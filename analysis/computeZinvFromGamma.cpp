@@ -24,7 +24,7 @@
 
 
 
-float lumi = 5.; // fb-1
+float lumi = 4.; // fb-1
 
 
 
@@ -43,8 +43,8 @@ int main( int argc, char* argv[] ) {
   //}
 
 
+  //std::string samplesFileName = "CSA14_Zinv_onlyskim";
   std::string samplesFileName = "CSA14_Zinv";
-  //std::string samplesFileName = "Zinv_prova";
   //std::string samplesFileName = "CSA14_skimprune_Zinv";
   if( argc>1 ) {
     std::string samplesFileName_tmp(argv[1]); 
@@ -90,7 +90,7 @@ int main( int argc, char* argv[] ) {
   TH1::AddDirectory(kFALSE); // stupid ROOT memory allocation needs this
 
 
-  std::string outputdir = "ZinvEstimateFromGamma_" + samplesFileName + "_" + regionsSet;
+  std::string outputdir( Form("ZinvEstimateFromGamma_%s_%s_%.0ffb", samplesFileName.c_str(), regionsSet.c_str(), lumi) );
   system(Form("mkdir -p %s", outputdir.c_str()));
 
   
@@ -244,7 +244,7 @@ MT2Analysis<MT2EstimateTree> computeYield( const MT2Sample& sample, const std::s
     if( myTree.ngamma>0 && prefix=="gamma_" ) {
 
       if( myTree.gamma_idCutBased[0]==0 ) continue;
-      if( myTree.gamma_chHadIso[0]+myTree.gamma_neuHadIso[0] > 10. ) continue;
+      //if( myTree.gamma_chHadIso[0]+myTree.gamma_neuHadIso[0] > 10. ) continue;
 
       TLorentzVector gamma;
       gamma.SetPtEtaPhiM( myTree.gamma_pt[0], myTree.gamma_eta[0], myTree.gamma_phi[0], myTree.gamma_mass[0] );
@@ -268,15 +268,16 @@ MT2Analysis<MT2EstimateTree> computeYield( const MT2Sample& sample, const std::s
 
       if( myTree.jet_pt[1]<100. ) continue;
 
-      //for( unsigned i=0; i<myTree.nGenPart; ++i ) {
-      //  if( myTree.genPart_pdgId!=23 ) continue;
-      //  ptV = genPart_pt;
+      //for( unsigned i=0; i<myTree.ngenPart; ++i ) {
+      //  if( myTree.genPart_pdgId[i]!=23 ) continue;
+      //  ptV = myTree.genPart_pt[i];
       //  break;
       //}
       ptV = met;
 
     }
 
+    //ptV = met;
 
     Double_t weight = myTree.evt_scale1fb*lumi; 
 
