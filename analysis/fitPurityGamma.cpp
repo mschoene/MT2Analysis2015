@@ -77,13 +77,14 @@ int main( int argc, char* argv[] ) {
   TH1::AddDirectory(kFALSE);
 
 
-  MT2Analysis<MT2EstimateZinvGamma>* gammaJet_data = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( "GammaControlRegion_" + samples + "_13TeV_CSA14/mc.root", "gammaCR" );
+  std::string gammaCRdir = "GammaControlRegion_" + samples + "_13TeV_CSA14";
+  MT2Analysis<MT2EstimateZinvGamma>* gammaJet_data = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( gammaCRdir + "/data.root", "gammaCR" );
 
   MT2Analysis<MT2EstimateZinvGamma>* templates_prompt = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( "gammaTemplates" + mc_or_data + "_" + samples + "_" + regionsSet + ".root", "templatesPrompt" );
   MT2Analysis<MT2EstimateZinvGamma>* templates_fake   = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( "gammaTemplates" + mc_or_data + "_" + samples + "_" + regionsSet + ".root", "templatesFake" );
 
 
-  std::string outputdir = "PurityFits" + mc_or_data + "_" + samples + "_" + regionsSet;
+  std::string outputdir = gammaCRdir + "/PurityFits" + mc_or_data + "_" + samples + "_" + regionsSet;
   system( Form( "mkdir -p %s", outputdir.c_str()) );
 
   std::set<MT2Region> regions = gammaJet_data->getRegions();
@@ -203,7 +204,7 @@ void fitSinglePurity( const std::string& outputdir, Purity& loose, Purity& tight
 
   TCanvas* c1 = new TCanvas("c1", "", 600, 600);
   gPad->SetLeftMargin(0.15);
-  TH2D* h2_axes = new TH2D("axes", "", 10, 0., xMaxFit, 10, 0., xframe->GetMaximum()*1.2 );
+  TH2D* h2_axes = new TH2D("axes", "", 10, 0., xMaxFit, 10, 0., xframe->GetMaximum()*1.1 );
   h2_axes->Draw();
   xframe->GetYaxis()->SetTitleOffset(1.4); 
   xframe->Draw("same");
