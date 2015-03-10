@@ -9,8 +9,8 @@
 #include "../interface/MT2Analysis.h"
 #include "../interface/MT2Region.h"
 #include "../interface/MT2EstimateZinvGamma.h"
+#include "../interface/MT2EstimateSyst.h"
 #include "../interface/MT2DrawTools.h"
-#include "../interface/MT2Efficiency.h"
 
 
 
@@ -71,7 +71,7 @@ int main( int argc, char* argv[] ) {
 
 void doAllPurityPlots( const std::string& gammaCRdir, const std::string& samples, const std::string& mc_or_data, const std::string& purityName ) {
 
-  MT2Analysis<MT2Efficiency>* purityMC = MT2Analysis<MT2Efficiency>::readFromFile( gammaCRdir + "/purityMC.root", purityName );
+  MT2Analysis<MT2EstimateSyst>* purityMC = MT2Analysis<MT2EstimateSyst>::readFromFile( gammaCRdir + "/purityMC.root", purityName );
 
   std::string outputdir = gammaCRdir + "/PurityFitPlots" + mc_or_data + "_" + samples;
   system( Form("mkdir -p %s", outputdir.c_str() ));
@@ -99,17 +99,17 @@ void doAllPurityPlots( const std::string& gammaCRdir, const std::string& samples
     c1->cd();
 
 
-    TEfficiency* thisPurityMC = purityMC->get( *iR )->eff;
-    TGraphAsymmErrors* gr_purityMC = thisPurityMC->CreateGraph();
+    MT2EstimateSyst* thisPurityMC = purityMC->get( *iR );
+
+    TGraphAsymmErrors* gr_purityMC = thisPurityMC->getGraph();
     gr_purityMC->SetLineColor( kBlack );
     gr_purityMC->SetLineWidth( 2 );
 
 
     float yMin = (purityName=="purity") ? 0.7 : 0.;
 
-    TH1* h1_purityMC = thisPurityMC->GetCopyTotalHisto();
 
-    TH2D* axes = new TH2D( "axes", "", 10, h1_purityMC->GetXaxis()->GetXmin(), h1_purityMC->GetXaxis()->GetXmax(), 10, yMin, 1.0001 );
+    TH2D* axes = new TH2D( "axes", "", 10, thisPurityMC->yield->GetXaxis()->GetXmin(), thisPurityMC->yield->GetXaxis()->GetXmax(), 10, yMin, 1.0001 );
     axes->SetXTitle( "M_{T2} [GeV]");
     axes->SetYTitle( "Photon Purity" );
     axes->Draw("");
