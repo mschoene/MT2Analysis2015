@@ -5,6 +5,7 @@
 #include <fstream>
 #include <cmath>
 
+#include "TEfficiency.h"
 
 
 
@@ -14,10 +15,47 @@ MT2EstimateSyst::MT2EstimateSyst( const std::string& aname, const MT2Region& are
   double* bins;
   region->getBins(nBins, bins);
 
-  yield_btagUp = new TH1D( this->getHistoName("yield_btagUp").c_str(), "", nBins, bins);
-  yield_btagUp->Sumw2();
-  yield_btagDown = new TH1D( this->getHistoName("yield_btagDown").c_str(), "", nBins, bins);
-  yield_btagDown->Sumw2();
+  yield_systUp = new TH1D( this->getHistoName("yield_systUp").c_str(), "", nBins, bins);
+  yield_systUp->Sumw2();
+  yield_systDown = new TH1D( this->getHistoName("yield_systDown").c_str(), "", nBins, bins);
+  yield_systDown->Sumw2();
+
+}
+
+
+
+
+MT2EstimateSyst::MT2EstimateSyst( const std::string& aname, const MT2Region& aregion, const MT2Estimate& pass, const MT2Estimate& tot ) : MT2Estimate( aname, aregion ) {
+
+  int nBins;
+  double* bins;
+  region->getBins(nBins, bins);
+
+  yield_systUp = new TH1D( this->getHistoName("yield_systUp").c_str(), "", nBins, bins);
+  yield_systUp->Sumw2();
+  yield_systDown = new TH1D( this->getHistoName("yield_systDown").c_str(), "", nBins, bins);
+  yield_systDown->Sumw2();
+
+  this->makeEfficiency( pass, tot );
+
+}
+
+
+
+MT2EstimateSyst::MT2EstimateSyst( const MT2Estimate& rhs ) : MT2Estimate(rhs) {
+
+  this->yield_systUp = new TH1D(*(rhs.yield));
+  this->yield_systDown = new TH1D(*(rhs.yield));
+
+}
+
+
+
+
+MT2EstimateSyst::MT2EstimateSyst( const MT2EstimateSyst& rhs ) : MT2Estimate(rhs) {
+
+  this->yield_systUp = new TH1D(*(rhs.yield_systUp));
+  this->yield_systDown = new TH1D(*(rhs.yield_systDown));
 
 }
 
@@ -25,10 +63,83 @@ MT2EstimateSyst::MT2EstimateSyst( const std::string& aname, const MT2Region& are
 
 MT2EstimateSyst::~MT2EstimateSyst() {
 
-  delete yield_btagUp;
-  delete yield_btagDown;
+  delete yield_systUp;
+  delete yield_systDown;
 
 }
+
+
+
+
+
+void MT2EstimateSyst::makeEfficiency( const MT2Estimate& pass, const MT2Estimate& tot ) {
+
+
+  TEfficiency eff( *(pass.yield), *(tot.yield) );
+
+  for( unsigned i=1; i<yield->GetNbinsX()+1; ++i ) {
+
+    yield         ->SetBinContent( i, eff.GetEfficiency(i) );
+    yield_systDown->SetBinContent( i, eff.GetEfficiencyErrorLow(i) );
+    yield_systUp  ->SetBinContent( i, eff.GetEfficiencyErrorUp(i) );
+
+  }
+
+}
+
+
+
+MT2Analysis<MT2EstimateSyst>* MT2EstimateSyst::makeEfficiencyAnalysis( const std::string& aname, const std::string& regionsSet, MT2Analysis<MT2Estimate>* pass, MT2Analysis<MT2Estimate>* all ) {
+
+  std::set<MT2Region> regions = pass->getRegions();
+
+  std::set<MT2EstimateSyst*> data;
+
+  for( std::set<MT2Region>::iterator iR=regions.begin(); iR!=regions.end(); ++iR ) {
+
+    MT2Estimate*     thisPass = pass    ->get( *iR );
+    MT2Estimate*     thisAll  = all     ->get( *iR );
+
+    MT2EstimateSyst* thisEff  = new MT2EstimateSyst( aname, *iR, *thisPass, *thisAll );
+    data.insert( thisEff );
+
+  } // for regions
+
+
+  MT2Analysis<MT2EstimateSyst>* analysis = new MT2Analysis<MT2EstimateSyst>( aname, data );
+
+  return analysis;
+
+}
+
+
+
+TGraphAsymmErrors* MT2EstimateSyst::getGraph() const {
+
+  TGraphAsymmErrors* graph = new TGraphAsymmErrors(0);
+  graph->SetName( this->getHistoName("grSyst").c_str() );
+
+
+  for( unsigned iBin=1; iBin<yield->GetNbinsX()+1; ++iBin ) {
+
+    float x = yield->GetBinCenter(iBin);
+    float x_minus = yield->GetBinLowEdge(iBin);
+    float x_plus  = yield->GetBinLowEdge(iBin+1);
+    float y = yield->GetBinContent(iBin);
+    float y_plus  = yield_systUp  ->GetBinContent(iBin);
+    float y_minus = yield_systDown->GetBinContent(iBin);
+    
+    int iPoint = iBin-1;
+    graph->SetPoint( iPoint, x, y );
+    graph->SetPointError( iPoint, x-x_minus, x_plus-x, y-y_minus, y_plus-y );
+
+  }
+
+
+  return graph;
+
+}
+
 
 
 
@@ -36,8 +147,8 @@ void MT2EstimateSyst::setName( const std::string& newName ) {
 
   MT2Estimate::setName(newName);
 
-  yield_btagUp->SetName( this->getHistoName("yield_btagUp").c_str() );
-  yield_btagDown->SetName( this->getHistoName("yield_btagDown").c_str() );
+  yield_systUp->SetName( this->getHistoName("yield_systUp").c_str() );
+  yield_systDown->SetName( this->getHistoName("yield_systDown").c_str() );
 
 }
 
@@ -47,8 +158,8 @@ void MT2EstimateSyst::addOverflow() {
 
   MT2Estimate::addOverflow();
 
-  MT2Estimate::addOverflowSingleHisto( yield_btagUp );
-  MT2Estimate::addOverflowSingleHisto( yield_btagDown );
+  MT2Estimate::addOverflowSingleHisto( yield_systUp );
+  MT2Estimate::addOverflowSingleHisto( yield_systDown );
 
 }
 
@@ -57,8 +168,8 @@ void MT2EstimateSyst::addOverflow() {
 void MT2EstimateSyst::getShit( TFile* file, const std::string& path ) {
 
   MT2Estimate::getShit(file, path);
-  yield_btagUp = (TH1D*)file->Get(Form("%s/%s", path.c_str(), yield_btagUp->GetName()));
-  yield_btagDown = (TH1D*)file->Get(Form("%s/%s", path.c_str(), yield_btagDown->GetName()));
+  yield_systUp = (TH1D*)file->Get(Form("%s/%s", path.c_str(), yield_systUp->GetName()));
+  yield_systDown = (TH1D*)file->Get(Form("%s/%s", path.c_str(), yield_systDown->GetName()));
 
 
 }
@@ -80,8 +191,8 @@ const MT2EstimateSyst& MT2EstimateSyst::operator=( const MT2EstimateSyst& rhs ) 
     this->region = new MT2Region(*(rhs.region));
 
     this->yield = new TH1D(*(rhs.yield));
-    this->yield_btagUp = new TH1D(*(rhs.yield_btagUp));
-    this->yield_btagDown = new TH1D(*(rhs.yield_btagDown));
+    this->yield_systUp = new TH1D(*(rhs.yield_systUp));
+    this->yield_systDown = new TH1D(*(rhs.yield_systDown));
 
   } else { // keep name and histo name, just make histogram identical
 
@@ -93,15 +204,15 @@ const MT2EstimateSyst& MT2EstimateSyst::operator=( const MT2EstimateSyst& rhs ) 
     this->yield = new TH1D(*(rhs.yield));
     this->yield->SetName(oldName.c_str());
 
-    std::string oldName_btagUp = this->yield_btagUp->GetName();
-    delete this->yield_btagUp;
-    this->yield_btagUp = new TH1D(*(rhs.yield_btagUp));
-    this->yield_btagUp->SetName(oldName_btagUp.c_str());
+    std::string oldName_systUp = this->yield_systUp->GetName();
+    delete this->yield_systUp;
+    this->yield_systUp = new TH1D(*(rhs.yield_systUp));
+    this->yield_systUp->SetName(oldName_systUp.c_str());
 
-    std::string oldName_btagDown = this->yield_btagDown->GetName();
-    delete this->yield_btagDown;
-    this->yield_btagDown = new TH1D(*(rhs.yield_btagDown));
-    this->yield_btagDown->SetName(oldName_btagDown.c_str());
+    std::string oldName_systDown = this->yield_systDown->GetName();
+    delete this->yield_systDown;
+    this->yield_systDown = new TH1D(*(rhs.yield_systDown));
+    this->yield_systDown->SetName(oldName_systDown.c_str());
 
   }
 
@@ -122,13 +233,13 @@ MT2EstimateSyst MT2EstimateSyst::operator+( const MT2EstimateSyst& rhs ) const{
 
   //MT2EstimateSyst result(*this);
   //result.yield->Add(rhs.yield);
-  //result.yield_btagUp->Add(rhs.yield_btagUp);
-  //result.yield_btagDown->Add(rhs.yield_btagDown);
+  //result.yield_systUp->Add(rhs.yield_systUp);
+  //result.yield_systDown->Add(rhs.yield_systDown);
 
   MT2EstimateSyst result(*this);
   result.yield->Add(rhs.yield);
-  result.yield_btagUp->Add(rhs.yield_btagUp);
-  result.yield_btagDown->Add(rhs.yield_btagDown);
+  result.yield_systUp->Add(rhs.yield_systUp);
+  result.yield_systDown->Add(rhs.yield_systDown);
 
   //return *this;
   return result;
@@ -146,8 +257,8 @@ MT2EstimateSyst MT2EstimateSyst::operator/( const MT2EstimateSyst& rhs ) const{
 
   MT2EstimateSyst result(*this);
   result.yield->Divide(rhs.yield);
-  result.yield_btagUp->Divide(rhs.yield_btagUp);
-  result.yield_btagDown->Divide(rhs.yield_btagDown);
+  result.yield_systUp->Divide(rhs.yield_systUp);
+  result.yield_systDown->Divide(rhs.yield_systDown);
 
   //return *this;
   return result;
@@ -165,10 +276,28 @@ MT2EstimateSyst MT2EstimateSyst::operator*( const MT2EstimateSyst& rhs ) const{
 
   MT2EstimateSyst result(*this);
   result.yield->Multiply(rhs.yield);
-  result.yield_btagUp->Multiply(rhs.yield_btagUp);
-  result.yield_btagDown->Multiply(rhs.yield_btagDown);
+  result.yield_systUp->Multiply(rhs.yield_systUp);
+  result.yield_systDown->Multiply(rhs.yield_systDown);
 
-  //return *this;
+  return result;
+
+}
+
+
+
+MT2EstimateSyst MT2EstimateSyst::operator*( const MT2Estimate& rhs ) const{
+
+
+  if( *(this->region) != *(rhs.region) ) {
+    std::cout << "[MT2EstimateSyst::operator*] ERROR! Can't multiply MT2EstimateSyst with different MT2Regions!" << std::endl;
+    exit(113);
+  }
+
+  MT2EstimateSyst result(*this);
+  result.yield->Multiply(rhs.yield);
+  result.yield_systUp->Multiply(rhs.yield);
+  result.yield_systDown->Multiply(rhs.yield);
+
   return result;
 
 }
@@ -180,11 +309,11 @@ MT2EstimateSyst MT2EstimateSyst::operator*( float k ) const{
   result.yield = new TH1D(*(this->yield));
   result.yield->Scale(k);
 
-  result.yield_btagUp = new TH1D(*(this->yield_btagUp));
-  result.yield_btagUp->Scale(k);
+  result.yield_systUp = new TH1D(*(this->yield_systUp));
+  result.yield_systUp->Scale(k);
 
-  result.yield_btagDown = new TH1D(*(this->yield_btagDown));
-  result.yield_btagDown->Scale(k);
+  result.yield_systDown = new TH1D(*(this->yield_systDown));
+  result.yield_systDown->Scale(k);
 
   return result;
 
@@ -198,11 +327,11 @@ MT2EstimateSyst MT2EstimateSyst::operator/( float k ) const{
   result.yield = new TH1D(*(this->yield));
   result.yield->Scale(1./k);
 
-  result.yield_btagUp = new TH1D(*(this->yield_btagUp));
-  result.yield_btagUp->Scale(1./k);
+  result.yield_systUp = new TH1D(*(this->yield_systUp));
+  result.yield_systUp->Scale(1./k);
 
-  result.yield_btagDown = new TH1D(*(this->yield_btagDown));
-  result.yield_btagDown->Scale(1./k);
+  result.yield_systDown = new TH1D(*(this->yield_systDown));
+  result.yield_systDown->Scale(1./k);
 
   return result;
 
@@ -214,8 +343,8 @@ MT2EstimateSyst MT2EstimateSyst::operator/( float k ) const{
 const MT2EstimateSyst& MT2EstimateSyst::operator+=( const MT2EstimateSyst& rhs ) {
 
   this->yield->Add(rhs.yield);
-  this->yield_btagUp->Add(rhs.yield_btagUp);
-  this->yield_btagDown->Add(rhs.yield_btagDown);
+  this->yield_systUp->Add(rhs.yield_systUp);
+  this->yield_systDown->Add(rhs.yield_systDown);
   return (*this);
 
 }
@@ -223,17 +352,28 @@ const MT2EstimateSyst& MT2EstimateSyst::operator+=( const MT2EstimateSyst& rhs )
 const MT2EstimateSyst& MT2EstimateSyst::operator/=( const MT2EstimateSyst& rhs ) {
 
   this->yield->Divide(rhs.yield);
-  this->yield_btagUp->Divide(rhs.yield_btagUp);
-  this->yield_btagDown->Divide(rhs.yield_btagDown);
+  this->yield_systUp->Divide(rhs.yield_systUp);
+  this->yield_systDown->Divide(rhs.yield_systDown);
   return (*this);
 
 }
 
+
 const MT2EstimateSyst& MT2EstimateSyst::operator*=( const MT2EstimateSyst& rhs ) {
 
   this->yield->Multiply(rhs.yield);
-  this->yield_btagUp->Multiply(rhs.yield_btagUp);
-  this->yield_btagDown->Multiply(rhs.yield_btagDown);
+  this->yield_systUp->Multiply(rhs.yield_systUp);
+  this->yield_systDown->Multiply(rhs.yield_systDown);
+  return (*this);
+
+}
+
+
+const MT2EstimateSyst& MT2EstimateSyst::operator*=( const MT2Estimate& rhs ) {
+
+  this->yield->Multiply(rhs.yield);
+  this->yield_systUp->Multiply(rhs.yield);
+  this->yield_systDown->Multiply(rhs.yield);
   return (*this);
 
 }
@@ -243,8 +383,8 @@ const MT2EstimateSyst& MT2EstimateSyst::operator*=( const MT2EstimateSyst& rhs )
 const MT2EstimateSyst& MT2EstimateSyst::operator*=( float k ) {
 
   this->yield->Scale(k);
-  this->yield_btagUp->Scale(k);
-  this->yield_btagDown->Scale(k);
+  this->yield_systUp->Scale(k);
+  this->yield_systDown->Scale(k);
   return (*this);
 
 }
@@ -252,8 +392,8 @@ const MT2EstimateSyst& MT2EstimateSyst::operator*=( float k ) {
 const MT2EstimateSyst& MT2EstimateSyst::operator/=( float k ) {
 
   this->yield->Scale(1./k);
-  this->yield_btagUp->Scale(1./k);
-  this->yield_btagDown->Scale(1./k);
+  this->yield_systUp->Scale(1./k);
+  this->yield_systDown->Scale(1./k);
   return (*this);
 
 }
