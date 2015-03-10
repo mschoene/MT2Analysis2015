@@ -39,7 +39,7 @@ class PurityFit {
 
 
 
-void doAllPurityPlots( const std::string& outputdir, const std::string& samples, const std::string& mc_or_data, const std::string& purityName );
+void doAllPurityPlots( const std::string& gammaCRdir, const std::string& samples, const std::string& mc_or_data, const std::string& purityName );
 
 
 
@@ -56,12 +56,10 @@ int main( int argc, char* argv[] ) {
   //std::string samples = "CSA14_Zinv";
   std::string samples = "PHYS14_v2_Zinv";
 
-  std::string outputdir = "PurityFitPlots" + mc_or_data + "_" + samples;
-  system( Form("mkdir -p %s", outputdir.c_str() ));
-
+  std::string gammaCRdir = "GammaControlRegion_" + samples + "_13TeV_CSA14";
   
-  doAllPurityPlots( outputdir, samples, mc_or_data, "purityLoose" ); 
-  doAllPurityPlots( outputdir, samples, mc_or_data, "purity" ); 
+  doAllPurityPlots( gammaCRdir, samples, mc_or_data, "purityLoose" ); 
+  doAllPurityPlots( gammaCRdir, samples, mc_or_data, "purity" ); 
 
   return 0;
 
@@ -71,21 +69,23 @@ int main( int argc, char* argv[] ) {
 
 
 
-void doAllPurityPlots( const std::string& outputdir, const std::string& samples, const std::string& mc_or_data, const std::string& purityName ) {
+void doAllPurityPlots( const std::string& gammaCRdir, const std::string& samples, const std::string& mc_or_data, const std::string& purityName ) {
 
+  MT2Analysis<MT2Efficiency>* purityMC = MT2Analysis<MT2Efficiency>::readFromFile( gammaCRdir + "/purityMC.root", purityName );
 
-  //MT2Analysis<MT2Estimate>* purityMC = MT2Analysis<MT2Estimate>::readFromFile( "GammaControlRegion_CSA14_Zinv_13TeV_inclusive/purityMC.root" );
-  MT2Analysis<MT2Efficiency>* purityMC = MT2Analysis<MT2Efficiency>::readFromFile( "GammaControlRegion_" + samples + "_13TeV_CSA14/purityMC.root", purityName );
+  std::string outputdir = gammaCRdir + "/PurityFitPlots" + mc_or_data + "_" + samples;
+  system( Form("mkdir -p %s", outputdir.c_str() ));
+
 
   std::vector< PurityFit > fits;
   if( mc_or_data=="MC" ) {
-    fits.push_back( PurityFit( "All Bins"  , "13TeV_CSA14"     , MT2Analysis<MT2Estimate>::readFromFile("PurityFitsMC_" + samples + "_13TeV_CSA14/purityFit_"     + samples + "_13TeV_CSA14.root"    , purityName), 20, kRed+2 ));
-    fits.push_back( PurityFit( "HT Bins"   , "13TeV_onlyHT"    , MT2Analysis<MT2Estimate>::readFromFile("PurityFitsMC_" + samples + "_13TeV_onlyHT/purityFit_"    + samples + "_13TeV_onlyHT.root"   , purityName), 21, 29 ));
-    fits.push_back( PurityFit( "Jet Bins"  , "13TeV_onlyJet"   , MT2Analysis<MT2Estimate>::readFromFile("PurityFitsMC_" + samples + "_13TeV_onlyJets/purityFit_"  + samples + "_13TeV_onlyJets.root" , purityName), 24, kAzure ));
-    fits.push_back( PurityFit( "Inclusive" , "13TeV_inclusive" , MT2Analysis<MT2Estimate>::readFromFile("PurityFitsMC_" + samples + "_13TeV_inclusive/purityFit_" + samples + "_13TeV_inclusive.root", purityName), 25, kOrange+1 ));
+    fits.push_back( PurityFit( "All Bins"  , "13TeV_CSA14"     , MT2Analysis<MT2Estimate>::readFromFile(gammaCRdir+"/PurityFitsMC_" + samples + "_13TeV_CSA14/purityFit_"     + samples + "_13TeV_CSA14.root"    , purityName), 20, kRed+2 ));
+    fits.push_back( PurityFit( "HT Bins"   , "13TeV_onlyHT"    , MT2Analysis<MT2Estimate>::readFromFile(gammaCRdir+"/PurityFitsMC_" + samples + "_13TeV_onlyHT/purityFit_"    + samples + "_13TeV_onlyHT.root"   , purityName), 21, 29 ));
+    fits.push_back( PurityFit( "Jet Bins"  , "13TeV_onlyJet"   , MT2Analysis<MT2Estimate>::readFromFile(gammaCRdir+"/PurityFitsMC_" + samples + "_13TeV_onlyJets/purityFit_"  + samples + "_13TeV_onlyJets.root" , purityName), 24, kAzure ));
+    fits.push_back( PurityFit( "Inclusive" , "13TeV_inclusive" , MT2Analysis<MT2Estimate>::readFromFile(gammaCRdir+"/PurityFitsMC_" + samples + "_13TeV_inclusive/purityFit_" + samples + "_13TeV_inclusive.root", purityName), 25, kOrange+1 ));
   } else {
-    fits.push_back( PurityFit( "Template Fit (MC)"  , "13TeV_inclusive" , MT2Analysis<MT2Estimate>::readFromFile("PurityFitsMC_"   + samples + "_13TeV_inclusive/purityFit_" + samples + "_13TeV_inclusive.root", purityName), 21, 29 ));
-    fits.push_back( PurityFit( "Template Fit (Data)", "13TeV_inclusive" , MT2Analysis<MT2Estimate>::readFromFile("PurityFitsData_" + samples + "_13TeV_inclusive/purityFit_" + samples + "_13TeV_inclusive.root", purityName), 20, kOrange+1 ));
+    fits.push_back( PurityFit( "Template Fit (MC)"  , "13TeV_inclusive" , MT2Analysis<MT2Estimate>::readFromFile(gammaCRdir+"/PurityFitsMC_"   + samples + "_13TeV_inclusive/purityFit_" + samples + "_13TeV_inclusive.root", purityName), 21, 29 ));
+    fits.push_back( PurityFit( "Template Fit (Data)", "13TeV_inclusive" , MT2Analysis<MT2Estimate>::readFromFile(gammaCRdir+"/PurityFitsData_" + samples + "_13TeV_inclusive/purityFit_" + samples + "_13TeV_inclusive.root", purityName), 20, kOrange+1 ));
   }
 
 
