@@ -96,13 +96,12 @@ int main( int argc, char* argv[] ) {
 
 
   gammaCR->writeToFile( outputdir + "/mc.root" );
-  //qcd->addToFile( outputdir + "/mc.root" );
-  //gammaJet->addToFile( outputdir + "/mc.root" );
+  prompt->addToFile( outputdir + "/mc.root" );
+  fake->addToFile( outputdir + "/mc.root" );
+
   purityTight->writeToFile( outputdir + "/purityMC.root" );
   purityLoose->addToFile( outputdir + "/purityMC.root" );
   eff_isoCut->addToFile( outputdir + "/purityMC.root" );
-  prompt->addToFile( outputdir + "/purityMC.root" );
-  fake->addToFile( outputdir + "/purityMC.root" );
 
   // emulate data:
   //randomizePoisson(gammaCR);
@@ -144,8 +143,8 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2An
   myTree.loadGenStuff = false;
   myTree.Init(tree);
 
-  int nentries = tree->GetEntries();
 
+  int nentries = tree->GetEntries();
 
 
   for( unsigned iEntry=0; iEntry<nentries; ++iEntry ) {
