@@ -123,21 +123,37 @@ std::string MT2HTRegion::getNiceName() const {
 
 bool MT2HTRegion::operator==( const MT2HTRegion& rhs ) const {
 
-  return ( htMin==rhs.htMin && htMax==rhs.htMax ); 
+  return (this->getName()==rhs.getName());
 
 }
 
 
 bool MT2HTRegion::operator!=( const MT2HTRegion& rhs ) const {
 
-  return ( htMin!=rhs.htMin || htMax!=rhs.htMax ); 
+  return (this->getName()!=rhs.getName());
 
 }
 
 
 bool MT2HTRegion::operator<( const MT2HTRegion& rhs ) const {
 
-  return ( htMin<rhs.htMin );
+  if( *this==rhs ) return true;
+
+  float thisHtMax = (htMax>=0.) ? htMax : 99999.;
+  float rhsHtMax = (rhs.htMax>=0.) ? rhs.htMax : 99999.;
+
+  bool returnBool;
+
+  if( htMin==rhs.htMin ) {
+    
+    returnBool = thisHtMax<rhsHtMax;
+
+  } else {
+
+    returnBool = ( htMin<rhs.htMin );
+  }
+
+  return returnBool;
 
 }
 
@@ -236,7 +252,7 @@ MT2SignalRegion::MT2SignalRegion(int njmin, int njmax, int nbmin, int nbmax, con
   nJetsMax = njmax;
   nBJetsMin = nbmin;
   nBJetsMax = nbmax;
-  if( nJetsMin<nBJetsMin ) nJetsMin = nBJetsMin;
+  //if( nJetsMin<nBJetsMin ) nJetsMin = nBJetsMin;
 
   mtCut = mtcut;
 
@@ -264,7 +280,7 @@ std::string MT2SignalRegion::getName() const {
   std::string bString = getSingleJetString( "b", nBJetsMin, nBJetsMax );
 
   std::string signal_region = jString + "_" + bString;
-  if( mtCut!="" ) signal_region += "_" + mtCut;
+  if( mtCut!="" ) signal_region = signal_region + "_" + mtCut;
 
   return signal_region;
 
@@ -298,7 +314,8 @@ std::string MT2SignalRegion::getNiceName() const {
   std::string niceName_j = getNiceJetName( "j", nJetsMin,  nJetsMax  );
   std::string niceName_b = getNiceJetName( "b", nBJetsMin,  nBJetsMax  );
 
-  std::string niceName = niceName_j + ",  " + niceName_b;
+  std::string niceName = niceName_j;
+  if( niceName!="" && niceName_b!="" ) niceName += ",  " + niceName_b;
 
   if( mtCut=="loMT"  ) niceName += " (low M_{T})";
   else if( mtCut=="hiMT" ) niceName += " (high M_{T})";
@@ -309,6 +326,8 @@ std::string MT2SignalRegion::getNiceName() const {
 
 
 std::string MT2SignalRegion::getNiceJetName( const std::string& pedix, int nmin, int nmax ) const {
+
+  if( nmin==-1 && nmax==-1 ) return std::string("");
 
   char n[500];
   if( nmax==nmin )
@@ -333,69 +352,80 @@ std::string MT2SignalRegion::getNiceJetName( const std::string& pedix, int nmin,
 
 bool MT2SignalRegion::operator==( const MT2SignalRegion& rhs ) const {
 
-  return ( nJetsMin==rhs.nJetsMin && nJetsMax==rhs.nJetsMax && nBJetsMin==rhs.nBJetsMin && nBJetsMax==rhs.nBJetsMax && mtCut==rhs.mtCut );
+  return (this->getName()==rhs.getName());
  
 }
 
 
 bool MT2SignalRegion::operator!=( const MT2SignalRegion& rhs ) const {
 
-  return ( nJetsMin!=rhs.nJetsMin || nJetsMax!=rhs.nJetsMax || nBJetsMin!=rhs.nBJetsMin || nBJetsMax!=rhs.nBJetsMax || mtCut!=rhs.mtCut );
+  return (this->getName()!=rhs.getName());
  
 }
-
+    
 
 bool MT2SignalRegion::operator<( const MT2SignalRegion& rhs ) const {
 
-  if( nJetsMax!=rhs.nJetsMax) {
-    if( rhs.nJetsMax == -1 )
-      return true;
-    else return nJetsMax<rhs.nJetsMax;
-  } else {
-    if( nBJetsMin!=rhs.nBJetsMin ) {
-      return nBJetsMin<rhs.nBJetsMin;
+  if( *this == rhs ) return false;
+
+  int  thisNJmax = (nJetsMax>=0) ? nJetsMax : 99999;
+  int  rhsNJmax = (rhs.nJetsMax>=0) ? rhs.nJetsMax : 99999;
+
+  bool returnBool;
+
+  if( (nBJetsMax >= 0 && rhs.nBJetsMax >= 0) || (rhs.nBJetsMax < 0 && nBJetsMax < 0) ) {
+
+    if( thisNJmax == rhsNJmax ) {
+      
+      if( nBJetsMin!=rhs.nBJetsMin ) {
+	
+	returnBool = ( nBJetsMin<rhs.nBJetsMin );
+	
+      } else {
+	
+	if( mtCut!=rhs.mtCut ) {
+	  
+	  if( mtCut=="loMT" ) {
+	    returnBool = true;
+	  } else {
+	    returnBool = false;
+	  }
+	  
+	} else { // everything is the same
+	  
+	  returnBool = false;
+	  
+	}
+	
+      } //if nbjetsmin
+      
     } else {
-      if( mtCut!=rhs.mtCut ) {
-        if( mtCut=="loMT" ) {
-          return true;
-        } else { 
-          return false;
-        }
-      }
-    }
+      
+      returnBool = thisNJmax<rhsNJmax;
+      
+    } // if njetsmax
+    
+  } // if nbjetsmax
+  else {
+    if( nBJetsMax < 0 )
+      returnBool = false;
+    else returnBool = true;
+    
   }
-
-  return false;
-
+  
+  return returnBool;
+  
 }
-//bool MT2SignalRegion::operator<( const MT2SignalRegion& rhs ) const {
-//
-//  if( nBJetsMin!=rhs.nBJetsMin) {
-//    return nBJetsMin<rhs.nBJetsMin;
-//  } else {
-//    if( nJetsMin!=rhs.nJetsMin ) {
-//      return nJetsMin<rhs.nJetsMin;
-//    } else {
-//      if( mtCut!=rhs.mtCut ) {
-//        if( mtCut=="loMT" ) {
-//          return true;
-//        } else { 
-//          return false;
-//        }
-//      }
-//    }
-//  }
-//
-//  return false;
-//
-//}
+
+
 
 
 bool MT2SignalRegion::operator>( const MT2SignalRegion& rhs ) const {
   
-  return !( (*this) < rhs );
+  return !( (*this) <= rhs );
 
 }
+
 
 bool MT2SignalRegion::operator>=( const MT2SignalRegion& rhs ) const {
 
@@ -403,11 +433,13 @@ bool MT2SignalRegion::operator>=( const MT2SignalRegion& rhs ) const {
 
 }
 
+
 bool MT2SignalRegion::operator<=( const MT2SignalRegion& rhs ) const {
 
   return ( (*this) < rhs || (*this) == rhs );
 
 }
+
 
 bool MT2SignalRegion::isIncluded( MT2SignalRegion* sigRegion ) const {
 
@@ -634,3 +666,63 @@ bool MT2Region::isIncluded( MT2Region* region ) const {
   return ( ( sigRegion_->isIncluded( region->sigRegion() ) ) && ( htRegion_->isIncluded( region->htRegion() ) ) );
 
 }
+
+
+bool MT2Region::operator==( const MT2Region& rhs ) const {
+
+  return ( (*htRegion_)==(*(rhs.htRegion())) && (*sigRegion_)==(*(rhs.sigRegion())) );
+
+}
+
+
+
+
+bool MT2Region::operator!=( const MT2Region& rhs ) const {
+
+  return !( *this == rhs );
+
+}
+
+
+
+
+bool MT2Region::operator<( const MT2Region& rhs ) const {
+
+  if( (*htRegion_)!=(*(rhs.htRegion())) ) {
+    return (*htRegion_)<(*(rhs.htRegion()));
+  } else {
+    return (*sigRegion_)<(*(rhs.sigRegion()));
+  }
+
+  return true;
+
+}
+
+
+
+
+bool MT2Region::operator>( const MT2Region& rhs ) const {
+
+    return !(*this <= rhs);
+
+}
+
+
+
+
+bool MT2Region::operator>=( const MT2Region& rhs ) const {
+
+  return (*this > rhs || *this == rhs);
+
+}
+
+
+
+
+bool MT2Region::operator<=( const MT2Region& rhs ) const {
+
+  return (*this < rhs || *this == rhs);
+
+}
+
+

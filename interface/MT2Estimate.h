@@ -57,9 +57,11 @@ class MT2Estimate {
 
   const MT2Estimate& operator=( const MT2Estimate& rhs );
   MT2Estimate operator+( const MT2Estimate& rhs ) const;
+  MT2Estimate operator-( const MT2Estimate& rhs ) const;
   MT2Estimate operator/( const MT2Estimate& rhs ) const;
   MT2Estimate operator*( const MT2Estimate& rhs ) const;
   const MT2Estimate& operator+=( const MT2Estimate& rhs );
+  const MT2Estimate& operator-=( const MT2Estimate& rhs );
   const MT2Estimate& operator/=( const MT2Estimate& rhs );
   const MT2Estimate& operator*=( const MT2Estimate& rhs );
 

@@ -2,10 +2,11 @@
 #include "interface/MT2Region.h"
 #include "interface/MT2Analysis.h"
 #include "interface/MT2EstimateZinvGamma.h"
+#include "interface/MT2EstimateSyst.h"
 
 
 #define mt2_cxx
-#include "../interface/mt2_float.h"
+#include "../interface/mt2.h"
 
 
 #include "TLorentzVector.h"
@@ -17,7 +18,7 @@ float lumi = 5.; //fb-1
 
 
 
-MT2Analysis<MT2EstimateZinvGamma> computeYield( const MT2Sample& sample, const std::string& regionsSet, int selectID=-1 );
+void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2Analysis<MT2EstimateZinvGamma>* prompt, MT2Analysis<MT2EstimateZinvGamma>* prompt_pass, MT2Analysis<MT2EstimateZinvGamma>* fake, MT2Analysis<MT2EstimateZinvGamma>* fake_pass, float isoCut );
 void randomizePoisson( MT2Analysis<MT2EstimateZinvGamma>* data );
 void randomizeSingleHisto( TRandom3 rand, TH1D* histo );
 
@@ -27,7 +28,8 @@ void randomizeSingleHisto( TRandom3 rand, TH1D* histo );
 int main( int argc, char* argv[] ) {
 
 
-  std::string samplesFileName = "CSA14_Zinv";
+  std::string samplesFileName = "PHYS14_v2_Zinv";
+  //std::string samplesFileName = "CSA14_Zinv";
   if( argc>1 ) {
     std::string samplesFileName_tmp(argv[1]); 
     samplesFileName = samplesFileName_tmp;
@@ -48,8 +50,8 @@ int main( int argc, char* argv[] ) {
   
 
 
-  //std::string regionsSet = "13TeV_onlyHT";
   std::string regionsSet = "13TeV_CSA14";
+  //std::string regionsSet = "13TeV_onlyHT";
   //std::string regionsSet = "13TeV_inclusive";
   //std::string regionsSet = "13TeV_ZinvGammaPurity";
 
@@ -62,39 +64,47 @@ int main( int argc, char* argv[] ) {
   
 
   MT2Analysis<MT2EstimateZinvGamma>* prompt = new MT2Analysis<MT2EstimateZinvGamma>( "prompt", regionsSet );
-  //MT2Analysis<MT2EstimateZinvGamma>* fake = new MT2Analysis<MT2EstimateZinvGamma>( "fake", regionsSet );
+  MT2Analysis<MT2EstimateZinvGamma>* prompt_pass = new MT2Analysis<MT2EstimateZinvGamma>( "prompt_pass", regionsSet );
 
-  MT2Analysis<MT2EstimateZinvGamma>* gammaJet = new MT2Analysis<MT2EstimateZinvGamma>( "gammaJet", regionsSet );
+  MT2Analysis<MT2EstimateZinvGamma>* fake = new MT2Analysis<MT2EstimateZinvGamma>( "fake", regionsSet );
+  MT2Analysis<MT2EstimateZinvGamma>* fake_pass = new MT2Analysis<MT2EstimateZinvGamma>( "fake_pass", regionsSet );
+
+
+  float isoCut = 3.; // GeV (absolute iso)
+  //float isoCut = 0.005;
+
   for( unsigned i=0; i<samples_gammaJet.size(); ++i ) {
-    (*gammaJet) += (computeYield( samples_gammaJet[i], regionsSet ));
-    (*prompt) += (computeYield( samples_gammaJet[i], regionsSet, 22 ));
-    //(*fake) += (computeYield( samples_gammaJet[i], regionsSet, 0 ));
+    computeYield( samples_gammaJet[i], regionsSet, prompt, prompt_pass, fake, fake_pass, isoCut );
   }
 
-  MT2Analysis<MT2EstimateZinvGamma>* qcd = new MT2Analysis<MT2EstimateZinvGamma>( "qcd", regionsSet );
   for( unsigned i=0; i<samples_qcd.size(); ++i ) {
-    (*qcd) += (computeYield( samples_qcd[i], regionsSet ));
-    (*prompt) += (computeYield( samples_qcd[i], regionsSet, 22 ));
-    //(*fake) += (computeYield( samples_qcd[i], regionsSet, 0 ));
+    computeYield( samples_qcd[i], regionsSet, prompt, prompt_pass, fake, fake_pass, isoCut );
   }
 
   MT2Analysis<MT2EstimateZinvGamma>* gammaCR = new MT2Analysis<MT2EstimateZinvGamma>( "gammaCR", regionsSet );
-  (*gammaCR) = (*gammaJet) + (*qcd);
+  (*gammaCR) = (*prompt) + (*fake);
+
+  MT2Analysis<MT2EstimateZinvGamma>* gammaCR_pass = new MT2Analysis<MT2EstimateZinvGamma>( "gammaCR_pass", regionsSet );
+  (*gammaCR_pass) = (*prompt_pass) + (*fake_pass);
 
 
-  MT2Analysis<MT2Estimate>* purity = new MT2Analysis<MT2Estimate>( "purityMC", regionsSet );
-  //(*purity) = *( (MT2Analysis<MT2Estimate>*) (gammaJet) );
-  (*purity) = *( (MT2Analysis<MT2Estimate>*) (prompt) );
-  (*purity) /= *( (MT2Analysis<MT2Estimate>*) (gammaCR) );
+  MT2Analysis<MT2EstimateSyst>* eff_isoCut = MT2EstimateSyst::makeEfficiencyAnalysis( "eff_isoCut", regionsSet, (MT2Analysis<MT2Estimate>*)prompt_pass, (MT2Analysis<MT2Estimate>*)prompt );
+
+  MT2Analysis<MT2EstimateSyst>* purityTight = MT2EstimateSyst::makeEfficiencyAnalysis( "purity", regionsSet, (MT2Analysis<MT2Estimate>*)prompt_pass, (MT2Analysis<MT2Estimate>*)gammaCR_pass );
+
+  MT2Analysis<MT2EstimateSyst>* purityLoose = MT2EstimateSyst::makeEfficiencyAnalysis( "purityLoose", regionsSet, (MT2Analysis<MT2Estimate>*)prompt, (MT2Analysis<MT2Estimate>*)gammaCR );
 
 
   gammaCR->writeToFile( outputdir + "/mc.root" );
-  qcd->addToFile( outputdir + "/mc.root" );
-  gammaJet->addToFile( outputdir + "/mc.root" );
-  purity->writeToFile( outputdir + "/purityMC.root" );
+  prompt->addToFile( outputdir + "/mc.root" );
+  fake->addToFile( outputdir + "/mc.root" );
+
+  purityTight->writeToFile( outputdir + "/purityMC.root" );
+  purityLoose->addToFile( outputdir + "/purityMC.root" );
+  eff_isoCut->addToFile( outputdir + "/purityMC.root" );
 
   // emulate data:
-  randomizePoisson(gammaCR);
+  //randomizePoisson(gammaCR);
   gammaCR->writeToFile( outputdir + "/data.root" );
 
 
@@ -110,8 +120,9 @@ int main( int argc, char* argv[] ) {
 
 
 
-MT2Analysis<MT2EstimateZinvGamma> computeYield( const MT2Sample& sample, const std::string& regionsSet, int selectID ) {
+void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2Analysis<MT2EstimateZinvGamma>* prompt, MT2Analysis<MT2EstimateZinvGamma>* prompt_pass, MT2Analysis<MT2EstimateZinvGamma>* fake, MT2Analysis<MT2EstimateZinvGamma>* fake_pass, float isoCut ) {
 
+  
 
   std::cout << std::endl << std::endl;
   std::cout << "-> Starting computation for sample: " << sample.name << std::endl;
@@ -123,16 +134,17 @@ MT2Analysis<MT2EstimateZinvGamma> computeYield( const MT2Sample& sample, const s
 
 
 
-  MT2Analysis<MT2EstimateZinvGamma> analysis( sample.sname, regionsSet, sample.id );
+  bool isQCD  = sample.id>=100 && sample.id<200;
+  bool isGJet = sample.id>=200 && sample.id<300;
+
 
   
   MT2Tree myTree;
   myTree.loadGenStuff = false;
   myTree.Init(tree);
 
+
   int nentries = tree->GetEntries();
-
-
 
 
   for( unsigned iEntry=0; iEntry<nentries; ++iEntry ) {
@@ -140,6 +152,8 @@ MT2Analysis<MT2EstimateZinvGamma> computeYield( const MT2Sample& sample, const s
     if( iEntry % 50000 == 0 ) std::cout << "    Entry: " << iEntry << " / " << nentries << std::endl;
 
     myTree.GetEntry(iEntry);
+
+    if( myTree.met_pt>100. ) continue; // orthogonal to signal regions
 
     if( myTree.gamma_ht>1000. && sample.id==204 ) continue; // remove high-weight spikes (remove GJet_400to600 leaking into HT>1000)
 
@@ -159,44 +173,122 @@ MT2Analysis<MT2EstimateZinvGamma> computeYield( const MT2Sample& sample, const s
 
     if( myTree.ngamma==0 ) continue;
 
+
     if( myTree.gamma_idCutBased[0]==0 ) continue;
-    //if( myTree.gamma_chHadIso[0]+myTree.gamma_neuHadIso[0] > 10. ) continue;
+
+
+    int mcMatchId = myTree.gamma_mcMatchId[0];
+    bool isMatched = (mcMatchId==22 || mcMatchId==7);
+    bool isGenIso = (myTree.gamma_genIso[0]<5.);
+
+    if( isMatched  &&  isGenIso && isQCD  ) continue; //isolated prompts taken from GJet only
+    if( isMatched  && !isGenIso && isGJet ) continue; //non-isolated prompts taken from QCD only
+    if( !isMatched &&              isGJet ) continue; //fakes from QCD only
+
 
     TLorentzVector gamma;
     gamma.SetPtEtaPhiM( myTree.gamma_pt[0], myTree.gamma_eta[0], myTree.gamma_phi[0], myTree.gamma_mass[0] );
-    float found_pt = 0.;
-    int foundjet = 0;
+
+    float hOverE = myTree.gamma_hOverE[0];
+    float sietaieta = myTree.gamma_sigmaIetaIeta[0];
+    if( fabs( gamma.Eta() )<1.479 ) {
+      if( hOverE > 0.058 ) continue;
+      if( sietaieta > 0.01 ) continue;
+    } else {  
+      if( hOverE > 0.020 ) continue;
+      if( sietaieta > 0.03 ) continue;
+    }
+
+
+    //// relative iso:
+    //float iso = myTree.gamma_chHadIso[0]/myTree.gamma_pt[0];
+    //if( iso>isoCut ) continue;
+    //if( iso>0.1 ) continue; // preselection anyways in there
+
+    // absolute iso:
+    float iso = myTree.gamma_chHadIso[0];
+    if( iso>20. ) continue; // preselection anyways in there
+
+
+    bool isPrompt = (isMatched);
+
+    int closestJet = -1;
+    float deltaRmin = 0.4;
     for( unsigned i=0; i<myTree.njet; ++i ) {
+      if( fabs(myTree.jet_eta[i])>2.5 ) continue;
+      if( myTree.jet_pt[i]<40. ) continue;
       TLorentzVector thisjet;
       thisjet.SetPtEtaPhiM( myTree.jet_pt[i], myTree.jet_eta[i], myTree.jet_phi[i], myTree.jet_mass[i] );
-      if( gamma.DeltaR(thisjet)>0.4 ) foundjet++;
-      if( foundjet==2 ) {
-        found_pt = thisjet.Pt();
+      float thisDeltaR = gamma.DeltaR(thisjet);
+      if( thisDeltaR<deltaRmin ) {
+        deltaRmin = thisDeltaR;
+        closestJet = i;
+      }
+    }
+    float found_pt = 0.;
+    int jet_counter = 0;
+    for( unsigned i=0; i<myTree.njet; ++i ) {
+      if( i==closestJet ) continue;
+      if( fabs(myTree.jet_eta[i])>2.5 ) continue;
+      if( myTree.jet_pt[i]<40. ) continue;
+      jet_counter++;
+      if( jet_counter==2 ) {
+        found_pt = myTree.jet_pt[i];
         break;
       }
     }
+
     if( found_pt<100. ) continue;
 
-    float mcMatchId = myTree.gamma_mcMatchId[0];
-    if( selectID>0 && mcMatchId==0 ) continue;
-    //if( selectID>=0 && selectID!=mcMatchId ) continue;
 
     Double_t weight = myTree.evt_scale1fb*lumi; 
 
-    MT2EstimateZinvGamma* thisEstimate = analysis.get( myTree.gamma_ht, myTree.gamma_nJet40, myTree.gamma_nBJet40, myTree.gamma_met_pt );
-    if( thisEstimate==0 ) continue;
+    if( isPrompt ) {
 
-    thisEstimate->yield->Fill(myTree.gamma_mt2, weight );
+      MT2EstimateZinvGamma* thisPrompt = prompt->get( myTree.gamma_ht, myTree.gamma_nJet40, myTree.gamma_nBJet40, myTree.gamma_met_pt );
+      if( thisPrompt==0 ) continue;
 
-    float iso = myTree.gamma_chHadIso[0]/myTree.gamma_pt[0];
+      thisPrompt->yield->Fill(myTree.gamma_mt2, weight );
+      thisPrompt->fillIso( iso, weight, myTree.gamma_mt2 );
 
-    thisEstimate->fillIso( iso, weight, myTree.gamma_mt2 );
+      if( iso<isoCut ) {
+
+        MT2EstimateZinvGamma* thisPrompt_pass = prompt_pass->get( myTree.gamma_ht, myTree.gamma_nJet40, myTree.gamma_nBJet40, myTree.gamma_met_pt );
+        if( thisPrompt_pass==0 ) continue;
+
+        thisPrompt_pass->yield->Fill(myTree.gamma_mt2, weight );
+        thisPrompt_pass->fillIso( iso, weight, myTree.gamma_mt2 );
+
+      }
+
+    } else { // is fake
+      
+      MT2EstimateZinvGamma* thisFake = fake->get( myTree.gamma_ht, myTree.gamma_nJet40, myTree.gamma_nBJet40, myTree.gamma_met_pt );
+      if( thisFake==0 ) continue;
+
+      thisFake->yield->Fill(myTree.gamma_mt2, weight );
+      thisFake->fillIso( iso, weight, myTree.gamma_mt2 );
+
+      if( iso<isoCut ) {
+
+        MT2EstimateZinvGamma* thisFake_pass = fake_pass->get( myTree.gamma_ht, myTree.gamma_nJet40, myTree.gamma_nBJet40, myTree.gamma_met_pt );
+        if( thisFake_pass==0 ) continue;
+
+        thisFake_pass->yield->Fill(myTree.gamma_mt2, weight );
+        thisFake_pass->fillIso( iso, weight, myTree.gamma_mt2 );
+
+      }
+
+    }
 
     
   } // for entries
 
 
-  analysis.finalize();
+  prompt->finalize();
+  prompt_pass->finalize();
+  fake->finalize();
+  fake_pass->finalize();
   
 
   delete tree;
@@ -205,7 +297,6 @@ MT2Analysis<MT2EstimateZinvGamma> computeYield( const MT2Sample& sample, const s
   file->Close();
   delete file;
   
-  return analysis;
 
 }
 
@@ -216,23 +307,24 @@ void randomizePoisson( MT2Analysis<MT2EstimateZinvGamma>* data ) {
   TRandom3 rand(13);
 
 
-  std::set<MT2HTRegion> HTRegions = data->getHTRegions();
-  std::set<MT2SignalRegion> signalRegions = data->getSignalRegions();
+  std::set<MT2Region> regions = data->getRegions();
 
-  for( std::set<MT2HTRegion>::iterator iHT = HTRegions.begin(); iHT!=HTRegions.end(); ++iHT ) {
-    for( std::set<MT2SignalRegion>::iterator iSR = signalRegions.begin(); iSR!=signalRegions.end(); ++iSR ) {
+  for( std::set<MT2Region>::iterator iR = regions.begin(); iR!=regions.end(); ++iR ) {
 
-      MT2Region thisRegion( (*iHT), (*iSR) );
+    MT2Region thisRegion( (*iR) );
 
-      randomizeSingleHisto(rand, data->get(thisRegion)->yield);
-      randomizeSingleHisto(rand, data->get(thisRegion)->iso);
+    randomizeSingleHisto(rand, data->get(thisRegion)->yield);
+    randomizeSingleHisto(rand, data->get(thisRegion)->iso);
 
-      for( unsigned i=0; i < data->get(thisRegion)->iso_bins_hist.size(); ++i ) {
-        randomizeSingleHisto(rand, data->get(thisRegion)->iso_bins_hist[i]);
-      }
+    for( unsigned i=0; i < data->get(thisRegion)->iso_bins_hist.size(); ++i ) {
+      randomizeSingleHisto(rand, data->get(thisRegion)->iso_bins_hist[i]);
+    }
 
-    }// for signal regions
-  }// for HT regions
+    data->get( thisRegion)->fakeDatasetsFromHistos();
+
+  }// for regions
+
+
 
 }
 
@@ -249,3 +341,4 @@ void randomizeSingleHisto( TRandom3 rand, TH1D* histo ) {
   }  // for bins
 
 }
+

@@ -1,0 +1,3 @@
+regionsSet 13TeV_inclusive
+mcSamples PHYS14_v2_qg
+additionalStuff qgVars

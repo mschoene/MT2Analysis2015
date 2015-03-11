@@ -19,27 +19,34 @@ class MT2EstimateZinvGamma : public MT2Estimate {
 
   virtual void setName( const std::string& newName );
  
+  
+  TH1D* sietaieta;
+
   // integrated over mt2:
   TH1D* iso;
+  RooDataSet* isoData() const;
 
   // this will be used to fill RooDataSets:
   RooRealVar* x_; // iso var
+  RooRealVar* w_; // weight var
 
   // for each bin of mt2:
   std::vector<RooDataSet*> iso_bins;
   std::vector<TH1D*> iso_bins_hist;
 
 
+  void fakeDatasetsFromHistos( int seed=0 );
+
   const MT2EstimateZinvGamma& operator=( const MT2EstimateZinvGamma& rhs );
   MT2EstimateZinvGamma operator+( const MT2EstimateZinvGamma& rhs ) const;
+  MT2EstimateZinvGamma operator-( const MT2EstimateZinvGamma& rhs ) const;
   //MT2EstimateZinvGamma operator/( const MT2EstimateZinvGamma& rhs ) const;
   const MT2EstimateZinvGamma& operator+=( const MT2EstimateZinvGamma& rhs );
+  const MT2EstimateZinvGamma& operator-=( const MT2EstimateZinvGamma& rhs );
   //MT2EstimateZinvGamma operator/=( const MT2EstimateZinvGamma& rhs ) const;
 
-  //MT2EstimateZinvGamma operator/ ( float k ) const;
-  //MT2EstimateZinvGamma operator* ( float k ) const;
-  //MT2EstimateZinvGamma operator/=( float k ) const;
-  //MT2EstimateZinvGamma operator*=( float k ) const;
+  MT2EstimateZinvGamma operator* ( float k ) const;
+  const MT2EstimateZinvGamma& operator*=( float k );
 
 
   void fillIso( float iso, float weight=1., float mt2=-1 );

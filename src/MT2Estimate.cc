@@ -135,6 +135,23 @@ MT2Estimate MT2Estimate::operator+( const MT2Estimate& rhs ) const {
 
 
 
+MT2Estimate MT2Estimate::operator-( const MT2Estimate& rhs ) const {
+
+
+  if( *(this->region) != *(rhs.region) ) {
+    std::cout << "[MT2Estimate::operator-] ERROR! Can't add MT2Estimate with different MT2Regions!" << std::endl;
+    exit(113);
+  }
+
+  MT2Estimate result(*this);
+  result.yield->Add(rhs.yield, -1.);
+
+  return result;
+
+}
+
+
+
 
 MT2Estimate MT2Estimate::operator/( const MT2Estimate& rhs ) const {
 
@@ -207,6 +224,14 @@ const MT2Estimate& MT2Estimate::operator/=( const MT2Estimate& rhs ) {
 const MT2Estimate& MT2Estimate::operator+=( const MT2Estimate& rhs ) {
 
   this->yield->Add(rhs.yield);
+  return (*this);
+
+}
+
+
+const MT2Estimate& MT2Estimate::operator-=( const MT2Estimate& rhs ) {
+
+  this->yield->Add(rhs.yield, -1.);
   return (*this);
 
 }

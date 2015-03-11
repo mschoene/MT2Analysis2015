@@ -26,13 +26,11 @@ int main( int argc, char* argv[] ) {
 
   std::string firstInputFile  = dir + "/analyses.root";
 
-
-
   std::vector< MT2Analysis<MT2Estimate>* > analyses_bg;
   analyses_bg.push_back( MT2Analysis<MT2Estimate>::readFromFile(firstInputFile.c_str(), "Top") );
   analyses_bg.push_back( MT2Analysis<MT2Estimate>::readFromFile(firstInputFile.c_str(), "WJets") );
   analyses_bg.push_back( MT2Analysis<MT2Estimate>::readFromFile(firstInputFile.c_str(), "ZJets") );
-  analyses_bg.push_back( MT2Analysis<MT2Estimate>::readFromFile(firstInputFile.c_str(), "QCD") );
+  //analyses_bg.push_back( MT2Analysis<MT2Estimate>::readFromFile(firstInputFile.c_str(), "QCD") );
 
 
   for(unsigned a =0;  a < analyses_bg.size(); ++a){

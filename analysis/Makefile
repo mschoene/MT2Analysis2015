@@ -15,7 +15,7 @@ EXTRALIBS := -L$(ROOTSYS)/lib -L$(ROOFIT_LIBDIR)/ -L$(CMSSW_BASE)/lib/slc6_amd64
 
 
 
-all: computeLostLepton computeLostLepton_CR computeLostLepton_BabyTrees regionEventYields_BabyTrees regionEventYields_postBabyTrees inclusivePlots_BabyTrees inclusivePlots_QCD regionOptimization_BabyTrees compareYield printYield printYield_CR fakeQCDestimate createDatacards
+all: computeLostLepton computeLostLepton_CR computeLostLepton_BabyTrees inclusivePlots_BabyTrees inclusivePlots_QCD regionOptimization_BabyTrees compareYield printYield printYield_CR fakeQCDestimate createDatacards
 
 computeLostLepton: computeLostLepton.cpp MT2Region.o MT2Sample.o MT2EstimateSyst.o MT2Estimate.o MT2DrawTools.o
 	$(CC) -Wall $(INCLUDES) -o computeLostLepton computeLostLepton.cpp MT2Region.o MT2Sample.o MT2EstimateSyst.o MT2Estimate.o MT2DrawTools.o $(ROOTFLAG) $(EXTRALIBS) -fpermissive
@@ -29,11 +29,11 @@ computeZinvFromZmumu: computeZinvFromZmumu.cpp MT2Region.o MT2Sample.o MT2Estima
 computeLostLepton_BabyTrees: computeLostLepton_BabyTrees.cpp MT2Region.o MT2LostLeptonUtilities.o MT2Sample.o
 	$(CC) -Wall $(INCLUDES) -o computeLostLepton_BabyTrees computeLostLepton_BabyTrees.cpp MT2Region.o MT2LostLeptonUtilities.o MT2Sample.o $(ROOTFLAG) $(EXTRALIBS)
 
-computeZinvFromGamma: computeZinvFromGamma.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateTree.o
-	$(CC) -Wall $(INCLUDES) -o computeZinvFromGamma computeZinvFromGamma.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateTree.o $(ROOTFLAG) $(EXTRALIBS)
+computeZinvFromGamma: computeZinvFromGamma.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateTree.o MT2EstimateSyst.o
+	$(CC) -Wall $(INCLUDES) -o computeZinvFromGamma computeZinvFromGamma.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateTree.o MT2EstimateSyst.o $(ROOTFLAG) $(EXTRALIBS)
 
-regionEventYields: regionEventYields.cpp MT2Region.o MT2Sample.o MT2EstimateSyst.o MT2Estimate.o MT2DrawTools.o
-	$(CC) -Wall $(INCLUDES) -o regionEventYields regionEventYields.cpp MT2Region.o MT2Sample.o MT2EstimateSyst.o MT2Estimate.o MT2DrawTools.o $(ROOTFLAG) $(EXTRALIBS) -fpermissive
+regionEventYields: regionEventYields.cpp MT2Region.o MT2Sample.o MT2EstimateTree.o MT2Estimate.o MT2DrawTools.o
+	$(CC) -Wall $(INCLUDES) -o regionEventYields regionEventYields.cpp MT2Region.o MT2Sample.o MT2EstimateTree.o MT2Estimate.o MT2DrawTools.o $(ROOTFLAG) $(EXTRALIBS) -fpermissive
 
 createDatacards: createDatacards.cpp MT2Region.o MT2Sample.o MT2EstimateSyst.o MT2Estimate.o MT2DrawTools.o
 	$(CC) -Wall $(INCLUDES) -o createDatacards createDatacards.cpp MT2Region.o MT2Sample.o MT2EstimateSyst.o MT2Estimate.o MT2DrawTools.o $(ROOTFLAG) $(EXTRALIBS) -fpermissive
@@ -64,9 +64,6 @@ prova: prova.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateSyst.o
 provaRead: provaRead.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateSyst.o
 	$(CC) -Wall $(INCLUDES) -o provaRead provaRead.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateSyst.o $(ROOTFLAG) $(EXTRALIBS)
 
-provaMatch: provaMatch.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateSyst.o
-	$(CC) -Wall $(INCLUDES) -o provaMatch provaMatch.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateSyst.o $(ROOTFLAG) $(EXTRALIBS)
-
 compareYield: compareYield.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateSyst.o MT2DrawTools.o
 	$(CC) -Wall $(INCLUDES) -o compareYield compareYield.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateSyst.o  MT2DrawTools.o $(ROOTFLAG) $(EXTRALIBS)
 
@@ -82,24 +79,48 @@ fakeQCDestimate: fakeQCDestimate.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2Es
 makeZinvGammaTemplates: makeZinvGammaTemplates.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateZinvGamma.o
 	$(CC) -Wall $(INCLUDES) -o makeZinvGammaTemplates makeZinvGammaTemplates.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateZinvGamma.o $(ROOTFLAG) $(EXTRALIBS)
 
+makePromptTemplateData: makePromptTemplateData.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateZinvGamma.o MT2DrawTools.o
+	$(CC) -Wall $(INCLUDES) -o makePromptTemplateData makePromptTemplateData.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateZinvGamma.o MT2DrawTools.o $(ROOTFLAG) $(EXTRALIBS)
+
+
 drawZinvGamma: drawZinvGamma.cpp MT2Region.o MT2Estimate.o MT2DrawTools.o MT2EstimateTree.o
 	$(CC) -Wall $(INCLUDES) -o drawZinvGamma drawZinvGamma.cpp MT2Region.o MT2Estimate.o MT2DrawTools.o MT2EstimateTree.o  $(ROOTFLAG) $(EXTRALIBS)
 
 drawGammaTemplates: drawGammaTemplates.cpp MT2Region.o MT2Estimate.o MT2EstimateZinvGamma.o MT2DrawTools.o 
 	$(CC) -Wall $(INCLUDES) -o drawGammaTemplates drawGammaTemplates.cpp MT2Region.o MT2Estimate.o MT2EstimateZinvGamma.o MT2DrawTools.o  $(ROOTFLAG) $(EXTRALIBS)
 
-drawPurityFits: drawPurityFits.cpp MT2Region.o MT2Estimate.o MT2EstimateZinvGamma.o MT2DrawTools.o 
-	$(CC) -Wall $(INCLUDES) -o drawPurityFits drawPurityFits.cpp MT2Region.o MT2Estimate.o MT2EstimateZinvGamma.o MT2DrawTools.o  $(ROOTFLAG) $(EXTRALIBS)
+drawGammaTemplatesFromData: drawGammaTemplatesFromData.cpp MT2Region.o MT2Estimate.o MT2EstimateZinvGamma.o MT2DrawTools.o 
+	$(CC) -Wall $(INCLUDES) -o drawGammaTemplatesFromData drawGammaTemplatesFromData.cpp MT2Region.o MT2Estimate.o MT2EstimateZinvGamma.o MT2DrawTools.o  $(ROOTFLAG) $(EXTRALIBS)
 
-fitPurityGamma: fitPurityGamma.cpp  MT2Region.o MT2Estimate.o MT2EstimateZinvGamma.o 
-	$(CC) -Wall $(INCLUDES) -o fitPurityGamma fitPurityGamma.cpp MT2Region.o MT2Estimate.o MT2EstimateZinvGamma.o $(ROOTFLAG) $(EXTRALIBS)
+drawPurityFits: drawPurityFits.cpp MT2Region.o MT2Estimate.o MT2EstimateZinvGamma.o MT2DrawTools.o MT2EstimateSyst.o 
+	$(CC) -Wall $(INCLUDES) -o drawPurityFits drawPurityFits.cpp MT2Region.o MT2Estimate.o MT2EstimateZinvGamma.o MT2DrawTools.o MT2EstimateSyst.o $(ROOTFLAG) $(EXTRALIBS)
 
-gammaControlRegion: gammaControlRegion.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateZinvGamma.o
-	$(CC) -Wall $(INCLUDES) -o gammaControlRegion gammaControlRegion.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateZinvGamma.o $(ROOTFLAG) $(EXTRALIBS)
+drawQG: drawQG.cpp MT2Region.o MT2Estimate.o MT2EstimateTree.o MT2DrawTools.o 
+	$(CC) -Wall $(INCLUDES) -o drawQG drawQG.cpp MT2Region.o MT2Estimate.o MT2EstimateTree.o MT2DrawTools.o  $(ROOTFLAG) $(EXTRALIBS)
+
+drawGammaControlRegion: drawGammaControlRegion.cpp MT2Region.o MT2Estimate.o MT2EstimateTree.o MT2DrawTools.o 
+	$(CC) -Wall $(INCLUDES) -o drawGammaControlRegion drawGammaControlRegion.cpp MT2Region.o MT2Estimate.o MT2EstimateTree.o MT2DrawTools.o  $(ROOTFLAG) $(EXTRALIBS)
+
+fitPurityGamma: fitPurityGamma.cpp  MT2Region.o MT2Estimate.o MT2EstimateZinvGamma.o  MT2EstimateSyst.o
+	$(CC) -Wall $(INCLUDES) -o fitPurityGamma fitPurityGamma.cpp MT2Region.o MT2Estimate.o MT2EstimateZinvGamma.o MT2EstimateSyst.o $(ROOTFLAG) $(EXTRALIBS)
+
+fitIsoVsSietaieta: fitIsoVsSietaieta.cpp  MT2Region.o MT2Estimate.o MT2EstimateTree.o MT2Sample.o MT2DrawTools.o
+	$(CC) -Wall $(INCLUDES) -o fitIsoVsSietaieta fitIsoVsSietaieta.cpp MT2Region.o MT2Estimate.o MT2EstimateTree.o MT2Sample.o MT2DrawTools.o $(ROOTFLAG) $(EXTRALIBS)
+
+gammaControlRegion: gammaControlRegion.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateZinvGamma.o MT2EstimateSyst.o
+	$(CC) -Wall $(INCLUDES) -o gammaControlRegion gammaControlRegion.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateZinvGamma.o MT2EstimateSyst.o $(ROOTFLAG) $(EXTRALIBS)
+
+checkGenIso: checkGenIso.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateTree.o
+	$(CC) -Wall $(INCLUDES) -o checkGenIso checkGenIso.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateTree.o $(ROOTFLAG) $(EXTRALIBS)
+
+drawIsoROC: drawIsoROC.cpp MT2DrawTools.o
+	$(CC) -Wall $(INCLUDES) -o drawIsoROC drawIsoROC.cpp MT2DrawTools.o $(ROOTFLAG) $(EXTRALIBS)
 
 
 provaTree: provaTree.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateTree.o
 	$(CC) -Wall $(INCLUDES) -o provaTree provaTree.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateTree.o $(ROOTFLAG) $(EXTRALIBS)
+
+
 
 
 

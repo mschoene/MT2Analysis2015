@@ -139,23 +139,12 @@ class MT2Region {
   std::string mtCut() const {return sigRegion_->mtCut; };
 
 
-  bool operator==( const MT2Region& rhs ) const {
-    return ( *htRegion_==*(rhs.htRegion()) && *sigRegion_==*(rhs.sigRegion()) );
-  }
-
-  bool operator!=( const MT2Region& rhs ) const {
-    return ( *htRegion_!=*(rhs.htRegion()) || *sigRegion_!=*(rhs.sigRegion()) );
-  }
-
-  bool operator<( const MT2Region& rhs ) const {
-    if( *htRegion_!=*(rhs.htRegion()) ) {
-      return *htRegion_<*(rhs.htRegion());
-    } else {
-      return *sigRegion_<*(rhs.sigRegion());
-    }
-    return false;
-  }
-
+  bool operator==( const MT2Region& rhs ) const;
+  bool operator!=( const MT2Region& rhs ) const;
+  bool operator<( const MT2Region& rhs ) const;
+  bool operator>( const MT2Region& rhs ) const;
+  bool operator>=( const MT2Region& rhs ) const;
+  bool operator<=( const MT2Region& rhs ) const;
 
   bool isIncluded( MT2Region* region ) const;
   
