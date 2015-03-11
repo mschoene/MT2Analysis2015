@@ -29,10 +29,6 @@ float lumi = 4.; // fb-1
 
 
 
-int round(float d) {
-  return (int)(floor(d + 0.5));
-}
-
 
 
 MT2Analysis<MT2EstimateSyst>* combineDataAndMC( MT2Analysis<MT2EstimateSyst>* data, MT2Analysis<MT2Estimate>* mc );
