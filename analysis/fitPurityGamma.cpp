@@ -23,6 +23,7 @@
 #include "../interface/MT2Analysis.h"
 #include "../interface/MT2Region.h"
 #include "../interface/MT2Estimate.h"
+#include "../interface/MT2EstimateSyst.h"
 #include "../interface/MT2EstimateZinvGamma.h"
 
 using namespace RooFit;
@@ -38,8 +39,8 @@ struct Purity {
 
 
 
-void fitPurity( const std::string& outputdir, TH1D* h1_purityLoose, TH1D* h1_purityTight, RooRealVar* x, std::vector<RooDataSet*> data, TH1D* templPrompt, TH1D* templFake );
 void fitSinglePurity( const std::string& outputdir, Purity& loose, Purity& tight, RooRealVar* x, RooDataSet* data, TH1D* h1_templPrompt, TH1D* h1_templFake );
+void fitPurity( const std::string& outputdir, MT2EstimateSyst* purityLoose, MT2EstimateSyst* purityTight, RooRealVar* x, std::vector<RooDataSet*> data, TH1D* templPrompt, TH1D* templFake );
 
 
 
@@ -89,8 +90,8 @@ int main( int argc, char* argv[] ) {
 
   std::set<MT2Region> regions = gammaJet_data->getRegions();
 
-  MT2Analysis<MT2Estimate>* purityLoose = new MT2Analysis<MT2Estimate>( "purityLoose", "13TeV_CSA14" );
-  MT2Analysis<MT2Estimate>* purityTight = new MT2Analysis<MT2Estimate>( "purity"     , "13TeV_CSA14" );
+  MT2Analysis<MT2EstimateSyst>* purityLoose = new MT2Analysis<MT2EstimateSyst>( "purityLoose", "13TeV_CSA14" );
+  MT2Analysis<MT2EstimateSyst>* purityTight = new MT2Analysis<MT2EstimateSyst>( "purity"     , "13TeV_CSA14" );
 
 
   for( std::set<MT2Region>::iterator iR=regions.begin(); iR!=regions.end(); ++iR ) {
@@ -102,13 +103,13 @@ int main( int argc, char* argv[] ) {
     MT2EstimateZinvGamma* templatePrompt = templates_prompt->get( *(templates_prompt->matchRegion( *iR )) );
     MT2EstimateZinvGamma* templateFake   = templates_fake  ->get( *(templates_fake  ->matchRegion( *iR )) );
 
-    MT2Estimate* thisLoosePurity = purityLoose->get( *iR );
+    MT2EstimateSyst* thisLoosePurity = purityLoose->get( *iR );
     std::string nameLoose = thisLoosePurity->yield->GetName();
 
-    MT2Estimate* thisTightPurity = purityTight->get( *iR );
+    MT2EstimateSyst* thisTightPurity = purityTight->get( *iR );
     std::string nameTight = thisTightPurity->yield->GetName();
 
-    fitPurity( outputdir, thisLoosePurity->yield, thisTightPurity->yield, thisEstimate->x_, thisEstimate->iso_bins, templatePrompt->iso, templateFake->iso);
+    fitPurity( outputdir, thisLoosePurity, thisTightPurity, thisEstimate->x_, thisEstimate->iso_bins, templatePrompt->iso, templateFake->iso);
 
     thisLoosePurity->yield->SetName( nameLoose.c_str() );
     thisTightPurity->yield->SetName( nameTight.c_str() );
@@ -127,7 +128,7 @@ int main( int argc, char* argv[] ) {
 
 
 
-void fitPurity( const std::string& outputdir, TH1D* h1_purityLoose, TH1D* h1_purityTight, RooRealVar* x, std::vector<RooDataSet*> data, TH1D* templPrompt, TH1D* templFake ) {
+void fitPurity( const std::string& outputdir, MT2EstimateSyst* purityLoose, MT2EstimateSyst* purityTight, RooRealVar* x, std::vector<RooDataSet*> data, TH1D* templPrompt, TH1D* templFake ) {
 
 
   for( unsigned i=0; i<data.size(); ++i ) {
@@ -137,11 +138,13 @@ void fitPurity( const std::string& outputdir, TH1D* h1_purityLoose, TH1D* h1_pur
     Purity loose, tight;
     fitSinglePurity( outputdir, loose, tight, x, data[i], templPrompt, templFake );
 
-    h1_purityLoose->SetBinContent( ibin, loose.purity );
-    h1_purityLoose->SetBinError  ( ibin, loose.purityError );
+    purityLoose->yield         ->SetBinContent( ibin, loose.purity );
+    purityLoose->yield_systUp  ->SetBinContent( ibin, loose.purity + loose.purityError );
+    purityLoose->yield_systDown->SetBinContent( ibin, loose.purity - loose.purityError );
 
-    h1_purityTight->SetBinContent( ibin, tight.purity );
-    h1_purityTight->SetBinError  ( ibin, tight.purityError );
+    purityTight->yield         ->SetBinContent( ibin, tight.purity );
+    purityTight->yield_systUp  ->SetBinContent( ibin, tight.purity + loose.purityError );
+    purityTight->yield_systDown->SetBinContent( ibin, tight.purity - loose.purityError );
 
   }
 
