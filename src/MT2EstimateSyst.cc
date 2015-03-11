@@ -36,7 +36,17 @@ MT2EstimateSyst::MT2EstimateSyst( const std::string& aname, const MT2Region& are
   yield_systDown = new TH1D( this->getHistoName("yield_systDown").c_str(), "", nBins, bins);
   yield_systDown->Sumw2();
 
-  this->makeEfficiency( pass, tot );
+
+  TEfficiency eff( *(pass.yield), *(tot.yield) );
+
+  for( unsigned i=1; i<yield->GetNbinsX()+1; ++i ) {
+
+    yield         ->SetBinContent( i, eff.GetEfficiency(i) );
+    yield_systDown->SetBinContent( i, eff.GetEfficiency(i) - eff.GetEfficiencyErrorLow(i) );
+    yield_systUp  ->SetBinContent( i, eff.GetEfficiency(i) + eff.GetEfficiencyErrorUp(i) );
+
+  }
+
 
 }
 
@@ -46,6 +56,9 @@ MT2EstimateSyst::MT2EstimateSyst( const MT2Estimate& rhs ) : MT2Estimate(rhs) {
 
   this->yield_systUp = new TH1D(*(rhs.yield));
   this->yield_systDown = new TH1D(*(rhs.yield));
+
+  this->yield_systUp   ->SetName(this->getHistoName("yield_systUp").c_str()); 
+  this->yield_systDown ->SetName(this->getHistoName("yield_systDown").c_str()); 
 
 }
 
@@ -72,21 +85,6 @@ MT2EstimateSyst::~MT2EstimateSyst() {
 
 
 
-void MT2EstimateSyst::makeEfficiency( const MT2Estimate& pass, const MT2Estimate& tot ) {
-
-
-  TEfficiency eff( *(pass.yield), *(tot.yield) );
-
-  for( unsigned i=1; i<yield->GetNbinsX()+1; ++i ) {
-
-    yield         ->SetBinContent( i, eff.GetEfficiency(i) );
-    yield_systDown->SetBinContent( i, eff.GetEfficiencyErrorLow(i) );
-    yield_systUp  ->SetBinContent( i, eff.GetEfficiencyErrorUp(i) );
-
-  }
-
-}
-
 
 
 MT2Analysis<MT2EstimateSyst>* MT2EstimateSyst::makeEfficiencyAnalysis( const std::string& aname, const std::string& regionsSet, MT2Analysis<MT2Estimate>* pass, MT2Analysis<MT2Estimate>* all ) {
@@ -97,11 +95,34 @@ MT2Analysis<MT2EstimateSyst>* MT2EstimateSyst::makeEfficiencyAnalysis( const std
 
   for( std::set<MT2Region>::iterator iR=regions.begin(); iR!=regions.end(); ++iR ) {
 
-    MT2Estimate*     thisPass = pass    ->get( *iR );
-    MT2Estimate*     thisAll  = all     ->get( *iR );
+    MT2Estimate* thisPass = pass->get( *iR );
+    MT2Estimate* thisAll  = all ->get( *iR );
 
     MT2EstimateSyst* thisEff  = new MT2EstimateSyst( aname, *iR, *thisPass, *thisAll );
     data.insert( thisEff );
+
+  } // for regions
+
+
+  MT2Analysis<MT2EstimateSyst>* analysis = new MT2Analysis<MT2EstimateSyst>( aname, data );
+
+  return analysis;
+
+}
+
+
+
+MT2Analysis<MT2EstimateSyst>* MT2EstimateSyst::makeAnalysisFromEstimate( const std::string& aname, const std::string& regionsSet, MT2Analysis<MT2Estimate>* estimate ) {
+
+  std::set<MT2Region> regions = estimate->getRegions();
+
+  std::set<MT2EstimateSyst*> data;
+
+  for( std::set<MT2Region>::iterator iR=regions.begin(); iR!=regions.end(); ++iR ) {
+
+    MT2Estimate*  thisEstimate = estimate->get( *iR );
+    MT2EstimateSyst* thisEstimateSyst = new MT2EstimateSyst( *thisEstimate );
+    data.insert( thisEstimateSyst );
 
   } // for regions
 
@@ -173,6 +194,18 @@ void MT2EstimateSyst::getShit( TFile* file, const std::string& path ) {
 
 
 }
+
+
+
+void MT2EstimateSyst::write() const {
+
+  MT2Estimate::write();
+  yield_systUp->Write();
+  yield_systDown->Write();
+
+}
+
+
 
 
 void MT2EstimateSyst::print(const std::string& ofs){
@@ -274,10 +307,33 @@ MT2EstimateSyst MT2EstimateSyst::operator*( const MT2EstimateSyst& rhs ) const{
     exit(113);
   }
 
+
   MT2EstimateSyst result(*this);
-  result.yield->Multiply(rhs.yield);
-  result.yield_systUp->Multiply(rhs.yield_systUp);
-  result.yield_systDown->Multiply(rhs.yield_systDown);
+
+  for( unsigned iBin=1; iBin<result.yield->GetNbinsX()+1; ++iBin ) {
+
+    float thisBin  = result.yield->GetBinContent(iBin);
+    float otherBin = rhs.yield->GetBinContent(iBin);
+
+    float thisBinUp  = result.yield_systUp->GetBinContent(iBin);
+    float otherBinUp = rhs.yield_systUp->GetBinContent(iBin);
+    float thisBinDown  = result.yield_systDown->GetBinContent(iBin);
+    float otherBinDown = rhs.yield_systDown->GetBinContent(iBin);
+
+    float thisErrUp = thisBinUp - thisBin;
+    float thisErrDown = thisBin - thisBinDown;
+    float otherErrUp = otherBinUp - otherBin;
+    float otherErrDown = otherBin - otherBinDown;
+
+    float newBin = thisBin*otherBin;
+    float newErrUp = sqrt( thisErrUp*otherErrUp + thisErrUp*otherErrUp );
+    float newErrDown = sqrt( thisErrDown*otherErrDown + thisErrDown*otherErrDown );
+
+    result.yield         ->SetBinContent( iBin, newBin );
+    result.yield_systUp  ->SetBinContent( iBin, newBin + newErrUp );
+    result.yield_systDown->SetBinContent( iBin, newBin - newErrDown );
+
+  }
 
   return result;
 
@@ -294,9 +350,25 @@ MT2EstimateSyst MT2EstimateSyst::operator*( const MT2Estimate& rhs ) const{
   }
 
   MT2EstimateSyst result(*this);
-  result.yield->Multiply(rhs.yield);
-  result.yield_systUp->Multiply(rhs.yield);
-  result.yield_systDown->Multiply(rhs.yield);
+
+  for( unsigned iBin=1; iBin<result.yield->GetNbinsX()+1; ++iBin ) {
+
+    float thisBin  = result.yield->GetBinContent(iBin);
+    float otherBin = rhs.yield->GetBinContent(iBin);
+
+    float thisBinUp  = result.yield_systUp->GetBinContent(iBin);
+    float thisBinDown  = result.yield_systDown->GetBinContent(iBin);
+
+    float thisErrUp = thisBinUp - thisBin;
+    float thisErrDown = thisBin - thisBinDown;
+
+    float newBin = thisBin*otherBin;
+
+    result.yield         ->SetBinContent( iBin, newBin );
+    result.yield_systUp  ->SetBinContent( iBin, newBin + thisErrUp );
+    result.yield_systDown->SetBinContent( iBin, newBin - thisErrDown );
+
+  }
 
   return result;
 
@@ -359,11 +431,36 @@ const MT2EstimateSyst& MT2EstimateSyst::operator/=( const MT2EstimateSyst& rhs )
 }
 
 
+
 const MT2EstimateSyst& MT2EstimateSyst::operator*=( const MT2EstimateSyst& rhs ) {
 
-  this->yield->Multiply(rhs.yield);
-  this->yield_systUp->Multiply(rhs.yield_systUp);
-  this->yield_systDown->Multiply(rhs.yield_systDown);
+
+  for( unsigned iBin=1; iBin<this->yield->GetNbinsX()+1; ++iBin ) {
+
+    float thisBin  = this->yield->GetBinContent(iBin);
+    float otherBin = rhs.yield->GetBinContent(iBin);
+
+    float thisBinUp  = this->yield_systUp->GetBinContent(iBin);
+    float otherBinUp = rhs.yield_systUp->GetBinContent(iBin);
+    float thisBinDown  = this->yield_systDown->GetBinContent(iBin);
+    float otherBinDown = rhs.yield_systDown->GetBinContent(iBin);
+
+    float thisErrUp = thisBinUp - thisBin;
+    float thisErrDown = thisBin - thisBinDown;
+    float otherErrUp = otherBinUp - otherBin;
+    float otherErrDown = otherBin - otherBinDown;
+
+    float newBin = thisBin*otherBin;
+    float newErrUp = sqrt( thisErrUp*otherErrUp + thisErrUp*otherErrUp );
+    float newErrDown = sqrt( thisErrDown*otherErrDown + thisErrDown*otherErrDown );
+
+    this->yield         ->SetBinContent( iBin, newBin );
+    this->yield_systUp  ->SetBinContent( iBin, newBin + newErrUp );
+    this->yield_systDown->SetBinContent( iBin, newBin - newErrDown );
+
+  }
+
+
   return (*this);
 
 }
@@ -371,9 +468,26 @@ const MT2EstimateSyst& MT2EstimateSyst::operator*=( const MT2EstimateSyst& rhs )
 
 const MT2EstimateSyst& MT2EstimateSyst::operator*=( const MT2Estimate& rhs ) {
 
-  this->yield->Multiply(rhs.yield);
-  this->yield_systUp->Multiply(rhs.yield);
-  this->yield_systDown->Multiply(rhs.yield);
+  for( unsigned iBin=1; iBin<this->yield->GetNbinsX()+1; ++iBin ) {
+
+    float thisBin  = this->yield->GetBinContent(iBin);
+    float otherBin = rhs.yield->GetBinContent(iBin);
+
+    float thisBinUp  = this->yield_systUp->GetBinContent(iBin);
+    float thisBinDown  = this->yield_systDown->GetBinContent(iBin);
+
+    float thisErrUp = thisBinUp - thisBin;
+    float thisErrDown = thisBin - thisBinDown;
+
+    float newBin = thisBin*otherBin;
+
+    this->yield         ->SetBinContent( iBin, newBin );
+    this->yield_systUp  ->SetBinContent( iBin, newBin + thisErrUp );
+    this->yield_systDown->SetBinContent( iBin, newBin - thisErrDown );
+
+  }
+
+
   return (*this);
 
 }
