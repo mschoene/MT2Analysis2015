@@ -51,18 +51,18 @@ class MT2Analysis {
   MT2Analysis operator+( const MT2Analysis& rhs) const;
   MT2Analysis operator-( const MT2Analysis& rhs) const;
   void add( const MT2Analysis& rhs );
-  MT2Analysis operator/( const MT2Analysis& rhs);
+  MT2Analysis operator/( const MT2Analysis& rhs) const;
   void divide( const MT2Analysis& rhs );
-  MT2Analysis operator*( const MT2Analysis& rhs);
-  MT2Analysis operator+=( const MT2Analysis& rhs);
-  MT2Analysis operator-=( const MT2Analysis& rhs);
-  MT2Analysis operator/=( const MT2Analysis& rhs);
-  MT2Analysis operator*=( const MT2Analysis& rhs);
+  MT2Analysis operator*( const MT2Analysis& rhs) const;
+  const MT2Analysis& operator+=( const MT2Analysis& rhs);
+  const MT2Analysis& operator-=( const MT2Analysis& rhs);
+  const MT2Analysis& operator/=( const MT2Analysis& rhs);
+  const MT2Analysis& operator*=( const MT2Analysis& rhs);
 
-  MT2Analysis operator* ( float k );
-  MT2Analysis operator/ ( float k );
-  MT2Analysis operator*=( float k );
-  MT2Analysis operator/=( float k );
+  MT2Analysis operator* ( float k ) const;
+  MT2Analysis operator/ ( float k ) const;
+  const MT2Analysis& operator*=( float k );
+  const MT2Analysis& operator/=( float k );
 
   static MT2Analysis* readFromFile( const std::string& fileName, const std::string& matchName="" );
   static std::vector<MT2Analysis*> readAllFromFile( const std::string& fileName, const std::string& matchName="", bool verbose=true );
@@ -506,6 +506,8 @@ MT2Analysis<T>::MT2Analysis( const std::string& aname, std::set<T*> newdata, int
 
   }
 
+  this->setName(aname);
+
 }
 
 
@@ -514,15 +516,26 @@ template<class T>
 MT2Analysis<T>::MT2Analysis( const MT2Analysis& rhs ) {
 
 
-  regions_ = rhs.getRegions();
+  //regions_ = rhs.getRegions();
 
   name = rhs.name;
   fullName = rhs.fullName;
   id = rhs.id;
 
-  this->createAnalysisStructure();
 
-  *this = rhs;
+  for( typename std::set<T*>::iterator idata=rhs.data.begin(); idata!=rhs.data.end(); ++idata ) {
+
+    MT2Region* thisRegion = (*idata)->region;
+    regions_.insert( *thisRegion );
+
+    this->data.insert( *idata );
+
+  }
+
+
+  //this->createAnalysisStructure();
+
+  //*this = rhs;
 
 }
 
@@ -778,7 +791,7 @@ void MT2Analysis<T>::setName( const std::string& newName ) {
 // operator overloading:
 
 template<class T> 
-const MT2Analysis<T>& MT2Analysis<T>::operator=( const MT2Analysis& rhs ) {
+const MT2Analysis<T>& MT2Analysis<T>::operator=( const MT2Analysis<T>& rhs ) {
 
   regions_ = rhs.getRegions();
 
@@ -869,7 +882,7 @@ MT2Analysis<T> MT2Analysis<T>::operator-( const MT2Analysis& rhs ) const {
 
 
 template<class T> 
-MT2Analysis<T> MT2Analysis<T>::operator+=( const MT2Analysis& rhs ) {
+const MT2Analysis<T>& MT2Analysis<T>::operator+=( const MT2Analysis& rhs ) {
 
   std::set<MT2Region> regions = rhs.getRegions();
 
@@ -895,7 +908,7 @@ MT2Analysis<T> MT2Analysis<T>::operator+=( const MT2Analysis& rhs ) {
 
 
 template<class T> 
-MT2Analysis<T> MT2Analysis<T>::operator-=( const MT2Analysis& rhs ) {
+const MT2Analysis<T>& MT2Analysis<T>::operator-=( const MT2Analysis& rhs ) {
 
   std::set<MT2Region> regions = rhs.getRegions();
 
@@ -921,7 +934,7 @@ MT2Analysis<T> MT2Analysis<T>::operator-=( const MT2Analysis& rhs ) {
 
 
 template<class T> 
-MT2Analysis<T> MT2Analysis<T>::operator/=( const MT2Analysis& rhs ) {
+const MT2Analysis<T>& MT2Analysis<T>::operator/=( const MT2Analysis& rhs ) {
 
   std::set<MT2Region> regions = rhs.getRegions();
 
@@ -948,7 +961,7 @@ MT2Analysis<T> MT2Analysis<T>::operator/=( const MT2Analysis& rhs ) {
 
 
 template<class T> 
-MT2Analysis<T> MT2Analysis<T>::operator*=( const MT2Analysis& rhs ) {
+const MT2Analysis<T>& MT2Analysis<T>::operator*=( const MT2Analysis& rhs ) {
 
   std::set<MT2Region> regions = rhs.getRegions();
 
@@ -976,7 +989,7 @@ MT2Analysis<T> MT2Analysis<T>::operator*=( const MT2Analysis& rhs ) {
 
 
 template<class T> 
-MT2Analysis<T> MT2Analysis<T>::operator/=( float k ) {
+const MT2Analysis<T>& MT2Analysis<T>::operator/=( float k ) {
 
   std::set<MT2Region> regions = this->getRegions();
 
@@ -997,7 +1010,7 @@ MT2Analysis<T> MT2Analysis<T>::operator/=( float k ) {
 
 
 template<class T> 
-MT2Analysis<T> MT2Analysis<T>::operator*=( float k ) {
+const MT2Analysis<T>& MT2Analysis<T>::operator*=( float k ) {
 
 
   std::set<MT2Region> regions = this->getRegions();
@@ -1020,18 +1033,18 @@ MT2Analysis<T> MT2Analysis<T>::operator*=( float k ) {
 
 
 
-//template<class T>
-//void MT2Analysis<T>::add( const MT2Analysis& rhs ) {
-//
-//  (*this) = (*this) + rhs;
-//
-//}
+template<class T>
+void MT2Analysis<T>::add( const MT2Analysis& rhs ) {
+
+  (*this) = (*this) + rhs;
+
+}
 
 
 
 
 template<class T> 
-MT2Analysis<T> MT2Analysis<T>::operator/( const MT2Analysis& rhs ) {
+MT2Analysis<T> MT2Analysis<T>::operator/( const MT2Analysis& rhs ) const {
 
   std::set<MT2Region> regions = rhs.getRegions();
 
@@ -1073,8 +1086,8 @@ void MT2Analysis<T>::divide( const MT2Analysis& rhs ) {
 
 
 
-template<class T> 
-MT2Analysis<T> MT2Analysis<T>::operator*( const MT2Analysis& rhs ) {
+template<class T>
+MT2Analysis<T> MT2Analysis<T>::operator*( const MT2Analysis<T>& rhs ) const {
 
   std::set<MT2Region> regions = rhs.getRegions();
 
@@ -1107,10 +1120,12 @@ MT2Analysis<T> MT2Analysis<T>::operator*( const MT2Analysis& rhs ) {
 
 
 template<class T> 
-MT2Analysis<T> MT2Analysis<T>::operator*( float k ) {
+MT2Analysis<T> MT2Analysis<T>::operator*( float k ) const {
 
 
   std::set<MT2Region> regions = this->getRegions();
+
+  std::set<T*> newdata;
 
   for( std::set<MT2Region>::iterator iR=regions.begin(); iR!=regions.end(); ++iR ) {
 
@@ -1121,19 +1136,21 @@ MT2Analysis<T> MT2Analysis<T>::operator*( float k ) {
 
   }
 
+  MT2Analysis<T> result(name, newdata);
 
-  return *this;
+  return result;
 
 }
 
 
 
-
 template<class T> 
-MT2Analysis<T> MT2Analysis<T>::operator/( float k ) {
+MT2Analysis<T> MT2Analysis<T>::operator/( float k ) const {
 
 
   std::set<MT2Region> regions = this->getRegions();
+
+  std::set<T*> newdata;
 
   for( std::set<MT2Region>::iterator iR=regions.begin(); iR!=regions.end(); ++iR ) {
 
@@ -1144,10 +1161,14 @@ MT2Analysis<T> MT2Analysis<T>::operator/( float k ) {
 
   }
 
+  MT2Analysis<T> result(name, newdata);
 
-  return *this;
+  return result;
 
 }
+
+
+
 
 
 
