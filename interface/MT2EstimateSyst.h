@@ -23,8 +23,8 @@ class MT2EstimateSyst : public MT2Estimate {
 
   virtual void setName( const std::string& newName );
 
-  void makeEfficiency( const MT2Estimate& pass, const MT2Estimate& tot );
   static MT2Analysis<MT2EstimateSyst>* makeEfficiencyAnalysis( const std::string& aname, const std::string& regionsSet, MT2Analysis<MT2Estimate>* pass, MT2Analysis<MT2Estimate>* all );
+  static MT2Analysis<MT2EstimateSyst>* makeAnalysisFromEstimate( const std::string& aname, const std::string& regionsSet, MT2Analysis<MT2Estimate>* analysis );
 
   TGraphAsymmErrors* getGraph() const;
  
@@ -56,11 +56,7 @@ class MT2EstimateSyst : public MT2Estimate {
 
   virtual void getShit( TFile* file, const std::string& path );
 
-  virtual void write() const {
-    MT2Estimate::write();
-    yield_systUp->Write();
-    yield_systDown->Write();
-  }
+  virtual void write() const;
 
   virtual void print(const std::string& ofs);
 
