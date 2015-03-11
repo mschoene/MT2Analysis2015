@@ -35,7 +35,7 @@ int round(float d) {
 
 
 
-MT2Analysis<MT2Estimate>* combineDataAndMC( MT2Analysis<MT2Estimate>* data, MT2Analysis<MT2Estimate>* mc );
+MT2Analysis<MT2EstimateSyst>* combineDataAndMC( MT2Analysis<MT2EstimateSyst>* data, MT2Analysis<MT2Estimate>* mc );
 
 
 int main( int argc, char* argv[] ) {
@@ -60,11 +60,12 @@ int main( int argc, char* argv[] ) {
   std::string gammaControlRegionDir = "GammaControlRegion_" + samplesFileName + "_" + regionsSet;
 
   MT2Analysis<MT2Estimate>* gammaCR = MT2Analysis<MT2Estimate>::readFromFile(gammaControlRegionDir + "/data.root", "gammaCR");
+  MT2Analysis<MT2Estimate>* gamma_prompt = MT2Analysis<MT2Estimate>::readFromFile(gammaControlRegionDir + "/mc.root", "prompt");
   
   MT2Analysis<MT2EstimateSyst>* purity = MT2Analysis<MT2EstimateSyst>::readFromFile( gammaControlRegionDir + "/PurityFitsData_PHYS14_v2_Zinv_13TeV_inclusive/purityFit_PHYS14_v2_Zinv_13TeV_inclusive.root", "purity" );
 
 
-  MT2Analysis<MT2Estimate>* Zinv = MT2Analysis<MT2Estimate>::readFromFile(Form("EventYields_mc_PHYS14_v2_dummy_%.0ffb", lumi), "ZJets");
+  MT2Analysis<MT2Estimate>* Zinv = MT2Analysis<MT2Estimate>::readFromFile(Form("EventYields_mc_PHYS14_v2_dummy_%.0ffb/analyses.root", lumi), "ZJets");
   if( Zinv==0 ) {
     std::cout << "-> Please run regionEventYields on MC first. I need to get the Z->vv MC yields from there." << std::endl;
     std::cout << "-> Thank you for your cooperation." << std::endl;
@@ -73,14 +74,17 @@ int main( int argc, char* argv[] ) {
 
 
   MT2Analysis<MT2Estimate>* ZgammaRatio = new MT2Analysis<MT2Estimate>( "ZgammaRatio", regionsSet );
-  (*ZgammaRatio) = (*((MT2Analysis<MT2Estimate>*)Zinv)) / (*((MT2Analysis<MT2Estimate>*)gammaCR));
+  (*ZgammaRatio) = (*Zinv) / (*gamma_prompt);
 
 
-  MT2Analysis<MT2EstimateSyst>* ZinvEstimateFromGamma = new MT2Analysis<MT2EstimateSyst>( "ZinvEstimateFromGamma", regionsSet );
-  (*ZinvEstimateFromGamma) = (*ZgammaRatio) * (*(MT2Analysis<MT2Estimate>*)(gammaCR)) * (*purity);
+  MT2Analysis<MT2Estimate>* gammaCR_times_ZgammaRatio = new MT2Analysis<MT2Estimate>( "gammaCR_times_ZgammaRatio", regionsSet );
+  (*gammaCR_times_ZgammaRatio) = (*gammaCR) * (*ZgammaRatio);
+
+  MT2Analysis<MT2EstimateSyst>* ZinvEstimateFromGamma = MT2EstimateSyst::makeAnalysisFromEstimate( "ZinvEstimateFromGamma", regionsSet, gammaCR_times_ZgammaRatio );
+  (*ZinvEstimateFromGamma) *= (*purity);
 
 
-  MT2Analysis<MT2Estimate>* ZinvEstimate = combineDataAndMC( ZinvEstimateFromGamma, (MT2Analysis<MT2Estimate>*)Zinv );
+  MT2Analysis<MT2EstimateSyst>* ZinvEstimate = combineDataAndMC( ZinvEstimateFromGamma, Zinv );
 
   std::string outFile = outputdir + "/MT2ZinvEstimate.root";
 
@@ -96,7 +100,7 @@ int main( int argc, char* argv[] ) {
 
 
 
-MT2Analysis<MT2Estimate>* combineDataAndMC( MT2Analysis<MT2Estimate>* data, MT2Analysis<MT2Estimate>* mc ) {
+MT2Analysis<MT2EstimateSyst>* combineDataAndMC( MT2Analysis<MT2EstimateSyst>* data, MT2Analysis<MT2Estimate>* mc ) {
 
   std::string dataname = data->getName();
   std::string mcname = mc->getName();
@@ -108,26 +112,28 @@ MT2Analysis<MT2Estimate>* combineDataAndMC( MT2Analysis<MT2Estimate>* data, MT2A
 
   std::set<MT2Region> regions = data->getRegions();
 
-  std::set<MT2Estimate*> newData;
+  std::set<MT2EstimateSyst*> newData;
 
   for( std::set<MT2Region>::iterator iR=regions.begin(); iR!=regions.end(); ++iR ) {
 
-    MT2Estimate* dataEst = data->get(*iR);
+    MT2EstimateSyst* dataEst = data->get(*iR);
     MT2Estimate* mcEst = mc->get(*iR);
 
-    MT2Estimate* thisNewEstimate;
+    MT2EstimateSyst* thisNewEstimate;
     if( iR->nBJetsMin()>1 ) {
-      thisNewEstimate =  new MT2Estimate(*mcEst);
-      for( unsigned ibin=1; ibin<thisNewEstimate->yield->GetNbinsX()+1; ++ibin )
-        thisNewEstimate->yield->SetBinError( ibin, thisNewEstimate->yield->GetBinContent(ibin) );
+      thisNewEstimate =  new MT2EstimateSyst(*mcEst);
+      for( unsigned ibin=1; ibin<thisNewEstimate->yield->GetNbinsX()+1; ++ibin ) {
+        thisNewEstimate->yield_systUp->SetBinContent( ibin, 2.*thisNewEstimate->yield->GetBinContent(ibin) );
+        thisNewEstimate->yield_systDown->SetBinContent( ibin, 0. );
+      }
     } else {
-      thisNewEstimate =  new MT2Estimate(*dataEst);
+      thisNewEstimate =  new MT2EstimateSyst(*dataEst);
     }
     newData.insert( thisNewEstimate );
 
   }
 
-  MT2Analysis<MT2Estimate>* analysis = new MT2Analysis<MT2Estimate>( estimateName, newData );
+  MT2Analysis<MT2EstimateSyst>* analysis = new MT2Analysis<MT2EstimateSyst>( estimateName, newData );
 
   // set names back to original:
   data->setName( dataname );
