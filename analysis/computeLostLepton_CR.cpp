@@ -63,10 +63,14 @@ int main( int argc, char* argv[] ) {
     exit(1209);
   }
 
-  std::string outputdir = "EventYields_" + sampleName;
-  system(Form("mkdir -p %s", outputdir.c_str()));
+  //std::string outputdir = "EventYields_" + sampleName;
+  //system(Form("mkdir -p %s", outputdir.c_str()));
 
-  std::string regionsSet = "13TeV_PHYS14_hiHT"; 
+  //std::string regionsSet = "13TeV_PHYS14";
+  //std::string regionsSet = "13TeV_PHYS14_hiHT"; 
+  //std::string regionsSet = "13TeV_PHYS14_hiJet_mergeHT";
+  std::string regionsSet = "13TeV_PHYS14_loJet_hiHT";
+  //std::string regionsSet = "13TeV_PHYS14_hiJet_extremeHT";
   //std::string regionsSet = "13TeV_CSA14";
 
   TH1::AddDirectory(kFALSE); // stupid ROOT memory allocation needs this
@@ -76,7 +80,7 @@ int main( int argc, char* argv[] ) {
   for( unsigned i=0; i < fSamples.size(); ++i )
     (*lostLeptonEstimate) += ( computeYield( fSamples[i], regionsSet, lumi ) );
   
-  lostLeptonEstimate->writeToFile("llep_PHYS14_v2_hiHT.root");
+  lostLeptonEstimate->writeToFile(Form("llep_PHYS14_v3_%s.root", regionsSet.c_str()));
 
   return 0;
   

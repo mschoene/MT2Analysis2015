@@ -38,6 +38,7 @@ int main( int argc, char* argv[] ) {
 
 
   std::string samplesFileName = "PHYS14_v2_Zinv";
+  //std::string samplesFileName = "PHYS14_v3_Zinv";
   if( argc>1 ) {
     std::string samplesFileName_tmp(argv[1]); 
     samplesFileName = samplesFileName_tmp;
@@ -45,6 +46,8 @@ int main( int argc, char* argv[] ) {
 
 
   std::string regionsSet = "13TeV_CSA14";
+  //std::string regionsSet = "13TeV_PHYS14_loJet_hiHT";
+  //std::string regionsSet = "13TeV_PHYS14_hiJet_extremeHT";
 
   TH1::AddDirectory(kFALSE); // stupid ROOT memory allocation needs this
 

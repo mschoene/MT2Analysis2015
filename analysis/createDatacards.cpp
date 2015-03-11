@@ -13,8 +13,8 @@
 #include "interface/MT2Estimate.h"
 
 
-bool use_gamma = false;
-//bool use_gamma = true;
+//bool use_gamma = false;
+bool use_gamma = true;
 
 
 int round(float d) {
@@ -54,6 +54,7 @@ int main( int argc, char* argv[] ) {
   float err_llep_lepEff = 0.15;
   float err_zinv_corr   = 0.2; // 20% on Z/gamma ratio
   float err_zinv_uncorr = -1.; // will take histogram bin error
+  float err_zinv_uncorr_2b = 1.0;
   float err_sig_corr    = 0.1;
   float err_sig_uncorr  = 0.;
 
@@ -81,12 +82,11 @@ int main( int argc, char* argv[] ) {
   if( useMC_zinv )
     zinv = MT2Analysis<MT2Estimate>::readFromFile( mc_fileName, "ZJets");
   else {
-//    zinv       = MT2Analysis<MT2Estimate>::readFromFile( "ZinvEstimateFromGamma_PHYS14_v2_Zinv_13TeV_CSA14_4fb/MT2ZinvEstimate.root", "ZinvEstimate");
-//    zinvCR     = MT2Analysis<MT2Estimate>::readFromFile( "ZinvEstimateFromGamma_PHYS14_v2_Zinv_13TeV_CSA14_4fb/mc.root", "gammaJet");
-//    zinv_ratio = MT2Analysis<MT2Estimate>::readFromFile( "ZinvEstimateFromGamma_PHYS14_v2_Zinv_13TeV_CSA14_4fb/mc.root", "ZgammaRatio");
-    zinv       = MT2Analysis<MT2Estimate>::readFromFile( "ZinvEstimateFromGamma_PHYS14_v2_Zinv_13TeV_PHYS14_hiHT_4fb/MT2ZinvEstimate.root", "ZinvEstimate");
-    zinvCR     = MT2Analysis<MT2Estimate>::readFromFile( "ZinvEstimateFromGamma_PHYS14_v2_Zinv_13TeV_PHYS14_hiHT_4fb/mc.root", "gammaJet");
-    zinv_ratio = MT2Analysis<MT2Estimate>::readFromFile( "ZinvEstimateFromGamma_PHYS14_v2_Zinv_13TeV_PHYS14_hiHT_4fb/mc.root", "ZgammaRatio");
+    //zinv       = MT2Analysis<MT2Estimate>::readFromFile( mc_fileName, "ZJets");
+    //zinv       = MT2Analysis<MT2Estimate>::readFromFile( "ZinvEstimateFromGamma_PHYS14_v3_Zinv_13TeV_CSA14_4fb/MT2ZinvEstimate.root", "ZinvEstimate");
+    zinv       = MT2Analysis<MT2Estimate>::readFromFile( "ZinvEstimateFromGamma_PHYS14_v3_Zinv_13TeV_PHYS14_hiHT_4fb/mc.root", "Zinv");
+    zinvCR     = MT2Analysis<MT2Estimate>::readFromFile( "ZinvEstimateFromGamma_PHYS14_v3_Zinv_13TeV_PHYS14_hiHT_4fb/mc.root", "gammaJet");
+    zinv_ratio = MT2Analysis<MT2Estimate>::readFromFile( "ZinvEstimateFromGamma_PHYS14_v3_Zinv_13TeV_PHYS14_hiHT_4fb/mc.root", "ZgammaRatio");
   }
   zinv->setName("zinv");
   zinv->addToFile( mc_fileName, true );
@@ -98,15 +98,15 @@ int main( int argc, char* argv[] ) {
     MT2Analysis<MT2Estimate>* top   = MT2Analysis<MT2Estimate>::readFromFile( mc_fileName, "Top");
     llep = new MT2Analysis<MT2Estimate>( (*wjets) + (*top) );
   } else {
-    //llep = MT2Analysis<MT2Estimate>::readFromFile( "llep_CSA14.root" );
-    llep = MT2Analysis<MT2Estimate>::readFromFile( "llep_PHYS14_v2_hiHT.root.root" );
+    //llep = MT2Analysis<MT2Estimate>::readFromFile( "llep_PHYS14_v3_CSA14.root" );
+    llep = MT2Analysis<MT2Estimate>::readFromFile( "llep_PHYS14_v3_13TeV_PHYS14_hiHT.root" );
   }
   llep->setName( "llep" );
   llep->addToFile( mc_fileName, true );
 
 
-  //MT2Analysis<MT2Estimate>* llepCR = MT2Analysis<MT2Estimate>::readFromFile( "llep_CSA14.root" );
-  MT2Analysis<MT2Estimate>* llepCR = MT2Analysis<MT2Estimate>::readFromFile( "llep_PHYS14_v2_hiHT.root" );
+  //MT2Analysis<MT2Estimate>* llepCR = MT2Analysis<MT2Estimate>::readFromFile( "llep_PHYS14_v3_CSA14.root" );
+  MT2Analysis<MT2Estimate>* llepCR = MT2Analysis<MT2Estimate>::readFromFile( "llep_PHYS14_v3_13TeV_PHYS14_hiHT.root" );
   //MT2Analysis<MT2Estimate>* llepCR = llep;
 
 
@@ -237,15 +237,17 @@ int main( int argc, char* argv[] ) {
 
            if( iR->nBJetsMin()>=2 ) {
 
-             if( yield_zinv>0. )
-               datacard << "zinv_MC_" << binName << " lnN - " << thisError_zinv_uncorr << " - -" << std::endl;
+//             if( yield_zinv>0. )
+//               datacard << "zinv_MC_" << binName << " lnN - " << thisError_zinv_uncorr << " - -" << std::endl;
+//	     else
+	     datacard << "zinv_MC_" << binName << " lnN - " << 1.+err_zinv_uncorr_2b << " - -" << std::endl;
 
            } else {
 
              int Ngamma = round(this_zinvCR->GetBinContent(iBin));
              datacard << "zinv_CRstat_" << gammaConvention( yield_zinv, Ngamma, 1, binName ) << std::endl;
-             if(  yield_zinv>0. ) {
-               float alphaErr = 1. + this_zinv_ratio->GetBinError(iBin)/yield_zinv; 
+             if(  yield_zinv>0. && this_zinv_ratio->GetBinContent(iBin) > 0.) {
+               float alphaErr = 1. + this_zinv_ratio->GetBinError(iBin)/this_zinv_ratio->GetBinContent(iBin); 
                datacard << "zinv_alphaErr_" << binName << " lnN  - " << alphaErr << " - -" << std::endl;
              }
 
@@ -275,7 +277,7 @@ int main( int argc, char* argv[] ) {
 
          } else {
 
-           datacard << "llep_lepEff_" << llepCR_name << "  lnN  - - " << 1.+err_llep_lepEff << " -" << std::endl;
+           datacard << "llep_lepeff_" << llepCR_name << "  lnN  - - " << 1.+err_llep_lepEff << " -" << std::endl;
 	   datacard << "llep_CRstat_" << gammaConvention( yield_llep, round(N_llep_CR), 2, llepCR_name, binName ) << std::endl;
            if( yield_llep>0. ) {
              datacard << "llep_MCstat_" << binName << " lnN  - - " << 1.+this_llep->GetBinError(iBin)/yield_llep << " -" << std::endl;
@@ -331,10 +333,13 @@ int main( int argc, char* argv[] ) {
         float mt2Min = this_signal->GetBinLowEdge( iBin );
         float mt2Max = (iBin==this_signal->GetNbinsX()) ?  -1. : this_signal->GetBinLowEdge( iBin+1 );
 
-      if( this_signal->GetBinContent(iBin) < 1e-3 );
-      else{
-
-        std::string binName;
+	//if( this_signal->GetBinContent(iBin) < 1e-3 );
+	//if( this_signal->GetBinContent(iBin) < 1e-2 );
+	//if( this_signal->GetBinContent(iBin) < 1e-3 || this_signal->GetBinContent(iBin) > 1e-2 );
+	if( this_signal->GetBinContent(iBin) < 1e-1 );
+	else{
+	  
+	std::string binName;
         if( mt2Max>=0. )
           binName = std::string( Form("%s_m%.0fto%.0f", iR->getName().c_str(), mt2Min, mt2Max) );
         else
@@ -551,7 +556,7 @@ std::string gammaConvention( float yieldSR, int yieldCR, int position, const std
   } else if( yieldCR==0 && yieldSR>0. ) {
     line << use_uncorrName << "  lnN  ";
     syst = 2.;
-  } else if( yieldCR!=0 && yieldSR==0. ) {
+  } else if( yieldCR>0 && yieldSR==0. ) {
     line << use_uncorrName << "  gmN 0  ";
     syst = testAlpha;
   } else {

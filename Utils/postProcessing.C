@@ -2,7 +2,7 @@
 How to run:
 root -l
 .L postProcessing.C+
-run("samples_50ns_miniaod.txt", "treeProducerSusyFullHad", "/scratch/mmasciov/ToPostProcess/", "/scratch/mmasciov/PostProcessED/", "_babytree.root")
+run()
 */
 
 #include <sstream>
@@ -22,257 +22,174 @@ run("samples_50ns_miniaod.txt", "treeProducerSusyFullHad", "/scratch/mmasciov/To
 #include "TChainElement.h"
 #include "TBranch.h"
 #include "TString.h"
-#include "TH1F.h"
+#include "TH1D.h"
 
 using namespace std;
 
 
-int postProcessing(string inputFile="input.root",
+int postProcessing(string inputString="input",
+		   string inputFolder="./",
 		   string outputFile="output.root",
 		   string treeName="tree",
 		   float filter=1.0, float kfactor=1.0, float xsec=-1.0, int id=1 );
 
 
-int run(string sampleFileName="samples_50ns_miniaod.txt",
+int run(string cfg="postProcessing.cfg",
 	string treeName="tree", 
-	string inputPath = "/scratch/mmasciov/CSA14v2/ToPostProcess/", 
-	string outputPath = "/scratch/mmasciov/CSA14v2/PostProcess/",  
+	string inputFolder = "/pnfs/psi.ch/cms/trivcat/store/user/casal/babies/PHYS14_Production_QCDpt_noSietaieta/", 
+	string outputFolder = "./test/",  
 	string fileExtension = "_post.root"){
   
-//int run(string sampleFileName="samples_50ns_miniaod.txt",
-//	string treeName="treeProducerSusyFullHad",
-//	string inputPath = "dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/",
-//	string outputPath = "/scratch/mmasciov/12Dec/PostProcess/",
-//	string fileExtension = "_PU_S14_POSTLS170_babytree_post.root"){
-//  
-  int start_s=clock();
+  // for measuring timing
+  time_t start = time(0);
 
-  ifstream IN(sampleFileName.c_str());
+  cout<<"Configuration file is: "<<cfg.c_str()<<endl;
+  
+  ifstream configuration(cfg.c_str());
+  string line;
+  
+  while(std::getline(configuration,line)){
+    istringstream ss(line);
+    if((ss.str()[0])==(string)"#") continue;
+    if(ss.str().empty()) continue;
 
-  if(!IN)
-    system(Form("wget https://mangano.web.cern.ch/mangano/public/MECCA/%s", sampleFileName.c_str()));
 
-  char buffer[512];
-
-  std::cout << "------------------------------------" << std::endl;
-  std::cout << "Sample File  " << sampleFileName << std::endl;
-
-  int counter(0);
-
-  while( IN.getline(buffer, 512, '\n') ) {
-
-    if (buffer[0] == '#' || buffer[0] == '\n' || buffer[0] == ' ' || buffer[0] == '\0' || strlen(buffer)==1)
-      continue;
-
-    ++counter;
-    std::cout << "# sample " << counter << std::endl;
-    std::cout << buffer << std::endl;
+    string idS,name,xsecS,filterS,kfactorS;
+    ss >> idS;
+    ss >> name;
+    ss >> xsecS;
+    ss >> filterS;
+    ss >> kfactorS;
 
     int id;
-    char datasetName[512];
-    float xs, filter, kfactor;
-    sscanf(buffer, "%d\t/%s\t%f\t%f\t%f\n", &id, datasetName, &xs, &filter, &kfactor);
-    std::cout << id << "\t" << xs << "\t" << filter << "\t" << "\t" << kfactor << std::endl;
+    float filter,kfactor,xsec;
+    filter = (float)atof(filterS.c_str());
+    kfactor = (float)atof(kfactorS.c_str());
+    xsec = (float)atof(xsecS.c_str());
+    id = (int)atof(idS.c_str());
 
-    std::string dataset(datasetName);
-    std::size_t length = dataset.find("_Tune");
-    if (length==std::string::npos) // if "_Tune" doesn't exist try "_13TeV" (some QCD samples)
-      length = dataset.find("_13TeV");
+    int debug=0;
+    if(debug){
+      cout << "id,name,x,f,k: " 
+	   << id << " , " 
+	   << name << " , "
+	   << xsec << " , " 
+	   << filter << " , " 
+	   << kfactor << endl;
+    }  
 
-    char fileName[512];
-    std::size_t nameLength = dataset.copy(fileName, length, 0);
-    fileName[nameLength]='\0';
-
-    for (int c = 0; c <= nameLength; ++c) {
-      
-      if (fileName[c] == '-' || fileName[c] == '_')
-	fileName[c] = '?';
-      
-      if (fileName[c]=='\0')
-	break;
-      
-    }
-
-    std::string file(fileName);
-    TString wildcard;
-    if (inputPath.find("/pnfs")==std::string::npos)
-      wildcard = TString::Format("%s%s*.root", inputPath.c_str(), file.c_str());
-    else // mind the directory structure in the SE 
-      wildcard = TString::Format("%s%s*/*.root", inputPath.c_str(), file.c_str());
-
-    system(Form("ls %s > inputFILE.txt", wildcard.Data()));
-      
-    
-    ifstream inputFILE("inputFILE.txt");
-    if(!inputFILE) {
-
-      std::cout << "ATTENTION: no input file, looking for next" << std::endl;
-      continue;
-    
-    }
-
-    char inputBuffer[512];
-
-    inputFILE.getline(inputBuffer, 512, '\n'); 
-      
-    if (inputBuffer[0] == '\0' || strlen(inputBuffer)==1){
-      
-      std::cout << "ATTENTION: no input file, looking for next" << std::endl;
-      continue;
-    
-    }
-
-    std::string inputFile(inputBuffer);
-
-    char unused[512];
-    inputFILE.getline(unused, 512, '\n'); 
-    if (unused[0] == '\0' || strlen(unused)==1){      
-      std::cout << "single input file: " << inputFile << std::endl;
-    }
-    else{ // in case of more than one file use wildcard
-      if (inputPath.find("/pnfs")==std::string::npos) // if not in SE use directly wildcar
-	inputFile = wildcard.Data();
-      else {// double wildcard does not work in SE. dataset name in directory not in filename
-	std::size_t len = inputFile.rfind("/");
-	inputFile = inputFile.substr(0,len)+"/*.root";
-      }
-      std::cout << "multiple input files: " << inputFile << std::endl;
-    }
-
-    std::string outputFileName(inputBuffer);    
-    std::size_t outlength = outputFileName.find(inputPath);
-    outputFileName.erase(outlength, inputPath.length());
-    std::string extension = ".root";
-    std::size_t extensionlength = outputFileName.find(".root");
-    outputFileName.erase(extensionlength, extension.length());
-    
-    if (inputPath.find("/pnfs")!=std::string::npos) // in SE output name is input dir
-      outputFileName.erase(outputFileName.find("/"), outputFileName.length());
-
-    std::string outputFile = outputPath + outputFileName + fileExtension;
-    std::cout << inputFile << std::endl;
-    std::cout << outputFile << std::endl;
-
-    FILE* rootfile;
-    rootfile = fopen(outputFile.c_str(), "r");
-    if (rootfile == NULL);
-    else {
-
-      std::cout << "ATTENTION: Target file already exists!!! I will skip this sample..." << std::endl;
-      continue;
-
-    }
-
-    postProcessing(inputFile, outputFile, treeName, filter, kfactor, xs, id);
-
+    string outputFile = outputFolder + "/" + name + fileExtension;
+    postProcessing(name, inputFolder, outputFile, treeName, filter, kfactor, xsec, id);
   }
   
-  int stop_s=clock();
-  std::cout << std::endl << "time: " << (stop_s-start_s)/double(CLOCKS_PER_SEC)*1000 << std::endl;
-
-  system(Form("rm -f inputFILE.txt"));
+  // for printing measured timing
+  time_t stop = time(0);
+  double time = difftime(stop, start);
+  cout << "real time in seconds: " << time << endl;
   
   return 0;
 }
 
-int postProcessing(string inputFile,
+int postProcessing(string inputString,
+		   string inputFolder,
 		   string outputFile,
 		   string treeName,
-		   float filter, float kfactor, float xsec, int id){
-
-  //TString infname, TString outfile, unsigned int events, 
-  //Float_t xsec, Float_t kfactor,
-  //Float_t filt_eff, bool SortBasketsByEntry ) {
-  
-  cout << "Processing File " << inputFile << endl;
-
-  // TFile *f = TFile::Open(inputFile.c_str(), "READ");
-  // if (! f || f->IsZombie()) {
-  //   cout << "File does not exist!" << endl;
-  //   return 1;
-  // }
-  
-  // TTree* t = (TTree*)f->Get(treeName.c_str());
-  // if (! t || t->IsZombie()) {
-  //   cout << "Tree does not exist!" << endl;
-  //   return 2;
-  // }
-
-  TChain *c = new TChain(treeName.c_str());
-  TString dcap = inputFile.find("pnfs")!=std::string::npos ? "dcap://t3se01.psi.ch:22125/" : "";
-  int chainReturn = c->Add(dcap + inputFile.c_str());
+		   float filter, float kfactor, float xsec, int id)
+{
+  TChain* chain = new TChain(treeName.c_str());
+  // Add all files in the input folder 
+  string dcap = inputFolder.find("pnfs")!=std::string::npos ? "dcap://t3se01.psi.ch:22125/" : "";
+  string fullInputString = dcap + inputFolder + "/" + inputString + "/*.root";
+  //string fullInputString = dcap + inputFolder + "/" + inputString + "/mt2_14.root";
+  int chainReturn = chain->Add(fullInputString.c_str()  );
   if (chainReturn < 1) {
-    cout << "File does not exist!" << endl;
+    cout << "ERROR: input folder/fileName is not well defined. Exit!" << endl;
+    cout << "fullInputString: " << fullInputString << endl;
     return 1;
   }
-
-  // merge (add) Count histograms from tchain files
-  TFileMerger *merger = new TFileMerger(kFALSE);
-  TObjArray *fileElements = c->GetListOfFiles();
-  TIter next(fileElements);
-  TChainElement *chEl=0;
-  while (( chEl=(TChainElement*)next() ))
-    merger->AddFile(chEl->GetTitle());
-  merger->OutputFile(outputFile.c_str(), "RECREATE");
-  merger->SetNotrees(kTRUE);
-  merger->Merge();
-  delete merger;
   
+
+  // Merge (add) Count histograms from tchain files
+  if(chainReturn>1){
+    TFileMerger merger = TFileMerger(kFALSE);
+    TObjArray *fileElements = chain->GetListOfFiles();
+    TIter next(fileElements);
+    TChainElement *chEl=0;
+    while (( chEl=(TChainElement*)next() )){    
+      merger.AddFile(chEl->GetTitle());
+    }
+    merger.SetNotrees(kTRUE);
+    merger.OutputFile(outputFile.c_str(), "RECREATE");
+    bool returnCode=merger.Merge();
+    if(!returnCode) {
+      cout << "ERROR: merger.Merge() returned " << returnCode << endl;
+      return 1;
+    }
+  }else{
+    // have to do this because the merger doesn't work as expected when the input is one single file
+    TFile* fileIn = TFile::Open(fullInputString.c_str());    
+    TH1* histo = (TH1D*)fileIn->Get("Count");
+    TFile output(outputFile.c_str(), "RECREATE");
+    histo->Write();
+    fileIn->Close();
+    delete fileIn;
+  }
+
+
   // This line should be uncommented for all the branches that we want to overwrite.
   // If the branch is not in the input tree, we don't need this.
   //
   //t->SetBranchStatus("scale1fb", 0);
 
+
+  
   TFile *out = TFile::Open(outputFile.c_str(), "UPDATE");
   TTree *clone = new TTree("mt2", "post processed baby tree for mt2 analysis");
 
-  //clone = t->CloneTree(-1, "fast");
-  clone = c->CloneTree(-1, "fast");
+  clone = chain->CloneTree(-1, "fast"); 
   clone->SetName("mt2");
 
-  /*
-  if(SortBasketsByEntry)
-    clone = t->CloneTree(-1, "fastSortBasketsByEntry");
-  else 
-    clone = t->CloneTree(-1, "fast");
-  */
+  
+  //if(SortBasketsByEntry)
+  // clone = t->CloneTree(-1, "fastSortBasketsByEntry");
+  //else 
+  // clone = t->CloneTree(-1, "fast");
+  
 
   //-------------------------------------------------------------
 
   //Calculate scaling factor and put variables into tree 
-  //int events = t->GetEntries();
-  int events = clone->GetEntries();
-  // get Nevents from Count histogram
-  int count = (int)((TH1F*)out->Get("Count"))->GetBinContent(1);
-  float scale1fb = xsec*kfactor*1000*filter/(Float_t)count;
+  int nEventsTree = clone->GetEntries();
+  int nEventsHisto = (int)((TH1D*)out->Get("Count"))->GetBinContent(1);
+  float scale1fb = xsec*kfactor*1000*filter/(Float_t)nEventsHisto;
  
-  if (count < events) // this should not happen
-    cout << "ERROR: histogram count has less events than tree" << endl
-	 << "count: "  << count << endl
-	 << "events: "  << events << endl;
-  else if (count > events) // this can happen
-    cout << "WARNING: histogram count has more events than tree" << endl
-	 << "count: "  << count << endl
-	 << "events: "  << events << endl;
+  if (nEventsHisto < nEventsTree) // this should not happen
+    cout << "ERROR: histogram count has less events than tree. This indicates something went wrong" << endl
+	 << "#events histo: "  << nEventsHisto << endl
+	 << "#events tree: "  << nEventsTree << endl;
+  else if (nEventsHisto < nEventsTree) // this can happen
+    cout << "WARNING: histogram count has more events than tree. This should only happen if tree was skimmed" << endl
+	 << "#events histo: "  << nEventsHisto << endl
+	 << "#events tree: "  << nEventsTree << endl;
     
-  /*
-  if(isdata){
-	scale1fb = 1.0;
-	cout<< "Data file. scale1fb: " << scale1fb << endl;
-	
-  }else{
-	cout << "scale1fb: " << scale1fb << endl; 
+
+  int isData; 
+  clone->SetBranchAddress("isData",&isData);
+  clone->GetEntry(0); 
+  if(isData){
+    //data should never be rescaled with scale1fb when making plots
+    //set scaler to zero so that user cannot miss the mistake
+    scale1fb = 0.0; 
   }
-  */
   
   TBranch* b1 = clone->Branch("evt_scale1fb", &scale1fb, "evt_scale1fb/F");
   TBranch* b2 = clone->Branch("evt_xsec", &xsec, "evt_xsec/F");
   TBranch* b3 = clone->Branch("evt_kfactor", &kfactor, "evt_kfactor/F");
   TBranch* b4 = clone->Branch("evt_filter", &filter, "evt_filter/F");
-  TBranch* b5 = clone->Branch("evt_nEvts", &count, "evt_nEvts/I");
+  TBranch* b5 = clone->Branch("evt_nEvts", &nEventsHisto, "evt_nEvts/I");
   TBranch* b6 = clone->Branch("evt_id", &id, "evt_id/I");
 
-  for(Int_t i = 0; i < events; i++) {
+  for(Int_t i = 0; i < nEventsTree; i++) {
     b1->Fill();
     b2->Fill();
     b3->Fill();
@@ -282,16 +199,11 @@ int postProcessing(string inputFile,
   }
   //-------------------------------------------------------------
 
-  // delete t;
-  // f->Close();
-  delete c;
+  delete chain; 
 
-  //out->cd();
   clone->Write();
   delete clone;
   out->Close();
-
-  
   return 0;
   
 }

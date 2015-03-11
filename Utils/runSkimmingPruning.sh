@@ -44,19 +44,26 @@ echo ""
 
 
 if [ -d $outputDir ]; then
-    echo "Output directory "$outputDir" already exists. Quitting...";
-    exit;
+    echo "====================================="  
+    echo "Output directory "$outputDir" already exists. "
+    echo "Be careful that you are not overwriting existing files by mistake";
+    echo "====================================="  
+    echo "" 
 fi
 
 
-outputSkimming=dirOutSkimming_$rand2
+# --- here I run the skimming python code
+outputSkimming=/scratch/`whoami`/dirOutSkimming_$rand2
 if [ "$doSkimming" = true ]; then
     echo "Running skimming... "
     mkdir $outputSkimming
     python skimBabies.py $inputDir $outputSkimming "$skimmingSelection"  --filter="$inputFilter"
 fi
 
-outputPruning=dirOutPruning_$rand3
+
+
+# --- here I run the pruning python code
+outputPruning=/scratch/`whoami`/dirOutPruning_$rand3
 if [ "$doPruning" = true ]; then
     if [ "$doSkimming" = true ]; then
       inputDir=$outputSkimming
@@ -64,16 +71,58 @@ if [ "$doPruning" = true ]; then
     python pruneBabies.py $inputDir $outputPruning "$branchesToPrune"  --filter="$inputFilter"
 fi
 
-if [[ "$doSkimming" = true && ! "$doPruning" = true ]]; then
-    echo "cleaning/moving temp folders...";
-    mv $outputSkimming $outputDir;
-elif [[ ! "$doSkimming" = true &&  "$doPruning" = true ]]; then
-    echo "cleaning/moving temp folders...";
-    mv $outputPruning $outputDir;
-elif [[ "$doSkimming" = true &&  "$doPruning" = true ]]; then
-    echo "cleaning/moving temp folders...";
-    mv $outputPruning $outputDir;
-    rm -r $outputSkimming;
+
+
+# --- creating destinatinon folder, copying files, cleaning of tmp folders in scratch
+if [[ "$outputDir" == *"/pnfs/psi.ch/"* ]]; then
+    gfal-mkdir -p srm://t3se01.psi.ch/$outputDir
+else
+    mkdir -p $outputDir
 fi
 
+
+echo "cleaning/moving temp folders...";
+if [[ "$doSkimming" = true && ! "$doPruning" = true ]]; then
+    if [[ "$outputDir" == *"/pnfs/psi.ch/"* ]]; then
+	for x in $outputSkimming/*; do 
+	    gfal-copy file://$x "srm://t3se01.psi.ch"$outputDir/
+	done;
+    else
+	for x in $outputSkimming/*; do 
+	    cp $x $outputDir/
+	done;
+    fi
+    rm $outputSkimming/*; rmdir $outputSkimming;
+elif [[ ! "$doSkimming" = true &&  "$doPruning" = true ]]; then
+    if [[ "$outputDir" == *"/pnfs/psi.ch/"* ]]; then
+	for x in $outputPruning/*; do 
+	    gfal-copy file://$x "srm://t3se01.psi.ch"$outputDir/
+	done;
+    else
+	for x in $outputPruning/*; do 
+	    cp $x $outputDir/
+	done;
+    fi
+    rm $outputPruning/*; rmdir $outputPruning;
+elif [[ "$doSkimming" = true &&  "$doPruning" = true ]]; then
+    if [[ "$outputDir" == *"/pnfs/psi.ch/"* ]]; then
+	for x in $outputSkimming/*; do 
+	    gfal-copy file://$x "srm://t3se01.psi.ch"$outputDir/
+	done;
+	for x in $outputPruning/*; do 
+	    gfal-copy file://$x "srm://t3se01.psi.ch"$outputDir/
+	done;
+    else
+	for x in $outputSkimming/*; do 
+	    cp $x $outputDir/
+	done;
+	for x in $outputPruning/*; do 
+	    cp $x $outputDir/
+	done;
+    fi
+    rm $outputPruning/*; rmdir $outputPruning;
+    rm $outputSkimming/*; rmdir $outputSkimming;
+fi
+
+echo ""
 echo "Find your files in: " $outputDir
