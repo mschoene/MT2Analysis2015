@@ -29,6 +29,12 @@ float lumi = 4.; // fb-1
 
 
 
+int type = 1;
+
+// 0: use bare MC for ratio (pure GJet)
+// 1: use GJet+QCD and multiply by fitted purity
+
+
 
 
 MT2Analysis<MT2EstimateSyst>* combineDataAndMC( MT2Analysis<MT2EstimateSyst>* data, MT2Analysis<MT2Estimate>* mc );
@@ -38,6 +44,7 @@ int main( int argc, char* argv[] ) {
 
 
   std::string samplesFileName = "PHYS14_v2_Zinv";
+  //std::string samplesFileName = "PHYS14_v3_Zinv";
   if( argc>1 ) {
     std::string samplesFileName_tmp(argv[1]); 
     samplesFileName = samplesFileName_tmp;
@@ -45,11 +52,13 @@ int main( int argc, char* argv[] ) {
 
 
   std::string regionsSet = "13TeV_CSA14";
+  //std::string regionsSet = "13TeV_PHYS14_loJet_hiHT";
+  //std::string regionsSet = "13TeV_PHYS14_hiJet_extremeHT";
 
   TH1::AddDirectory(kFALSE); // stupid ROOT memory allocation needs this
 
 
-  std::string outputdir( Form("ZinvEstimateFromGamma_%s_%s_%.0ffb", samplesFileName.c_str(), regionsSet.c_str(), lumi) );
+  std::string outputdir( Form("ZinvEstimateFromGamma_%s_%s_%.0ffb_type%d", samplesFileName.c_str(), regionsSet.c_str(), lumi, type) );
   system(Form("mkdir -p %s", outputdir.c_str()));
 
 
@@ -57,8 +66,24 @@ int main( int argc, char* argv[] ) {
 
   MT2Analysis<MT2Estimate>* gammaCR = MT2Analysis<MT2Estimate>::readFromFile(gammaControlRegionDir + "/data.root", "gammaCR");
   MT2Analysis<MT2Estimate>* gamma_prompt = MT2Analysis<MT2Estimate>::readFromFile(gammaControlRegionDir + "/mc.root", "prompt");
+
+  if( gammaCR==0 || gamma_prompt==0 ) {
+    std::cout << "-> Please run gammaControlRegion first. I need to get the gammaCR yields from there." << std::endl;
+    std::cout << "-> Thank you for your cooperation." << std::endl;
+    exit(193);
+  }
+
   
-  MT2Analysis<MT2EstimateSyst>* purity = MT2Analysis<MT2EstimateSyst>::readFromFile( gammaControlRegionDir + "/PurityFitsData_PHYS14_v2_Zinv_13TeV_inclusive/purityFit_PHYS14_v2_Zinv_13TeV_inclusive.root", "purity" );
+  MT2Analysis<MT2EstimateSyst>* purity = 0;
+
+  if( type!=0 )
+    purity = MT2Analysis<MT2EstimateSyst>::readFromFile( gammaControlRegionDir + "/PurityFitsData_PHYS14_v2_Zinv_13TeV_inclusive/purityFit_PHYS14_v2_Zinv_13TeV_inclusive.root", "purity" );
+
+  if( purity==0 && type!=0 ) {
+    std::cout << "-> Please run fitPurityGamma first. I need to get the purity from there." << std::endl;
+    std::cout << "-> Thank you for your cooperation." << std::endl;
+    exit(195);
+  }
 
 
   MT2Analysis<MT2Estimate>* Zinv = MT2Analysis<MT2Estimate>::readFromFile(Form("EventYields_mc_PHYS14_v2_dummy_%.0ffb/analyses.root", lumi), "ZJets");
@@ -74,10 +99,13 @@ int main( int argc, char* argv[] ) {
 
 
   MT2Analysis<MT2Estimate>* gammaCR_times_ZgammaRatio = new MT2Analysis<MT2Estimate>( "gammaCR_times_ZgammaRatio", regionsSet );
-  (*gammaCR_times_ZgammaRatio) = (*gammaCR) * (*ZgammaRatio);
+  if( type==0 )
+    (*gammaCR_times_ZgammaRatio) = (*prompt) * (*ZgammaRatio);
+  else
+    (*gammaCR_times_ZgammaRatio) = (*gammaCR) * (*ZgammaRatio);
 
   MT2Analysis<MT2EstimateSyst>* ZinvEstimateFromGamma = MT2EstimateSyst::makeAnalysisFromEstimate( "ZinvEstimateFromGamma", regionsSet, gammaCR_times_ZgammaRatio );
-  (*ZinvEstimateFromGamma) *= (*purity);
+  if( type!=0 ) (*ZinvEstimateFromGamma) *= (*purity);
 
 
   MT2Analysis<MT2EstimateSyst>* ZinvEstimate = combineDataAndMC( ZinvEstimateFromGamma, Zinv );
