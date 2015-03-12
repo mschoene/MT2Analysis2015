@@ -14,7 +14,7 @@
 #include "TRandom3.h"
 
 
-float lumi = 5.; //fb-1
+float lumi = 4.; //fb-1
 
 
 
@@ -70,8 +70,7 @@ int main( int argc, char* argv[] ) {
   MT2Analysis<MT2EstimateZinvGamma>* fake_pass = new MT2Analysis<MT2EstimateZinvGamma>( "fake_pass", regionsSet );
 
 
-  float isoCut = 3.; // GeV (absolute iso)
-  //float isoCut = 0.005;
+  float isoCut = 2.5; // GeV (absolute iso)
 
   for( unsigned i=0; i<samples_gammaJet.size(); ++i ) {
     computeYield( samples_gammaJet[i], regionsSet, prompt, prompt_pass, fake, fake_pass, isoCut );
@@ -81,12 +80,15 @@ int main( int argc, char* argv[] ) {
     computeYield( samples_qcd[i], regionsSet, prompt, prompt_pass, fake, fake_pass, isoCut );
   }
 
-  MT2Analysis<MT2EstimateZinvGamma>* gammaCR = new MT2Analysis<MT2EstimateZinvGamma>( "gammaCR", regionsSet );
+
+  MT2Analysis<MT2EstimateZinvGamma>* gammaCR = new MT2Analysis<MT2EstimateZinvGamma>( "gammaCR_loose", regionsSet );
   (*gammaCR) = (*prompt) + (*fake);
 
-  MT2Analysis<MT2EstimateZinvGamma>* gammaCR_pass = new MT2Analysis<MT2EstimateZinvGamma>( "gammaCR_pass", regionsSet );
+ 
+  MT2Analysis<MT2EstimateZinvGamma>* gammaCR_pass = new MT2Analysis<MT2EstimateZinvGamma>( "gammaCR", regionsSet );
   (*gammaCR_pass) = (*prompt_pass) + (*fake_pass);
-
+ 
+ 
 
   MT2Analysis<MT2EstimateSyst>* eff_isoCut = MT2EstimateSyst::makeEfficiencyAnalysis( "eff_isoCut", regionsSet, (MT2Analysis<MT2Estimate>*)prompt_pass, (MT2Analysis<MT2Estimate>*)prompt );
 
@@ -105,8 +107,8 @@ int main( int argc, char* argv[] ) {
 
   // emulate data:
   //randomizePoisson(gammaCR);
-  gammaCR->writeToFile( outputdir + "/data.root" );
-
+  gammaCR_pass->writeToFile( outputdir + "/data.root" );
+ 
 
   return 0;
 
