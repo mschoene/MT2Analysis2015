@@ -39,15 +39,6 @@ createDatacards: createDatacards.cpp MT2Region.o MT2Sample.o MT2EstimateSyst.o M
 
 
 
-qgStudies: qgStudies.cpp localQGLikelihoodCalculator2.o DrawBase.o fitTools.o localQGLikelihoodCalculator.o
-	$(CC) -Wall $(INCLUDES) -o qgStudies qgStudies.cpp localQGLikelihoodCalculator2.o DrawBase.o fitTools.o localQGLikelihoodCalculator.o  $(ROOTFLAG) $(EXTRALIBS)
-
-checkQGL: checkQGL.cpp localQGLikelihoodCalculator2.o DrawBase.o fitTools.o localQGLikelihoodCalculator.o
-	$(CC) -Wall $(INCLUDES) -o checkQGL checkQGL.cpp localQGLikelihoodCalculator2.o DrawBase.o fitTools.o localQGLikelihoodCalculator.o  $(ROOTFLAG) $(EXTRALIBS)
-
-check_mht: check_mht.cpp 
-	$(CC) -Wall $(INCLUDES) -o check_mht check_mht.cpp   $(ROOTFLAG) $(EXTRALIBS)
-
 prova: prova.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateSyst.o
 	$(CC) -Wall $(INCLUDES) -o prova prova.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateSyst.o $(ROOTFLAG) $(EXTRALIBS)
 
