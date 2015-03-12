@@ -14,7 +14,7 @@
 #include "TRandom3.h"
 
 
-float lumi = 5.; //fb-1
+float lumi = 4.; //fb-1
 
 
 
@@ -81,10 +81,10 @@ int main( int argc, char* argv[] ) {
     computeYield( samples_qcd[i], regionsSet, prompt, prompt_pass, fake, fake_pass, isoCut );
   }
 
-  MT2Analysis<MT2EstimateZinvGamma>* gammaCR = new MT2Analysis<MT2EstimateZinvGamma>( "gammaCR", regionsSet );
+  MT2Analysis<MT2EstimateZinvGamma>* gammaCR = new MT2Analysis<MT2EstimateZinvGamma>( "gammaCR_loose", regionsSet );
   (*gammaCR) = (*prompt) + (*fake);
 
-  MT2Analysis<MT2EstimateZinvGamma>* gammaCR_pass = new MT2Analysis<MT2EstimateZinvGamma>( "gammaCR_pass", regionsSet );
+  MT2Analysis<MT2EstimateZinvGamma>* gammaCR_pass = new MT2Analysis<MT2EstimateZinvGamma>( "gammaCR", regionsSet );
   (*gammaCR_pass) = (*prompt_pass) + (*fake_pass);
 
 
@@ -105,7 +105,7 @@ int main( int argc, char* argv[] ) {
 
   // emulate data:
   //randomizePoisson(gammaCR);
-  gammaCR->writeToFile( outputdir + "/data.root" );
+  gammaCR_pass->writeToFile( outputdir + "/data.root" );
 
 
   return 0;
