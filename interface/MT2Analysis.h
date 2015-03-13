@@ -1019,7 +1019,7 @@ const MT2Analysis<T>& MT2Analysis<T>::operator*=( float k ) {
     MT2Region thisRegion(*iR);
 
     T* t1 = this->get(thisRegion); 
-    *t1 /= k;
+    *t1 *= k;
 
   }
 
