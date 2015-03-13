@@ -40,24 +40,25 @@ int main( int argc, char* argv[] ) {
     exit(101);
   }
 
-  //std::string regionsSet = "13TeV_onlyHT";
-  std::string regionsSet = "13TeV_CSA14";
-  //std::string regionsSet = "13TeV_inclusive";
-  //std::string regionsSet = "13TeV_ZinvGammaPurity";
-  if( argc>1 ) {
-    std::string regionsSet_tmp(argv[1]); 
-    regionsSet = regionsSet_tmp;
-  }
-
 
   bool useMC = true;
-  if( argc>2 ) {
-    std::string useMC_str(argv[2]); 
+  if( argc>1 ) {
+    std::string useMC_str(argv[1]); 
     if( useMC_str!="data" && useMC_str!="MC" ) {
       std::cout << "ERROR! Second argument may only be 'MC' or 'data'" << std::endl;
       exit(1111);
     }
     if( useMC_str=="data" ) useMC = false;
+  }
+
+
+  //std::string regionsSet = "13TeV_onlyHT";
+  std::string regionsSet = "13TeV_inclusive";
+  //std::string regionsSet = "13TeV_inclusive";
+  //std::string regionsSet = "13TeV_ZinvGammaPurity";
+  if( argc>2 ) {
+    std::string regionsSet_tmp(argv[2]); 
+    regionsSet = regionsSet_tmp;
   }
 
 
@@ -89,6 +90,12 @@ int main( int argc, char* argv[] ) {
   }
 
 
+  if( !useMC ) {
+    setPoissonError( templatesFake );
+    setPoissonError( templatesPrompt );
+  }
+
+
 
   std::string templateFileName = "gammaTemplates";
   if( useMC ) templateFileName += "MC";
@@ -96,15 +103,7 @@ int main( int argc, char* argv[] ) {
   templateFileName = templateFileName + "_" + samplesFileName + "_" + regionsSet + ".root";
 
 
-
-  if( !useMC ) {
-    setPoissonError( templatesFake );
-    setPoissonError( templatesPrompt );
-  }
   templatesFake->writeToFile(templateFileName);
-
-  if( !useMC ) 
-    templatesPrompt->setName( "templatesPromptRaw" ); // still contaminated from fakes with good sietaieta
   templatesPrompt->addToFile(templateFileName, true);
 
 
@@ -184,11 +183,6 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2An
     if( !isMatched &&              isGJet ) continue; //fakes from QCD only
 
 
-    float iso = myTree.gamma_chHadIso[0];
-    if( iso > 30. ) continue;
-    //float iso = myTree.gamma_chHadIso[0]/myTree.gamma_pt[0];
-    //if( iso > 0.1 ) continue;
-
 
     TLorentzVector gamma;
     gamma.SetPtEtaPhiM( myTree.gamma_pt[0], myTree.gamma_eta[0], myTree.gamma_phi[0], myTree.gamma_mass[0] );
@@ -228,6 +222,11 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2An
 
     }
 
+
+    float iso = myTree.gamma_chHadIso[0];
+    if( !useMC && isPrompt ) iso = myTree.gamma_chHadIsoRC[0]; // random cone
+ 
+    if( iso > 20. ) continue;
 
 
     int closestJet = -1;
