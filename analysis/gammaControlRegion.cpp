@@ -127,8 +127,8 @@ int main( int argc, char* argv[] ) {
   // emulate data:
   //randomizePoisson(gammaCR);
   gammaCR_pass->writeToFile( outputdir + "/data.root" );
-  gammaCR_nipUp_pass->writeToFile( outputdir + "/data.root" );
-  gammaCR_nipDown_pass->writeToFile( outputdir + "/data.root" );
+  gammaCR_nipUp_pass->addToFile( outputdir + "/data.root" );
+  gammaCR_nipDown_pass->addToFile( outputdir + "/data.root" );
  
 
   return 0;
