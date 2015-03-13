@@ -500,7 +500,7 @@ MT2Analysis<T>::MT2Analysis( const std::string& aname, std::set<T*> newdata, int
   for( typename std::set<T*>::iterator idata=newdata.begin(); idata!=newdata.end(); ++idata ) {
 
     MT2Region* thisRegion = (*idata)->region;
-    regions_.insert( *thisRegion );
+    this->regions_.insert( *thisRegion );
 
     this->data.insert( *idata );
 
@@ -514,7 +514,6 @@ MT2Analysis<T>::MT2Analysis( const std::string& aname, std::set<T*> newdata, int
 
 template<class T> 
 MT2Analysis<T>::MT2Analysis( const MT2Analysis& rhs ) {
-
 
   //regions_ = rhs.getRegions();
 
@@ -1134,6 +1133,8 @@ MT2Analysis<T> MT2Analysis<T>::operator*( float k ) const {
     T* t1 = this->get(thisRegion); 
     *t1 *= k;
 
+    newdata.insert( t1 );
+
   }
 
   MT2Analysis<T> result(name, newdata);
@@ -1158,6 +1159,8 @@ MT2Analysis<T> MT2Analysis<T>::operator/( float k ) const {
 
     T* t1 = this->get(thisRegion); 
     *t1 /= k;
+
+    newdata.insert( t1 );
 
   }
 
