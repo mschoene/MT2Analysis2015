@@ -229,8 +229,11 @@ const MT2EstimateSyst& MT2EstimateSyst::operator=( const MT2EstimateSyst& rhs ) 
 
   } else { // keep name and histo name, just make histogram identical
 
-    if( this->region!=0 ) delete this->region;
-    this->region = new MT2Region(*(rhs.region));
+    std::string rhsRegionName = rhs.region->getName();
+    if( this->region != rhs.region ) {
+      if( this->region!=0 ) delete this->region;
+      this->region = new MT2Region(rhsRegionName);
+    }
 
     std::string oldName = this->yield->GetName();
     delete this->yield;
