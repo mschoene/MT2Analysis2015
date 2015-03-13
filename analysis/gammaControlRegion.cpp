@@ -18,7 +18,10 @@ float lumi = 4.; //fb-1
 
 
 
-void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2Analysis<MT2EstimateZinvGamma>* prompt, MT2Analysis<MT2EstimateZinvGamma>* prompt_pass, MT2Analysis<MT2EstimateZinvGamma>* nip, MT2Analysis<MT2EstimateZinvGamma>* nip_pass, MT2Analysis<MT2EstimateZinvGamma>* fake, MT2Analysis<MT2EstimateZinvGamma>* fake_pass, float isoCut );
+void computeYield( const MT2Sample& sample, const std::string& regionsSet, 
+                   MT2Analysis<MT2EstimateZinvGamma>* prompt, MT2Analysis<MT2EstimateZinvGamma>* prompt_pass, 
+                   MT2Analysis<MT2EstimateZinvGamma>* nip, MT2Analysis<MT2EstimateZinvGamma>* nip_pass, 
+                   MT2Analysis<MT2EstimateZinvGamma>* fake, MT2Analysis<MT2EstimateZinvGamma>* fake_pass, float isoCut );
 void randomizePoisson( MT2Analysis<MT2EstimateZinvGamma>* data );
 void randomizeSingleHisto( TRandom3 rand, TH1D* histo );
 
@@ -84,41 +87,45 @@ int main( int argc, char* argv[] ) {
   }
 
 
-  MT2Analysis<MT2EstimateZinvGamma>* gammaCR = new MT2Analysis<MT2EstimateZinvGamma>( "gammaCR_loose", regionsSet );
-  (*gammaCR) = (*prompt) + (*nip) + (*fake);
+  MT2Analysis<MT2EstimateZinvGamma>* gammaCR_loose = new MT2Analysis<MT2EstimateZinvGamma>( "gammaCR_loose", regionsSet );
+  (*gammaCR_loose) = (*prompt) + (*nip) + (*fake);
 
  
   MT2Analysis<MT2EstimateZinvGamma>* fake_plus_prompt_pass = new MT2Analysis<MT2EstimateZinvGamma>( (*prompt_pass) + (*fake_pass) ); 
   fake_plus_prompt_pass->setName("fake_plus_prompt_pass");
 
-  MT2Analysis<MT2EstimateZinvGamma>* nip_pass_times2 = new MT2Analysis<MT2EstimateZinvGamma>( *nip );
+  MT2Analysis<MT2EstimateZinvGamma>* nip_pass_div2 = new MT2Analysis<MT2EstimateZinvGamma>( *nip_pass );
+  nip_pass_div2->setName("nip_pass_div2");
+  (*nip_pass_div2) *= 0.5;
+  //(*nip_pass_div2) /= 2.;
+
+  MT2Analysis<MT2EstimateZinvGamma>* nip_pass_times2 = new MT2Analysis<MT2EstimateZinvGamma>( *nip_pass );
   nip_pass_times2->setName("nip_pass_times2");
   (*nip_pass_times2) *= 2.;
 
-  MT2Analysis<MT2EstimateZinvGamma>* nip_pass_div2 = new MT2Analysis<MT2EstimateZinvGamma>( *nip );
-  nip_pass_div2->setName("nip_pass_div2");
-  (*nip_pass_div2) /= 2.;
 
  
-  MT2Analysis<MT2EstimateZinvGamma>* gammaCR_pass         = new MT2Analysis<MT2EstimateZinvGamma>( *fake_plus_prompt_pass + *nip_pass );
-  gammaCR_pass->setName("gammaCR");
-  MT2Analysis<MT2EstimateZinvGamma>* gammaCR_nipUp_pass   = new MT2Analysis<MT2EstimateZinvGamma>( *fake_plus_prompt_pass + *nip_pass_times2 );
-  gammaCR_nipUp_pass->setName("gammaCR_nipUp");
-  MT2Analysis<MT2EstimateZinvGamma>* gammaCR_nipDown_pass = new MT2Analysis<MT2EstimateZinvGamma>( *fake_plus_prompt_pass + *nip_pass_div2 );
-  gammaCR_nipDown_pass->setName("gammaCR_nipDown");
+  MT2Analysis<MT2EstimateZinvGamma>* gammaCR         = new MT2Analysis<MT2EstimateZinvGamma>( *fake_plus_prompt_pass + *nip_pass );
+  gammaCR->setName("gammaCR");
+  MT2Analysis<MT2EstimateZinvGamma>* gammaCR_nipUp   = new MT2Analysis<MT2EstimateZinvGamma>( *fake_plus_prompt_pass + *nip_pass_times2 );
+  gammaCR_nipUp->setName("gammaCR_nipUp");
+  MT2Analysis<MT2EstimateZinvGamma>* gammaCR_nipDown = new MT2Analysis<MT2EstimateZinvGamma>( *fake_plus_prompt_pass + *nip_pass_div2 );
+  gammaCR_nipDown->setName("gammaCR_nipDown");
   
  
 
   MT2Analysis<MT2EstimateSyst>* eff_isoCut = MT2EstimateSyst::makeEfficiencyAnalysis( "eff_isoCut", regionsSet, (MT2Analysis<MT2Estimate>*)prompt_pass, (MT2Analysis<MT2Estimate>*)prompt );
 
-  MT2Analysis<MT2EstimateSyst>* purityTight = MT2EstimateSyst::makeEfficiencyAnalysis( "purity", regionsSet, (MT2Analysis<MT2Estimate>*)prompt_pass, (MT2Analysis<MT2Estimate>*)gammaCR_pass );
+  MT2Analysis<MT2EstimateSyst>* purityTight = MT2EstimateSyst::makeEfficiencyAnalysis( "purity", regionsSet, (MT2Analysis<MT2Estimate>*)prompt_pass, (MT2Analysis<MT2Estimate>*)gammaCR);
 
-  MT2Analysis<MT2EstimateSyst>* purityLoose = MT2EstimateSyst::makeEfficiencyAnalysis( "purityLoose", regionsSet, (MT2Analysis<MT2Estimate>*)prompt, (MT2Analysis<MT2Estimate>*)gammaCR );
+  MT2Analysis<MT2EstimateSyst>* purityLoose = MT2EstimateSyst::makeEfficiencyAnalysis( "purityLoose", regionsSet, (MT2Analysis<MT2Estimate>*)prompt, (MT2Analysis<MT2Estimate>*)gammaCR_loose );
 
 
-  gammaCR->writeToFile( outputdir + "/mc.root" );
+  gammaCR_loose->writeToFile( outputdir + "/mc.root" );
+  gammaCR->addToFile( outputdir + "/mc.root" );
   prompt->addToFile( outputdir + "/mc.root" );
   fake->addToFile( outputdir + "/mc.root" );
+  nip->addToFile( outputdir + "/mc.root" );
 
   purityTight->writeToFile( outputdir + "/purityMC.root" );
   purityLoose->addToFile( outputdir + "/purityMC.root" );
@@ -126,9 +133,9 @@ int main( int argc, char* argv[] ) {
 
   // emulate data:
   //randomizePoisson(gammaCR);
-  gammaCR_pass->writeToFile( outputdir + "/data.root" );
-  gammaCR_nipUp_pass->addToFile( outputdir + "/data.root" );
-  gammaCR_nipDown_pass->addToFile( outputdir + "/data.root" );
+  gammaCR->writeToFile( outputdir + "/data.root" );
+  gammaCR_nipUp->addToFile( outputdir + "/data.root" );
+  gammaCR_nipDown->addToFile( outputdir + "/data.root" );
  
 
   return 0;
@@ -143,7 +150,10 @@ int main( int argc, char* argv[] ) {
 
 
 
-void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2Analysis<MT2EstimateZinvGamma>* prompt, MT2Analysis<MT2EstimateZinvGamma>* prompt_pass, MT2Analysis<MT2EstimateZinvGamma>* nip, MT2Analysis<MT2EstimateZinvGamma>* nip_pass, MT2Analysis<MT2EstimateZinvGamma>* fake, MT2Analysis<MT2EstimateZinvGamma>* fake_pass, float isoCut ) {
+void computeYield( const MT2Sample& sample, const std::string& regionsSet, 
+                   MT2Analysis<MT2EstimateZinvGamma>* prompt, MT2Analysis<MT2EstimateZinvGamma>* prompt_pass, 
+                   MT2Analysis<MT2EstimateZinvGamma>* nip, MT2Analysis<MT2EstimateZinvGamma>* nip_pass, 
+                   MT2Analysis<MT2EstimateZinvGamma>* fake, MT2Analysis<MT2EstimateZinvGamma>* fake_pass, float isoCut ) {
 
   
 
@@ -271,7 +281,7 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2An
 
     if( isPrompt ) {
 
-      MT2EstimateZinvGamma* thisPrompt = prompt->get( myTree.gamma_ht, myTree.gamma_nJet40, myTree.gamma_nBJet40, myTree.gamma_met_pt );
+      MT2EstimateZinvGamma* thisPrompt = prompt->get( myTree.gamma_ht, myTree.gamma_nJet40, myTree.gamma_nBJet40, myTree.gamma_met_pt, myTree.gamma_minMTBMet, myTree.gamma_mt2 );
       if( thisPrompt==0 ) continue;
 
       thisPrompt->yield->Fill(myTree.gamma_mt2, weight );
@@ -279,7 +289,7 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2An
 
       if( iso<isoCut ) {
 
-        MT2EstimateZinvGamma* thisPrompt_pass = prompt_pass->get( myTree.gamma_ht, myTree.gamma_nJet40, myTree.gamma_nBJet40, myTree.gamma_met_pt );
+        MT2EstimateZinvGamma* thisPrompt_pass = prompt_pass->get( myTree.gamma_ht, myTree.gamma_nJet40, myTree.gamma_nBJet40, myTree.gamma_met_pt, myTree.gamma_minMTBMet, myTree.gamma_mt2 );
         if( thisPrompt_pass==0 ) continue;
 
         thisPrompt_pass->yield->Fill(myTree.gamma_mt2, weight );
@@ -289,7 +299,7 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2An
 
     } else if( isNIP ) { 
       
-      MT2EstimateZinvGamma* thisnip = nip->get( myTree.gamma_ht, myTree.gamma_nJet40, myTree.gamma_nBJet40, myTree.gamma_met_pt );
+      MT2EstimateZinvGamma* thisnip = nip->get( myTree.gamma_ht, myTree.gamma_nJet40, myTree.gamma_nBJet40, myTree.gamma_met_pt, myTree.gamma_minMTBMet, myTree.gamma_mt2 );
       if( thisnip==0 ) continue;
 
       thisnip->yield->Fill(myTree.gamma_mt2, weight );
@@ -297,7 +307,7 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2An
 
       if( iso<isoCut ) {
 
-        MT2EstimateZinvGamma* thisnip_pass = nip_pass->get( myTree.gamma_ht, myTree.gamma_nJet40, myTree.gamma_nBJet40, myTree.gamma_met_pt );
+        MT2EstimateZinvGamma* thisnip_pass = nip_pass->get( myTree.gamma_ht, myTree.gamma_nJet40, myTree.gamma_nBJet40, myTree.gamma_met_pt, myTree.gamma_minMTBMet, myTree.gamma_mt2 );
         if( thisnip_pass==0 ) continue;
 
         thisnip_pass->yield->Fill(myTree.gamma_mt2, weight );
@@ -307,7 +317,7 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2An
 
     } else if( isFake ) {
 
-      MT2EstimateZinvGamma* thisFake = fake->get( myTree.gamma_ht, myTree.gamma_nJet40, myTree.gamma_nBJet40, myTree.gamma_met_pt );
+      MT2EstimateZinvGamma* thisFake = fake->get( myTree.gamma_ht, myTree.gamma_nJet40, myTree.gamma_nBJet40, myTree.gamma_met_pt, myTree.gamma_minMTBMet, myTree.gamma_mt2 );
       if( thisFake==0 ) continue;
 
       thisFake->yield->Fill(myTree.gamma_mt2, weight );
@@ -315,7 +325,7 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2An
 
       if( iso<isoCut ) {
 
-        MT2EstimateZinvGamma* thisFake_pass = fake_pass->get( myTree.gamma_ht, myTree.gamma_nJet40, myTree.gamma_nBJet40, myTree.gamma_met_pt );
+        MT2EstimateZinvGamma* thisFake_pass = fake_pass->get( myTree.gamma_ht, myTree.gamma_nJet40, myTree.gamma_nBJet40, myTree.gamma_met_pt, myTree.gamma_minMTBMet, myTree.gamma_mt2 );
         if( thisFake_pass==0 ) continue;
 
         thisFake_pass->yield->Fill(myTree.gamma_mt2, weight );
