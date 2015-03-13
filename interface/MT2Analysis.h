@@ -805,10 +805,11 @@ const MT2Analysis<T>& MT2Analysis<T>::operator=( const MT2Analysis<T>& rhs ) {
       exit(111);
     }
 
-    if( t1==0 ) 
+    if( t1==0 ) {
       t1 = new T(*t2);
-    else 
+    } else {
       *t1 = *t2;
+    }
 
   }
 
