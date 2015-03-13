@@ -1215,7 +1215,7 @@ void MT2Analysis<T>::writeToFile( const std::string& fileName, const std::string
 template<class T>
 void MT2Analysis<T>::printFromFile( const std::string& fileName, const std::string& ofs, const std::string& matchName ) {
 
-  std::vector<MT2Analysis<T>*> analyses = readAllFromFile(fileName, false);
+  std::vector<MT2Analysis<T>*> analyses = readAllFromFile(fileName, matchName, false);
 
   if( analyses.size()==0 ) {
     std::cout << "[MT2Analysis::printFromFile] WARNING!!! Didn't find any MT2Analysis in file " << fileName << std::endl;
@@ -1366,7 +1366,7 @@ std::vector<MT2Analysis<T>*> MT2Analysis<T>::readAllFromFile( const std::string&
 
     //TString analysisName_tstr(analysisName);
     //if( matchExpression!="" && !(analysisName_tstr.Contains(matchExpression)) ) continue;
-    if( matchName!=analysisName ) continue;
+    if( matchName!="" && matchName!=analysisName ) continue;
 
     // now that we know name and region structure we can istantiate an MT2Analysis:
     MT2Analysis<T>* analysis = new MT2Analysis<T>( analysisName, regions );
