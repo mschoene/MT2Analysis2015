@@ -103,8 +103,12 @@ const MT2Estimate& MT2Estimate::operator=( const MT2Estimate& rhs ) {
 
   } else { // keep name and histo name, just make histogram identical
 
-    if( this->region!=0 ) delete this->region;
-    this->region = new MT2Region(*(rhs.region));
+    std::string rhsRegionName = rhs.region->getName();
+    if( this->region != rhs.region ) {
+      if( this->region!=0 ) delete this->region;
+      this->region = new MT2Region(rhsRegionName);
+    }
+
 
     std::string oldName = this->yield->GetName();
     delete this->yield;
@@ -162,9 +166,11 @@ MT2Estimate MT2Estimate::operator/( const MT2Estimate& rhs ) const {
   }
 
 
-  MT2Estimate result(name, *(this->region) );
-  result.yield = new TH1D(*(this->yield));
+  MT2Estimate result(*this);
   result.yield->Divide(rhs.yield);
+  //MT2Estimate result(name, *(this->region) );
+  //result.yield = new TH1D(*(this->yield));
+  //result.yield->Divide(rhs.yield);
 
   return result;
 
@@ -178,9 +184,11 @@ MT2Estimate MT2Estimate::operator*( const MT2Estimate& rhs ) const {
     exit(113);
   }
 
-  MT2Estimate result(name, *(this->region) );
-  result.yield = new TH1D(*(this->yield));
+  MT2Estimate result(*this);
   result.yield->Multiply(rhs.yield);
+  //MT2Estimate result(name, *(this->region) );
+  //result.yield = new TH1D(*(this->yield));
+  //result.yield->Multiply(rhs.yield);
 
   return result;
 
@@ -190,9 +198,11 @@ MT2Estimate MT2Estimate::operator*( const MT2Estimate& rhs ) const {
 
 MT2Estimate MT2Estimate::operator/( float k ) const {
 
-  MT2Estimate result(name, *(this->region) );
-  result.yield = new TH1D(*(this->yield));
+  MT2Estimate result(*this);
   result.yield->Scale(1./k);
+  //MT2Estimate result(name, *(this->region) );
+  //result.yield = new TH1D(*(this->yield));
+  //result.yield->Scale(1./k);
 
   return result;
 
@@ -201,9 +211,11 @@ MT2Estimate MT2Estimate::operator/( float k ) const {
 
 MT2Estimate MT2Estimate::operator*( float k ) const {
 
-  MT2Estimate result(name, *(this->region) );
-  result.yield = new TH1D(*(this->yield));
+  MT2Estimate result(*this);
   result.yield->Scale(k);
+  //MT2Estimate result(name, *(this->region) );
+  //result.yield = new TH1D(*(this->yield));
+  //result.yield->Scale(k);
 
   return result;
 
