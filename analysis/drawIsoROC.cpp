@@ -23,7 +23,7 @@
 // 2: ignore them
 
 
-void drawSietaieta( const std::string& outputdir, TTree* tree, const std::string& eb_ee );
+void drawSietaieta( const std::string& outputdir, TTree* tree, const std::string& eb_ee, float ptMin=-1., float ptMax=100000 );
 void drawROC( const std::string& outputdir, TTree* tree, int optionNGI );
 TGraph* getRoC( TH1D* h1_prompt, TH1D* h1_fake );
 TGraph* getWP( TH1D* h1_prompt, TH1D* h1_fake, float thresh );
@@ -60,6 +60,11 @@ int main() {
 
   drawSietaieta( outputdir, tree, "Barrel" );
   drawSietaieta( outputdir, tree, "Endcap" );
+  drawSietaieta( outputdir, tree, "Barrel", 200., 300. );
+  drawSietaieta( outputdir, tree, "Barrel", 300., 400. );
+  drawSietaieta( outputdir, tree, "Barrel", 400., 600. );
+  drawSietaieta( outputdir, tree, "Barrel", 600., 800. );
+  drawSietaieta( outputdir, tree, "Barrel", 800. );
 
   drawIsoVsSigma( outputdir, tree, "iso", "isoCP" );
   //drawIsoVsSigma( outputdir, tree, "iso", "(isoCP-iso)" );
@@ -79,7 +84,7 @@ int main() {
 
 
 
-void drawSietaieta( const std::string& outputdir, TTree* tree, const std::string& eb_ee ) {
+void drawSietaieta( const std::string& outputdir, TTree* tree, const std::string& eb_ee, float ptMin, float ptMax ) {
 
 
   float etaMin;
@@ -125,8 +130,8 @@ void drawSietaieta( const std::string& outputdir, TTree* tree, const std::string
   TH1D* h1_fake = new TH1D("fake", "", nBins, xMin, xMax );
   h1_fake->Sumw2();
 
-  tree->Project( "prompt", "sietaieta", "weight*( mcMatchId==22)" );
-  tree->Project( "fake"  , "sietaieta", "weight*( mcMatchId==0 )" );
+  tree->Project( "prompt", "sietaieta", Form("weight*( mcMatchId==22 && ptGamma>%f && ptGamma<%f)", ptMin, ptMax) );
+  tree->Project( "fake"  , "sietaieta", Form("weight*( mcMatchId==0  && ptGamma>%f && ptGamma<%f)", ptMin, ptMax) );
 
   std::cout << std::endl;
   std::cout << eb_ee << ":" << std::endl;
@@ -140,6 +145,7 @@ void drawSietaieta( const std::string& outputdir, TTree* tree, const std::string
   c1->cd();
 
   float yMax = (h1_prompt->GetMaximum()+h1_fake->GetMaximum())*1.1;
+  if( ptMin>0. ) yMax = 750.;
 
   TH2D* h2_axes = new TH2D("axes", "", 10, xMin, xMax, 10, 0., yMax);
   h2_axes->SetXTitle("Photon #sigma_{i#eta i#eta}");
@@ -182,7 +188,15 @@ void drawSietaieta( const std::string& outputdir, TTree* tree, const std::string
   lineSB2->SetLineWidth(2);
   lineSB2->Draw("same");
 
-  TLegend* legend = new TLegend( xMinLegend, 0.67, xMaxLegend, 0.88, eb_ee.c_str());
+  TLegend* legend;
+  if( ptMin>0. ) {
+    std::string ptString;
+    if( ptMax > 10000. ) ptString = std::string(Form("p_{T} > %.0f", ptMin));
+    else                 ptString = std::string(Form("%.0f < p_{T} < %.0f", ptMin, ptMax));
+    legend = new TLegend( xMinLegend, 0.6, xMaxLegend, 0.88, Form("#splitline{%s}{%s}", eb_ee.c_str(), ptString.c_str()) );
+  } else {
+    legend = new TLegend( xMinLegend, 0.67, xMaxLegend, 0.88, eb_ee.c_str());
+  }
   legend->SetTextSize(0.035);
   legend->SetFillColor(0);
   legend->AddEntry( h1_prompt, "Prompt", "F" );
@@ -194,9 +208,15 @@ void drawSietaieta( const std::string& outputdir, TTree* tree, const std::string
 
   gPad->RedrawAxis();
 
-  c1->SaveAs(Form("%s/sietaieta%s.eps", outputdir.c_str(), eb_ee.c_str()));
-  c1->SaveAs(Form("%s/sietaieta%s.pdf", outputdir.c_str(), eb_ee.c_str()));
-  c1->SaveAs(Form("%s/sietaieta%s.png", outputdir.c_str(), eb_ee.c_str()));
+  if( ptMin>0. ) {
+    c1->SaveAs(Form("%s/sietaieta%s_pt%.0f_%.0f.eps", outputdir.c_str(), eb_ee.c_str(), ptMin, ptMax));
+    c1->SaveAs(Form("%s/sietaieta%s_pt%.0f_%.0f.pdf", outputdir.c_str(), eb_ee.c_str(), ptMin, ptMax));
+    c1->SaveAs(Form("%s/sietaieta%s_pt%.0f_%.0f.png", outputdir.c_str(), eb_ee.c_str(), ptMin, ptMax));
+  } else {
+    c1->SaveAs(Form("%s/sietaieta%s.eps", outputdir.c_str(), eb_ee.c_str()));
+    c1->SaveAs(Form("%s/sietaieta%s.pdf", outputdir.c_str(), eb_ee.c_str()));
+    c1->SaveAs(Form("%s/sietaieta%s.png", outputdir.c_str(), eb_ee.c_str()));
+  }
 
   delete c1;
   delete h2_axes;
