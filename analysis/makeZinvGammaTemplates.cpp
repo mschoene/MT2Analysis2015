@@ -152,7 +152,7 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2An
 
     //if( myTree.gamma_ht>1000. && sample.id==204 ) continue; // remove high-weight spikes (remove GJet_400to600 leaking into HT>1000)
 
-    if( myTree.met_pt > 100.) continue;
+    if( myTree.mt2 > 200.) continue;
     if( myTree.gamma_mt2 < 200.) continue;
 
     if( myTree.nMuons10 > 0) continue;
@@ -168,6 +168,7 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2An
     if( myTree.gamma_nJet40<2 ) continue;
 
     if( myTree.ngamma==0 ) continue;
+    if( myTree.ptGamma[0]<160. ) continue;
 
 
     // AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH REMOVE THIS SOOOOON
@@ -178,10 +179,13 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2An
     bool isMatched = (mcMatchId==22 || mcMatchId==7);
     bool isGenIso = (myTree.gamma_genIso[0]<5.);
 
-    if( isMatched  &&  isGenIso && isQCD  ) continue; //isolated prompts taken from GJet only
-    if( isMatched  && !isGenIso && isGJet ) continue; //non-isolated prompts taken from QCD only
-    if( !isMatched &&              isGJet ) continue; //fakes from QCD only
+    bool isPrompt = ( isMatched &&  isGenIso);
+    bool isNIP    = ( isMatched && !isGenIso);
+    bool isFake   = (!isMatched);
 
+    if( isPrompt && isQCD  ) continue; //isolated prompts taken from GJet only
+    if( isNIP    && isGJet ) continue; //non-isolated prompts taken from QCD only
+    if( isFake   && isGJet ) continue; //fakes from QCD only
 
 
     TLorentzVector gamma;
@@ -202,29 +206,29 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2An
       sietaietaOK = (sietaieta < 0.03);
     }
 
-    bool isPrompt = false;
+    bool isWorkingPrompt = false;
 
     if( useMC ) {
 
       if( !sietaietaOK ) continue;
-      isPrompt = isMatched;
+      isWorkingPrompt = isPrompt;
 
     } else { // is data
 
-      isPrompt = sietaietaOK;
+      isWorkingPrompt = sietaietaOK;
 
-      if( isPrompt ) {
-        // for prompts use only low-sensitivity regions:
-        if( myTree.gamma_mt2>300. ) continue;
-        if( myTree.gamma_ht>1000. ) continue;
-        if( myTree.gamma_nBJet40>0 ) continue;
-      }
+      //if( isWorkingPrompt ) {
+      //  // for prompts use only low-sensitivity regions:
+      //  if( myTree.gamma_mt2>300. ) continue;
+      //  if( myTree.gamma_ht>1000. ) continue;
+      //  if( myTree.gamma_nBJet40>0 ) continue;
+      //}
 
     }
 
 
     float iso = myTree.gamma_chHadIso[0];
-    if( !useMC && isPrompt ) iso = myTree.gamma_chHadIsoRC[0]; // random cone
+    if( !useMC && isWorkingPrompt ) iso = myTree.gamma_chHadIsoRC[0]; // random cone
  
     if( iso > 20. ) continue;
 
@@ -262,7 +266,7 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2An
     Double_t weight = myTree.evt_scale1fb*lumi; 
 
 
-    if( isPrompt ) {
+    if( isWorkingPrompt ) {
 
       MT2EstimateZinvGamma* thisPrompt = prompt->get( myTree.gamma_ht, myTree.gamma_nJet40, myTree.gamma_nBJet40, myTree.gamma_met_pt );
       if( thisPrompt==0 ) continue;

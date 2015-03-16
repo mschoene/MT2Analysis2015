@@ -186,7 +186,7 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet,
 
     myTree.GetEntry(iEntry);
 
-    if( myTree.met_pt>100. ) continue; // orthogonal to signal regions
+    if( myTree.mt2>200. ) continue; // orthogonal to signal regions
 
     if( myTree.gamma_ht>1000. && sample.id==204 ) continue; // remove high-weight spikes (remove GJet_400to600 leaking into HT>1000)
 
@@ -205,6 +205,7 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet,
     if( myTree.gamma_nJet40<2 ) continue;
 
     if( myTree.ngamma==0 ) continue;
+    if( myTree.gamma_pt[0]<160. ) continue;
 
 
     if( myTree.gamma_idCutBased[0]==0 ) continue;
