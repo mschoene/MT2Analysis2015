@@ -53,10 +53,7 @@ int main( int argc, char* argv[] ) {
   
 
 
-  std::string regionsSet = "13TeV_CSA14";
-  //std::string regionsSet = "13TeV_onlyHT";
-  //std::string regionsSet = "13TeV_inclusive";
-  //std::string regionsSet = "13TeV_ZinvGammaPurity";
+  std::string regionsSet = "zurich";
 
   TH1::AddDirectory(kFALSE); // stupid ROOT memory allocation needs this
 
@@ -114,7 +111,7 @@ int main( int argc, char* argv[] ) {
   
  
 
-  MT2Analysis<MT2EstimateSyst>* eff_isoCut = MT2EstimateSyst::makeEfficiencyAnalysis( "eff_isoCut", regionsSet, (MT2Analysis<MT2Estimate>*)prompt_pass, (MT2Analysis<MT2Estimate>*)prompt );
+  MT2Analysis<MT2EstimateSyst>* eff = MT2EstimateSyst::makeEfficiencyAnalysis( "eff", regionsSet, (MT2Analysis<MT2Estimate>*)prompt_pass, (MT2Analysis<MT2Estimate>*)prompt );
 
   MT2Analysis<MT2EstimateSyst>* purityTight = MT2EstimateSyst::makeEfficiencyAnalysis( "purity", regionsSet, (MT2Analysis<MT2Estimate>*)prompt_pass, (MT2Analysis<MT2Estimate>*)gammaCR);
 
@@ -129,7 +126,7 @@ int main( int argc, char* argv[] ) {
 
   purityTight->writeToFile( outputdir + "/purityMC.root" );
   purityLoose->addToFile( outputdir + "/purityMC.root" );
-  eff_isoCut->addToFile( outputdir + "/purityMC.root" );
+  eff->addToFile( outputdir + "/purityMC.root" );
 
   // emulate data:
   //randomizePoisson(gammaCR);
