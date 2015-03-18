@@ -168,7 +168,7 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2An
     if( myTree.gamma_nJet40<2 ) continue;
 
     if( myTree.ngamma==0 ) continue;
-    if( myTree.ptGamma[0]<160. ) continue;
+    if( myTree.gamma_pt[0]<160. ) continue;
 
 
     // AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH REMOVE THIS SOOOOON
