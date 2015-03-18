@@ -309,7 +309,7 @@ MT2Analysis<MT2EstimateTree> computeYield( const MT2Sample& sample, const std::s
     if( myTree.gamma_nJet40<2 ) continue;
 
     if( myTree.ngamma==0 ) continue;
-    if( myTree.ptGamma[0]<160. ) continue;
+    if( myTree.gamma_pt[0]<160. ) continue;
 
 
 
