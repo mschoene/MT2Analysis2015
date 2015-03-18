@@ -51,7 +51,7 @@ int main( int argc, char* argv[] ) {
   }
 
 
-  std::string regionsSet = "13TeV_CSA14";
+  std::string regionsSet = "zurich";
   //std::string regionsSet = "13TeV_PHYS14_loJet_hiHT";
   //std::string regionsSet = "13TeV_PHYS14_hiJet_extremeHT";
 
