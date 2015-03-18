@@ -51,38 +51,27 @@ int main( int argc, char* argv[] ) {
 
   std::string samples = "PHYS14_v2_Zinv";
 
-  if( argc==1 ) {
-    std::cout << "-> You need to pass me the regions set name. Here are some suggestions: " << std::endl;
-    std::cout << "  13TeV_CSA14" << std::endl;
-    std::cout << "  13TeV_onlyHT" << std::endl;
-    std::cout << "  13TeV_onlyJets" << std::endl;
-    std::cout << "  13TeV_inclusive" << std::endl;
-    exit(101);
-  }
-
-
-  std::string regionsSet = "13TeV_CSA14";
-  if( argc>1 ) {
-    std::string regionsSet_tmp(argv[1]); 
-    regionsSet = regionsSet_tmp;
-  }
 
   std::string mc_or_data = "MC";
-  if( argc>2 ) {
-    mc_or_data = std::string(argv[2]);
+  if( argc>1 ) {
+    mc_or_data = std::string(argv[1]);
     if( mc_or_data=="data" ) mc_or_data="Data";
     if( mc_or_data=="mc" ) mc_or_data="MC";
   }
 
 
+
+  std::string regionsSet = "zurich";
+
+
   TH1::AddDirectory(kFALSE);
 
 
-  std::string gammaCRdir = "GammaControlRegion_" + samples + "_13TeV_CSA14";
+  std::string gammaCRdir = "GammaControlRegion_" + samples + "_" + regionsSet;
   MT2Analysis<MT2EstimateZinvGamma>* gammaJet_data = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( gammaCRdir + "/data.root", "gammaCR" );
 
-  MT2Analysis<MT2EstimateZinvGamma>* templates_prompt = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( "gammaTemplates" + mc_or_data + "_" + samples + "_" + regionsSet + ".root", "templatesPrompt" );
-  MT2Analysis<MT2EstimateZinvGamma>* templates_fake   = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( "gammaTemplates" + mc_or_data + "_" + samples + "_" + regionsSet + ".root", "templatesFake" );
+  MT2Analysis<MT2EstimateZinvGamma>* templates_prompt = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( "gammaTemplates" + mc_or_data + "_" + samples + "_13TeV_inclusive.root", "templatesPrompt" );
+  MT2Analysis<MT2EstimateZinvGamma>* templates_fake   = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( "gammaTemplates" + mc_or_data + "_" + samples + "_13TeV_inclusive.root", "templatesFake" );
 
 
   std::string outputdir = gammaCRdir + "/PurityFits" + mc_or_data + "_" + samples + "_" + regionsSet;
@@ -90,8 +79,8 @@ int main( int argc, char* argv[] ) {
 
   std::set<MT2Region> regions = gammaJet_data->getRegions();
 
-  MT2Analysis<MT2EstimateSyst>* purityLoose = new MT2Analysis<MT2EstimateSyst>( "purityLoose", "13TeV_CSA14" );
-  MT2Analysis<MT2EstimateSyst>* purityTight = new MT2Analysis<MT2EstimateSyst>( "purity"     , "13TeV_CSA14" );
+  MT2Analysis<MT2EstimateSyst>* purityLoose = new MT2Analysis<MT2EstimateSyst>( "purityLoose", regionsSet );
+  MT2Analysis<MT2EstimateSyst>* purityTight = new MT2Analysis<MT2EstimateSyst>( "purity"     , regionsSet );
 
 
   for( std::set<MT2Region>::iterator iR=regions.begin(); iR!=regions.end(); ++iR ) {
