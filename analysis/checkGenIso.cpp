@@ -17,7 +17,7 @@ float lumi = 5.; //fb-1
 
 
 
-void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2Analysis<MT2EstimateTree>* prompt, MT2Analysis<MT2EstimateTree>* prompt_genIso );
+void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2Analysis<MT2EstimateTree>* prompt, MT2Analysis<MT2EstimateTree>* nip, MT2Analysis<MT2EstimateTree>* fake );
 
 
 
@@ -34,12 +34,11 @@ int main( int argc, char* argv[] ) {
 
   std::string samplesFile = "../samples/samples_" + samplesFileName + ".dat";
   
-  std::vector<MT2Sample> samples_gammaJet = MT2Sample::loadSamples(samplesFile, "GJets");
-  if( samples_gammaJet.size()==0 ) {
-    std::cout << "There must be an error: didn't find any gamma+jet files in " << samplesFile << "!" << std::endl;
+  std::vector<MT2Sample> samples = MT2Sample::loadSamples(samplesFile, 100, 299); // GJet + QCD
+  if( samples.size()==0 ) {
+    std::cout << "There must be an error: didn't find any samples in " << samplesFile << "!" << std::endl;
     exit(1209);
   }
-
 
   
 
@@ -58,69 +57,50 @@ int main( int argc, char* argv[] ) {
   
 
   MT2Analysis<MT2EstimateTree>* prompt = new MT2Analysis<MT2EstimateTree>( "prompt", regionsSet );
-  MT2Analysis<MT2EstimateTree>* prompt_genIso = new MT2Analysis<MT2EstimateTree>( "prompt_genIso", regionsSet );
+  MT2Analysis<MT2EstimateTree>* nip = new MT2Analysis<MT2EstimateTree>( "nip", regionsSet );
+  MT2Analysis<MT2EstimateTree>* fake = new MT2Analysis<MT2EstimateTree>( "fake", regionsSet );
+
   MT2EstimateTree::addVar( prompt, "genIso" );
-  MT2EstimateTree::addVar( prompt_genIso, "genIso" );
   MT2EstimateTree::addVar( prompt, "iso" );
+  MT2EstimateTree::addVar( prompt, "isoRC" );
   MT2EstimateTree::addVar( prompt, "isoCN" );
   MT2EstimateTree::addVar( prompt, "isoCP" );
   MT2EstimateTree::addVar( prompt, "isoCPN" );
-  MT2EstimateTree::addVar( prompt_genIso, "iso" );
-  MT2EstimateTree::addVar( prompt_genIso, "isoCN" );
-  MT2EstimateTree::addVar( prompt_genIso, "isoCP" );
-  MT2EstimateTree::addVar( prompt_genIso, "isoCPN" );
   MT2EstimateTree::addVar( prompt, "sietaieta" );
-  MT2EstimateTree::addVar( prompt_genIso, "sietaieta" );
   MT2EstimateTree::addVar( prompt, "mcMatchId" );
-  MT2EstimateTree::addVar( prompt_genIso, "mcMatchId" );
   MT2EstimateTree::addVar( prompt, "ptGamma" );
-  MT2EstimateTree::addVar( prompt_genIso, "ptGamma" );
+  MT2EstimateTree::addVar( prompt, "etaGamma" );
 
+  MT2EstimateTree::addVar( nip, "genIso" );
+  MT2EstimateTree::addVar( nip, "iso" );
+  MT2EstimateTree::addVar( nip, "isoRC" );
+  MT2EstimateTree::addVar( nip, "isoCN" );
+  MT2EstimateTree::addVar( nip, "isoCP" );
+  MT2EstimateTree::addVar( nip, "isoCPN" );
+  MT2EstimateTree::addVar( nip, "sietaieta" );
+  MT2EstimateTree::addVar( nip, "mcMatchId" );
+  MT2EstimateTree::addVar( nip, "ptGamma" );
+  MT2EstimateTree::addVar( nip, "etaGamma" );
 
-  for( unsigned i=0; i<samples_gammaJet.size(); ++i ) {
-    computeYield( samples_gammaJet[i], regionsSet, prompt, prompt_genIso );
-  }
-
-
-  //std::string samplesFile_snt = "../samples/samples_QCD_snt.dat";
-  std::vector<MT2Sample> samples_qcd = MT2Sample::loadSamples(samplesFile, "QCD_Pt");
-//  std::vector<MT2Sample> samples_qcd = MT2Sample::loadSamples(samplesFile_snt, "QCD_Ht");
-  //std::vector<MT2Sample> samples_qcd = MT2Sample::loadSamples(samplesFile, "QCD_HT");
-  MT2Analysis<MT2EstimateTree>* fake = new MT2Analysis<MT2EstimateTree>( "fake", regionsSet );
-  MT2Analysis<MT2EstimateTree>* fake_genIso = new MT2Analysis<MT2EstimateTree>( "fake_genIso", regionsSet );
   MT2EstimateTree::addVar( fake, "genIso" );
-  MT2EstimateTree::addVar( fake_genIso, "genIso" );
   MT2EstimateTree::addVar( fake, "iso" );
+  MT2EstimateTree::addVar( fake, "isoRC" );
   MT2EstimateTree::addVar( fake, "isoCN" );
   MT2EstimateTree::addVar( fake, "isoCP" );
   MT2EstimateTree::addVar( fake, "isoCPN" );
-  MT2EstimateTree::addVar( fake_genIso, "iso" );
-  MT2EstimateTree::addVar( fake_genIso, "isoCN" );
-  MT2EstimateTree::addVar( fake_genIso, "isoCP" );
-  MT2EstimateTree::addVar( fake_genIso, "isoCPN" );
   MT2EstimateTree::addVar( fake, "sietaieta" );
-  MT2EstimateTree::addVar( fake_genIso, "sietaieta" );
   MT2EstimateTree::addVar( fake, "mcMatchId" );
-  MT2EstimateTree::addVar( fake_genIso, "mcMatchId" );
   MT2EstimateTree::addVar( fake, "ptGamma" );
-  MT2EstimateTree::addVar( fake_genIso, "ptGamma" );
+  MT2EstimateTree::addVar( fake, "etaGamma" );
 
-  for( unsigned i=0; i<samples_qcd.size(); ++i ) {
-    computeYield( samples_qcd[i], regionsSet, fake, fake_genIso );
+
+  for( unsigned i=0; i<samples.size(); ++i ) {
+    computeYield( samples[i], regionsSet, prompt, nip, fake );
   }
 
 
-
-
-  //MT2Analysis<MT2EstimateTree>* eff = new MT2Analysis<MT2EstimateTree>( "eff", regionsSet );
-  //(*eff) = *( (MT2Analysis<MT2EstimateTree>*) (prompt_genIso) );
-  //(*eff) /= *( (MT2Analysis<MT2EstimateTree>*) (prompt) );
-
-  prompt->setName("gjet");
-  fake->setName("qcd");
-
   prompt->writeToFile( outputdir + "/genIso.root" );
-  //eff->addToFile( outputdir + "/genIso.root" );
+  nip->addToFile( outputdir + "/genIso.root" );
   fake->addToFile( outputdir + "/genIso.root" );
 
 
@@ -135,8 +115,7 @@ int main( int argc, char* argv[] ) {
 
 
 
-
-void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2Analysis<MT2EstimateTree>* prompt, MT2Analysis<MT2EstimateTree>* prompt_genIso ) {
+void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2Analysis<MT2EstimateTree>* prompt, MT2Analysis<MT2EstimateTree>* nip, MT2Analysis<MT2EstimateTree>* fake ) {
 
   
   std::cout << std::endl << std::endl;
@@ -186,7 +165,7 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2An
     if( myTree.gamma_nJet40<2 ) continue;
 
     if( myTree.ngamma==0 ) continue;
-    if( myTree.ptGamma[0]<160. ) continue;
+    if( myTree.gamma_pt[0]<160. ) continue;
 
 
     //// aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa REMOVE SOON
@@ -255,13 +234,19 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2An
     float isoCPN = (myTree.gamma_chHadIso[0]+isoNH+isoPH)/myTree.gamma_pt[0];
     //if( iso>0.1 ) continue; // preselection anyways in there
 
+    float isoRC = myTree.gamma_chHadIsoRC[0];
+
     int mcMatchId = myTree.gamma_mcMatchId[0];
     bool isMatched = (mcMatchId==22 || mcMatchId==7);
     bool isGenIso = (myTree.gamma_genIso[0]<5.);
 
-    if( isMatched  &&  isGenIso && isQCD  ) continue; //isolated prompts taken from GJet only
-    if( isMatched  && !isGenIso && isGJet ) continue; //non-isolated prompts taken from QCD only
-    if( !isMatched &&              isGJet ) continue; //fakes from QCD only
+    bool isPrompt = ( isMatched &&  isGenIso);
+    bool isNIP    = ( isMatched && !isGenIso);
+    bool isFake   = (!isMatched);
+
+    if( isPrompt && isQCD  ) continue; //isolated prompts taken from GJet only
+    if( isNIP    && isGJet ) continue; //non-isolated prompts taken from QCD only
+    if( isFake   && isGJet ) continue; //fakes from QCD only
 
 
     int closestJet = -1;
@@ -296,49 +281,79 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2An
 
     Double_t weight = myTree.evt_scale1fb*lumi; 
 
-    MT2EstimateTree* thisPrompt = prompt->get( myTree.gamma_ht, myTree.gamma_nJet40, myTree.gamma_nBJet40, myTree.gamma_met_pt );
-    if( thisPrompt==0 ) continue;
 
-    MT2EstimateTree* thisPrompt_genIso = prompt_genIso->get( myTree.gamma_ht, myTree.gamma_nJet40, myTree.gamma_nBJet40, myTree.gamma_met_pt );
-    if( thisPrompt_genIso==0 ) continue;
+    if( isPrompt ) {
 
+      MT2EstimateTree* thisPrompt = prompt->get( myTree.gamma_ht, myTree.gamma_nJet40, myTree.gamma_nBJet40, myTree.gamma_met_pt );
+      if( thisPrompt==0 ) continue;
 
-    thisPrompt->yield->Fill(myTree.gamma_mt2, weight );
+      thisPrompt->yield->Fill(myTree.gamma_mt2, weight );
 
+      thisPrompt->assignTree(myTree, lumi*myTree.evt_scale1fb);
+      thisPrompt->assignVars( myTree.gamma_ht, myTree.gamma_nJet40, myTree.gamma_nBJet40, myTree.gamma_met_pt, myTree.gamma_mt2 );
+      thisPrompt->assignVar( "genIso", myTree.gamma_genIso[0] );
+      thisPrompt->assignVar( "sietaieta", sietaieta );
+      thisPrompt->assignVar( "iso", iso );
+      thisPrompt->assignVar( "isoRC", isoRC );
+      thisPrompt->assignVar( "isoCN", isoCN );
+      thisPrompt->assignVar( "isoCP", isoCP );
+      thisPrompt->assignVar( "isoCPN", isoCPN );
+      thisPrompt->assignVar( "mcMatchId", mcMatchId );
+      thisPrompt->assignVar( "ptGamma", gamma.Pt() );
+      thisPrompt->assignVar( "etaGamma", gamma.Eta() );
+      thisPrompt->tree->Fill();
 
-    thisPrompt->assignTree(myTree, lumi*myTree.evt_scale1fb);
-    thisPrompt->assignVars( myTree.gamma_ht, myTree.gamma_nJet40, myTree.gamma_nBJet40, myTree.gamma_met_pt, myTree.gamma_mt2 );
-    thisPrompt->assignVar( "genIso", myTree.gamma_genIso[0] );
-    thisPrompt->assignVar( "sietaieta", sietaieta );
-    thisPrompt->assignVar( "iso", iso );
-    thisPrompt->assignVar( "isoCN", isoCN );
-    thisPrompt->assignVar( "isoCP", isoCP );
-    thisPrompt->assignVar( "isoCPN", isoCPN );
-    thisPrompt->assignVar( "mcMatchId", mcMatchId );
-    thisPrompt->assignVar( "ptGamma", gamma.Pt() );
-    thisPrompt->tree->Fill();
+    } else if( isNIP ) {
 
-    if( isGenIso ) {
-      thisPrompt_genIso->yield->Fill(myTree.gamma_mt2, weight );
-      thisPrompt_genIso->assignTree(myTree, lumi*myTree.evt_scale1fb);
-      thisPrompt_genIso->assignVars( myTree.gamma_ht, myTree.gamma_nJet40, myTree.gamma_nBJet40, myTree.gamma_met_pt, myTree.gamma_mt2 );
-      thisPrompt_genIso->assignVar( "genIso", myTree.gamma_genIso[0] );
-      thisPrompt_genIso->assignVar( "sietaieta", sietaieta );
-      thisPrompt_genIso->assignVar( "iso", iso );
-      thisPrompt_genIso->assignVar( "isoCN", isoCN );
-      thisPrompt_genIso->assignVar( "isoCP", isoCP );
-      thisPrompt_genIso->assignVar( "isoCPN", isoCPN );
-      thisPrompt_genIso->assignVar( "mcMatchId", mcMatchId );
-      thisPrompt_genIso->assignVar( "ptGamma", gamma.Pt() );
-      thisPrompt_genIso->tree->Fill();
+      MT2EstimateTree* thisNIP = nip->get( myTree.gamma_ht, myTree.gamma_nJet40, myTree.gamma_nBJet40, myTree.gamma_met_pt );
+      if( thisNIP==0 ) continue;
+
+      thisNIP->yield->Fill(myTree.gamma_mt2, weight );
+
+      thisNIP->assignTree(myTree, lumi*myTree.evt_scale1fb);
+      thisNIP->assignVars( myTree.gamma_ht, myTree.gamma_nJet40, myTree.gamma_nBJet40, myTree.gamma_met_pt, myTree.gamma_mt2 );
+      thisNIP->assignVar( "genIso", myTree.gamma_genIso[0] );
+      thisNIP->assignVar( "sietaieta", sietaieta );
+      thisNIP->assignVar( "iso", iso );
+      thisNIP->assignVar( "isoRC", isoRC );
+      thisNIP->assignVar( "isoCN", isoCN );
+      thisNIP->assignVar( "isoCP", isoCP );
+      thisNIP->assignVar( "isoCPN", isoCPN );
+      thisNIP->assignVar( "mcMatchId", mcMatchId );
+      thisNIP->assignVar( "ptGamma", gamma.Pt() );
+      thisNIP->assignVar( "etaGamma", gamma.Eta() );
+      thisNIP->tree->Fill();
+
+    } else if( isFake ) {
+
+      MT2EstimateTree* thisFake = fake->get( myTree.gamma_ht, myTree.gamma_nJet40, myTree.gamma_nBJet40, myTree.gamma_met_pt );
+      if( thisFake==0 ) continue;
+
+      thisFake->yield->Fill(myTree.gamma_mt2, weight );
+
+      thisFake->assignTree(myTree, lumi*myTree.evt_scale1fb);
+      thisFake->assignVars( myTree.gamma_ht, myTree.gamma_nJet40, myTree.gamma_nBJet40, myTree.gamma_met_pt, myTree.gamma_mt2 );
+      thisFake->assignVar( "genIso", myTree.gamma_genIso[0] );
+      thisFake->assignVar( "sietaieta", sietaieta );
+      thisFake->assignVar( "iso", iso );
+      thisFake->assignVar( "isoRC", isoRC );
+      thisFake->assignVar( "isoCN", isoCN );
+      thisFake->assignVar( "isoCP", isoCP );
+      thisFake->assignVar( "isoCPN", isoCPN );
+      thisFake->assignVar( "mcMatchId", mcMatchId );
+      thisFake->assignVar( "ptGamma", gamma.Pt() );
+      thisFake->assignVar( "etaGamma", gamma.Eta() );
+      thisFake->tree->Fill();
+
     }
 
-    
+
   } // for entries
 
 
   prompt->finalize();
-  prompt_genIso->finalize();
+  nip->finalize();
+  fake->finalize();
   
 
   delete tree;
