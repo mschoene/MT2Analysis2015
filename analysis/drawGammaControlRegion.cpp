@@ -8,13 +8,13 @@
 
 #include "../interface/MT2Analysis.h"
 #include "../interface/MT2Region.h"
-#include "../interface/MT2Estimate.h"
+#include "../interface/MT2EstimateSyst.h"
 #include "../interface/MT2DrawTools.h"
 
 
 
 
-void compareRegions( const std::string& outputdir, std::vector<MT2Region> regions, MT2Analysis<MT2Estimate>* analysis );
+void compareRegions( const std::string& outputdir, std::vector<MT2Region> regions, MT2Analysis<MT2EstimateSyst>* analysis );
 
 
 int main( int argc, char* argv[] ) {
@@ -27,15 +27,15 @@ int main( int argc, char* argv[] ) {
   }
 
 
-  std::string regionsSet = "13TeV_CSA14";
+  std::string regionsSet = "zurich";
 
   MT2DrawTools::setStyle();
 
   std::string outputdir = "Plots_GammaControlRegion_" + samples + "_" + regionsSet;
   system( Form("mkdir -p %s", outputdir.c_str()) );
 
-  MT2Analysis<MT2Estimate>* purity_isoCut = MT2Analysis<MT2Estimate>::readFromFile("GammaControlRegion_" + samples + "_13TeV_CSA14/purityMC.root", "purity_isoCut");
-  MT2Analysis<MT2Estimate>* eff_isoCut    = MT2Analysis<MT2Estimate>::readFromFile("GammaControlRegion_" + samples + "_13TeV_CSA14/purityMC.root", "eff_isoCut");
+  MT2Analysis<MT2EstimateSyst>* purity_isoCut = MT2Analysis<MT2EstimateSyst>::readFromFile("GammaControlRegion_" + samples + "_" + regionsSet + "/purityMC.root", "purity");
+  MT2Analysis<MT2EstimateSyst>* eff_isoCut    = MT2Analysis<MT2EstimateSyst>::readFromFile("GammaControlRegion_" + samples + "_" + regionsSet + "/purityMC.root", "eff");
 
   purity_isoCut->setFullName( "Purity" );
   eff_isoCut->setFullName( "Efficiency" );
@@ -43,27 +43,27 @@ int main( int argc, char* argv[] ) {
 
   std::vector<MT2Region> r_lowHT_vs_njet;
   r_lowHT_vs_njet.push_back( MT2Region( 450., 575., 2,  3, 0, 0 ) );
-  r_lowHT_vs_njet.push_back( MT2Region( 450., 575., 4, -1, 0, 0 ) );
+  r_lowHT_vs_njet.push_back( MT2Region( 450., 575., 4,  6, 0, 0 ) );
   r_lowHT_vs_njet.push_back( MT2Region( 450., 575., 2,  3, 1, 1 ) );
-  r_lowHT_vs_njet.push_back( MT2Region( 450., 575., 4, -1, 1, 1 ) );
+  r_lowHT_vs_njet.push_back( MT2Region( 450., 575., 4,  6, 1, 1 ) );
 
   compareRegions( outputdir, r_lowHT_vs_njet, purity_isoCut );
   compareRegions( outputdir, r_lowHT_vs_njet, eff_isoCut );
 
   std::vector<MT2Region> r_medHT_vs_njet;
   r_medHT_vs_njet.push_back( MT2Region( 575., 1000., 2,  3, 0, 0 ) );
-  r_medHT_vs_njet.push_back( MT2Region( 575., 1000., 4, -1, 0, 0 ) );
+  r_medHT_vs_njet.push_back( MT2Region( 575., 1000., 4,  6, 0, 0 ) );
   r_medHT_vs_njet.push_back( MT2Region( 575., 1000., 2,  3, 1, 1 ) );
-  r_medHT_vs_njet.push_back( MT2Region( 575., 1000., 4, -1, 1, 1 ) );
+  r_medHT_vs_njet.push_back( MT2Region( 575., 1000., 4,  6, 1, 1 ) );
 
   compareRegions( outputdir, r_medHT_vs_njet, purity_isoCut );
   compareRegions( outputdir, r_medHT_vs_njet, eff_isoCut );
 
   std::vector<MT2Region> r_highHT_vs_njet;
-  r_highHT_vs_njet.push_back( MT2Region( 1000., -1., 2,  3, 0, 0 ) );
-  r_highHT_vs_njet.push_back( MT2Region( 1000., -1., 4, -1, 0, 0 ) );
-  r_highHT_vs_njet.push_back( MT2Region( 1000., -1., 2,  3, 1, 1 ) );
-  r_highHT_vs_njet.push_back( MT2Region( 1000., -1., 4, -1, 1, 1 ) );
+  r_highHT_vs_njet.push_back( MT2Region( 1000., 1500., 2,  3, 0, 0 ) );
+  r_highHT_vs_njet.push_back( MT2Region( 1000., 1500., 4,  6, 0, 0 ) );
+  r_highHT_vs_njet.push_back( MT2Region( 1000., 1500., 2,  3, 1, 1 ) );
+  r_highHT_vs_njet.push_back( MT2Region( 1000., 1500., 4,  6, 1, 1 ) );
 
   compareRegions( outputdir, r_highHT_vs_njet, purity_isoCut );
   compareRegions( outputdir, r_highHT_vs_njet, eff_isoCut );
@@ -97,7 +97,7 @@ int main( int argc, char* argv[] ) {
 
 
 
-void compareRegions( const std::string& outputdir, std::vector<MT2Region> regions, MT2Analysis<MT2Estimate>* analysis ) {
+void compareRegions( const std::string& outputdir, std::vector<MT2Region> regions, MT2Analysis<MT2EstimateSyst>* analysis ) {
 
 
   bool loopOnHT=true;
@@ -143,22 +143,24 @@ void compareRegions( const std::string& outputdir, std::vector<MT2Region> region
 
   for( unsigned i=0; i<regions.size(); ++i ) {
 
-    MT2Estimate* thisEstimate = analysis->get( regions[i] );
+    MT2EstimateSyst* thisEstimate = analysis->get( regions[i] );
     if( thisEstimate==0 ) {
       std::cout << "ERROR! Didn't find estimate for region: " << regions[i].getName() << " ! Exiting." << std::endl;
       exit(119);
     }
 
-    TH1D* thisYield = (TH1D*)(thisEstimate->yield->Clone());
-    thisYield->SetLineColor(colors[i]);
-    thisYield->SetLineWidth(2);
-
-    thisYield->Draw("same" );
+    TGraphAsymmErrors* graph = thisEstimate->getGraph();
+    graph->SetLineColor(colors[i]);
+    graph->SetLineWidth(2);
+    graph->SetMarkerColor(colors[i]);
+    graph->SetMarkerSize(0.);
+    graph->SetMarkerStyle(21);
+    graph->Draw("p same" );
 
     if( loopOnHT )
-      legend->AddEntry( thisYield, regions[i].htRegion()->getNiceName().c_str(), "L" );
+      legend->AddEntry( graph, regions[i].htRegion()->getNiceName().c_str(), "L" );
     else
-      legend->AddEntry( thisYield, regions[i].sigRegion()->getNiceName().c_str(), "L" );
+      legend->AddEntry( graph, regions[i].sigRegion()->getNiceName().c_str(), "L" );
 
   }
 
