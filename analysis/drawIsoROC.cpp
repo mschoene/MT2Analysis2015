@@ -18,11 +18,12 @@
 
 
 
-// 0: put them in BG
-// 1: put them in signal
-// 2: ignore them
 
 
+
+
+void drawIsoRandomCone( const std::string& outputdir, TTree* tree_prompt, TTree* tree_nip, TTree* tree_fake, const std::string& eb_ee );
+void drawCompare( const std::string& outputdir, const std::string& saveName, const std::string& axisName, std::vector<TH1D*> v, const std::string& eb_ee );
 void drawSietaieta( const std::string& outputdir, TTree* tree_prompt, TTree* tree_nip, TTree* tree_fake, const std::string& eb_ee, float ptMin=-1., float ptMax=100000 );
 void drawROC( const std::string& outputdir, TTree* tree_prompt, TTree* tree_nip, TTree* tree_fake, int optionNGI );
 TGraph* getRoC( TH1D* h1_prompt, TH1D* h1_fake );
@@ -32,6 +33,7 @@ void drawVsMT2( const std::string& outputdir, const std::string& varName, const 
 void drawIsoVsSigma( const std::string& outputdir, TTree* tree_fake, const std::string& iso1, const std::string& iso2 );
 std::string getLongName( const std::string& name );
 void setBins( TH1D* h1, TH2D* h2 );
+
 
 
 int main() {
@@ -51,13 +53,12 @@ int main() {
   TTree* tree_fake   = (TTree*)file->Get(  "fake/HT450toInf_j2toInf_b0toInf/tree_fake_HT450toInf_j2toInf_b0toInf");
   TTree* tree_nip    = (TTree*)file->Get(   "nip/HT450toInf_j2toInf_b0toInf/tree_nip_HT450toInf_j2toInf_b0toInf");
 
-  //TChain* tree = new TChain("t");
-  //tree->Add( Form("%s/fake/HT450toInf_j2toInf_b0toInf/tree_qcd_HT450toInf_j2toInf_b0toInf", fileName.c_str()));
-  //tree->Add( Form("%s/prompt/HT450toInf_j2toInf_b0toInf/tree_gjet_HT450toInf_j2toInf_b0toInf", fileName.c_str()));
-  //tree->Add( Form("%s/nip/HT450toInf_j2toInf_b0toInf/tree_gjet_HT450toInf_j2toInf_b0toInf", fileName.c_str()));
 
   std::cout << "-> Got stuff from file: " << fileName << std::endl;
 
+  drawIsoRandomCone( outputdir, tree_prompt, tree_nip, tree_fake, "" );
+  drawIsoRandomCone( outputdir, tree_prompt, tree_nip, tree_fake, "Barrel" );
+  drawIsoRandomCone( outputdir, tree_prompt, tree_nip, tree_fake, "Endcap" );
 
   drawSietaieta( outputdir, tree_prompt, tree_nip, tree_fake, "Barrel" );
   drawSietaieta( outputdir, tree_prompt, tree_nip, tree_fake, "Endcap" );
@@ -68,17 +69,203 @@ int main() {
   drawSietaieta( outputdir, tree_prompt, tree_nip, tree_fake, "Barrel", 800. );
 
   drawIsoVsSigma( outputdir, tree_fake, "iso", "isoCP" );
-  //drawIsoVsSigma( outputdir, tree_prompt, tree_nip, tree_fake, "iso", "(isoCP-iso)" );
 
-  drawROC( outputdir, tree_prompt, tree_nip, tree_fake, 0 );
-  drawROC( outputdir, tree_prompt, tree_nip, tree_fake, 1 );
-  drawROC( outputdir, tree_prompt, tree_nip, tree_fake, 2 );
+
+  drawROC( outputdir, tree_prompt, tree_nip, tree_fake, 0 );  // 0: put them in BG
+  drawROC( outputdir, tree_prompt, tree_nip, tree_fake, 1 );  // 1: put them in signal
+  drawROC( outputdir, tree_prompt, tree_nip, tree_fake, 2 );  // 2: ignore them
 
   drawTemplatesVsMT2( outputdir, "iso", tree_prompt, tree_nip, tree_fake );
   drawTemplatesVsMT2( outputdir, "isoCP", tree_prompt, tree_nip, tree_fake );
 
 
   return 0;
+
+}
+
+
+
+
+void drawIsoRandomCone( const std::string& outputdir, TTree* tree_prompt, TTree* tree_nip, TTree* tree_fake, const std::string& eb_ee ) {
+
+  float etaMin;
+  float etaMax;
+  if( eb_ee=="Barrel" ) {
+    etaMin = 0.;
+    etaMax = 1.479;
+  } else if( eb_ee=="Endcap" ) {
+    etaMin = 1.479;
+    etaMax = 2.5;
+  } else if( eb_ee=="" ) {
+    etaMin = 0.;
+    etaMax = 2.5;
+  }
+
+  
+  TH1D* h1_iso_prompt = new TH1D("iso_prompt", "", 100, 0., 20.);
+  h1_iso_prompt->Sumw2();
+  TH1D* h1_iso_nip = new TH1D("iso_nip", "", 100, 0., 20.);
+  h1_iso_nip->Sumw2();
+  TH1D* h1_iso_fake = new TH1D("iso_fake", "", 100, 0., 20.);
+  h1_iso_fake->Sumw2();
+
+  TH1D* h1_isoRC_prompt = new TH1D("isoRC_prompt", "", 100, 0., 20.);
+  h1_isoRC_prompt->Sumw2();
+  TH1D* h1_isoRC_nip = new TH1D("isoRC_nip", "", 100, 0., 20.);
+  h1_isoRC_nip->Sumw2();
+  TH1D* h1_isoRC_fake = new TH1D("isoRC_fake", "", 100, 0., 20.);
+  h1_isoRC_fake->Sumw2();
+
+
+  std::string cut(Form("weight*( abs(etaGamma)>=%f && abs(etaGamma)<%f)", etaMin, etaMax) );
+
+  tree_prompt->Project( "iso_prompt"  , "iso*ptGamma", cut.c_str() );
+  tree_prompt->Project( "isoRC_prompt", "isoRC", cut.c_str() );
+
+  tree_nip->Project( "iso_nip"  , "iso*ptGamma", cut.c_str() );
+  tree_nip->Project( "isoRC_nip", "isoRC", cut.c_str() );
+
+  tree_fake->Project( "iso_fake"  , "iso*ptGamma", cut.c_str() );
+  tree_fake->Project( "isoRC_fake", "isoRC", cut.c_str() );
+
+
+  h1_iso_prompt->SetTitle("Prompt");
+  h1_iso_nip->SetTitle("NIP");
+  h1_iso_fake->SetTitle("Fake");
+
+  h1_isoRC_prompt->SetTitle("Prompt");
+  h1_isoRC_nip->SetTitle("NIP");
+  h1_isoRC_fake->SetTitle("Fake");
+
+
+  std::vector<TH1D*> v1;
+  v1.push_back( h1_iso_prompt );
+  v1.push_back( h1_iso_nip );
+  v1.push_back( h1_iso_fake );
+  drawCompare( outputdir, "iso", "Charged Isolation [GeV]", v1, eb_ee );
+
+  std::vector<TH1D*> v1rc;
+  v1rc.push_back( h1_isoRC_prompt );
+  v1rc.push_back( h1_isoRC_nip );
+  v1rc.push_back( h1_isoRC_fake );
+  drawCompare( outputdir, "isoRC", "Random Cone Isolation [GeV]", v1rc, eb_ee );
+
+
+  h1_isoRC_prompt->SetTitle("Random Cone");
+
+  TH1D* h1_iso_prompt_plus_nip = new TH1D(*h1_iso_prompt);
+  h1_iso_prompt_plus_nip->SetName("iso_prompt_plus_nip");
+  h1_iso_prompt_plus_nip->Add(h1_iso_nip);
+  h1_iso_prompt_plus_nip->SetTitle("Prompt+NIP");
+
+
+  std::vector<TH1D*> v2;
+  v2.push_back( h1_iso_prompt );
+  v2.push_back( h1_iso_prompt_plus_nip );
+  v2.push_back( h1_isoRC_prompt );
+  drawCompare( outputdir, "isoRC_vs_iso", "Charged Isolation [GeV]", v2, eb_ee );
+
+
+  delete h1_iso_prompt;
+  delete h1_iso_nip;
+  delete h1_iso_fake;
+
+  delete h1_isoRC_prompt;
+  delete h1_isoRC_nip;
+  delete h1_isoRC_fake;
+
+
+}
+
+
+
+void drawCompare( const std::string& outputdir, const std::string& saveName, const std::string& axisName, std::vector<TH1D*> v, const std::string& eb_ee ) {
+
+
+  std::vector<int> colors;
+  colors.push_back( 46 );
+  colors.push_back( 29 );
+  colors.push_back( 38 );
+  colors.push_back( 42 );
+  colors.push_back( kGray+2 );
+
+
+  TCanvas* c1 = new TCanvas("c1", "", 600, 600 );
+  c1->cd();
+  TCanvas* c1_log = new TCanvas("c1_log", "", 600, 600 );
+  c1_log->SetLogy();
+  c1_log->cd();
+
+  float yMax = 0.;
+  for( unsigned i=0; i<v.size(); ++i ) {
+    float thismax = v[i]->GetMaximum()/v[i]->Integral();
+    if( thismax > yMax ) yMax = thismax;
+  }
+  yMax *= 1.2;
+
+  float xMax = 10.;
+
+  TH2D* h2_axes = new TH2D( "axes", "", 10, 0., xMax, 10, 0., yMax );  
+  h2_axes->SetYTitle("Normalized to Unity");
+  h2_axes->SetXTitle(axisName.c_str());
+  c1->cd();
+  h2_axes->Draw();
+
+  TH2D* h2_axes_log = new TH2D( "axes_log", "", 10, 0., xMax, 10, 0.0001, 5.*yMax );  
+  h2_axes_log->SetYTitle("Normalized to Unity");
+  h2_axes_log->SetXTitle(axisName.c_str());
+  c1_log->cd();
+  h2_axes_log->Draw();
+
+  float yMax_leg = 0.9;
+  float yMin_leg = yMax_leg - (v.size()+1)*0.07;
+  TLegend* legend;
+  if( eb_ee!="" ) legend = new TLegend( 0.55, yMin_leg, 0.9, yMax_leg, eb_ee.c_str() );
+  else            legend = new TLegend( 0.55, yMin_leg, 0.9, yMax_leg );
+  legend->SetTextSize(0.038);
+  legend->SetFillColor(0);
+
+  for( unsigned i =0; i<v.size(); ++i ) {
+
+    v[i]->SetLineWidth(2);
+    v[i]->SetLineColor(colors[i]);
+
+    c1->cd();
+    v[i]->DrawNormalized("l same");
+
+    c1_log->cd();
+    v[i]->DrawNormalized("l same");
+
+    legend->AddEntry( v[i], v[i]->GetTitle(), "L" );
+
+  }
+
+  TPaveText* labelTop = MT2DrawTools::getLabelTop();
+
+  c1->cd();
+  legend->Draw("same");
+  labelTop->Draw("same");
+  gPad->RedrawAxis();
+
+  c1_log->cd();
+  legend->Draw("same");
+  labelTop->Draw("same");
+  gPad->RedrawAxis();
+
+
+  std::string eb_ee_canvas = (eb_ee!="") ? "_"+eb_ee : "";
+  c1->SaveAs(Form("%s/%s%s.eps", outputdir.c_str(), saveName.c_str(), eb_ee_canvas.c_str()));
+  c1->SaveAs(Form("%s/%s%s.png", outputdir.c_str(), saveName.c_str(), eb_ee_canvas.c_str()));
+  c1->SaveAs(Form("%s/%s%s.pdf", outputdir.c_str(), saveName.c_str(), eb_ee_canvas.c_str()));
+
+  c1_log->SaveAs(Form("%s/%s%s_log.eps", outputdir.c_str(), saveName.c_str(), eb_ee_canvas.c_str()));
+  c1_log->SaveAs(Form("%s/%s%s_log.png", outputdir.c_str(), saveName.c_str(), eb_ee_canvas.c_str()));
+  c1_log->SaveAs(Form("%s/%s%s_log.pdf", outputdir.c_str(), saveName.c_str(), eb_ee_canvas.c_str()));
+
+  delete c1;
+  delete h2_axes;
+  delete c1_log;
+  delete h2_axes_log;
 
 }
 
@@ -111,7 +298,7 @@ void drawSietaieta( const std::string& outputdir, TTree* tree_prompt, TTree* tre
     xMaxLegend = 0.91;
   } else if( eb_ee=="Endcap" ) {
     etaMin = 1.479;
-    etaMax = 3.;
+    etaMax = 2.5;
     xMin = 0.02;
     xMax = 0.035;
     xCut = 0.030;
@@ -134,7 +321,7 @@ void drawSietaieta( const std::string& outputdir, TTree* tree_prompt, TTree* tre
   h1_fake->Sumw2();
 
 
-  std::string cut(Form("weight*(ptGamma>%f && ptGamma<%f)", ptMin, ptMax));
+  std::string cut(Form("weight*(ptGamma>%f && ptGamma<%f && abs(etaGamma)>=%f && abs(etaGamma)<%f)", ptMin, ptMax, etaMin, etaMax));
 
   tree_prompt->Project( "hprompt", "sietaieta", cut.c_str() );
   tree_nip   ->Project( "hnip"   , "sietaieta", cut.c_str() );
@@ -578,6 +765,7 @@ void drawVsMT2( const std::string& outputdir, const std::string& varName, const 
   bool isPrompt = (name!="fake");
   float xMax = histos[0]->GetXaxis()->GetXmax();
   bool isAbs = (xMax>2.);
+
 
   std::vector<int> colors;
   colors.push_back( 46 );
