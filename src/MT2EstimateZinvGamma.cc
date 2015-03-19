@@ -19,30 +19,8 @@ MT2EstimateZinvGamma::MT2EstimateZinvGamma( const std::string& aname, const MT2R
   sietaieta->Sumw2();
 
 
-  //int nbins = 12;
-  //Double_t bins[nbins];
-  //bins[0] = 0.;
-  //bins[1] = 0.005;
-  //bins[2] = 0.01;
-  //bins[3] = 0.02;
-  //bins[4] = 0.03;
-  //bins[5] = 0.04;
-  //bins[6] = 0.05;
-  //bins[7] = 0.06;
-  //bins[8] = 0.07;
-  //bins[9] = 0.08;
-  //bins[10] = 0.09;
-  //bins[11] = 0.1;
-  ////bins[6] = 0.2;
-  ////bins[7] = 0.3;
-  ////bins[8] = 0.4;
-  ////bins[9] = 0.5;
-  ////bins[10] = 1.;
-  //float xmax = bins[nbins-1];
-
   int nbins = 8;
-  float xmax = 20.;
-
+  int xmax = 20.;
 
   // this histo will be used to create histogram templates:
   //iso = new TH1D( this->getHistoName("iso").c_str(), "", nbins-1, bins );
@@ -78,6 +56,11 @@ MT2EstimateZinvGamma::MT2EstimateZinvGamma( const MT2EstimateZinvGamma& rhs ) : 
 
   this->iso = new TH1D(*(rhs.iso));
   this->sietaieta = new TH1D(*(rhs.sietaieta));
+
+  int xmax = this->iso->GetXaxis()->GetXmax();
+
+  this->x_ = new RooRealVar( "x", "", 0., xmax );
+  this->w_ = new RooRealVar( "w", "", 0., 1000. );
 
   for( unsigned i=0; i<rhs.iso_bins.size(); ++i ) {
     RooDataSet* newDataSet = new RooDataSet( *(rhs.iso_bins[i]) );
@@ -249,63 +232,20 @@ void MT2EstimateZinvGamma::write() const {
 const MT2EstimateZinvGamma& MT2EstimateZinvGamma::operator=( const MT2EstimateZinvGamma& rhs ) {
 
 
-  if( this->yield->GetEntries() == 0 ) { // first time
+  this->region = new MT2Region(*(rhs.region));
 
-    this->setName(rhs.getName());
+  this->yield = new TH1D(*(rhs.yield));
 
-    this->region = new MT2Region(*(rhs.region));
+  this->iso = new TH1D(*(rhs.iso));
 
-    this->yield = new TH1D(*(rhs.yield));
+  this->sietaieta = new TH1D(*(rhs.sietaieta));
 
-    this->iso = new TH1D(*(rhs.iso));
-
-    this->sietaieta = new TH1D(*(rhs.sietaieta));
-
-    for( unsigned i=0; i<iso_bins.size(); ++i ) {
-      this->iso_bins[i] = new RooDataSet( *(rhs.iso_bins[i]) );
-      this->iso_bins_hist[i] = new TH1D( *(rhs.iso_bins_hist[i]) );
-    }
-
-
-  } else { // keep name and histo name, just make histogram identical
-
-    std::string rhsRegionName = rhs.region->getName();
-    if( this->region != rhs.region ) 
-      if( this->region!=0 ) delete this->region;
-    
-    this->region = new MT2Region(rhsRegionName);
-
-    std::string oldName = this->yield->GetName();
-    delete this->yield;
-    this->yield = new TH1D(*(rhs.yield));
-    this->yield->SetName(oldName.c_str());
-
-    std::string oldName_iso = this->iso->GetName();
-    delete this->iso;
-    this->iso = new TH1D(*(rhs.iso));
-    this->iso->SetName(oldName_iso.c_str());
-
-    std::string oldName_sietaieta = this->sietaieta->GetName();
-    delete this->sietaieta;
-    this->sietaieta = new TH1D(*(rhs.sietaieta));
-    this->sietaieta->SetName(oldName_sietaieta.c_str());
-
-
-    for( unsigned i=0; i<iso_bins.size(); ++i ) {
-
-      std::string oldName_bin = this->iso_bins[i]->GetName();
-      this->iso_bins[i] = new RooDataSet( *(rhs.iso_bins[i]) );
-      this->iso_bins[i]->SetName( oldName_bin.c_str() );
-
-      std::string oldName_bin_hist = this->iso_bins_hist[i]->GetName();
-      this->iso_bins_hist[i] = new TH1D( *(rhs.iso_bins_hist[i]) );
-      this->iso_bins_hist[i]->SetName( oldName_bin_hist.c_str() );
-
-    }
-
-
+  for( unsigned i=0; i<iso_bins.size(); ++i ) {
+    this->iso_bins[i] = new RooDataSet( *(rhs.iso_bins[i]) );
+    this->iso_bins_hist[i] = new TH1D( *(rhs.iso_bins_hist[i]) );
   }
 
+  this->setName(this->getName());
 
   return *this;
 
@@ -456,6 +396,7 @@ MT2EstimateZinvGamma MT2EstimateZinvGamma::operator*( float k ) const{
 
 
   
+
 
 
 const MT2EstimateZinvGamma& MT2EstimateZinvGamma::operator*=( float k ) {
