@@ -54,10 +54,15 @@ int main( int argc, char* argv[] ) {
     if( mc_or_data=="data" ) mc_or_data = "Data";
   }
 
-  //std::string samples = "CSA14_Zinv";
+
+  std::string regionsSet = "zurich";
+  if( argc>2 ) {
+    regionsSet = std::string(argv[2]);
+  }
+
   std::string samples = "PHYS14_v2_Zinv";
 
-  std::string gammaCRdir = "GammaControlRegion_" + samples + "_zurich";
+  std::string gammaCRdir = "GammaControlRegion_" + samples + "_" + regionsSet;
   
   doAllPurityPlots( gammaCRdir, samples, mc_or_data, "purityLoose" ); 
   doAllPurityPlots( gammaCRdir, samples, mc_or_data, "purity" ); 
