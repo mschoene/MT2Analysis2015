@@ -191,6 +191,25 @@ MT2Analysis<T>::MT2Analysis( const std::string& aname, const std::string& region
     regions_ = multiplyHTandSignal( htRegions, signalRegions );
 
 
+  } else if( regionsSet=="13TeV_CSA14_noMT" ) {
+
+    std::set<MT2HTRegion> htRegions;
+    htRegions.insert(MT2HTRegion( 450.,   575.));
+    htRegions.insert(MT2HTRegion( 575.,  1000.));
+    htRegions.insert(MT2HTRegion(1000.,    -1.));
+
+    std::set<MT2SignalRegion> signalRegions;
+    signalRegions.insert(MT2SignalRegion(2,  3, 0,  0)); 
+    signalRegions.insert(MT2SignalRegion(4, -1, 0,  0)); 
+    signalRegions.insert(MT2SignalRegion(2,  3, 1,  1)); 
+    signalRegions.insert(MT2SignalRegion(4, -1, 1,  1)); 
+    signalRegions.insert(MT2SignalRegion(2,  3, 2,  2));
+    signalRegions.insert(MT2SignalRegion(4, -1, 2,  2));
+    signalRegions.insert(MT2SignalRegion(3, -1, 3, -1));
+
+    regions_ = multiplyHTandSignal( htRegions, signalRegions );
+
+
   } else if( regionsSet=="13TeV_PHYS14" ){
     
     std::set<MT2HTRegion> htRegions;
@@ -222,6 +241,31 @@ MT2Analysis<T>::MT2Analysis( const std::string& aname, const std::string& region
     
     regions_ = multiplyHTandSignal( htRegions, signalRegions );
     
+  } else if( regionsSet=="13TeV_PHYS14_noMT" ){
+
+    std::set<MT2HTRegion> htRegions;
+    htRegions.insert(MT2HTRegion( 450.,   575.));
+    htRegions.insert(MT2HTRegion( 575.,  1000.));
+    htRegions.insert(MT2HTRegion(1000.,    -1.));
+
+    std::set<MT2SignalRegion> signalRegions;
+    signalRegions.insert(MT2SignalRegion(2,  3, 0,  0 ));
+    signalRegions.insert(MT2SignalRegion(4, 6, 0,  0 ));
+    signalRegions.insert(MT2SignalRegion(7, 8, 0,  0 ));
+    signalRegions.insert(MT2SignalRegion(9, -1, 0,  0 ));
+    signalRegions.insert(MT2SignalRegion(2,  3, 1,  1 ));
+    signalRegions.insert(MT2SignalRegion(4, 6, 1,  1 ));
+    signalRegions.insert(MT2SignalRegion(7, 8, 1,  1 ));
+    signalRegions.insert(MT2SignalRegion(9, -1, 1,  1 ));
+    signalRegions.insert(MT2SignalRegion(2,  3, 2,  2 ));
+    signalRegions.insert(MT2SignalRegion(4, 6, 2,  2 ));
+    signalRegions.insert(MT2SignalRegion(7, 8, 2,  2 ));
+    signalRegions.insert(MT2SignalRegion(9, -1, 2,  2 ));
+    signalRegions.insert(MT2SignalRegion(2,  6, 3,  -1 ));
+    signalRegions.insert(MT2SignalRegion(7, -1, 3,  -1 ));
+
+    regions_ = multiplyHTandSignal( htRegions, signalRegions );
+
   } else if( regionsSet=="13TeV_PHYS14_hiHT" ){
 
     std::set<MT2HTRegion> htRegions;
@@ -278,60 +322,73 @@ MT2Analysis<T>::MT2Analysis( const std::string& aname, const std::string& region
 
     regions_ = multiplyHTandSignal( htRegions, signalRegions );
 
-  } else if( regionsSet=="13TeV_PHYS14_hiJHT" ){
-    
+  } else if( regionsSet=="13TeV_PHYS14_hiJet_mergeHT" ){
+
     regions_.insert(MT2Region(450., 575., 2, 3, 0,  0));
     regions_.insert(MT2Region(575., 1000., 2, 3, 0,  0));
-    regions_.insert(MT2Region(1000., -1, 2, 3, 0,  0));
+    regions_.insert(MT2Region(1000., 1500., 2, 3, 0,  0));
+    regions_.insert(MT2Region(1500., -1, 2, 3, 0,  0));
+
 
     regions_.insert(MT2Region(450., 575., 4, 6, 0,  0));
     regions_.insert(MT2Region(575., 1000., 4, 6, 0,  0));
-    regions_.insert(MT2Region(1000., -1, 4, 6, 0,  0));
+    regions_.insert(MT2Region(1000., 1500., 4, 6, 0,  0));
+    regions_.insert(MT2Region(1500., -1, 4, 6, 0,  0));
 
     regions_.insert(MT2Region(450., 575., 7, 8, 0,  0));
     regions_.insert(MT2Region(575., 1000., 7, 8, 0,  0));
-    regions_.insert(MT2Region(1000., -1, 7, 8, 0,  0));
-    
+    regions_.insert(MT2Region(1000., 1500., 7, 8, 0,  0));
+    regions_.insert(MT2Region(1500., -1, 7, 8, 0,  0));
+
     regions_.insert(MT2Region(450., -1, 9, -1, 0,  0));
 
     regions_.insert(MT2Region(450., 575., 2, 3, 1,  1));
     regions_.insert(MT2Region(575., 1000., 2, 3, 1,  1));
-    regions_.insert(MT2Region(1000., -1, 2, 3, 1,  1));
+    regions_.insert(MT2Region(1000., 1500., 2, 3, 1,  1));
+    regions_.insert(MT2Region(1500., -1, 2, 3, 1,  1));
 
     regions_.insert(MT2Region(450., 575., 4, 6, 1,  1));
     regions_.insert(MT2Region(575., 1000., 4, 6, 1,  1));
-    regions_.insert(MT2Region(1000., -1, 4, 6, 1,  1));
+    regions_.insert(MT2Region(1000., 1500., 4, 6, 1,  1));
+    regions_.insert(MT2Region(1500., -1, 4, 6, 1,  1));
 
     regions_.insert(MT2Region(450., 575., 7, 8, 1,  1));
     regions_.insert(MT2Region(575., 1000., 7, 8, 1,  1));
-    regions_.insert(MT2Region(1000., -1, 7, 8, 1,  1));
+    regions_.insert(MT2Region(1000., 1500., 7, 8, 1,  1));
+    regions_.insert(MT2Region(1500., -1, 7, 8, 1,  1));
 
     regions_.insert(MT2Region(450., -1, 9, -1, 1,  1));
-
+    
     regions_.insert(MT2Region(450., 575., 2, 3, 2,  2, "loMT" ));
     regions_.insert(MT2Region(575., 1000., 2, 3, 2,  2, "loMT" ));
-    regions_.insert(MT2Region(1000., -1, 2, 3, 2,  2, "loMT" ));
+    regions_.insert(MT2Region(1000., 1500., 2, 3, 2,  2, "loMT" ));
+    regions_.insert(MT2Region(1500., -1, 2, 3, 2,  2, "loMT" ));
     regions_.insert(MT2Region(450., 575., 2, 3, 2,  2, "hiMT" ));
     regions_.insert(MT2Region(575., 1000., 2, 3, 2,  2, "hiMT" ));
-    regions_.insert(MT2Region(1000., -1, 2, 3, 2,  2, "hiMT" ));
+    regions_.insert(MT2Region(1000., 1500., 2, 3, 2,  2, "hiMT" ));
+    regions_.insert(MT2Region(1500., -1, 2, 3, 2,  2, "hiMT" ));
 
     regions_.insert(MT2Region(450., 575., 4, 6, 2, 2, "loMT" ));
     regions_.insert(MT2Region(575., 1000., 4, 6, 2, 2, "loMT" ));
-    regions_.insert(MT2Region(1000., -1, 4, 6, 2, 2, "loMT" ));
+    regions_.insert(MT2Region(1000., 1500., 4, 6, 2, 2, "loMT" ));
+    regions_.insert(MT2Region(1500., -1, 4, 6, 2, 2, "loMT" ));
     regions_.insert(MT2Region(450., 575., 4, 6, 2, 2, "hiMT" ));
     regions_.insert(MT2Region(575., 1000., 4, 6, 2, 2, "hiMT" ));
-    regions_.insert(MT2Region(1000., -1, 4, 6, 2, 2, "hiMT" ));
+    regions_.insert(MT2Region(1000., 1500., 4, 6, 2, 2, "hiMT" ));
+    regions_.insert(MT2Region(1500., -1, 4, 6, 2, 2, "hiMT" ));
 
     regions_.insert(MT2Region(450., 575., 7, 8, 2,  2, "loMT" ));
     regions_.insert(MT2Region(575., 1000., 7, 8, 2,  2, "loMT" ));
-    regions_.insert(MT2Region(1000., -1, 7, 8, 2,  2, "loMT" ));
+    regions_.insert(MT2Region(1000., 1500., 7, 8, 2,  2, "loMT" ));
+    regions_.insert(MT2Region(1500., -1, 7, 8, 2,  2, "loMT" ));
     regions_.insert(MT2Region(450., 575., 7, 8, 2,  2, "hiMT" ));
     regions_.insert(MT2Region(575., 1000., 7, 8, 2,  2, "hiMT" ));
-    regions_.insert(MT2Region(1000., -1, 7, 8, 2,  2, "hiMT" ));
+    regions_.insert(MT2Region(1000., 1500., 7, 8, 2,  2, "hiMT" ));
+    regions_.insert(MT2Region(1500., -1, 7, 8, 2,  2, "hiMT" ));
 
     regions_.insert(MT2Region(450., -1, 9, -1, 2,  2, "loMT" ));
     regions_.insert(MT2Region(450., -1, 9, -1, 2,  2, "hiMT" ));
-    
+
     regions_.insert(MT2Region(450., 575., 2,  6, 3,  -1, "loMT"));
     regions_.insert(MT2Region(450., 575., 2,  6, 3,  -1, "hiMT"));
     regions_.insert(MT2Region(450., 575., 7, -1, 3,  -1, "loMT"));
@@ -347,6 +404,246 @@ MT2Analysis<T>::MT2Analysis( const std::string& aname, const std::string& region
     regions_.insert(MT2Region(1000., -1, 7, -1, 3,  -1, "loMT"));
     regions_.insert(MT2Region(1000., -1, 7, -1, 3,  -1, "hiMT"));
 
+
+  } else if( regionsSet=="13TeV_PHYS14_hiJet_mergeHT_noMT" ){
+
+    regions_.insert(MT2Region(450., 575., 2, 3, 0,  0));
+    regions_.insert(MT2Region(575., 1000., 2, 3, 0,  0));
+    regions_.insert(MT2Region(1000., 1500., 2, 3, 0,  0));
+    regions_.insert(MT2Region(1500., -1, 2, 3, 0,  0));
+
+
+    regions_.insert(MT2Region(450., 575., 4, 6, 0,  0));
+    regions_.insert(MT2Region(575., 1000., 4, 6, 0,  0));
+    regions_.insert(MT2Region(1000., 1500., 4, 6, 0,  0));
+    regions_.insert(MT2Region(1500., -1, 4, 6, 0,  0));
+
+    regions_.insert(MT2Region(450., 575., 7, 8, 0,  0));
+    regions_.insert(MT2Region(575., 1000., 7, 8, 0,  0));
+    regions_.insert(MT2Region(1000., 1500., 7, 8, 0,  0));
+    regions_.insert(MT2Region(1500., -1, 7, 8, 0,  0));
+
+    regions_.insert(MT2Region(450., -1, 9, -1, 0,  0));
+
+    regions_.insert(MT2Region(450., 575., 2, 3, 1,  1));
+    regions_.insert(MT2Region(575., 1000., 2, 3, 1,  1));
+    regions_.insert(MT2Region(1000., 1500., 2, 3, 1,  1));
+    regions_.insert(MT2Region(1500., -1, 2, 3, 1,  1));
+
+    regions_.insert(MT2Region(450., 575., 4, 6, 1,  1));
+    regions_.insert(MT2Region(575., 1000., 4, 6, 1,  1));
+    regions_.insert(MT2Region(1000., 1500., 4, 6, 1,  1));
+    regions_.insert(MT2Region(1500., -1, 4, 6, 1,  1));
+
+    regions_.insert(MT2Region(450., 575., 7, 8, 1,  1));
+    regions_.insert(MT2Region(575., 1000., 7, 8, 1,  1));
+    regions_.insert(MT2Region(1000., 1500., 7, 8, 1,  1));
+    regions_.insert(MT2Region(1500., -1, 7, 8, 1,  1));
+
+    regions_.insert(MT2Region(450., -1, 9, -1, 1,  1));
+    
+    regions_.insert(MT2Region(450., 575., 2, 3, 2,  2));
+    regions_.insert(MT2Region(575., 1000., 2, 3, 2,  2));
+    regions_.insert(MT2Region(1000., 1500., 2, 3, 2,  2));
+    regions_.insert(MT2Region(1500., -1, 2, 3, 2,  2));
+   
+    regions_.insert(MT2Region(450., 575., 4, 6, 2, 2));
+    regions_.insert(MT2Region(575., 1000., 4, 6, 2, 2));
+    regions_.insert(MT2Region(1000., 1500., 4, 6, 2, 2));
+    regions_.insert(MT2Region(1500., -1, 4, 6, 2, 2));
+   
+    regions_.insert(MT2Region(450., 575., 7, 8, 2,  2));
+    regions_.insert(MT2Region(575., 1000., 7, 8, 2,  2));
+    regions_.insert(MT2Region(1000., 1500., 7, 8, 2,  2));
+    regions_.insert(MT2Region(1500., -1, 7, 8, 2,  2));
+   
+    regions_.insert(MT2Region(450., -1, 9, -1, 2,  2));
+   
+    regions_.insert(MT2Region(450., 575., 2,  6, 3,  -1));
+    regions_.insert(MT2Region(450., 575., 7, -1, 3,  -1));
+
+    regions_.insert(MT2Region(575., 1000., 2,  6, 3,  -1));
+    regions_.insert(MT2Region(575., 1000., 7, -1, 3,  -1));
+    
+    regions_.insert(MT2Region(1000., -1, 2,  6, 3,  -1));
+    regions_.insert(MT2Region(1000., -1, 7, -1, 3,  -1));
+    
+  } else if( regionsSet=="13TeV_PHYS14_hiJet_extremeHT" ){
+
+    regions_.insert(MT2Region(450., 575., 2, 3, 0,  0));
+    regions_.insert(MT2Region(575., 1000., 2, 3, 0,  0));
+    regions_.insert(MT2Region(1000., 2000., 2, 3, 0,  0));
+
+    regions_.insert(MT2Region(450., 575., 4, 6, 0,  0));
+    regions_.insert(MT2Region(575., 1000., 4, 6, 0,  0));
+    regions_.insert(MT2Region(1000., 2000., 4, 6, 0,  0));
+
+    regions_.insert(MT2Region(450., 575., 7, 8, 0,  0));
+    regions_.insert(MT2Region(575., 1000., 7, 8, 0,  0));
+    regions_.insert(MT2Region(1000., 2000., 7, 8, 0,  0));
+
+    regions_.insert(MT2Region(450., 2000, 9, -1, 0,  0));
+
+    regions_.insert(MT2Region(450., 575., 2, 3, 1,  1));
+    regions_.insert(MT2Region(575., 1000., 2, 3, 1,  1));
+    regions_.insert(MT2Region(1000., 2000., 2, 3, 1,  1));
+
+    regions_.insert(MT2Region(450., 575., 4, 6, 1,  1));
+    regions_.insert(MT2Region(575., 1000., 4, 6, 1,  1));
+    regions_.insert(MT2Region(1000., 2000., 4, 6, 1,  1));
+
+    regions_.insert(MT2Region(450., 575., 7, 8, 1,  1));
+    regions_.insert(MT2Region(575., 1000., 7, 8, 1,  1));
+    regions_.insert(MT2Region(1000., 2000., 7, 8, 1,  1));
+
+    regions_.insert(MT2Region(450., 2000, 9, -1, 1,  1));
+    
+    regions_.insert(MT2Region(450., 575., 2, 3, 2,  2, "loMT" ));
+    regions_.insert(MT2Region(575., 1000., 2, 3, 2,  2, "loMT" ));
+    regions_.insert(MT2Region(1000., 2000., 2, 3, 2,  2, "loMT" ));
+    regions_.insert(MT2Region(450., 575., 2, 3, 2,  2, "hiMT" ));
+    regions_.insert(MT2Region(575., 1000., 2, 3, 2,  2, "hiMT" ));
+    regions_.insert(MT2Region(1000., 2000., 2, 3, 2,  2, "hiMT" ));
+
+    regions_.insert(MT2Region(450., 575., 4, 6, 2, 2, "loMT" ));
+    regions_.insert(MT2Region(575., 1000., 4, 6, 2, 2, "loMT" ));
+    regions_.insert(MT2Region(1000., 2000., 4, 6, 2, 2, "loMT" ));
+    regions_.insert(MT2Region(450., 575., 4, 6, 2, 2, "hiMT" ));
+    regions_.insert(MT2Region(575., 1000., 4, 6, 2, 2, "hiMT" ));
+    regions_.insert(MT2Region(1000., 2000., 4, 6, 2, 2, "hiMT" ));
+
+    regions_.insert(MT2Region(450., 575., 7, 8, 2,  2, "loMT" ));
+    regions_.insert(MT2Region(575., 1000., 7, 8, 2,  2, "loMT" ));
+    regions_.insert(MT2Region(1000., 2000., 7, 8, 2,  2, "loMT" ));
+    regions_.insert(MT2Region(450., 575., 7, 8, 2,  2, "hiMT" ));
+    regions_.insert(MT2Region(575., 1000., 7, 8, 2,  2, "hiMT" ));
+    regions_.insert(MT2Region(1000., 2000., 7, 8, 2,  2, "hiMT" ));
+
+    regions_.insert(MT2Region(450., 2000, 9, -1, 2,  2, "loMT" ));
+    regions_.insert(MT2Region(450., 2000, 9, -1, 2,  2, "hiMT" ));
+
+    regions_.insert(MT2Region(450., 575., 2,  6, 3,  -1, "loMT"));
+    regions_.insert(MT2Region(450., 575., 2,  6, 3,  -1, "hiMT"));
+    regions_.insert(MT2Region(450., 575., 7, -1, 3,  -1, "loMT"));
+    regions_.insert(MT2Region(450., 575., 7, -1, 3,  -1, "hiMT"));
+
+    regions_.insert(MT2Region(575., 1000., 2,  6, 3,  -1, "loMT"));
+    regions_.insert(MT2Region(575., 1000., 2,  6, 3,  -1, "hiMT"));
+    regions_.insert(MT2Region(575., 1000., 7, -1, 3,  -1, "loMT"));
+    regions_.insert(MT2Region(575., 1000., 7, -1, 3,  -1, "hiMT"));
+
+    regions_.insert(MT2Region(1000., 2000., 2,  6, 3,  -1, "loMT"));
+    regions_.insert(MT2Region(1000., 2000., 2,  6, 3,  -1, "hiMT"));
+    regions_.insert(MT2Region(1000., 2000., 7, -1, 3,  -1, "loMT"));
+    regions_.insert(MT2Region(1000., 2000., 7, -1, 3,  -1, "hiMT"));
+
+    regions_.insert(MT2Region(2000., -1, 2,  -1, 0,  -1));
+
+  } else if( regionsSet=="13TeV_PHYS14_hiJet_extremeHT_noMT" ){
+
+    regions_.insert(MT2Region(450., 575., 2, 3, 0,  0));
+    regions_.insert(MT2Region(575., 1000., 2, 3, 0,  0));
+    regions_.insert(MT2Region(1000., 2000., 2, 3, 0,  0));
+
+    regions_.insert(MT2Region(450., 575., 4, 6, 0,  0));
+    regions_.insert(MT2Region(575., 1000., 4, 6, 0,  0));
+    regions_.insert(MT2Region(1000., 2000., 4, 6, 0,  0));
+
+    regions_.insert(MT2Region(450., 575., 7, 8, 0,  0));
+    regions_.insert(MT2Region(575., 1000., 7, 8, 0,  0));
+    regions_.insert(MT2Region(1000., 2000., 7, 8, 0,  0));
+
+    regions_.insert(MT2Region(450., 2000, 9, -1, 0,  0));
+
+    regions_.insert(MT2Region(450., 575., 2, 3, 1,  1));
+    regions_.insert(MT2Region(575., 1000., 2, 3, 1,  1));
+    regions_.insert(MT2Region(1000., 2000., 2, 3, 1,  1));
+
+    regions_.insert(MT2Region(450., 575., 4, 6, 1,  1));
+    regions_.insert(MT2Region(575., 1000., 4, 6, 1,  1));
+    regions_.insert(MT2Region(1000., 2000., 4, 6, 1,  1));
+
+    regions_.insert(MT2Region(450., 575., 7, 8, 1,  1));
+    regions_.insert(MT2Region(575., 1000., 7, 8, 1,  1));
+    regions_.insert(MT2Region(1000., 2000., 7, 8, 1,  1));
+
+    regions_.insert(MT2Region(450., 2000, 9, -1, 1,  1));
+    
+    regions_.insert(MT2Region(450., 575., 2, 3, 2,  2));
+    regions_.insert(MT2Region(575., 1000., 2, 3, 2,  2));
+    regions_.insert(MT2Region(1000., 2000., 2, 3, 2,  2));
+  
+    regions_.insert(MT2Region(450., 575., 4, 6, 2, 2));
+    regions_.insert(MT2Region(575., 1000., 4, 6, 2, 2));
+    regions_.insert(MT2Region(1000., 2000., 4, 6, 2, 2));
+  
+    regions_.insert(MT2Region(450., 575., 7, 8, 2,  2));
+    regions_.insert(MT2Region(575., 1000., 7, 8, 2,  2));
+    regions_.insert(MT2Region(1000., 2000., 7, 8, 2,  2));
+  
+    regions_.insert(MT2Region(450., 2000, 9, -1, 2,  2));
+  
+    regions_.insert(MT2Region(450., 575., 2,  6, 3,  -1));
+    regions_.insert(MT2Region(450., 575., 7, -1, 3,  -1));
+  
+    regions_.insert(MT2Region(575., 1000., 2,  6, 3,  -1));
+    regions_.insert(MT2Region(575., 1000., 7, -1, 3,  -1));
+  
+    regions_.insert(MT2Region(1000., 2000., 2,  6, 3,  -1));
+    regions_.insert(MT2Region(1000., 2000., 7, -1, 3,  -1));
+  
+    regions_.insert(MT2Region(2000., -1, 2,  -1, 0,  -1));
+
+  } else if( regionsSet=="13TeV_PHYS14_loJet_hiHT" ){
+
+    std::set<MT2HTRegion> htRegions;
+    htRegions.insert(MT2HTRegion( 450.,   575.));
+    htRegions.insert(MT2HTRegion( 575.,  1000.));
+    htRegions.insert(MT2HTRegion(1000.,  1500.));
+    htRegions.insert(MT2HTRegion(1500.,    -1 ));
+
+    std::set<MT2SignalRegion> signalRegions;
+    signalRegions.insert(MT2SignalRegion(2,  3, 0,  0));
+    signalRegions.insert(MT2SignalRegion(4, 6, 0,  0));
+    signalRegions.insert(MT2SignalRegion(7, -1, 0,  0));
+    signalRegions.insert(MT2SignalRegion(2,  3, 1,  1));
+    signalRegions.insert(MT2SignalRegion(4, 6, 1,  1));
+    signalRegions.insert(MT2SignalRegion(7, -1, 1,  1));
+    signalRegions.insert(MT2SignalRegion(2,  3, 2,  2, "loMT"));
+    signalRegions.insert(MT2SignalRegion(2,  3, 2,  2, "hiMT"));
+    signalRegions.insert(MT2SignalRegion(4, 6, 2,  2, "loMT"));
+    signalRegions.insert(MT2SignalRegion(4, 6, 2,  2, "hiMT"));
+    signalRegions.insert(MT2SignalRegion(7, -1, 2,  2, "loMT"));
+    signalRegions.insert(MT2SignalRegion(7, -1, 2,  2, "hiMT"));
+    signalRegions.insert(MT2SignalRegion(2,  6, 3,  -1, "loMT"));
+    signalRegions.insert(MT2SignalRegion(2,  6, 3,  -1, "hiMT"));
+    signalRegions.insert(MT2SignalRegion(7, -1, 3,  -1, "loMT"));
+    signalRegions.insert(MT2SignalRegion(7, -1, 3,  -1, "hiMT"));
+
+    regions_ = multiplyHTandSignal( htRegions, signalRegions );
+
+  } else if( regionsSet=="13TeV_PHYS14_loJet_hiHT_noMT" ){
+
+    std::set<MT2HTRegion> htRegions;
+    htRegions.insert(MT2HTRegion( 450.,   575.));
+    htRegions.insert(MT2HTRegion( 575.,  1000.));
+    htRegions.insert(MT2HTRegion(1000.,  1500.));
+    htRegions.insert(MT2HTRegion(1500.,    -1 ));
+
+    std::set<MT2SignalRegion> signalRegions;
+    signalRegions.insert(MT2SignalRegion(2,  3, 0,  0));
+    signalRegions.insert(MT2SignalRegion(4, 6, 0,  0));
+    signalRegions.insert(MT2SignalRegion(7, -1, 0,  0));
+    signalRegions.insert(MT2SignalRegion(2,  3, 1,  1));
+    signalRegions.insert(MT2SignalRegion(4, 6, 1,  1));
+    signalRegions.insert(MT2SignalRegion(7, -1, 1,  1));
+    signalRegions.insert(MT2SignalRegion(2,  3, 2,  2));
+    signalRegions.insert(MT2SignalRegion(4, 6, 2,  2));
+    signalRegions.insert(MT2SignalRegion(7, -1, 2,  2));
+    signalRegions.insert(MT2SignalRegion(2,  6, 3,  -1));
+    signalRegions.insert(MT2SignalRegion(7, -1, 3,  -1));
+  
+    regions_ = multiplyHTandSignal( htRegions, signalRegions );
 
   } else if( regionsSet=="13TeV_onlyHT" ) {
 
@@ -1059,7 +1356,7 @@ MT2Analysis<T> MT2Analysis<T>::operator*( float k ) const {
 
     MT2Region thisRegion(*iR);
 
-    T* t1 = this->get(thisRegion); 
+    T* t1 = new T(*(this->get(thisRegion))); 
     *t1 *= k;
 
     newdata.insert( t1 );
@@ -1086,7 +1383,7 @@ MT2Analysis<T> MT2Analysis<T>::operator/( float k ) const {
 
     MT2Region thisRegion(*iR);
 
-    T* t1 = this->get(thisRegion); 
+    T* t1 = new T(*(this->get(thisRegion))); 
     *t1 /= k;
 
     newdata.insert( t1 );
@@ -1229,9 +1526,9 @@ void MT2Analysis<T>::print( const std::string& ofs ) const {
     ofs_file << std::endl;
 
     for( std::set<MT2Region>::iterator imt2=mt2Regions.begin(); imt2!=mt2Regions.end(); ++imt2 ) {
-             	
+             
       if( *(imt2->htRegion()) != (*iHT) )
-	continue;
+        continue;
 
       T* thisT = this->get(*imt2);
       thisT->print( ofs );

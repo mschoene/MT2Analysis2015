@@ -355,6 +355,7 @@ const MT2EstimateZinvGamma& MT2EstimateZinvGamma::operator-=( const MT2EstimateZ
 MT2EstimateZinvGamma MT2EstimateZinvGamma::operator*( float k ) const{
 
 
+std::cout << "operator * float " << std::endl;
   MT2EstimateZinvGamma result(*this);
   result.yield->Scale(k);
   result.iso->Scale(k);
@@ -401,6 +402,7 @@ MT2EstimateZinvGamma MT2EstimateZinvGamma::operator*( float k ) const{
 
 const MT2EstimateZinvGamma& MT2EstimateZinvGamma::operator*=( float k ) {
 
+std::cout << "operator *= float " << std::endl;
   this->yield->Scale(k);
   this->iso->Scale(k);
   this->sietaieta->Scale(k);
@@ -533,6 +535,7 @@ const MT2EstimateZinvGamma& MT2EstimateZinvGamma::operator/=( float k ) {
 
 MT2EstimateZinvGamma operator*( float k, const MT2EstimateZinvGamma& rhs ) {
 
+std::cout << "operator * float friend" << std::endl;
   return rhs*k;
 
 }

@@ -84,32 +84,16 @@ int main( int argc, char* argv[] ) {
   }
 
 
-  MT2Analysis<MT2EstimateZinvGamma>* gammaCR_loose = new MT2Analysis<MT2EstimateZinvGamma>( (*prompt) + (*nip) + (*fake) );
-  gammaCR_loose->setName("gammaCR_loose");
-  //MT2Analysis<MT2EstimateZinvGamma>* gammaCR_loose = new MT2Analysis<MT2EstimateZinvGamma>( "gammaCR_loose", regionsSet );
-  //(*gammaCR_loose) = (*prompt) + (*nip) + (*fake);
-
+  MT2Analysis<MT2EstimateZinvGamma>* gammaCR_loose = new MT2Analysis<MT2EstimateZinvGamma>( "gammaCR_loose",  regionsSet );
+  (*gammaCR_loose) = (*prompt) + (*nip) + (*fake);
  
-  MT2Analysis<MT2EstimateZinvGamma>* fake_plus_prompt_pass = new MT2Analysis<MT2EstimateZinvGamma>( (*prompt_pass) + (*fake_pass) ); 
-  fake_plus_prompt_pass->setName("fake_plus_prompt_pass");
-
-  MT2Analysis<MT2EstimateZinvGamma>* nip_pass_div2 = new MT2Analysis<MT2EstimateZinvGamma>( *nip_pass );
-  nip_pass_div2->setName("nip_pass_div2");
-  (*nip_pass_div2) *= 0.5;
-  //(*nip_pass_div2) /= 2.;
-
-  MT2Analysis<MT2EstimateZinvGamma>* nip_pass_times2 = new MT2Analysis<MT2EstimateZinvGamma>( *nip_pass );
-  nip_pass_times2->setName("nip_pass_times2");
-  (*nip_pass_times2) *= 2.;
-
-
  
-  MT2Analysis<MT2EstimateZinvGamma>* gammaCR         = new MT2Analysis<MT2EstimateZinvGamma>( *fake_plus_prompt_pass + *nip_pass );
-  gammaCR->setName("gammaCR");
-  MT2Analysis<MT2EstimateZinvGamma>* gammaCR_nipUp   = new MT2Analysis<MT2EstimateZinvGamma>( *fake_plus_prompt_pass + *nip_pass_times2 );
-  gammaCR_nipUp->setName("gammaCR_nipUp");
-  MT2Analysis<MT2EstimateZinvGamma>* gammaCR_nipDown = new MT2Analysis<MT2EstimateZinvGamma>( *fake_plus_prompt_pass + *nip_pass_div2 );
-  gammaCR_nipDown->setName("gammaCR_nipDown");
+  MT2Analysis<MT2EstimateZinvGamma>* gammaCR         = new MT2Analysis<MT2EstimateZinvGamma>( "gammaCR", regionsSet );
+  MT2Analysis<MT2EstimateZinvGamma>* gammaCR_nipUp   = new MT2Analysis<MT2EstimateZinvGamma>( "gammaCR_nipUp", regionsSet );
+  MT2Analysis<MT2EstimateZinvGamma>* gammaCR_nipDown = new MT2Analysis<MT2EstimateZinvGamma>( "gammaCR_nipDown", regionsSet );
+  (*gammaCR        ) = (*prompt_pass) + (*fake_pass) +     (*nip_pass);
+  (*gammaCR_nipUp  ) = (*prompt_pass) + (*fake_pass) + 2. *(*nip_pass);
+  (*gammaCR_nipDown) = (*prompt_pass) + (*fake_pass) + 0.5*(*nip_pass);
   
  
 

@@ -41,7 +41,7 @@ int main( int argc, char* argv[] ) {
   MT2Analysis<MT2EstimateZinvGamma>* templatesFakeMC    = MT2Analysis<MT2EstimateZinvGamma>::readFromFile("gammaTemplatesMC_" + samples + "_" + regionsSet + ".root", "templatesFake");
 
   MT2Analysis<MT2EstimateZinvGamma>* templatesPrompt    = MT2Analysis<MT2EstimateZinvGamma>::readFromFile("gammaTemplatesData_" + samples + "_" + regionsSet + ".root", "templatesPrompt");
-  MT2Analysis<MT2EstimateZinvGamma>* templatesPromptRaw = MT2Analysis<MT2EstimateZinvGamma>::readFromFile("gammaTemplatesData_" + samples + "_" + regionsSet + ".root", "templatesPromptRaw");
+  //MT2Analysis<MT2EstimateZinvGamma>* templatesPromptRaw = MT2Analysis<MT2EstimateZinvGamma>::readFromFile("gammaTemplatesData_" + samples + "_" + regionsSet + ".root", "templatesPromptRaw");
   MT2Analysis<MT2EstimateZinvGamma>* templatesFake      = MT2Analysis<MT2EstimateZinvGamma>::readFromFile("gammaTemplatesData_" + samples + "_" + regionsSet + ".root", "templatesFake");
 
   std::set<MT2Region> regions = templatesPrompt->getRegions();
@@ -49,7 +49,8 @@ int main( int argc, char* argv[] ) {
   for( std::set<MT2Region>::iterator iR = regions.begin(); iR!=regions.end(); ++iR ) {
 
     drawSinglePlot( outputdir, "Fake", *iR, templatesFake->get(*iR)->iso, "Data Fakes", 0, "", templatesFakeMC->get(*iR)->iso, "MC Fakes" );
-    drawSinglePlot( outputdir, "Prompt", *iR, templatesPromptRaw->get(*iR)->iso, "Data (all)", templatesPrompt->get(*iR)->iso, "Data w/o Fakes", templatesPromptMC->get(*iR)->iso, "MC Prompts" );
+    drawSinglePlot( outputdir, "Prompt", *iR, templatesPrompt->get(*iR)->iso, "Data Random Cone", 0, "", templatesPromptMC->get(*iR)->iso, "MC Prompts" );
+    //drawSinglePlot( outputdir, "Prompt", *iR, templatesPromptRaw->get(*iR)->iso, "Data (all)", templatesPrompt->get(*iR)->iso, "Data w/o Fakes", templatesPromptMC->get(*iR)->iso, "MC Prompts" );
 
   } 
 

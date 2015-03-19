@@ -1,6 +1,7 @@
 #! /usr/bin/python
 
 from ROOT import TFile, TTree
+import commands
 
 
 
@@ -8,7 +9,9 @@ from ROOT import TFile, TTree
 def pruneBaby( fname, dir, prunedir, pruneBranches ):
 
   fullname = dir+"/"+fname
-  file = TFile(fullname)
+  if "pnfs" in fullname : 
+    fullname = "dcap://t3se01.psi.ch:22125//"+fullname
+  file = TFile.Open(fullname)
   tree = file.Get("mt2")
 
   print "-> Pruning " + fullname
@@ -64,13 +67,16 @@ if __name__ == '__main__':
 
    prunedir = outdir
    os.system("mkdir -p " + prunedir)
-   print "prunedir: " + prunedir
-   print "dir: " + dir
 
-   files = os.listdir(dir)
+   if "pnfs/psi.ch" in dir : 
+     status,files = commands.getstatusoutput("gfal-ls "+"srm://t3se01.psi.ch"+dir)
+     files=files.splitlines()
+   else :
+     files = os.listdir(dir)
+
+
 
    for f in files:
-     print "found : " + str(f)
      if ".root" in f:
        if options.filter in f:
          pruneBaby(f, dir, prunedir, pruneBranches)
