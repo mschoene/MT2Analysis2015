@@ -138,8 +138,8 @@ void fitPurity( const std::string& outputdir, MT2EstimateSyst* purityLoose, MT2E
     purityLoose->yield_systDown->SetBinContent( ibin, loose.purity - loose.purityErrDown );
 
     purityTight->yield         ->SetBinContent( ibin, tight.purity );
-    purityTight->yield_systUp  ->SetBinContent( ibin, tight.purity + loose.purityErrUp );
-    purityTight->yield_systDown->SetBinContent( ibin, tight.purity - loose.purityErrDown );
+    purityTight->yield_systUp  ->SetBinContent( ibin, tight.purity + tight.purityErrUp );
+    purityTight->yield_systDown->SetBinContent( ibin, tight.purity - tight.purityErrDown );
 
   }
 
@@ -194,9 +194,11 @@ void fitSinglePurity( const std::string& outputdir, Purity& loose, Purity& tight
   float sigFirstBin = sigFrac.getVal()*sigEff;
   float bgFirstBin = (1.-sigFrac.getVal())*bgEff;
   tight.purity = sigFirstBin / (sigFirstBin+bgFirstBin);
-  float factor = tight.purity/loose.purity;
-  tight.purityErrUp = loose.purityErrUp*factor;
-  tight.purityErrDown = loose.purityErrDown*factor;
+  tight.purityErrUp = loose.purityErrUp; // is it ok to assign the same error also to the tight purity?
+  tight.purityErrDown = loose.purityErrDown;
+  //float factor = tight.purity/loose.purity;
+  //tight.purityErrUp = loose.purityErrUp*factor;
+  //tight.purityErrDown = loose.purityErrDown*factor;
 
   checkBoundaries( loose );
   checkBoundaries( tight );
