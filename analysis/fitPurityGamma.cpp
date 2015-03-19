@@ -64,6 +64,10 @@ int main( int argc, char* argv[] ) {
 
 
   std::string regionsSet = "zurich";
+  if( argc>2 ) {
+    regionsSet = std::string(argv[2]);
+  }
+
 
 
   TH1::AddDirectory(kFALSE);
