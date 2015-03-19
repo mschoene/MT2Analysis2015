@@ -477,3 +477,11 @@ MT2EstimateTree operator*( float k, const MT2EstimateTree& rhs ) {
 
 }
 
+
+
+MT2EstimateTree operator/( float k, const MT2EstimateTree& rhs ) {
+
+  return rhs/k;
+
+}
+
