@@ -584,4 +584,24 @@ const MT2EstimateZinvGamma& MT2EstimateZinvGamma::operator/=( float k ) {
 
 }
 
+  
+  
+  
+  
+// friend functions:
+
+MT2EstimateZinvGamma operator*( float k, const MT2EstimateZinvGamma& rhs ) {
+
+  return rhs*k;
+
+}
+
+
+
+MT2EstimateZinvGamma operator/( float k, const MT2EstimateZinvGamma& rhs ) {
+
+  return rhs/k;
+
+}
+
 
