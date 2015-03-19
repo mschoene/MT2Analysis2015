@@ -34,11 +34,13 @@ int main( int argc, char* argv[] ) {
   std::string outputdir = "Plots_GammaControlRegion_" + samples + "_" + regionsSet;
   system( Form("mkdir -p %s", outputdir.c_str()) );
 
-  MT2Analysis<MT2EstimateSyst>* purity_isoCut = MT2Analysis<MT2EstimateSyst>::readFromFile("GammaControlRegion_" + samples + "_" + regionsSet + "/purityMC.root", "purity");
-  MT2Analysis<MT2EstimateSyst>* eff_isoCut    = MT2Analysis<MT2EstimateSyst>::readFromFile("GammaControlRegion_" + samples + "_" + regionsSet + "/purityMC.root", "eff");
+  MT2Analysis<MT2EstimateSyst>* purity      = MT2Analysis<MT2EstimateSyst>::readFromFile("GammaControlRegion_" + samples + "_" + regionsSet + "/purityMC.root", "purity");
+  MT2Analysis<MT2EstimateSyst>* purityLoose = MT2Analysis<MT2EstimateSyst>::readFromFile("GammaControlRegion_" + samples + "_" + regionsSet + "/purityMC.root", "purityLoose");
+  MT2Analysis<MT2EstimateSyst>* eff         = MT2Analysis<MT2EstimateSyst>::readFromFile("GammaControlRegion_" + samples + "_" + regionsSet + "/purityMC.root", "eff");
 
-  purity_isoCut->setFullName( "Purity" );
-  eff_isoCut->setFullName( "Efficiency" );
+  purity->setFullName( "Purity" );
+  purityLoose->setFullName( "Purity" );
+  eff->setFullName( "Efficiency" );
 
 
   std::vector<MT2Region> r_lowHT_vs_njet;
@@ -47,8 +49,9 @@ int main( int argc, char* argv[] ) {
   r_lowHT_vs_njet.push_back( MT2Region( 450., 575., 2,  3, 1, 1 ) );
   r_lowHT_vs_njet.push_back( MT2Region( 450., 575., 4,  6, 1, 1 ) );
 
-  compareRegions( outputdir, r_lowHT_vs_njet, purity_isoCut );
-  compareRegions( outputdir, r_lowHT_vs_njet, eff_isoCut );
+  compareRegions( outputdir, r_lowHT_vs_njet, purity );
+  compareRegions( outputdir, r_lowHT_vs_njet, purityLoose );
+  compareRegions( outputdir, r_lowHT_vs_njet, eff );
 
   std::vector<MT2Region> r_medHT_vs_njet;
   r_medHT_vs_njet.push_back( MT2Region( 575., 1000., 2,  3, 0, 0 ) );
@@ -56,8 +59,9 @@ int main( int argc, char* argv[] ) {
   r_medHT_vs_njet.push_back( MT2Region( 575., 1000., 2,  3, 1, 1 ) );
   r_medHT_vs_njet.push_back( MT2Region( 575., 1000., 4,  6, 1, 1 ) );
 
-  compareRegions( outputdir, r_medHT_vs_njet, purity_isoCut );
-  compareRegions( outputdir, r_medHT_vs_njet, eff_isoCut );
+  compareRegions( outputdir, r_medHT_vs_njet, purity );
+  compareRegions( outputdir, r_medHT_vs_njet, purityLoose );
+  compareRegions( outputdir, r_medHT_vs_njet, eff );
 
   std::vector<MT2Region> r_highHT_vs_njet;
   r_highHT_vs_njet.push_back( MT2Region( 1000., 1500., 2,  3, 0, 0 ) );
@@ -65,8 +69,9 @@ int main( int argc, char* argv[] ) {
   r_highHT_vs_njet.push_back( MT2Region( 1000., 1500., 2,  3, 1, 1 ) );
   r_highHT_vs_njet.push_back( MT2Region( 1000., 1500., 4,  6, 1, 1 ) );
 
-  compareRegions( outputdir, r_highHT_vs_njet, purity_isoCut );
-  compareRegions( outputdir, r_highHT_vs_njet, eff_isoCut );
+  compareRegions( outputdir, r_highHT_vs_njet, purity );
+  compareRegions( outputdir, r_highHT_vs_njet, purityLoose );
+  compareRegions( outputdir, r_highHT_vs_njet, eff );
 
 
 
@@ -76,8 +81,8 @@ int main( int argc, char* argv[] ) {
   //r_vsHT.push_back( MT2Region( 575., 1000., 2, 3, 0, 0 ) );
   //r_vsHT.push_back( MT2Region( 1000., -1. , 2, 3, 0, 0 ) );
 
-  //compareRegions( outputdir, r_vsHT, purity_isoCut, true );
-  //compareRegions( outputdir, r_vsHT, eff_isoCut , false );
+  //compareRegions( outputdir, r_vsHT, purity, true );
+  //compareRegions( outputdir, r_vsHT, eff , false );
 
 
 
@@ -86,8 +91,8 @@ int main( int argc, char* argv[] ) {
   //r_vsHT2.push_back( MT2Region( 575., 1000., 4, -1, 0, 0 ) );
   //r_vsHT2.push_back( MT2Region( 1000., -1. , 4, -1, 0, 0 ) );
 
-  //compareRegions( outputdir, r_vsHT2, purity_isoCut, true );
-  //compareRegions( outputdir, r_vsHT2, eff_isoCut , false );
+  //compareRegions( outputdir, r_vsHT2, purity, true );
+  //compareRegions( outputdir, r_vsHT2, eff , false );
 
   return 0;
 
@@ -127,7 +132,9 @@ void compareRegions( const std::string& outputdir, std::vector<MT2Region> region
   TCanvas* c1 = new TCanvas( "c1", "", 600, 600 );
 
 
-  TH2D* h2_axes = new TH2D( "axes", "", 10, 200., 1500., 10, 0.7, 1.0001 );
+  float yMin = (analysis->getName()=="purityLoose") ? 0. : 0.7;
+
+  TH2D* h2_axes = new TH2D( "axes", "", 10, 200., 1500., 10, yMin, 1.0001 );
   h2_axes->SetYTitle( analysis->getFullName().c_str() );
   h2_axes->SetXTitle( "M_{T2} [GeV]" );
   c1->cd();
