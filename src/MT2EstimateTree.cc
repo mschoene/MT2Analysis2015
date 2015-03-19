@@ -238,34 +238,13 @@ void MT2EstimateTree::print(const std::string& ofs){
 
 const MT2EstimateTree& MT2EstimateTree::operator=( const MT2EstimateTree& rhs ) {
 
-  if( this->yield == 0 ) { // first time
+  this->region = new MT2Region(*(rhs.region));
 
-    this->setName(rhs.getName());
+  this->yield = new TH1D(*(rhs.yield));
 
-    this->region = new MT2Region(*(rhs.region));
+  this->tree = rhs.tree->CloneTree(-1);
 
-    this->yield = new TH1D(*(rhs.yield));
-
-    this->tree = rhs.tree->CloneTree(-1);
-
-  } else { // keep name and histo name, just make histogram identical
-
-    std::string rhsRegionName = rhs.region->getName();
-    if( this->region != rhs.region ) {
-      if( this->region!=0 ) delete this->region;
-      this->region = new MT2Region(rhsRegionName);
-    }
-
-    std::string oldName = this->yield->GetName();
-    delete this->yield;
-    this->yield = new TH1D(*(rhs.yield));
-    this->yield->SetName(oldName.c_str());
-
-    std::string oldTreeName = this->tree->GetName();
-    this->tree = rhs.tree->CloneTree(-1);
-    this->tree->SetName(oldTreeName.c_str());
-
-  }
+  this->setName( this->getName() );
 
   this->initTree();
 
@@ -378,6 +357,7 @@ MT2EstimateTree MT2EstimateTree::operator/( float k ) const{
 
 
 const MT2EstimateTree& MT2EstimateTree::operator+=( const MT2EstimateTree& rhs ) {
+
 
   if( rhs.tree->GetEntries()>0 ) {
 

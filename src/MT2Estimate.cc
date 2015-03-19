@@ -93,29 +93,12 @@ void MT2Estimate::addOverflowSingleHisto( TH1D* yield ) {
 
 const MT2Estimate& MT2Estimate::operator=( const MT2Estimate& rhs ) {
 
-  if( this->yield == 0 ) { // first time
 
-    this->name = rhs.name;
+  this->region = new MT2Region(*(rhs.region));
 
-    this->region = new MT2Region(*(rhs.region));
+  this->yield = new TH1D(*(rhs.yield));
 
-    this->yield = new TH1D(*(rhs.yield));
-
-  } else { // keep name and histo name, just make histogram identical
-
-    std::string rhsRegionName = rhs.region->getName();
-    if( this->region != rhs.region ) {
-      if( this->region!=0 ) delete this->region;
-      this->region = new MT2Region(rhsRegionName);
-    }
-
-
-    std::string oldName = this->yield->GetName();
-    delete this->yield;
-    this->yield = new TH1D(*(rhs.yield));
-    this->yield->SetName(oldName.c_str());
-
-  }
+  this->setName(this->getName());
 
   return *this;
 

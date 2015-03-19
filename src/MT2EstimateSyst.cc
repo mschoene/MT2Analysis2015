@@ -217,40 +217,15 @@ void MT2EstimateSyst::print(const std::string& ofs){
 
 const MT2EstimateSyst& MT2EstimateSyst::operator=( const MT2EstimateSyst& rhs ) {
 
-  if( this->yield == 0 ) { // first time
 
-    this->setName(rhs.getName());
+  this->region = new MT2Region(*(rhs.region));
 
-    this->region = new MT2Region(*(rhs.region));
+  this->yield = new TH1D(*(rhs.yield));
+  this->yield_systUp = new TH1D(*(rhs.yield_systUp));
+  this->yield_systDown = new TH1D(*(rhs.yield_systDown));
 
-    this->yield = new TH1D(*(rhs.yield));
-    this->yield_systUp = new TH1D(*(rhs.yield_systUp));
-    this->yield_systDown = new TH1D(*(rhs.yield_systDown));
+  this->setName( this->getName() );
 
-  } else { // keep name and histo name, just make histogram identical
-
-    std::string rhsRegionName = rhs.region->getName();
-    if( this->region != rhs.region ) {
-      if( this->region!=0 ) delete this->region;
-      this->region = new MT2Region(rhsRegionName);
-    }
-
-    std::string oldName = this->yield->GetName();
-    delete this->yield;
-    this->yield = new TH1D(*(rhs.yield));
-    this->yield->SetName(oldName.c_str());
-
-    std::string oldName_systUp = this->yield_systUp->GetName();
-    delete this->yield_systUp;
-    this->yield_systUp = new TH1D(*(rhs.yield_systUp));
-    this->yield_systUp->SetName(oldName_systUp.c_str());
-
-    std::string oldName_systDown = this->yield_systDown->GetName();
-    delete this->yield_systDown;
-    this->yield_systDown = new TH1D(*(rhs.yield_systDown));
-    this->yield_systDown->SetName(oldName_systDown.c_str());
-
-  }
 
   return *this;
 
