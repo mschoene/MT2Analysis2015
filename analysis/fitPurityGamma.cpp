@@ -33,7 +33,8 @@ using namespace RooFit;
 struct Purity {
 
   float purity;
-  float purityError;
+  float purityErrUp;
+  float purityErrDown;
 
 };
 
@@ -41,6 +42,7 @@ struct Purity {
 
 void fitSinglePurity( const std::string& outputdir, Purity& loose, Purity& tight, RooRealVar* x, RooDataSet* data, TH1D* h1_templPrompt, TH1D* h1_templFake );
 void fitPurity( const std::string& outputdir, MT2EstimateSyst* purityLoose, MT2EstimateSyst* purityTight, RooRealVar* x, std::vector<RooDataSet*> data, TH1D* templPrompt, TH1D* templFake );
+void checkBoundaries( Purity& p );
 
 
 
@@ -68,14 +70,14 @@ int main( int argc, char* argv[] ) {
 
 
   std::string gammaCRdir = "GammaControlRegion_" + samples + "_" + regionsSet;
-  MT2Analysis<MT2EstimateZinvGamma>* gammaJet_data = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( gammaCRdir + "/data.root", "gammaCR" );
+  MT2Analysis<MT2EstimateZinvGamma>* gammaJet_data = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( gammaCRdir + "/data.root", "gammaCR_loose" );
 
   MT2Analysis<MT2EstimateZinvGamma>* templates_prompt = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( "gammaTemplates" + mc_or_data + "_" + samples + "_13TeV_inclusive.root", "templatesPrompt" );
   MT2Analysis<MT2EstimateZinvGamma>* templates_fake   = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( "gammaTemplates" + mc_or_data + "_" + samples + "_13TeV_inclusive.root", "templatesFake" );
 
 
-  std::string outputdir = gammaCRdir + "/PurityFits" + mc_or_data + "_" + samples + "_" + regionsSet;
-  system( Form( "mkdir -p %s", outputdir.c_str()) );
+  std::string outputdir = gammaCRdir + "/PurityFits" + mc_or_data;
+  system( Form( "mkdir -p %s/singleFits", outputdir.c_str()) );
 
   std::set<MT2Region> regions = gammaJet_data->getRegions();
 
@@ -106,8 +108,8 @@ int main( int argc, char* argv[] ) {
   }
     
 
-  purityLoose->writeToFile( outputdir + "/purityFit_" + samples + "_" + regionsSet + ".root" );
-  purityTight->addToFile( outputdir + "/purityFit_" + samples + "_" + regionsSet + ".root" );
+  purityLoose->writeToFile( outputdir + "/purityFit.root" );
+  purityTight->addToFile( outputdir + "/purityFit.root" );
 
   return 0;
 
@@ -128,12 +130,12 @@ void fitPurity( const std::string& outputdir, MT2EstimateSyst* purityLoose, MT2E
     fitSinglePurity( outputdir, loose, tight, x, data[i], templPrompt, templFake );
 
     purityLoose->yield         ->SetBinContent( ibin, loose.purity );
-    purityLoose->yield_systUp  ->SetBinContent( ibin, loose.purity + loose.purityError );
-    purityLoose->yield_systDown->SetBinContent( ibin, loose.purity - loose.purityError );
+    purityLoose->yield_systUp  ->SetBinContent( ibin, loose.purity + loose.purityErrUp );
+    purityLoose->yield_systDown->SetBinContent( ibin, loose.purity - loose.purityErrDown );
 
     purityTight->yield         ->SetBinContent( ibin, tight.purity );
-    purityTight->yield_systUp  ->SetBinContent( ibin, tight.purity + loose.purityError );
-    purityTight->yield_systDown->SetBinContent( ibin, tight.purity - loose.purityError );
+    purityTight->yield_systUp  ->SetBinContent( ibin, tight.purity + loose.purityErrUp );
+    purityTight->yield_systDown->SetBinContent( ibin, tight.purity - loose.purityErrDown );
 
   }
 
@@ -153,9 +155,11 @@ void fitSinglePurity( const std::string& outputdir, Purity& loose, Purity& tight
 
   if( dataIntegral == 0. ) {
     loose.purity=-1;
-    loose.purityError=0.;
+    loose.purityErrUp=0.;
+    loose.purityErrDown=0.;
     tight.purity=-1;
-    tight.purityError=0.;
+    tight.purityErrUp=0.;
+    tight.purityErrDown=0.;
     return;
   }
 
@@ -175,17 +179,23 @@ void fitSinglePurity( const std::string& outputdir, Purity& loose, Purity& tight
 
   float xMaxFit = 0.999*xMax;
   x->setRange( "fittingRange", 0., xMaxFit );
-  model.fitTo(*data, SumW2Error(kTRUE), Range("fittingRange")); 
+  model.fitTo(*data, SumW2Error(kTRUE), Minos(kTRUE), Range("fittingRange")); 
 
   loose.purity = sigFrac.getVal();
-  loose.purityError = sigFrac.getError();
+  loose.purityErrUp = sigFrac.getErrorHi();
+  loose.purityErrDown = -sigFrac.getErrorLo();
 
   float sigEff = h1_templPrompt->GetBinContent(1)/h1_templPrompt->Integral(1,nBins);
   float bgEff = h1_templFake->GetBinContent(1)/h1_templFake->Integral(1,nBins);
   float sigFirstBin = sigFrac.getVal()*sigEff;
   float bgFirstBin = (1.-sigFrac.getVal())*bgEff;
   tight.purity = sigFirstBin / (sigFirstBin+bgFirstBin);
-  tight.purityError = sigFrac.getError();
+  float factor = tight.purity/loose.purity;
+  tight.purityErrUp = loose.purityErrUp*factor;
+  tight.purityErrDown = loose.purityErrDown*factor;
+
+  checkBoundaries( loose );
+  checkBoundaries( tight );
 
   RooPlot* xframe = x->frame();
   data->plotOn(xframe, Binning(nBins, xMin, xMax));
@@ -201,8 +211,9 @@ void fitSinglePurity( const std::string& outputdir, Purity& loose, Purity& tight
   xframe->GetYaxis()->SetTitleOffset(1.4); 
   xframe->Draw("same");
 
-  c1->SaveAs(Form("%s/purityFit_%s.eps", outputdir.c_str(), data->GetName()));
-  c1->SaveAs(Form("%s/purityFit_%s.png", outputdir.c_str(), data->GetName()));
+  c1->SaveAs(Form("%s/singleFits/purityFit_%s.eps", outputdir.c_str(), data->GetName()));
+  c1->SaveAs(Form("%s/singleFits/purityFit_%s.png", outputdir.c_str(), data->GetName()));
+  c1->SaveAs(Form("%s/singleFits/purityFit_%s.pdf", outputdir.c_str(), data->GetName()));
 
   delete c1;
   delete xframe;
@@ -211,3 +222,11 @@ void fitSinglePurity( const std::string& outputdir, Purity& loose, Purity& tight
 
 }
 
+
+
+void checkBoundaries( Purity& p ) {
+
+  if( p.purity - p.purityErrDown < 0. ) p.purityErrDown = p.purity;
+  if( p.purity + p.purityErrUp   > 1. ) p.purityErrUp   = 1. - p.purity;
+
+}
