@@ -13,7 +13,7 @@ int main() {
   // "pippo" is a name that will figure in the histogram names
   // "8TeV" is the name of a given signal region set (for now i've implemented the one used at 8 tev and the recent proposal by mario - called "13TeV")
   // 702 is an optional argument: it's the id of the sample (so 702 in this case is DYJetsToLL_M-50_HT-100to200)
-  MT2Analysis<MT2Estimate> *analysis = new MT2Analysis<MT2Estimate>("pippo", "13TeV_CSA14", 702);
+  MT2Analysis<MT2EstimateSyst> *analysis = new MT2Analysis<MT2EstimateSyst>("pippo", "13TeV_CSA14", 702);
   // ^ the above command creates the whole HT x SR structure, and instantiates one MT2EstimateSyst per region
 
   float ht = 500.;
@@ -33,8 +33,8 @@ int main() {
     // if you found a valid region, you can use the pointer, for example filling histograms
     std::cout << "filling region: " << est->region->getName() << std::endl;
     est->yield->Fill( mt2, weight );
-    est->yield_btagUp->Fill( mt2, weight_btagUp );
-    est->yield_btagDown->Fill( mt2, weight_btagDown );
+    est->yield_systUp->Fill( mt2, weight_btagUp );
+    est->yield_systDown->Fill( mt2, weight_btagDown );
   }
 
   // the command below calls the method addOverflow() for all elements in the MT2Analysis
