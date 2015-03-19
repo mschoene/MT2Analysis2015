@@ -515,3 +515,23 @@ const MT2EstimateSyst& MT2EstimateSyst::operator/=( float k ) {
 
 }
 
+
+
+
+// friend functions
+
+
+MT2EstimateSyst operator*( float k, const MT2EstimateSyst& rhs ) {
+
+  return rhs*k;
+
+}
+
+
+MT2EstimateSyst operator/( float k, const MT2EstimateSyst& rhs ) {
+
+  return rhs/k;
+
+}
+
+
