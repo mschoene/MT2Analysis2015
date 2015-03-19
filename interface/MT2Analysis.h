@@ -427,10 +427,11 @@ MT2Analysis<T>::MT2Analysis( const std::string& aname, std::set<T*> newdata, int
 
   for( typename std::set<T*>::iterator idata=newdata.begin(); idata!=newdata.end(); ++idata ) {
 
-    MT2Region* thisRegion = (*idata)->region;
-    this->regions_.insert( *thisRegion );
+    MT2Region* thisRegion = new MT2Region(*((*idata)->region));
+    regions_.insert( *thisRegion );
 
-    this->data.insert( *idata );
+    T* newdata = new T( *(*idata) );
+    this->data.insert( newdata );
 
   }
 
@@ -452,10 +453,11 @@ MT2Analysis<T>::MT2Analysis( const MT2Analysis& rhs ) {
 
   for( typename std::set<T*>::iterator idata=rhs.data.begin(); idata!=rhs.data.end(); ++idata ) {
 
-    MT2Region* thisRegion = (*idata)->region;
+    MT2Region* thisRegion = new MT2Region(*((*idata)->region));
     regions_.insert( *thisRegion );
 
-    this->data.insert( *idata );
+    T* newdata = new T( *(*idata) );
+    this->data.insert( newdata );
 
   }
 
