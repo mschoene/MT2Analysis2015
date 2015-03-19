@@ -108,33 +108,26 @@ int postProcessing(string inputString,
     return 1;
   }
   
-
-  // Merge (add) Count histograms from tchain files
-  if(chainReturn>1){
-    TFileMerger merger = TFileMerger(kFALSE);
-    TObjArray *fileElements = chain->GetListOfFiles();
-    TIter next(fileElements);
-    TChainElement *chEl=0;
-    while (( chEl=(TChainElement*)next() )){    
-      merger.AddFile(chEl->GetTitle());
+  // here I set the "Count" histograms
+  TIter nextfile(chain->GetListOfFiles());
+  TChainElement *elem;
+  bool isFirst=true;
+  TH1D* newH=0;
+  unsigned long int allHistoEntries=0;
+  while ((elem = (TChainElement*)nextfile())) {
+    TFile *f; f = TFile::Open(elem->GetTitle(),"READ");
+    TH1D *countH = (TH1D*)f->Get("Count");
+    if(isFirst){
+      newH = (TH1D*) countH->Clone();
+      newH->SetDirectory(0);  
+      isFirst=false;
     }
-    merger.SetNotrees(kTRUE);
-    merger.OutputFile(outputFile.c_str(), "RECREATE");
-    bool returnCode=merger.Merge();
-    if(!returnCode) {
-      cout << "ERROR: merger.Merge() returned " << returnCode << endl;
-      return 1;
-    }
-  }else{
-    // have to do this because the merger doesn't work as expected when the input is one single file
-    TFile* fileIn = TFile::Open(fullInputString.c_str());    
-    TH1* histo = (TH1D*)fileIn->Get("Count");
-    TFile output(outputFile.c_str(), "RECREATE");
-    histo->Write();
-    fileIn->Close();
-    delete fileIn;
+    allHistoEntries += countH->GetBinContent(1);
+    f->Close();
+    delete f;      
   }
-
+  newH->SetBinContent(1,allHistoEntries);
+  
 
   // This line should be uncommented for all the branches that we want to overwrite.
   // If the branch is not in the input tree, we don't need this.
@@ -143,7 +136,7 @@ int postProcessing(string inputString,
 
 
   
-  TFile *out = TFile::Open(outputFile.c_str(), "UPDATE");
+  TFile *out = TFile::Open(outputFile.c_str(), "RECREATE");
   TTree *clone = new TTree("mt2", "post processed baby tree for mt2 analysis");
 
   clone = chain->CloneTree(-1, "fast"); 
@@ -159,8 +152,9 @@ int postProcessing(string inputString,
   //-------------------------------------------------------------
 
   //Calculate scaling factor and put variables into tree 
-  int nEventsTree = clone->GetEntries();
-  int nEventsHisto = (int)((TH1D*)out->Get("Count"))->GetBinContent(1);
+  unsigned long int nEventsTree = clone->GetEntries();
+  unsigned long int nEventsHisto = (unsigned long int) newH->GetBinContent(1); 					 
+
   float scale1fb = xsec*kfactor*1000*filter/(Float_t)nEventsHisto;
  
   if (nEventsHisto < nEventsTree) // this should not happen
@@ -189,7 +183,7 @@ int postProcessing(string inputString,
   TBranch* b5 = clone->Branch("evt_nEvts", &nEventsHisto, "evt_nEvts/I");
   TBranch* b6 = clone->Branch("evt_id", &id, "evt_id/I");
 
-  for(Int_t i = 0; i < nEventsTree; i++) {
+  for(unsigned long int i = 0; i < nEventsTree; i++) {
     b1->Fill();
     b2->Fill();
     b3->Fill();
@@ -201,6 +195,9 @@ int postProcessing(string inputString,
 
   delete chain; 
 
+
+  newH->Write();
+  delete newH;
   clone->Write();
   delete clone;
   out->Close();
