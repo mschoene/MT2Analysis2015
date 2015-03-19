@@ -84,8 +84,10 @@ int main( int argc, char* argv[] ) {
   }
 
 
-  MT2Analysis<MT2EstimateZinvGamma>* gammaCR_loose = new MT2Analysis<MT2EstimateZinvGamma>( "gammaCR_loose", regionsSet );
-  (*gammaCR_loose) = (*prompt) + (*nip) + (*fake);
+  MT2Analysis<MT2EstimateZinvGamma>* gammaCR_loose = new MT2Analysis<MT2EstimateZinvGamma>( (*prompt) + (*nip) + (*fake) );
+  gammaCR_loose->setName("gammaCR_loose");
+  //MT2Analysis<MT2EstimateZinvGamma>* gammaCR_loose = new MT2Analysis<MT2EstimateZinvGamma>( "gammaCR_loose", regionsSet );
+  //(*gammaCR_loose) = (*prompt) + (*nip) + (*fake);
 
  
   MT2Analysis<MT2EstimateZinvGamma>* fake_plus_prompt_pass = new MT2Analysis<MT2EstimateZinvGamma>( (*prompt_pass) + (*fake_pass) ); 
@@ -131,6 +133,7 @@ int main( int argc, char* argv[] ) {
   // emulate data:
   //randomizePoisson(gammaCR);
   gammaCR->writeToFile( outputdir + "/data.root" );
+  gammaCR_loose->addToFile( outputdir + "/data.root" );
   gammaCR_nipUp->addToFile( outputdir + "/data.root" );
   gammaCR_nipDown->addToFile( outputdir + "/data.root" );
  
