@@ -109,8 +109,6 @@ class MT2Analysis {
 
 
 
-
-
 // constructors
 
 template<class T> 
@@ -1375,6 +1373,26 @@ void MT2Analysis<T>::finalize() {
 
 
 }
+
+
+
+// global functions:
+
+template<class T>
+MT2Analysis<T> operator*( float k, const MT2Analysis<T>& rhs ) {
+
+  return rhs*k;
+
+}
+
+
+template<class T>
+MT2Analysis<T> operator/( float k, const MT2Analysis<T>& rhs ) {
+
+  return rhs/k;
+
+}
+
 
 
 #endif
