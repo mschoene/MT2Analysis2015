@@ -76,23 +76,50 @@ int main( int argc, char* argv[] ) {
 
 
 
-  //std::vector<MT2Region> r_vsHT;
-  //r_vsHT.push_back( MT2Region( 450., 575. , 2, 3, 0, 0 ) );
-  //r_vsHT.push_back( MT2Region( 575., 1000., 2, 3, 0, 0 ) );
-  //r_vsHT.push_back( MT2Region( 1000., -1. , 2, 3, 0, 0 ) );
+  std::vector<MT2Region> r_vsHT;
+  r_vsHT.push_back( MT2Region(  450., 575. , 2, 3, 0, 0 ) );
+  r_vsHT.push_back( MT2Region(  575., 1000., 2, 3, 0, 0 ) );
+  r_vsHT.push_back( MT2Region( 1000., 1500., 2, 3, 0, 0 ) );
+  r_vsHT.push_back( MT2Region( 1500.,   -1., 2, 3, 0, 0 ) );
 
-  //compareRegions( outputdir, r_vsHT, purity, true );
-  //compareRegions( outputdir, r_vsHT, eff , false );
+  compareRegions( outputdir, r_vsHT, purity );
+  compareRegions( outputdir, r_vsHT, purityLoose );
+  compareRegions( outputdir, r_vsHT, eff );
 
 
+  std::vector<MT2Region> r_vsHT_b1;
+  r_vsHT_b1.push_back( MT2Region(  450., 575. , 2, 3, 1, 1 ) );
+  r_vsHT_b1.push_back( MT2Region(  575., 1000., 2, 3, 1, 1 ) );
+  r_vsHT_b1.push_back( MT2Region( 1000., 1500., 2, 3, 1, 1 ) );
+  r_vsHT_b1.push_back( MT2Region( 1500.,   -1., 2, 3, 1, 1 ) );
 
-  //std::vector<MT2Region> r_vsHT2;
-  //r_vsHT2.push_back( MT2Region( 450., 575. , 4, -1, 0, 0 ) );
-  //r_vsHT2.push_back( MT2Region( 575., 1000., 4, -1, 0, 0 ) );
-  //r_vsHT2.push_back( MT2Region( 1000., -1. , 4, -1, 0, 0 ) );
+  compareRegions( outputdir, r_vsHT_b1, purity );
+  compareRegions( outputdir, r_vsHT_b1, purityLoose );
+  compareRegions( outputdir, r_vsHT_b1, eff );
 
-  //compareRegions( outputdir, r_vsHT2, purity, true );
-  //compareRegions( outputdir, r_vsHT2, eff , false );
+
+  std::vector<MT2Region> r_vsHT_j46;
+  r_vsHT_j46.push_back( MT2Region(  450., 575. , 4, 6, 0, 0 ) );
+  r_vsHT_j46.push_back( MT2Region(  575., 1000., 4, 6, 0, 0 ) );
+  r_vsHT_j46.push_back( MT2Region( 1000., 1500., 4, 6, 0, 0 ) );
+  r_vsHT_j46.push_back( MT2Region( 1500.,   -1., 4, 6, 0, 0 ) );
+
+  compareRegions( outputdir, r_vsHT_j46, purity );
+  compareRegions( outputdir, r_vsHT_j46, purityLoose );
+  compareRegions( outputdir, r_vsHT_j46, eff );
+
+
+  std::vector<MT2Region> r_vsHT_j46_b1;
+  r_vsHT_j46_b1.push_back( MT2Region(  450., 575. , 4, 6, 1, 1 ) );
+  r_vsHT_j46_b1.push_back( MT2Region(  575., 1000., 4, 6, 1, 1 ) );
+  r_vsHT_j46_b1.push_back( MT2Region( 1000., 1500., 4, 6, 1, 1 ) );
+  r_vsHT_j46_b1.push_back( MT2Region( 1500.,   -1., 4, 6, 1, 1 ) );
+
+  compareRegions( outputdir, r_vsHT_j46_b1, purity );
+  compareRegions( outputdir, r_vsHT_j46_b1, purityLoose );
+  compareRegions( outputdir, r_vsHT_j46_b1, eff );
+
+
 
   return 0;
 
