@@ -70,6 +70,8 @@ class MT2Estimate {
   const MT2Estimate& operator/=( float k );
   const MT2Estimate& operator*=( float k );
 
+  friend MT2Estimate operator*( float k, const MT2Estimate& rhs );
+  friend MT2Estimate operator/( float k, const MT2Estimate& rhs );
 
   virtual void finalize() {
     return this->addOverflow();

@@ -40,24 +40,25 @@ int main( int argc, char* argv[] ) {
     exit(101);
   }
 
-  //std::string regionsSet = "13TeV_onlyHT";
-  std::string regionsSet = "13TeV_CSA14";
-  //std::string regionsSet = "13TeV_inclusive";
-  //std::string regionsSet = "13TeV_ZinvGammaPurity";
-  if( argc>1 ) {
-    std::string regionsSet_tmp(argv[1]); 
-    regionsSet = regionsSet_tmp;
-  }
-
 
   bool useMC = true;
-  if( argc>2 ) {
-    std::string useMC_str(argv[2]); 
+  if( argc>1 ) {
+    std::string useMC_str(argv[1]); 
     if( useMC_str!="data" && useMC_str!="MC" ) {
       std::cout << "ERROR! Second argument may only be 'MC' or 'data'" << std::endl;
       exit(1111);
     }
     if( useMC_str=="data" ) useMC = false;
+  }
+
+
+  //std::string regionsSet = "13TeV_onlyHT";
+  std::string regionsSet = "13TeV_inclusive";
+  //std::string regionsSet = "13TeV_inclusive";
+  //std::string regionsSet = "13TeV_ZinvGammaPurity";
+  if( argc>2 ) {
+    std::string regionsSet_tmp(argv[2]); 
+    regionsSet = regionsSet_tmp;
   }
 
 
@@ -89,6 +90,12 @@ int main( int argc, char* argv[] ) {
   }
 
 
+  if( !useMC ) {
+    setPoissonError( templatesFake );
+    setPoissonError( templatesPrompt );
+  }
+
+
 
   std::string templateFileName = "gammaTemplates";
   if( useMC ) templateFileName += "MC";
@@ -96,15 +103,7 @@ int main( int argc, char* argv[] ) {
   templateFileName = templateFileName + "_" + samplesFileName + "_" + regionsSet + ".root";
 
 
-
-  if( !useMC ) {
-    setPoissonError( templatesFake );
-    setPoissonError( templatesPrompt );
-  }
   templatesFake->writeToFile(templateFileName);
-
-  if( !useMC ) 
-    templatesPrompt->setName( "templatesPromptRaw" ); // still contaminated from fakes with good sietaieta
   templatesPrompt->addToFile(templateFileName, true);
 
 
@@ -153,7 +152,7 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2An
 
     //if( myTree.gamma_ht>1000. && sample.id==204 ) continue; // remove high-weight spikes (remove GJet_400to600 leaking into HT>1000)
 
-    if( myTree.met_pt > 100.) continue;
+    if( myTree.mt2 > 200.) continue;
     if( myTree.gamma_mt2 < 200.) continue;
 
     if( myTree.nMuons10 > 0) continue;
@@ -169,6 +168,7 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2An
     if( myTree.gamma_nJet40<2 ) continue;
 
     if( myTree.ngamma==0 ) continue;
+    if( myTree.gamma_pt[0]<160. ) continue;
 
 
     // AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH REMOVE THIS SOOOOON
@@ -179,15 +179,13 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2An
     bool isMatched = (mcMatchId==22 || mcMatchId==7);
     bool isGenIso = (myTree.gamma_genIso[0]<5.);
 
-    if( isMatched  &&  isGenIso && isQCD  ) continue; //isolated prompts taken from GJet only
-    if( isMatched  && !isGenIso && isGJet ) continue; //non-isolated prompts taken from QCD only
-    if( !isMatched &&              isGJet ) continue; //fakes from QCD only
+    bool isPrompt = ( isMatched &&  isGenIso);
+    bool isNIP    = ( isMatched && !isGenIso);
+    bool isFake   = (!isMatched);
 
-
-    float iso = myTree.gamma_chHadIso[0];
-    if( iso > 30. ) continue;
-    //float iso = myTree.gamma_chHadIso[0]/myTree.gamma_pt[0];
-    //if( iso > 0.1 ) continue;
+    if( isPrompt && isQCD  ) continue; //isolated prompts taken from GJet only
+    if( isNIP    && isGJet ) continue; //non-isolated prompts taken from QCD only
+    if( isFake   && isGJet ) continue; //fakes from QCD only
 
 
     TLorentzVector gamma;
@@ -208,26 +206,31 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2An
       sietaietaOK = (sietaieta < 0.03);
     }
 
-    bool isPrompt = false;
+    bool isWorkingPrompt = false;
 
     if( useMC ) {
 
       if( !sietaietaOK ) continue;
-      isPrompt = isMatched;
+      isWorkingPrompt = isPrompt;
 
     } else { // is data
 
-      isPrompt = sietaietaOK;
+      isWorkingPrompt = sietaietaOK;
 
-      if( isPrompt ) {
-        // for prompts use only low-sensitivity regions:
-        if( myTree.gamma_mt2>300. ) continue;
-        if( myTree.gamma_ht>1000. ) continue;
-        if( myTree.gamma_nBJet40>0 ) continue;
-      }
+      //if( isWorkingPrompt ) {
+      //  // for prompts use only low-sensitivity regions:
+      //  if( myTree.gamma_mt2>300. ) continue;
+      //  if( myTree.gamma_ht>1000. ) continue;
+      //  if( myTree.gamma_nBJet40>0 ) continue;
+      //}
 
     }
 
+
+    float iso = myTree.gamma_chHadIso[0];
+    if( !useMC && isWorkingPrompt ) iso = myTree.gamma_chHadIsoRC[0]; // random cone
+ 
+    if( iso > 20. ) continue;
 
 
     int closestJet = -1;
@@ -263,7 +266,7 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2An
     Double_t weight = myTree.evt_scale1fb*lumi; 
 
 
-    if( isPrompt ) {
+    if( isWorkingPrompt ) {
 
       MT2EstimateZinvGamma* thisPrompt = prompt->get( myTree.gamma_ht, myTree.gamma_nJet40, myTree.gamma_nBJet40, myTree.gamma_met_pt );
       if( thisPrompt==0 ) continue;

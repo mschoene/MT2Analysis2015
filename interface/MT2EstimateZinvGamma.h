@@ -46,7 +46,12 @@ class MT2EstimateZinvGamma : public MT2Estimate {
   //MT2EstimateZinvGamma operator/=( const MT2EstimateZinvGamma& rhs ) const;
 
   MT2EstimateZinvGamma operator* ( float k ) const;
+  MT2EstimateZinvGamma operator/ ( float k ) const;
   const MT2EstimateZinvGamma& operator*=( float k );
+  const MT2EstimateZinvGamma& operator/=( float k );
+
+  friend MT2EstimateZinvGamma operator*( float k, const MT2EstimateZinvGamma& rhs );
+  friend MT2EstimateZinvGamma operator/( float k, const MT2EstimateZinvGamma& rhs );
 
 
   void fillIso( float iso, float weight=1., float mt2=-1 );

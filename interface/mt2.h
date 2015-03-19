@@ -295,20 +295,24 @@ public :
    Int_t           genLepFromTau_status[5];   //[ngenLepFromTau]
    Int_t           genLepFromTau_sourceId[5];   //[ngenLepFromTau]
    Int_t           ngamma;
-   Float_t         gamma_pt[4];   //[ngamma]
-   Float_t         gamma_eta[4];   //[ngamma]
-   Float_t         gamma_phi[4];   //[ngamma]
-   Float_t         gamma_mass[4];   //[ngamma]
-   Int_t           gamma_pdgId[4];   //[ngamma]
-   Int_t           gamma_idCutBased[4];   //[ngamma]
-   Float_t         gamma_hOverE[4];   //[ngamma]
-   Float_t         gamma_r9[4];   //[ngamma]
-   Float_t         gamma_sigmaIetaIeta[4];   //[ngamma]
-   Float_t         gamma_chHadIso[4];   //[ngamma]
-   Float_t         gamma_neuHadIso[4];   //[ngamma]
-   Float_t         gamma_phIso[4];   //[ngamma]
-   Int_t           gamma_mcMatchId[4];   //[ngamma]
-   Float_t         gamma_genIso[4];   //[ngamma]
+   Float_t         gamma_pt[20];   //[ngamma]
+   Float_t         gamma_eta[20];   //[ngamma]
+   Float_t         gamma_phi[20];   //[ngamma]
+   Float_t         gamma_mass[20];   //[ngamma]
+   Int_t           gamma_pdgId[20];   //[ngamma]
+   Int_t           gamma_idCutBased[20];   //[ngamma]
+   Float_t         gamma_hOverE[20];   //[ngamma]
+   Float_t         gamma_r9[20];   //[ngamma]
+   Float_t         gamma_sigmaIetaIeta[20];   //[ngamma]
+   Float_t         gamma_chHadIso[20];   //[ngamma]
+   Float_t         gamma_chHadIso04[20];   //[ngamma]
+   Float_t         gamma_chHadIsoRC[20];   //[ngamma]
+   Float_t         gamma_chHadIsoRC04[20];   //[ngamma]
+   Float_t         gamma_neuHadIso[20];   //[ngamma]
+   Float_t         gamma_phIso[20];   //[ngamma]
+   Int_t           gamma_mcMatchId[20];   //[ngamma]
+   Float_t         gamma_genIso[20];   //[ngamma]
+   Float_t         gamma_genIso04[20];   //[ngamma]
    Int_t           nGenP6StatusThree;
    Float_t         GenP6StatusThree_pt[54];   //[nGenP6StatusThree]
    Float_t         GenP6StatusThree_eta[54];   //[nGenP6StatusThree]
@@ -632,10 +636,14 @@ public :
    TBranch        *b_gamma_r9;   //!
    TBranch        *b_gamma_sigmaIetaIeta;   //!
    TBranch        *b_gamma_chHadIso;   //!
+   TBranch        *b_gamma_chHadIso04;   //!
+   TBranch        *b_gamma_chHadIsoRC;   //!
+   TBranch        *b_gamma_chHadIsoRC04;   //!
    TBranch        *b_gamma_neuHadIso;   //!
    TBranch        *b_gamma_phIso;   //!
    TBranch        *b_gamma_mcMatchId;   //!
    TBranch        *b_gamma_genIso;   //!
+   TBranch        *b_gamma_genIso04;   //!
    TBranch        *b_nGenP6StatusThree;   //!
    TBranch        *b_GenP6StatusThree_pt;   //!
    TBranch        *b_GenP6StatusThree_eta;   //!
@@ -1044,10 +1052,14 @@ void MT2Tree::Init(TTree *tree)
    fChain->SetBranchAddress("gamma_r9", gamma_r9, &b_gamma_r9);
    fChain->SetBranchAddress("gamma_sigmaIetaIeta", gamma_sigmaIetaIeta, &b_gamma_sigmaIetaIeta);
    fChain->SetBranchAddress("gamma_chHadIso", gamma_chHadIso, &b_gamma_chHadIso);
+   fChain->SetBranchAddress("gamma_chHadIso04", gamma_chHadIso04, &b_gamma_chHadIso04);
+   fChain->SetBranchAddress("gamma_chHadIsoRC"  , gamma_chHadIsoRC,   &b_gamma_chHadIsoRC);
+   fChain->SetBranchAddress("gamma_chHadIsoRC04", gamma_chHadIsoRC04, &b_gamma_chHadIsoRC04);
    fChain->SetBranchAddress("gamma_neuHadIso", gamma_neuHadIso, &b_gamma_neuHadIso);
    fChain->SetBranchAddress("gamma_phIso", gamma_phIso, &b_gamma_phIso);
    fChain->SetBranchAddress("gamma_mcMatchId", gamma_mcMatchId, &b_gamma_mcMatchId);
    fChain->SetBranchAddress("gamma_genIso", gamma_genIso, &b_gamma_genIso);
+   fChain->SetBranchAddress("gamma_genIso04", gamma_genIso04, &b_gamma_genIso04);
    fChain->SetBranchAddress("ntau", &ntau, &b_ntau);
    fChain->SetBranchAddress("tau_pt", tau_pt, &b_tau_pt);
    fChain->SetBranchAddress("tau_eta", tau_eta, &b_tau_eta);

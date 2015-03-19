@@ -6,6 +6,7 @@
 #include <cmath>
 
 #include "TRandom3.h"
+#include "TTree.h"
 
 
 
@@ -18,30 +19,8 @@ MT2EstimateZinvGamma::MT2EstimateZinvGamma( const std::string& aname, const MT2R
   sietaieta->Sumw2();
 
 
-  //int nbins = 12;
-  //Double_t bins[nbins];
-  //bins[0] = 0.;
-  //bins[1] = 0.005;
-  //bins[2] = 0.01;
-  //bins[3] = 0.02;
-  //bins[4] = 0.03;
-  //bins[5] = 0.04;
-  //bins[6] = 0.05;
-  //bins[7] = 0.06;
-  //bins[8] = 0.07;
-  //bins[9] = 0.08;
-  //bins[10] = 0.09;
-  //bins[11] = 0.1;
-  ////bins[6] = 0.2;
-  ////bins[7] = 0.3;
-  ////bins[8] = 0.4;
-  ////bins[9] = 0.5;
-  ////bins[10] = 1.;
-  //float xmax = bins[nbins-1];
-
   int nbins = 8;
-  float xmax = 20.;
-
+  int xmax = 20.;
 
   // this histo will be used to create histogram templates:
   //iso = new TH1D( this->getHistoName("iso").c_str(), "", nbins-1, bins );
@@ -77,6 +56,11 @@ MT2EstimateZinvGamma::MT2EstimateZinvGamma( const MT2EstimateZinvGamma& rhs ) : 
 
   this->iso = new TH1D(*(rhs.iso));
   this->sietaieta = new TH1D(*(rhs.sietaieta));
+
+  int xmax = this->iso->GetXaxis()->GetXmax();
+
+  this->x_ = new RooRealVar( "x", "", 0., xmax );
+  this->w_ = new RooRealVar( "w", "", 0., 1000. );
 
   for( unsigned i=0; i<rhs.iso_bins.size(); ++i ) {
     RooDataSet* newDataSet = new RooDataSet( *(rhs.iso_bins[i]) );
@@ -247,59 +231,21 @@ void MT2EstimateZinvGamma::write() const {
 
 const MT2EstimateZinvGamma& MT2EstimateZinvGamma::operator=( const MT2EstimateZinvGamma& rhs ) {
 
-  if( this->iso == 0 ) { // first time
 
-    this->setName(rhs.getName());
+  this->region = new MT2Region(*(rhs.region));
 
-    this->region = new MT2Region(*(rhs.region));
+  this->yield = new TH1D(*(rhs.yield));
 
-    this->yield = new TH1D(*(rhs.yield));
+  this->iso = new TH1D(*(rhs.iso));
 
-    this->iso = new TH1D(*(rhs.iso));
+  this->sietaieta = new TH1D(*(rhs.sietaieta));
 
-    this->sietaieta = new TH1D(*(rhs.sietaieta));
-
-    for( unsigned i=0; i<iso_bins.size(); ++i ) {
-      this->iso_bins[i] = new RooDataSet( *(rhs.iso_bins[i]) );
-      this->iso_bins_hist[i] = new TH1D( *(rhs.iso_bins_hist[i]) );
-    }
-
-
-  } else { // keep name and histo name, just make histogram identical
-
-    if( this->region!=0 ) delete this->region;
-    this->region = new MT2Region(*(rhs.region));
-
-    std::string oldName = this->yield->GetName();
-    delete this->yield;
-    this->yield = new TH1D(*(rhs.yield));
-    this->yield->SetName(oldName.c_str());
-
-    std::string oldName_iso = this->iso->GetName();
-    delete this->iso;
-    this->iso = new TH1D(*(rhs.iso));
-    this->iso->SetName(oldName_iso.c_str());
-
-    std::string oldName_sietaieta = this->sietaieta->GetName();
-    delete this->sietaieta;
-    this->sietaieta = new TH1D(*(rhs.sietaieta));
-    this->sietaieta->SetName(oldName_sietaieta.c_str());
-
-
-    for( unsigned i=0; i<iso_bins.size(); ++i ) {
-
-      std::string oldName_bin = this->iso_bins[i]->GetName();
-      this->iso_bins[i] = new RooDataSet( *(rhs.iso_bins[i]) );
-      this->iso_bins[i]->SetName( oldName_bin.c_str() );
-
-      std::string oldName_bin_hist = this->iso_bins_hist[i]->GetName();
-      this->iso_bins_hist[i] = new TH1D( *(rhs.iso_bins_hist[i]) );
-      this->iso_bins_hist[i]->SetName( oldName_bin_hist.c_str() );
-
-    }
-
-
+  for( unsigned i=0; i<iso_bins.size(); ++i ) {
+    this->iso_bins[i] = new RooDataSet( *(rhs.iso_bins[i]) );
+    this->iso_bins_hist[i] = new TH1D( *(rhs.iso_bins_hist[i]) );
   }
+
+  this->setName(this->getName());
 
   return *this;
 
@@ -408,37 +354,197 @@ const MT2EstimateZinvGamma& MT2EstimateZinvGamma::operator-=( const MT2EstimateZ
 
 MT2EstimateZinvGamma MT2EstimateZinvGamma::operator*( float k ) const{
 
-  std::cout << "[MT2EstimateZinvGamma::operator*] CAREFUL!! RooDataSets will not be multiplied!!" << std::endl;
 
+std::cout << "operator * float " << std::endl;
   MT2EstimateZinvGamma result(*this);
   result.yield->Scale(k);
   result.iso->Scale(k);
   result.sietaieta->Scale(k);
 
+  std::vector<RooDataSet*> new_iso_bins;
+
   for( unsigned i=0; i<iso_bins.size(); ++i ) {
 
     result.iso_bins_hist[i]->Scale(k);
 
+    std::string oldName(result.iso_bins[i]->GetName());
+    RooDataSet* newDataset = new RooDataSet( "newDataset", "", RooArgSet(*x_,*w_), w_->GetName() );
+
+    for (int iEntry = 0; iEntry < result.iso_bins[i]->numEntries(); iEntry++) {
+      x_->setVal(result.iso_bins[i]->get(iEntry)->getRealValue("x"));
+      float newWeight = k* result.iso_bins[i]->weight();
+      w_->setVal(newWeight);
+      newDataset->add( RooArgList(*x_, *w_), newWeight );
+    }
+
+    delete result.iso_bins[i];
+    result.iso_bins[i] = 0;
+
+    newDataset->SetName(oldName.c_str());
+    new_iso_bins.push_back(newDataset);
+
   }
+
   
+  result.iso_bins.clear();
+  
+  for( unsigned i=0; i<new_iso_bins.size(); ++i )
+    result.iso_bins.push_back(new_iso_bins[i]);
+
   return result;
 
 }
 
 
+  
+
+
+
 const MT2EstimateZinvGamma& MT2EstimateZinvGamma::operator*=( float k ) {
 
+std::cout << "operator *= float " << std::endl;
   this->yield->Scale(k);
   this->iso->Scale(k);
   this->sietaieta->Scale(k);
+
+  std::vector<RooDataSet*> new_iso_bins;
 
   for( unsigned i=0; i<iso_bins.size(); ++i ) {
 
     this->iso_bins_hist[i]->Scale(k);
 
+    std::string oldName(this->iso_bins[i]->GetName());
+    RooDataSet* newDataset = new RooDataSet( "newDataset", "", RooArgSet(*x_,*w_), w_->GetName() );
+
+    for (int iEntry = 0; iEntry < this->iso_bins[i]->numEntries(); iEntry++) {
+      x_->setVal(this->iso_bins[i]->get(iEntry)->getRealValue("x"));
+      float newWeight = k* this->iso_bins[i]->weight();
+      w_->setVal(newWeight);
+      newDataset->add( RooArgList(*x_, *w_), newWeight );
+    }
+
+    delete this->iso_bins[i];
+    this->iso_bins[i] = 0;
+
+    newDataset->SetName(oldName.c_str());
+    new_iso_bins.push_back(newDataset);
+
   }
 
+  this->iso_bins.clear();
+  
+  for( unsigned i=0; i<new_iso_bins.size(); ++i )
+    this->iso_bins.push_back(new_iso_bins[i]);
+
   return (*this);
+
+}
+
+
+
+
+MT2EstimateZinvGamma MT2EstimateZinvGamma::operator/( float k ) const{
+
+
+  MT2EstimateZinvGamma result(*this);
+  result.yield->Scale(1./k);
+  result.iso->Scale(1./k);
+  result.sietaieta->Scale(1./k);
+
+  std::vector<RooDataSet*> new_iso_bins;
+
+  for( unsigned i=0; i<iso_bins.size(); ++i ) {
+
+    result.iso_bins_hist[i]->Scale(1./k);
+
+    std::string oldName(result.iso_bins[i]->GetName());
+    RooDataSet* newDataset = new RooDataSet( "newDataset", "", RooArgSet(*x_,*w_), w_->GetName() );
+
+    for (int iEntry = 0; iEntry < result.iso_bins[i]->numEntries(); iEntry++) {
+      x_->setVal(result.iso_bins[i]->get(iEntry)->getRealValue("x"));
+      float newWeight = result.iso_bins[i]->weight()/k;
+      w_->setVal(newWeight);
+      newDataset->add( RooArgList(*x_, *w_), newWeight );
+    }
+
+    delete result.iso_bins[i];
+    result.iso_bins[i] = 0;
+
+    newDataset->SetName(oldName.c_str());
+    new_iso_bins.push_back(newDataset);
+
+  }
+
+  
+  result.iso_bins.clear();
+  
+  for( unsigned i=0; i<new_iso_bins.size(); ++i )
+    result.iso_bins.push_back(new_iso_bins[i]);
+
+  return result;
+
+}
+
+
+
+
+const MT2EstimateZinvGamma& MT2EstimateZinvGamma::operator/=( float k ) {
+
+  this->yield->Scale(1./k);
+  this->iso->Scale(1./k);
+  this->sietaieta->Scale(1./k);
+
+  std::vector<RooDataSet*> new_iso_bins;
+
+  for( unsigned i=0; i<iso_bins.size(); ++i ) {
+
+    this->iso_bins_hist[i]->Scale(1./k);
+
+    std::string oldName(this->iso_bins[i]->GetName());
+    RooDataSet* newDataset = new RooDataSet( "newDataset", "", RooArgSet(*x_,*w_), w_->GetName() );
+
+    for (int iEntry = 0; iEntry < this->iso_bins[i]->numEntries(); iEntry++) {
+      x_->setVal(this->iso_bins[i]->get(iEntry)->getRealValue("x"));
+      float newWeight = this->iso_bins[i]->weight()/k;
+      w_->setVal(newWeight);
+      newDataset->add( RooArgList(*x_, *w_), newWeight );
+    }
+
+    delete this->iso_bins[i];
+    this->iso_bins[i] = 0;
+
+    newDataset->SetName(oldName.c_str());
+    new_iso_bins.push_back(newDataset);
+
+  }
+
+  this->iso_bins.clear();
+  
+  for( unsigned i=0; i<new_iso_bins.size(); ++i )
+    this->iso_bins.push_back(new_iso_bins[i]);
+
+  return (*this);
+
+}
+
+  
+  
+  
+  
+// friend functions:
+
+MT2EstimateZinvGamma operator*( float k, const MT2EstimateZinvGamma& rhs ) {
+
+std::cout << "operator * float friend" << std::endl;
+  return rhs*k;
+
+}
+
+
+
+MT2EstimateZinvGamma operator/( float k, const MT2EstimateZinvGamma& rhs ) {
+
+  return rhs/k;
 
 }
 

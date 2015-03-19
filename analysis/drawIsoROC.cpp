@@ -18,20 +18,22 @@
 
 
 
-// 0: put them in BG
-// 1: put them in signal
-// 2: ignore them
 
 
-void drawSietaieta( const std::string& outputdir, TTree* tree, const std::string& eb_ee );
-void drawROC( const std::string& outputdir, TTree* tree, int optionNGI );
+
+
+void drawIsoRandomCone( const std::string& outputdir, TTree* tree_prompt, TTree* tree_nip, TTree* tree_fake, const std::string& eb_ee );
+void drawCompare( const std::string& outputdir, const std::string& saveName, const std::string& axisName, std::vector<TH1D*> v, const std::string& eb_ee );
+void drawSietaieta( const std::string& outputdir, TTree* tree_prompt, TTree* tree_nip, TTree* tree_fake, const std::string& eb_ee, float ptMin=-1., float ptMax=100000 );
+void drawROC( const std::string& outputdir, TTree* tree_prompt, TTree* tree_nip, TTree* tree_fake, int optionNGI );
 TGraph* getRoC( TH1D* h1_prompt, TH1D* h1_fake );
 TGraph* getWP( TH1D* h1_prompt, TH1D* h1_fake, float thresh );
-void drawTemplatesVsMT2( const std::string& outputdir, const std::string& varName, TTree* tree );
+void drawTemplatesVsMT2( const std::string& outputdir, const std::string& varName, TTree* tree_prompt, TTree* tree_nip, TTree* tree_fake );
 void drawVsMT2( const std::string& outputdir, const std::string& varName, const std::string& name, std::vector<TH1D*> histos, std::vector<float> bins );
-void drawIsoVsSigma( const std::string& outputdir, TTree* tree, const std::string& iso1, const std::string& iso2 );
+void drawIsoVsSigma( const std::string& outputdir, TTree* tree_fake, const std::string& iso1, const std::string& iso2 );
 std::string getLongName( const std::string& name );
 void setBins( TH1D* h1, TH2D* h2 );
+
 
 
 int main() {
@@ -42,34 +44,39 @@ int main() {
   std::string outputdir = "IsoPlots";
   system(Form("mkdir -p %s", outputdir.c_str()));
 
-  //TH1::AddDirectory(kFALSE); // stupid ROOT memory allocation needs this
-
-  //TFile* file = TFile::Open("GenIsoCheck_PHYS14_v2_Zinv_noSietaieta_13TeV_inclusive/genIso.root");
-  //TTree* tree_qcd = (TTree*)file->Get("qcd/HT450toInf_j2toInf_b0toInf/tree_qcd_HT450toInf_j2toInf_b0toInf");
-  //TTree* tree_gjet = (TTree*)file->Get("gjet/HT450toInf_j2toInf_b0toInf/tree_gjet_HT450toInf_j2toInf_b0toInf");
 
 
   std::string fileName = "GenIsoCheck_PHYS14_v2_Zinv_13TeV_inclusive/genIso.root";
 
-  TChain* tree = new TChain("t");
-  tree->Add( Form("%s/qcd/HT450toInf_j2toInf_b0toInf/tree_qcd_HT450toInf_j2toInf_b0toInf", fileName.c_str()));
-  tree->Add( Form("%s/gjet/HT450toInf_j2toInf_b0toInf/tree_gjet_HT450toInf_j2toInf_b0toInf", fileName.c_str()));
+  TFile* file = TFile::Open(fileName.c_str());
+  TTree* tree_prompt = (TTree*)file->Get("prompt/HT450toInf_j2toInf_b0toInf/tree_prompt_HT450toInf_j2toInf_b0toInf");
+  TTree* tree_fake   = (TTree*)file->Get(  "fake/HT450toInf_j2toInf_b0toInf/tree_fake_HT450toInf_j2toInf_b0toInf");
+  TTree* tree_nip    = (TTree*)file->Get(   "nip/HT450toInf_j2toInf_b0toInf/tree_nip_HT450toInf_j2toInf_b0toInf");
+
 
   std::cout << "-> Got stuff from file: " << fileName << std::endl;
 
+  drawIsoRandomCone( outputdir, tree_prompt, tree_nip, tree_fake, "" );
+  drawIsoRandomCone( outputdir, tree_prompt, tree_nip, tree_fake, "Barrel" );
+  drawIsoRandomCone( outputdir, tree_prompt, tree_nip, tree_fake, "Endcap" );
 
-  drawSietaieta( outputdir, tree, "Barrel" );
-  drawSietaieta( outputdir, tree, "Endcap" );
+  drawSietaieta( outputdir, tree_prompt, tree_nip, tree_fake, "Barrel" );
+  drawSietaieta( outputdir, tree_prompt, tree_nip, tree_fake, "Endcap" );
+  drawSietaieta( outputdir, tree_prompt, tree_nip, tree_fake, "Barrel", 200., 300. );
+  drawSietaieta( outputdir, tree_prompt, tree_nip, tree_fake, "Barrel", 300., 400. );
+  drawSietaieta( outputdir, tree_prompt, tree_nip, tree_fake, "Barrel", 400., 600. );
+  drawSietaieta( outputdir, tree_prompt, tree_nip, tree_fake, "Barrel", 600., 800. );
+  drawSietaieta( outputdir, tree_prompt, tree_nip, tree_fake, "Barrel", 800. );
 
-  drawIsoVsSigma( outputdir, tree, "iso", "isoCP" );
-  //drawIsoVsSigma( outputdir, tree, "iso", "(isoCP-iso)" );
+  drawIsoVsSigma( outputdir, tree_fake, "iso", "isoCP" );
 
-  drawROC( outputdir, tree, 0 );
-  drawROC( outputdir, tree, 1 );
-  drawROC( outputdir, tree, 2 );
 
-  drawTemplatesVsMT2( outputdir, "iso", tree );
-  drawTemplatesVsMT2( outputdir, "isoCP", tree );
+  drawROC( outputdir, tree_prompt, tree_nip, tree_fake, 0 );  // 0: put them in BG
+  drawROC( outputdir, tree_prompt, tree_nip, tree_fake, 1 );  // 1: put them in signal
+  drawROC( outputdir, tree_prompt, tree_nip, tree_fake, 2 );  // 2: ignore them
+
+  drawTemplatesVsMT2( outputdir, "iso", tree_prompt, tree_nip, tree_fake );
+  drawTemplatesVsMT2( outputdir, "isoCP", tree_prompt, tree_nip, tree_fake );
 
 
   return 0;
@@ -79,7 +86,193 @@ int main() {
 
 
 
-void drawSietaieta( const std::string& outputdir, TTree* tree, const std::string& eb_ee ) {
+void drawIsoRandomCone( const std::string& outputdir, TTree* tree_prompt, TTree* tree_nip, TTree* tree_fake, const std::string& eb_ee ) {
+
+  float etaMin;
+  float etaMax;
+  if( eb_ee=="Barrel" ) {
+    etaMin = 0.;
+    etaMax = 1.479;
+  } else if( eb_ee=="Endcap" ) {
+    etaMin = 1.479;
+    etaMax = 2.5;
+  } else if( eb_ee=="" ) {
+    etaMin = 0.;
+    etaMax = 2.5;
+  }
+
+  
+  TH1D* h1_iso_prompt = new TH1D("iso_prompt", "", 100, 0., 20.);
+  h1_iso_prompt->Sumw2();
+  TH1D* h1_iso_nip = new TH1D("iso_nip", "", 100, 0., 20.);
+  h1_iso_nip->Sumw2();
+  TH1D* h1_iso_fake = new TH1D("iso_fake", "", 100, 0., 20.);
+  h1_iso_fake->Sumw2();
+
+  TH1D* h1_isoRC_prompt = new TH1D("isoRC_prompt", "", 100, 0., 20.);
+  h1_isoRC_prompt->Sumw2();
+  TH1D* h1_isoRC_nip = new TH1D("isoRC_nip", "", 100, 0., 20.);
+  h1_isoRC_nip->Sumw2();
+  TH1D* h1_isoRC_fake = new TH1D("isoRC_fake", "", 100, 0., 20.);
+  h1_isoRC_fake->Sumw2();
+
+
+  std::string cut(Form("weight*( abs(etaGamma)>=%f && abs(etaGamma)<%f)", etaMin, etaMax) );
+
+  tree_prompt->Project( "iso_prompt"  , "iso*ptGamma", cut.c_str() );
+  tree_prompt->Project( "isoRC_prompt", "isoRC", cut.c_str() );
+
+  tree_nip->Project( "iso_nip"  , "iso*ptGamma", cut.c_str() );
+  tree_nip->Project( "isoRC_nip", "isoRC", cut.c_str() );
+
+  tree_fake->Project( "iso_fake"  , "iso*ptGamma", cut.c_str() );
+  tree_fake->Project( "isoRC_fake", "isoRC", cut.c_str() );
+
+
+  h1_iso_prompt->SetTitle("Prompt");
+  h1_iso_nip->SetTitle("NIP");
+  h1_iso_fake->SetTitle("Fake");
+
+  h1_isoRC_prompt->SetTitle("Prompt");
+  h1_isoRC_nip->SetTitle("NIP");
+  h1_isoRC_fake->SetTitle("Fake");
+
+
+  std::vector<TH1D*> v1;
+  v1.push_back( h1_iso_prompt );
+  v1.push_back( h1_iso_nip );
+  v1.push_back( h1_iso_fake );
+  drawCompare( outputdir, "iso", "Charged Isolation [GeV]", v1, eb_ee );
+
+  std::vector<TH1D*> v1rc;
+  v1rc.push_back( h1_isoRC_prompt );
+  v1rc.push_back( h1_isoRC_nip );
+  v1rc.push_back( h1_isoRC_fake );
+  drawCompare( outputdir, "isoRC", "Random Cone Isolation [GeV]", v1rc, eb_ee );
+
+
+  h1_isoRC_prompt->SetTitle("Random Cone");
+
+  TH1D* h1_iso_prompt_plus_nip = new TH1D(*h1_iso_prompt);
+  h1_iso_prompt_plus_nip->SetName("iso_prompt_plus_nip");
+  h1_iso_prompt_plus_nip->Add(h1_iso_nip);
+  h1_iso_prompt_plus_nip->SetTitle("Prompt+NIP");
+
+
+  std::vector<TH1D*> v2;
+  v2.push_back( h1_iso_prompt );
+  v2.push_back( h1_iso_prompt_plus_nip );
+  v2.push_back( h1_isoRC_prompt );
+  drawCompare( outputdir, "isoRC_vs_iso", "Charged Isolation [GeV]", v2, eb_ee );
+
+
+  delete h1_iso_prompt;
+  delete h1_iso_nip;
+  delete h1_iso_fake;
+
+  delete h1_isoRC_prompt;
+  delete h1_isoRC_nip;
+  delete h1_isoRC_fake;
+
+
+}
+
+
+
+void drawCompare( const std::string& outputdir, const std::string& saveName, const std::string& axisName, std::vector<TH1D*> v, const std::string& eb_ee ) {
+
+
+  std::vector<int> colors;
+  colors.push_back( 46 );
+  colors.push_back( 29 );
+  colors.push_back( 38 );
+  colors.push_back( 42 );
+  colors.push_back( kGray+2 );
+
+
+  TCanvas* c1 = new TCanvas("c1", "", 600, 600 );
+  c1->cd();
+  TCanvas* c1_log = new TCanvas("c1_log", "", 600, 600 );
+  c1_log->SetLogy();
+  c1_log->cd();
+
+  float yMax = 0.;
+  for( unsigned i=0; i<v.size(); ++i ) {
+    float thismax = v[i]->GetMaximum()/v[i]->Integral();
+    if( thismax > yMax ) yMax = thismax;
+  }
+  yMax *= 1.2;
+
+  float xMax = 10.;
+
+  TH2D* h2_axes = new TH2D( "axes", "", 10, 0., xMax, 10, 0., yMax );  
+  h2_axes->SetYTitle("Normalized to Unity");
+  h2_axes->SetXTitle(axisName.c_str());
+  c1->cd();
+  h2_axes->Draw();
+
+  TH2D* h2_axes_log = new TH2D( "axes_log", "", 10, 0., xMax, 10, 0.0001, 5.*yMax );  
+  h2_axes_log->SetYTitle("Normalized to Unity");
+  h2_axes_log->SetXTitle(axisName.c_str());
+  c1_log->cd();
+  h2_axes_log->Draw();
+
+  float yMax_leg = 0.9;
+  float yMin_leg = yMax_leg - (v.size()+1)*0.07;
+  TLegend* legend;
+  if( eb_ee!="" ) legend = new TLegend( 0.55, yMin_leg, 0.9, yMax_leg, eb_ee.c_str() );
+  else            legend = new TLegend( 0.55, yMin_leg, 0.9, yMax_leg );
+  legend->SetTextSize(0.038);
+  legend->SetFillColor(0);
+
+  for( unsigned i =0; i<v.size(); ++i ) {
+
+    v[i]->SetLineWidth(2);
+    v[i]->SetLineColor(colors[i]);
+
+    c1->cd();
+    v[i]->DrawNormalized("l same");
+
+    c1_log->cd();
+    v[i]->DrawNormalized("l same");
+
+    legend->AddEntry( v[i], v[i]->GetTitle(), "L" );
+
+  }
+
+  TPaveText* labelTop = MT2DrawTools::getLabelTop();
+
+  c1->cd();
+  legend->Draw("same");
+  labelTop->Draw("same");
+  gPad->RedrawAxis();
+
+  c1_log->cd();
+  legend->Draw("same");
+  labelTop->Draw("same");
+  gPad->RedrawAxis();
+
+
+  std::string eb_ee_canvas = (eb_ee!="") ? "_"+eb_ee : "";
+  c1->SaveAs(Form("%s/%s%s.eps", outputdir.c_str(), saveName.c_str(), eb_ee_canvas.c_str()));
+  c1->SaveAs(Form("%s/%s%s.png", outputdir.c_str(), saveName.c_str(), eb_ee_canvas.c_str()));
+  c1->SaveAs(Form("%s/%s%s.pdf", outputdir.c_str(), saveName.c_str(), eb_ee_canvas.c_str()));
+
+  c1_log->SaveAs(Form("%s/%s%s_log.eps", outputdir.c_str(), saveName.c_str(), eb_ee_canvas.c_str()));
+  c1_log->SaveAs(Form("%s/%s%s_log.png", outputdir.c_str(), saveName.c_str(), eb_ee_canvas.c_str()));
+  c1_log->SaveAs(Form("%s/%s%s_log.pdf", outputdir.c_str(), saveName.c_str(), eb_ee_canvas.c_str()));
+
+  delete c1;
+  delete h2_axes;
+  delete c1_log;
+  delete h2_axes_log;
+
+}
+
+
+
+
+void drawSietaieta( const std::string& outputdir, TTree* tree_prompt, TTree* tree_nip, TTree* tree_fake, const std::string& eb_ee, float ptMin, float ptMax ) {
 
 
   float etaMin;
@@ -105,7 +298,7 @@ void drawSietaieta( const std::string& outputdir, TTree* tree, const std::string
     xMaxLegend = 0.91;
   } else if( eb_ee=="Endcap" ) {
     etaMin = 1.479;
-    etaMax = 3.;
+    etaMax = 2.5;
     xMin = 0.02;
     xMax = 0.035;
     xCut = 0.030;
@@ -120,13 +313,22 @@ void drawSietaieta( const std::string& outputdir, TTree* tree, const std::string
   }
     
 
-  TH1D* h1_prompt = new TH1D("prompt", "", nBins, xMin, xMax );
+  TH1D* h1_prompt = new TH1D("hprompt", "", nBins, xMin, xMax );
   h1_prompt->Sumw2();
-  TH1D* h1_fake = new TH1D("fake", "", nBins, xMin, xMax );
+  TH1D* h1_nip = new TH1D("hnip", "", nBins, xMin, xMax );
+  h1_nip->Sumw2();
+  TH1D* h1_fake = new TH1D("hfake", "", nBins, xMin, xMax );
   h1_fake->Sumw2();
 
-  tree->Project( "prompt", "sietaieta", "weight*( mcMatchId==22)" );
-  tree->Project( "fake"  , "sietaieta", "weight*( mcMatchId==0 )" );
+
+  std::string cut(Form("weight*(ptGamma>%f && ptGamma<%f && abs(etaGamma)>=%f && abs(etaGamma)<%f)", ptMin, ptMax, etaMin, etaMax));
+
+  tree_prompt->Project( "hprompt", "sietaieta", cut.c_str() );
+  tree_nip   ->Project( "hnip"   , "sietaieta", cut.c_str() );
+  tree_fake  ->Project( "hfake"  , "sietaieta", cut.c_str() );
+
+  h1_fake->Add(h1_nip);
+
 
   std::cout << std::endl;
   std::cout << eb_ee << ":" << std::endl;
@@ -140,6 +342,7 @@ void drawSietaieta( const std::string& outputdir, TTree* tree, const std::string
   c1->cd();
 
   float yMax = (h1_prompt->GetMaximum()+h1_fake->GetMaximum())*1.1;
+  if( ptMin>0. ) yMax = 750.;
 
   TH2D* h2_axes = new TH2D("axes", "", 10, xMin, xMax, 10, 0., yMax);
   h2_axes->SetXTitle("Photon #sigma_{i#eta i#eta}");
@@ -151,10 +354,6 @@ void drawSietaieta( const std::string& outputdir, TTree* tree, const std::string
 
   h1_fake->SetFillColor(29);
   h1_fake->SetLineColor(kBlack);
-
-  //h1_fake->SetLineColor(kRed+3);
-  //h1_fake->SetLineWidth(2);
-
 
 
   TBox* sbBox = new TBox( xSBmin, 0., xSBmax, yMax );
@@ -182,7 +381,15 @@ void drawSietaieta( const std::string& outputdir, TTree* tree, const std::string
   lineSB2->SetLineWidth(2);
   lineSB2->Draw("same");
 
-  TLegend* legend = new TLegend( xMinLegend, 0.67, xMaxLegend, 0.88, eb_ee.c_str());
+  TLegend* legend;
+  if( ptMin>0. ) {
+    std::string ptString;
+    if( ptMax > 10000. ) ptString = std::string(Form("p_{T} > %.0f", ptMin));
+    else                 ptString = std::string(Form("%.0f < p_{T} < %.0f", ptMin, ptMax));
+    legend = new TLegend( xMinLegend, 0.6, xMaxLegend, 0.88, Form("#splitline{%s}{%s}", eb_ee.c_str(), ptString.c_str()) );
+  } else {
+    legend = new TLegend( xMinLegend, 0.67, xMaxLegend, 0.88, eb_ee.c_str());
+  }
   legend->SetTextSize(0.035);
   legend->SetFillColor(0);
   legend->AddEntry( h1_prompt, "Prompt", "F" );
@@ -194,20 +401,27 @@ void drawSietaieta( const std::string& outputdir, TTree* tree, const std::string
 
   gPad->RedrawAxis();
 
-  c1->SaveAs(Form("%s/sietaieta%s.eps", outputdir.c_str(), eb_ee.c_str()));
-  c1->SaveAs(Form("%s/sietaieta%s.pdf", outputdir.c_str(), eb_ee.c_str()));
-  c1->SaveAs(Form("%s/sietaieta%s.png", outputdir.c_str(), eb_ee.c_str()));
+  if( ptMin>0. ) {
+    c1->SaveAs(Form("%s/sietaieta%s_pt%.0f_%.0f.eps", outputdir.c_str(), eb_ee.c_str(), ptMin, ptMax));
+    c1->SaveAs(Form("%s/sietaieta%s_pt%.0f_%.0f.pdf", outputdir.c_str(), eb_ee.c_str(), ptMin, ptMax));
+    c1->SaveAs(Form("%s/sietaieta%s_pt%.0f_%.0f.png", outputdir.c_str(), eb_ee.c_str(), ptMin, ptMax));
+  } else {
+    c1->SaveAs(Form("%s/sietaieta%s.eps", outputdir.c_str(), eb_ee.c_str()));
+    c1->SaveAs(Form("%s/sietaieta%s.pdf", outputdir.c_str(), eb_ee.c_str()));
+    c1->SaveAs(Form("%s/sietaieta%s.png", outputdir.c_str(), eb_ee.c_str()));
+  }
 
   delete c1;
   delete h2_axes;
   delete h1_prompt;
   delete h1_fake;
+  delete h1_nip;
 
 }
 
 
 
-void drawROC( const std::string& outputdir, TTree* tree, int optionNGI ) {
+void drawROC( const std::string& outputdir, TTree* tree_prompt, TTree* tree_nip, TTree* tree_fake, int optionNGI ) {
 
 
   int nbins = 1200;
@@ -219,72 +433,72 @@ void drawROC( const std::string& outputdir, TTree* tree, int optionNGI ) {
   h1_iso_prompt->Sumw2();
   TH1D* h1_iso_fake = new TH1D("iso_fake", "", nbins, xmin, xmax );
   h1_iso_fake->Sumw2();
+  TH1D* h1_iso_nip = new TH1D("iso_nip", "", nbins, xmin, xmax );
+  h1_iso_nip->Sumw2();
 
   TH1D* h1_isoCP_prompt = new TH1D("isoCP_prompt", "", nbins, xmin, xmax );
   h1_isoCP_prompt->Sumw2();
   TH1D* h1_isoCP_fake = new TH1D("isoCP_fake", "", nbins, xmin, xmax );
   h1_isoCP_fake->Sumw2();
+  TH1D* h1_isoCP_nip = new TH1D("isoCP_nip", "", nbins, xmin, xmax );
+  h1_isoCP_nip->Sumw2();
 
   TH1D* h1_isoCN_prompt = new TH1D("isoCN_prompt", "", nbins, xmin, xmax );
   h1_isoCN_prompt->Sumw2();
   TH1D* h1_isoCN_fake = new TH1D("isoCN_fake", "", nbins, xmin, xmax );
   h1_isoCN_fake->Sumw2();
+  TH1D* h1_isoCN_nip = new TH1D("isoCN_nip", "", nbins, xmin, xmax );
+  h1_isoCN_nip->Sumw2();
 
   TH1D* h1_isoCPN_prompt = new TH1D("isoCPN_prompt", "", nbins, xmin, xmax );
   h1_isoCPN_prompt->Sumw2();
   TH1D* h1_isoCPN_fake = new TH1D("isoCPN_fake", "", nbins, xmin, xmax );
   h1_isoCPN_fake->Sumw2();
+  TH1D* h1_isoCPN_nip = new TH1D("isoCPN_nip", "", nbins, xmin, xmax );
+  h1_isoCPN_nip->Sumw2();
 
+
+  std::string sietaietaCut = "weight*( (abs(etaGamma)<1.479 && sietaieta<0.01) || (abs(etaGamma)>1.479 && sietaieta<0.03) )";
+
+  tree_prompt->Project( "iso_prompt", "iso*ptGamma", sietaietaCut.c_str() );
+  tree_fake  ->Project( "iso_fake"  , "iso*ptGamma", sietaietaCut.c_str() );
+  tree_nip   ->Project( "iso_nip", "iso*ptGamma", sietaietaCut.c_str() );
+  
+  tree_prompt->Project( "isoCP_prompt", "isoCP*ptGamma", sietaietaCut.c_str() );
+  tree_fake  ->Project( "isoCP_fake"  , "isoCP*ptGamma", sietaietaCut.c_str() );
+  tree_nip   ->Project( "isoCP_nip", "isoCP*ptGamma", sietaietaCut.c_str() );
+  
+  tree_prompt->Project( "isoCN_prompt", "isoCN*ptGamma", sietaietaCut.c_str() );
+  tree_fake  ->Project( "isoCN_fake"  , "isoCN*ptGamma", sietaietaCut.c_str() );
+  tree_nip   ->Project( "isoCN_nip", "isoCN*ptGamma", sietaietaCut.c_str() );
+  
+  tree_prompt->Project( "isoCPN_prompt", "isoCPN*ptGamma", sietaietaCut.c_str() );
+  tree_fake  ->Project( "isoCPN_fake"  , "isoCPN*ptGamma", sietaietaCut.c_str() );
+  tree_nip   ->Project( "isoCPN_nip", "isoCPN*ptGamma", sietaietaCut.c_str() );
 
   if( optionNGI==0 ) {
 
-    // putting NGIg in BG:
-    tree->Project( "iso_prompt", "iso*ptGamma", "weight*(   mcMatchId==22 && genIso<5.   && (sietaieta<0.01 || (sietaieta>0.02 && sietaieta<0.027)))" );
-    tree->Project( "iso_fake"  , "iso*ptGamma", "weight*((!(mcMatchId==22 && genIso<5.)) && (sietaieta<0.01 || (sietaieta>0.02 && sietaieta<0.027)))" );
+    // putting NIP in BG:
+    h1_iso_fake   ->Add(h1_iso_nip );   
+    h1_isoCP_fake ->Add(h1_isoCP_nip ); 
+    h1_isoCN_fake ->Add(h1_isoCN_nip ); 
+    h1_isoCPN_fake->Add(h1_isoCPN_nip );
     
-    tree->Project( "isoCP_prompt", "isoCP*ptGamma", "weight*(   mcMatchId==22 && genIso<5.   && (sietaieta<0.01 || (sietaieta>0.02 && sietaieta<0.027)))" );
-    tree->Project( "isoCP_fake"  , "isoCP*ptGamma", "weight*((!(mcMatchId==22 && genIso<5.)) && (sietaieta<0.01 || (sietaieta>0.02 && sietaieta<0.027)))" );
-    
-    tree->Project( "isoCN_prompt", "isoCN*ptGamma", "weight*(   mcMatchId==22 && genIso<5.   && (sietaieta<0.01 || (sietaieta>0.02 && sietaieta<0.027)))" );
-    tree->Project( "isoCN_fake"  , "isoCN*ptGamma", "weight*((!(mcMatchId==22 && genIso<5.)) && (sietaieta<0.01 || (sietaieta>0.02 && sietaieta<0.027)))" );
-    
-    tree->Project( "isoCPN_prompt", "isoCPN*ptGamma", "weight*(   mcMatchId==22 && genIso<5.   && (sietaieta<0.01 || (sietaieta>0.02 && sietaieta<0.027)))" );
-    tree->Project( "isoCPN_fake"  , "isoCPN*ptGamma", "weight*((!(mcMatchId==22 && genIso<5.)) && (sietaieta<0.01 || (sietaieta>0.02 && sietaieta<0.027)))" );
-
 
   } else if( optionNGI==1 ) {
 
-    // putting NGIg in signal:
-    tree->Project( "iso_prompt", "iso*ptGamma", "weight*(mcMatchId==22 && (sietaieta<0.01 || (sietaieta>0.02 && sietaieta<0.027)))" );
-    tree->Project( "iso_fake"  , "iso*ptGamma", "weight*(mcMatchId==0 && (sietaieta<0.01 || (sietaieta>0.02 && sietaieta<0.027)))" );
-    
-    tree->Project( "isoCP_prompt", "isoCP*ptGamma", "weight*(mcMatchId==22 && (sietaieta<0.01 || (sietaieta>0.02 && sietaieta<0.027)))" );
-    tree->Project( "isoCP_fake"  , "isoCP*ptGamma", "weight*(mcMatchId==0 && (sietaieta<0.01 || (sietaieta>0.02 && sietaieta<0.027)))" );
-    
-    tree->Project( "isoCN_prompt", "isoCN*ptGamma", "weight*(mcMatchId==22 && (sietaieta<0.01 || (sietaieta>0.02 && sietaieta<0.027)))" );
-    tree->Project( "isoCN_fake"  , "isoCN*ptGamma", "weight*(mcMatchId==0 && (sietaieta<0.01 || (sietaieta>0.02 && sietaieta<0.027)))" );
-    
-    tree->Project( "isoCPN_prompt", "isoCPN*ptGamma", "weight*(mcMatchId==22 && (sietaieta<0.01 || (sietaieta>0.02 && sietaieta<0.027)))" );
-    tree->Project( "isoCPN_fake"  , "isoCPN*ptGamma", "weight*(mcMatchId==0 && (sietaieta<0.01 || (sietaieta>0.02 && sietaieta<0.027)))" );
+    // putting NIP in signal:
+    h1_iso_prompt   ->Add(h1_iso_nip );   
+    h1_isoCP_prompt ->Add(h1_isoCP_nip ); 
+    h1_isoCN_prompt ->Add(h1_isoCN_nip ); 
+    h1_isoCPN_prompt->Add(h1_isoCPN_nip );
 
 
   } else if( optionNGI==2 ) {
 
-    // ignoring NGIg:
-    tree->Project( "iso_prompt", "iso*ptGamma", "weight*( mcMatchId==22 && genIso<5.   && (sietaieta<0.01 || (sietaieta>0.02 && sietaieta<0.027)))" );
-    tree->Project( "iso_fake"  , "iso*ptGamma", "weight*( mcMatchId==0                 && (sietaieta<0.01 || (sietaieta>0.02 && sietaieta<0.027)))" );
-
-    tree->Project( "isoCP_prompt", "isoCP*ptGamma", "weight*( mcMatchId==22 && genIso<5. && (sietaieta<0.01 || (sietaieta>0.02 && sietaieta<0.027)))" );
-    tree->Project( "isoCP_fake"  , "isoCP*ptGamma", "weight*( mcMatchId==0               && (sietaieta<0.01 || (sietaieta>0.02 && sietaieta<0.027)))" );
-
-    tree->Project( "isoCN_prompt", "isoCN*ptGamma", "weight*( mcMatchId==22 && genIso<5. && (sietaieta<0.01 || (sietaieta>0.02 && sietaieta<0.027)))" );
-    tree->Project( "isoCN_fake"  , "isoCN*ptGamma", "weight*( mcMatchId==0               && (sietaieta<0.01 || (sietaieta>0.02 && sietaieta<0.027)))" );
-
-    tree->Project( "isoCPN_prompt", "isoCPN*ptGamma", "weight*( mcMatchId==22 && genIso<5. && (sietaieta<0.01 || (sietaieta>0.02 && sietaieta<0.027)))" );
-    tree->Project( "isoCPN_fake"  , "isoCPN*ptGamma", "weight*( mcMatchId==0               && (sietaieta<0.01 || (sietaieta>0.02 && sietaieta<0.027)))" );
+    // ignoring NIP
 
   }
-
 
 
   TGraph* roc_iso = getRoC( h1_iso_prompt, h1_iso_fake );
@@ -303,13 +517,6 @@ void drawROC( const std::string& outputdir, TTree* tree, int optionNGI ) {
   c1->cd();
 
   TH2D* h2_axes;
-  //if( optionNGI==0 ) {
-  //  h2_axes = new TH2D("axes", "", 10, 0.75, 1.0001, 10, 0.95, 1.0001);
-  //} else if( optionNGI==1 ) {
-  //  h2_axes = new TH2D("axes", "", 10, 0.75, 1.0001, 10, 0.75, 1.0001);
-  //} else if( optionNGI==2 ) {
-  //  h2_axes = new TH2D("axes", "", 10, 0.75, 1.0001, 10, 0.95, 1.0001);
-  //}
   h2_axes = new TH2D("axes", "", 10, 0.75, 1.0001, 10, 0.9, 1.0001);
   h2_axes->SetXTitle("Fake Photon Rejection");
   h2_axes->SetYTitle("Prompt Photon Efficiency");
@@ -367,9 +574,7 @@ void drawROC( const std::string& outputdir, TTree* tree, int optionNGI ) {
   roc_isoCN->Draw("psame");
   roc_isoCPN->Draw("psame");
 
-  //wp_isoCP_loose->Draw("psame");
   wp_isoCP_tight->Draw("psame");
-  //wp_iso_loose->Draw("psame");
   wp_iso_tight->Draw("psame");
 
   gPad->RedrawAxis();
@@ -383,36 +588,30 @@ void drawROC( const std::string& outputdir, TTree* tree, int optionNGI ) {
   c1->SaveAs(Form("%s/isoROC_%s.pdf", outputdir.c_str(), suffix.c_str()));
   c1->SaveAs(Form("%s/isoROC_%s.eps", outputdir.c_str(), suffix.c_str()));
 
-  //TFile* rocFile = TFile::Open("rocFile.root", "recreate");
-  //rocFile->cd();
-  //roc_iso->Write();
-  //roc_isoCP->Write();
-  //h1_iso_prompt->Write();
-  //h1_iso_fake->Write();
-  //h1_isoCP_prompt->Write();
-  //h1_isoCP_fake->Write();
-  //rocFile->Close();
-
   delete c1;
   delete h2_axes;
 
   delete h1_iso_prompt;
   delete h1_iso_fake;
+  delete h1_iso_nip;
 
   delete h1_isoCP_prompt;
   delete h1_isoCP_fake;
+  delete h1_isoCP_nip;
 
   delete h1_isoCN_prompt;
   delete h1_isoCN_fake;
+  delete h1_isoCN_nip;
 
   delete h1_isoCPN_prompt;
   delete h1_isoCPN_fake;
+  delete h1_isoCPN_nip;
 
 }
   
 
 
-void drawTemplatesVsMT2( const std::string& outputdir, const std::string& varName, TTree* tree ) {
+void drawTemplatesVsMT2( const std::string& outputdir, const std::string& varName, TTree* tree_prompt, TTree* tree_nip, TTree* tree_fake ) {
 
   // now templates vs MT2
   std::vector<float> bins;
@@ -425,11 +624,11 @@ void drawTemplatesVsMT2( const std::string& outputdir, const std::string& varNam
 
   std::vector<TH1D*> templates_prompt;
   std::vector<TH1D*> templates_fake;
-  std::vector<TH1D*> templates_NGIg;
+  std::vector<TH1D*> templates_NIP;
 
   std::vector<TH1D*> templatesAbs_prompt;
   std::vector<TH1D*> templatesAbs_fake;
-  std::vector<TH1D*> templatesAbs_NGIg;
+  std::vector<TH1D*> templatesAbs_NIP;
 
   float k = (varName=="iso") ? 1. : 2.;
 
@@ -454,64 +653,48 @@ void drawTemplatesVsMT2( const std::string& outputdir, const std::string& varNam
 
     std::string promptName(Form("prompt%d", i));
     std::string fakeName(Form("fake%d", i));
-    std::string NGIgName(Form("NGIg%d", i));
+    std::string NIPName(Form("NIP%d", i));
 
     TH1D* h1_prompt = new TH1D(promptName.c_str(), "", nBinsPlusOne-1, isoBins);
     TH1D* h1_fake   = new TH1D(  fakeName.c_str(), "", nBinsPlusOne-1, isoBins);
-    TH1D* h1_NGIg   = new TH1D(  NGIgName.c_str(), "", nBinsPlusOne-1, isoBins);
+    TH1D* h1_NIP   = new TH1D(  NIPName.c_str(), "", nBinsPlusOne-1, isoBins);
     
     h1_prompt->Sumw2();
     h1_fake  ->Sumw2();
-    h1_NGIg  ->Sumw2();
+    h1_NIP  ->Sumw2();
     
-    tree->Project( promptName.c_str(), varName.c_str(), Form("weight*( mt2>%f && mt2<%f && mcMatchId==22 && genIso<5. && (sietaieta<0.01 || (sietaieta>0.02 && sietaieta<0.027)))", bins[i], bins[i+1]) );
-    tree->Project(   NGIgName.c_str(), varName.c_str(), Form("weight*( mt2>%f && mt2<%f && mcMatchId==22 && genIso>5. && (sietaieta<0.01 || (sietaieta>0.02 && sietaieta<0.027)))", bins[i], bins[i+1]) );
-    tree->Project(   fakeName.c_str(), varName.c_str(), Form("weight*( mt2>%f && mt2<%f && mcMatchId==0               && (sietaieta<0.01 || (sietaieta>0.02 && sietaieta<0.027)))", bins[i], bins[i+1]) );
+
+    std::string cut(Form("weight*( mt2>%f && mt2<%f && (abs(etaGamma)<1.479 && sietaieta<0.01) || (abs(etaGamma)>1.479 && sietaieta<0.03) )", bins[i], bins[i+1]) );;
+
+    tree_prompt->Project( promptName.c_str(), varName.c_str(), cut.c_str() );
+    tree_nip   ->Project(    NIPName.c_str(), varName.c_str(), cut.c_str() );
+    tree_fake  ->Project(   fakeName.c_str(), varName.c_str(), cut.c_str() );
 
     templates_prompt.push_back( h1_prompt );
     templates_fake  .push_back( h1_fake );
-    templates_NGIg  .push_back( h1_NGIg );
+    templates_NIP   .push_back( h1_NIP );
 
 
 
     std::string promptNameAbs(Form("prompt_abs%d", i));
     std::string fakeNameAbs(Form("fake_abs%d", i));
-    std::string NGIgNameAbs(Form("NGIg_abs%d", i));
+    std::string NIPNameAbs(Form("NIP_abs%d", i));
 
     TH1D* h1_abs_prompt;
     TH1D* h1_abs_fake  ;
-    TH1D* h1_abs_NGIg  ;
+    TH1D* h1_abs_NIP  ;
 
     if( varName=="iso" ) {
 
       h1_abs_prompt = new TH1D(promptNameAbs.c_str(), "", 20, 0., 30.);
       h1_abs_fake   = new TH1D(  fakeNameAbs.c_str(), "", 20, 0., 30.);
-      h1_abs_NGIg   = new TH1D(  NGIgNameAbs.c_str(), "", 20, 0., 30.);
-
-      //int nBinsAbsPlusOne = 12;
-      //Double_t isoBinsAbs[nBinsPlusOne];
-      //isoBinsAbs[0]  = 0.;
-      //isoBinsAbs[1]  = 1.;
-      //isoBinsAbs[2]  = 2.;
-      //isoBinsAbs[3]  = 4.;
-      //isoBinsAbs[4]  = 6.;
-      //isoBinsAbs[5]  = 8.;
-      //isoBinsAbs[6]  = 10.;
-      //isoBinsAbs[7]  = 12.;
-      //isoBinsAbs[8]  = 14.;
-      //isoBinsAbs[9]  = 16.;
-      //isoBinsAbs[10] = 18.;
-      //isoBinsAbs[11] = 20.;
-
-      //h1_abs_prompt = new TH1D(promptNameAbs.c_str(), "", nBinsAbsPlusOne-1, isoBinsAbs);
-      //h1_abs_fake   = new TH1D(  fakeNameAbs.c_str(), "", nBinsAbsPlusOne-1, isoBinsAbs);
-      //h1_abs_NGIg   = new TH1D(  NGIgNameAbs.c_str(), "", nBinsAbsPlusOne-1, isoBinsAbs);
+      h1_abs_NIP   = new TH1D(  NIPNameAbs.c_str(), "", 20, 0., 30.);
 
     } else {
 
       h1_abs_prompt = new TH1D(promptNameAbs.c_str(), "", 30, 0., 60.);
       h1_abs_fake   = new TH1D(  fakeNameAbs.c_str(), "", 30, 0., 60.);
-      h1_abs_NGIg   = new TH1D(  NGIgNameAbs.c_str(), "", 30, 0., 60.);
+      h1_abs_NIP   = new TH1D(  NIPNameAbs.c_str(), "", 30, 0., 60.);
 
     }
 
@@ -519,34 +702,34 @@ void drawTemplatesVsMT2( const std::string& outputdir, const std::string& varNam
     
     h1_abs_prompt->Sumw2();
     h1_abs_fake  ->Sumw2();
-    h1_abs_NGIg  ->Sumw2();
+    h1_abs_NIP  ->Sumw2();
     
-    tree->Project( promptNameAbs.c_str(), Form("%s*ptGamma", varName.c_str()), Form("weight*( mt2>%f && mt2<%f && mcMatchId==22 && genIso<5. && (sietaieta<0.01 || (sietaieta>0.02 && sietaieta<0.027)))", bins[i], bins[i+1]) );
-    tree->Project(   NGIgNameAbs.c_str(), Form("%s*ptGamma", varName.c_str()), Form("weight*( mt2>%f && mt2<%f && mcMatchId==22 && genIso>5. && (sietaieta<0.01 || (sietaieta>0.02 && sietaieta<0.027)))", bins[i], bins[i+1]) );
-    tree->Project(   fakeNameAbs.c_str(), Form("%s*ptGamma", varName.c_str()), Form("weight*( mt2>%f && mt2<%f && mcMatchId==0               && (sietaieta<0.01 || (sietaieta>0.02 && sietaieta<0.027)))", bins[i], bins[i+1]) );
+    tree_prompt->Project( promptNameAbs.c_str(), Form("%s*ptGamma", varName.c_str()), cut.c_str() );
+    tree_nip   ->Project(    NIPNameAbs.c_str(), Form("%s*ptGamma", varName.c_str()), cut.c_str() );
+    tree_fake  ->Project(   fakeNameAbs.c_str(), Form("%s*ptGamma", varName.c_str()), cut.c_str() );
 
     templatesAbs_prompt.push_back( h1_abs_prompt );
     templatesAbs_fake  .push_back( h1_abs_fake );
-    templatesAbs_NGIg  .push_back( h1_abs_NGIg );
+    templatesAbs_NIP  .push_back( h1_abs_NIP );
 
   }
 
 
   drawVsMT2( outputdir, varName, "prompt", templates_prompt, bins );
   drawVsMT2( outputdir, varName, "fake"  , templates_fake  , bins );
-  drawVsMT2( outputdir, varName, "NGIg"  , templates_NGIg  , bins );
+  drawVsMT2( outputdir, varName, "NIP"   , templates_NIP   , bins );
 
   drawVsMT2( outputdir, varName, "prompt", templatesAbs_prompt, bins );
   drawVsMT2( outputdir, varName, "fake"  , templatesAbs_fake  , bins );
-  drawVsMT2( outputdir, varName, "NGIg"  , templatesAbs_NGIg  , bins );
+  drawVsMT2( outputdir, varName, "NIP"   , templatesAbs_NIP   , bins );
 
   for( unsigned i=0; i<templates_prompt.size(); ++i ) {
     delete templates_prompt[i];
     delete templates_fake[i];
-    delete templates_NGIg[i];
+    delete templates_NIP[i];
     delete templatesAbs_prompt[i];
     delete templatesAbs_fake[i];
-    delete templatesAbs_NGIg[i];
+    delete templatesAbs_NIP[i];
   }
 
 }
@@ -583,6 +766,7 @@ void drawVsMT2( const std::string& outputdir, const std::string& varName, const 
   float xMax = histos[0]->GetXaxis()->GetXmax();
   bool isAbs = (xMax>2.);
 
+
   std::vector<int> colors;
   colors.push_back( 46 );
   colors.push_back( 29 );
@@ -616,7 +800,7 @@ void drawVsMT2( const std::string& outputdir, const std::string& varName, const 
   } else if( name=="fake" ) {
     yMin_log = 0.001;
     yMax_log = 50.;
-  } else if( name=="NGIg" ) {
+  } else if( name=="NIP" ) {
     yMin_log = 0.001;
     yMax_log = 50.;
   }
@@ -662,7 +846,7 @@ void drawVsMT2( const std::string& outputdir, const std::string& varName, const 
   if( name=="prompt" ) {
     xMin_label = 0.75;
     yMin_label = 0.2;
-  } else if( name=="fake" || name=="NGIg" ) {
+  } else if( name=="fake" || name=="NIP" ) {
     xMin_label = 0.2;
     yMin_label = 0.8;
   }
@@ -681,7 +865,7 @@ void drawVsMT2( const std::string& outputdir, const std::string& varName, const 
   } else if( name=="fake" ) {
     labelPrompt    ->AddText( "Fake" );
     labelPrompt_log->AddText( "Fake" );
-  } else if( name=="NGIg" ) {
+  } else if( name=="NIP" ) {
     labelPrompt    ->AddText( "Non-GenIso" );
     labelPrompt_log->AddText( "Non-GenIso" );
   }
@@ -743,7 +927,7 @@ TGraph* getWP( TH1D* h1_prompt, TH1D* h1_fake, float thresh ) {
 
 
 
-void drawIsoVsSigma( const std::string& outputdir, TTree* tree, const std::string& iso1, const std::string& iso2 ) {
+void drawIsoVsSigma( const std::string& outputdir, TTree* tree_fake, const std::string& iso1, const std::string& iso2 ) {
 
   float xmin = 0.008;
   float xmax = 0.015;
@@ -758,8 +942,8 @@ void drawIsoVsSigma( const std::string& outputdir, TTree* tree, const std::strin
   h2_iso2_vs_sigma->Sumw2();
 
 
-  tree->Project( "iso1_vs_sigma_2D", Form("%s*ptGamma:sietaieta", iso1.c_str()), Form("weight*(mcMatchId==0 && %s*ptGamma<%f)", iso1.c_str(), iso1Max) );
-  tree->Project( "iso2_vs_sigma_2D", Form("%s*ptGamma:sietaieta", iso2.c_str()), Form("weight*(mcMatchId==0 && %s*ptGamma<%f)", iso2.c_str(), iso2Max) );
+  tree_fake->Project( "iso1_vs_sigma_2D", Form("%s*ptGamma:sietaieta", iso1.c_str()), Form("weight*(%s*ptGamma<%f)", iso1.c_str(), iso1Max) );
+  tree_fake->Project( "iso2_vs_sigma_2D", Form("%s*ptGamma:sietaieta", iso2.c_str()), Form("weight*(%s*ptGamma<%f)", iso2.c_str(), iso2Max) );
 
 
   TH1D* h1_iso1_vs_sigma = new TH1D( "iso1_vs_sigma", "", 20, xmin, xmax );

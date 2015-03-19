@@ -289,7 +289,7 @@ MT2Analysis<MT2EstimateTree> computeYield( const MT2Sample& sample, const std::s
     //if( myTree.gamma_ht > 1000. ) continue;
     if( myTree.gamma_mt2 < 200.) continue;
     //if( myTree.gamma_mt2 > 300. ) continue;
-    if( myTree.met_pt > 100.) continue;
+    if( myTree.mt2 > 200.) continue;
     //if( myTree.gamma_nJet40 > 4) continue;
     if( myTree.gamma_nBJet40 > 1) continue;
     //if( myTree.gamma_ht>1000. && sample.id==204 ) continue; // remove high-weight spikes (remove GJet_400to600 leaking into HT>1000)
@@ -309,6 +309,7 @@ MT2Analysis<MT2EstimateTree> computeYield( const MT2Sample& sample, const std::s
     if( myTree.gamma_nJet40<2 ) continue;
 
     if( myTree.ngamma==0 ) continue;
+    if( myTree.gamma_pt[0]<160. ) continue;
 
 
 

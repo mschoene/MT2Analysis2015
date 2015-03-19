@@ -510,13 +510,15 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2EstimateTree>* dat
 
 
 
+  std::string fullPath = outputdir;
+  std::string fullPathPlots = outputdir + "/plots";
+  system( Form("mkdir -p %s", fullPathPlots.c_str()) );
 
   std::set<MT2Region> MT2Regions = data->getRegions();
   
   for( std::set<MT2Region>::iterator iMT2 = MT2Regions.begin(); iMT2!=MT2Regions.end(); ++iMT2 ) {
   
 
-    std::string fullPath = outputdir;
     //std::string fullPath = outputdir + "/" + iHT->getName() + "/" + iSR->getName();
     //std::string mkdircommand = "mkdir -p " + fullPath;
     //system( mkdircommand.c_str() );
@@ -610,9 +612,9 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2EstimateTree>* dat
 
     gPad->RedrawAxis();
 
-    c1->SaveAs( Form("%s/mt2_%s.eps", fullPath.c_str(), thisRegion.getName().c_str()) );
-    c1->SaveAs( Form("%s/mt2_%s.png", fullPath.c_str(), thisRegion.getName().c_str()) );
-    c1->SaveAs( Form("%s/mt2_%s.pdf", fullPath.c_str(), thisRegion.getName().c_str()) );
+    c1->SaveAs( Form("%s/mt2_%s.eps", fullPathPlots.c_str(), thisRegion.getName().c_str()) );
+    c1->SaveAs( Form("%s/mt2_%s.png", fullPathPlots.c_str(), thisRegion.getName().c_str()) );
+    c1->SaveAs( Form("%s/mt2_%s.pdf", fullPathPlots.c_str(), thisRegion.getName().c_str()) );
 
     delete c1;
     delete h2_axes;

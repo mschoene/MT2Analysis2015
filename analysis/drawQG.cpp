@@ -200,9 +200,9 @@ QGHistos getHistos( MT2Analysis<MT2EstimateTree>* analysis ) {
 
   int nentries = tree->GetEntries();
 
-  float qgl_thresh0 = 0.2;
-  float qgl_thresh1 = 0.3;
-  float qgl_thresh2 = 0.5;
+  float qgl_thresh0 = 0.8;
+  float qgl_thresh1 = 0.9;
+  float qgl_thresh2 = 0.95;
 
   for( unsigned iEntry=0; iEntry<nentries; ++iEntry ) {
 
@@ -218,23 +218,23 @@ QGHistos getHistos( MT2Analysis<MT2EstimateTree>* analysis ) {
     int nq_cut1 = 0;
     int nq_cut2 = 0;
 
-    if( nJets>0 ) {
-      all0 += weight;
-      if( fabs(partId0)<4.5 ) quarks0+=weight;
-      histos.h1_qgl0->Fill( qgl0, weight );
-      if( qgl0>qgl_thresh0 ) nq_cut0++;
-      if( qgl0>qgl_thresh1 ) nq_cut1++;
-      if( qgl0>qgl_thresh2 ) nq_cut2++;
-    }
+    //if( nJets>0 ) {
+    //  all0 += weight;
+    //  if( fabs(partId0)<4.5 ) quarks0+=weight;
+    //  histos.h1_qgl0->Fill( qgl0, weight );
+    //  if( qgl0>qgl_thresh0 ) nq_cut0++;
+    //  if( qgl0>qgl_thresh1 ) nq_cut1++;
+    //  if( qgl0>qgl_thresh2 ) nq_cut2++;
+    //}
 
-    if( nJets>1 ) {
-      all1 += weight;
-      if( fabs(partId1)<4.5 ) quarks1+=weight;
-      histos.h1_qgl1->Fill( qgl1, weight );
-      if( qgl1>qgl_thresh0 ) nq_cut0++;
-      if( qgl1>qgl_thresh1 ) nq_cut1++;
-      if( qgl1>qgl_thresh2 ) nq_cut2++;
-    }
+    //if( nJets>1 ) {
+    //  all1 += weight;
+    //  if( fabs(partId1)<4.5 ) quarks1+=weight;
+    //  histos.h1_qgl1->Fill( qgl1, weight );
+    //  if( qgl1>qgl_thresh0 ) nq_cut0++;
+    //  if( qgl1>qgl_thresh1 ) nq_cut1++;
+    //  if( qgl1>qgl_thresh2 ) nq_cut2++;
+    //}
 
     if( nJets>2 ) {
       all2 += weight;

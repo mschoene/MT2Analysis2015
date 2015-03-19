@@ -46,6 +46,8 @@ class MT2EstimateSyst : public MT2Estimate {
   const MT2EstimateSyst& operator/=( float k );
   const MT2EstimateSyst& operator*=( float k );
 
+  friend MT2EstimateSyst operator/( float k, const MT2EstimateSyst& rhs );
+  friend MT2EstimateSyst operator*( float k, const MT2EstimateSyst& rhs );
 
 
   virtual void finalize() {

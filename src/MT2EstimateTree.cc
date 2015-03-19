@@ -238,31 +238,13 @@ void MT2EstimateTree::print(const std::string& ofs){
 
 const MT2EstimateTree& MT2EstimateTree::operator=( const MT2EstimateTree& rhs ) {
 
-  if( this->yield == 0 ) { // first time
+  this->region = new MT2Region(*(rhs.region));
 
-    this->setName(rhs.getName());
+  this->yield = new TH1D(*(rhs.yield));
 
-    this->region = new MT2Region(*(rhs.region));
+  this->tree = rhs.tree->CloneTree(-1);
 
-    this->yield = new TH1D(*(rhs.yield));
-
-    this->tree = rhs.tree->CloneTree(-1);
-
-  } else { // keep name and histo name, just make histogram identical
-
-    if( this->region!=0 ) delete this->region;
-    this->region = new MT2Region(*(rhs.region));
-
-    std::string oldName = this->yield->GetName();
-    delete this->yield;
-    this->yield = new TH1D(*(rhs.yield));
-    this->yield->SetName(oldName.c_str());
-
-    std::string oldTreeName = this->tree->GetName();
-    this->tree = rhs.tree->CloneTree(-1);
-    this->tree->SetName(oldTreeName.c_str());
-
-  }
+  this->setName( this->getName() );
 
   this->initTree();
 
@@ -304,33 +286,78 @@ MT2EstimateTree MT2EstimateTree::operator+( const MT2EstimateTree& rhs ) const{
 
 //MT2EstimateTree MT2EstimateTree::operator*( float k ) const{
 //
+//std::cout << "aaaaaaaaaaaa here! " << std::endl;
 //  MT2EstimateTree result( this->getName(), *(this->region) );
 //  result.yield = new TH1D(*(this->yield));
 //  result.yield->Scale(k);
 //
 //  // loop on entries and multiply weight
 //
-//  return result;
 //
-//}
-
-
-
-//MT2EstimateTree MT2EstimateTree::operator/( float k ) const{
+//  std::string oldName(tree->GetName());
+//  result.tree->SetName("willBeKilled");
 //
-//  MT2EstimateTree result( this->getName(), *(this->region) );
-//  result.yield = new TH1D(*(this->yield));
-//  result.yield->Scale(1./k);
+//  result.tree->SetBranchStatus( "weight", 0 );
+//  Float_t oldWeight;
+//  result.tree->SetBranchAddress("weight", &oldWeight);
+//
+//  TTree* newTree = new TTree(oldName.c_str(), "");
+//  newTree = result.tree->CloneTree(0);
+//  Float_t newWeight;
+//  newTree->Branch( "weight", &newWeight, "newWeight/F" );
+// 
+//  int nentries = result.tree->GetEntries();
+//
 //  // loop on entries and multiply weight
+//  for( unsigned iEntry=0; iEntry<nentries; ++iEntry ) {
+//
+//    result.tree->GetEntry(iEntry);
+//    newWeight = oldWeight*k;
+//    newTree->Fill();
+//
+//  }
+//
+//
+//  delete result.tree;
+//  result.tree = newTree;
+//  result.tree->SetName( oldName.c_str() );
 //
 //  return result;
 //
-//
 //}
+
+
+
+
+MT2EstimateTree MT2EstimateTree::operator*( float k ) const{
+
+  MT2EstimateTree result( this->getName(), *(this->region) );
+  result.yield = new TH1D(*(this->yield));
+  result.yield->Scale(k);
+  // loop on entries and multiply weight
+
+  return result;
+
+
+}
+
+
+MT2EstimateTree MT2EstimateTree::operator/( float k ) const{
+
+  MT2EstimateTree result( this->getName(), *(this->region) );
+  result.yield = new TH1D(*(this->yield));
+  result.yield->Scale(1./k);
+  // loop on entries and multiply weight
+
+  return result;
+
+
+}
 
 
 
 const MT2EstimateTree& MT2EstimateTree::operator+=( const MT2EstimateTree& rhs ) {
+
 
   if( rhs.tree->GetEntries()>0 ) {
 
@@ -358,17 +385,83 @@ const MT2EstimateTree& MT2EstimateTree::operator+=( const MT2EstimateTree& rhs )
 
 //const MT2EstimateTree& MT2EstimateTree::operator*=( float k ) {
 //
+//
 //  this->yield->Scale(k);
+//
+//
+//  std::string oldName(tree->GetName());
+//  tree->SetName("willBeKilled");
+//
+//  TTree* newTree = new TTree(oldName.c_str(), "");
+//
+//  newTree->Branch( "run", &run, "run/I");
+//  newTree->Branch( "lumi", &lumi, "lumi/I");
+//  newTree->Branch( "evt", &evt, "evt/i");
+//  newTree->Branch( "weight", &weight, "weight/F");
+//  newTree->Branch( "id", &id, "id/I");
+//
+//  newTree->Branch( "mt2", &mt2, "mt2/F");
+//  newTree->Branch( "ht", &ht, "ht/F");
+//  newTree->Branch( "met", &met, "met/F");
+//  newTree->Branch( "nJets", &nJets, "nJets/I");
+//  newTree->Branch( "nBJets", &nBJets, "nBJets/I");
+//
+//
+//  int nentries = tree->GetEntries();
+//
 //  // loop on entries and multiply weight
+//  for( unsigned iEntry=0; iEntry<nentries; ++iEntry ) {
+//
+//    tree->GetEntry(iEntry);
+//
+//    weight *= k;
+//
+//    newTree->Fill();
+//
+//  }
+//
+//
+//  delete tree;
+//  tree = newTree;
+//  tree->SetName( oldName.c_str() );
+//
 //  return (*this);
 //
 //}
-//
-//const MT2EstimateTree& MT2EstimateTree::operator/=( float k ) {
-//
-//  this->yield->Scale(1./k);
-//  // loop on entries and multiply weight
-//  return (*this);
-//
-//}
+
+
+const MT2EstimateTree& MT2EstimateTree::operator*=( float k ) {
+
+  this->yield->Scale(k);
+  // loop on entries and multiply weight
+  return (*this);
+
+}
+
+
+const MT2EstimateTree& MT2EstimateTree::operator/=( float k ) {
+
+  this->yield->Scale(1./k);
+  // loop on entries and multiply weight
+  return (*this);
+
+}
+
+
+
+// friend functions:
+
+MT2EstimateTree operator*( float k, const MT2EstimateTree& rhs ) {
+
+  return rhs*k;
+
+}
+
+
+
+MT2EstimateTree operator/( float k, const MT2EstimateTree& rhs ) {
+
+  return rhs/k;
+
+}
 
