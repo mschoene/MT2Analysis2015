@@ -32,10 +32,11 @@ int main( int argc, char* argv[] ) {
 
 
   std::string samplesFileName = "PHYS14_v2_Zinv";
-  //std::string samplesFileName = "CSA14_Zinv";
+
+
+  std::string regionsSet = "zurich";
   if( argc>1 ) {
-    std::string samplesFileName_tmp(argv[1]); 
-    samplesFileName = samplesFileName_tmp;
+    regionsSet = std::string(argv[1]);
   }
 
   std::string samplesFile = "../samples/samples_" + samplesFileName + ".dat";
@@ -52,8 +53,6 @@ int main( int argc, char* argv[] ) {
   std::vector<MT2Sample> samples_qcd = MT2Sample::loadSamples(samplesFile, "QCD");
   
 
-
-  std::string regionsSet = "zurich";
 
   TH1::AddDirectory(kFALSE); // stupid ROOT memory allocation needs this
 
