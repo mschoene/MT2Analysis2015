@@ -58,6 +58,7 @@ class MT2EstimateTree : public MT2Estimate {
   const MT2EstimateTree& operator*=( float k );
 
   friend MT2EstimateTree operator*( float k, const MT2EstimateTree& rhs );
+  friend MT2EstimateTree operator/( float k, const MT2EstimateTree& rhs );
 
 
 
