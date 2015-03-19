@@ -74,6 +74,17 @@ int main( int argc, char* argv[] ) {
   compareRegions( outputdir, r_highHT_vs_njet, eff );
 
 
+  std::vector<MT2Region> r_veryhighHT_vs_njet;
+  r_veryhighHT_vs_njet.push_back( MT2Region( 1500., -1., 2,  3, 0, 0 ) );
+  r_veryhighHT_vs_njet.push_back( MT2Region( 1500., -1., 4,  6, 0, 0 ) );
+  r_veryhighHT_vs_njet.push_back( MT2Region( 1500., -1., 2,  3, 1, 1 ) );
+  r_veryhighHT_vs_njet.push_back( MT2Region( 1500., -1., 4,  6, 1, 1 ) );
+
+  compareRegions( outputdir, r_veryhighHT_vs_njet, purity );
+  compareRegions( outputdir, r_veryhighHT_vs_njet, purityLoose );
+  compareRegions( outputdir, r_veryhighHT_vs_njet, eff );
+
+
 
 
   std::vector<MT2Region> r_vsHT;
