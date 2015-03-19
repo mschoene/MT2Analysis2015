@@ -2,9 +2,8 @@
 
 # --- configuration (consider to move this into a separate file) ---
 treeName="tree"
-#inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/casal/babies/PHYS14_Production_QCDpt_noSietaieta/"
-inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/mangano/babies/testMarch7attempt8/"
-productionName="prodMarch9"
+inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/mangano/babies/chunks/afterSynchMarch8/"
+productionName="afterSynchMarch8"
 fileExt="_post.root"
 # --------------------------
 
@@ -21,9 +20,32 @@ if [[ "$#" -eq 0 ]]; then
     echo "./doTreeProduction.sh post"
     echo "./doTreeProduction.sh postCheck"
     echo "./doTreeProduction.sh clean"
+    exit;
 fi;
 
+
+ 
+
+#######################################
 if [[ "$1" = "post" ]]; then
+
+# --- check the existence of outputFolder on SE ---
+gfal-ls srm://t3se01.psi.ch$outputFolder &> /tmp/checkOutputDir
+if [ -n "`cat /tmp/checkOutputDir|grep 'No such file or directory'`"  ]; then
+    :
+else
+    echo "WARNING: output directory " $outputFolder "already exists."
+    read -r -p "Are you sure you want to write there ? [y/N] " response
+    if [[ $response =~ ^([yY][eE][sS]|[yY])$ ]]
+    then
+	echo "Ok. Will proceed then ... "
+    else
+	echo "Exiting ..."
+	exit;
+    fi
+fi
+# --- 
+
 
 
 if [ -d "$jobsLogsFolder" ]; then 
