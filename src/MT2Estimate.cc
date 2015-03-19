@@ -301,3 +301,26 @@ void MT2Estimate::print(const std::string& ofs){
     ofs_file << std::fixed << std::setprecision(2) << " & " << integral << " $\\pm$ " << error;
 
 }
+
+
+
+// friend functions
+
+MT2Estimate operator*( float k, const MT2Estimate& rhs ) {
+
+  return rhs*k;
+
+}
+
+
+MT2Estimate operator/( float k, const MT2Estimate& rhs ) {
+
+  return rhs/k;
+
+}
+
+
+
+
+
+
