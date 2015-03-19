@@ -52,10 +52,12 @@ class MT2EstimateTree : public MT2Estimate {
   MT2EstimateTree operator+( const MT2EstimateTree& rhs ) const;
   const MT2EstimateTree& operator+=( const MT2EstimateTree& rhs );
 
-  //MT2EstimateTree operator/ ( float k ) const;
-  //MT2EstimateTree operator* ( float k ) const;
-  //const MT2EstimateTree& operator/=( float k );
-  //const MT2EstimateTree& operator*=( float k );
+  MT2EstimateTree operator/ ( float k ) const;
+  MT2EstimateTree operator* ( float k ) const;
+  const MT2EstimateTree& operator/=( float k );
+  const MT2EstimateTree& operator*=( float k );
+
+  friend MT2EstimateTree operator*( float k, const MT2EstimateTree& rhs );
 
 
 
