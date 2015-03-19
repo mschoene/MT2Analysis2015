@@ -322,6 +322,14 @@ MT2Analysis<T>::MT2Analysis( const std::string& aname, const std::string& region
 
     regions_ = multiplyHTandSignal( htRegions, signalRegions );
 
+  } else if( regionsSet=="zurich_onlyHT" ){
+
+    regions_.insert(MT2Region( 450.,   575.)); // no cut on jets
+    regions_.insert(MT2Region( 575.,  1000.));
+    regions_.insert(MT2Region(1000.,  1500.));
+    regions_.insert(MT2Region(1500.,    -1.));
+
+
   } else if( regionsSet=="13TeV_PHYS14_hiJet_mergeHT" ){
 
     regions_.insert(MT2Region(450., 575., 2, 3, 0,  0));
