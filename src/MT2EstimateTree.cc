@@ -350,7 +350,7 @@ MT2EstimateTree MT2EstimateTree::operator+( const MT2EstimateTree& rhs ) const{
 
 
 
-MT2EstimateTree MT2EstimateTree::operator8( float k ) const{
+MT2EstimateTree MT2EstimateTree::operator*( float k ) const{
 
   MT2EstimateTree result( this->getName(), *(this->region) );
   result.yield = new TH1D(*(this->yield));
