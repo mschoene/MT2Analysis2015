@@ -322,12 +322,28 @@ MT2Analysis<T>::MT2Analysis( const std::string& aname, const std::string& region
 
     regions_ = multiplyHTandSignal( htRegions, signalRegions );
 
+
   } else if( regionsSet=="zurich_onlyHT" ){
 
     regions_.insert(MT2Region( 450.,   575.)); // no cut on jets
     regions_.insert(MT2Region( 575.,  1000.));
     regions_.insert(MT2Region(1000.,  1500.));
     regions_.insert(MT2Region(1500.,    -1.));
+
+
+  } else if( regionsSet=="zurich_onlyJets" ){
+
+    regions_.insert(MT2Region(450., -1., 2,  3, 0,  0));
+    regions_.insert(MT2Region(450., -1., 4, 6, 0,  0));
+    regions_.insert(MT2Region(450., -1., 7, -1, 0,  0));
+    regions_.insert(MT2Region(450., -1., 2,  3, 1,  1));
+    regions_.insert(MT2Region(450., -1., 4, 6, 1,  1));
+    regions_.insert(MT2Region(450., -1., 7, -1, 1,  1));
+    regions_.insert(MT2Region(450., -1., 2,  3, 2,  2));
+    regions_.insert(MT2Region(450., -1., 4, 6, 2,  2));
+    regions_.insert(MT2Region(450., -1., 7, -1, 2,  2));
+    regions_.insert(MT2Region(450., -1., 2,  6, 3,  -1));
+    regions_.insert(MT2Region(450., -1., 7, -1, 3,  -1));
 
 
   } else if( regionsSet=="13TeV_PHYS14_hiJet_mergeHT" ){
