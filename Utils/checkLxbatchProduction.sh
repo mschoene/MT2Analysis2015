@@ -4,12 +4,12 @@
 
 if [[ "$#" -lt 2 ]]; then
     echo "Relunch the script with one of the following options: "
-    echo "./checkLxbatchLogs.sh inputFolder checkLogs"
-    echo "./checkLxbatchLogs.sh inputFolder checkRemoteFiles"
-    echo "./checkLxbatchLogs.sh inputFolder checkTiming"
-    echo "./checkLxbatchLogs.sh inputFolder checkRate"
-    echo "./checkLxbatchLogs.sh ... "
-    echo "./checkLxbatchLogs.sh inputFolder debug"
+    echo "./checkLxbatchProduction.sh inputFolder checkLogs"
+    echo "./checkLxbatchProduction.sh inputFolder checkRemoteFiles"
+    echo "./checkLxbatchProduction.sh inputFolder checkTiming"
+    echo "./checkLxbatchProduction.sh inputFolder checkRate"
+    echo "./checkLxbatchProduction.sh ... "
+    echo "./checkLxbatchProduction.sh inputFolder debug"
     exit;
 fi;
 
@@ -50,7 +50,7 @@ fi
 if [ $2 = "checkRemoteFiles" ]; then  
     if [[ "$#" -lt 3 ]]; then
 	echo "You need to specify also the remote folder of the SE where the chunk files are stored"
-	echo "./checkLxbatchLogs.sh /afs/../ProductionLogs checkRemoteFiles /pnfs/../productionFolder"
+	echo "./checkLxbatchProduction.sh /afs/../ProductionLogs checkRemoteFiles /pnfs/../productionFolder"
 	exit;
     fi;
 
