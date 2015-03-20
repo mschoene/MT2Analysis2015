@@ -4,12 +4,12 @@
 
 if [[ "$#" -lt 2 ]]; then
     echo "Relunch the script with one of the following options: "
-    echo "./checkLxbatchLogs.sh inputFolder check1"
-    echo "./checkLxbatchLogs.sh inputFolder check2"
-    echo "./checkLxbatchLogs.sh inputFolder checkTiming"
-    echo "./checkLxbatchLogs.sh inputFolder checkRate"
-    echo "./checkLxbatchLogs.sh ... "
-    echo "./checkLxbatchLogs.sh inputFolder debug"
+    echo "./checkLxbatchProduction.sh inputFolder checkLogs"
+    echo "./checkLxbatchProduction.sh inputFolder checkRemoteFiles"
+    echo "./checkLxbatchProduction.sh inputFolder checkTiming"
+    echo "./checkLxbatchProduction.sh inputFolder checkRate"
+    echo "./checkLxbatchProduction.sh ... "
+    echo "./checkLxbatchProduction.sh inputFolder debug"
     exit;
 fi;
 
@@ -18,7 +18,7 @@ inputFolder=$1
 
 # --- This parses the log file and printout a message if there were issues in copying the file to the SE
 # --- This script should be extended to verify if there were error messages in general
-if [ $2 = "check1" ]; then 
+if [ $2 = "checkLogs" ]; then 
     #for x in `ls -1 $inputFolder| grep _Chunk`; do
     for x in `ls -1 $inputFolder| grep _Chunk|awk -F_Chunk '{print $1}'|uniq`; do
 	echo "processing logs for sample " $x
@@ -47,14 +47,32 @@ fi
 
 
 # --- This is to compare directly the list of files in the SE with the number of jobs that were submitted
-if [ $2 = "check2" ]; then  
-    ls -1 $inputFolder/|sort -n > ~/listJobs.txt
+if [ $2 = "checkRemoteFiles" ]; then  
+    if [[ "$#" -lt 3 ]]; then
+	echo "You need to specify also the remote folder of the SE where the chunk files are stored"
+	echo "./checkLxbatchProduction.sh /afs/../ProductionLogs checkRemoteFiles /pnfs/../productionFolder"
+	exit;
+    fi;
+
+    remoteFolderOnSE=$3
+
+    listJobs="$PWD/listJobs_$RANDOM.txt"
+    listFiles="$PWD/listFiles_$RANDOM.txt"
+
+    #echo "listJobs :" $listJobs
+    #echo "listFiles :" $listFiles
+
+    ls -1 $inputFolder/|grep _Chunk|sort -n > $listJobs
     
-    echo "--- In the pnfs folder where the output is stored, run the following one-liner:"
-    echo 'for x in `ls -1`; do for y in `ls -1 $x`; do echo $x/$y| sed 's#/mt2_#_Chunk#'|sed 's#.root##'; done;  done |sort -n > ~/listFiles.txt'
-    echo ""
-    echo "--- And then: "
-    echo "diff /afs/cern.ch/user/`whoami |head -c 1`/`whoami`/listJobs.txt ~/listFiles.txt"
+    cd $remoteFolderOnSE
+    for x in `ls -1`; do for y in `ls -1 $x`; do echo $x/$y| sed 's#/mt2_#_Chunk#'|sed 's#.root##'; \
+	done;  done |sort -n > $listFiles;
+    cd $OLDPWD
+
+    echo "diff listJobs listFilesOnSE:"
+    diff $listJobs  $listFiles | grep "<";
+
+    rm $listJobs $listFiles;
  
     
 fi
