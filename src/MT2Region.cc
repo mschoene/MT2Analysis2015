@@ -164,7 +164,8 @@ bool MT2HTRegion::isIncluded( MT2HTRegion* htRegion ) const {
   bool returnBool = true;
 
   if( htMin < htRegion->htMin ) returnBool = false;
-  if( htMax > htRegion->htMax && htRegion->htMax>=0. ) returnBool = false;
+  if( htMax > htRegion->htMax && htRegion->htMax >=0. ) returnBool = false;
+  if( htMax < htRegion->htMax && htMax < 0 ) returnBool = false; //To solve case where htMax is Inf and htRegion->htMax is finite
 
   return returnBool;
 
@@ -447,8 +448,10 @@ bool MT2SignalRegion::isIncluded( MT2SignalRegion* sigRegion ) const {
 
   if( nJetsMin < sigRegion->nJetsMin ) returnBool = false;
   if( nJetsMax > sigRegion->nJetsMax && sigRegion->nJetsMax>=0 ) returnBool = false;
+  if( nJetsMax < sigRegion->nJetsMax && nJetsMax < 0 ) returnBool = false; //To solve case where nJetsMax is inf and sigRegion->nJetsMax is finite
   if( nBJetsMin < sigRegion->nBJetsMin ) returnBool = false;
   if( nBJetsMax > sigRegion->nBJetsMax && sigRegion->nBJetsMax>=0 ) returnBool = false;
+  if( nBJetsMax < sigRegion->nBJetsMax && nBJetsMax < 0 ) returnBool = false; //To solve case where nBJetsMax is inf and sigRegion->nBJetsMax is finite 
   if( sigRegion->mtCut != "" && mtCut != sigRegion->mtCut ) return false;
 
   return returnBool;

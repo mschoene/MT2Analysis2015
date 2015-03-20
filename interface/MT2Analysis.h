@@ -928,18 +928,19 @@ MT2Region* MT2Analysis<T>::getRegion( float ht, int njets, int nbjets, float met
 template<class T>
 MT2Region* MT2Analysis<T>::matchRegion( MT2Region region ) const {
 
-
   MT2Region* foundRegion = 0;
   
-  for( typename std::set<T*>::iterator it=data.begin(); it!=data.end(); ++it ) {
-
-    if( !( region.isIncluded((*it)->region) ) ) continue;
-
-    foundRegion = (*it)->region;
-    break;
-
-  }  // for
-
+  for( std::set<MT2Region>::iterator iR=regions_.begin(); iR!=regions_.end(); ++iR ) {
+    
+    MT2Region* thisRegion= new MT2Region( (*iR) );
+ 
+    if(!( region.isIncluded( thisRegion ) ) ) continue;
+    foundRegion = ( thisRegion );
+    std::cout << "Match " << thisRegion->getName() << std::endl;
+    //    break;
+    
+  }
+    
   return foundRegion;
 
 
