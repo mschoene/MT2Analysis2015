@@ -133,6 +133,16 @@ int main( int argc, char* argv[] ) {
 
 
 
+  std::vector<MT2Region> r_vsHT_j46_b1;
+  r_vsHT_j46_b1.push_back( MT2Region( 450., 575. , 4, 6, 1, 1 ) );
+  r_vsHT_j46_b1.push_back( MT2Region( 575., 1000., 4, 6, 1, 1 ) );
+  r_vsHT_j46_b1.push_back( MT2Region( 1000.,1500., 4, 6, 1, 1 ) );
+  r_vsHT_j46_b1.push_back( MT2Region( 1500., -1. , 4, 6, 1, 1 ) );
+
+  compareRegions( outputdir, r_vsHT_j46_b1, zgammaRatio );
+
+
+
 
 
 
@@ -169,8 +179,8 @@ void compareRegions( const std::string& outputdir, std::vector<MT2Region> region
   colors.push_back( 29 );
   colors.push_back( 38 );
   colors.push_back( 42 );
+  colors.push_back( kGray+1 );
   colors.push_back( kRed );
-  colors.push_back( kBlack );
   
   std::vector<int> markers;
   markers.push_back( 21 );
