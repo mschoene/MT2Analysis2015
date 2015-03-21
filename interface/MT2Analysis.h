@@ -936,8 +936,7 @@ MT2Region* MT2Analysis<T>::matchRegion( MT2Region region ) const {
  
     if(!( region.isIncluded( thisRegion ) ) ) continue;
     foundRegion = ( thisRegion );
-    std::cout << "Match " << thisRegion->getName() << std::endl;
-    //    break;
+    break;
     
   }
     
