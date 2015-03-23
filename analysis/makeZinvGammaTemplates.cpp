@@ -21,7 +21,7 @@ float lumi = 5.; //fb-1
 
 
 
-void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2Analysis<MT2EstimateZinvGamma>* prompt, MT2Analysis<MT2EstimateZinvGamma>* fake, bool useMC );
+void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2Analysis<MT2EstimateZinvGamma>* prompt, MT2Analysis<MT2EstimateZinvGamma>* fake, const std::string& useMC );
 void setPoissonError( MT2Analysis<MT2EstimateZinvGamma>* data );
 //void randomizePoisson( MT2Analysis<MT2EstimateZinvGamma>* data );
 
@@ -31,24 +31,16 @@ void setPoissonError( MT2Analysis<MT2EstimateZinvGamma>* data );
 int main( int argc, char* argv[] ) {
 
 
-  if( argc==1 ) {
-    std::cout << "-> You need to pass me the regions set name. Here are some suggestions: " << std::endl;
-    std::cout << "  13TeV_CSA14" << std::endl;
-    std::cout << "  13TeV_onlyHT" << std::endl;
-    std::cout << "  13TeV_onlyJets" << std::endl;
-    std::cout << "  13TeV_inclusive" << std::endl;
-    exit(101);
-  }
 
-
-  bool useMC = true;
+  std::string useMC = "MC";
   if( argc>1 ) {
-    std::string useMC_str(argv[1]); 
-    if( useMC_str!="data" && useMC_str!="MC" ) {
-      std::cout << "ERROR! Second argument may only be 'MC' or 'data'" << std::endl;
+    useMC = std::string(argv[1]); 
+    if( useMC=="data" ) useMC="Data";
+    if( useMC=="dataRC" ) useMC="DataRC";
+    if( useMC!="Data" && useMC!="MC" && useMC!="DataRC" ) {
+      std::cout << "ERROR! Second argument may only be 'MC' or 'data' or 'dataRC'" << std::endl;
       exit(1111);
     }
-    if( useMC_str=="data" ) useMC = false;
   }
 
 
@@ -90,16 +82,15 @@ int main( int argc, char* argv[] ) {
   }
 
 
-  if( !useMC ) {
+  if( useMC=="Data" || useMC=="DataRC" ) {
     setPoissonError( templatesFake );
     setPoissonError( templatesPrompt );
+    if( useMC=="Data" ) templatesPrompt->setName("templatesPromptRaw");
   }
 
 
 
-  std::string templateFileName = "gammaTemplates";
-  if( useMC ) templateFileName += "MC";
-  else        templateFileName += "Data";
+  std::string templateFileName = "gammaTemplates" + useMC;
   templateFileName = templateFileName + "_" + samplesFileName + "_" + regionsSet + ".root";
 
 
@@ -119,7 +110,7 @@ int main( int argc, char* argv[] ) {
 
 
 
-void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2Analysis<MT2EstimateZinvGamma>* prompt, MT2Analysis<MT2EstimateZinvGamma>* fake, bool useMC ) {
+void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2Analysis<MT2EstimateZinvGamma>* prompt, MT2Analysis<MT2EstimateZinvGamma>* fake, const std::string& useMC ) {
 
 
   std::cout << std::endl << std::endl;
@@ -191,6 +182,7 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2An
     TLorentzVector gamma;
     gamma.SetPtEtaPhiM( myTree.gamma_pt[0], myTree.gamma_eta[0], myTree.gamma_phi[0], myTree.gamma_mass[0] );
 
+    float iso = myTree.gamma_chHadIso[0];
 
     float hOverE = myTree.gamma_hOverE[0];
     float sietaieta = myTree.gamma_sigmaIetaIeta[0];
@@ -208,27 +200,39 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2An
 
     bool isWorkingPrompt = false;
 
-    if( useMC ) {
+    if( useMC=="MC" ) {
 
       if( !sietaietaOK ) continue;
       isWorkingPrompt = isPrompt;
 
-    } else { // is data
+    } else if( useMC=="Data" ) { 
 
       isWorkingPrompt = sietaietaOK;
 
-      //if( isWorkingPrompt ) {
-      //  // for prompts use only low-sensitivity regions:
-      //  if( myTree.gamma_mt2>300. ) continue;
-      //  if( myTree.gamma_ht>1000. ) continue;
-      //  if( myTree.gamma_nBJet40>0 ) continue;
-      //}
+      if( isWorkingPrompt ) {
+        // for prompts use only low-sensitivity regions:
+        if( myTree.gamma_mt2>300. ) continue;
+        if( myTree.gamma_ht>1000. ) continue;
+        if( myTree.gamma_nBJet40>0 ) continue;
+      }
+
+
+    } else if( useMC=="DataRC" ) { 
+
+      isWorkingPrompt = sietaietaOK;
+
+      if( isWorkingPrompt ) iso = myTree.gamma_chHadIsoRC[0]; // random cone
+
+
+    } else {
+
+      // this shouldnt be possible
+      std::cout << "-> NOPE. Don't know anything about useMC='" << useMC << "'." << std::endl;
+      exit(191);
 
     }
 
 
-    float iso = myTree.gamma_chHadIso[0];
-    if( !useMC && isWorkingPrompt ) iso = myTree.gamma_chHadIsoRC[0]; // random cone
  
     if( iso > 20. ) continue;
 
