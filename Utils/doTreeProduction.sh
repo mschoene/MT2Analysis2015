@@ -2,8 +2,8 @@
 
 # --- configuration (consider to move this into a separate file) ---
 treeName="tree"
-inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/mangano/babies/chunks/afterSynchMarch8/"
-productionName="afterSynchMarch8"
+inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/mangano/babies/chunks/productionForFrancescoTry5/"
+productionName="productionForFrancescoTry5"
 fileExt="_post.root"
 # --------------------------
 
@@ -109,7 +109,7 @@ mkdir -p $workingFolder
 gfal-mkdir -p srm://t3se01.psi.ch/$outputFolder
 
 echo "postProcessing(\"$name\",\"$inputFolder\",\"$outputFile\",\"$treeName\",$filter,$kfactor,$xsec,$id);"
-echo "gROOT->LoadMacro(\"postProcessing.C\"); postProcessing(\"$name\",\"$inputFolder\",\"$outputFile\",\"$treeName\",$filter,$kfactor,$xsec,$id); gSystem->Exit(0);" |root.exe -b -l ;
+echo "gROOT->LoadMacro(\"postProcessing.C+\"); postProcessing(\"$name\",\"$inputFolder\",\"$outputFile\",\"$treeName\",$filter,$kfactor,$xsec,$id); gSystem->Exit(0);" |root.exe -b -l ;
 
 #mv $outputFile $outputFolder
 gfal-copy file://$outputFile srm://t3se01.psi.ch/$outputFolder

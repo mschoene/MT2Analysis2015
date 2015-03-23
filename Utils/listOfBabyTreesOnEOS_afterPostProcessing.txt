@@ -1,1 +1,0 @@
-/eos/cms/store/user/mmasciov/CSA14_babyTrees_postProcessed/WJetsToLNu_HT400to600_PU_S14_POSTLS170_babyTree_post.root
