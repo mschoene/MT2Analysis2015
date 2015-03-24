@@ -203,6 +203,7 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2An
     if( useMC=="MC" ) {
 
       if( !sietaietaOK ) continue;
+      if( isNIP ) continue; // don't want no NIP slip
       isWorkingPrompt = isPrompt;
 
     } else if( useMC=="Data" ) { 
