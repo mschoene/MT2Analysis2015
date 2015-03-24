@@ -83,6 +83,13 @@ int main( int argc, char* argv[] ) {
 void drawSinglePlot( const std::string& outputdir, const std::string& name, const MT2Region& region, std::vector<TH1D*> histosData, TH1D* histoMC ) {
 
 
+  if( name=="Fake" ) {
+
+    histoMC->Rebin(2);
+    for( unsigned i=0; i<histosData.size(); ++i ) histosData[i]->Rebin(2);
+
+  }
+
 
   TCanvas* c1 = new TCanvas( "c1", "", 600, 600 );
   c1->cd();
@@ -90,7 +97,7 @@ void drawSinglePlot( const std::string& outputdir, const std::string& name, cons
   c1_log->SetLogy();
 
   float yMinLegend = 0.9 - (histosData.size()+1)*0.06;
-  float yMaxScale = (name=="Fake") ? 1.5 : 1.25;
+  float yMaxScale = (name=="Fake") ? 1.6 : 1.25;
   float xMax = histoMC->GetXaxis()->GetXmax();
 
   //if( name=="Fake" ) {
@@ -100,13 +107,28 @@ void drawSinglePlot( const std::string& outputdir, const std::string& name, cons
   //} else { // rescale so that first bin has same content
 
 
-  // normalize first one
-  histosData[0]->Scale(1./histosData[0]->Integral() );
+  if( name=="Fake" ) { 
 
-  for( unsigned i=1; i<histosData.size(); ++i ) 
-    histosData[i]->Scale( histosData[0]->GetBinContent(1)/histosData[i]->GetBinContent(1) );
+    // keep first one normalized to lumi, normalize all others to integral of first
 
-  histoMC->Scale( histosData[0]->GetBinContent(1)/histoMC->GetBinContent(1) );
+    for( unsigned i=1; i<histosData.size(); ++i )
+      histosData[i]->Scale( histosData[0]->Integral()/histosData[i]->Integral() );
+
+    histoMC->Scale( histosData[0]->Integral()/histoMC->Integral() );
+
+  } else {
+
+    // normalize first one to unity
+    histosData[0]->Scale(1./histosData[0]->Integral() );
+
+    // normalize other ones so that first bin has same content:
+    for( unsigned i=1; i<histosData.size(); ++i ) 
+      histosData[i]->Scale( histosData[0]->GetBinContent(1)/histosData[i]->GetBinContent(1) );
+
+    histoMC->Scale( histosData[0]->GetBinContent(1)/histoMC->GetBinContent(1) );
+
+  }
+
 
 
   float yMax = histosData[0]->GetMaximum()*yMaxScale;
@@ -114,13 +136,19 @@ void drawSinglePlot( const std::string& outputdir, const std::string& name, cons
 
   TH2D* h2_axes = new TH2D("axes", "", 10, 0., xMax, 10, 0., yMax );
   h2_axes->SetXTitle( "Photon Charged Isolation [GeV]" );
-  h2_axes->SetYTitle( "Normalized to Unity" );
+  if( name=="Fake" )
+    h2_axes->SetYTitle( Form("Events / %.1f GeV", histoMC->GetBinWidth(1)) );
+  else
+    h2_axes->SetYTitle( "Normalized to Unity" );
   c1->cd();
   h2_axes->Draw();
 
   TH2D* h2_axes_log = new TH2D("axes_log", "", 10, 0., xMax, 10, 0.00001, 3.*yMax );
   h2_axes_log->SetXTitle( "Photon Charged Isolation [GeV]" );
-  h2_axes_log->SetYTitle( "Normalized to Unity" );
+  if( name=="Fake" )
+    h2_axes_log->SetYTitle( Form("Events / %.1f GeV", histoMC->GetBinWidth(1)) );
+  else
+    h2_axes_log->SetYTitle( "Normalized to Unity" );
   c1_log->cd();
   h2_axes_log->Draw();
 
@@ -148,10 +176,12 @@ void drawSinglePlot( const std::string& outputdir, const std::string& name, cons
   markers.push_back( 24 );
   markers.push_back( 25 );
 
+  float markerSize = (name=="Fake") ? 1.6 : 1.3;
+
   for( unsigned i=0; i<histosData.size(); ++i ) {
     histosData[i]->SetMarkerStyle( markers[i] );
     histosData[i]->SetMarkerColor( colors[i] );
-    histosData[i]->SetMarkerSize( 1.6 );
+    histosData[i]->SetMarkerSize( markerSize );
     histosData[i]->SetLineColor( colors[i] );
     c1->cd();
     histosData[i]->Draw("p same");
