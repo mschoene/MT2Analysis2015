@@ -21,13 +21,12 @@ int main( int argc, char* argv[] ) {
 
 
   std::string samples = "PHYS14_v2_Zinv";
-  if( argc>1 ) {
-    std::string samples_tmp(argv[1]); 
-    samples = samples_tmp;
-  }
-
 
   std::string regionsSet = "zurich";
+  if( argc>1 ) {
+    regionsSet = std::string(argv[1]); 
+  }
+
 
   MT2DrawTools::setStyle();
 
@@ -43,92 +42,123 @@ int main( int argc, char* argv[] ) {
   eff->setFullName( "Efficiency" );
 
 
-  std::vector<MT2Region> r_lowHT_vs_njet;
-  r_lowHT_vs_njet.push_back( MT2Region( 450., 575., 2,  3, 0, 0 ) );
-  r_lowHT_vs_njet.push_back( MT2Region( 450., 575., 4,  6, 0, 0 ) );
-  r_lowHT_vs_njet.push_back( MT2Region( 450., 575., 2,  3, 1, 1 ) );
-  r_lowHT_vs_njet.push_back( MT2Region( 450., 575., 4,  6, 1, 1 ) );
+  if( regionsSet=="zurich" ) {
 
-  compareRegions( outputdir, r_lowHT_vs_njet, purity );
-  compareRegions( outputdir, r_lowHT_vs_njet, purityLoose );
-  compareRegions( outputdir, r_lowHT_vs_njet, eff );
+    std::vector<MT2Region> r_lowHT_vs_njet;
+    r_lowHT_vs_njet.push_back( MT2Region( 450., 575., 2,  3, 0, 0 ) );
+    r_lowHT_vs_njet.push_back( MT2Region( 450., 575., 4,  6, 0, 0 ) );
+    r_lowHT_vs_njet.push_back( MT2Region( 450., 575., 2,  3, 1, 1 ) );
+    r_lowHT_vs_njet.push_back( MT2Region( 450., 575., 4,  6, 1, 1 ) );
 
-  std::vector<MT2Region> r_medHT_vs_njet;
-  r_medHT_vs_njet.push_back( MT2Region( 575., 1000., 2,  3, 0, 0 ) );
-  r_medHT_vs_njet.push_back( MT2Region( 575., 1000., 4,  6, 0, 0 ) );
-  r_medHT_vs_njet.push_back( MT2Region( 575., 1000., 2,  3, 1, 1 ) );
-  r_medHT_vs_njet.push_back( MT2Region( 575., 1000., 4,  6, 1, 1 ) );
+    compareRegions( outputdir, r_lowHT_vs_njet, purity );
+    compareRegions( outputdir, r_lowHT_vs_njet, purityLoose );
+    compareRegions( outputdir, r_lowHT_vs_njet, eff );
 
-  compareRegions( outputdir, r_medHT_vs_njet, purity );
-  compareRegions( outputdir, r_medHT_vs_njet, purityLoose );
-  compareRegions( outputdir, r_medHT_vs_njet, eff );
+    std::vector<MT2Region> r_medHT_vs_njet;
+    r_medHT_vs_njet.push_back( MT2Region( 575., 1000., 2,  3, 0, 0 ) );
+    r_medHT_vs_njet.push_back( MT2Region( 575., 1000., 4,  6, 0, 0 ) );
+    r_medHT_vs_njet.push_back( MT2Region( 575., 1000., 2,  3, 1, 1 ) );
+    r_medHT_vs_njet.push_back( MT2Region( 575., 1000., 4,  6, 1, 1 ) );
 
-  std::vector<MT2Region> r_highHT_vs_njet;
-  r_highHT_vs_njet.push_back( MT2Region( 1000., 1500., 2,  3, 0, 0 ) );
-  r_highHT_vs_njet.push_back( MT2Region( 1000., 1500., 4,  6, 0, 0 ) );
-  r_highHT_vs_njet.push_back( MT2Region( 1000., 1500., 2,  3, 1, 1 ) );
-  r_highHT_vs_njet.push_back( MT2Region( 1000., 1500., 4,  6, 1, 1 ) );
+    compareRegions( outputdir, r_medHT_vs_njet, purity );
+    compareRegions( outputdir, r_medHT_vs_njet, purityLoose );
+    compareRegions( outputdir, r_medHT_vs_njet, eff );
 
-  compareRegions( outputdir, r_highHT_vs_njet, purity );
-  compareRegions( outputdir, r_highHT_vs_njet, purityLoose );
-  compareRegions( outputdir, r_highHT_vs_njet, eff );
+    std::vector<MT2Region> r_highHT_vs_njet;
+    r_highHT_vs_njet.push_back( MT2Region( 1000., 1500., 2,  3, 0, 0 ) );
+    r_highHT_vs_njet.push_back( MT2Region( 1000., 1500., 4,  6, 0, 0 ) );
+    r_highHT_vs_njet.push_back( MT2Region( 1000., 1500., 2,  3, 1, 1 ) );
+    r_highHT_vs_njet.push_back( MT2Region( 1000., 1500., 4,  6, 1, 1 ) );
 
-
-  std::vector<MT2Region> r_veryhighHT_vs_njet;
-  r_veryhighHT_vs_njet.push_back( MT2Region( 1500., -1., 2,  3, 0, 0 ) );
-  r_veryhighHT_vs_njet.push_back( MT2Region( 1500., -1., 4,  6, 0, 0 ) );
-  r_veryhighHT_vs_njet.push_back( MT2Region( 1500., -1., 2,  3, 1, 1 ) );
-  r_veryhighHT_vs_njet.push_back( MT2Region( 1500., -1., 4,  6, 1, 1 ) );
-
-  compareRegions( outputdir, r_veryhighHT_vs_njet, purity );
-  compareRegions( outputdir, r_veryhighHT_vs_njet, purityLoose );
-  compareRegions( outputdir, r_veryhighHT_vs_njet, eff );
+    compareRegions( outputdir, r_highHT_vs_njet, purity );
+    compareRegions( outputdir, r_highHT_vs_njet, purityLoose );
+    compareRegions( outputdir, r_highHT_vs_njet, eff );
 
 
+    std::vector<MT2Region> r_veryhighHT_vs_njet;
+    r_veryhighHT_vs_njet.push_back( MT2Region( 1500., -1., 2,  3, 0, 0 ) );
+    r_veryhighHT_vs_njet.push_back( MT2Region( 1500., -1., 4,  6, 0, 0 ) );
+    r_veryhighHT_vs_njet.push_back( MT2Region( 1500., -1., 2,  3, 1, 1 ) );
+    r_veryhighHT_vs_njet.push_back( MT2Region( 1500., -1., 4,  6, 1, 1 ) );
+
+    compareRegions( outputdir, r_veryhighHT_vs_njet, purity );
+    compareRegions( outputdir, r_veryhighHT_vs_njet, purityLoose );
+    compareRegions( outputdir, r_veryhighHT_vs_njet, eff );
 
 
-  std::vector<MT2Region> r_vsHT;
-  r_vsHT.push_back( MT2Region(  450., 575. , 2, 3, 0, 0 ) );
-  r_vsHT.push_back( MT2Region(  575., 1000., 2, 3, 0, 0 ) );
-  r_vsHT.push_back( MT2Region( 1000., 1500., 2, 3, 0, 0 ) );
-  r_vsHT.push_back( MT2Region( 1500.,   -1., 2, 3, 0, 0 ) );
-
-  compareRegions( outputdir, r_vsHT, purity );
-  compareRegions( outputdir, r_vsHT, purityLoose );
-  compareRegions( outputdir, r_vsHT, eff );
 
 
-  std::vector<MT2Region> r_vsHT_b1;
-  r_vsHT_b1.push_back( MT2Region(  450., 575. , 2, 3, 1, 1 ) );
-  r_vsHT_b1.push_back( MT2Region(  575., 1000., 2, 3, 1, 1 ) );
-  r_vsHT_b1.push_back( MT2Region( 1000., 1500., 2, 3, 1, 1 ) );
-  r_vsHT_b1.push_back( MT2Region( 1500.,   -1., 2, 3, 1, 1 ) );
+    std::vector<MT2Region> r_vsHT;
+    r_vsHT.push_back( MT2Region(  450., 575. , 2, 3, 0, 0 ) );
+    r_vsHT.push_back( MT2Region(  575., 1000., 2, 3, 0, 0 ) );
+    r_vsHT.push_back( MT2Region( 1000., 1500., 2, 3, 0, 0 ) );
+    r_vsHT.push_back( MT2Region( 1500.,   -1., 2, 3, 0, 0 ) );
 
-  compareRegions( outputdir, r_vsHT_b1, purity );
-  compareRegions( outputdir, r_vsHT_b1, purityLoose );
-  compareRegions( outputdir, r_vsHT_b1, eff );
-
-
-  std::vector<MT2Region> r_vsHT_j46;
-  r_vsHT_j46.push_back( MT2Region(  450., 575. , 4, 6, 0, 0 ) );
-  r_vsHT_j46.push_back( MT2Region(  575., 1000., 4, 6, 0, 0 ) );
-  r_vsHT_j46.push_back( MT2Region( 1000., 1500., 4, 6, 0, 0 ) );
-  r_vsHT_j46.push_back( MT2Region( 1500.,   -1., 4, 6, 0, 0 ) );
-
-  compareRegions( outputdir, r_vsHT_j46, purity );
-  compareRegions( outputdir, r_vsHT_j46, purityLoose );
-  compareRegions( outputdir, r_vsHT_j46, eff );
+    compareRegions( outputdir, r_vsHT, purity );
+    compareRegions( outputdir, r_vsHT, purityLoose );
+    compareRegions( outputdir, r_vsHT, eff );
 
 
-  std::vector<MT2Region> r_vsHT_j46_b1;
-  r_vsHT_j46_b1.push_back( MT2Region(  450., 575. , 4, 6, 1, 1 ) );
-  r_vsHT_j46_b1.push_back( MT2Region(  575., 1000., 4, 6, 1, 1 ) );
-  r_vsHT_j46_b1.push_back( MT2Region( 1000., 1500., 4, 6, 1, 1 ) );
-  r_vsHT_j46_b1.push_back( MT2Region( 1500.,   -1., 4, 6, 1, 1 ) );
+    std::vector<MT2Region> r_vsHT_b1;
+    r_vsHT_b1.push_back( MT2Region(  450., 575. , 2, 3, 1, 1 ) );
+    r_vsHT_b1.push_back( MT2Region(  575., 1000., 2, 3, 1, 1 ) );
+    r_vsHT_b1.push_back( MT2Region( 1000., 1500., 2, 3, 1, 1 ) );
+    r_vsHT_b1.push_back( MT2Region( 1500.,   -1., 2, 3, 1, 1 ) );
 
-  compareRegions( outputdir, r_vsHT_j46_b1, purity );
-  compareRegions( outputdir, r_vsHT_j46_b1, purityLoose );
-  compareRegions( outputdir, r_vsHT_j46_b1, eff );
+    compareRegions( outputdir, r_vsHT_b1, purity );
+    compareRegions( outputdir, r_vsHT_b1, purityLoose );
+    compareRegions( outputdir, r_vsHT_b1, eff );
+
+
+    std::vector<MT2Region> r_vsHT_j46;
+    r_vsHT_j46.push_back( MT2Region(  450., 575. , 4, 6, 0, 0 ) );
+    r_vsHT_j46.push_back( MT2Region(  575., 1000., 4, 6, 0, 0 ) );
+    r_vsHT_j46.push_back( MT2Region( 1000., 1500., 4, 6, 0, 0 ) );
+    r_vsHT_j46.push_back( MT2Region( 1500.,   -1., 4, 6, 0, 0 ) );
+
+    compareRegions( outputdir, r_vsHT_j46, purity );
+    compareRegions( outputdir, r_vsHT_j46, purityLoose );
+    compareRegions( outputdir, r_vsHT_j46, eff );
+
+
+    std::vector<MT2Region> r_vsHT_j46_b1;
+    r_vsHT_j46_b1.push_back( MT2Region(  450., 575. , 4, 6, 1, 1 ) );
+    r_vsHT_j46_b1.push_back( MT2Region(  575., 1000., 4, 6, 1, 1 ) );
+    r_vsHT_j46_b1.push_back( MT2Region( 1000., 1500., 4, 6, 1, 1 ) );
+    r_vsHT_j46_b1.push_back( MT2Region( 1500.,   -1., 4, 6, 1, 1 ) );
+
+    compareRegions( outputdir, r_vsHT_j46_b1, purity );
+    compareRegions( outputdir, r_vsHT_j46_b1, purityLoose );
+    compareRegions( outputdir, r_vsHT_j46_b1, eff );
+
+
+  } else if( regionsSet=="zurich_onlyHT" ) {
+
+    std::vector<MT2Region> r_vsHT;
+    r_vsHT.push_back( MT2Region(  450., 575.  ) );
+    r_vsHT.push_back( MT2Region(  575., 1000. ) );
+    r_vsHT.push_back( MT2Region( 1000., 1500. ) );
+    r_vsHT.push_back( MT2Region( 1500.,   -1. ) );
+
+    compareRegions( outputdir, r_vsHT, purity );
+    compareRegions( outputdir, r_vsHT, purityLoose );
+    compareRegions( outputdir, r_vsHT, eff );
+
+
+
+  } else if( regionsSet=="zurich_onlyJets" ) {
+
+    std::vector<MT2Region> r_vs_njet;
+    r_vs_njet.push_back( MT2Region( 450., -1., 2,  3, 0, 0 ) );
+    r_vs_njet.push_back( MT2Region( 450., -1., 4,  6, 0, 0 ) );
+    r_vs_njet.push_back( MT2Region( 450., -1., 2,  3, 1, 1 ) );
+    r_vs_njet.push_back( MT2Region( 450., -1., 4,  6, 1, 1 ) );
+
+    compareRegions( outputdir, r_vs_njet, purity );
+    compareRegions( outputdir, r_vs_njet, purityLoose );
+    compareRegions( outputdir, r_vs_njet, eff );
+
+  }
 
 
 
