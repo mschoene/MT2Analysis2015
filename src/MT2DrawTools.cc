@@ -75,7 +75,14 @@ TStyle* MT2DrawTools::setStyle() {
   style->SetPadTickX(1); // To get tick marks on the opposite side of the frame
   style->SetPadTickY(1);
   // for histograms:
-  style->SetHistLineColor(0);
+  style->SetHistLineColor(1);
+  // for the pallete
+  Double_t stops[5] = { 0.00, 0.34, 0.61, 0.84, 1.00 };
+  Double_t red  [5] = { 0.00, 0.00, 0.87, 1.00, 0.51 };
+  Double_t green[5] = { 0.00, 0.81, 1.00, 0.20, 0.00 };
+  Double_t blue [5] = { 0.51, 1.00, 0.12, 0.00, 0.00 };
+  TColor::CreateGradientColorTable(5, stops, red, green, blue, 100);
+  style->SetNumberContours(100);
 
   style->cd();
   return style;
@@ -98,6 +105,7 @@ TPaveText* MT2DrawTools::getLabelTop( float lumi ) {
 TPaveText* MT2DrawTools::getLabelTop( const std::string& text ) {
 
   TPaveText* label_top = new TPaveText(0.4,0.953,0.975,0.975, "brNDC");
+  label_top->SetBorderSize(0);
   label_top->SetFillColor(kWhite);
   label_top->SetTextSize(0.038);
   label_top->SetTextAlign(31); // align right
@@ -115,7 +123,7 @@ TGraphAsymmErrors* MT2DrawTools::getPoissonGraph( TH1D* histo, bool drawZeros, c
 
   TGraphAsymmErrors* graph = new TGraphAsymmErrors(0);
 
-  for( unsigned iBin=1; iBin<(histo->GetXaxis()->GetNbins()+1); ++iBin ) {
+  for( int iBin=1; iBin<(histo->GetXaxis()->GetNbins()+1); ++iBin ) {
 
     int y; // these are data histograms, so y has to be integer
     double x, xerr, yerrplus, yerrminus;
