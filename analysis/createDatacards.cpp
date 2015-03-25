@@ -82,11 +82,15 @@ int main( int argc, char* argv[] ) {
   if( useMC_zinv )
     zinv = MT2Analysis<MT2Estimate>::readFromFile( mc_fileName, "ZJets");
   else {
-    //zinv       = MT2Analysis<MT2Estimate>::readFromFile( mc_fileName, "ZJets");
-    //zinv       = MT2Analysis<MT2Estimate>::readFromFile( "ZinvEstimateFromGamma_PHYS14_v3_Zinv_13TeV_CSA14_4fb/MT2ZinvEstimate.root", "ZinvEstimate");
-    zinv       = MT2Analysis<MT2Estimate>::readFromFile( "ZinvEstimateFromGamma_PHYS14_v3_Zinv_13TeV_PHYS14_hiHT_4fb/mc.root", "Zinv");
-    zinvCR     = MT2Analysis<MT2Estimate>::readFromFile( "ZinvEstimateFromGamma_PHYS14_v3_Zinv_13TeV_PHYS14_hiHT_4fb/mc.root", "gammaJet");
-    zinv_ratio = MT2Analysis<MT2Estimate>::readFromFile( "ZinvEstimateFromGamma_PHYS14_v3_Zinv_13TeV_PHYS14_hiHT_4fb/mc.root", "ZgammaRatio");
+    ////zinv       = MT2Analysis<MT2Estimate>::readFromFile( mc_fileName, "ZJets");
+    ////zinv       = MT2Analysis<MT2Estimate>::readFromFile( "MT2ZinvEstimate.root", "ZinvEstimate");
+    //zinv       = MT2Analysis<MT2Estimate>::readFromFile( "ZinvEstimateFromGamma_PHYS14_v2_Zinv_zurich_4fb_type0/mc.root", "Zinv");
+    //zinvCR     = MT2Analysis<MT2Estimate>::readFromFile( "ZinvEstimateFromGamma_PHYS14_v2_Zinv_zurich_4fb_type0/mc.root", "gammaJet");
+    //zinv_ratio = MT2Analysis<MT2Estimate>::readFromFile( "ZinvEstimateFromGamma_PHYS14_v2_Zinv_zurich_4fb_type0/mc.root", "ZgammaRatio");
+
+    zinv       = MT2Analysis<MT2Estimate>::readFromFile( mc_fileName, "ZJets");
+    zinvCR     = MT2Analysis<MT2Estimate>::readFromFile( "GammaControlRegion_oldMT2_PHYS14_v2_Zinv_zurich/mc.root", "gammaCR");
+    zinv_ratio = MT2Analysis<MT2Estimate>::readFromFile( "ZinvEstimateFromGamma_oldMT2_PHYS14_v2_Zinv_zurich_4fb_type0/MT2ZinvEstimate.root", "ZgammaRatio");
   }
   zinv->setName("zinv");
   zinv->addToFile( mc_fileName, true );
@@ -98,22 +102,18 @@ int main( int argc, char* argv[] ) {
     MT2Analysis<MT2Estimate>* top   = MT2Analysis<MT2Estimate>::readFromFile( mc_fileName, "Top");
     llep = new MT2Analysis<MT2Estimate>( (*wjets) + (*top) );
   } else {
-    //llep = MT2Analysis<MT2Estimate>::readFromFile( "llep_PHYS14_v3_CSA14.root" );
-    llep = MT2Analysis<MT2Estimate>::readFromFile( "llep_PHYS14_v3_13TeV_PHYS14_hiHT.root" );
+    llep = MT2Analysis<MT2Estimate>::readFromFile( "llep_PHYS14_Zurich_oldRegionProposal_13TeV_PHYS14_loJet_hiHT_noMT_4fb.root" );
   }
   llep->setName( "llep" );
   llep->addToFile( mc_fileName, true );
 
 
-  //MT2Analysis<MT2Estimate>* llepCR = MT2Analysis<MT2Estimate>::readFromFile( "llep_PHYS14_v3_CSA14.root" );
-  MT2Analysis<MT2Estimate>* llepCR = MT2Analysis<MT2Estimate>::readFromFile( "llep_PHYS14_v3_13TeV_PHYS14_hiHT.root" );
+  //MT2Analysis<MT2Estimate>* llepCR = MT2Analysis<MT2Estimate>::readFromFile( "llep_PHYS14_v3_13TeV_CSA14.root" );
+  MT2Analysis<MT2Estimate>* llepCR = MT2Analysis<MT2Estimate>::readFromFile( "llep_PHYS14_Zurich_oldRegionProposal_13TeV_PHYS14_loJet_hiHT_noMT_4fb.root" );
   //MT2Analysis<MT2Estimate>* llepCR = llep;
 
 
   std::set<MT2Region> regions = data->getRegions();
-
-
-
 
   // first create template datacards
 

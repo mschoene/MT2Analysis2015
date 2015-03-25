@@ -29,7 +29,7 @@ float lumi = 4.; // fb-1
 
 
 
-int type = 1;
+int type = 0;
 
 // 0: use bare MC for ratio (pure GJet)
 // 1: use GJet+QCD and multiply by fitted purity
@@ -56,11 +56,11 @@ int main( int argc, char* argv[] ) {
   TH1::AddDirectory(kFALSE); // stupid ROOT memory allocation needs this
 
 
-  std::string outputdir( Form("ZinvEstimateFromGamma_%s_%s_%.0ffb_type%d", samplesFileName.c_str(), regionsSet.c_str(), lumi, type) );
+  std::string outputdir( Form("ZinvEstimateFromGamma_oldMT2_%s_%s_%.0ffb_type%d", samplesFileName.c_str(), regionsSet.c_str(), lumi, type) );
   system(Form("mkdir -p %s", outputdir.c_str()));
 
 
-  std::string gammaControlRegionDir = "GammaControlRegion_" + samplesFileName + "_" + regionsSet;
+  std::string gammaControlRegionDir = "GammaControlRegion_oldMT2_" + samplesFileName + "_" + regionsSet;
 
   MT2Analysis<MT2Estimate>* gammaCR = MT2Analysis<MT2Estimate>::readFromFile(gammaControlRegionDir + "/data.root", "gammaCR");
   MT2Analysis<MT2Estimate>* gamma_prompt = MT2Analysis<MT2Estimate>::readFromFile(gammaControlRegionDir + "/mc.root", "prompt");
@@ -84,7 +84,8 @@ int main( int argc, char* argv[] ) {
   }
 
 
-  MT2Analysis<MT2Estimate>* Zinv = MT2Analysis<MT2Estimate>::readFromFile(Form("EventYields_mc_PHYS14_v2_dummy_%.0ffb/analyses.root", lumi), "ZJets");
+  //MT2Analysis<MT2Estimate>* Zinv = MT2Analysis<MT2Estimate>::readFromFile(Form("EventYields_mc_PHYS14_v2_dummy_%.0ffb/analyses.root", lumi), "ZJets");
+  MT2Analysis<MT2Estimate>* Zinv = MT2Analysis<MT2Estimate>::readFromFile(Form("EventYields_oldRegionProposal_mc_PHYS14_Zurich_dummy_%.0ffb/analyses.root", lumi), "ZJets");
   if( Zinv==0 ) {
     std::cout << "-> Please run regionEventYields on MC first. I need to get the Z->vv MC yields from there." << std::endl;
     std::cout << "-> Thank you for your cooperation." << std::endl;
@@ -98,7 +99,7 @@ int main( int argc, char* argv[] ) {
 
   MT2Analysis<MT2Estimate>* gammaCR_times_ZgammaRatio = new MT2Analysis<MT2Estimate>( "gammaCR_times_ZgammaRatio", regionsSet );
   if( type==0 )
-    (*gammaCR_times_ZgammaRatio) = (*prompt) * (*ZgammaRatio);
+    (*gammaCR_times_ZgammaRatio) = (*gamma_prompt) * (*ZgammaRatio);
   else
     (*gammaCR_times_ZgammaRatio) = (*gammaCR) * (*ZgammaRatio);
 
@@ -112,7 +113,8 @@ int main( int argc, char* argv[] ) {
 
   ZinvEstimate->writeToFile( outFile );
   ZgammaRatio->addToFile( outFile );
-  purity->addToFile( outFile );
+  if( purity != 0 ) 
+    purity->addToFile( outFile );
 
   return 0;
 
