@@ -6,8 +6,8 @@ from array import array
 fsig = ["/scratch/casal/PHYS14_Production_Feb20/SMS_T1qqqq_2J_mGl1400_mLSP100_post.root", "/scratch/casal/PHYS14_Production_Feb20/SMS_T1qqqq_2J_mGl1000_mLSP800_post.root", "/scratch/casal/PHYS14_Production_Feb20/SMS_T1tttt_2J_mGl1500_mLSP100_post.root" ]#,"/scratch/casal/PHYS14_Production_Feb20/SMS_T1tttt_2J_mGl1200_mLSP800_post.root"]
 
 # 2. resolution as a function of (so far binning only adapted to ht and mt2*):
-vs = "ht"
-#vs = "mt2"
+#vs = "ht"
+vs = "mt2"
 #vs = "mt2_gen"
 
 # before running compile first MT2DrawTools.cc:
@@ -119,9 +119,9 @@ for n,f in enumerate(fsig):
     
     graphRMS[signal] = ROOT.TGraphErrors(len(x[signal]),array('f',x[signal]),array('f',rms[signal]),array('f',dx[signal]),array('f',drms[signal]))
     graphSig[signal] = ROOT.TGraphErrors(len(x[signal]),array('f',x[signal]),array('f',sig[signal]),array('f',dx[signal]),array('f',dsig[signal]))
-    graphStyle(graphRMS[signal], "", "M_{T2}^{gen} [GeV]" if "mt2" in vs else "H_{T} [TeV]", 
+    graphStyle(graphRMS[signal], "", "M_{T2}^{gen} [GeV]" if vs=="mt2_gen" else "M_{T2} [GeV]" if vs=="mt2" else "H_{T} [TeV]", 
                "M_{T2} resolution [GeV]", 21, colors[signal])
-    graphStyle(graphSig[signal], "", "M_{T2}^{gen} [GeV]" if "mt2" in vs else "H_{T} [TeV]", 
+    graphStyle(graphSig[signal], "", "M_{T2}^{gen} [GeV]" if vs=="mt2_gen" else "M_{T2} [GeV]" if vs=="mt2" else "H_{T} [TeV]", 
                "M_{T2} resolution [GeV]", 25, colors[signal])
 
 #can = ROOT.TCanvas("can","can",700,700)
