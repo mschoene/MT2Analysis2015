@@ -28,11 +28,11 @@ if [ $1 = "checkLogs" ]; then
 		if  [ -z "`tail -n 50 std_output.txt |grep -v echo|grep "remote copy succeeded"`" ]; 
 		then 
 		    if [ -e mt2.root ]; then
-			echo "ERROR: problem in copying output to SE for job: " $x ", but file was saved locally" 
+			echo "ERROR: problem in copying output to SE for job: " $z ", but file was saved locally" 
 			echo "copy file by hand and everything should be fine"
 			echo " "
 		    else
-			echo "ERROR: problem in copying output to SE for job: " $x 
+			echo "ERROR: problem in copying output to SE for job: " $z 
 			echo "File was not saved locally and job probably needs to be resubmitted"
 			echo ""
 		    fi		
