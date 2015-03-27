@@ -2,8 +2,8 @@
 
 # --- configuration (consider to move this into a separate file) ---
 treeName="tree"
-inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/mangano/babies/chunks/productionForFrancescoTry5/"
-productionName="productionForFrancescoTry5"
+inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/mangano/babies/chunks/afterSynchMarch8Rares/"
+productionName="afterSynchMarch8Rares"
 fileExt="_post.root"
 # --------------------------
 
@@ -132,6 +132,9 @@ qsub batchScript_${name}.sh;
 rm batchScript_${name}.sh;
 
 done < postProcessing.cfg
+
+rm -f postProcessing_C.d postProcessing_C.so;
+
 fi;
 
 if [[ "$1" = "postCheck" ]]; then

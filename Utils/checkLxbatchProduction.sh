@@ -4,21 +4,21 @@
 
 if [[ "$#" -lt 2 ]]; then
     echo "Relunch the script with one of the following options: "
-    echo "./checkLxbatchProduction.sh inputFolder checkLogs"
-    echo "./checkLxbatchProduction.sh inputFolder checkRemoteFiles"
-    echo "./checkLxbatchProduction.sh inputFolder checkTiming"
-    echo "./checkLxbatchProduction.sh inputFolder checkRate"
+    echo "./checkLxbatchProduction.sh checkLogs inputFolder "
+    echo "./checkLxbatchProduction.sh checkRemoteFiles inputFolder "
+    echo "./checkLxbatchProduction.sh checkTiming inputFolder "
+    echo "./checkLxbatchProduction.sh checkRate inputFolder "
     echo "./checkLxbatchProduction.sh ... "
-    echo "./checkLxbatchProduction.sh inputFolder debug"
+    echo "./checkLxbatchProduction.sh debug inputFolder "
     exit;
 fi;
 
 
-inputFolder=$1
+inputFolder=$2
 
 # --- This parses the log file and printout a message if there were issues in copying the file to the SE
 # --- This script should be extended to verify if there were error messages in general
-if [ $2 = "checkLogs" ]; then 
+if [ $1 = "checkLogs" ]; then 
     #for x in `ls -1 $inputFolder| grep _Chunk`; do
     for x in `ls -1 $inputFolder| grep _Chunk|awk -F_Chunk '{print $1}'|uniq`; do
 	echo "processing logs for sample " $x
@@ -28,11 +28,11 @@ if [ $2 = "checkLogs" ]; then
 		if  [ -z "`tail -n 50 std_output.txt |grep -v echo|grep "remote copy succeeded"`" ]; 
 		then 
 		    if [ -e mt2.root ]; then
-			echo "ERROR: problem in copying output to SE for job: " $x ", but file was saved locally" 
+			echo "ERROR: problem in copying output to SE for job: " $z ", but file was saved locally" 
 			echo "copy file by hand and everything should be fine"
 			echo " "
 		    else
-			echo "ERROR: problem in copying output to SE for job: " $x 
+			echo "ERROR: problem in copying output to SE for job: " $z 
 			echo "File was not saved locally and job probably needs to be resubmitted"
 			echo ""
 		    fi		
@@ -47,10 +47,10 @@ fi
 
 
 # --- This is to compare directly the list of files in the SE with the number of jobs that were submitted
-if [ $2 = "checkRemoteFiles" ]; then  
+if [ $1 = "checkRemoteFiles" ]; then  
     if [[ "$#" -lt 3 ]]; then
-	echo "You need to specify also the remote folder of the SE where the chunk files are stored"
-	echo "./checkLxbatchProduction.sh /afs/../ProductionLogs checkRemoteFiles /pnfs/../productionFolder"
+	echo "ERROR: you need to specify also the remote folder of the SE where the chunk files are stored"
+	echo "./checkLxbatchProduction.sh checkRemoteFiles </afs/../ProductionLogs>  </pnfs/../productionFolder>"
 	exit;
     fi;
 
@@ -69,16 +69,27 @@ if [ $2 = "checkRemoteFiles" ]; then
 	done;  done |sort -n > $listFiles;
     cd $OLDPWD
 
-    echo "diff listJobs listFilesOnSE:"
-    diff $listJobs  $listFiles | grep "<";
+    
+    result="$PWD/resultOfCheck_$RANDOM.txt"
+    diff $listJobs  $listFiles | grep "<" > $result;
+    
+
+    prova="`cat $result`"    
+    if [ -z "$prova" ]; 
+    then
+	echo "Success: all files have been copied to the SE";
+    else
+	echo "diff listJobs listFilesOnSE:"
+	cat $result;
+    fi;
 
     rm $listJobs $listFiles;
- 
+    rm $result;
     
 fi
 
 # --- This produces distributions of the time/job in hours
-if [ $2 = "checkTiming" ]; then  
+if [ $1 = "checkTiming" ]; then  
     cat <<EOF > plotTiming.C
 #include "TTree.h"
 #include "TH1F.h"
@@ -119,7 +130,7 @@ fi
 
 
 # --- This produces tables about the average rate to process events
-if [ $2 = "checkRate" ]; then  
+if [ $1 = "checkRate" ]; then  
     outputFolder=$inputFolder
     for sample in `ls -1 $inputFolder | grep -v txt| grep -v png| awk -F_Chunk '{print $1}'|uniq`; do
     #for sample in TTJets; do
@@ -138,7 +149,7 @@ fi
 
 
 # Debugging
-if [ $2 = "debug" ]; then 
+if [ $1 = "debug" ]; then 
     for x in `ls -1 $inputFolder`; do
 	cd $inputFolder/$x
 	if [ -e std_output.err ]; then
