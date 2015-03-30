@@ -48,7 +48,7 @@ int main( int argc, char* argv[] ) {
   MT2Analysis<MT2EstimateZinvGamma>* templatesPromptRC  = MT2Analysis<MT2EstimateZinvGamma>::readFromFile("gammaTemplatesDataRC_" + samples + "_" + regionsSet + ".root", "templatesPrompt");
 
 
-  setHistoTitle( templatesFake, "Data Fakes" );
+  setHistoTitle( templatesFake, "Data #sigma_{i#eta i#eta} Sidebands" );
   setHistoTitle( templatesFakeMC, "MC Fakes" );
   setHistoTitle( templatesPromptRaw, "Data (all)" );
   setHistoTitle( templatesPrompt, "Data (fake removal)" );
@@ -96,7 +96,7 @@ void drawSinglePlot( const std::string& outputdir, const std::string& name, cons
   TCanvas* c1_log = new TCanvas( "c1_log", "", 600, 600 );
   c1_log->SetLogy();
 
-  float yMinLegend = 0.9 - (histosData.size()+1)*0.06;
+  float yMinLegend = 0.9 - (histosData.size()+1)*0.065;
   float yMaxScale = (name=="Fake") ? 1.6 : 1.25;
   float xMax = histoMC->GetXaxis()->GetXmax();
 
@@ -139,7 +139,7 @@ void drawSinglePlot( const std::string& outputdir, const std::string& name, cons
   if( name=="Fake" )
     h2_axes->SetYTitle( Form("Events / %.1f GeV", histoMC->GetBinWidth(1)) );
   else
-    h2_axes->SetYTitle( "Normalized to Unity" );
+    h2_axes->SetYTitle( "Normalized to First Bin" );
   c1->cd();
   h2_axes->Draw();
 
@@ -148,7 +148,7 @@ void drawSinglePlot( const std::string& outputdir, const std::string& name, cons
   if( name=="Fake" )
     h2_axes_log->SetYTitle( Form("Events / %.1f GeV", histoMC->GetBinWidth(1)) );
   else
-    h2_axes_log->SetYTitle( "Normalized to Unity" );
+    h2_axes_log->SetYTitle( "Normalized to First Bin" );
   c1_log->cd();
   h2_axes_log->Draw();
 
@@ -160,7 +160,7 @@ void drawSinglePlot( const std::string& outputdir, const std::string& name, cons
   c1_log->cd();
   histoMC->Draw("L E same");
 
-  TLegend* legend = new TLegend( 0.5, yMinLegend, 0.9, 0.9 );
+  TLegend* legend = new TLegend( 0.46, yMinLegend, 0.9, 0.9 );
   legend->SetFillColor(0);
   legend->SetTextSize(0.035);
 
