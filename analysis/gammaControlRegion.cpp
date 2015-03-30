@@ -74,6 +74,8 @@ int main( int argc, char* argv[] ) {
   MT2Analysis<MT2EstimateZinvGamma>* nip_pass = new MT2Analysis<MT2EstimateZinvGamma>( "nip_pass", regionsSet );
 
   MT2Analysis<MT2EstimateTree>* tree = new MT2Analysis<MT2EstimateTree>( "gammaCRtree", regionsSet );
+  MT2EstimateTree::addVar( tree, "prompt" );
+  
 
 
   float isoCut = 2.5; // GeV (absolute iso)
@@ -332,6 +334,12 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet,
       MT2EstimateTree* thisTree = anaTree->get( myTree.gamma_ht, myTree.gamma_nJet40, myTree.gamma_nBJet40, myTree.gamma_met_pt, myTree.gamma_minMTBMet, myTree.gamma_mt2 );
       if( thisTree!=0 ) {
         thisTree->yield->Fill(myTree.gamma_mt2, weight );
+        if( isPrompt )
+          thisTree->assignVar( "prompt", 2 );
+        else if( isNIP )
+          thisTree->assignVar( "prompt", 1 );
+        else if( isFake )
+          thisTree->assignVar( "prompt", 0 );
         thisTree->fillTree_gamma(myTree, weight );
       }
     }
