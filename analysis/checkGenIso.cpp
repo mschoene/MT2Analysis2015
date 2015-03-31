@@ -133,7 +133,7 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2An
 
   
   MT2Tree myTree;
-  myTree.loadGenStuff = false;
+  //myTree.loadGenStuff = false;
   myTree.Init(tree);
 
   int nentries = tree->GetEntries();
@@ -236,46 +236,36 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2An
 
     float isoRC = myTree.gamma_chHadIsoRC[0];
 
+
     int mcMatchId = myTree.gamma_mcMatchId[0];
     bool isMatched = (mcMatchId==22 || mcMatchId==7);
     bool isGenIso = (myTree.gamma_genIso[0]<5.);
 
-    bool isPrompt = ( isMatched &&  isGenIso);
-    bool isNIP    = ( isMatched && !isGenIso);
-    bool isFake   = (!isMatched);
+    bool isPrompt = isMatched && !isQCD;
+    bool isNIP    = isMatched && isQCD;
+    bool isFake   = !isMatched;
 
-    if( isPrompt && isQCD  ) continue; //isolated prompts taken from GJet only
-    if( isNIP    && isGJet ) continue; //non-isolated prompts taken from QCD only
-    if( isFake   && isGJet ) continue; //fakes from QCD only
+    if( isFake && isGJet ) continue; // fakes only from QCD (it's inclusive)
 
 
-    int closestJet = -1;
-    float deltaRmin = 0.4;
-    for( unsigned i=0; i<myTree.njet; ++i ) {
-      if( fabs(myTree.jet_eta[i])>2.5 ) continue;
-      if( myTree.jet_pt[i]<40. ) continue;
-      TLorentzVector thisjet;
-      thisjet.SetPtEtaPhiM( myTree.jet_pt[i], myTree.jet_eta[i], myTree.jet_phi[i], myTree.jet_mass[i] );
-      float thisDeltaR = gamma.DeltaR(thisjet);
-      if( thisDeltaR<deltaRmin ) {
-        deltaRmin = thisDeltaR;
-        closestJet = i;
+    if( !isFake ) {
+
+      float deltaRmin_parton = 999.;
+      for( unsigned ipart=0; ipart<myTree.ngenPart; ++ipart ) {
+        if( myTree.genPart_pt[ipart]<1. ) continue;
+        if( myTree.genPart_status[ipart]!=22 && myTree.genPart_status[ipart]!=23 ) continue;
+        if( abs(myTree.genPart_pdgId[ipart])>21 ) continue;
+        TLorentzVector thisPart;
+        thisPart.SetPtEtaPhiM( myTree.genPart_pt[ipart], myTree.genPart_eta[ipart], myTree.genPart_phi[ipart], myTree.genPart_mass[ipart] );
+        float thisDR = thisPart.DeltaR( gamma );
+        if( thisDR < deltaRmin_parton ) {
+          deltaRmin_parton = thisDR;
+        }
       }
-    }
-    float found_pt = 0.;
-    int jet_counter = 0;
-    for( unsigned i=0; i<myTree.njet; ++i ) {
-      if( i==closestJet ) continue;
-      if( fabs(myTree.jet_eta[i])>2.5 ) continue;
-      if( myTree.jet_pt[i]<40. ) continue;
-      jet_counter++;
-      if( jet_counter==2 ) {
-        found_pt = myTree.jet_pt[i];
-        break;
-      }
-    }
 
-    if( found_pt<100. ) continue;
+      if( isQCD && deltaRmin_parton>0.4 ) continue; // stitching
+
+    }
 
 
 
