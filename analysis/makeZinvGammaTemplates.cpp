@@ -127,7 +127,7 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2An
 
   
   MT2Tree myTree;
-  myTree.loadGenStuff = false;
+  //myTree.loadGenStuff = false;
   myTree.Init(tree);
 
   int nentries = tree->GetEntries();
@@ -166,21 +166,40 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2An
     if( myTree.evt_scale1fb>1. ) continue;
     
 
+    TLorentzVector gamma;
+    gamma.SetPtEtaPhiM( myTree.gamma_pt[0], myTree.gamma_eta[0], myTree.gamma_phi[0], myTree.gamma_mass[0] );
+
+
     int mcMatchId = myTree.gamma_mcMatchId[0];
     bool isMatched = (mcMatchId==22 || mcMatchId==7);
     bool isGenIso = (myTree.gamma_genIso[0]<5.);
 
-    bool isPrompt = ( isMatched &&  isGenIso);
-    bool isNIP    = ( isMatched && !isGenIso);
-    bool isFake   = (!isMatched);
+    bool isPrompt = isMatched && !isQCD;
+    bool isNIP    = isMatched && isQCD;
+    bool isFake   = !isMatched;
 
-    if( isPrompt && isQCD  ) continue; //isolated prompts taken from GJet only
-    if( isNIP    && isGJet ) continue; //non-isolated prompts taken from QCD only
-    if( isFake   && isGJet ) continue; //fakes from QCD only
+    if( isFake && isGJet ) continue; // fakes only from QCD (it's inclusive)
 
 
-    TLorentzVector gamma;
-    gamma.SetPtEtaPhiM( myTree.gamma_pt[0], myTree.gamma_eta[0], myTree.gamma_phi[0], myTree.gamma_mass[0] );
+    if( !isFake ) {
+
+      float deltaRmin_parton = 999.;
+      for( unsigned ipart=0; ipart<myTree.ngenPart; ++ipart ) {
+        if( myTree.genPart_pt[ipart]<1. ) continue;
+        if( myTree.genPart_status[ipart]!=22 && myTree.genPart_status[ipart]!=23 ) continue;
+        if( abs(myTree.genPart_pdgId[ipart])>21 ) continue;
+        TLorentzVector thisPart;
+        thisPart.SetPtEtaPhiM( myTree.genPart_pt[ipart], myTree.genPart_eta[ipart], myTree.genPart_phi[ipart], myTree.genPart_mass[ipart] );
+        float thisDR = thisPart.DeltaR( gamma );
+        if( thisDR < deltaRmin_parton ) {
+          deltaRmin_parton = thisDR;
+        }
+      }
+
+      if( isQCD && deltaRmin_parton>0.4 ) continue; // stitching
+
+    }
+
 
     float iso = myTree.gamma_chHadIso[0];
 
