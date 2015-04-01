@@ -257,34 +257,6 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2An
     if( iso > 20. ) continue;
 
 
-    int closestJet = -1;
-    float deltaRmin = 0.4;
-    for( unsigned i=0; i<myTree.njet; ++i ) {
-      if( fabs(myTree.jet_eta[i])>2.5 ) continue;
-      if( myTree.jet_pt[i]<40. ) continue;
-      TLorentzVector thisjet;
-      thisjet.SetPtEtaPhiM( myTree.jet_pt[i], myTree.jet_eta[i], myTree.jet_phi[i], myTree.jet_mass[i] );
-      float thisDeltaR = gamma.DeltaR(thisjet);
-      if( thisDeltaR<deltaRmin ) {
-        deltaRmin = thisDeltaR;
-        closestJet = i;
-      }
-    }
-    float found_pt = 0.;
-    int jet_counter = 0;
-    for( unsigned i=0; i<myTree.njet; ++i ) {
-      if( i==closestJet ) continue;
-      if( fabs(myTree.jet_eta[i])>2.5 ) continue;
-      if( myTree.jet_pt[i]<40. ) continue;
-      jet_counter++;
-      if( jet_counter==2 ) {
-        found_pt = myTree.jet_pt[i];
-        break;
-      }
-    }
-
-    if( found_pt<100. ) continue;
-
 
 
     Double_t weight = myTree.evt_scale1fb*lumi; 
