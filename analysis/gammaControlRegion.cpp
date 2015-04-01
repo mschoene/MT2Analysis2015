@@ -76,6 +76,7 @@ int main( int argc, char* argv[] ) {
   MT2Analysis<MT2EstimateTree>* tree = new MT2Analysis<MT2EstimateTree>( "gammaCRtree", regionsSet );
   MT2EstimateTree::addVar( tree, "prompt" );
   MT2EstimateTree::addVar( tree, "iso" );
+  MT2EstimateTree::addVar( tree, "drParton" );
   
 
 
@@ -233,9 +234,9 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet,
     if( isFake && isGJet ) continue; // fakes only from QCD (it's inclusive)
 
 
+    float deltaRmin_parton = 999.;
     if( !isFake ) {
 
-      float deltaRmin_parton = 999.;
       for( unsigned ipart=0; ipart<myTree.ngenPart; ++ipart ) {
         if( myTree.genPart_pt[ipart]<1. ) continue;
         if( myTree.genPart_status[ipart]!=22 && myTree.genPart_status[ipart]!=23 ) continue;
@@ -328,6 +329,7 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet,
         else if( isFake )
           thisTree->assignVar( "prompt", 0 );
         thisTree->assignVar( "iso", iso );
+        thisTree->assignVar( "drParton", deltaRmin_parton );
         thisTree->fillTree_gamma(myTree, weight );
       }
     }
