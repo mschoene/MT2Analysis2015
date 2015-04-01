@@ -69,8 +69,11 @@ int main( int argc, char* argv[] ) {
   //std::string regionsSet = "13TeV_PHYS14";
   //std::string regionsSet = "13TeV_PHYS14_hiHT"; 
   //std::string regionsSet = "13TeV_PHYS14_hiJet_mergeHT";
-  std::string regionsSet = "13TeV_PHYS14_loJet_hiHT";
-  //std::string regionsSet = "13TeV_PHYS14_hiJet_extremeHT";
+  //std::string regionsSet = "13TeV_PHYS14_loJet_hiHT";
+  //std::string regionsSet = "13TeV_PHYS14_noMT";
+  //std::string regionsSet = "13TeV_PHYS14_hiHT_noMT"; 
+  //std::string regionsSet = "13TeV_PHYS14_hiJet_mergeHT_noMT";
+  std::string regionsSet = "13TeV_PHYS14_loJet_hiHT_noMT";
   //std::string regionsSet = "13TeV_CSA14";
 
   TH1::AddDirectory(kFALSE); // stupid ROOT memory allocation needs this
@@ -80,7 +83,7 @@ int main( int argc, char* argv[] ) {
   for( unsigned i=0; i < fSamples.size(); ++i )
     (*lostLeptonEstimate) += ( computeYield( fSamples[i], regionsSet, lumi ) );
   
-  lostLeptonEstimate->writeToFile(Form("llep_PHYS14_v3_%s.root", regionsSet.c_str()));
+  lostLeptonEstimate->writeToFile(Form("llep_PHYS14_Zurich_oldRegionProposal_%s_%.0ffb.root", regionsSet.c_str(), lumi));
 
   return 0;
   
@@ -122,16 +125,18 @@ MT2Analysis<MT2EstimateSyst> computeYield( const MT2Sample& sample, const std::s
     if( myTree.deltaPhiMin<0.3 ) continue;
     if( myTree.diffMetMht>0.5*myTree.met_pt ) continue;
 
-    float jetCentral_pt[2];
-    int njetsCentral = 0;
-    for(int j=0; j<myTree.njet; ++j){
-      if( fabs( myTree.jet_eta[j] ) < 2.5 ) {
-        jetCentral_pt[njetsCentral] = myTree.jet_pt[j];
-        ++njetsCentral;
-      }
-      if( njetsCentral >= 2 ) break;
-    }
-    if (jetCentral_pt[1] < 100. ) continue;
+//    float jetCentral_pt[2];
+//    int njetsCentral = 0;
+//    for(int j=0; j<myTree.njet; ++j){
+//      if( fabs( myTree.jet_eta[j] ) < 2.5 ) {
+//        jetCentral_pt[njetsCentral] = myTree.jet_pt[j];
+//        ++njetsCentral;
+//      }
+//      if( njetsCentral >= 2 ) break;
+//    }
+//    if (jetCentral_pt[1] < 100. ) continue;
+
+    if( myTree.jet1_pt < 40. || myTree.jet2_pt < 40. ) continue;
 
     float ht   = myTree.ht;
     float met  = myTree.met_pt;
@@ -235,15 +240,15 @@ MT2Analysis<MT2EstimateSyst> computeYield( const MT2Sample& sample, const std::s
 
     Double_t weight = myTree.evt_scale1fb*lumi;
 
-    float fullweight_btagUp = weight;
-    float fullweight_btagDown = weight;
+    //float fullweight_btagUp = weight;
+    //float fullweight_btagDown = weight;
 
     MT2EstimateSyst* thisEstimate = analysis.get( ht, njets, nbjets, met, minMTBmet, mt2 );
     if( thisEstimate==0 ) continue;
 
     thisEstimate->yield         ->Fill(mt2, weight );
-    thisEstimate->yield_btagUp  ->Fill(mt2, fullweight_btagUp );
-    thisEstimate->yield_btagDown->Fill(mt2, fullweight_btagDown );
+    //thisEstimate->yield_btagUp  ->Fill(mt2, fullweight_btagUp );
+    //thisEstimate->yield_btagDown->Fill(mt2, fullweight_btagDown );
 
     //ofs << "entry " << iEntry <<  "\tmet " << met << "\tmt2 " << mt2 << "\tminMTBmet " << minMTBmet << std::endl;
     

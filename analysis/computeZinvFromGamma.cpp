@@ -29,7 +29,7 @@ float lumi = 4.; // fb-1
 
 
 
-int type = 1;
+int type = 0;
 
 // 0: use bare MC for ratio (pure GJet)
 // 1: use GJet+QCD and multiply by fitted purity
@@ -56,11 +56,11 @@ int main( int argc, char* argv[] ) {
   TH1::AddDirectory(kFALSE); // stupid ROOT memory allocation needs this
 
 
-  std::string outputdir( Form("ZinvEstimateFromGamma_%s_%s_%.0ffb_type%d", samplesFileName.c_str(), regionsSet.c_str(), lumi, type) );
+  std::string outputdir( Form("ZinvEstimateFromGamma_oldMT2_%s_%s_%.0ffb_type%d", samplesFileName.c_str(), regionsSet.c_str(), lumi, type) );
   system(Form("mkdir -p %s", outputdir.c_str()));
 
 
-  std::string gammaControlRegionDir = "GammaControlRegion_" + samplesFileName + "_" + regionsSet;
+  std::string gammaControlRegionDir = "GammaControlRegion_oldMT2_" + samplesFileName + "_" + regionsSet;
 
   MT2Analysis<MT2Estimate>* gammaCR = MT2Analysis<MT2Estimate>::readFromFile(gammaControlRegionDir + "/data.root", "gammaCR");
   MT2Analysis<MT2Estimate>* gamma_prompt = MT2Analysis<MT2Estimate>::readFromFile(gammaControlRegionDir + "/mc.root", "prompt");
@@ -112,7 +112,8 @@ int main( int argc, char* argv[] ) {
 
   ZinvEstimate->writeToFile( outFile );
   ZgammaRatio->addToFile( outFile );
-  purity->addToFile( outFile );
+  if( purity!=0 )
+    purity->addToFile( outFile );
   Zinv->setName("Zinv");
   Zinv->addToFile( outFile );
 

@@ -59,7 +59,7 @@ int main( int argc, char* argv[] ) {
   TH1::AddDirectory(kFALSE); // stupid ROOT memory allocation needs this
 
 
-  std::string outputdir = "GammaControlRegion_" + samplesFileName + "_" + regionsSet;
+  std::string outputdir = "GammaControlRegion_oldMT2_" + samplesFileName + "_" + regionsSet;
   system(Form("mkdir -p %s", outputdir.c_str()));
 
   
@@ -252,8 +252,6 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet,
       if( isQCD && deltaRmin_parton>0.4 ) continue; // stitching
 
     }
-
-
 
 
 
