@@ -40,6 +40,7 @@ class PurityFit {
 
 
 void doAllPurityPlots( const std::string& gammaCRdir, const std::string& samples, const std::string& mc_or_data, const std::string& purityName );
+void compareRegions( const std::string& outputdir, std::vector<MT2Region> regions, MT2Analysis<MT2EstimateSyst>* analysis, const std::string& suffix="" );
 
 
 
@@ -54,10 +55,15 @@ int main( int argc, char* argv[] ) {
     if( mc_or_data=="data" ) mc_or_data = "Data";
   }
 
-  //std::string samples = "CSA14_Zinv";
+
+  std::string regionsSet = "zurich";
+  if( argc>2 ) {
+    regionsSet = std::string(argv[2]);
+  }
+
   std::string samples = "PHYS14_v2_Zinv";
 
-  std::string gammaCRdir = "GammaControlRegion_" + samples + "_zurich";
+  std::string gammaCRdir = "GammaControlRegion_" + samples + "_" + regionsSet;
   
   doAllPurityPlots( gammaCRdir, samples, mc_or_data, "purityLoose" ); 
   doAllPurityPlots( gammaCRdir, samples, mc_or_data, "purity" ); 
@@ -162,4 +168,206 @@ void doAllPurityPlots( const std::string& gammaCRdir, const std::string& samples
   } // for regions
 
 
+
+  TString gammaCRdir_tstr(gammaCRdir);
+  
+  if( gammaCRdir_tstr.Contains("zurich_onlyHT") ) {
+
+
+    std::vector<MT2Region> r_vsHT;
+    r_vsHT.push_back( MT2Region( 450., 575.  ) );
+    r_vsHT.push_back( MT2Region( 575., 1000. ) );
+    r_vsHT.push_back( MT2Region( 1000.,1500. ) );
+    r_vsHT.push_back( MT2Region( 1500., -1.  ) );
+
+    compareRegions( outputdir, r_vsHT, fits[0].purity );
+
+
+  } else if( gammaCRdir_tstr.Contains("zurich_onlyJets") ) {
+
+
+    std::vector<MT2Region> r_vs_njet;
+    r_vs_njet.push_back( MT2Region( 450., -1., 2, 3, 0, 0 ) );
+    r_vs_njet.push_back( MT2Region( 450., -1., 4, 6, 0, 0 ) );
+    r_vs_njet.push_back( MT2Region( 450., -1., 2, 3, 1, 1 ) );
+    r_vs_njet.push_back( MT2Region( 450., -1., 4, 6, 1, 1 ) );
+
+    compareRegions( outputdir, r_vs_njet, fits[0].purity );
+
+
+
+  } else if( gammaCRdir_tstr.Contains("zurich") ) {
+
+
+    std::vector<MT2Region> r_lowHT_vs_njet;
+    r_lowHT_vs_njet.push_back( MT2Region( 450., 575., 2, 3, 0, 0 ) );
+    r_lowHT_vs_njet.push_back( MT2Region( 450., 575., 4, 6, 0, 0 ) );
+    r_lowHT_vs_njet.push_back( MT2Region( 450., 575., 2, 3, 1, 1 ) );
+    r_lowHT_vs_njet.push_back( MT2Region( 450., 575., 4, 6, 1, 1 ) );
+
+    compareRegions( outputdir, r_lowHT_vs_njet, fits[0].purity );
+
+
+    std::vector<MT2Region> r_medHT_vs_njet;
+    r_medHT_vs_njet.push_back( MT2Region( 575., 1000., 2, 3, 0, 0 ) );
+    r_medHT_vs_njet.push_back( MT2Region( 575., 1000., 4, 6, 0, 0 ) );
+    r_medHT_vs_njet.push_back( MT2Region( 575., 1000., 2, 3, 1, 1 ) );
+    r_medHT_vs_njet.push_back( MT2Region( 575., 1000., 4, 6, 1, 1 ) );
+
+    compareRegions( outputdir, r_medHT_vs_njet, fits[0].purity );
+
+
+    std::vector<MT2Region> r_highHT_vs_njet;
+    r_highHT_vs_njet.push_back( MT2Region( 1000., 1500., 2, 3, 0, 0 ) );
+    r_highHT_vs_njet.push_back( MT2Region( 1000., 1500., 4, 6, 0, 0 ) );
+    r_highHT_vs_njet.push_back( MT2Region( 1000., 1500., 2, 3, 1, 1 ) );
+    r_highHT_vs_njet.push_back( MT2Region( 1000., 1500., 4, 6, 1, 1 ) );
+
+    compareRegions( outputdir, r_highHT_vs_njet, fits[0].purity );
+
+
+    std::vector<MT2Region> r_veryhighHT_vs_njet;
+    r_veryhighHT_vs_njet.push_back( MT2Region( 1500., -1., 2, 3, 0, 0 ) );
+    r_veryhighHT_vs_njet.push_back( MT2Region( 1500., -1., 4, 6, 0, 0 ) );
+    r_veryhighHT_vs_njet.push_back( MT2Region( 1500., -1., 2, 3, 1, 1 ) );
+    r_veryhighHT_vs_njet.push_back( MT2Region( 1500., -1., 4, 6, 1, 1 ) );
+
+    compareRegions( outputdir, r_veryhighHT_vs_njet, fits[0].purity );
+
+
+
+    std::vector<MT2Region> r_vsHT;
+    r_vsHT.push_back( MT2Region( 450., 575. , 2, 3, 0, 0 ) );
+    r_vsHT.push_back( MT2Region( 575., 1000., 2, 3, 0, 0 ) );
+    r_vsHT.push_back( MT2Region( 1000.,1500., 2, 3, 0, 0 ) );
+    r_vsHT.push_back( MT2Region( 1500., -1. , 2, 3, 0, 0 ) );
+
+    compareRegions( outputdir, r_vsHT, fits[0].purity );
+
+
+
+    std::vector<MT2Region> r_vsHT_j46;
+    r_vsHT_j46.push_back( MT2Region( 450., 575. , 4, 6, 0, 0 ) );
+    r_vsHT_j46.push_back( MT2Region( 575., 1000., 4, 6, 0, 0 ) );
+    r_vsHT_j46.push_back( MT2Region( 1000.,1500., 4, 6, 0, 0 ) );
+    r_vsHT_j46.push_back( MT2Region( 1500., -1. , 4, 6, 0, 0 ) );
+
+    compareRegions( outputdir, r_vsHT_j46, fits[0].purity );
+
+
+
+    std::vector<MT2Region> r_vsHT_b1;
+    r_vsHT_b1.push_back( MT2Region( 450., 575. , 2, 3, 1, 1 ) );
+    r_vsHT_b1.push_back( MT2Region( 575., 1000., 2, 3, 1, 1 ) );
+    r_vsHT_b1.push_back( MT2Region( 1000.,1500., 2, 3, 1, 1 ) );
+    r_vsHT_b1.push_back( MT2Region( 1500., -1. , 2, 3, 1, 1 ) );
+
+    compareRegions( outputdir, r_vsHT_b1, fits[0].purity );
+
+
+
+    std::vector<MT2Region> r_vsHT_j46_b1;
+    r_vsHT_j46_b1.push_back( MT2Region( 450., 575. , 4, 6, 1, 1 ) );
+    r_vsHT_j46_b1.push_back( MT2Region( 575., 1000., 4, 6, 1, 1 ) );
+    r_vsHT_j46_b1.push_back( MT2Region( 1000.,1500., 4, 6, 1, 1 ) );
+    r_vsHT_j46_b1.push_back( MT2Region( 1500., -1. , 4, 6, 1, 1 ) );
+
+    compareRegions( outputdir, r_vsHT_j46_b1, fits[0].purity );
+
+  }
+
 }
+
+
+
+
+void compareRegions( const std::string& outputdir, std::vector<MT2Region> regions, MT2Analysis<MT2EstimateSyst>* analysis, const std::string& suffix ) {
+
+  bool loopOnHT=true;
+
+  if( regions.size()>1 ) 
+    if( (*(regions[0].htRegion())) == (*(regions[1].htRegion())) ) loopOnHT=false;
+
+
+
+  std::vector<int> colors;
+  colors.push_back( 46 );
+  colors.push_back( 29 );
+  colors.push_back( 38 );
+  colors.push_back( 42 );
+  colors.push_back( kGray+1 );
+  colors.push_back( kRed );
+  
+  std::vector<int> markers;
+  markers.push_back( 21 );
+  markers.push_back( 20 );
+  markers.push_back( 25 );
+  markers.push_back( 24 );
+  markers.push_back( 26 );
+  
+  TCanvas* c1 = new TCanvas( "c1", "", 600, 600 );
+  c1->cd();
+
+  TH2D* h2_axes = new TH2D( "axes", "", 10, 200., 1500., 10, 0., 1.0001 );
+  h2_axes->SetXTitle( "M_{T2} [GeV]" );
+  h2_axes->SetYTitle( "Purity (MC Fit)");
+  h2_axes->Draw("");
+  
+
+  std::string legendTitle = (loopOnHT) ? regions[0].sigRegion()->getNiceName() : regions[0].htRegion()->getNiceName();
+
+  TLegend* legend = new TLegend( 0.5, 0.5-0.07*regions.size(), 0.9, 0.5, legendTitle.c_str() );
+  legend->SetTextSize(0.038);
+  legend->SetFillColor(0);
+  
+
+  for( unsigned i=0; i<regions.size(); ++i ) {
+
+    MT2EstimateSyst* thisEstimate = analysis->get( regions[i] );
+    if( thisEstimate==0 ) {
+      std::cout << "-> Didn't find estimate for region: " << regions[i].getName() << " ! Skipping." << std::endl;
+      delete c1;
+      delete h2_axes;
+      return;
+    }
+
+    TGraphAsymmErrors* thisGraph = thisEstimate->getGraph();
+
+    thisGraph->SetMarkerSize(1.);
+    thisGraph->SetMarkerStyle(markers[i]);
+    thisGraph->SetMarkerColor(colors[i]);
+    thisGraph->SetLineColor(kBlack);
+
+    thisGraph->SetLineWidth(2);
+    thisGraph->SetLineColor(colors[i]);
+
+    thisGraph->Draw("p same" );
+
+    if( loopOnHT )
+      legend->AddEntry( thisGraph, regions[i].htRegion()->getNiceName().c_str(), "PL" );
+    else
+      legend->AddEntry( thisGraph, regions[i].sigRegion()->getNiceName().c_str(), "PL" );
+
+  }
+
+
+  legend->Draw("same");
+
+  TPaveText* labelTop = MT2DrawTools::getLabelTop();
+  labelTop->Draw("same");
+
+  gPad->RedrawAxis();
+
+  std::string saveName = (loopOnHT) ? regions[0].sigRegion()->getName() : regions[0].htRegion()->getName();
+
+  c1->SaveAs( Form("%s/%s_%s%s.eps", outputdir.c_str(), analysis->getName().c_str(), saveName.c_str(), suffix.c_str()) );
+  c1->SaveAs( Form("%s/%s_%s%s.pdf", outputdir.c_str(), analysis->getName().c_str(), saveName.c_str(), suffix.c_str()) );
+  c1->SaveAs( Form("%s/%s_%s%s.png", outputdir.c_str(), analysis->getName().c_str(), saveName.c_str(), suffix.c_str()) );
+
+  delete c1;
+  delete h2_axes;
+
+}
+
+
+

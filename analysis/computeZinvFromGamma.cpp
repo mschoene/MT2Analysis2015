@@ -75,7 +75,7 @@ int main( int argc, char* argv[] ) {
   MT2Analysis<MT2EstimateSyst>* purity = 0;
 
   if( type!=0 )
-    purity = MT2Analysis<MT2EstimateSyst>::readFromFile( gammaControlRegionDir + "/PurityFitsData_PHYS14_v2_Zinv_13TeV_inclusive/purityFit_PHYS14_v2_Zinv_13TeV_inclusive.root", "purity" );
+    purity = MT2Analysis<MT2EstimateSyst>::readFromFile( gammaControlRegionDir + "/PurityFitsData/purityFit.root", "purity" );
 
   if( purity==0 && type!=0 ) {
     std::cout << "-> Please run fitPurityGamma first. I need to get the purity from there." << std::endl;
@@ -84,7 +84,7 @@ int main( int argc, char* argv[] ) {
   }
 
 
-  MT2Analysis<MT2Estimate>* Zinv = MT2Analysis<MT2Estimate>::readFromFile(Form("EventYields_mc_PHYS14_v2_dummy_%.0ffb/analyses.root", lumi), "ZJets");
+  MT2Analysis<MT2EstimateTree>* Zinv = MT2Analysis<MT2EstimateTree>::readFromFile(Form("EventYields_mc_PHYS14_v2_dummy_%.0ffb/analyses.root", lumi), "ZJets");
   if( Zinv==0 ) {
     std::cout << "-> Please run regionEventYields on MC first. I need to get the Z->vv MC yields from there." << std::endl;
     std::cout << "-> Thank you for your cooperation." << std::endl;
@@ -93,12 +93,12 @@ int main( int argc, char* argv[] ) {
 
 
   MT2Analysis<MT2Estimate>* ZgammaRatio = new MT2Analysis<MT2Estimate>( "ZgammaRatio", regionsSet );
-  (*ZgammaRatio) = (*Zinv) / (*gamma_prompt);
+  (*ZgammaRatio) = (* (MT2Analysis<MT2Estimate>*)Zinv) / (*gamma_prompt);
 
 
   MT2Analysis<MT2Estimate>* gammaCR_times_ZgammaRatio = new MT2Analysis<MT2Estimate>( "gammaCR_times_ZgammaRatio", regionsSet );
   if( type==0 )
-    (*gammaCR_times_ZgammaRatio) = (*prompt) * (*ZgammaRatio);
+    (*gammaCR_times_ZgammaRatio) = (*gamma_prompt) * (*ZgammaRatio);
   else
     (*gammaCR_times_ZgammaRatio) = (*gammaCR) * (*ZgammaRatio);
 
@@ -106,13 +106,15 @@ int main( int argc, char* argv[] ) {
   if( type!=0 ) (*ZinvEstimateFromGamma) *= (*purity);
 
 
-  MT2Analysis<MT2EstimateSyst>* ZinvEstimate = combineDataAndMC( ZinvEstimateFromGamma, Zinv );
+  MT2Analysis<MT2EstimateSyst>* ZinvEstimate = combineDataAndMC( ZinvEstimateFromGamma, (MT2Analysis<MT2Estimate>*)Zinv );
 
   std::string outFile = outputdir + "/MT2ZinvEstimate.root";
 
   ZinvEstimate->writeToFile( outFile );
   ZgammaRatio->addToFile( outFile );
   purity->addToFile( outFile );
+  Zinv->setName("Zinv");
+  Zinv->addToFile( outFile );
 
   return 0;
 

@@ -14,8 +14,14 @@
 
 
 
+float lumi = 4.;
 
-float lumi = 5.;
+int type = 1;
+
+// 0: use bare MC for ratio (pure GJet)
+// 1: use GJet+QCD and multiply by fitted purity
+
+
 
 
 
@@ -28,80 +34,115 @@ void drawFromTree( const std::string& outputdir, const std::string& varName, int
 int main( int argc, char* argv[] ) {
 
 
-  std::string samples = "CSA14_Zinv";
+  std::string samples = "PHYS14_v2_Zinv";
 
-  if( argc==1 ) {
-    std::cout << "-> You need to pass me the regions set name. Here are some suggestions: " << std::endl;
-    std::cout << "  13TeV_CSA14" << std::endl;
-    std::cout << "  13TeV_onlyHT" << std::endl;
-    std::cout << "  13TeV_onlyJets" << std::endl;
-    std::cout << "  13TeV_inclusive" << std::endl;
-    exit(101);
-  }
-
-
-  std::string regionsSet = "13TeV_CSA14";
+  std::string regionsSet = "zurich";
   if( argc>1 ) {
-    std::string regionsSet_tmp(argv[1]); 
-    regionsSet = regionsSet_tmp;
+    regionsSet = std::string(argv[1]); 
   }
 
-  std::string dir = "ZinvEstimateFromGamma_" + samples + "_" + regionsSet;
+
+
+  std::string dir_estimate( Form("ZinvEstimateFromGamma_%s_%s_%.0ffb_type%d", samples.c_str(), regionsSet.c_str(), lumi, type) );
+  //std::string dir_gammaCR = "GammaControlRegion_" + samples + "_" + regionsSet;
 
 
   MT2DrawTools::setStyle();
 
-  std::string outputdir = dir + "/plots";
+  std::string outputdir = dir_estimate + "/plots";
   system( Form("mkdir -p %s", outputdir.c_str()) );
 
-  MT2Analysis<MT2Estimate>* zgammaRatio = MT2Analysis<MT2Estimate>::readFromFile(dir + "/mc.root", "ZgammaRatio");
-  MT2Analysis<MT2EstimateTree>* zinv = MT2Analysis<MT2EstimateTree>::readFromFile(dir + "/mc.root", "Zinv");
-  MT2Analysis<MT2Estimate>* zinvEstimate = MT2Analysis<MT2Estimate>::readFromFile(dir + "/MT2ZinvEstimate.root");
-  MT2Analysis<MT2EstimateTree>* gammaJet = MT2Analysis<MT2EstimateTree>::readFromFile(dir + "/mc.root", "gammaJet");
+  MT2Analysis<MT2Estimate>* zgammaRatio = MT2Analysis<MT2Estimate>::readFromFile(dir_estimate + "/MT2ZinvEstimate.root", "ZgammaRatio");
+  MT2Analysis<MT2EstimateTree>* zinv = MT2Analysis<MT2EstimateTree>::readFromFile(dir_estimate + "/MT2ZinvEstimate.root", "Zinv");
+  MT2Analysis<MT2Estimate>* zinvEstimate = MT2Analysis<MT2Estimate>::readFromFile(dir_estimate + "/MT2ZinvEstimate.root", "ZinvEstimate" );
+  //MT2Analysis<MT2EstimateTree>* gammaJet = MT2Analysis<MT2EstimateTree>::readFromFile(dir_gammaCR + "/mc.root", "gammaJet");
 
 
   std::vector<MT2Region> r_lowHT_vs_njet;
-  r_lowHT_vs_njet.push_back( MT2Region( 450., 575., 200., 2,  3, 0, 0 ) );
-  r_lowHT_vs_njet.push_back( MT2Region( 450., 575., 200., 4, -1, 0, 0 ) );
-  r_lowHT_vs_njet.push_back( MT2Region( 450., 575., 200., 2,  3, 1, 1 ) );
-  r_lowHT_vs_njet.push_back( MT2Region( 450., 575., 200., 4, -1, 1, 1 ) );
+  r_lowHT_vs_njet.push_back( MT2Region( 450., 575., 2, 3, 0, 0 ) );
+  r_lowHT_vs_njet.push_back( MT2Region( 450., 575., 4, 6, 0, 0 ) );
+  r_lowHT_vs_njet.push_back( MT2Region( 450., 575., 2, 3, 1, 1 ) );
+  r_lowHT_vs_njet.push_back( MT2Region( 450., 575., 4, 6, 1, 1 ) );
+  r_lowHT_vs_njet.push_back( MT2Region( 450., 575., 7,-1, 0, 0 ) );
 
   compareRegions( outputdir, r_lowHT_vs_njet, zgammaRatio );
 
+
+
   std::vector<MT2Region> r_medHT_vs_njet;
-  r_medHT_vs_njet.push_back( MT2Region( 575., 1000., 200., 2, 3, 0, 0 ) );
-  r_medHT_vs_njet.push_back( MT2Region( 575., 1000., 200., 4, -1, 0, 0 ) );
-  r_medHT_vs_njet.push_back( MT2Region( 575., 1000., 200., 2,  3, 1, 1 ) );
-  r_medHT_vs_njet.push_back( MT2Region( 575., 1000., 200., 4, -1, 1, 1 ) );
+  r_medHT_vs_njet.push_back( MT2Region( 575., 1000., 2, 3, 0, 0 ) );
+  r_medHT_vs_njet.push_back( MT2Region( 575., 1000., 4, 6, 0, 0 ) );
+  r_medHT_vs_njet.push_back( MT2Region( 575., 1000., 2, 3, 1, 1 ) );
+  r_medHT_vs_njet.push_back( MT2Region( 575., 1000., 4, 6, 1, 1 ) );
+  r_medHT_vs_njet.push_back( MT2Region( 575., 1000., 7,-1, 0, 0 ) );
 
   compareRegions( outputdir, r_medHT_vs_njet, zgammaRatio );
 
+
+
   std::vector<MT2Region> r_highHT_vs_njet;
-  r_highHT_vs_njet.push_back( MT2Region( 1000., -1., 30., 2, 3, 0, 0 ) );
-  r_highHT_vs_njet.push_back( MT2Region( 1000., -1., 30., 4, -1, 0, 0 ) );
-  r_highHT_vs_njet.push_back( MT2Region( 1000., -1., 30., 2,  3, 1, 1 ) );
-  r_highHT_vs_njet.push_back( MT2Region( 1000., -1., 30., 4, -1, 1, 1 ) );
+  r_highHT_vs_njet.push_back( MT2Region( 1000., 1500., 2, 3, 0, 0 ) );
+  r_highHT_vs_njet.push_back( MT2Region( 1000., 1500., 4, 6, 0, 0 ) );
+  r_highHT_vs_njet.push_back( MT2Region( 1000., 1500., 2, 3, 1, 1 ) );
+  r_highHT_vs_njet.push_back( MT2Region( 1000., 1500., 4, 6, 1, 1 ) );
+  r_highHT_vs_njet.push_back( MT2Region( 1000., 1500., 7,-1, 0, 0 ) );
 
   compareRegions( outputdir, r_highHT_vs_njet, zgammaRatio );
 
 
+
+  std::vector<MT2Region> r_veryhighHT_vs_njet;
+  r_veryhighHT_vs_njet.push_back( MT2Region( 1500., -1., 2, 3, 0, 0 ) );
+  r_veryhighHT_vs_njet.push_back( MT2Region( 1500., -1., 4, 6, 0, 0 ) );
+  r_veryhighHT_vs_njet.push_back( MT2Region( 1500., -1., 2, 3, 1, 1 ) );
+  r_veryhighHT_vs_njet.push_back( MT2Region( 1500., -1., 4, 6, 1, 1 ) );
+  r_veryhighHT_vs_njet.push_back( MT2Region( 1500., -1., 7,-1, 0, 0 ) );
+
+  compareRegions( outputdir, r_veryhighHT_vs_njet, zgammaRatio );
+
+
+
   std::vector<MT2Region> r_vsHT;
-  //r_highHT_vs_njet.push_back( MT2Region( 1000., -1., 30., 2, -1, 0, 0 ) );
-  r_vsHT.push_back( MT2Region( 450., 575. , 200., 2, 3, 0, 0 ) );
-  r_vsHT.push_back( MT2Region( 575., 1000., 200., 2, 3, 0, 0 ) );
-  r_vsHT.push_back( MT2Region( 1000., -1. ,  30., 2, 3, 0, 0 ) );
+  r_vsHT.push_back( MT2Region( 450., 575. , 2, 3, 0, 0 ) );
+  r_vsHT.push_back( MT2Region( 575., 1000., 2, 3, 0, 0 ) );
+  r_vsHT.push_back( MT2Region( 1000.,1500., 2, 3, 0, 0 ) );
+  r_vsHT.push_back( MT2Region( 1500., -1. , 2, 3, 0, 0 ) );
 
   compareRegions( outputdir, r_vsHT, zgammaRatio );
 
 
 
-  std::vector<MT2Region> r_vsHT2;
-  //r_highHT_vs_njet.push_back( MT2Region( 1000., -1., 30., 2, -1, 0, 0 ) );
-  r_vsHT2.push_back( MT2Region( 450., 575. , 200., 4, -1, 0, 0 ) );
-  r_vsHT2.push_back( MT2Region( 575., 1000., 200., 4, -1, 0, 0 ) );
-  r_vsHT2.push_back( MT2Region( 1000., -1. ,  30., 4, -1, 0, 0 ) );
 
-  compareRegions( outputdir, r_vsHT2, zgammaRatio );
+  std::vector<MT2Region> r_vsHT_j46;
+  r_vsHT_j46.push_back( MT2Region( 450., 575. , 4, 6, 0, 0 ) );
+  r_vsHT_j46.push_back( MT2Region( 575., 1000., 4, 6, 0, 0 ) );
+  r_vsHT_j46.push_back( MT2Region( 1000.,1500., 4, 6, 0, 0 ) );
+  r_vsHT_j46.push_back( MT2Region( 1500., -1. , 4, 6, 0, 0 ) );
+
+  compareRegions( outputdir, r_vsHT_j46, zgammaRatio );
+
+
+
+  std::vector<MT2Region> r_vsHT_b1;
+  r_vsHT_b1.push_back( MT2Region( 450., 575. , 2, 3, 1, 1 ) );
+  r_vsHT_b1.push_back( MT2Region( 575., 1000., 2, 3, 1, 1 ) );
+  r_vsHT_b1.push_back( MT2Region( 1000.,1500., 2, 3, 1, 1 ) );
+  r_vsHT_b1.push_back( MT2Region( 1500., -1. , 2, 3, 1, 1 ) );
+
+  compareRegions( outputdir, r_vsHT_b1, zgammaRatio );
+
+
+
+  std::vector<MT2Region> r_vsHT_j46_b1;
+  r_vsHT_j46_b1.push_back( MT2Region( 450., 575. , 4, 6, 1, 1 ) );
+  r_vsHT_j46_b1.push_back( MT2Region( 575., 1000., 4, 6, 1, 1 ) );
+  r_vsHT_j46_b1.push_back( MT2Region( 1000.,1500., 4, 6, 1, 1 ) );
+  r_vsHT_j46_b1.push_back( MT2Region( 1500., -1. , 4, 6, 1, 1 ) );
+
+  compareRegions( outputdir, r_vsHT_j46_b1, zgammaRatio );
+
+
+
 
 
 
@@ -111,7 +152,7 @@ int main( int argc, char* argv[] ) {
     drawComparison( outputdir, "closure"             , "M_{T2}", "GeV", *iR, (MT2Analysis<MT2Estimate>*)zinv, "Z#rightarrow#nu#nu (MC)", zinvEstimate, "Z Invisible Estimate" );
     //drawComparison( outputdir, "Z_vs_gamma"          , "M_{T2}", "GeV", *iR, (MT2Analysis<MT2Estimate>*)zinv, "Z#rightarrow#nu#nu", (MT2Analysis<MT2Estimate>*)gammaJet, "#gamma+jet" );
     //drawComparison( outputdir, "ZgammaRatio"         , "M_{T2}", "GeV", *iR, zgammaRatio, "Z#rightarrow#nu#nu / #gamma+jet" );
-    drawFromTree  ( outputdir, "ptV", 100, 0., 1500., "p_{T}(V)", "GeV", *iR, zinv, "Z#rightarrow#nu#nu", gammaJet, "#gamma+jet" );
+    //drawFromTree  ( outputdir, "ptV", 100, 0., 1500., "p_{T}(V)", "GeV", *iR, zinv, "Z#rightarrow#nu#nu", gammaJet, "#gamma+jet" );
   }
 
 
@@ -138,8 +179,8 @@ void compareRegions( const std::string& outputdir, std::vector<MT2Region> region
   colors.push_back( 29 );
   colors.push_back( 38 );
   colors.push_back( 42 );
+  colors.push_back( kGray+1 );
   colors.push_back( kRed );
-  colors.push_back( kBlack );
   
   std::vector<int> markers;
   markers.push_back( 21 );

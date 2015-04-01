@@ -70,7 +70,6 @@ int main() {
 
   drawIsoVsSigma( outputdir, tree_fake, "iso", "isoCP" );
 
-
   drawROC( outputdir, tree_prompt, tree_nip, tree_fake, 0 );  // 0: put them in BG
   drawROC( outputdir, tree_prompt, tree_nip, tree_fake, 1 );  // 1: put them in signal
   drawROC( outputdir, tree_prompt, tree_nip, tree_fake, 2 );  // 2: ignore them
@@ -927,6 +926,7 @@ TGraph* getWP( TH1D* h1_prompt, TH1D* h1_fake, float thresh ) {
 
 
 
+
 void drawIsoVsSigma( const std::string& outputdir, TTree* tree_fake, const std::string& iso1, const std::string& iso2 ) {
 
   float xmin = 0.008;
@@ -971,11 +971,12 @@ void drawIsoVsSigma( const std::string& outputdir, TTree* tree_fake, const std::
   c1->cd();
 
 
-  float yMax = 18.;
+  float yMax = 20.;
 
   TH2D* h2_axes = new TH2D("axes", "", 10, xmin, xmax, 10, 0., yMax );
   h2_axes->SetXTitle( "#sigma_{i#eta i#eta}" );
-  h2_axes->SetYTitle( "Isolation [GeV]");
+  h2_axes->SetYTitle( "Charged Isolation [GeV]");
+  //h2_axes->SetYTitle( "Isolation [GeV]");
   h2_axes->Draw();
 
 
@@ -1002,7 +1003,7 @@ void drawIsoVsSigma( const std::string& outputdir, TTree* tree_fake, const std::
   legend->SetFillColor( 0 );
   legend->AddEntry( h1_iso1_vs_sigma, longName1.c_str(), "P" );
   legend->AddEntry( h1_iso2_vs_sigma, longName2.c_str(), "P" );
-  legend->Draw("same");
+  //legend->Draw("same");
 
 
   h1_iso1_vs_sigma->Draw("p same");

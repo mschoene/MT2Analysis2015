@@ -1,8 +1,0 @@
-#input		output			filter	k-factor	xsec(pb)	id
-/scratch/mmasciov/CSA14_babytrees_QG/TTJets_MSDecaysCKM_central_PU_S14_POSTLS170_babytree_QG_1.root /scratch/dalfonso/POSTPROCESSING/midOCT/Top/TTJets_MSDecaysCKM_central_PU_S14_POSTLS170_babytree_QG_1.root  1.0    1.0  800.0 300
-/scratch/mmasciov/CSA14_babytrees_QG/TTJets_MSDecaysCKM_central_PU_S14_POSTLS170_babytree_QG_2.root /scratch/dalfonso/POSTPROCESSING/midOCT/Top/TTJets_MSDecaysCKM_central_PU_S14_POSTLS170_babytree_QG_2.root  1.0    1.0  800.0 300
-/scratch/mmasciov/CSA14_babytrees_QG/TTJets_MSDecaysCKM_central_PU_S14_POSTLS170_babytree_QG_3.root /scratch/dalfonso/POSTPROCESSING/midOCT/Top/TTJets_MSDecaysCKM_central_PU_S14_POSTLS170_babytree_QG_3.root  1.0    1.0  800.0 300
-/scratch/mmasciov/CSA14_babytrees_QG/TTJets_MSDecaysCKM_central_PU_S14_POSTLS170_babytree_QG_4.root /scratch/dalfonso/POSTPROCESSING/midOCT/Top/TTJets_MSDecaysCKM_central_PU_S14_POSTLS170_babytree_QG_4.root  1.0    1.0  800.0 300
-/scratch/mmasciov/CSA14_babytrees_QG/TTJets_MSDecaysCKM_central_PU_S14_POSTLS170_babytree_QG_5.root /scratch/dalfonso/POSTPROCESSING/midOCT/Top/TTJets_MSDecaysCKM_central_PU_S14_POSTLS170_babytree_QG_5.root  1.0    1.0  800.0 300
-/scratch/mmasciov/CSA14_babytrees_QG/TTJets_MSDecaysCKM_central_PU_S14_POSTLS170_babytree_QG_6.root /scratch/dalfonso/POSTPROCESSING/midOCT/Top/TTJets_MSDecaysCKM_central_PU_S14_POSTLS170_babytree_QG_6.root  1.0    1.0  800.0 300
-
