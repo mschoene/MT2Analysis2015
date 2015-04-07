@@ -11,6 +11,7 @@
 #include <TROOT.h>
 #include <TChain.h>
 #include <TFile.h>
+#include <TString.h>
 
 // Header file for the classes stored in the TTree if any.
 
@@ -84,6 +85,8 @@ public :
    Float_t         mht_had_phi;
    Float_t         diffMetMht_had;
    Float_t         deltaPhiMin_had;
+   Float_t         met_rawPt;
+   Float_t         met_rawPhi;
    Int_t           nBJet40;
    Int_t           nMuons10;
    Int_t           nElectrons10;
@@ -107,6 +110,8 @@ public :
    Float_t         gamma_mht_pt;
    Float_t         gamma_mht_phi;
    Float_t         gamma_minMTBMet;
+   Float_t         gamma_jet1_pt;
+   Float_t         gamma_jet2_pt;
    Float_t         zll_deltaPhiMin;
    Float_t         zll_diffMetMht;
    Float_t         zll_mht_pt;
@@ -236,6 +241,20 @@ public :
    Float_t         jet_qgl[50];   //[njet]
    Int_t           jet_partonId[50];   //[njet]
    Int_t           jet_partonMotherId[50];   //[njet]
+   Float_t         jet_chHEF[50];   //[njet]
+   Float_t         jet_neHEF[50];   //[njet]
+   Float_t         jet_phEF[50];   //[njet]
+   Float_t         jet_eEF[50];   //[njet]
+   Float_t         jet_muEF[50];   //[njet]
+   Float_t         jet_HFHEF[50];   //[njet]
+   Float_t         jet_HFEMEF[50];   //[njet]
+   Int_t           jet_chHMult[50];   //[njet]
+   Int_t           jet_neHMult[50];   //[njet]
+   Int_t           jet_phMult[50];   //[njet]
+   Int_t           jet_eMult[50];   //[njet]
+   Int_t           jet_muMult[50];   //[njet]
+   Int_t           jet_HFHMult[50];   //[njet]
+   Int_t           jet_HFEMMult[50];   //[njet]
    Int_t           ngenNu;
    Float_t         genNu_pt[9];   //[ngenNu]
    Float_t         genNu_eta[9];   //[ngenNu]
@@ -264,6 +283,7 @@ public :
    Int_t           lep_looseIdSusy[5];   //[nlep]
    Float_t         lep_relIso03[5];   //[nlep]
    Float_t         lep_relIso04[5];   //[nlep]
+   Float_t         lep_miniRelIso[5];   //[nlep]
    Float_t         lep_chargedHadRelIso03[5];   //[nlep]
    Float_t         lep_chargedHadRelIso04[5];   //[nlep]
    Int_t           lep_convVetoFull[5];   //[nlep]
@@ -313,8 +333,11 @@ public :
    Float_t         gamma_neuHadIso[20];   //[ngamma]
    Float_t         gamma_phIso[20];   //[ngamma]
    Int_t           gamma_mcMatchId[20];   //[ngamma]
+   Float_t         gamma_mcPt[20];   //[ngamma]
    Float_t         gamma_genIso[20];   //[ngamma]
+   Float_t         gamma_genIso03[20];   //[ngamma]
    Float_t         gamma_genIso04[20];   //[ngamma]
+   Float_t         gamma_drMinParton[20];   //[ngamma]
    Int_t           nGenP6StatusThree;
    Float_t         GenP6StatusThree_pt[54];   //[nGenP6StatusThree]
    Float_t         GenP6StatusThree_eta[54];   //[nGenP6StatusThree]
@@ -417,6 +440,8 @@ public :
    TBranch        *b_mht_had_phi;   //!
    TBranch        *b_diffMetMht_had;   //!
    TBranch        *b_deltaPhiMin_had;   //!
+   TBranch        *b_met_rawPt;   //!
+   TBranch        *b_met_rawPhi;   //!
    TBranch        *b_nBJet40;   //!
    TBranch        *b_nMuons10;   //!
    TBranch        *b_nElectrons10;   //!
@@ -440,6 +465,8 @@ public :
    TBranch        *b_gamma_mht_pt;   //!
    TBranch        *b_gamma_mht_phi;   //!
    TBranch        *b_gamma_minMTBMet;   //!
+   TBranch        *b_gamma_jet1_pt;   //!
+   TBranch        *b_gamma_jet2_pt;   //!
    TBranch        *b_zll_deltaPhiMin;   //!
    TBranch        *b_zll_diffMetMht;   //!
    TBranch        *b_zll_mht_pt;   //!
@@ -569,6 +596,20 @@ public :
    TBranch        *b_jet_qgl;   //!
    TBranch        *b_jet_partonId;   //!
    TBranch        *b_jet_partonMotherId;   //!
+   TBranch        *b_jet_chHEF;   //!
+   TBranch        *b_jet_neHEF;   //!
+   TBranch        *b_jet_phEF;   //!
+   TBranch        *b_jet_eEF;   //!
+   TBranch        *b_jet_muEF;   //!
+   TBranch        *b_jet_HFHEF;   //!
+   TBranch        *b_jet_HFEMEF;   //!
+   TBranch        *b_jet_chHMult;   //!
+   TBranch        *b_jet_neHMult;   //!
+   TBranch        *b_jet_phMult;   //!
+   TBranch        *b_jet_eMult;   //!
+   TBranch        *b_jet_muMult;   //!
+   TBranch        *b_jet_HFHMult;   //!
+   TBranch        *b_jet_HFEMMult;   //!
    TBranch        *b_ngenNu;   //!
    TBranch        *b_genNu_pt;   //!
    TBranch        *b_genNu_eta;   //!
@@ -597,6 +638,7 @@ public :
    TBranch        *b_lep_looseIdSusy;   //!
    TBranch        *b_lep_relIso03;   //!
    TBranch        *b_lep_relIso04;   //!
+   TBranch        *b_lep_miniRelIso;   //!
    TBranch        *b_lep_chargedHadRelIso03;   //!
    TBranch        *b_lep_chargedHadRelIso04;   //!
    TBranch        *b_lep_convVetoFull;   //!
@@ -646,8 +688,11 @@ public :
    TBranch        *b_gamma_neuHadIso;   //!
    TBranch        *b_gamma_phIso;   //!
    TBranch        *b_gamma_mcMatchId;   //!
+   TBranch        *b_gamma_mcPt;   //!
    TBranch        *b_gamma_genIso;   //!
    TBranch        *b_gamma_genIso04;   //!
+   TBranch        *b_gamma_genIso03;   //!
+   TBranch        *b_gamma_drMinParton;   //!
    TBranch        *b_nGenP6StatusThree;   //!
    TBranch        *b_GenP6StatusThree_pt;   //!
    TBranch        *b_GenP6StatusThree_eta;   //!
@@ -691,6 +736,10 @@ public :
 
    MT2Tree(TTree *tree=0);
    virtual ~MT2Tree();
+   virtual Bool_t   passSelection(TString sel = "");
+   virtual Bool_t   passBaseline (TString sel = "");
+   virtual Bool_t   passLeptonVeto  ();
+   virtual Bool_t   passIsoTrackVeto();
    virtual Int_t    Cut(Long64_t entry);
    virtual Int_t    GetEntry(Long64_t entry);
    virtual Long64_t LoadTree(Long64_t entry);
@@ -813,6 +862,8 @@ void MT2Tree::Init(TTree *tree)
    fChain->SetBranchAddress("mht_had_phi", &mht_had_phi, &b_mht_had_phi);
    fChain->SetBranchAddress("diffMetMht_had", &diffMetMht_had, &b_diffMetMht_had);
    fChain->SetBranchAddress("deltaPhiMin_had", &deltaPhiMin_had, &b_deltaPhiMin_had);
+   fChain->SetBranchAddress("met_rawPt", &met_rawPt, &b_met_rawPt);
+   fChain->SetBranchAddress("met_rawPhi", &met_rawPhi, &b_met_rawPhi);
    fChain->SetBranchAddress("nBJet40", &nBJet40, &b_nBJet40);
    fChain->SetBranchAddress("nMuons10", &nMuons10, &b_nMuons10);
    fChain->SetBranchAddress("nElectrons10", &nElectrons10, &b_nElectrons10);
@@ -836,6 +887,8 @@ void MT2Tree::Init(TTree *tree)
    fChain->SetBranchAddress("gamma_mht_pt", &gamma_mht_pt, &b_gamma_mht_pt);
    fChain->SetBranchAddress("gamma_mht_phi", &gamma_mht_phi, &b_gamma_mht_phi);
    fChain->SetBranchAddress("gamma_minMTBMet", &gamma_minMTBMet, &b_gamma_minMTBMet);
+   fChain->SetBranchAddress("gamma_jet1_pt", &gamma_jet1_pt, &b_gamma_jet1_pt);
+   fChain->SetBranchAddress("gamma_jet2_pt", &gamma_jet2_pt, &b_gamma_jet2_pt);
    fChain->SetBranchAddress("zll_deltaPhiMin", &zll_deltaPhiMin, &b_zll_deltaPhiMin);
    fChain->SetBranchAddress("zll_diffMetMht", &zll_diffMetMht, &b_zll_diffMetMht);
    fChain->SetBranchAddress("zll_mht_pt", &zll_mht_pt, &b_zll_mht_pt);
@@ -1005,6 +1058,20 @@ void MT2Tree::Init(TTree *tree)
    fChain->SetBranchAddress("jet_qgl", jet_qgl, &b_jet_qgl);
    fChain->SetBranchAddress("jet_partonId", jet_partonId, &b_jet_partonId);
    fChain->SetBranchAddress("jet_partonMotherId", jet_partonMotherId, &b_jet_partonMotherId);
+   fChain->SetBranchAddress("jet_chHEF", jet_chHEF, &b_jet_chHEF);
+   fChain->SetBranchAddress("jet_neHEF", jet_neHEF, &b_jet_neHEF);
+   fChain->SetBranchAddress("jet_phEF", jet_phEF, &b_jet_phEF);
+   fChain->SetBranchAddress("jet_eEF", jet_eEF, &b_jet_eEF);
+   fChain->SetBranchAddress("jet_muEF", jet_muEF, &b_jet_muEF);
+   fChain->SetBranchAddress("jet_HFHEF", jet_HFHEF, &b_jet_HFHEF);
+   fChain->SetBranchAddress("jet_HFEMEF", jet_HFEMEF, &b_jet_HFEMEF);
+   fChain->SetBranchAddress("jet_chHMult", jet_chHMult, &b_jet_chHMult);
+   fChain->SetBranchAddress("jet_neHMult", jet_neHMult, &b_jet_neHMult);
+   fChain->SetBranchAddress("jet_phMult", jet_phMult, &b_jet_phMult);
+   fChain->SetBranchAddress("jet_eMult", jet_eMult, &b_jet_eMult);
+   fChain->SetBranchAddress("jet_muMult", jet_muMult, &b_jet_muMult);
+   fChain->SetBranchAddress("jet_HFHMult", jet_HFHMult, &b_jet_HFHMult);
+   fChain->SetBranchAddress("jet_HFEMMult", jet_HFEMMult, &b_jet_HFEMMult);
    fChain->SetBranchAddress("nlep", &nlep, &b_nlep);
    fChain->SetBranchAddress("lep_pt", lep_pt, &b_lep_pt);
    fChain->SetBranchAddress("lep_eta", lep_eta, &b_lep_eta);
@@ -1024,6 +1091,7 @@ void MT2Tree::Init(TTree *tree)
    fChain->SetBranchAddress("lep_looseIdSusy", lep_looseIdSusy, &b_lep_looseIdSusy);
    fChain->SetBranchAddress("lep_relIso03", lep_relIso03, &b_lep_relIso03);
    fChain->SetBranchAddress("lep_relIso04", lep_relIso04, &b_lep_relIso04);
+   fChain->SetBranchAddress("lep_miniRelIso", lep_miniRelIso, &b_lep_miniRelIso);
    fChain->SetBranchAddress("lep_chargedHadRelIso03", lep_chargedHadRelIso03, &b_lep_chargedHadRelIso03);
    fChain->SetBranchAddress("lep_chargedHadRelIso04", lep_chargedHadRelIso04, &b_lep_chargedHadRelIso04);
    fChain->SetBranchAddress("lep_convVetoFull", lep_convVetoFull, &b_lep_convVetoFull);
@@ -1064,8 +1132,11 @@ void MT2Tree::Init(TTree *tree)
    fChain->SetBranchAddress("gamma_neuHadIso", gamma_neuHadIso, &b_gamma_neuHadIso);
    fChain->SetBranchAddress("gamma_phIso", gamma_phIso, &b_gamma_phIso);
    fChain->SetBranchAddress("gamma_mcMatchId", gamma_mcMatchId, &b_gamma_mcMatchId);
+   fChain->SetBranchAddress("gamma_mcPt", gamma_mcPt, &b_gamma_mcPt);
    fChain->SetBranchAddress("gamma_genIso", gamma_genIso, &b_gamma_genIso);
    fChain->SetBranchAddress("gamma_genIso04", gamma_genIso04, &b_gamma_genIso04);
+   fChain->SetBranchAddress("gamma_genIso03", gamma_genIso03, &b_gamma_genIso03);
+   fChain->SetBranchAddress("gamma_drMinParton", gamma_drMinParton, &b_gamma_drMinParton);
    fChain->SetBranchAddress("ntau", &ntau, &b_ntau);
    fChain->SetBranchAddress("tau_pt", tau_pt, &b_tau_pt);
    fChain->SetBranchAddress("tau_eta", tau_eta, &b_tau_eta);
@@ -1105,6 +1176,36 @@ void MT2Tree::Show(Long64_t entry)
    if (!fChain) return;
    fChain->Show(entry);
 }
+
+Bool_t MT2Tree::passSelection(TString sel)
+{
+  return passBaseline(sel) && passLeptonVeto() && passIsoTrackVeto();
+}
+
+Bool_t MT2Tree::passLeptonVeto(){
+  return nMuons10==0 && nElectrons10==0;
+}
+
+Bool_t MT2Tree::passIsoTrackVeto(){
+  return nPFLep5LowMT==0 && nPFHad10LowMT==0;
+}
+
+Bool_t MT2Tree::passBaseline(TString sel)
+{
+  if (sel=="")
+    return nVert > 0 && nJet40 >= 2 &&
+      deltaPhiMin > 0.3 && 
+      diffMetMht < 0.5*met_pt && 
+      jet1_pt > 40. && jet2_pt > 40. ;
+  else if (sel=="gamma")
+    return nVert > 0 && gamma_nJet40 >= 2 && 
+      gamma_deltaPhiMin > 0.3 && 
+      gamma_diffMetMht < 0.5*gamma_met_pt && 
+      gamma_jet1_pt > 40. && gamma_jet2_pt > 40. ;
+  else
+    return kFALSE;
+}
+
 Int_t MT2Tree::Cut(Long64_t entry)
 {
 // This function may be called from Loop.
