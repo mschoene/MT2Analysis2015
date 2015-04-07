@@ -1444,7 +1444,7 @@ void MT2Region::getBins( int &nBins, double*& bins) const {
 
   else if( regionName == "HT450to575_j2to3_b0" ){ // new MT2 binning
     
-    const int nBins_tmp                        = 4
+    const int nBins_tmp                        = 4;
     bins = new double[nBins_tmp+1]{200., 300., 400., 500., 1500.};
     nBins = nBins_tmp;
     
