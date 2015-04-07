@@ -175,6 +175,7 @@ int main( int argc, char* argv[] ) {
        datacard << "imax 1" << std::endl;
        datacard << "jmax 3" << std::endl;
        datacard << "kmax *" << std::endl;
+       datacard << "shapes * * FAKE" << std::endl;
        datacard << "-------------" << std::endl;
        datacard << std::endl << std::endl;
 
