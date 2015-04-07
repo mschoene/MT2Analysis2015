@@ -640,7 +640,7 @@ void MT2Region::getBins( int &nBins, double*& bins) const {
 
 
   } 
-//else if( regionName == "HT450to575_j2to3_b0" ){ // new MT2 binning
+//  else if( regionName == "HT450to575_j2to3_b0" ){ // new MT2 binning
 //    
 //    const int nBins_tmp                        = 4;
 //    bins = new double[nBins_tmp+1]{200., 360., 460., 560., 1500.};
@@ -905,6 +905,809 @@ void MT2Region::getBins( int &nBins, double*& bins) const {
 //    nBins = nBins_tmp;
 //
 //  }
+
+//  else if( regionName == "HT450to575_j2to3_b0" ){ // new MT2 binning
+//    
+//    const int nBins_tmp                        = 4;
+//    bins = new double[nBins_tmp+1]{200., 350., 450., 550., 1500.};
+//    nBins = nBins_tmp;
+//    
+//  } else if( regionName == "HT450to575_j2to3_b1" ){
+//
+//    const int nBins_tmp                        = 4;
+//    bins = new double[nBins_tmp+1]{200., 350., 450., 550., 1500.};
+//    nBins = nBins_tmp;
+//
+//  } else if( regionName == "HT450to575_j4to6_b0" ){
+//
+//    const int nBins_tmp                        = 4;
+//    bins = new double[nBins_tmp+1]{200., 350., 450., 550., 1500.};
+//    nBins = nBins_tmp;
+//
+//  } else if( regionName == "HT450to575_j4to6_b1" ){
+//
+//    const int nBins_tmp                        = 4;
+//    bins = new double[nBins_tmp+1]{200., 300., 400., 500., 1500.};
+//    nBins = nBins_tmp;
+//
+//  } else if( regionName == "HT450to575_j7toInf_b0" ){
+//
+//    const int nBins_tmp                        = 2;
+//    bins = new double[nBins_tmp+1]{200., 350., 1500.};
+//    nBins = nBins_tmp;
+//
+//  } else if( regionName == "HT450to575_j7toInf_b1" ){
+//
+//    const int nBins_tmp                        = 2;
+//    bins = new double[nBins_tmp+1]{200., 300., 1500.};
+//    nBins = nBins_tmp;
+//
+//  } else if( regionName == "HT450to575_j2to3_b2" ){
+//
+//    const int nBins_tmp                        = 4;
+//    bins = new double[nBins_tmp+1]{200., 300., 400., 500., 1500.};
+//    nBins = nBins_tmp;
+//
+//  } else if( regionName == "HT450to575_j4to6_b2" ){
+//
+//    const int nBins_tmp                        = 3;
+//    bins = new double[nBins_tmp+1]{200., 350., 450., 1500.};
+//    nBins = nBins_tmp;
+//
+//  } else if( regionName == "HT450to575_j7toInf_b2" ){
+//
+//    const int nBins_tmp                        = 1;
+//    bins = new double[nBins_tmp+1]{200., 1500.};
+//    nBins = nBins_tmp;
+//
+//  } else if( regionName == "HT450to575_j2to6_b3toInf" ){
+//
+//    const int nBins_tmp                        = 2;
+//    bins = new double[nBins_tmp+1]{200., 350., 1500.};
+//    nBins = nBins_tmp;
+//
+//  } else if( regionName == "HT450to575_j7toInf_b3toInf" ){
+//
+//    const int nBins_tmp                        = 1;
+//    bins = new double[nBins_tmp+1]{200., 1500.};
+//    nBins = nBins_tmp;
+//
+//  } else if( regionName == "HT575to1000_j2to3_b0" ){
+//
+//    const int nBins_tmp                        = 8;
+//    bins = new double[nBins_tmp+1]{200., 300., 400., 500., 600., 700., 800., 900., 1500.};
+//    nBins = nBins_tmp;
+//
+//  } else if( regionName == "HT575to1000_j2to3_b1" ){
+//
+//    const int nBins_tmp                        = 7;
+//    bins = new double[nBins_tmp+1]{200., 300., 400., 500., 600., 700., 800., 1500.};
+//    nBins = nBins_tmp;
+//
+//  } else if( regionName == "HT575to1000_j4to6_b0" ){
+//
+//    const int nBins_tmp                        = 7;
+//    bins = new double[nBins_tmp+1]{200., 350., 450., 550., 650., 750., 850., 1500.};
+//    nBins = nBins_tmp;
+//
+//  } else if( regionName == "HT575to1000_j4to6_b1" ){
+//
+//    const int nBins_tmp                        = 6;
+//    bins = new double[nBins_tmp+1]{200., 350., 450., 550., 650., 750., 1500.};
+//    nBins = nBins_tmp;
+//
+//  } else if( regionName == "HT575to1000_j7toInf_b0" ){
+//
+//    const int nBins_tmp                        = 4;
+//    bins = new double[nBins_tmp+1]{200., 350., 450., 550., 1500.};
+//    nBins = nBins_tmp;
+//
+//  } else if( regionName == "HT575to1000_j7toInf_b1" ){
+//
+//    const int nBins_tmp                        = 4;
+//    bins = new double[nBins_tmp+1]{200., 300., 400., 500., 1500.};
+//    nBins = nBins_tmp;
+//
+//  } else if( regionName == "HT575to1000_j2to3_b2" ){
+//
+//    const int nBins_tmp                        = 5;
+//    bins = new double[nBins_tmp+1]{200., 350., 450., 550., 650., 1500.};
+//    nBins = nBins_tmp;
+//
+//  } else if( regionName == "HT575to1000_j4to6_b2" ){
+//
+//    const int nBins_tmp                        = 5;
+//    bins = new double[nBins_tmp+1]{250., 350., 450., 550., 650., 1500.};
+//    nBins = nBins_tmp;
+//
+//  } else if( regionName == "HT575to1000_j7toInf_b2" ){
+//
+//    const int nBins_tmp                        = 3;
+//    bins = new double[nBins_tmp+1]{200., 350., 450., 1500.};
+//    nBins = nBins_tmp;
+//
+//  } else if( regionName == "HT575to1000_j2to6_b3toInf" ){
+//
+//    const int nBins_tmp                        = 3;
+//    bins = new double[nBins_tmp+1]{200., 350., 450., 1500.};
+//    nBins = nBins_tmp;
+//
+//  } else if( regionName == "HT575to1000_j7toInf_b3toInf" ){
+//
+//    const int nBins_tmp                        = 3;
+//    bins = new double[nBins_tmp+1]{200., 350., 450., 1500.};
+//    nBins = nBins_tmp;
+//
+//  } else if( regionName == "HT1000to1500_j2to3_b0" ){
+//
+//    const int nBins_tmp                        = 10;
+//    bins = new double[nBins_tmp+1]{200., 300., 400., 500., 600., 700., 800., 900., 1000., 1100., 1500.};
+//    nBins = nBins_tmp;
+//
+//  } else if( regionName == "HT1000to1500_j2to3_b1" ){
+//
+//    const int nBins_tmp                        = 8;
+//    bins = new double[nBins_tmp+1]{200., 350., 450., 550., 650., 750., 850., 950., 1500.};
+//    nBins = nBins_tmp;
+//
+//  } else if( regionName == "HT1000to1500_j4to6_b0" ){
+//
+//    const int nBins_tmp                        = 9;
+//    bins = new double[nBins_tmp+1]{250., 350., 450., 550., 650., 750., 850., 950., 1050., 1500.};
+//    nBins = nBins_tmp;
+//
+//  } else if( regionName == "HT1000to1500_j4to6_b1" ){
+//
+//    const int nBins_tmp                        = 8;
+//    bins = new double[nBins_tmp+1]{200., 300., 400., 500., 600., 700., 800., 900., 1500.};
+//    nBins = nBins_tmp;
+//
+//  } else if( regionName == "HT1000to1500_j7toInf_b0" ){
+//
+//    const int nBins_tmp                        = 5;
+//    bins = new double[nBins_tmp+1]{200., 350., 450., 550., 650., 1500.};
+//    nBins = nBins_tmp;
+//
+//  } else if( regionName == "HT1000to1500_j7toInf_b1" ){
+//
+//    const int nBins_tmp                        = 5;
+//    bins = new double[nBins_tmp+1]{200., 300., 400., 500., 600., 1500.};
+//    nBins = nBins_tmp;
+//
+//  } else if( regionName == "HT1000to1500_j2to3_b2" ){
+//
+//    const int nBins_tmp                        = 3;
+//    bins = new double[nBins_tmp+1]{200., 300., 400., 1500.};
+//    nBins = nBins_tmp;
+//
+//  } else if( regionName == "HT1000to1500_j4to6_b2" ){
+//
+//    const int nBins_tmp                        = 5;
+//    bins = new double[nBins_tmp+1]{200., 350., 450., 550., 650., 1500.};
+//    nBins = nBins_tmp;
+//
+//  } else if( regionName == "HT1000to1500_j7toInf_b2" ){
+//
+//    const int nBins_tmp                        = 3;
+//    bins = new double[nBins_tmp+1]{250., 350., 450., 1500.};
+//    nBins = nBins_tmp;
+//
+//  } else if( regionName == "HT1000to1500_j2to6_b3toInf" ){
+//
+//    const int nBins_tmp                        = 2;
+//    bins = new double[nBins_tmp+1]{250., 350., 1500.};
+//    nBins = nBins_tmp;
+//
+//  } else if( regionName == "HT1000to1500_j7toInf_b3toInf" ){
+//
+//    const int nBins_tmp                        = 3;
+//    bins = new double[nBins_tmp+1]{200., 350., 450., 1500.};
+//    nBins = nBins_tmp;
+//
+//  } else if( regionName == "HT1500toInf_j2to3_b0" ){
+//
+//    const int nBins_tmp                        = 10;
+//    bins = new double[nBins_tmp+1]{300., 400., 500, 600., 700., 800., 900., 1000., 1100., 1200., 1500.};
+//    nBins = nBins_tmp;
+//
+//  } else if( regionName == "HT1500toInf_j2to3_b1" ){
+//
+//    const int nBins_tmp                        = 6;
+//    bins = new double[nBins_tmp+1]{300., 400., 500., 600., 700., 800., 1500.};
+//    nBins = nBins_tmp;
+//
+//  } else if( regionName == "HT1500toInf_j4to6_b0" ){
+//
+//    const int nBins_tmp                        = 9;
+//    bins = new double[nBins_tmp+1]{300., 350., 450., 550., 650., 750., 850., 950., 1050., 1500.};
+//    nBins = nBins_tmp;
+//
+//  } else if( regionName == "HT1500toInf_j4to6_b1" ){
+//
+//    const int nBins_tmp                        = 7;
+//    bins = new double[nBins_tmp+1]{300., 350., 450., 550., 650., 750., 850., 1500.};
+//    nBins = nBins_tmp;
+//
+//  } else if( regionName == "HT1500toInf_j7toInf_b0" ){
+//
+//    const int nBins_tmp                        = 4;
+//    bins = new double[nBins_tmp+1]{300., 350., 450., 550., 1500.};
+//    nBins = nBins_tmp;
+//
+//  } else if( regionName == "HT1500toInf_j7toInf_b1" ){
+//
+//    const int nBins_tmp                        = 3;
+//    bins = new double[nBins_tmp+1]{300., 400., 500., 1500.};
+//    nBins = nBins_tmp;
+//
+//  } else if( regionName == "HT1500toInf_j2to3_b2" ){
+//
+//    const int nBins_tmp                        = 1;
+//    bins = new double[nBins_tmp+1]{250., 1500.};
+//    nBins = nBins_tmp;
+//
+//  } else if( regionName == "HT1500toInf_j4to6_b2" ){
+//
+//    const int nBins_tmp                        = 5;
+//    bins = new double[nBins_tmp+1]{250., 300., 400., 500., 600., 1500.};
+//    nBins = nBins_tmp;
+//
+//  } else if( regionName == "HT1500toInf_j7toInf_b2" ){
+//
+//    const int nBins_tmp                        = 2;
+//    bins = new double[nBins_tmp+1]{250., 350., 1500.};
+//    nBins = nBins_tmp;
+//
+//  } else if( regionName == "HT1500toInf_j2to6_b3toInf" ){
+//
+//    const int nBins_tmp                        = 1;
+//    bins = new double[nBins_tmp+1]{250., 1500.};
+//    nBins = nBins_tmp;
+//
+//  } else if( regionName == "HT1500toInf_j7toInf_b3toInf" ){
+//
+//    const int nBins_tmp                        = 1;
+//    bins = new double[nBins_tmp+1]{250., 1500.};
+//    nBins = nBins_tmp;
+//
+//  }
+
+//  //HERE
+//
+//  else if( regionName == "HT450to575_j2to3_b0" ){ // new MT2 binning
+//    
+//    const int nBins_tmp                        = 3;
+//    bins = new double[nBins_tmp+1]{200., 300., 550., 1500.};
+//    nBins = nBins_tmp;
+//    
+//  } else if( regionName == "HT450to575_j2to3_b1" ){
+//
+//    const int nBins_tmp                        = 3;
+//    bins = new double[nBins_tmp+1]{200., 300., 550., 1500.};
+//    nBins = nBins_tmp;
+//
+//  } else if( regionName == "HT450to575_j4to6_b0" ){
+//
+//    const int nBins_tmp                        = 3;
+//    bins = new double[nBins_tmp+1]{200., 300., 550., 1500.};
+//    nBins = nBins_tmp;
+//
+//  } else if( regionName == "HT450to575_j4to6_b1" ){
+//
+//    const int nBins_tmp                        = 4;
+//    bins = new double[nBins_tmp+1]{200., 300., 400., 500., 1500.};
+//    nBins = nBins_tmp;
+//
+//  } else if( regionName == "HT450to575_j7toInf_b0" ){
+//
+//    const int nBins_tmp                        = 2;
+//    bins = new double[nBins_tmp+1]{200., 300., 1500.};
+//    nBins = nBins_tmp;
+//
+//  } else if( regionName == "HT450to575_j7toInf_b1" ){
+//
+//    const int nBins_tmp                        = 2;
+//    bins = new double[nBins_tmp+1]{200., 300., 1500.};
+//    nBins = nBins_tmp;
+//
+//  } else if( regionName == "HT450to575_j2to3_b2" ){
+//
+//    const int nBins_tmp                        = 4;
+//    bins = new double[nBins_tmp+1]{200., 300., 400., 500., 1500.};
+//    nBins = nBins_tmp;
+//
+//  } else if( regionName == "HT450to575_j4to6_b2" ){
+//
+//    const int nBins_tmp                        = 3;
+//    bins = new double[nBins_tmp+1]{200., 300., 450., 1500.};
+//    nBins = nBins_tmp;
+//
+//  } else if( regionName == "HT450to575_j7toInf_b2" ){
+//
+//    const int nBins_tmp                        = 1;
+//    bins = new double[nBins_tmp+1]{200., 1500.};
+//    nBins = nBins_tmp;
+//
+//  } else if( regionName == "HT450to575_j2to6_b3toInf" ){
+//
+//    const int nBins_tmp                        = 2;
+//    bins = new double[nBins_tmp+1]{200., 350., 1500.};
+//    nBins = nBins_tmp;
+//
+//  } else if( regionName == "HT450to575_j7toInf_b3toInf" ){
+//
+//    const int nBins_tmp                        = 1;
+//    bins = new double[nBins_tmp+1]{200., 1500.};
+//    nBins = nBins_tmp;
+//
+//  } else if( regionName == "HT575to1000_j2to3_b0" ){
+//
+//    const int nBins_tmp                        = 6;
+//    bins = new double[nBins_tmp+1]{200., 300., 400., 500., 700., 900., 1500.};
+//    nBins = nBins_tmp;
+//
+//  } else if( regionName == "HT575to1000_j2to3_b1" ){
+//
+//    const int nBins_tmp                        = 5;
+//    bins = new double[nBins_tmp+1]{200., 300., 400., 600., 800., 1500.};
+//    nBins = nBins_tmp;
+//
+//  } else if( regionName == "HT575to1000_j4to6_b0" ){
+//
+//    const int nBins_tmp                        = 5;
+//    bins = new double[nBins_tmp+1]{200., 300., 400., 600., 850., 1500.};
+//    nBins = nBins_tmp;
+//
+//  } else if( regionName == "HT575to1000_j4to6_b1" ){
+//
+//    const int nBins_tmp                        = 5;
+//    bins = new double[nBins_tmp+1]{200., 300., 400., 500., 750., 1500.};
+//    nBins = nBins_tmp;
+//
+//  } else if( regionName == "HT575to1000_j7toInf_b0" ){
+//
+//    const int nBins_tmp                        = 3;
+//    bins = new double[nBins_tmp+1]{200., 300., 550., 1500.};
+//    nBins = nBins_tmp;
+//
+//  } else if( regionName == "HT575to1000_j7toInf_b1" ){
+//
+//    const int nBins_tmp                        = 4;
+//    bins = new double[nBins_tmp+1]{200., 300., 400., 500., 1500.};
+//    nBins = nBins_tmp;
+//
+//  } else if( regionName == "HT575to1000_j2to3_b2" ){
+//
+//    const int nBins_tmp                        = 4;
+//    bins = new double[nBins_tmp+1]{200., 300., 400., 650., 1500.};
+//    nBins = nBins_tmp;
+//
+//  } else if( regionName == "HT575to1000_j4to6_b2" ){
+//
+//    const int nBins_tmp                        = 4;
+//    bins = new double[nBins_tmp+1]{200., 300., 400., 650., 1500.};
+//    nBins = nBins_tmp;
+//
+//  } else if( regionName == "HT575to1000_j7toInf_b2" ){
+//
+//    const int nBins_tmp                        = 3;
+//    bins = new double[nBins_tmp+1]{200., 300., 450., 1500.};
+//    nBins = nBins_tmp;
+//
+//  } else if( regionName == "HT575to1000_j2to6_b3toInf" ){
+//
+//    const int nBins_tmp                        = 3;
+//    bins = new double[nBins_tmp+1]{200., 300., 450., 1500.};
+//    nBins = nBins_tmp;
+//
+//  } else if( regionName == "HT575to1000_j7toInf_b3toInf" ){
+//
+//    const int nBins_tmp                        = 3;
+//    bins = new double[nBins_tmp+1]{200., 300., 450., 1500.};
+//    nBins = nBins_tmp;
+//
+//  } else if( regionName == "HT1000to1500_j2to3_b0" ){
+//
+//    const int nBins_tmp                        = 6;
+//    bins = new double[nBins_tmp+1]{200., 300., 400., 500., 700., 1100., 1500.};
+//    nBins = nBins_tmp;
+//
+//  } else if( regionName == "HT1000to1500_j2to3_b1" ){
+//
+//    const int nBins_tmp                        = 6;
+//    bins = new double[nBins_tmp+1]{200., 300., 400., 500., 700., 950., 1500.};
+//    nBins = nBins_tmp;
+//
+//  } else if( regionName == "HT1000to1500_j4to6_b0" ){
+//
+//    const int nBins_tmp                        = 5;
+//    bins = new double[nBins_tmp+1]{200., 300., 400., 600., 1050., 1500.};
+//    nBins = nBins_tmp;
+//
+//  } else if( regionName == "HT1000to1500_j4to6_b1" ){
+//
+//    const int nBins_tmp                        = 6;
+//    bins = new double[nBins_tmp+1]{200., 300., 400., 500., 700., 900., 1500.};
+//    nBins = nBins_tmp;
+//
+//  } else if( regionName == "HT1000to1500_j7toInf_b0" ){
+//
+//    const int nBins_tmp                        = 4;
+//    bins = new double[nBins_tmp+1]{200., 300., 400., 650., 1500.};
+//    nBins = nBins_tmp;
+//
+//  } else if( regionName == "HT1000to1500_j7toInf_b1" ){
+//
+//    const int nBins_tmp                        = 4;
+//    bins = new double[nBins_tmp+1]{200., 300., 400., 600., 1500.};
+//    nBins = nBins_tmp;
+//
+//  } else if( regionName == "HT1000to1500_j2to3_b2" ){
+//
+//    const int nBins_tmp                        = 3;
+//    bins = new double[nBins_tmp+1]{200., 300., 400., 1500.};
+//    nBins = nBins_tmp;
+//
+//  } else if( regionName == "HT1000to1500_j4to6_b2" ){
+//
+//    const int nBins_tmp                        = 4;
+//    bins = new double[nBins_tmp+1]{200., 300., 400., 650., 1500.};
+//    nBins = nBins_tmp;
+//
+//  } else if( regionName == "HT1000to1500_j7toInf_b2" ){
+//
+//    const int nBins_tmp                        = 3;
+//    bins = new double[nBins_tmp+1]{200., 300., 450., 1500.};
+//    nBins = nBins_tmp;
+//
+//  } else if( regionName == "HT1000to1500_j2to6_b3toInf" ){
+//
+//    const int nBins_tmp                        = 2;
+//    bins = new double[nBins_tmp+1]{200., 350., 1500.};
+//    nBins = nBins_tmp;
+//
+//  } else if( regionName == "HT1000to1500_j7toInf_b3toInf" ){
+//
+//    const int nBins_tmp                        = 3;
+//    bins = new double[nBins_tmp+1]{200., 300., 400., 1500.};
+//    nBins = nBins_tmp;
+//
+//  } else if( regionName == "HT1500toInf_j2to3_b0" ){
+//
+//    const int nBins_tmp                        = 6;
+//    bins = new double[nBins_tmp+1]{200., 300., 400, 600., 800., 1200., 1500.};
+//    nBins = nBins_tmp;
+//
+//  } else if( regionName == "HT1500toInf_j2to3_b1" ){
+//
+//    const int nBins_tmp                        = 5;
+//    bins = new double[nBins_tmp+1]{200., 300., 400., 600., 800., 1500.};
+//    nBins = nBins_tmp;
+//
+//  } else if( regionName == "HT1500toInf_j4to6_b0" ){
+//
+//    const int nBins_tmp                        = 5;
+//    bins = new double[nBins_tmp+1]{200., 300., 400., 600., 1050., 1500.};
+//    nBins = nBins_tmp;
+//
+//  } else if( regionName == "HT1500toInf_j4to6_b1" ){
+//
+//    const int nBins_tmp                        = 5;
+//    bins = new double[nBins_tmp+1]{200., 300., 400., 600., 850., 1500.};
+//    nBins = nBins_tmp;
+//
+//  } else if( regionName == "HT1500toInf_j7toInf_b0" ){
+//
+//    const int nBins_tmp                        = 3;
+//    bins = new double[nBins_tmp+1]{200., 300., 550., 1500.};
+//    nBins = nBins_tmp;
+//
+//  } else if( regionName == "HT1500toInf_j7toInf_b1" ){
+//
+//    const int nBins_tmp                        = 4;
+//    bins = new double[nBins_tmp+1]{200., 300., 400., 500., 1500.};
+//    nBins = nBins_tmp;
+//
+//  } else if( regionName == "HT1500toInf_j2to3_b2" ){
+//
+//    const int nBins_tmp                        = 1;
+//    bins = new double[nBins_tmp+1]{200., 1500.};
+//    nBins = nBins_tmp;
+//
+//  } else if( regionName == "HT1500toInf_j4to6_b2" ){
+//
+//    const int nBins_tmp                        = 4;
+//    bins = new double[nBins_tmp+1]{200., 300., 400., 600., 1500.};
+//    nBins = nBins_tmp;
+//
+//  } else if( regionName == "HT1500toInf_j7toInf_b2" ){
+//
+//    const int nBins_tmp                        = 2;
+//    bins = new double[nBins_tmp+1]{200., 350., 1500.};
+//    nBins = nBins_tmp;
+//
+//  } else if( regionName == "HT1500toInf_j2to6_b3toInf" ){
+//
+//    const int nBins_tmp                        = 1;
+//    bins = new double[nBins_tmp+1]{200., 1500.};
+//    nBins = nBins_tmp;
+//
+//  } else if( regionName == "HT1500toInf_j7toInf_b3toInf" ){
+//
+//    const int nBins_tmp                        = 1;
+//    bins = new double[nBins_tmp+1]{200., 1500.};
+//    nBins = nBins_tmp;
+//
+//  }
+
+  //HERE
+
+  else if( regionName == "HT450to575_j2to3_b0" ){ // new MT2 binning
+    
+    const int nBins_tmp                        = 4
+    bins = new double[nBins_tmp+1]{200., 300., 400., 500., 1500.};
+    nBins = nBins_tmp;
+    
+  } else if( regionName == "HT450to575_j2to3_b1" ){
+
+    const int nBins_tmp                        = 4;
+    bins = new double[nBins_tmp+1]{200., 300., 400., 500., 1500.};
+    nBins = nBins_tmp;
+
+  } else if( regionName == "HT450to575_j4to6_b0" ){
+
+    const int nBins_tmp                        = 4;
+    bins = new double[nBins_tmp+1]{200., 300., 400., 500., 1500.};
+    nBins = nBins_tmp;
+
+  } else if( regionName == "HT450to575_j4to6_b1" ){
+
+    const int nBins_tmp                        = 4;
+    bins = new double[nBins_tmp+1]{200., 300., 400., 500., 1500.};
+    nBins = nBins_tmp;
+
+  } else if( regionName == "HT450to575_j7toInf_b0" ){
+
+    const int nBins_tmp                        = 1;
+    bins = new double[nBins_tmp+1]{200., 1500.};
+    nBins = nBins_tmp;
+
+  } else if( regionName == "HT450to575_j7toInf_b1" ){
+
+    const int nBins_tmp                        = 2;
+    bins = new double[nBins_tmp+1]{200., 300., 1500.};
+    nBins = nBins_tmp;
+
+  } else if( regionName == "HT450to575_j2to3_b2" ){
+
+    const int nBins_tmp                        = 4;
+    bins = new double[nBins_tmp+1]{200., 300., 400., 500., 1500.};
+    nBins = nBins_tmp;
+
+  } else if( regionName == "HT450to575_j4to6_b2" ){
+
+    const int nBins_tmp                        = 4;
+    bins = new double[nBins_tmp+1]{200., 300., 400., 500., 1500.};
+    nBins = nBins_tmp;
+
+  } else if( regionName == "HT450to575_j7toInf_b2" ){
+
+    const int nBins_tmp                        = 1;
+    bins = new double[nBins_tmp+1]{200., 1500.};
+    nBins = nBins_tmp;
+
+  } else if( regionName == "HT450to575_j2to6_b3toInf" ){
+
+    const int nBins_tmp                        = 2;
+    bins = new double[nBins_tmp+1]{200., 300., 1500.};
+    nBins = nBins_tmp;
+
+  } else if( regionName == "HT450to575_j7toInf_b3toInf" ){
+
+    const int nBins_tmp                        = 1;
+    bins = new double[nBins_tmp+1]{200., 1500.};
+    nBins = nBins_tmp;
+
+  } else if( regionName == "HT575to1000_j2to3_b0" ){
+
+    const int nBins_tmp                        = 5;
+    bins = new double[nBins_tmp+1]{200., 300., 400., 600., 800., 1500.};
+    nBins = nBins_tmp;
+
+  } else if( regionName == "HT575to1000_j2to3_b1" ){
+
+    const int nBins_tmp                        = 5;
+    bins = new double[nBins_tmp+1]{200., 300., 400., 600., 800., 1500.};
+    nBins = nBins_tmp;
+
+  } else if( regionName == "HT575to1000_j4to6_b0" ){
+
+    const int nBins_tmp                        = 5;
+    bins = new double[nBins_tmp+1]{200., 300., 400., 600., 800., 1500.};
+    nBins = nBins_tmp;
+
+  } else if( regionName == "HT575to1000_j4to6_b1" ){
+
+    const int nBins_tmp                        = 4;
+    bins = new double[nBins_tmp+1]{200., 300., 400., 600., 1500.};
+    nBins = nBins_tmp;
+
+  } else if( regionName == "HT575to1000_j7toInf_b0" ){
+
+    const int nBins_tmp                        = 3;
+    bins = new double[nBins_tmp+1]{200., 300., 400., 1500.};
+    nBins = nBins_tmp;
+
+  } else if( regionName == "HT575to1000_j7toInf_b1" ){
+
+    const int nBins_tmp                        = 3;
+    bins = new double[nBins_tmp+1]{200., 300., 400., 1500.};
+    nBins = nBins_tmp;
+
+  } else if( regionName == "HT575to1000_j2to3_b2" ){
+
+    const int nBins_tmp                        = 4;
+    bins = new double[nBins_tmp+1]{200., 300., 400., 600., 1500.};
+    nBins = nBins_tmp;
+
+  } else if( regionName == "HT575to1000_j4to6_b2" ){
+
+    const int nBins_tmp                        = 4;
+    bins = new double[nBins_tmp+1]{200., 300., 400., 600., 1500.};
+    nBins = nBins_tmp;
+
+  } else if( regionName == "HT575to1000_j7toInf_b2" ){
+
+    const int nBins_tmp                        = 3;
+    bins = new double[nBins_tmp+1]{200., 300., 400., 1500.};
+    nBins = nBins_tmp;
+
+  } else if( regionName == "HT575to1000_j2to6_b3toInf" ){
+
+    const int nBins_tmp                        = 3;
+    bins = new double[nBins_tmp+1]{200., 300., 400., 1500.};
+    nBins = nBins_tmp;
+
+  } else if( regionName == "HT575to1000_j7toInf_b3toInf" ){
+
+    const int nBins_tmp                        = 3;
+    bins = new double[nBins_tmp+1]{200., 300., 400., 1500.};
+    nBins = nBins_tmp;
+
+  } else if( regionName == "HT1000to1500_j2to3_b0" ){
+
+    const int nBins_tmp                        = 5;
+    bins = new double[nBins_tmp+1]{200., 400., 600., 800., 1000., 1500.};
+    nBins = nBins_tmp;
+
+  } else if( regionName == "HT1000to1500_j2to3_b1" ){
+
+    const int nBins_tmp                        = 4;
+    bins = new double[nBins_tmp+1]{200., 400., 600., 800., 1500.};
+    nBins = nBins_tmp;
+
+  } else if( regionName == "HT1000to1500_j4to6_b0" ){
+
+    const int nBins_tmp                        = 5;
+    bins = new double[nBins_tmp+1]{200., 400., 600., 800., 1000., 1500.};
+    nBins = nBins_tmp;
+
+  } else if( regionName == "HT1000to1500_j4to6_b1" ){
+
+    const int nBins_tmp                        = 4;
+    bins = new double[nBins_tmp+1]{200., 400., 600., 800., 1500.};
+    nBins = nBins_tmp;
+
+  } else if( regionName == "HT1000to1500_j7toInf_b0" ){
+
+    const int nBins_tmp                        = 3;
+    bins = new double[nBins_tmp+1]{200., 400., 600., 1500.};
+    nBins = nBins_tmp;
+
+  } else if( regionName == "HT1000to1500_j7toInf_b1" ){
+
+    const int nBins_tmp                        = 3;
+    bins = new double[nBins_tmp+1]{200., 400., 600., 1500.};
+    nBins = nBins_tmp;
+
+  } else if( regionName == "HT1000to1500_j2to3_b2" ){
+
+    const int nBins_tmp                        = 2;
+    bins = new double[nBins_tmp+1]{200., 400., 1500.};
+    nBins = nBins_tmp;
+
+  } else if( regionName == "HT1000to1500_j4to6_b2" ){
+
+    const int nBins_tmp                        = 3;
+    bins = new double[nBins_tmp+1]{200., 400., 600., 1500.};
+    nBins = nBins_tmp;
+
+  } else if( regionName == "HT1000to1500_j7toInf_b2" ){
+
+    const int nBins_tmp                        = 2;
+    bins = new double[nBins_tmp+1]{200., 400., 1500.};
+    nBins = nBins_tmp;
+
+  } else if( regionName == "HT1000to1500_j2to6_b3toInf" ){
+
+    const int nBins_tmp                        = 2;
+    bins = new double[nBins_tmp+1]{200., 400., 1500.};
+    nBins = nBins_tmp;
+
+  } else if( regionName == "HT1000to1500_j7toInf_b3toInf" ){
+
+    const int nBins_tmp                        = 2;
+    bins = new double[nBins_tmp+1]{200., 400., 1500.};
+    nBins = nBins_tmp;
+
+  } else if( regionName == "HT1500toInf_j2to3_b0" ){
+
+    const int nBins_tmp                        = 5;
+    bins = new double[nBins_tmp+1]{200., 400., 600., 800., 1000., 1500.};
+    nBins = nBins_tmp;
+
+  } else if( regionName == "HT1500toInf_j2to3_b1" ){
+
+    const int nBins_tmp                        = 3;
+    bins = new double[nBins_tmp+1]{200., 400., 600., 1500.};
+    nBins = nBins_tmp;
+
+  } else if( regionName == "HT1500toInf_j4to6_b0" ){
+
+    const int nBins_tmp                        = 5;
+    bins = new double[nBins_tmp+1]{200., 400., 600., 800., 1000., 1500.};
+    nBins = nBins_tmp;
+
+  } else if( regionName == "HT1500toInf_j4to6_b1" ){
+
+    const int nBins_tmp                        = 3;
+    bins = new double[nBins_tmp+1]{200., 400., 600., 1500.};
+    nBins = nBins_tmp;
+
+  } else if( regionName == "HT1500toInf_j7toInf_b0" ){
+
+    const int nBins_tmp                        = 2;
+    bins = new double[nBins_tmp+1]{200., 400., 1500.};
+    nBins = nBins_tmp;
+
+  } else if( regionName == "HT1500toInf_j7toInf_b1" ){
+
+    const int nBins_tmp                        = 2;
+    bins = new double[nBins_tmp+1]{200., 400., 1500.};
+    nBins = nBins_tmp;
+
+  } else if( regionName == "HT1500toInf_j2to3_b2" ){
+
+    const int nBins_tmp                        = 1;
+    bins = new double[nBins_tmp+1]{200., 1500.};
+    nBins = nBins_tmp;
+
+  } else if( regionName == "HT1500toInf_j4to6_b2" ){
+
+    const int nBins_tmp                        = 3;
+    bins = new double[nBins_tmp+1]{200., 400., 600., 1500.};
+    nBins = nBins_tmp;
+
+  } else if( regionName == "HT1500toInf_j7toInf_b2" ){
+
+    const int nBins_tmp                        = 2;
+    bins = new double[nBins_tmp+1]{200., 400., 1500.};
+    nBins = nBins_tmp;
+
+  } else if( regionName == "HT1500toInf_j2to6_b3toInf" ){
+
+    const int nBins_tmp                        = 1;
+    bins = new double[nBins_tmp+1]{200., 1500.};
+    nBins = nBins_tmp;
+
+  } else if( regionName == "HT1500toInf_j7toInf_b3toInf" ){
+
+    const int nBins_tmp                        = 1;
+    bins = new double[nBins_tmp+1]{200., 1500.};
+    nBins = nBins_tmp;
+
+  }
+
   else { // default binning
 
     const int nBins_tmp                        = 5;
@@ -995,3 +1798,5 @@ bool MT2Region::operator<=( const MT2Region& rhs ) const {
 }
 
 
+
+//  LocalWords:  tmp
