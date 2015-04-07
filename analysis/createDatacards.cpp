@@ -16,6 +16,7 @@
 //bool use_gamma = false;
 bool use_gamma = true;
 
+double lumi = 4;
 
 int round(float d) {
   return (int)(floor(d + 0.5));
@@ -54,10 +55,13 @@ int main( int argc, char* argv[] ) {
   float err_llep_lepEff = 0.15;
   float err_zinv_corr   = 0.2; // 20% on Z/gamma ratio
   float err_zinv_uncorr = -1.; // will take histogram bin error
+  float err_zinv_alpha_extra  = 0.2; // 20% extra uncertainty on alpha if using lower MT2 as CR
   float err_zinv_uncorr_2b = 1.0;
   float err_sig_corr    = 0.1;
   float err_sig_uncorr  = 0.;
 
+  float llep_weighted   = 0.0314378*lumi;
+  float zinv_weighted   = 0.0011701*lumi;
 
   MT2Analysis<MT2Estimate>* data  = MT2Analysis<MT2Estimate>::readFromFile( mc_fileName, "data" );
   MT2Analysis<MT2Estimate>* qcd;
@@ -89,8 +93,10 @@ int main( int argc, char* argv[] ) {
     //zinv_ratio = MT2Analysis<MT2Estimate>::readFromFile( "ZinvEstimateFromGamma_PHYS14_v2_Zinv_zurich_4fb_type0/mc.root", "ZgammaRatio");
 
     zinv       = MT2Analysis<MT2Estimate>::readFromFile( mc_fileName, "ZJets");
-    zinvCR     = MT2Analysis<MT2Estimate>::readFromFile( "GammaControlRegion_oldMT2_PHYS14_v2_Zinv_zurich/mc.root", "gammaCR");
-    zinv_ratio = MT2Analysis<MT2Estimate>::readFromFile( "ZinvEstimateFromGamma_oldMT2_PHYS14_v2_Zinv_zurich_4fb_type0/MT2ZinvEstimate.root", "ZgammaRatio");
+    //    zinvCR     = MT2Analysis<MT2Estimate>::readFromFile( "GammaControlRegion_oldMT2_PHYS14_v2_Zinv_zurich/mc.root", "gammaCR");
+    //    zinv_ratio = MT2Analysis<MT2Estimate>::readFromFile( "ZinvEstimateFromGamma_oldMT2_PHYS14_v2_Zinv_zurich_4fb_type0/MT2ZinvEstimate.root", "ZgammaRatio");
+    zinvCR     = MT2Analysis<MT2Estimate>::readFromFile( "GammaControlRegion_MT2fine_PHYS14_v2_Zinv_zurich/mc.root", "gammaCR");
+    zinv_ratio = MT2Analysis<MT2Estimate>::readFromFile( "ZinvEstimateFromGamma_MT2fine_PHYS14_v2_Zinv_zurich_4fb_type0/MT2ZinvEstimate.root", "ZgammaRatio");
   }
   zinv->setName("zinv");
   zinv->addToFile( mc_fileName, true );
@@ -102,14 +108,15 @@ int main( int argc, char* argv[] ) {
     MT2Analysis<MT2Estimate>* top   = MT2Analysis<MT2Estimate>::readFromFile( mc_fileName, "Top");
     llep = new MT2Analysis<MT2Estimate>( (*wjets) + (*top) );
   } else {
-    llep = MT2Analysis<MT2Estimate>::readFromFile( "llep_PHYS14_Zurich_oldRegionProposal_13TeV_PHYS14_loJet_hiHT_noMT_4fb.root" );
+    llep = MT2Analysis<MT2Estimate>::readFromFile( "llep_PHYS14_Zurich_MT2fine_13TeV_PHYS14_loJet_hiHT_noMT_4fb.root" );
+    //llep = MT2Analysis<MT2Estimate>::readFromFile( "llep_PHYS14_Zurich_oldRegionProposal_13TeV_PHYS14_loJet_hiHT_noMT_4fb.root" );
   }
   llep->setName( "llep" );
   llep->addToFile( mc_fileName, true );
 
 
-  //MT2Analysis<MT2Estimate>* llepCR = MT2Analysis<MT2Estimate>::readFromFile( "llep_PHYS14_v3_13TeV_CSA14.root" );
-  MT2Analysis<MT2Estimate>* llepCR = MT2Analysis<MT2Estimate>::readFromFile( "llep_PHYS14_Zurich_oldRegionProposal_13TeV_PHYS14_loJet_hiHT_noMT_4fb.root" );
+  MT2Analysis<MT2Estimate>* llepCR = MT2Analysis<MT2Estimate>::readFromFile( "llep_PHYS14_Zurich_MT2fine_13TeV_PHYS14_loJet_hiHT_noMT_4fb.root" );
+  //MT2Analysis<MT2Estimate>* llepCR = MT2Analysis<MT2Estimate>::readFromFile( "llep_PHYS14_Zurich_oldRegionProposal_13TeV_PHYS14_loJet_hiHT_noMT_4fb.root" );
   //MT2Analysis<MT2Estimate>* llepCR = llep;
 
 
@@ -144,9 +151,12 @@ int main( int argc, char* argv[] ) {
        }
      }
          
-
+     unsigned iEmptyZinvBin=this_data->GetNbinsX()+1;
+     int nEmptyCR=0;
 
      for( unsigned iBin=1; iBin<this_data->GetNbinsX()+1; ++iBin ) {
+       
+       if(this_data->GetBinLowEdge( iBin ) > iR->htMax() && iR->htMax()>0 ) continue;
 
        float mt2Min = this_data->GetBinLowEdge( iBin );
        float mt2Max = (iBin==this_data->GetNbinsX()) ?  -1. : this_data->GetBinLowEdge( iBin+1 );
@@ -183,11 +193,13 @@ int main( int argc, char* argv[] ) {
 
        if( use_gamma ) {
              
-         if( yield_zinv<0.001 ) yield_zinv = 0.;
+         //if( yield_zinv<0.001 ) yield_zinv = 0.;
+         if( yield_zinv<0.001 ) yield_zinv = zinv_weighted;
          if( yield_qcd <0.001 ) yield_qcd  = 0.;
-         if( yield_llep<0.001 ) yield_llep = 0.;
+         //if( yield_llep<0.001 ) yield_llep = 0.;
+         if( yield_llep<0.001 ) yield_llep = llep_weighted;
          if( yield_llep<0.001 && yield_zinv<0.001 && yield_qcd<0.001 ) {
-           yield_qcd  = 0.01;
+	   yield_qcd  = 0.01;
          }
 
        } else {
@@ -244,13 +256,30 @@ int main( int argc, char* argv[] ) {
 
            } else {
 
+	     bool isEmptyCR=false;
+
              int Ngamma = round(this_zinvCR->GetBinContent(iBin));
+	     if( Ngamma == 0 ){
+	       if( nEmptyCR == 0 )
+		 iEmptyZinvBin=iBin;
+	       ++nEmptyCR;
+
+	       Ngamma = round(this_zinvCR->GetBinContent(iEmptyZinvBin-1));
+	       
+	       isEmptyCR=true;
+	       
+	     }
              datacard << "zinv_CRstat_" << gammaConvention( yield_zinv, Ngamma, 1, binName ) << std::endl;
              if(  yield_zinv>0. && this_zinv_ratio->GetBinContent(iBin) > 0.) {
                float alphaErr = 1. + this_zinv_ratio->GetBinError(iBin)/this_zinv_ratio->GetBinContent(iBin); 
                datacard << "zinv_alphaErr_" << binName << " lnN  - " << alphaErr << " - -" << std::endl;
              }
-
+	     if ( isEmptyCR ){
+	       float alphaErr_extra = 1. + err_zinv_alpha_extra;
+	       datacard << "zinv_alphaErr_extra lnN  - " << alphaErr_extra << " - -" << std::endl;
+	     }
+	     else ;
+	     
            }
 
          } // if use gamma
@@ -329,6 +358,8 @@ int main( int argc, char* argv[] ) {
 
 
       for( unsigned iBin=1; iBin<this_signal->GetNbinsX()+1; ++iBin ) {
+
+	if( this_signal->GetBinLowEdge( iBin ) > iR->htMax() && iR->htMax()>0 ) continue;
 
         float mt2Min = this_signal->GetBinLowEdge( iBin );
         float mt2Max = (iBin==this_signal->GetNbinsX()) ?  -1. : this_signal->GetBinLowEdge( iBin+1 );
