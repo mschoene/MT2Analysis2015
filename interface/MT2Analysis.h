@@ -1621,7 +1621,7 @@ std::vector<MT2Analysis<T>*> MT2Analysis<T>::readAllFromFile( const std::string&
     //if( matchExpression!="" && !(analysisName_tstr.Contains(matchExpression)) ) continue;
     TString analysisName_tstr(analysisName);
     if( matchName=="SMS" && !(analysisName_tstr.Contains(matchName)) ) continue;
-    if( matchName!="" && matchName!=analysisName ) continue;
+    else if( matchName!="" && matchName!="SMS" && matchName!=analysisName ) continue;
 
     // now that we know name and region structure we can istantiate an MT2Analysis:
     MT2Analysis<T>* analysis = new MT2Analysis<T>( analysisName, regions );
