@@ -39,7 +39,7 @@ MT2EstimateSyst::MT2EstimateSyst( const std::string& aname, const MT2Region& are
 
   TEfficiency eff( *(pass.yield), *(tot.yield) );
 
-  for( unsigned i=1; i<yield->GetNbinsX()+1; ++i ) {
+  for( int i=1; i<yield->GetNbinsX()+1; ++i ) {
 
     yield         ->SetBinContent( i, eff.GetEfficiency(i) );
     yield_systDown->SetBinContent( i, eff.GetEfficiency(i) - eff.GetEfficiencyErrorLow(i) );
@@ -141,7 +141,7 @@ TGraphAsymmErrors* MT2EstimateSyst::getGraph() const {
   graph->SetName( this->getHistoName("grSyst").c_str() );
 
 
-  for( unsigned iBin=1; iBin<yield->GetNbinsX()+1; ++iBin ) {
+  for( int iBin=1; iBin<yield->GetNbinsX()+1; ++iBin ) {
 
     float x = yield->GetBinCenter(iBin);
     float x_minus = yield->GetBinLowEdge(iBin);
@@ -288,7 +288,7 @@ MT2EstimateSyst MT2EstimateSyst::operator*( const MT2EstimateSyst& rhs ) const{
 
   MT2EstimateSyst result(*this);
 
-  for( unsigned iBin=1; iBin<result.yield->GetNbinsX()+1; ++iBin ) {
+  for( int iBin=1; iBin<result.yield->GetNbinsX()+1; ++iBin ) {
 
     float thisBin  = result.yield->GetBinContent(iBin);
     float otherBin = rhs.yield->GetBinContent(iBin);
@@ -329,7 +329,7 @@ MT2EstimateSyst MT2EstimateSyst::operator*( const MT2Estimate& rhs ) const{
 
   MT2EstimateSyst result(*this);
 
-  for( unsigned iBin=1; iBin<result.yield->GetNbinsX()+1; ++iBin ) {
+  for( int iBin=1; iBin<result.yield->GetNbinsX()+1; ++iBin ) {
 
     float thisBin  = result.yield->GetBinContent(iBin);
     float otherBin = rhs.yield->GetBinContent(iBin);
@@ -413,7 +413,7 @@ const MT2EstimateSyst& MT2EstimateSyst::operator/=( const MT2EstimateSyst& rhs )
 const MT2EstimateSyst& MT2EstimateSyst::operator*=( const MT2EstimateSyst& rhs ) {
 
 
-  for( unsigned iBin=1; iBin<this->yield->GetNbinsX()+1; ++iBin ) {
+  for( int iBin=1; iBin<this->yield->GetNbinsX()+1; ++iBin ) {
 
     float thisBin  = this->yield->GetBinContent(iBin);
     float otherBin = rhs.yield->GetBinContent(iBin);
@@ -446,7 +446,7 @@ const MT2EstimateSyst& MT2EstimateSyst::operator*=( const MT2EstimateSyst& rhs )
 
 const MT2EstimateSyst& MT2EstimateSyst::operator*=( const MT2Estimate& rhs ) {
 
-  for( unsigned iBin=1; iBin<this->yield->GetNbinsX()+1; ++iBin ) {
+  for( int iBin=1; iBin<this->yield->GetNbinsX()+1; ++iBin ) {
 
     float thisBin  = this->yield->GetBinContent(iBin);
     float otherBin = rhs.yield->GetBinContent(iBin);
