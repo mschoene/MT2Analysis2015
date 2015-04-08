@@ -18,9 +18,9 @@ MT2EstimateQCD::MT2EstimateQCD( const std::string& aname, const MT2Region& aregi
   hDphi = new TH1D( this->getHistoName("hDphi").c_str(), "", nBins, bins); hDphi->Sumw2();
   ratio = new TH1D( this->getHistoName("ratio").c_str(), "", nBins, bins); ratio->Sumw2();
 
-  exp      = new TH1F(this->getHistoName("exp"     ).c_str(), "expo(0)"                                   , bins[0], bins[nBins]);
-  expPlusC = new TH1F(this->getHistoName("expPlusC").c_str(), "expo(0)+[2]"                               , bins[0], bins[nBins]);
-  expOrC   = new TH1F(this->getHistoName("expOrC"  ).c_str(), "(x>=200)*exp([0]+200.*[1])+(x<200)*expo(0)", bins[0], bins[nBins]);
+  exp      = new TF1(this->getHistoName("exp"     ).c_str(), "expo(0)"                                   , bins[0], bins[nBins]);
+  expPlusC = new TF1(this->getHistoName("expPlusC").c_str(), "expo(0)+[2]"                               , bins[0], bins[nBins]);
+  expOrC   = new TF1(this->getHistoName("expOrC"  ).c_str(), "(x>=200)*exp([0]+200.*[1])+(x<200)*expo(0)", bins[0], bins[nBins]);
 
   fitXmin  = 50.;
   fitXmax  = 80.;
@@ -71,7 +71,7 @@ void MT2EstimateQCD::setName( const std::string& newName ) {
 
 }
 
-void MT2EstimateQCD::fillDphi( float dphi, float weight, float mt2 ) {
+void MT2EstimateQCD::fillDphi(float dphi, float weight, float mt2) {
 
   if (dphi > 0.3)
     this->hDphi->Fill( mt2, weight );
@@ -146,9 +146,9 @@ const MT2EstimateQCD& MT2EstimateQCD::operator=( const MT2EstimateQCD& rhs ) {
   this->hDphi = new TH1D(*(rhs.hDphi));
   this->ratio = new TH1D(*(rhs.ratio));
 
-  this->exp      = new TH1D(*(rhs.exp     ));
-  this->expPlusC = new TH1D(*(rhs.expPlusC));
-  this->expOrC   = new TH1D(*(rhs.expOrC  ));
+  this->exp      = new TF1(*(rhs.exp     ));
+  this->expPlusC = new TF1(*(rhs.expPlusC));
+  this->expOrC   = new TF1(*(rhs.expOrC  ));
 
   this->setName(this->getName());
 

@@ -2,6 +2,7 @@
 #define MT2EstimateQCD_h
 
 #include "MT2Estimate.h"
+#include "TF1.h"
 
 #include <iostream>
 #include <vector>
@@ -42,19 +43,19 @@ class MT2EstimateQCD : public MT2Estimate {
   friend MT2EstimateQCD operator*( float k, const MT2EstimateQCD& rhs );
   friend MT2EstimateQCD operator/( float k, const MT2EstimateQCD& rhs );
 
-  void fillDphi( float dphi, float weight=1., float mt2=-1 );
+  void fillDphi( float dphi, float mt2=0., float weight=1. );
 
   void doFit();
 
   void getRatio() {
-    ratio.Divide(hDphi, lDphi)
+    ratio->Divide(hDphi, lDphi);
   }
 
   void setFitXmin(float xmin){
     fitXmin = xmin;
   }
   void setFitXmax(float xmax){
-    fitXmaz = xmax;
+    fitXmax = xmax;
   }
   void setDphiLow(float dphi){
     dphi_low = dphi;
