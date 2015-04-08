@@ -334,7 +334,6 @@ public :
    Float_t         gamma_phIso[20];   //[ngamma]
    Int_t           gamma_mcMatchId[20];   //[ngamma]
    Float_t         gamma_mcPt[20];   //[ngamma]
-   Float_t         gamma_genIso[20];   //[ngamma]
    Float_t         gamma_genIso03[20];   //[ngamma]
    Float_t         gamma_genIso04[20];   //[ngamma]
    Float_t         gamma_drMinParton[20];   //[ngamma]
@@ -689,7 +688,6 @@ public :
    TBranch        *b_gamma_phIso;   //!
    TBranch        *b_gamma_mcMatchId;   //!
    TBranch        *b_gamma_mcPt;   //!
-   TBranch        *b_gamma_genIso;   //!
    TBranch        *b_gamma_genIso04;   //!
    TBranch        *b_gamma_genIso03;   //!
    TBranch        *b_gamma_drMinParton;   //!
@@ -1133,7 +1131,6 @@ void MT2Tree::Init(TTree *tree)
    fChain->SetBranchAddress("gamma_phIso", gamma_phIso, &b_gamma_phIso);
    fChain->SetBranchAddress("gamma_mcMatchId", gamma_mcMatchId, &b_gamma_mcMatchId);
    fChain->SetBranchAddress("gamma_mcPt", gamma_mcPt, &b_gamma_mcPt);
-   fChain->SetBranchAddress("gamma_genIso", gamma_genIso, &b_gamma_genIso);
    fChain->SetBranchAddress("gamma_genIso04", gamma_genIso04, &b_gamma_genIso04);
    fChain->SetBranchAddress("gamma_genIso03", gamma_genIso03, &b_gamma_genIso03);
    fChain->SetBranchAddress("gamma_drMinParton", gamma_drMinParton, &b_gamma_drMinParton);
