@@ -119,7 +119,8 @@ class MT2Region {
 
   std::vector< std::string > getNiceNames() const;
 
-  void getBins( int& nBins, double*& bins ) const;
+  void getBins      ( int& nBins, double*& bins ) const;
+  void getBins_qcdCR( int& nBins, double*& bins ) const;
 
   MT2HTRegion* htRegion() const {
     return htRegion_;
