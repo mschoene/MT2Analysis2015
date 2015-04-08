@@ -1202,6 +1202,11 @@ Bool_t MT2Tree::passBaseline(TString sel)
       gamma_deltaPhiMin > 0.3 && 
       gamma_diffMetMht < 0.5*gamma_met_pt && 
       gamma_jet1_pt > 40. && gamma_jet2_pt > 40. ;
+  else if (sel=="zll")
+    return nVert > 0 && zll_nJet40 >= 2 && 
+      zll_deltaPhiMin > 0.3 && 
+      zll_diffMetMht < 0.5*zll_met_pt && 
+      zll_jet1_pt > 40. && zll_jet2_pt > 40. ;
   else
     return kFALSE;
 }
