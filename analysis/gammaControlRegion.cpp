@@ -175,7 +175,7 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet,
   int nentries = tree->GetEntries();
 
 
-  for( unsigned iEntry=0; iEntry<nentries; ++iEntry ) {
+  for( int iEntry=0; iEntry<nentries; ++iEntry ) {
 
     if( iEntry % 50000 == 0 ) std::cout << "    Entry: " << iEntry << " / " << nentries << std::endl;
 
@@ -223,25 +223,27 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet,
 
     if( isFake && isGJet ) continue; // fakes only from QCD (it's inclusive)
 
+    float deltaRmin_parton = myTree.gamma_drMinParton[0];
+    if( isQCD && deltaRmin_parton>0.4 ) continue; // stitching
 
-    float deltaRmin_parton = 999.;
-    if( !isFake ) {
+    //float deltaRmin_parton = 999.;
+    //if( !isFake ) {
 
-      for( unsigned ipart=0; ipart<myTree.ngenPart; ++ipart ) {
-        if( myTree.genPart_pt[ipart]<1. ) continue;
-        if( myTree.genPart_status[ipart]!=22 && myTree.genPart_status[ipart]!=23 ) continue;
-        if( abs(myTree.genPart_pdgId[ipart])>21 ) continue;
-        TLorentzVector thisPart;
-        thisPart.SetPtEtaPhiM( myTree.genPart_pt[ipart], myTree.genPart_eta[ipart], myTree.genPart_phi[ipart], myTree.genPart_mass[ipart] );
-        float thisDR = thisPart.DeltaR( gamma );
-        if( thisDR < deltaRmin_parton ) {
-          deltaRmin_parton = thisDR;
-        }
-      }
+    //  for( unsigned ipart=0; ipart<myTree.ngenPart; ++ipart ) {
+    //    if( myTree.genPart_pt[ipart]<1. ) continue;
+    //    if( myTree.genPart_status[ipart]!=22 && myTree.genPart_status[ipart]!=23 ) continue;
+    //    if( abs(myTree.genPart_pdgId[ipart])>21 ) continue;
+    //    TLorentzVector thisPart;
+    //    thisPart.SetPtEtaPhiM( myTree.genPart_pt[ipart], myTree.genPart_eta[ipart], myTree.genPart_phi[ipart], myTree.genPart_mass[ipart] );
+    //    float thisDR = thisPart.DeltaR( gamma );
+    //    if( thisDR < deltaRmin_parton ) {
+    //      deltaRmin_parton = thisDR;
+    //    }
+    //  }
 
-      if( isQCD && deltaRmin_parton>0.4 ) continue; // stitching
+    //  if( isQCD && deltaRmin_parton>0.4 ) continue; // stitching
 
-    }
+    //}
 
 
 
@@ -377,7 +379,7 @@ void randomizePoisson( MT2Analysis<MT2EstimateZinvGamma>* data ) {
 
 void randomizeSingleHisto( TRandom3 rand, TH1D* histo ) {
 
-  for( unsigned ibin=1; ibin<histo->GetXaxis()->GetNbins()+1; ++ibin ) {
+  for( int ibin=1; ibin<histo->GetXaxis()->GetNbins()+1; ++ibin ) {
 
     int poisson_data = rand.Poisson(histo->GetBinContent(ibin));
     histo->SetBinContent(ibin, poisson_data);
