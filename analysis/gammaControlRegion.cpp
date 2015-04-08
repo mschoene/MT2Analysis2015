@@ -59,7 +59,7 @@ int main( int argc, char* argv[] ) {
   TH1::AddDirectory(kFALSE); // stupid ROOT memory allocation needs this
 
 
-  std::string outputdir = "GammaControlRegion_oldMT2_" + samplesFileName + "_" + regionsSet;
+  std::string outputdir = "GammaControlRegion_" + samplesFileName + "_" + regionsSet;
   system(Form("mkdir -p %s", outputdir.c_str()));
 
   
@@ -179,28 +179,16 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet,
 
     myTree.GetEntry(iEntry);
 
+    if( !myTree.passSelection("gamma") ) continue;
+
     if( myTree.mt2>200. ) continue; // orthogonal to signal regions
+
 
     if( myTree.gamma_ht>1000. && sample.id==204 ) continue; // remove high-weight spikes (remove GJet_400to600 leaking into HT>1000)
 
-    if( myTree.gamma_mt2 < 200.) continue;
-
-    if( myTree.nMuons10 > 0) continue;
-    if( myTree.nElectrons10 > 0 ) continue;
-    if( myTree.nPFLep5LowMT > 0) continue;
-    if( myTree.nPFHad10LowMT > 0) continue;
-
-    if( myTree.gamma_deltaPhiMin<0.3 ) continue;
-    if( myTree.gamma_diffMetMht>0.5*myTree.gamma_met_pt ) continue;
-  
-    if( myTree.nVert==0 ) continue;
-
-    if( myTree.gamma_nJet40<2 ) continue;
 
     if( myTree.ngamma==0 ) continue;
     if( myTree.gamma_pt[0]<160. ) continue;
-
-
     if( myTree.gamma_idCutBased[0]==0 ) continue;
 
 

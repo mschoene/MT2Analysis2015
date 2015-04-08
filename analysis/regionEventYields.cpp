@@ -98,7 +98,7 @@ int main( int argc, char* argv[] ) {
   std::string configFileName(argv[1]);
 
 
-  std::string outputdir = "EventYields_oldRegionProposal_" + configFileName;
+  std::string outputdir = "EventYields_" + configFileName;
   if( dummyAnalysis ) {
     double intpart;
     double fracpart = modf(lumi, &intpart);
@@ -316,31 +316,7 @@ MT2Analysis<MT2EstimateTree>* computeYield( const MT2Sample& sample, const MT2Co
 
     myTree.GetEntry(iEntry);
 
-    if( myTree.nMuons10 > 0) continue;
-    if( myTree.nElectrons10 > 0 ) continue;
-    if( myTree.nPFLep5LowMT > 0) continue;
-    if( myTree.nPFHad10LowMT > 0) continue;
-  
-    if( myTree.deltaPhiMin<0.3 ) continue;
-    if( myTree.diffMetMht>0.5*myTree.met_pt ) continue;
-
-    if( myTree.nVert==0 ) continue;
-    if( myTree.nJet40<2 ) continue;
-    if( myTree.njet<2 ) continue;
-    //if( myTree.jet_pt[1]<100. ) continue;
-
-    //float jetCentral_pt[2];
-    //int njetsCentral = 0;
-    //for(int j=0; j<myTree.njet; ++j){
-    //  if( fabs( myTree.jet_eta[j] ) < 2.5 ) {
-    //	jetCentral_pt[njetsCentral] = myTree.jet_pt[j];
-    //	++njetsCentral;
-    //  }
-    //  if( njetsCentral >= 2 ) break;
-    //}
-    //if (jetCentral_pt[1] < 100. ) continue;
-
-    if ( myTree.jet1_pt < 40. || myTree.jet2_pt < 40. ) continue;
+    if( !myTree.passSelection() ) continue;
 
     float ht   = myTree.ht;
     float met  = myTree.met_pt;
