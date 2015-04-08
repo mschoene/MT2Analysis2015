@@ -281,7 +281,7 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2An
 
       thisPrompt->assignTree(myTree, lumi*myTree.evt_scale1fb);
       thisPrompt->assignVars( myTree.gamma_ht, myTree.gamma_nJet40, myTree.gamma_nBJet40, myTree.gamma_met_pt, myTree.gamma_mt2 );
-      thisPrompt->assignVar( "genIso", myTree.gamma_genIso[0] );
+      thisPrompt->assignVar( "genIso", myTree.gamma_genIso04[0] );
       thisPrompt->assignVar( "sietaieta", sietaieta );
       thisPrompt->assignVar( "iso", iso );
       thisPrompt->assignVar( "isoRC", isoRC );
@@ -302,7 +302,7 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2An
 
       thisNIP->assignTree(myTree, lumi*myTree.evt_scale1fb);
       thisNIP->assignVars( myTree.gamma_ht, myTree.gamma_nJet40, myTree.gamma_nBJet40, myTree.gamma_met_pt, myTree.gamma_mt2 );
-      thisNIP->assignVar( "genIso", myTree.gamma_genIso[0] );
+      thisNIP->assignVar( "genIso", myTree.gamma_genIso04[0] );
       thisNIP->assignVar( "sietaieta", sietaieta );
       thisNIP->assignVar( "iso", iso );
       thisNIP->assignVar( "isoRC", isoRC );
@@ -323,7 +323,7 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2An
 
       thisFake->assignTree(myTree, lumi*myTree.evt_scale1fb);
       thisFake->assignVars( myTree.gamma_ht, myTree.gamma_nJet40, myTree.gamma_nBJet40, myTree.gamma_met_pt, myTree.gamma_mt2 );
-      thisFake->assignVar( "genIso", myTree.gamma_genIso[0] );
+      thisFake->assignVar( "genIso", myTree.gamma_genIso04[0] );
       thisFake->assignVar( "sietaieta", sietaieta );
       thisFake->assignVar( "iso", iso );
       thisFake->assignVar( "isoRC", isoRC );
