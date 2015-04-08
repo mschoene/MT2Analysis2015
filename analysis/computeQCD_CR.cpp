@@ -58,7 +58,14 @@ int main( int argc, char* argv[] ) {
 
   qcdCR->finalize();
 
+  //for( unsigned i=0; i<samples.size(); ++i ) {
+  //  controlRegions[i]->finalize();
+  //  controlRegions[i]->writeToFile( outputdir + "/mc.root" );
+  //}
+  //qcdCR->addToFile( outputdir + "/mc.root" );
+  
   qcdCR->writeToFile( outputdir + "/mc.root" );
+
 }
 
 

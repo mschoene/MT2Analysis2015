@@ -51,15 +51,12 @@ class MT2EstimateQCD : public MT2Estimate {
     ratio->Divide(hDphi, lDphi);
   }
 
-  void setFitXmin(float xmin){
-    fitXmin = xmin;
-  }
-  void setFitXmax(float xmax){
-    fitXmax = xmax;
-  }
-  void setDphiLow(float dphi){
-    dphi_low = dphi;
-  }
+  float getFitXmin () { return fitXmin; }
+  float getFitXmax () { return fitXmax; }
+  float getDphiLow() { return dphi_low; }
+  virtual void setFitXmin(float xmin){ fitXmin = xmin;  }
+  virtual void setFitXmax(float xmax){ fitXmax = xmax;  }
+  virtual void setDphiLow(float dphi){ dphi_low = dphi; }
 
   virtual void finalize();
 
