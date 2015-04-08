@@ -41,6 +41,8 @@ int main( int argc, char* argv[] ) {
     regionsSet = std::string(argv[1]);
   }
 
+  std::cout << "-> Using regions: " << regionsSet << std::endl;
+
   std::string samplesFile = "../samples/samples_" + samplesFileName + ".dat";
   
   std::vector<MT2Sample> samples_gammaJet = MT2Sample::loadSamples(samplesFile, "GJets");
@@ -213,7 +215,7 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet,
 
     int mcMatchId = myTree.gamma_mcMatchId[0];
     bool isMatched = (mcMatchId==22 || mcMatchId==7);
-    bool isGenIso = (myTree.gamma_genIso[0]<5.);
+    bool isGenIso = (myTree.gamma_genIso04[0]<5.);
 
     bool isPrompt = isMatched && !isQCD;
     bool isNIP    = isMatched && isQCD;
