@@ -38,9 +38,9 @@ MT2EstimateQCD::MT2EstimateQCD( const MT2EstimateQCD& rhs ) : MT2Estimate(rhs) {
   this->expPlusC = new TF1(*(rhs.expPlusC));
   this->expOrC   = new TF1(*(rhs.expOrC));
 
-  fitXmin  = rhs.fitXmin;
-  fitXmax  = rhs.fitXmax;
-  dphi_low = rhs.dphi_low;
+  this->fitXmin  = rhs.fitXmin;
+  this->fitXmax  = rhs.fitXmax;
+  this->dphi_low = rhs.dphi_low;
 
 }
 
@@ -76,7 +76,7 @@ void MT2EstimateQCD::fillDphi(float dphi, float weight, float mt2) {
   if (dphi > 0.3)
     this->hDphi->Fill( mt2, weight );
   else if (dphi < dphi_low)
-    this->hDphi->Fill( mt2, weight );
+    this->lDphi->Fill( mt2, weight );
       
 }
 
@@ -149,6 +149,10 @@ const MT2EstimateQCD& MT2EstimateQCD::operator=( const MT2EstimateQCD& rhs ) {
   this->exp      = new TF1(*(rhs.exp     ));
   this->expPlusC = new TF1(*(rhs.expPlusC));
   this->expOrC   = new TF1(*(rhs.expOrC  ));
+
+  this->fitXmin  = rhs.fitXmin ;
+  this->fitXmax  = rhs.fitXmax ;
+  this->dphi_low = rhs.dphi_low;
 
   this->setName(this->getName());
 
