@@ -738,6 +738,7 @@ public :
    virtual Bool_t   passBaseline (TString sel = "");
    virtual Bool_t   passLeptonVeto  ();
    virtual Bool_t   passIsoTrackVeto();
+   virtual Bool_t   passGammaAdditionalSelection( int sampleId );
    virtual Int_t    Cut(Long64_t entry);
    virtual Int_t    GetEntry(Long64_t entry);
    virtual Long64_t LoadTree(Long64_t entry);
@@ -1201,6 +1202,26 @@ Bool_t MT2Tree::passBaseline(TString sel)
       gamma_jet1_pt > 40. && gamma_jet2_pt > 40. ;
   else
     return kFALSE;
+}
+
+
+Bool_t MT2Tree::passGammaAdditionalSelection(int sampleId) 
+{
+
+  if( ngamma==0 ) return kFALSE;
+  if( gamma_pt[0]<160. ) return kFALSE;
+  //if( gamma_idCutBased[0]==0 ) return kFalse;     
+
+  bool isQCD  = sampleId>=100 && sampleId<200;
+  bool isGJet = sampleId>=200 && sampleId<300;
+
+  float deltaRmin_parton = gamma_drMinParton[0];
+  if( isQCD && deltaRmin_parton>0.4 ) return kFALSE; // stitching
+
+  if( gamma_mcMatchId[0]!=22 && isGJet ) return kFALSE; // fakes only from QCD (it's inclusive)
+
+  return kTRUE;
+
 }
 
 Int_t MT2Tree::Cut(Long64_t entry)
