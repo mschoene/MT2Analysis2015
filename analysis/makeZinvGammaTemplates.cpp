@@ -171,6 +171,10 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2An
     if( myTree.evt_scale1fb>1. ) continue;
     
 
+    float deltaRmin_parton = myTree.gamma_drMinParton[0];
+    if( isQCD && deltaRmin_parton>0.4 ) continue; // stitching
+
+
     TLorentzVector gamma;
     gamma.SetPtEtaPhiM( myTree.gamma_pt[0], myTree.gamma_eta[0], myTree.gamma_phi[0], myTree.gamma_mass[0] );
 
@@ -184,26 +188,6 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2An
     bool isFake   = !isMatched;
 
     if( isFake && isGJet ) continue; // fakes only from QCD (it's inclusive)
-
-
-    if( !isFake ) {
-
-      float deltaRmin_parton = 999.;
-      for( unsigned ipart=0; ipart<myTree.ngenPart; ++ipart ) {
-        if( myTree.genPart_pt[ipart]<1. ) continue;
-        if( myTree.genPart_status[ipart]!=22 && myTree.genPart_status[ipart]!=23 ) continue;
-        if( abs(myTree.genPart_pdgId[ipart])>21 ) continue;
-        TLorentzVector thisPart;
-        thisPart.SetPtEtaPhiM( myTree.genPart_pt[ipart], myTree.genPart_eta[ipart], myTree.genPart_phi[ipart], myTree.genPart_mass[ipart] );
-        float thisDR = thisPart.DeltaR( gamma );
-        if( thisDR < deltaRmin_parton ) {
-          deltaRmin_parton = thisDR;
-        }
-      }
-
-      if( isQCD && deltaRmin_parton>0.4 ) continue; // stitching
-
-    }
 
 
     float iso = myTree.gamma_chHadIso[0];
@@ -340,7 +324,7 @@ void setPoissonError( MT2Analysis<MT2EstimateZinvGamma>* data ) {
 
     TH1D* h1_iso = data->get(*iMT2)->iso;
     
-    for( unsigned ibin=1; ibin<h1_iso->GetXaxis()->GetNbins()+1; ++ibin ) {
+    for( int ibin=1; ibin<h1_iso->GetXaxis()->GetNbins()+1; ++ibin ) {
     
       h1_iso->SetBinError(ibin, sqrt(h1_iso->GetBinContent(ibin)));
       
