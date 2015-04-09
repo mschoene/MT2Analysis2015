@@ -66,6 +66,8 @@ class MT2EstimateQCD : public MT2Estimate {
 
   virtual void print(const std::string& ofs);
 
+  virtual void randomizePoisson( float scale=1. );
+
  private:
 
   float fitXmin, fitXmax;  // fit window
