@@ -2,8 +2,8 @@
 
 # --- configuration (consider to move this into a separate file) ---
 treeName="tree"
-inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/mangano/babies/chunks/afterSynchMarch8Rares/"
-productionName="afterSynchMarch8Rares"
+inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/MT2production/080415/"
+productionName="080415"
 fileExt="_post.root"
 # --------------------------
 
@@ -11,7 +11,7 @@ fileExt="_post.root"
 
 # initialization
 jobsLogsFolder="./$productionName"
-outputFolder="/pnfs/psi.ch/cms/trivcat/store/user/`whoami`/babies/postprocessed/"$productionName/
+outputFolder="/pnfs/psi.ch/cms/trivcat/store/user/`whoami`/MT2production/PostProcessed/"$productionName/
 workingFolder="/scratch/`whoami`/"$productionName
 
 
@@ -109,7 +109,7 @@ mkdir -p $workingFolder
 gfal-mkdir -p srm://t3se01.psi.ch/$outputFolder
 
 echo "postProcessing(\"$name\",\"$inputFolder\",\"$outputFile\",\"$treeName\",$filter,$kfactor,$xsec,$id);"
-echo "gROOT->LoadMacro(\"postProcessing.C+\"); postProcessing(\"$name\",\"$inputFolder\",\"$outputFile\",\"$treeName\",$filter,$kfactor,$xsec,$id); gSystem->Exit(0);" |root.exe -b -l ;
+echo "gROOT->LoadMacro(\"postProcessing.C\"); postProcessing(\"$name\",\"$inputFolder\",\"$outputFile\",\"$treeName\",$filter,$kfactor,$xsec,$id); gSystem->Exit(0);" |root.exe -b -l ;
 
 #mv $outputFile $outputFolder
 gfal-copy file://$outputFile srm://t3se01.psi.ch/$outputFolder
