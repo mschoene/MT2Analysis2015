@@ -52,7 +52,7 @@ int main( int argc, char* argv[] ) {
   std::string mc_or_data = "MC";
   if( argc>1 ) {
     mc_or_data = std::string(argv[1]);
-    if( mc_or_data=="data" ) mc_or_data = "Data";
+    if( mc_or_data=="data" ) mc_or_data = "DataRC"; // default is Random Cone
   }
 
 
@@ -61,7 +61,7 @@ int main( int argc, char* argv[] ) {
     regionsSet = std::string(argv[2]);
   }
 
-  std::string samples = "PHYS14_v2_Zinv";
+  std::string samples = "PHYS14_v4_skimprune";
 
   std::string gammaCRdir = "GammaControlRegion_" + samples + "_" + regionsSet;
   
@@ -89,10 +89,10 @@ void doAllPurityPlots( const std::string& gammaCRdir, const std::string& samples
     //fits.push_back( PurityFit( "All Bins"  , "13TeV_CSA14"     , MT2Analysis<MT2EstimateSyst>::readFromFile(gammaCRdir+"/PurityFitsMC_" + samples + "_13TeV_CSA14/purityFit_"     + samples + "_13TeV_CSA14.root"    , purityName), 20, kRed+2 ));
     //fits.push_back( PurityFit( "HT Bins"   , "13TeV_onlyHT"    , MT2Analysis<MT2EstimateSyst>::readFromFile(gammaCRdir+"/PurityFitsMC_" + samples + "_13TeV_onlyHT/purityFit_"    + samples + "_13TeV_onlyHT.root"   , purityName), 21, 29 ));
     //fits.push_back( PurityFit( "Jet Bins"  , "13TeV_onlyJet"   , MT2Analysis<MT2EstimateSyst>::readFromFile(gammaCRdir+"/PurityFitsMC_" + samples + "_13TeV_onlyJets/purityFit_"  + samples + "_13TeV_onlyJets.root" , purityName), 24, kAzure ));
-    fits.push_back( PurityFit( "Inclusive" , "13TeV_inclusive" , MT2Analysis<MT2EstimateSyst>::readFromFile(gammaCRdir+"/PurityFitsMC/purityFit.root", purityName), 25, kOrange+1 ));
+    fits.push_back( PurityFit( "Template Fit" , "13TeV_inclusive" , MT2Analysis<MT2EstimateSyst>::readFromFile(gammaCRdir+"/PurityFitsMC/purityFit.root", purityName), 25, kOrange+1 ));
   } else {
     fits.push_back( PurityFit( "Template Fit (MC)"  , "13TeV_inclusive" , MT2Analysis<MT2EstimateSyst>::readFromFile(gammaCRdir+"/PurityFitsMC/purityFit.root", purityName), 21, 29 ));
-    fits.push_back( PurityFit( "Template Fit (Data)", "13TeV_inclusive" , MT2Analysis<MT2EstimateSyst>::readFromFile(gammaCRdir+"/PurityFitsData/purityFit.root", purityName), 20, kOrange+1 ));
+    fits.push_back( PurityFit( "Template Fit (Data)", "13TeV_inclusive" , MT2Analysis<MT2EstimateSyst>::readFromFile(gammaCRdir+"/PurityFits" + mc_or_data + "/purityFit.root", purityName), 20, kOrange+1 ));
   }
 
 
