@@ -60,7 +60,7 @@ int main( int argc, char* argv[] ) {
 
 
 
-  std::string samplesFileName = "PHYS14_v2_Zinv";
+  std::string samplesFileName = "PHYS14_v4";
   std::string samplesFile = "../samples/samples_" + samplesFileName + ".dat";
   
   std::vector<MT2Sample> samples = MT2Sample::loadSamples(samplesFile, 100, 299); // GJet and QCD
@@ -132,7 +132,7 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2An
 
   
   MT2Tree myTree;
-  //myTree.loadGenStuff = false;
+  myTree.loadGenStuff = false;
   myTree.Init(tree);
 
   int nentries = tree->GetEntries();
