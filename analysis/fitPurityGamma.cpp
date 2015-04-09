@@ -51,13 +51,13 @@ void checkBoundaries( Purity& p );
 int main( int argc, char* argv[] ) {
 
 
-  std::string samples = "PHYS14_v2_Zinv";
+  std::string samples = "PHYS14_v4_skimprune";
 
 
   std::string mc_or_data = "MC";
   if( argc>1 ) {
     mc_or_data = std::string(argv[1]);
-    if( mc_or_data=="data" ) mc_or_data="Data";
+    if( mc_or_data=="data" ) mc_or_data="DataRC";
     if( mc_or_data=="mc" ) mc_or_data="MC";
   }
 
