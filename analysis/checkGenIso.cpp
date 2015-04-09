@@ -146,21 +146,15 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2An
 
     myTree.GetEntry(iEntry);
 
-    if( myTree.mt2>200. ) continue; // orthogonal to signal regions
-
-    if( myTree.gamma_ht>1000. && sample.id==204 ) continue; // remove high-weight spikes (remove GJet_400to600 leaking into HT>1000)
-
-    if( myTree.gamma_mt2 < 200.) continue;
+    //if( myTree.gamma_ht>1000. && sample.id==204 ) continue; // remove high-weight spikes (remove GJet_400to600 leaking into HT>1000)
 
     if( !myTree.passSelection("gamma") ) continue;    
-
     if( !myTree.passGammaAdditionalSelection(sample.id) ) continue;
 
 
     //// aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa REMOVE SOON
     if( myTree.evt_scale1fb > 1. ) continue;
 
-    //if( myTree.gamma_idCutBased[0]==0 ) continue;
 
 
     TLorentzVector gamma;
@@ -221,24 +215,6 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2An
     bool isNIP    = isMatched && isQCD;
     bool isFake   = !isMatched;
 
-    //if( isMatched ) {
-
-    //  float deltaRmin_parton = 999.;
-    //  for( int ipart=0; ipart<myTree.ngenPart; ++ipart ) {
-    //    if( myTree.genPart_pt[ipart]<1. ) continue;
-    //    if( myTree.genPart_status[ipart]!=22 && myTree.genPart_status[ipart]!=23 ) continue;
-    //    if( abs(myTree.genPart_pdgId[ipart])>21 ) continue;
-    //    TLorentzVector thisPart;
-    //    thisPart.SetPtEtaPhiM( myTree.genPart_pt[ipart], myTree.genPart_eta[ipart], myTree.genPart_phi[ipart], myTree.genPart_mass[ipart] );
-    //    float thisDR = thisPart.DeltaR( gamma );
-    //    if( thisDR < deltaRmin_parton ) {
-    //      deltaRmin_parton = thisDR;
-    //    }
-    //  }
-
-    //  if( isQCD && deltaRmin_parton>0.4 ) continue; // stitching
-
-    //}
 
 
 
