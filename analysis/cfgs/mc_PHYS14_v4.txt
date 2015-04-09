@@ -1,0 +1,3 @@
+regionsSet zurich
+mcSamples PHYS14_v4_skimprune
+dataSamples datatest
