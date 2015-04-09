@@ -177,7 +177,7 @@ void MT2EstimateZinvGamma::fakeDatasetsFromHistos(int seed) {
 
 void MT2EstimateZinvGamma::finalize() {
 
-  MT2Estimate::addOverflow();
+  MT2Estimate::finalize();
 
   MT2Estimate::addOverflowSingleHisto( iso );
   MT2Estimate::addOverflowSingleHisto( sietaieta );

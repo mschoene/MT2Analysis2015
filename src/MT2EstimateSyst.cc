@@ -175,6 +175,13 @@ void MT2EstimateSyst::setName( const std::string& newName ) {
 
 
 
+void MT2EstimateSyst::finalize() {
+
+  this->addOverflow();
+
+}
+
+
 void MT2EstimateSyst::addOverflow() {
 
   MT2Estimate::addOverflow();

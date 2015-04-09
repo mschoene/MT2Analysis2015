@@ -33,14 +33,25 @@ int main( int argc, char* argv[] ) {
 
 
   std::string useMC = "MC";
+
   if( argc>1 ) {
+
     useMC = std::string(argv[1]); 
-    if( useMC=="data" ) useMC="Data";
-    if( useMC=="dataRC" ) useMC="DataRC";
-    if( useMC!="Data" && useMC!="MC" && useMC!="DataRC" ) {
-      std::cout << "ERROR! Second argument may only be 'MC' or 'data' or 'dataRC'" << std::endl;
+
+    if( useMC=="dataFR" ) useMC="DataFR"; // data Fake Removal
+    if( useMC=="dataRC" ) useMC="DataRC"; // data Random Cone
+    if( useMC=="data"   ) {
+      std::cout << std::endl;
+      std::cout << "-> Asking for 'data': will use data Random Cone. (default)" << std::endl;
+      std::cout << std::endl;
+      useMC="DataRC"; // (default for data)
+    }
+
+    if( useMC!="data" && useMC!="DataFR" && useMC!="MC" && useMC!="DataRC" ) {
+      std::cout << "ERROR! Second argument may only be 'MC' or 'dataFR' or 'dataRC'" << std::endl;
       exit(1111);
     }
+
   }
 
 
@@ -55,7 +66,7 @@ int main( int argc, char* argv[] ) {
 
 
 
-  std::string samplesFileName = "PHYS14_v2_Zinv";
+  std::string samplesFileName = "PHYS14_v4_skimprune";
   std::string samplesFile = "../samples/samples_" + samplesFileName + ".dat";
   
   std::vector<MT2Sample> samples = MT2Sample::loadSamples(samplesFile, 100, 299); // GJet and QCD
@@ -82,10 +93,10 @@ int main( int argc, char* argv[] ) {
   }
 
 
-  if( useMC=="Data" || useMC=="DataRC" ) {
+  if( useMC=="DataFR" || useMC=="DataRC" ) {
     setPoissonError( templatesFake );
     setPoissonError( templatesPrompt );
-    if( useMC=="Data" ) templatesPrompt->setName("templatesPromptRaw");
+    if( useMC=="DataFR" ) templatesPrompt->setName("templatesPromptRaw");
   }
 
 
@@ -127,7 +138,7 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2An
 
   
   MT2Tree myTree;
-  //myTree.loadGenStuff = false;
+  myTree.loadGenStuff = false;
   myTree.Init(tree);
 
   int nentries = tree->GetEntries();
@@ -166,39 +177,23 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2An
     if( myTree.evt_scale1fb>1. ) continue;
     
 
+    float deltaRmin_parton = myTree.gamma_drMinParton[0];
+    if( isQCD && deltaRmin_parton>0.4 ) continue; // stitching
+
+
     TLorentzVector gamma;
     gamma.SetPtEtaPhiM( myTree.gamma_pt[0], myTree.gamma_eta[0], myTree.gamma_phi[0], myTree.gamma_mass[0] );
 
 
     int mcMatchId = myTree.gamma_mcMatchId[0];
     bool isMatched = (mcMatchId==22 || mcMatchId==7);
-    bool isGenIso = (myTree.gamma_genIso[0]<5.);
+    bool isGenIso = (myTree.gamma_genIso04[0]<5.);
 
     bool isPrompt = isMatched && !isQCD;
     bool isNIP    = isMatched && isQCD;
     bool isFake   = !isMatched;
 
     if( isFake && isGJet ) continue; // fakes only from QCD (it's inclusive)
-
-
-    if( !isFake ) {
-
-      float deltaRmin_parton = 999.;
-      for( unsigned ipart=0; ipart<myTree.ngenPart; ++ipart ) {
-        if( myTree.genPart_pt[ipart]<1. ) continue;
-        if( myTree.genPart_status[ipart]!=22 && myTree.genPart_status[ipart]!=23 ) continue;
-        if( abs(myTree.genPart_pdgId[ipart])>21 ) continue;
-        TLorentzVector thisPart;
-        thisPart.SetPtEtaPhiM( myTree.genPart_pt[ipart], myTree.genPart_eta[ipart], myTree.genPart_phi[ipart], myTree.genPart_mass[ipart] );
-        float thisDR = thisPart.DeltaR( gamma );
-        if( thisDR < deltaRmin_parton ) {
-          deltaRmin_parton = thisDR;
-        }
-      }
-
-      if( isQCD && deltaRmin_parton>0.4 ) continue; // stitching
-
-    }
 
 
     float iso = myTree.gamma_chHadIso[0];
@@ -225,7 +220,7 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2An
       if( isNIP ) continue; // don't want no NIP slip
       isWorkingPrompt = isPrompt;
 
-    } else if( useMC=="Data" ) { 
+    } else if( useMC=="DataFR" ) { 
 
       isWorkingPrompt = sietaietaOK;
 
@@ -335,7 +330,7 @@ void setPoissonError( MT2Analysis<MT2EstimateZinvGamma>* data ) {
 
     TH1D* h1_iso = data->get(*iMT2)->iso;
     
-    for( unsigned ibin=1; ibin<h1_iso->GetXaxis()->GetNbins()+1; ++ibin ) {
+    for( int ibin=1; ibin<h1_iso->GetXaxis()->GetNbins()+1; ++ibin ) {
     
       h1_iso->SetBinError(ibin, sqrt(h1_iso->GetBinContent(ibin)));
       
