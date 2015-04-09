@@ -33,7 +33,7 @@ void randomizeSingleHisto( TRandom3 rand, TH1D* histo );
 int main( int argc, char* argv[] ) {
 
 
-  std::string samplesFileName = "PHYS14_v2_Zinv";
+  std::string samplesFileName = "PHYS14_v4_skimprune";
 
 
   std::string regionsSet = "zurich";
@@ -168,7 +168,7 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet,
 
   
   MT2Tree myTree;
-  //myTree.loadGenStuff = false;
+  myTree.loadGenStuff = false;
   myTree.Init(tree);
 
 
