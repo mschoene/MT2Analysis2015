@@ -6,6 +6,7 @@
 #define mt2_cxx
 #include "../interface/mt2.h"
 
+#include "TEventList.h"
 
 float lumi = 4.; //fb-1
 
@@ -21,7 +22,7 @@ int main( int argc, char* argv[] ) {
 
 
   if( argc>2 ) {
-    std::cout << "USAGE: ./qcdControlRegion [configFileName]" << std::endl;
+    std::cout << "USAGE: ./qcdControlRegion [samplesFileName]" << std::endl;
     std::cout << "Exiting." << std::endl;
     exit(11);
   }
@@ -55,16 +56,27 @@ int main( int argc, char* argv[] ) {
     controlRegions.push_back( fillCR( samples[i], regionsSet ) );
 
   MT2Analysis<MT2EstimateQCD>* qcdCR  = merge( controlRegions, regionsSet, "qcdCR", 100, 199 );
-
   qcdCR->finalize();
 
-  //for( unsigned i=0; i<samples.size(); ++i ) {
-  //  controlRegions[i]->finalize();
-  //  controlRegions[i]->writeToFile( outputdir + "/mc.root" );
-  //}
-  //qcdCR->addToFile( outputdir + "/mc.root" );
+  controlRegions[0]->writeToFile( outputdir + "/mc.root" );
+  for( unsigned i=1; i<samples.size(); ++i ) {
+    controlRegions[i]->finalize();
+  controlRegions[i]->addToFile( outputdir + "/mc.root" );
+  }
+  qcdCR->addToFile( outputdir + "/mc.root" );
   
-  qcdCR->writeToFile( outputdir + "/mc.root" );
+  //qcdCR->writeToFile( outputdir + "/mc.root" );
+
+  MT2Analysis<MT2EstimateQCD>* topCR    = merge( controlRegions, regionsSet, "topCR"  , 300, 499 );
+  MT2Analysis<MT2EstimateQCD>* wjetsCR  = merge( controlRegions, regionsSet, "wjetsCR", 500, 599 );
+  MT2Analysis<MT2EstimateQCD>* zjetsCR  = merge( controlRegions, regionsSet, "zjetsCR", 600, 699 );
+  topCR  ->finalize();
+  wjetsCR->finalize();
+  zjetsCR->finalize();
+
+  topCR  ->addToFile( outputdir + "/mc.root" );
+  wjetsCR->addToFile( outputdir + "/mc.root" );
+  zjetsCR->addToFile( outputdir + "/mc.root" );
 
 }
 
@@ -94,6 +106,12 @@ MT2Analysis<MT2EstimateQCD>* fillCR( const MT2Sample& sample, const std::string&
 
   TTree* tree = (TTree*)file->Get("mt2");
   
+  // In absence of skimmed ntuples let's filter to gain some speed
+  TString filter = "mt2>30&&ht>450";
+  tree->Draw(">>selList", filter);
+  TEventList *myEvtList = (TEventList*)gDirectory->Get("selList");
+  tree->SetEventList(myEvtList);
+
   MT2Tree myTree;
   myTree.loadGenStuff = false;
   myTree.Init(tree);
@@ -101,16 +119,32 @@ MT2Analysis<MT2EstimateQCD>* fillCR( const MT2Sample& sample, const std::string&
   std::cout << "-> Setting up MT2Analysis with name: " << sample.sname << std::endl;
   MT2Analysis<MT2EstimateQCD>* analysis = new MT2Analysis<MT2EstimateQCD>( sample.sname, regionsSet, sample.id );
 
-  int nentries = tree->GetEntries();
-  for( int iEntry=0; iEntry<nentries; ++iEntry ) {
+  // int nentries = tree->GetEntries();
+  // for( int iEntry=0; iEntry<nentries; ++iEntry ) {
 
-    if( iEntry % 50000 == 0 ) std::cout << "    Entry: " << iEntry << " / " << nentries << std::endl;
+  //   if( iEntry % 50000 == 0 ) std::cout << "    Entry: " << iEntry << " / " << nentries << std::endl;
+  int nentries = myEvtList->GetN();
+  for( int jEntry=0; jEntry<nentries; ++jEntry ) {
+    int iEntry = myEvtList->GetEntry(jEntry);
+
+    if( jEntry % 50000 == 0 ) std::cout << "    Entry: " << jEntry << " / " << nentries << std::endl;
     myTree.GetEntry(iEntry);
+
+    //if (myTree.mt2<30 && myTree.ht<450) std::cout << "*** Check it, filtering didn't work!" << std::endl;
 
     if ( !(myTree.passLeptonVeto() && myTree.passIsoTrackVeto()) )                            continue;
     if ( !(myTree.nVert>0 && myTree.nJet40>=2 && myTree.jet1_pt>40.  && myTree.jet2_pt>40.) ) continue;
     if ( doDiffMetMht && !(myTree.diffMetMht < 0.5*myTree.met_pt) )                           continue;
 
+    // protection against crazy pfMuons (doesn't catch all but many of them)
+    if (myTree.jet_mcPt[0]==0 || myTree.jet_mcPt[1]==0) continue;
+    bool foundCrazyMuon = false;
+    for (int j=2; j<myTree.nJet40; j++){
+      if ( myTree.jet_pt[j]<100 ) continue; // only check fake jets with pt > 100
+      if ( myTree.jet_mcPt[j]==0) foundCrazyMuon = true;
+    }
+    if (foundCrazyMuon) continue;
+    
     float ht   = myTree.ht;
     float mt2  = myTree.mt2;
     float dphi = myTree.deltaPhiMin;

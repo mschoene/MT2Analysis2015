@@ -8,3 +8,12 @@ dcap://t3se01.psi.ch:22125/pnfs/psi.ch/cms/trivcat/store/user/mangano/babies/pos
 dcap://t3se01.psi.ch:22125/pnfs/psi.ch/cms/trivcat/store/user/mangano/babies/postprocessed/withNewGT/QCD_Pt1800to2400_post.root
 dcap://t3se01.psi.ch:22125/pnfs/psi.ch/cms/trivcat/store/user/mangano/babies/postprocessed/withNewGT/QCD_Pt2400to3200_post.root
 dcap://t3se01.psi.ch:22125/pnfs/psi.ch/cms/trivcat/store/user/mangano/babies/postprocessed/withNewGT/QCD_Pt3200_post.root
+dcap://t3se01.psi.ch:22125/pnfs/psi.ch/cms/trivcat/store/user/mangano/babies/postprocessed/afterSynchMarch8/TTJets_post.root
+dcap://t3se01.psi.ch:22125/pnfs/psi.ch/cms/trivcat/store/user/mangano/babies/postprocessed/afterSynchMarch8/WJetsToLNu_HT100to200_post.root
+dcap://t3se01.psi.ch:22125/pnfs/psi.ch/cms/trivcat/store/user/mangano/babies/postprocessed/afterSynchMarch8/WJetsToLNu_HT200to400_post.root
+dcap://t3se01.psi.ch:22125/pnfs/psi.ch/cms/trivcat/store/user/mangano/babies/postprocessed/afterSynchMarch8/WJetsToLNu_HT400to600_post.root
+dcap://t3se01.psi.ch:22125/pnfs/psi.ch/cms/trivcat/store/user/mangano/babies/postprocessed/afterSynchMarch8/WJetsToLNu_HT600toInf_post.root
+dcap://t3se01.psi.ch:22125/pnfs/psi.ch/cms/trivcat/store/user/mangano/babies/postprocessed/afterSynchMarch8/ZJetsToNuNu_HT100to200_post.root
+dcap://t3se01.psi.ch:22125/pnfs/psi.ch/cms/trivcat/store/user/mangano/babies/postprocessed/afterSynchMarch8/ZJetsToNuNu_HT200to400_post.root
+dcap://t3se01.psi.ch:22125/pnfs/psi.ch/cms/trivcat/store/user/mangano/babies/postprocessed/afterSynchMarch8/ZJetsToNuNu_HT400to600_post.root
+dcap://t3se01.psi.ch:22125/pnfs/psi.ch/cms/trivcat/store/user/mangano/babies/postprocessed/afterSynchMarch8/ZJetsToNuNu_HT600toInf_post.root
