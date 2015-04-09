@@ -40,8 +40,14 @@ int main( int argc, char* argv[] ) {
 
     if( useMC=="dataFR" ) useMC="DataFR"; // data Fake Removal
     if( useMC=="dataRC" ) useMC="DataRC"; // data Random Cone
+    if( useMC=="data"   ) {
+      std::cout << std::endl;
+      std::cout << "-> Asking for 'data': will use data Random Cone. (default)" << std::endl;
+      std::cout << std::endl;
+      useMC="DataRC"; // (default for data)
+    }
 
-    if( useMC!="DataFR" && useMC!="MC" && useMC!="DataRC" ) {
+    if( useMC!="data" && useMC!="DataFR" && useMC!="MC" && useMC!="DataRC" ) {
       std::cout << "ERROR! Second argument may only be 'MC' or 'dataFR' or 'dataRC'" << std::endl;
       exit(1111);
     }
@@ -60,7 +66,7 @@ int main( int argc, char* argv[] ) {
 
 
 
-  std::string samplesFileName = "PHYS14_v4";
+  std::string samplesFileName = "PHYS14_v4_skimprune";
   std::string samplesFile = "../samples/samples_" + samplesFileName + ".dat";
   
   std::vector<MT2Sample> samples = MT2Sample::loadSamples(samplesFile, 100, 299); // GJet and QCD
