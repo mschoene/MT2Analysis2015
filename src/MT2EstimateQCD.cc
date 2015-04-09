@@ -6,6 +6,7 @@
 #include <cmath>
 
 #include "TRandom3.h"
+#include "TMath.h"
 
 
 MT2EstimateQCD::MT2EstimateQCD( const std::string& aname, const MT2Region& aregion ) : MT2Estimate( aname, aregion ) {
@@ -91,7 +92,7 @@ void MT2EstimateQCD::doFit() {
 
 void MT2EstimateQCD::finalize() {
 
-  MT2Estimate::addOverflow();
+  MT2Estimate::finalize();
 
   MT2Estimate::addOverflowSingleHisto( lDphi );
   MT2Estimate::addOverflowSingleHisto( hDphi );
@@ -119,6 +120,30 @@ void MT2EstimateQCD::print(const std::string& ofs){
 
   MT2Estimate::print( ofs );
 
+}
+
+void MT2EstimateQCD::randomizePoisson( float scale ){
+
+  MT2Estimate::randomizePoisson( scale );
+
+  TRandom3 rand(13);
+  
+  for( int ibin=1; ibin<lDphi->GetXaxis()->GetNbins()+1; ++ibin ) {
+    
+    int poisson_data = rand.Poisson(scale * lDphi->GetBinContent(ibin));
+    lDphi->SetBinContent(ibin, poisson_data);
+    lDphi->SetBinError( ibin, TMath::Sqrt(poisson_data) ); // here i want an approximation of the Poisson error
+    
+  } 
+
+  for( int ibin=1; ibin<hDphi->GetXaxis()->GetNbins()+1; ++ibin ) {
+    
+    int poisson_data = rand.Poisson(scale * hDphi->GetBinContent(ibin));
+    hDphi->SetBinContent(ibin, poisson_data);
+    hDphi->SetBinError( ibin, TMath::Sqrt(poisson_data) ); // here i want an approximation of the Poisson error
+    
+  } 
+  
 }
 
 

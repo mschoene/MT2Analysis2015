@@ -88,6 +88,8 @@ class MT2Estimate {
   
   virtual void print(const std::string& ofs);
   
+  virtual void randomizePoisson( float scale=1. );
+  
  private:
   
   std::string name;

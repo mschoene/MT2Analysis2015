@@ -79,6 +79,9 @@ class MT2Analysis {
 
   void finalize();
 
+  void randomizePoisson( float scale=1. );
+
+
   int id;
 
 
@@ -1034,8 +1037,6 @@ void MT2Analysis<T>::setName( const std::string& newName ) {
 }
 
 
-
-
 // operator overloading:
 
 template<class T> 
@@ -1697,6 +1698,13 @@ void MT2Analysis<T>::finalize() {
 
 }
 
+template<class T> 
+void MT2Analysis<T>::randomizePoisson( float scale ) {
+
+  for( typename std::set<T*>::iterator it=data.begin(); it!=data.end(); ++it ) 
+    (*it)->randomizePoisson( scale );
+
+}
 
 
 // global functions:
