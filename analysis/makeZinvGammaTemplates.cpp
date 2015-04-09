@@ -33,14 +33,19 @@ int main( int argc, char* argv[] ) {
 
 
   std::string useMC = "MC";
+
   if( argc>1 ) {
+
     useMC = std::string(argv[1]); 
-    if( useMC=="data" ) useMC="Data";
-    if( useMC=="dataRC" ) useMC="DataRC";
-    if( useMC!="Data" && useMC!="MC" && useMC!="DataRC" ) {
-      std::cout << "ERROR! Second argument may only be 'MC' or 'data' or 'dataRC'" << std::endl;
+
+    if( useMC=="dataFR" ) useMC="DataFR"; // data Fake Removal
+    if( useMC=="dataRC" ) useMC="DataRC"; // data Random Cone
+
+    if( useMC!="DataFR" && useMC!="MC" && useMC!="DataRC" ) {
+      std::cout << "ERROR! Second argument may only be 'MC' or 'dataFR' or 'dataRC'" << std::endl;
       exit(1111);
     }
+
   }
 
 
@@ -82,10 +87,10 @@ int main( int argc, char* argv[] ) {
   }
 
 
-  if( useMC=="Data" || useMC=="DataRC" ) {
+  if( useMC=="DataFR" || useMC=="DataRC" ) {
     setPoissonError( templatesFake );
     setPoissonError( templatesPrompt );
-    if( useMC=="Data" ) templatesPrompt->setName("templatesPromptRaw");
+    if( useMC=="DataFR" ) templatesPrompt->setName("templatesPromptRaw");
   }
 
 
@@ -172,7 +177,7 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2An
 
     int mcMatchId = myTree.gamma_mcMatchId[0];
     bool isMatched = (mcMatchId==22 || mcMatchId==7);
-    bool isGenIso = (myTree.gamma_genIso[0]<5.);
+    bool isGenIso = (myTree.gamma_genIso04[0]<5.);
 
     bool isPrompt = isMatched && !isQCD;
     bool isNIP    = isMatched && isQCD;
@@ -225,7 +230,7 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2An
       if( isNIP ) continue; // don't want no NIP slip
       isWorkingPrompt = isPrompt;
 
-    } else if( useMC=="Data" ) { 
+    } else if( useMC=="DataFR" ) { 
 
       isWorkingPrompt = sietaietaOK;
 
