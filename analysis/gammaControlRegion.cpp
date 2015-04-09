@@ -213,6 +213,9 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet,
     if( iso>20. ) continue; // preselection anyways in there
 
 
+    float deltaRmin_parton = myTree.gamma_drMinParton[0];
+    if( isQCD && deltaRmin_parton>0.4 ) continue; // stitching
+
     int mcMatchId = myTree.gamma_mcMatchId[0];
     bool isMatched = (mcMatchId==22 || mcMatchId==7);
     bool isGenIso = (myTree.gamma_genIso04[0]<5.);
@@ -223,8 +226,6 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet,
 
     if( isFake && isGJet ) continue; // fakes only from QCD (it's inclusive)
 
-    float deltaRmin_parton = myTree.gamma_drMinParton[0];
-    if( isQCD && deltaRmin_parton>0.4 ) continue; // stitching
 
     //float deltaRmin_parton = 999.;
     //if( !isFake ) {
