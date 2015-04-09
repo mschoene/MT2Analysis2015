@@ -137,16 +137,16 @@ void drawSinglePlot( const std::string& outputdir, const std::string& name, cons
   TH2D* h2_axes = new TH2D("axes", "", 10, 0., xMax, 10, 0., yMax );
   h2_axes->SetXTitle( "Photon Charged Isolation [GeV]" );
   if( name=="Fake" )
-    h2_axes->SetYTitle( Form("Events / %.1f GeV", histoMC->GetBinWidth(1)) );
+    h2_axes->SetYTitle( Form("Events / %.2f GeV", histoMC->GetBinWidth(1)) );
   else
     h2_axes->SetYTitle( "Normalized to First Bin" );
   c1->cd();
   h2_axes->Draw();
 
-  TH2D* h2_axes_log = new TH2D("axes_log", "", 10, 0., xMax, 10, 0.00001, 3.*yMax );
+  TH2D* h2_axes_log = new TH2D("axes_log", "", 10, 0., xMax, 10, 0.0001, 3.*yMax );
   h2_axes_log->SetXTitle( "Photon Charged Isolation [GeV]" );
   if( name=="Fake" )
-    h2_axes_log->SetYTitle( Form("Events / %.1f GeV", histoMC->GetBinWidth(1)) );
+    h2_axes_log->SetYTitle( Form("Events / %.2f GeV", histoMC->GetBinWidth(1)) );
   else
     h2_axes_log->SetYTitle( "Normalized to First Bin" );
   c1_log->cd();
