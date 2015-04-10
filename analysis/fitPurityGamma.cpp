@@ -45,6 +45,7 @@ void fitPurity( const std::string& outputdir, MT2EstimateSyst* purityLoose, MT2E
 void checkBoundaries( Purity& p );
 
 
+float lumi = 4.; // fb-1
 
 
 
@@ -73,7 +74,7 @@ int main( int argc, char* argv[] ) {
   TH1::AddDirectory(kFALSE);
 
 
-  std::string gammaCRdir = "GammaControlRegion_" + samples + "_" + regionsSet;
+  std::string gammaCRdir(Form("GammaControlRegion_%s_%s_%.0ffb", samples.c_str(), regionsSet.c_str(), lumi ));
   MT2Analysis<MT2EstimateZinvGamma>* gammaJet_data = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( gammaCRdir + "/data.root", "gammaCR_loose" );
 
   MT2Analysis<MT2EstimateZinvGamma>* templates_prompt = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( "gammaTemplates" + mc_or_data + "_" + samples + "_13TeV_inclusive.root", "templatesPrompt" );
@@ -181,7 +182,7 @@ void fitSinglePurity( const std::string& outputdir, Purity& loose, Purity& tight
   float xMin = h1_templPrompt->GetXaxis()->GetXmin();
   float xMax = h1_templPrompt->GetXaxis()->GetXmax();
 
-  float xMaxFit = 0.999*xMax;
+  float xMaxFit = 0.9999*xMax;
   x->setRange( "fittingRange", 0., xMaxFit );
   model.fitTo(*data, SumW2Error(kTRUE), Minos(kTRUE), Range("fittingRange")); 
 
@@ -189,11 +190,14 @@ void fitSinglePurity( const std::string& outputdir, Purity& loose, Purity& tight
   loose.purityErrUp = sigFrac.getErrorHi();
   loose.purityErrDown = -sigFrac.getErrorLo();
 
-  float sigEff = h1_templPrompt->GetBinContent(1)/h1_templPrompt->Integral(1,nBins);
-  float bgEff = h1_templFake->GetBinContent(1)/h1_templFake->Integral(1,nBins);
-  float sigFirstBin = sigFrac.getVal()*sigEff;
-  float bgFirstBin = (1.-sigFrac.getVal())*bgEff;
-  tight.purity = sigFirstBin / (sigFirstBin+bgFirstBin);
+  float thresh = 2.5;
+  int cutBin = h1_templPrompt->FindBin(thresh) - 1;
+
+  float sigEff = h1_templPrompt->Integral(1, cutBin)/h1_templPrompt->Integral(1,nBins);
+  float bgEff = h1_templFake->Integral(1, cutBin)/h1_templFake->Integral(1,nBins);
+  float sigPassCut = sigFrac.getVal()*sigEff;
+  float bgPassCut = (1.-sigFrac.getVal())*bgEff;
+  tight.purity = sigPassCut / (sigPassCut+bgPassCut);
   tight.purityErrUp = loose.purityErrUp; // is it ok to assign the same error also to the tight purity?
   tight.purityErrDown = loose.purityErrDown;
   //float factor = tight.purity/loose.purity;

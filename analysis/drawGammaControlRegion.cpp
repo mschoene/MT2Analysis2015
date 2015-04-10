@@ -13,6 +13,8 @@
 
 
 
+float lumi = 4.; // fb-1
+
 
 void compareRegions( const std::string& outputdir, std::vector<MT2Region> regions, MT2Analysis<MT2EstimateSyst>* analysis );
 
@@ -33,9 +35,9 @@ int main( int argc, char* argv[] ) {
   std::string outputdir = "Plots_GammaControlRegion_" + samples + "_" + regionsSet;
   system( Form("mkdir -p %s", outputdir.c_str()) );
 
-  MT2Analysis<MT2EstimateSyst>* purity      = MT2Analysis<MT2EstimateSyst>::readFromFile("GammaControlRegion_" + samples + "_" + regionsSet + "/purityMC.root", "purity");
-  MT2Analysis<MT2EstimateSyst>* purityLoose = MT2Analysis<MT2EstimateSyst>::readFromFile("GammaControlRegion_" + samples + "_" + regionsSet + "/purityMC.root", "purityLoose");
-  MT2Analysis<MT2EstimateSyst>* eff         = MT2Analysis<MT2EstimateSyst>::readFromFile("GammaControlRegion_" + samples + "_" + regionsSet + "/purityMC.root", "eff");
+  MT2Analysis<MT2EstimateSyst>* purity      = MT2Analysis<MT2EstimateSyst>::readFromFile(Form("GammaControlRegion_%s_%s_%.0ffb/purityMC.root", samples.c_str(), regionsSet.c_str(), lumi), "purity");
+  MT2Analysis<MT2EstimateSyst>* purityLoose = MT2Analysis<MT2EstimateSyst>::readFromFile(Form("GammaControlRegion_%s_%s_%.0ffb/purityMC.root", samples.c_str(), regionsSet.c_str(), lumi), "purityLoose");
+  MT2Analysis<MT2EstimateSyst>* eff         = MT2Analysis<MT2EstimateSyst>::readFromFile(Form("GammaControlRegion_%s_%s_%.0ffb/purityMC.root", samples.c_str(), regionsSet.c_str(), lumi), "eff");
 
   purity->setFullName( "Purity" );
   purityLoose->setFullName( "Purity" );

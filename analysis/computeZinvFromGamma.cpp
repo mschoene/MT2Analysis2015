@@ -29,7 +29,7 @@ float lumi = 4.; // fb-1
 
 
 
-int type = 0;
+int type = 1;
 
 // 0: use bare MC for ratio (pure GJet)
 // 1: use GJet+QCD and multiply by fitted purity
@@ -59,7 +59,7 @@ int main( int argc, char* argv[] ) {
   system(Form("mkdir -p %s", outputdir.c_str()));
 
 
-  std::string gammaControlRegionDir = "GammaControlRegion_" + samples + "_" + regionsSet;
+  std::string gammaControlRegionDir(Form("GammaControlRegion_%s_%s_%.0ffb", samples.c_str(), regionsSet.c_str(), lumi));
 
   MT2Analysis<MT2Estimate>* gammaCR = MT2Analysis<MT2Estimate>::readFromFile(gammaControlRegionDir + "/data.root", "gammaCR");
   MT2Analysis<MT2Estimate>* gamma_prompt = MT2Analysis<MT2Estimate>::readFromFile(gammaControlRegionDir + "/mc.root", "prompt");
@@ -74,7 +74,7 @@ int main( int argc, char* argv[] ) {
   MT2Analysis<MT2EstimateSyst>* purity = 0;
 
   if( type!=0 )
-    purity = MT2Analysis<MT2EstimateSyst>::readFromFile( gammaControlRegionDir + "/PurityFitsData/purityFit.root", "purity" );
+    purity = MT2Analysis<MT2EstimateSyst>::readFromFile( gammaControlRegionDir + "/PurityFitsDataRC/purityFit.root", "purity" );
 
   if( purity==0 && type!=0 ) {
     std::cout << "-> Please run fitPurityGamma first. I need to get the purity from there." << std::endl;

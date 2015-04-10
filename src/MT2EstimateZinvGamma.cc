@@ -35,7 +35,7 @@ MT2EstimateZinvGamma::MT2EstimateZinvGamma( const std::string& aname, const MT2R
   aregion.getBins( nbins_mt2, bins_mt2 );
 
 
-  for( unsigned i=0; i<nbins_mt2; ++i ) {
+  for( int i=0; i<nbins_mt2; ++i ) {
 
     RooDataSet* isoDataset = new RooDataSet( this->getHistoName(Form("iso_bin%d", i)).c_str(), "", RooArgSet(*x_,*w_), w_->GetName() );
     iso_bins.push_back(isoDataset);
@@ -147,7 +147,7 @@ void MT2EstimateZinvGamma::fakeDatasetsFromHistos(int seed) {
 
     RooDataSet* newdataset = new RooDataSet( this->getHistoName(Form("iso_bin%d", i)).c_str(), "", RooArgSet(*x_,*w_), w_->GetName() );
 
-    for( unsigned ibin=1; ibin<iso_bins_hist[i]->GetNbinsX()+1; ++ibin ) {
+    for( int ibin=1; ibin<iso_bins_hist[i]->GetNbinsX()+1; ++ibin ) {
 
       float isoValue = iso_bins_hist[i]->GetBinLowEdge(ibin);
       //float isoValue = iso_bins_hist[i]->GetBinCenter(ibin);
@@ -155,7 +155,7 @@ void MT2EstimateZinvGamma::fakeDatasetsFromHistos(int seed) {
       //int entries = (int)iso_bins_hist[i]->GetBinContent(ibin);
       int entries = rand.Poisson( iso_bins_hist[i]->GetBinContent(ibin) );
 
-      for( unsigned ientry=0; ientry<entries; ++ientry ) {
+      for( int ientry=0; ientry<entries; ++ientry ) {
 
         x_->setVal(isoValue);
         w_->setVal(1.);
