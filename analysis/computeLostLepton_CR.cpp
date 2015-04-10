@@ -104,27 +104,9 @@ MT2Analysis<MT2EstimateSyst> computeYield( const MT2Sample& sample, const std::s
 
     myTree.GetEntry(iEntry);
 
-    if( myTree.nMuons10 > 0 || myTree.nElectrons10 > 0 || myTree.nPFLep5LowMT > 0 || myTree.nPFHad10LowMT > 0) ; //CR
-    else continue;
+    if( !myTree.passBaseline() ) continue;
+    if( myTree.passLeptonVeto() && myTree.passIsoTrackVeto() ) continue; // lost lepton CR
 
-    if( myTree.nVert==0 ) continue;
-    if( myTree.nJet40<2 ) continue;
-    //if( myTree.jet_pt[1]<100. ) continue;
-    if( myTree.deltaPhiMin<0.3 ) continue;
-    if( myTree.diffMetMht>0.5*myTree.met_pt ) continue;
-
-//    float jetCentral_pt[2];
-//    int njetsCentral = 0;
-//    for(int j=0; j<myTree.njet; ++j){
-//      if( fabs( myTree.jet_eta[j] ) < 2.5 ) {
-//        jetCentral_pt[njetsCentral] = myTree.jet_pt[j];
-//        ++njetsCentral;
-//      }
-//      if( njetsCentral >= 2 ) break;
-//    }
-//    if (jetCentral_pt[1] < 100. ) continue;
-
-    if( myTree.jet1_pt < 40. || myTree.jet2_pt < 40. ) continue;
 
     float ht   = myTree.ht;
     float met  = myTree.met_pt;
