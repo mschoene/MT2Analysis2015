@@ -43,11 +43,10 @@ MT2Analysis<MT2EstimateSyst>* combineDataAndMC( MT2Analysis<MT2EstimateSyst>* da
 int main( int argc, char* argv[] ) {
 
 
-  std::string samplesFileName = "PHYS14_v2_Zinv";
-  //std::string samplesFileName = "PHYS14_v3_Zinv";
+  std::string samples = "PHYS14_v4_skimprune";
   if( argc>1 ) {
-    std::string samplesFileName_tmp(argv[1]); 
-    samplesFileName = samplesFileName_tmp;
+    std::string samples_tmp(argv[1]); 
+    samples = samples_tmp;
   }
 
 
@@ -56,11 +55,11 @@ int main( int argc, char* argv[] ) {
   TH1::AddDirectory(kFALSE); // stupid ROOT memory allocation needs this
 
 
-  std::string outputdir( Form("ZinvEstimateFromGamma_oldMT2_%s_%s_%.0ffb_type%d", samplesFileName.c_str(), regionsSet.c_str(), lumi, type) );
+  std::string outputdir( Form("ZinvEstimateFromGamma_%s_%s_%.0ffb_type%d", samples.c_str(), regionsSet.c_str(), lumi, type) );
   system(Form("mkdir -p %s", outputdir.c_str()));
 
 
-  std::string gammaControlRegionDir = "GammaControlRegion_oldMT2_" + samplesFileName + "_" + regionsSet;
+  std::string gammaControlRegionDir = "GammaControlRegion_" + samples + "_" + regionsSet;
 
   MT2Analysis<MT2Estimate>* gammaCR = MT2Analysis<MT2Estimate>::readFromFile(gammaControlRegionDir + "/data.root", "gammaCR");
   MT2Analysis<MT2Estimate>* gamma_prompt = MT2Analysis<MT2Estimate>::readFromFile(gammaControlRegionDir + "/mc.root", "prompt");
@@ -84,7 +83,7 @@ int main( int argc, char* argv[] ) {
   }
 
 
-  MT2Analysis<MT2EstimateTree>* Zinv = MT2Analysis<MT2EstimateTree>::readFromFile(Form("EventYields_mc_PHYS14_v2_dummy_%.0ffb/analyses.root", lumi), "ZJets");
+  MT2Analysis<MT2EstimateTree>* Zinv = MT2Analysis<MT2EstimateTree>::readFromFile(Form("EventYields_mc_PHYS14_v4_dummy_%.0ffb/analyses.root", lumi), "ZJets");
   if( Zinv==0 ) {
     std::cout << "-> Please run regionEventYields on MC first. I need to get the Z->vv MC yields from there." << std::endl;
     std::cout << "-> Thank you for your cooperation." << std::endl;
@@ -147,7 +146,7 @@ MT2Analysis<MT2EstimateSyst>* combineDataAndMC( MT2Analysis<MT2EstimateSyst>* da
     MT2EstimateSyst* thisNewEstimate;
     if( iR->nBJetsMin()>1 ) {
       thisNewEstimate =  new MT2EstimateSyst(*mcEst);
-      for( unsigned ibin=1; ibin<thisNewEstimate->yield->GetNbinsX()+1; ++ibin ) {
+      for( int ibin=1; ibin<thisNewEstimate->yield->GetNbinsX()+1; ++ibin ) {
         thisNewEstimate->yield_systUp->SetBinContent( ibin, 2.*thisNewEstimate->yield->GetBinContent(ibin) );
         thisNewEstimate->yield_systDown->SetBinContent( ibin, 0. );
       }

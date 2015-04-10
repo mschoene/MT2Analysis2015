@@ -132,9 +132,6 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2An
   
   std::cout << "-> Loaded tree: it has " << tree->GetEntries() << " entries." << std::endl;
 
-  bool isQCD  = sample.id>=100 && sample.id<200;
-  bool isGJet = sample.id>=200 && sample.id<300;
-
 
   
   MT2Tree myTree;
@@ -146,68 +143,36 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2An
 
 
 
-  for( unsigned iEntry=0; iEntry<nentries; ++iEntry ) {
+  for( int iEntry=0; iEntry<nentries; ++iEntry ) {
 
     if( iEntry % 50000 == 0 ) std::cout << "    Entry: " << iEntry << " / " << nentries << std::endl;
 
     myTree.GetEntry(iEntry);
 
-    //if( myTree.gamma_ht>1000. && sample.id==204 ) continue; // remove high-weight spikes (remove GJet_400to600 leaking into HT>1000)
-
-    if( myTree.mt2 > 200.) continue;
-    if( myTree.gamma_mt2 < 200.) continue;
-
-    if( myTree.nMuons10 > 0) continue;
-    if( myTree.nElectrons10 > 0 ) continue;
-    if( myTree.nPFLep5LowMT > 0) continue;
-    if( myTree.nPFHad10LowMT > 0) continue;
-
-    if( myTree.gamma_deltaPhiMin<0.3 ) continue;
-    if( myTree.gamma_diffMetMht>0.5*myTree.gamma_met_pt ) continue;
-  
-    if( myTree.nVert==0 ) continue;
-
-    if( myTree.gamma_nJet40<2 ) continue;
-
-    if( myTree.ngamma==0 ) continue;
-    if( myTree.gamma_pt[0]<160. ) continue;
+    if( !myTree.passSelection("gamma") ) continue;
+    if( !myTree.passGammaAdditionalSelection(sample.id) ) continue;
 
 
     // AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH REMOVE THIS SOOOOON
     if( myTree.evt_scale1fb>1. ) continue;
-    
 
-    float deltaRmin_parton = myTree.gamma_drMinParton[0];
-    if( isQCD && deltaRmin_parton>0.4 ) continue; // stitching
 
 
     TLorentzVector gamma;
     gamma.SetPtEtaPhiM( myTree.gamma_pt[0], myTree.gamma_eta[0], myTree.gamma_phi[0], myTree.gamma_mass[0] );
 
 
-    int mcMatchId = myTree.gamma_mcMatchId[0];
-    bool isMatched = (mcMatchId==22 || mcMatchId==7);
-    bool isGenIso = (myTree.gamma_genIso04[0]<5.);
-
-    bool isPrompt = isMatched && !isQCD;
-    bool isNIP    = isMatched && isQCD;
-    bool isFake   = !isMatched;
-
-    if( isFake && isGJet ) continue; // fakes only from QCD (it's inclusive)
-
 
     float iso = myTree.gamma_chHadIso[0];
 
-    float hOverE = myTree.gamma_hOverE[0];
     float sietaieta = myTree.gamma_sigmaIetaIeta[0];
     bool sietaietaOK = false;
     if( fabs( gamma.Eta() )<1.479 ) {
-      if( hOverE > 0.058 ) continue;
       if( sietaieta>0.010 && sietaieta<0.011 ) continue; // no man's land
       if( sietaieta>0.015 ) continue; // end of sidebands
       sietaietaOK = (sietaieta < 0.01);
     } else {  
-      if( hOverE > 0.020 ) continue;
+      if( sietaieta>0.0266 && sietaieta<0.030 ) continue; // no man's land
       if( sietaieta>0.035 ) continue; // end of sidebands
       sietaietaOK = (sietaieta < 0.03);
     }
@@ -217,8 +182,7 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2An
     if( useMC=="MC" ) {
 
       if( !sietaietaOK ) continue;
-      if( isNIP ) continue; // don't want no NIP slip
-      isWorkingPrompt = isPrompt;
+      isWorkingPrompt = myTree.gamma_mcMatchId[0]==22; // prompt = matched
 
     } else if( useMC=="DataFR" ) { 
 
@@ -248,11 +212,7 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2An
     }
 
 
- 
-    if( iso > 20. ) continue;
-
-
-
+    if( iso > 10. ) continue;
 
     Double_t weight = myTree.evt_scale1fb*lumi; 
 

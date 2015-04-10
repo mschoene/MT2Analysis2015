@@ -78,7 +78,6 @@ int main( int argc, char* argv[] ) {
   MT2Analysis<MT2EstimateTree>* tree = new MT2Analysis<MT2EstimateTree>( "gammaCRtree", regionsSet );
   MT2EstimateTree::addVar( tree, "prompt" );
   MT2EstimateTree::addVar( tree, "iso" );
-  MT2EstimateTree::addVar( tree, "drParton" );
   
 
 
@@ -163,8 +162,6 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet,
 
 
   bool isQCD  = sample.id>=100 && sample.id<200;
-  bool isGJet = sample.id>=200 && sample.id<300;
-
 
   
   MT2Tree myTree;
@@ -182,69 +179,30 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet,
     myTree.GetEntry(iEntry);
 
     if( !myTree.passSelection("gamma") ) continue;
+    if( !myTree.passGammaAdditionalSelection(sample.id) ) continue;
 
-    if( myTree.mt2>200. ) continue; // orthogonal to signal regions
+    //if( myTree.gamma_ht>1000. && sample.id==204 ) continue; // remove high-weight spikes (remove GJet_400to600 leaking into HT>1000)
 
-
-    if( myTree.gamma_ht>1000. && sample.id==204 ) continue; // remove high-weight spikes (remove GJet_400to600 leaking into HT>1000)
-
-
-    if( myTree.ngamma==0 ) continue;
-    if( myTree.gamma_pt[0]<160. ) continue;
     if( myTree.gamma_idCutBased[0]==0 ) continue;
-
 
 
     TLorentzVector gamma;
     gamma.SetPtEtaPhiM( myTree.gamma_pt[0], myTree.gamma_eta[0], myTree.gamma_phi[0], myTree.gamma_mass[0] );
 
-    float hOverE = myTree.gamma_hOverE[0];
-    float sietaieta = myTree.gamma_sigmaIetaIeta[0];
-    if( fabs( gamma.Eta() )<1.479 ) {
-      if( hOverE > 0.058 ) continue;
-      if( sietaieta > 0.01 ) continue;
-    } else {  
-      if( hOverE > 0.020 ) continue;
-      if( sietaieta > 0.03 ) continue;
-    }
 
     // absolute iso:
     float iso = myTree.gamma_chHadIso[0];
-    if( iso>20. ) continue; // preselection anyways in there
+    if( iso>10. ) continue; // preselection anyways in there
 
-
-    float deltaRmin_parton = myTree.gamma_drMinParton[0];
-    if( isQCD && deltaRmin_parton>0.4 ) continue; // stitching
 
     int mcMatchId = myTree.gamma_mcMatchId[0];
     bool isMatched = (mcMatchId==22 || mcMatchId==7);
-    bool isGenIso = (myTree.gamma_genIso04[0]<5.);
 
     bool isPrompt = isMatched && !isQCD;
     bool isNIP    = isMatched && isQCD;
     bool isFake   = !isMatched;
 
-    if( isFake && isGJet ) continue; // fakes only from QCD (it's inclusive)
 
-
-    //float deltaRmin_parton = 999.;
-    //if( !isFake ) {
-
-    //  for( unsigned ipart=0; ipart<myTree.ngenPart; ++ipart ) {
-    //    if( myTree.genPart_pt[ipart]<1. ) continue;
-    //    if( myTree.genPart_status[ipart]!=22 && myTree.genPart_status[ipart]!=23 ) continue;
-    //    if( abs(myTree.genPart_pdgId[ipart])>21 ) continue;
-    //    TLorentzVector thisPart;
-    //    thisPart.SetPtEtaPhiM( myTree.genPart_pt[ipart], myTree.genPart_eta[ipart], myTree.genPart_phi[ipart], myTree.genPart_mass[ipart] );
-    //    float thisDR = thisPart.DeltaR( gamma );
-    //    if( thisDR < deltaRmin_parton ) {
-    //      deltaRmin_parton = thisDR;
-    //    }
-    //  }
-
-    //  if( isQCD && deltaRmin_parton>0.4 ) continue; // stitching
-
-    //}
 
 
 
@@ -320,7 +278,6 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet,
         else if( isFake )
           thisTree->assignVar( "prompt", 0 );
         thisTree->assignVar( "iso", iso );
-        thisTree->assignVar( "drParton", deltaRmin_parton );
         thisTree->fillTree_gamma(myTree, weight );
       }
     }

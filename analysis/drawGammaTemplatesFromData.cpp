@@ -22,7 +22,7 @@ void setHistoTitle( MT2Analysis<MT2EstimateZinvGamma>* analysis, const std::stri
 int main( int argc, char* argv[] ) {
 
 
-  std::string samples = "PHYS14_v2_Zinv";
+  std::string samples = "PHYS14_v4_skimprune";
   if( argc>1 ) {
     std::string samples_tmp(argv[1]); 
     samples = samples_tmp;
@@ -41,9 +41,9 @@ int main( int argc, char* argv[] ) {
   MT2Analysis<MT2EstimateZinvGamma>* templatesPromptMC  = MT2Analysis<MT2EstimateZinvGamma>::readFromFile("gammaTemplatesMC_" + samples + "_" + regionsSet + ".root", "templatesPrompt");
   MT2Analysis<MT2EstimateZinvGamma>* templatesFakeMC    = MT2Analysis<MT2EstimateZinvGamma>::readFromFile("gammaTemplatesMC_" + samples + "_" + regionsSet + ".root", "templatesFake");
 
-  MT2Analysis<MT2EstimateZinvGamma>* templatesPrompt    = MT2Analysis<MT2EstimateZinvGamma>::readFromFile("gammaTemplatesData_" + samples + "_" + regionsSet + ".root", "templatesPrompt");
-  MT2Analysis<MT2EstimateZinvGamma>* templatesPromptRaw = MT2Analysis<MT2EstimateZinvGamma>::readFromFile("gammaTemplatesData_" + samples + "_" + regionsSet + ".root", "templatesPromptRaw");
-  MT2Analysis<MT2EstimateZinvGamma>* templatesFake      = MT2Analysis<MT2EstimateZinvGamma>::readFromFile("gammaTemplatesData_" + samples + "_" + regionsSet + ".root", "templatesFake");
+  MT2Analysis<MT2EstimateZinvGamma>* templatesPrompt    = MT2Analysis<MT2EstimateZinvGamma>::readFromFile("gammaTemplatesDataFR_" + samples + "_" + regionsSet + ".root", "templatesPrompt");
+  MT2Analysis<MT2EstimateZinvGamma>* templatesPromptRaw = MT2Analysis<MT2EstimateZinvGamma>::readFromFile("gammaTemplatesDataFR_" + samples + "_" + regionsSet + ".root", "templatesPromptRaw");
+  MT2Analysis<MT2EstimateZinvGamma>* templatesFake      = MT2Analysis<MT2EstimateZinvGamma>::readFromFile("gammaTemplatesDataFR_" + samples + "_" + regionsSet + ".root", "templatesFake");
 
   MT2Analysis<MT2EstimateZinvGamma>* templatesPromptRC  = MT2Analysis<MT2EstimateZinvGamma>::readFromFile("gammaTemplatesDataRC_" + samples + "_" + regionsSet + ".root", "templatesPrompt");
 
@@ -83,12 +83,12 @@ int main( int argc, char* argv[] ) {
 void drawSinglePlot( const std::string& outputdir, const std::string& name, const MT2Region& region, std::vector<TH1D*> histosData, TH1D* histoMC ) {
 
 
-  if( name=="Fake" ) {
+  //if( name=="Fake" ) {
 
-    histoMC->Rebin(2);
-    for( unsigned i=0; i<histosData.size(); ++i ) histosData[i]->Rebin(2);
+  //  histoMC->Rebin(2);
+  //  for( unsigned i=0; i<histosData.size(); ++i ) histosData[i]->Rebin(2);
 
-  }
+  //}
 
 
   TCanvas* c1 = new TCanvas( "c1", "", 600, 600 );
@@ -137,16 +137,16 @@ void drawSinglePlot( const std::string& outputdir, const std::string& name, cons
   TH2D* h2_axes = new TH2D("axes", "", 10, 0., xMax, 10, 0., yMax );
   h2_axes->SetXTitle( "Photon Charged Isolation [GeV]" );
   if( name=="Fake" )
-    h2_axes->SetYTitle( Form("Events / %.1f GeV", histoMC->GetBinWidth(1)) );
+    h2_axes->SetYTitle( Form("Events / %.2f GeV", histoMC->GetBinWidth(1)) );
   else
     h2_axes->SetYTitle( "Normalized to First Bin" );
   c1->cd();
   h2_axes->Draw();
 
-  TH2D* h2_axes_log = new TH2D("axes_log", "", 10, 0., xMax, 10, 0.00001, 3.*yMax );
+  TH2D* h2_axes_log = new TH2D("axes_log", "", 10, 0., xMax, 10, 0.0001, 3.*yMax );
   h2_axes_log->SetXTitle( "Photon Charged Isolation [GeV]" );
   if( name=="Fake" )
-    h2_axes_log->SetYTitle( Form("Events / %.1f GeV", histoMC->GetBinWidth(1)) );
+    h2_axes_log->SetYTitle( Form("Events / %.2f GeV", histoMC->GetBinWidth(1)) );
   else
     h2_axes_log->SetYTitle( "Normalized to First Bin" );
   c1_log->cd();

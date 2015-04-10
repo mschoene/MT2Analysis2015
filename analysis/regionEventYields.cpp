@@ -538,6 +538,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2EstimateTree>* dat
     if( yMax3 > yMax ) yMax = yMax3;
     //float yMax = TMath::Max( h1_data->GetMaximum()*1.5, (h1_data->GetMaximum() + h1_data->GetBinError(h1_data->GetMaximumBin()))*1.2);
     //float yMax = h1_data->GetMaximum()*1.5;
+    if( h1_data->GetNbinsX()<2 ) yMax *=3.;
 
     TH2D* h2_axes = new TH2D("axes", "", 10, xMin, xMax, 10, 0., yMax );
     h2_axes->SetXTitle("M_{T2} [GeV]");

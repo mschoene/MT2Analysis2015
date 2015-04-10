@@ -43,9 +43,9 @@ int main( int argc, char* argv[] ) {
   }
 
 
-  std::string samplesName = "PHYS14_v2_Zinv";
+  std::string samplesName = "PHYS14_v4_skimprune";
 
-  std::string fileName = "gammaTemplatesData_" + samplesName + "_" + regionsSet + ".root";
+  std::string fileName = "gammaTemplatesDataFR_" + samplesName + "_" + regionsSet + ".root";
   MT2Analysis<MT2EstimateZinvGamma>* templatesPromptRaw = MT2Analysis<MT2EstimateZinvGamma>::readFromFile(fileName, "templatesPromptRaw");
   MT2Analysis<MT2EstimateZinvGamma>* templatesFake      = MT2Analysis<MT2EstimateZinvGamma>::readFromFile(fileName, "templatesFake");
 
@@ -135,7 +135,7 @@ void removeNegatives( MT2Analysis<MT2EstimateZinvGamma>* data ) {
 
 void removeNegativesSingleHisto( TH1D* h1 ) {
 
-  for( unsigned ibin=1; ibin<h1->GetXaxis()->GetNbins()+1; ++ibin ) {
+  for( int ibin=1; ibin<h1->GetXaxis()->GetNbins()+1; ++ibin ) {
 
     if( h1->GetBinContent(ibin)<0. ) h1->SetBinContent( ibin, 0. );
 
