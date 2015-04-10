@@ -104,7 +104,7 @@ int main( int argc, char* argv[] ) {
   llep->setName( "llep" );
   llep->addToFile( mc_fileName, true );
 
-
+  MT2Analysis<MT2Estimate>* llepCR = MT2Analysis<MT2Estimate>::readFromFile( Form("llep_%s_%s_%.0ffb.root", samplesName.c_str(), regionsName.c_str(), lumi) );
 
 
   std::set<MT2Region> regions = data->getRegions();
@@ -122,18 +122,19 @@ int main( int argc, char* argv[] ) {
      TH1D* this_qcd  = qcd ->get(*iR)->yield;
      TH1D* this_zinv = zinv->get(*iR)->yield;
      TH1D* this_llep = llep->get(*iR)->yield;
+     TH1D* this_llepCR = llepCR->get(*iR)->yield;
      TH1D* this_zinvCR     = (use_gamma) ? zinvCR->get(*iR)->yield : 0;
      TH1D* this_zinv_ratio = (use_gamma) ? zinv_ratio->get(*iR)->yield : 0;
 
-     float N_llep_CR = this_llep->Integral();
+     float N_llep_CR = this_llepCR->Integral();
      std::string llepCR_name = iR->getName();
      if( iR->mtCut()!="" ) { 
        std::string choppedName = llepCR_name.substr(0, llepCR_name.size()-5);
        llepCR_name = choppedName;
        if( iR->mtCut()=="loMT" ) {
-         N_llep_CR += llep->get(MT2Region(iR->htMin(), iR->htMax(), iR->nJetsMin(), iR->nJetsMax(), iR->nBJetsMin(), iR->nBJetsMax(), "hiMT"))->yield->Integral();
+         N_llep_CR += llepCR->get(MT2Region(iR->htMin(), iR->htMax(), iR->nJetsMin(), iR->nJetsMax(), iR->nBJetsMin(), iR->nBJetsMax(), "hiMT"))->yield->Integral();
        } else {
-         N_llep_CR += llep->get(MT2Region(iR->htMin(), iR->htMax(), iR->nJetsMin(), iR->nJetsMax(), iR->nBJetsMin(), iR->nBJetsMax(), "loMT"))->yield->Integral();
+         N_llep_CR += llepCR->get(MT2Region(iR->htMin(), iR->htMax(), iR->nJetsMin(), iR->nJetsMax(), iR->nBJetsMin(), iR->nBJetsMax(), "loMT"))->yield->Integral();
        }
      }
          
