@@ -189,11 +189,14 @@ void fitSinglePurity( const std::string& outputdir, Purity& loose, Purity& tight
   loose.purityErrUp = sigFrac.getErrorHi();
   loose.purityErrDown = -sigFrac.getErrorLo();
 
-  float sigEff = h1_templPrompt->GetBinContent(1)/h1_templPrompt->Integral(1,nBins);
-  float bgEff = h1_templFake->GetBinContent(1)/h1_templFake->Integral(1,nBins);
-  float sigFirstBin = sigFrac.getVal()*sigEff;
-  float bgFirstBin = (1.-sigFrac.getVal())*bgEff;
-  tight.purity = sigFirstBin / (sigFirstBin+bgFirstBin);
+  float thresh = 2.5;
+  int cutBin = h1_templPrompt->FindBin(thresh) - 1;
+
+  float sigEff = h1_templPrompt->Integral(1, cutBin)/h1_templPrompt->Integral(1,nBins);
+  float bgEff = h1_templFake->Integral(1, cutBin)/h1_templFake->Integral(1,nBins);
+  float sigPassCut = sigFrac.getVal()*sigEff;
+  float bgPassCut = (1.-sigFrac.getVal())*bgEff;
+  tight.purity = sigPassCut / (sigPassCut+bgPassCut);
   tight.purityErrUp = loose.purityErrUp; // is it ok to assign the same error also to the tight purity?
   tight.purityErrDown = loose.purityErrDown;
   //float factor = tight.purity/loose.purity;
