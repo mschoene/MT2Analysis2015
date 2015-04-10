@@ -646,28 +646,6 @@ MT2Analysis<T>::MT2Analysis( const std::string& aname, const std::string& region
 
     regions_ = multiplyHTandSignal( htRegions, signalRegions );
 
-  } else if( regionsSet=="13TeV_PHYS14_loJet_hiHT_noMT" ){
-
-    std::set<MT2HTRegion> htRegions;
-    htRegions.insert(MT2HTRegion( 450.,   575.));
-    htRegions.insert(MT2HTRegion( 575.,  1000.));
-    htRegions.insert(MT2HTRegion(1000.,  1500.));
-    htRegions.insert(MT2HTRegion(1500.,    -1 ));
-
-    std::set<MT2SignalRegion> signalRegions;
-    signalRegions.insert(MT2SignalRegion(2,  3, 0,  0));
-    signalRegions.insert(MT2SignalRegion(4, 6, 0,  0));
-    signalRegions.insert(MT2SignalRegion(7, -1, 0,  0));
-    signalRegions.insert(MT2SignalRegion(2,  3, 1,  1));
-    signalRegions.insert(MT2SignalRegion(4, 6, 1,  1));
-    signalRegions.insert(MT2SignalRegion(7, -1, 1,  1));
-    signalRegions.insert(MT2SignalRegion(2,  3, 2,  2));
-    signalRegions.insert(MT2SignalRegion(4, 6, 2,  2));
-    signalRegions.insert(MT2SignalRegion(7, -1, 2,  2));
-    signalRegions.insert(MT2SignalRegion(2,  6, 3,  -1));
-    signalRegions.insert(MT2SignalRegion(7, -1, 3,  -1));
-  
-    regions_ = multiplyHTandSignal( htRegions, signalRegions );
 
   } else if( regionsSet=="13TeV_onlyHT" ) {
 
