@@ -310,7 +310,7 @@ MT2Analysis<MT2EstimateTree>* computeYield( const MT2Sample& sample, const MT2Co
 
   int nentries = tree->GetEntries();
 
-  for( unsigned iEntry=0; iEntry<nentries; ++iEntry ) {
+  for( int iEntry=0; iEntry<nentries; ++iEntry ) {
 
     if( iEntry % 50000 == 0 ) std::cout << "    Entry: " << iEntry << " / " << nentries << std::endl;
 
@@ -538,6 +538,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2EstimateTree>* dat
     if( yMax3 > yMax ) yMax = yMax3;
     //float yMax = TMath::Max( h1_data->GetMaximum()*1.5, (h1_data->GetMaximum() + h1_data->GetBinError(h1_data->GetMaximumBin()))*1.2);
     //float yMax = h1_data->GetMaximum()*1.5;
+    if( h1_data->GetNbinsX()<2 ) yMax *=3.;
 
     TH2D* h2_axes = new TH2D("axes", "", 10, xMin, xMax, 10, 0., yMax );
     h2_axes->SetXTitle("M_{T2} [GeV]");
@@ -700,7 +701,7 @@ void randomizePoisson( MT2Analysis<MT2EstimateTree>* data ) {
 	
 	TH1D* h1_data = data->get(thisRegion)->yield;
 
-	for( unsigned ibin=1; ibin<h1_data->GetXaxis()->GetNbins()+1; ++ibin ) {
+	for( int ibin=1; ibin<h1_data->GetXaxis()->GetNbins()+1; ++ibin ) {
 
 	  int poisson_data = rand.Poisson(h1_data->GetBinContent(ibin));
 	  h1_data->SetBinContent(ibin, poisson_data);
@@ -726,7 +727,7 @@ int matchPartonToJet( int index, MT2Tree* myTree ) {
   jet.SetPtEtaPhiM( myTree->jet_pt[index], myTree->jet_eta[index], myTree->jet_phi[index], myTree->jet_mass[index] );
 
 
-  for( unsigned i=0; i<myTree->ngenPart; ++i ) {
+  for( int i=0; i<myTree->ngenPart; ++i ) {
 
     if( myTree->genPart_status[i]!=23 ) continue;
     if( !(myTree->genPart_pdgId[i]==21 || abs(myTree->genPart_pdgId[i]<6)) ) continue;

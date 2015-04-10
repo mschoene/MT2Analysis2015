@@ -25,16 +25,15 @@ void compareTemplatesVsMt2( const std::string& outputdir, MT2Analysis<MT2Estimat
 int main( int argc, char* argv[] ) {
 
 
-  std::string samples = "PHYS14_v2_Zinv";
-  //std::string samples = "CSA14_Zinv";
+  std::string samples = "PHYS14_v4_skimprune";
   if( argc>1 ) {
     std::string samples_tmp(argv[1]); 
     samples = samples_tmp;
   }
 
 
-  //std::string regionsSet = "13TeV_inclusive";
-  std::string regionsSet = "13TeV_CSA14";
+  std::string regionsSet = "13TeV_inclusive";
+  //std::string regionsSet = "zurich";
 
   MT2DrawTools::setStyle();
 
@@ -144,7 +143,7 @@ void drawSingleSigmaPlot( const std::string& outputdir, const std::string& label
   TH1D* thisPrompt = new TH1D("thisPrompt", "", nbins, xMin, xMax );
   TH1D* thisFake = new TH1D("thisFake", "", nbins, xMin, xMax );
 
-  for( unsigned i=0; i<nbins; ++i ) {
+  for( int i=0; i<nbins; ++i ) {
     thisPrompt->SetBinContent( i+1, prompt->GetBinContent( i+binMin ));
     thisFake->SetBinContent( i+1, fake->GetBinContent( i+binMin ));
   }
@@ -267,7 +266,7 @@ void compareTemplatesVsMt2( const std::string& outputdir, MT2Analysis<MT2Estimat
   h2_axes_log->Draw("");
 
 
-  int maxHistos = 4;
+  unsigned maxHistos = 4;
   TLegend* legend = new TLegend( 0.45, 0.91-0.07*maxHistos, 0.9, 0.91 );
   legend->SetTextSize(0.038);
   legend->SetFillColor(0);
@@ -294,9 +293,11 @@ void compareTemplatesVsMt2( const std::string& outputdir, MT2Analysis<MT2Estimat
 
   float xMinLabel, xMaxLabel, yMinLabel, yMaxLabel;
   if( isPrompt ) {
-    xMinLabel = 0.7;
+    xMinLabel = 0.2;
+    //xMinLabel = 0.7;
     yMinLabel = 0.2;
-    xMaxLabel = 0.9;
+    xMaxLabel = 0.49;
+    //xMaxLabel = 0.9;
     yMaxLabel = 0.3;
   } else {
     xMinLabel = 0.2;

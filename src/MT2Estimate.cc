@@ -5,7 +5,7 @@
 #include <fstream>
 #include <cmath>
 
-
+#include "TRandom3.h"
 
 
 
@@ -285,6 +285,20 @@ void MT2Estimate::print(const std::string& ofs){
 
 }
 
+
+void MT2Estimate::randomizePoisson( float scale ){
+
+  TRandom3 rand(13);
+  
+  for( int ibin=1; ibin<yield->GetXaxis()->GetNbins()+1; ++ibin ) {
+    
+    int poisson_data = rand.Poisson(scale * yield->GetBinContent(ibin));
+    yield->SetBinContent(ibin, poisson_data);
+    yield->SetBinError(ibin, 0.); // it's data 
+    
+  } 
+  
+}
 
 
 // friend functions

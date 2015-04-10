@@ -50,9 +50,7 @@ class MT2EstimateSyst : public MT2Estimate {
   friend MT2EstimateSyst operator*( float k, const MT2EstimateSyst& rhs );
 
 
-  virtual void finalize() {
-    return this->addOverflow();
-  }
+  virtual void finalize();
 
   virtual void addOverflow();
 

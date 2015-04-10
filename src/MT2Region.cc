@@ -1720,6 +1720,11 @@ void MT2Region::getBins( int &nBins, double*& bins) const {
 
 }
 
+void MT2Region::getBins_qcdCR( int &nBins, double*& bins) const {
+    const int nBins_tmp = 17;
+    bins = new double[nBins_tmp+1]{30,35,40,45,50,55,60,65,70,75,80,88,100,125,180,250,450,800};
+    nBins = nBins_tmp;
+}
 
 std::vector< std::string > MT2Region::getNiceNames() const {
 

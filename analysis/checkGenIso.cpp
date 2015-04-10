@@ -25,7 +25,7 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2An
 int main( int argc, char* argv[] ) {
 
 
-  std::string samplesFileName = "PHYS14_v2_Zinv";
+  std::string samplesFileName = "PHYS14_v4_skimprune";
   //std::string samplesFileName = "CSA14_Zinv";
   if( argc>1 ) {
     std::string samplesFileName_tmp(argv[1]); 
@@ -129,67 +129,39 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2An
 
 
   bool isQCD  = sample.id>=100 && sample.id<200;
-  bool isGJet = sample.id>=200 && sample.id<300;
+  //bool isGJet = sample.id>=200 && sample.id<300;
 
   
   MT2Tree myTree;
-  //myTree.loadGenStuff = false;
+  myTree.loadGenStuff = false;
   myTree.Init(tree);
 
   int nentries = tree->GetEntries();
 
 
 
-  for( unsigned iEntry=0; iEntry<nentries; ++iEntry ) {
+  for( int iEntry=0; iEntry<nentries; ++iEntry ) {
 
     if( iEntry % 50000 == 0 ) std::cout << "    Entry: " << iEntry << " / " << nentries << std::endl;
 
     myTree.GetEntry(iEntry);
 
-    if( myTree.mt2>200. ) continue; // orthogonal to signal regions
+    //if( myTree.gamma_ht>1000. && sample.id==204 ) continue; // remove high-weight spikes (remove GJet_400to600 leaking into HT>1000)
 
-    if( myTree.gamma_ht>1000. && sample.id==204 ) continue; // remove high-weight spikes (remove GJet_400to600 leaking into HT>1000)
-
-    if( myTree.gamma_mt2 < 200.) continue;
-
-    if( myTree.nMuons10 > 0) continue;
-    if( myTree.nElectrons10 > 0 ) continue;
-    if( myTree.nPFLep5LowMT > 0) continue;
-    if( myTree.nPFHad10LowMT > 0) continue;
-
-    if( myTree.gamma_deltaPhiMin<0.3 ) continue;
-    if( myTree.gamma_diffMetMht>0.5*myTree.gamma_met_pt ) continue;
-  
-    if( myTree.nVert==0 ) continue;
-
-    if( myTree.gamma_nJet40<2 ) continue;
-
-    if( myTree.ngamma==0 ) continue;
-    if( myTree.gamma_pt[0]<160. ) continue;
+    if( !myTree.passSelection("gamma") ) continue;    
+    if( !myTree.passGammaAdditionalSelection(sample.id) ) continue;
 
 
     //// aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa REMOVE SOON
     if( myTree.evt_scale1fb > 1. ) continue;
 
-    //if( myTree.gamma_idCutBased[0]==0 ) continue;
 
 
     TLorentzVector gamma;
     gamma.SetPtEtaPhiM( myTree.gamma_pt[0], myTree.gamma_eta[0], myTree.gamma_phi[0], myTree.gamma_mass[0] );
 
-    float hOverE = myTree.gamma_hOverE[0];
     float sietaieta = myTree.gamma_sigmaIetaIeta[0];
-    if( fabs( gamma.Eta() )<1.479 ) {
-      if( hOverE > 0.058 ) continue;
-      //if( sietaieta > 0.014 ) continue;
-      //if( sietaieta > 0.0099 ) continue;
-    } else {  
-      if( hOverE > 0.020 ) continue;
-      if( sietaieta > 0.035 ) continue;
-      //if( sietaieta > 0.0268 ) continue;
-    }
 
-    //if( myTree.gamma_chHadIso[0]+myTree.gamma_neuHadIso[0] > 10. ) continue;
     float iso = myTree.gamma_chHadIso[0]/myTree.gamma_pt[0];
 
     float effAreaCH = 0.; // not used now
@@ -232,40 +204,17 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2An
     float isoCN = (myTree.gamma_chHadIso[0]+isoNH)/myTree.gamma_pt[0];
     float isoCP = (myTree.gamma_chHadIso[0]+isoPH)/myTree.gamma_pt[0];
     float isoCPN = (myTree.gamma_chHadIso[0]+isoNH+isoPH)/myTree.gamma_pt[0];
-    //if( iso>0.1 ) continue; // preselection anyways in there
 
     float isoRC = myTree.gamma_chHadIsoRC[0];
 
 
     int mcMatchId = myTree.gamma_mcMatchId[0];
     bool isMatched = (mcMatchId==22 || mcMatchId==7);
-    bool isGenIso = (myTree.gamma_genIso[0]<5.);
 
     bool isPrompt = isMatched && !isQCD;
     bool isNIP    = isMatched && isQCD;
     bool isFake   = !isMatched;
 
-    if( isFake && isGJet ) continue; // fakes only from QCD (it's inclusive)
-
-
-    if( !isFake ) {
-
-      float deltaRmin_parton = 999.;
-      for( unsigned ipart=0; ipart<myTree.ngenPart; ++ipart ) {
-        if( myTree.genPart_pt[ipart]<1. ) continue;
-        if( myTree.genPart_status[ipart]!=22 && myTree.genPart_status[ipart]!=23 ) continue;
-        if( abs(myTree.genPart_pdgId[ipart])>21 ) continue;
-        TLorentzVector thisPart;
-        thisPart.SetPtEtaPhiM( myTree.genPart_pt[ipart], myTree.genPart_eta[ipart], myTree.genPart_phi[ipart], myTree.genPart_mass[ipart] );
-        float thisDR = thisPart.DeltaR( gamma );
-        if( thisDR < deltaRmin_parton ) {
-          deltaRmin_parton = thisDR;
-        }
-      }
-
-      if( isQCD && deltaRmin_parton>0.4 ) continue; // stitching
-
-    }
 
 
 
@@ -281,7 +230,7 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2An
 
       thisPrompt->assignTree(myTree, lumi*myTree.evt_scale1fb);
       thisPrompt->assignVars( myTree.gamma_ht, myTree.gamma_nJet40, myTree.gamma_nBJet40, myTree.gamma_met_pt, myTree.gamma_mt2 );
-      thisPrompt->assignVar( "genIso", myTree.gamma_genIso[0] );
+      thisPrompt->assignVar( "genIso", myTree.gamma_genIso04[0] );
       thisPrompt->assignVar( "sietaieta", sietaieta );
       thisPrompt->assignVar( "iso", iso );
       thisPrompt->assignVar( "isoRC", isoRC );
@@ -302,7 +251,7 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2An
 
       thisNIP->assignTree(myTree, lumi*myTree.evt_scale1fb);
       thisNIP->assignVars( myTree.gamma_ht, myTree.gamma_nJet40, myTree.gamma_nBJet40, myTree.gamma_met_pt, myTree.gamma_mt2 );
-      thisNIP->assignVar( "genIso", myTree.gamma_genIso[0] );
+      thisNIP->assignVar( "genIso", myTree.gamma_genIso04[0] );
       thisNIP->assignVar( "sietaieta", sietaieta );
       thisNIP->assignVar( "iso", iso );
       thisNIP->assignVar( "isoRC", isoRC );
@@ -323,7 +272,7 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2An
 
       thisFake->assignTree(myTree, lumi*myTree.evt_scale1fb);
       thisFake->assignVars( myTree.gamma_ht, myTree.gamma_nJet40, myTree.gamma_nBJet40, myTree.gamma_met_pt, myTree.gamma_mt2 );
-      thisFake->assignVar( "genIso", myTree.gamma_genIso[0] );
+      thisFake->assignVar( "genIso", myTree.gamma_genIso04[0] );
       thisFake->assignVar( "sietaieta", sietaieta );
       thisFake->assignVar( "iso", iso );
       thisFake->assignVar( "isoRC", isoRC );

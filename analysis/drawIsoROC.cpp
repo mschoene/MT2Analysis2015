@@ -46,7 +46,7 @@ int main() {
 
 
 
-  std::string fileName = "GenIsoCheck_PHYS14_v2_Zinv_13TeV_inclusive/genIso.root";
+  std::string fileName = "GenIsoCheck_PHYS14_v4_skimprune_13TeV_inclusive/genIso.root";
 
   TFile* file = TFile::Open(fileName.c_str());
   TTree* tree_prompt = (TTree*)file->Get("prompt/HT450toInf_j2toInf_b0toInf/tree_prompt_HT450toInf_j2toInf_b0toInf");
@@ -202,7 +202,7 @@ void drawCompare( const std::string& outputdir, const std::string& saveName, con
   }
   yMax *= 1.2;
 
-  float xMax = 10.;
+  float xMax = 20.;
 
   TH2D* h2_axes = new TH2D( "axes", "", 10, 0., xMax, 10, 0., yMax );  
   h2_axes->SetYTitle("Normalized to Unity");
@@ -210,7 +210,7 @@ void drawCompare( const std::string& outputdir, const std::string& saveName, con
   c1->cd();
   h2_axes->Draw();
 
-  TH2D* h2_axes_log = new TH2D( "axes_log", "", 10, 0., xMax, 10, 0.0001, 5.*yMax );  
+  TH2D* h2_axes_log = new TH2D( "axes_log", "", 10, 0., xMax, 10, 0.000001, 5.*yMax );  
   h2_axes_log->SetYTitle("Normalized to Unity");
   h2_axes_log->SetXTitle(axisName.c_str());
   c1_log->cd();
@@ -741,7 +741,7 @@ TGraph* getRoC( TH1D* h1_prompt, TH1D* h1_fake ) {
 
   int nBins = h1_prompt->GetNbinsX()+1;
 
-  for( unsigned iBin=1; iBin<nBins; ++iBin ) {
+  for( int iBin=1; iBin<nBins; ++iBin ) {
 
     float eff_prompt = h1_prompt->Integral(1, iBin)/h1_prompt->Integral(1, nBins+1);
     float eff_fake   = h1_fake  ->Integral(1, iBin)/h1_fake  ->Integral(1, nBins+1);
@@ -794,7 +794,7 @@ void drawVsMT2( const std::string& outputdir, const std::string& varName, const 
 
   float yMax_log, yMin_log;
   if( name=="prompt" ) {
-    yMin_log = 0.0001;
+    yMin_log = 0.00001;
     yMax_log = 5.;
   } else if( name=="fake" ) {
     yMin_log = 0.001;
@@ -815,7 +815,7 @@ void drawVsMT2( const std::string& outputdir, const std::string& varName, const 
   h2_axes_log->Draw("");
 
 
-  int maxHistos = 4;
+  unsigned maxHistos = 4;
   TLegend* legend = new TLegend( 0.45, 0.91-0.07*maxHistos, 0.9, 0.91 );
   legend->SetTextSize(0.038);
   legend->SetFillColor(0);
@@ -843,7 +843,8 @@ void drawVsMT2( const std::string& outputdir, const std::string& varName, const 
   float xMin_label;
   float yMin_label;
   if( name=="prompt" ) {
-    xMin_label = 0.75;
+    xMin_label = 0.2;
+    //xMin_label = 0.75;
     yMin_label = 0.2;
   } else if( name=="fake" || name=="NIP" ) {
     xMin_label = 0.2;
@@ -1046,7 +1047,7 @@ std::string getLongName( const std::string& name ) {
 
 void setBins( TH1D* h1, TH2D* h2 ) {
 
-  for( unsigned iBin=1; iBin<h2->GetNbinsX()+1; ++iBin ) {
+  for( int iBin=1; iBin<h2->GetNbinsX()+1; ++iBin ) {
 
     TH1D* thisProj = h2->ProjectionY(Form("%s_proj%d", h2->GetName(), iBin), iBin, iBin);
 
