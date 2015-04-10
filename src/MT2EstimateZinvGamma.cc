@@ -20,7 +20,7 @@ MT2EstimateZinvGamma::MT2EstimateZinvGamma( const std::string& aname, const MT2R
 
 
   int nbins = 8;
-  int xmax = 20.;
+  int xmax = 10.;
 
   // this histo will be used to create histogram templates:
   //iso = new TH1D( this->getHistoName("iso").c_str(), "", nbins-1, bins );
