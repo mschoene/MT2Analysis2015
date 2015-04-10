@@ -1210,7 +1210,8 @@ Bool_t MT2Tree::passGammaAdditionalSelection(int sampleId)
 
   if( ngamma==0 ) return kFALSE;
   if( gamma_pt[0]<160. ) return kFALSE;
-  //if( gamma_idCutBased[0]==0 ) return kFalse;     
+  if( gamma_mt2<200. ) return kFALSE;     
+  if( mt2>200. ) return kFALSE; // orthogonal to signal region
 
   bool isQCD  = sampleId>=100 && sampleId<200;
   bool isGJet = sampleId>=200 && sampleId<300;
