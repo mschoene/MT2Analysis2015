@@ -45,6 +45,7 @@ void fitPurity( const std::string& outputdir, MT2EstimateSyst* purityLoose, MT2E
 void checkBoundaries( Purity& p );
 
 
+float lumi = 4.; // fb-1
 
 
 
@@ -73,7 +74,7 @@ int main( int argc, char* argv[] ) {
   TH1::AddDirectory(kFALSE);
 
 
-  std::string gammaCRdir = "GammaControlRegion_" + samples + "_" + regionsSet;
+  std::string gammaCRdir(Form("GammaControlRegion_%s_%s_%.0ffb", samples.c_str(), regionsSet.c_str(), lumi ));
   MT2Analysis<MT2EstimateZinvGamma>* gammaJet_data = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( gammaCRdir + "/data.root", "gammaCR_loose" );
 
   MT2Analysis<MT2EstimateZinvGamma>* templates_prompt = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( "gammaTemplates" + mc_or_data + "_" + samples + "_13TeV_inclusive.root", "templatesPrompt" );
@@ -181,7 +182,7 @@ void fitSinglePurity( const std::string& outputdir, Purity& loose, Purity& tight
   float xMin = h1_templPrompt->GetXaxis()->GetXmin();
   float xMax = h1_templPrompt->GetXaxis()->GetXmax();
 
-  float xMaxFit = 0.999*xMax;
+  float xMaxFit = 0.9999*xMax;
   x->setRange( "fittingRange", 0., xMaxFit );
   model.fitTo(*data, SumW2Error(kTRUE), Minos(kTRUE), Range("fittingRange")); 
 
