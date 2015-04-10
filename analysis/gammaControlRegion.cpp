@@ -61,7 +61,7 @@ int main( int argc, char* argv[] ) {
   TH1::AddDirectory(kFALSE); // stupid ROOT memory allocation needs this
 
 
-  std::string outputdir = "GammaControlRegion_" + samplesFileName + "_" + regionsSet;
+  std::string outputdir(Form("GammaControlRegion_%s_%s_%.0ffb", samplesFileName.c_str(), regionsSet.c_str(), lumi ));
   system(Form("mkdir -p %s", outputdir.c_str()));
 
   
