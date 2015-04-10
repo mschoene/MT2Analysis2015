@@ -104,6 +104,17 @@ int main( int argc, char* argv[] ) {
   (*gammaCR_nipDown) = (*prompt_pass) + (*fake_pass) + 0.5*(*nip_pass);
   
  
+  MT2Analysis<MT2EstimateZinvGamma>* matched = new MT2Analysis<MT2EstimateZinvGamma>( "matched", regionsSet ); 
+  (*matched) = (*prompt) + (*nip);
+
+  MT2Analysis<MT2EstimateZinvGamma>* matched_pass = new MT2Analysis<MT2EstimateZinvGamma>( "matched_pass", regionsSet ); 
+  (*matched_pass) = (*prompt_pass) + (*nip_pass);
+
+
+  MT2Analysis<MT2EstimateSyst>* f = MT2EstimateSyst::makeEfficiencyAnalysis( "f", regionsSet, (MT2Analysis<MT2Estimate>*)prompt, (MT2Analysis<MT2Estimate>*)matched );
+  MT2Analysis<MT2EstimateSyst>* f_pass = MT2EstimateSyst::makeEfficiencyAnalysis( "f_pass", regionsSet, (MT2Analysis<MT2Estimate>*)prompt_pass, (MT2Analysis<MT2Estimate>*)matched_pass );
+
+
 
   MT2Analysis<MT2EstimateSyst>* eff = MT2EstimateSyst::makeEfficiencyAnalysis( "eff", regionsSet, (MT2Analysis<MT2Estimate>*)prompt_pass, (MT2Analysis<MT2Estimate>*)prompt );
 
@@ -117,6 +128,11 @@ int main( int argc, char* argv[] ) {
   prompt->addToFile( outputdir + "/mc.root" );
   fake->addToFile( outputdir + "/mc.root" );
   nip->addToFile( outputdir + "/mc.root" );
+  prompt_pass->addToFile( outputdir + "/mc.root" );
+  fake_pass->addToFile( outputdir + "/mc.root" );
+  nip_pass->addToFile( outputdir + "/mc.root" );
+  f->addToFile( outputdir + "/mc.root" );
+  f_pass->addToFile( outputdir + "/mc.root" );
 
   purityTight->writeToFile( outputdir + "/purityMC.root" );
   purityLoose->addToFile( outputdir + "/purityMC.root" );
