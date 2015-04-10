@@ -15,7 +15,7 @@
 
 
 
-float lumi = 5.; //fb-1
+float lumi = 4.; //fb-1
 
 
 
