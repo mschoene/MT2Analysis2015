@@ -17,4 +17,4 @@ do
     echo $i >> $outputFile
 done
 
-sed -i 's/\/pnfs\//srm:\/\/t3se01.psi.ch:8443\/srm\/managerv2?SFN=\/pnfs\//g' $outputFile
+sed -i 's/\/pnfs\//dcap:\/\/t3se01.psi.ch:22125\/pnfs\//g' $outputFile
