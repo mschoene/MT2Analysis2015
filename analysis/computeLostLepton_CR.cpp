@@ -105,8 +105,9 @@ MT2Analysis<MT2EstimateSyst> computeYield( const MT2Sample& sample, const std::s
     myTree.GetEntry(iEntry);
 
     if( !myTree.passBaseline() ) continue;
-    if( myTree.passLeptonVeto() && myTree.passIsoTrackVeto() ) continue; // lost lepton CR
-
+    //if( myTree.passLeptonVeto() && myTree.passIsoTrackVeto() ) continue; // OLD lost lepton CR
+    if( myTree.nLepLowMT==1 ) ; // New lost lepton CR
+    else continue;
 
     float ht   = myTree.ht;
     float met  = myTree.met_pt;
