@@ -207,6 +207,8 @@ void MT2EstimateSyst::getShit( TFile* file, const std::string& path ) {
 void MT2EstimateSyst::write() const {
 
   MT2Estimate::write();
+  yield_systUp->SetLineColor(kRed);
+  yield_systDown->SetLineColor(kGreen);
   yield_systUp->Write();
   yield_systDown->Write();
 
