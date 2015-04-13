@@ -42,7 +42,7 @@ MT2EstimateTree::~MT2EstimateTree() {
 
 
 
-void MT2EstimateTree::initTree() {
+void MT2EstimateTree::initTree( ) {
 
   tree->Branch( "run", &run, "run/I");
   tree->Branch( "lumi", &lumi, "lumi/I");
@@ -52,12 +52,23 @@ void MT2EstimateTree::initTree() {
 
   tree->Branch( "mt2", &mt2, "mt2/F");
   tree->Branch( "ht", &ht, "ht/F");
-  tree->Branch( "met", &met, "met/F");
+  tree->Branch( "met_pt", &met_pt, "met_pt/F");
+  tree->Branch( "met_phi", &met_phi, "met_phi/F");
   tree->Branch( "nJets", &nJets, "nJets/I");
   tree->Branch( "nBJets", &nBJets, "nBJets/I");
+  
+  tree->Branch( "gamma_mt2", &gamma_mt2, "gamma_mt2/F");
+  tree->Branch( "gamma_ht", &gamma_ht, "gamma_ht/F");
+  tree->Branch( "gamma_met", &gamma_met, "gamma_met/F");
+  tree->Branch( "gamma_nJets", &gamma_nJets, "gamma_nJets/I");
+  tree->Branch( "gamma_nBJets", &gamma_nBJets, "gamma_nBJets/I");
+
+  tree->Branch( "zll_mt2", &zll_mt2, "zll_mt2/F");
+  tree->Branch( "zll_ht", &zll_ht, "zll_ht/F");
+  tree->Branch( "zll_met_pt", &zll_met_pt, "zll_met_pt/F");
+  tree->Branch( "zll_met_phi", &zll_met_phi, "zll_met_phi/F");
 
   tree->SetDirectory(0);
-
 }
 
 
@@ -139,7 +150,7 @@ void MT2EstimateTree::assignVar( const std::string& name, float value ) {
 
 
 
-void MT2EstimateTree::fillTree( const MT2Tree& mt2tree, float w ) {
+void MT2EstimateTree::fillTree( const MT2Tree& mt2tree, float w ,const std::string& sel) {
 
   this->assignTree( mt2tree, w );
 
@@ -161,6 +172,7 @@ void MT2EstimateTree::fillTree_gamma( const MT2Tree& mt2tree, float w ) {
 
 void MT2EstimateTree::assignTree( const MT2Tree& mt2tree, float w ) {
 
+ 
   run    = mt2tree.run;
   lumi   = mt2tree.lumi;
   evt    = mt2tree.evt;
@@ -169,9 +181,21 @@ void MT2EstimateTree::assignTree( const MT2Tree& mt2tree, float w ) {
 
   mt2    = mt2tree.mt2;
   ht     = mt2tree.ht;
-  met    = mt2tree.met_pt;
+  met_pt    = mt2tree.met_pt;
+  met_phi    = mt2tree.met_phi;
   nJets  = mt2tree.nJet40;
   nBJets = mt2tree.nBJet40;
+
+  gamma_mt2    = mt2tree.gamma_mt2;
+  gamma_ht     = mt2tree.gamma_ht;
+  gamma_met    = mt2tree.gamma_met_pt;
+  gamma_nJets  = mt2tree.gamma_nJet40;
+  gamma_nBJets = mt2tree.gamma_nBJet40;
+
+  zll_mt2    = mt2tree.zll_mt2;
+  zll_ht     = mt2tree.zll_ht;
+  zll_met_pt    = mt2tree.zll_met_pt;
+  zll_met_phi    = mt2tree.zll_met_phi;
 
 }
   
@@ -186,7 +210,7 @@ void MT2EstimateTree::assignTree_gamma( const MT2Tree& mt2tree, float w ) {
 
   mt2    = mt2tree.gamma_mt2;
   ht     = mt2tree.gamma_ht;
-  met    = mt2tree.gamma_met_pt;
+  met_pt    = mt2tree.gamma_met_pt;
   nJets  = mt2tree.gamma_nJet40;
   nBJets = mt2tree.gamma_nBJet40;
 
@@ -199,7 +223,7 @@ void MT2EstimateTree::assignVars( float aht, int anJets, int anBJets, float amet
 
   mt2    = amt2;
   ht     = aht;
-  met    = amet;
+  met_pt    = amet;
   nJets  = anJets;
   nBJets = anBJets;
 
