@@ -225,7 +225,7 @@ int main( int argc, char* argv[] ) {
   if( dummyAnalysis ) { // use same as MC
 
     for( unsigned i=1; i < bgYields.size(); ++i ) (*data) += *(bgYields[i]);
-    randomizePoisson( data );
+    //randomizePoisson( data );
 
   } else {
 

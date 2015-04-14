@@ -162,7 +162,7 @@ int main( int argc, char* argv[] ) {
        datacard << "imax 1" << std::endl;
        datacard << "jmax 3" << std::endl;
        datacard << "kmax *" << std::endl;
-       datacard << "shapes * * FAKE" << std::endl;
+       //datacard << "shapes * * FAKE" << std::endl; // To fix instabilities of RooFit in case of too many bins
        datacard << "-------------" << std::endl;
        datacard << std::endl << std::endl;
 
@@ -170,7 +170,7 @@ int main( int argc, char* argv[] ) {
        datacard << std::fixed;
        datacard << std::setprecision(3) << std::endl << std::endl;
        datacard << "bin  " << binName<< std::endl;
-       datacard << "observation  " << this_data->GetBinContent(iBin) << std::endl;
+       datacard << "observation  " << round(this_data->GetBinContent(iBin)) << std::endl;
        datacard << "-------------" << std::endl;
        datacard << std::endl << std::endl;
 

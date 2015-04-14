@@ -18,7 +18,7 @@
 #include "TPaveText.h"
 #include "TGraphAsymmErrors.h"
 
-float lumi =5.0; //fb-1 
+float lumi =4.0; //fb-1 
 
 void drawYields( const std::string& outputdir, MT2Analysis<MT2EstimateSyst>* data, std::vector<MT2Analysis<MT2EstimateSyst>* > bgYields );
 
@@ -26,33 +26,26 @@ int main() {
 
   TH1::AddDirectory(kFALSE); // stupid ROOT memory allocation needs this
 
-  std::string outputdir = "/scratch/mmasciov/CMSSW_7_0_6_patch3_MT2Analysis2015/src/MT2Analysis2015/analysis/YieldComparison/";
+  std::string outputdir = "/scratch/mmasciov/CMSSW_7_2_3_GammaFunctions/src/MT2Analysis2015/analysis/YieldComparison/";
 
   //std::string firstInputFile = "/shome/mmasciov/analyses_fp.root";
-  std::string firstInputFile  = "/scratch/mmasciov/CMSSW_7_0_6_patch3_MT2Analysis2015/src/MT2Analysis2015/analysis/EventYields_mc_CSA14_dummy/analyses.root";
-  std::string secondInputFile = "/scratch/mmasciov/CMSSW_7_0_6_patch3_MT2Analysis2015/src/MT2Analysis2015/analysis/MT2LostLeptonEstimate_v0.root";
+  std::string firstInputFile  = "/scratch/mmasciov/CMSSW_7_2_3_GammaFunctions/src/MT2Analysis2015/analysis/llep_PHYS14_v4_skimprune_zurich_4fb.root";
+  std::string secondInputFile = "/scratch/mmasciov/CMSSW_7_2_3_GammaFunctions/src/MT2Analysis2015/analysis/llep_PHYS14_Zurich_MT2final_13TeV_PHYS14_loJet_hiHT_noMT_4fb.root";
 
-  MT2Analysis<MT2EstimateSyst>* analysisTop = MT2Analysis<MT2EstimateSyst>::readFromFile(firstInputFile.c_str(), "Top");
+  MT2Analysis<MT2EstimateSyst>* analysisFirst = MT2Analysis<MT2EstimateSyst>::readFromFile(firstInputFile.c_str(), "llep");
  
-  MT2Analysis<MT2EstimateSyst>* analysisWJets = MT2Analysis<MT2EstimateSyst>::readFromFile(firstInputFile.c_str(), "WJets");
- 
-  MT2Analysis<MT2EstimateSyst>* analysisSum = new MT2Analysis<MT2EstimateSyst>( (*analysisTop) );
-  (*analysisSum) += (*analysisWJets);
-  analysisSum->setName("fromRegioEventYield");
-  analysisSum->writeToFile( "LostLeptonFromRegionEventYield.root" );
-
-  MT2Analysis<MT2EstimateSyst>* analysisLostLepton = MT2Analysis<MT2EstimateSyst>::readFromFile( secondInputFile.c_str() );
+  MT2Analysis<MT2EstimateSyst>* analysisSecond = MT2Analysis<MT2EstimateSyst>::readFromFile( secondInputFile.c_str(), "llep" );
 
   std::vector< MT2Analysis<MT2EstimateSyst> *> bgEstimate;
-  bgEstimate.push_back( analysisLostLepton );
+  bgEstimate.push_back( analysisSecond );
 
-  drawYields(outputdir.c_str(), analysisSum, bgEstimate );
+  drawYields(outputdir.c_str(), analysisFirst, bgEstimate );
 
   return 0;
 
 }
 
-void drawYields( const std::string& outputdir, MT2Analysis<MT2EstimateSyst>* fromRegionEventYield, std::vector< MT2Analysis<MT2EstimateSyst> *> bgYields ) {
+void drawYields( const std::string& outputdir, MT2Analysis<MT2EstimateSyst>*  analysisFirst, std::vector< MT2Analysis<MT2EstimateSyst> *> bgYields ) {
 
   MT2DrawTools::setStyle();
 
@@ -73,33 +66,27 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2EstimateSyst>* fro
   colors.push_back(430);
   
 
-  std::set<MT2HTRegion> HTRegions = fromRegionEventYield->getHTRegions();
-  std::set<MT2SignalRegion> signalRegions = fromRegionEventYield->getSignalRegions();
+  std::set<MT2Region> MT2Regions = analysisFirst->getRegions();
 
-
-  for( std::set<MT2HTRegion>::iterator iHT = HTRegions.begin(); iHT!=HTRegions.end(); ++iHT ) {
-
-    for( std::set<MT2SignalRegion>::iterator iSR = signalRegions.begin(); iSR!=signalRegions.end(); ++iSR ) {
+  for( std::set<MT2Region>::iterator iMT2 = MT2Regions.begin(); iMT2!=MT2Regions.end(); ++iMT2 ) {
 
       std::string fullPath = outputdir;
 
-      MT2Region thisRegion( (*iHT), (*iSR) );
+      TH1D* h_first = analysisFirst->get(*iMT2)->yield;
 
-      TH1D* h1_fromRegionEventYield = fromRegionEventYield->get(thisRegion)->yield;
-
-      TFile* histoFile = TFile::Open( Form("%s/histograms_%s.root", fullPath.c_str(), thisRegion.getName().c_str()), "recreate" );
+      TFile* histoFile = TFile::Open( Form("%s/histograms_%s.root", fullPath.c_str(), iMT2->getName().c_str()), "recreate" );
       histoFile->cd();
-      h1_fromRegionEventYield->Write();
-      h1_fromRegionEventYield->SetMarkerStyle(20);
-      h1_fromRegionEventYield->SetMarkerSize(1.6);
+      h_first->Write();
+      h_first->SetMarkerStyle(20);
+      h_first->SetMarkerSize(1.6);
 
       TCanvas* c1 = new TCanvas( "c1", "", 600, 600 );
       c1->cd();
 
-      float xMin = h1_fromRegionEventYield->GetXaxis()->GetXmin();
-      float xMax = h1_fromRegionEventYield->GetXaxis()->GetXmax();
-      float yMax1 = h1_fromRegionEventYield->GetMaximum()*1.5;
-      float yMax2 = 1.2*(h1_fromRegionEventYield->GetMaximum() + h1_fromRegionEventYield->GetBinError(h1_fromRegionEventYield->GetMaximumBin()));
+      float xMin = h_first->GetXaxis()->GetXmin();
+      float xMax = h_first->GetXaxis()->GetXmax();
+      float yMax1 = h_first->GetMaximum()*1.5;
+      float yMax2 = 1.2*(h_first->GetMaximum() + h_first->GetBinError(h_first->GetMaximumBin()));
       float yMax = (yMax1>yMax2) ? yMax1 : yMax2;
 
       TH2D* h2_axes = new TH2D("axes", "", 10, xMin, xMax, 10, 0., yMax );
@@ -111,13 +98,13 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2EstimateSyst>* fro
       THStack bgStack("bgStack", "");
       for( unsigned i=0; i<bgYields.size(); ++i ) { // reverse ordered stack is prettier
         int index = bgYields.size() - i - 1;
-        TH1D* h1_bg = bgYields[index]->get(thisRegion)->yield;
-        h1_bg->SetFillColor( colors[index] );
-        h1_bg->SetLineColor( kBlack );
-        bgStack.Add(h1_bg);
+        TH1D* h_second = bgYields[index]->get(*iMT2)->yield;
+        h_second->SetFillColor( colors[index] );
+        h_second->SetLineColor( kBlack );
+        bgStack.Add(h_second);
       }
 
-      std::vector<std::string> niceNames = thisRegion.getNiceNames();
+      std::vector<std::string> niceNames = iMT2->getNiceNames();
 
       for( unsigned i=0; i<niceNames.size(); ++i ) {
 
@@ -138,33 +125,31 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2EstimateSyst>* fro
       legend->SetTextSize(0.038);
       legend->SetTextFont(42);
       legend->SetFillColor(0);
-      legend->AddEntry( h1_fromRegionEventYield, "MC only", "P" );
+      legend->AddEntry( h_first, "MC only", "P" );
       histoFile->cd();
       for( unsigned i=0; i<bgYields.size(); ++i ) {
-        TH1D* h1_bg = bgYields[i]->get(thisRegion)->yield;
-        legend->AddEntry( h1_bg, bgYields[i]->fullName.c_str(), "F" );
-        h1_bg->Write();
+        TH1D* h_second = bgYields[i]->get(*iMT2)->yield;
+        legend->AddEntry( h_second, bgYields[i]->getName().c_str(), "F" );
+        h_second->Write();
       }
 
       histoFile->Close();
 
       legend->Draw("same");
       bgStack.Draw("histo same");
-      h1_fromRegionEventYield->Draw("p, same");
+      h_first->Draw("p, same");
 
       TPaveText* labelTop = MT2DrawTools::getLabelTop(lumi);
       labelTop->Draw("same");
 
       gPad->RedrawAxis();
 
-      c1->SaveAs( Form("%s/mt2_%s.eps", fullPath.c_str(), thisRegion.getName().c_str()) );
-      c1->SaveAs( Form("%s/mt2_%s.png", fullPath.c_str(), thisRegion.getName().c_str()) );
+      c1->SaveAs( Form("%s/mt2_%s.eps", fullPath.c_str(), iMT2->getName().c_str()) );
+      c1->SaveAs( Form("%s/mt2_%s.png", fullPath.c_str(), iMT2->getName().c_str()) );
 
       delete c1;
       delete h2_axes;
 
-    }  // for signal regions
-
-  } // for HT regions
+  } // for MT2 regions
 
 }
