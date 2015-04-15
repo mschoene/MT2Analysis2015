@@ -1208,6 +1208,7 @@ template<class T>
 template<class T2> 
 const MT2Analysis<T>& MT2Analysis<T>::operator*=( const MT2Analysis<T2>& rhs ) {
 
+
   std::set<MT2Region> regions = rhs.getRegions();
 
   for( std::set<MT2Region>::iterator iR=regions.begin(); iR!=regions.end(); ++iR ) {

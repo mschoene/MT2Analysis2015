@@ -71,17 +71,6 @@ int main( int argc, char* argv[] ) {
   }
 
   
-  MT2Analysis<MT2EstimateSyst>* purity = 0;
-
-  if( type!=0 )
-    purity = MT2Analysis<MT2EstimateSyst>::readFromFile( gammaControlRegionDir + "/PurityFitsDataRC/purityFit.root", "purity" );
-
-  if( purity==0 && type!=0 ) {
-    std::cout << "-> Please run fitPurityGamma first. I need to get the purity from there." << std::endl;
-    std::cout << "-> Thank you for your cooperation." << std::endl;
-    exit(195);
-  }
-
 
   MT2Analysis<MT2EstimateTree>* Zinv = MT2Analysis<MT2EstimateTree>::readFromFile(Form("EventYields_mc_PHYS14_v4_dummy_%.0ffb/analyses.root", lumi), "ZJets");
   if( Zinv==0 ) {
@@ -124,8 +113,8 @@ int main( int argc, char* argv[] ) {
 
   ZinvEstimate->writeToFile( outFile );
   ZgammaRatio->addToFile( outFile );
-  if( purity!=0 )
-    purity->addToFile( outFile );
+  //if( purity!=0 )
+  //  purity->addToFile( outFile );
   Zinv->setName("Zinv");
   Zinv->addToFile( outFile );
 
