@@ -91,23 +91,18 @@ int main( int argc, char* argv[] ) {
     (*gammaCR_times_ZgammaRatio) = (*gammaCR) * (*ZgammaRatio);
 
 
-  //MT2Analysis<MT2EstimateSyst>* purity = 0;
 
-  MT2Analysis<MT2EstimateSyst>* ZinvEstimateFromGamma = MT2EstimateSyst::makeAnalysisFromEstimate( "ZinvEstimateFromGamma", regionsSet, gammaCR_times_ZgammaRatio );
 
-  if( type!=0 ) {
+  MT2Analysis<MT2EstimateSyst>* ZinvEstimateFromGamma;
+  if( type==0 ) {
 
-    MT2Analysis<MT2EstimateSyst>* purity = MT2Analysis<MT2EstimateSyst>::readFromFile( gammaControlRegionDir + "/PurityFitsDataRC/purityFit.root", "purity" );
+    ZinvEstimateFromGamma = MT2EstimateSyst::makeAnalysisFromEstimate( "ZinvEstimateFromGamma", regionsSet, gammaCR_times_ZgammaRatio );
 
-    if( purity==0 ) {
-      std::cout << "-> Please run fitPurityGamma first. I need to get the purity from there." << std::endl;
-      std::cout << "-> Thank you for your cooperation." << std::endl;
-      exit(195);
-    }
-    ZinvEstimateFromGamma = new MT2Analysis<MT2EstimateSyst>( "ZinvEstimateFromGamma", regionsSet );
-    (*ZinvEstimateFromGamma) = (*purity);
-    (*ZinvEstimateFromGamma) *= 0.92; // flat f
-    (*ZinvEstimateFromGamma) *= (*gammaCR_times_ZgammaRatio);
+  } else {
+
+    ZinvEstimateFromGamma = new MT2Analysis<MT2EstimateSyst>("ZinvEstimateFromGamma", regionsSet);
+    (*ZinvEstimateFromGamma) = (*purity)*(*gammaCR_times_ZgammaRatio);
+    (*ZinvEstimateFromGamma) *= 0.92; // f
 
   }
 

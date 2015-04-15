@@ -48,18 +48,27 @@ class MT2Analysis {
   void setFullName( const std::string& newName ) { fullName = newName; };
 
   const MT2Analysis& operator=( const MT2Analysis& rhs);
-  MT2Analysis operator+( const MT2Analysis& rhs) const;
-  MT2Analysis operator-( const MT2Analysis& rhs) const;
+
+  template<class T2>
+  MT2Analysis<T> operator+( const MT2Analysis<T2>& rhs) const;
+  template<class T2>
+  MT2Analysis<T> operator-( const MT2Analysis<T2>& rhs) const;
+  template<class T2>
+  MT2Analysis<T> operator/( const MT2Analysis<T2>& rhs) const;
+  template<class T2>
+  MT2Analysis<T> operator*( const MT2Analysis<T2>& rhs) const;
+
+  template<class T2>
+  const MT2Analysis<T>& operator+=( const MT2Analysis<T2>& rhs);
+  template<class T2>
+  const MT2Analysis<T>& operator-=( const MT2Analysis<T2>& rhs);
+  template<class T2>
+  const MT2Analysis<T>& operator/=( const MT2Analysis<T2>& rhs);
+  template<class T2>
+  const MT2Analysis<T>& operator*=( const MT2Analysis<T2>& rhs);
+
   void add( const MT2Analysis& rhs );
-  MT2Analysis operator/( const MT2Analysis& rhs) const;
   void divide( const MT2Analysis& rhs );
-  MT2Analysis operator*( const MT2Analysis& rhs) const;
-  const MT2Analysis& operator+=( const MT2Analysis& rhs);
-  const MT2Analysis& operator-=( const MT2Analysis& rhs);
-  const MT2Analysis& operator/=( const MT2Analysis& rhs);
-  const MT2Analysis<T>& operator*=( const MT2Analysis<T>& rhs);
-  //template<class T1>
-  //const MT2Analysis<T>& operator*=( const MT2Analysis<T1>& rhs);
 
   MT2Analysis operator* ( float k ) const;
   MT2Analysis operator/ ( float k ) const;
@@ -1050,7 +1059,8 @@ const MT2Analysis<T>& MT2Analysis<T>::operator=( const MT2Analysis<T>& rhs ) {
 
 
 template<class T> 
-MT2Analysis<T> MT2Analysis<T>::operator+( const MT2Analysis& rhs ) const {
+template<class T2> 
+MT2Analysis<T> MT2Analysis<T>::operator+( const MT2Analysis<T2>& rhs ) const {
 
   std::set<MT2Region> regions = rhs.getRegions();
 
@@ -1061,7 +1071,7 @@ MT2Analysis<T> MT2Analysis<T>::operator+( const MT2Analysis& rhs ) const {
       MT2Region thisRegion(*iR);
 
       T* t1 = this->get(thisRegion); 
-      T* t2 = rhs.get(thisRegion); 
+      T2* t2 = rhs.get(thisRegion); 
       if( t2==0 ) {
         std::cout << "[MT2Analysis::operator+] ERROR! Can't add MT2Analysis with different regional structures!" << std::endl;
         exit(111);
@@ -1081,7 +1091,8 @@ MT2Analysis<T> MT2Analysis<T>::operator+( const MT2Analysis& rhs ) const {
 
 
 template<class T> 
-MT2Analysis<T> MT2Analysis<T>::operator-( const MT2Analysis& rhs ) const {
+template<class T2> 
+MT2Analysis<T> MT2Analysis<T>::operator-( const MT2Analysis<T2>& rhs ) const {
 
   std::set<MT2Region> regions = rhs.getRegions();
 
@@ -1092,7 +1103,7 @@ MT2Analysis<T> MT2Analysis<T>::operator-( const MT2Analysis& rhs ) const {
       MT2Region thisRegion(*iR);
 
       T* t1 = this->get(thisRegion); 
-      T* t2 = rhs.get(thisRegion); 
+      T2* t2 = rhs.get(thisRegion); 
       if( t2==0 ) {
         std::cout << "[MT2Analysis::operator-] ERROR! Can't add MT2Analysis with different regional structures!" << std::endl;
         exit(111);
@@ -1112,7 +1123,8 @@ MT2Analysis<T> MT2Analysis<T>::operator-( const MT2Analysis& rhs ) const {
 
 
 template<class T> 
-const MT2Analysis<T>& MT2Analysis<T>::operator+=( const MT2Analysis& rhs ) {
+template<class T2> 
+const MT2Analysis<T>& MT2Analysis<T>::operator+=( const MT2Analysis<T2>& rhs ) {
 
   std::set<MT2Region> regions = rhs.getRegions();
 
@@ -1138,7 +1150,8 @@ const MT2Analysis<T>& MT2Analysis<T>::operator+=( const MT2Analysis& rhs ) {
 
 
 template<class T> 
-const MT2Analysis<T>& MT2Analysis<T>::operator-=( const MT2Analysis& rhs ) {
+template<class T2> 
+const MT2Analysis<T>& MT2Analysis<T>::operator-=( const MT2Analysis<T2>& rhs ) {
 
   std::set<MT2Region> regions = rhs.getRegions();
 
@@ -1147,7 +1160,7 @@ const MT2Analysis<T>& MT2Analysis<T>::operator-=( const MT2Analysis& rhs ) {
     MT2Region thisRegion(*iR);
 
     T* t1 = this->get(thisRegion); 
-    T* t2 = rhs.get(thisRegion); 
+    T2* t2 = rhs.get(thisRegion); 
     if( t2==0 ) {
       std::cout << "[MT2Analysis::operator-=] ERROR! Can't add MT2Analysis with different regional structures!" << std::endl;
       exit(111);
@@ -1164,7 +1177,8 @@ const MT2Analysis<T>& MT2Analysis<T>::operator-=( const MT2Analysis& rhs ) {
 
 
 template<class T> 
-const MT2Analysis<T>& MT2Analysis<T>::operator/=( const MT2Analysis& rhs ) {
+template<class T2> 
+const MT2Analysis<T>& MT2Analysis<T>::operator/=( const MT2Analysis<T2>& rhs ) {
 
   std::set<MT2Region> regions = rhs.getRegions();
 
@@ -1173,7 +1187,7 @@ const MT2Analysis<T>& MT2Analysis<T>::operator/=( const MT2Analysis& rhs ) {
     MT2Region thisRegion(*iR);
 
     T* t1 = this->get(thisRegion); 
-    T* t2 = rhs.get(thisRegion); 
+    T2* t2 = rhs.get(thisRegion); 
     if( t2==0 ) {
       std::cout << "[MT2Analysis::operator/= ERROR! Can't add MT2Analysis with different regional structures!" << std::endl;
       exit(111);
@@ -1190,35 +1204,10 @@ const MT2Analysis<T>& MT2Analysis<T>::operator/=( const MT2Analysis& rhs ) {
 
 
 
-//template<class T>
-//template<class T1> 
-//const MT2Analysis<T>& MT2Analysis<T>::operator*=( const MT2Analysis<T1>& rhs ) {
-//
-//  std::set<MT2Region> regions = rhs.getRegions();
-//
-//  for( std::set<MT2Region>::iterator iR=regions.begin(); iR!=regions.end(); ++iR ) {
-//
-//    MT2Region thisRegion(*iR);
-//
-//    T* t1 = this->get(thisRegion); 
-//    T1* t2 = rhs.get(thisRegion); 
-//    if( t2==0 ) {
-//      std::cout << "[MT2Analysis::operator*= ERROR! Can't add MT2Analysis with different regional structures!" << std::endl;
-//      exit(111);
-//    }
-//
-//    *t1 *= *t2;
-//
-//  }
-//
-//
-//  return *this;
-//
-//}
+template<class T> 
+template<class T2> 
+const MT2Analysis<T>& MT2Analysis<T>::operator*=( const MT2Analysis<T2>& rhs ) {
 
-
-template<class T>
-const MT2Analysis<T>& MT2Analysis<T>::operator*=( const MT2Analysis<T>& rhs ) {
 
   std::set<MT2Region> regions = rhs.getRegions();
 
@@ -1227,7 +1216,7 @@ const MT2Analysis<T>& MT2Analysis<T>::operator*=( const MT2Analysis<T>& rhs ) {
     MT2Region thisRegion(*iR);
 
     T* t1 = this->get(thisRegion); 
-    T* t2 = rhs.get(thisRegion); 
+    T2* t2 = rhs.get(thisRegion); 
     if( t2==0 ) {
       std::cout << "[MT2Analysis::operator*= ERROR! Can't add MT2Analysis with different regional structures!" << std::endl;
       exit(111);
@@ -1300,8 +1289,9 @@ void MT2Analysis<T>::add( const MT2Analysis& rhs ) {
 
 
 
-template<class T> 
-MT2Analysis<T> MT2Analysis<T>::operator/( const MT2Analysis& rhs ) const {
+template<class T>
+template<class T2>
+MT2Analysis<T> MT2Analysis<T>::operator/( const MT2Analysis<T2>& rhs ) const {
 
   std::set<MT2Region> regions = rhs.getRegions();
 
@@ -1312,7 +1302,7 @@ MT2Analysis<T> MT2Analysis<T>::operator/( const MT2Analysis& rhs ) const {
     MT2Region thisRegion(*iR);
 
     T* t1 = this->get(thisRegion); 
-    T* t2 = rhs.get(thisRegion); 
+    T2* t2 = rhs.get(thisRegion); 
     if( t2==0 ) {
       std::cout << "[MT2Analysis::operator/] ERROR! Can't add MT2Analysis with different regional structures!" << std::endl;
       exit(111);
@@ -1344,7 +1334,8 @@ void MT2Analysis<T>::divide( const MT2Analysis& rhs ) {
 
 
 template<class T>
-MT2Analysis<T> MT2Analysis<T>::operator*( const MT2Analysis<T>& rhs ) const {
+template<class T2>
+MT2Analysis<T> MT2Analysis<T>::operator*( const MT2Analysis<T2>& rhs ) const {
 
   std::set<MT2Region> regions = rhs.getRegions();
 
@@ -1355,7 +1346,7 @@ MT2Analysis<T> MT2Analysis<T>::operator*( const MT2Analysis<T>& rhs ) const {
     MT2Region thisRegion(*iR);
 
     T* t1 = this->get(thisRegion); 
-    T* t2 = rhs.get(thisRegion); 
+    T2* t2 = rhs.get(thisRegion); 
     if( t2==0 ) {
       std::cout << "[MT2Analysis::operator*] ERROR! Can't add MT2Analysis with different regional structures!" << std::endl;
       exit(111);

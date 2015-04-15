@@ -242,6 +242,8 @@ void fitSinglePurity( const std::string& outputdir, Purity& loose, Purity& tight
 
 void checkBoundaries( Purity& p ) {
 
+  if( p.purity > 1. ) p.purity = 1.;
+  if( p.purity < 0. ) p.purity = 0.;
   if( p.purity - p.purityErrDown < 0. ) p.purityErrDown = p.purity;
   if( p.purity + p.purityErrUp   > 1. ) p.purityErrUp   = 1. - p.purity;
 
