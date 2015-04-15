@@ -157,6 +157,8 @@ void fitSinglePurity( const std::string& outputdir, Purity& loose, Purity& tight
 
 
   float dataIntegral = data->sumEntries();
+  float thresh = 2.5;
+  float data_pass = data->sumEntries(Form("x<%f", thresh));
 
   if( dataIntegral == 0. ) {
     loose.purity=-1;
@@ -167,6 +169,7 @@ void fitSinglePurity( const std::string& outputdir, Purity& loose, Purity& tight
     tight.purityErrDown=0.;
     return;
   }
+
 
 
   RooDataHist templPrompt("templPrompt", "", *x, h1_templPrompt);
@@ -190,19 +193,22 @@ void fitSinglePurity( const std::string& outputdir, Purity& loose, Purity& tight
   loose.purityErrUp = sigFrac.getErrorHi();
   loose.purityErrDown = -sigFrac.getErrorLo();
 
-  float thresh = 2.5;
   int cutBin = h1_templPrompt->FindBin(thresh) - 1;
 
   float sigEff = h1_templPrompt->Integral(1, cutBin)/h1_templPrompt->Integral(1,nBins);
-  float bgEff = h1_templFake->Integral(1, cutBin)/h1_templFake->Integral(1,nBins);
-  float sigPassCut = sigFrac.getVal()*sigEff;
-  float bgPassCut = (1.-sigFrac.getVal())*bgEff;
-  tight.purity = sigPassCut / (sigPassCut+bgPassCut);
-  tight.purityErrUp = loose.purityErrUp; // is it ok to assign the same error also to the tight purity?
-  tight.purityErrDown = loose.purityErrDown;
-  //float factor = tight.purity/loose.purity;
-  //tight.purityErrUp = loose.purityErrUp*factor;
-  //tight.purityErrDown = loose.purityErrDown*factor;
+  tight.purity        = sigEff * loose.purity        * dataIntegral / data_pass;
+  tight.purityErrUp   = sigEff * loose.purityErrUp   * dataIntegral / data_pass;
+  tight.purityErrDown = sigEff * loose.purityErrDown * dataIntegral / data_pass;
+
+  //float sigPassCut = sigFrac.getVal()*sigEff;
+  //float bgEff = h1_templFake->Integral(1, cutBin)/h1_templFake->Integral(1,nBins);
+  //float bgPassCut = (1.-sigFrac.getVal())*bgEff;
+  //tight.purity = sigPassCut / (sigPassCut+bgPassCut);
+  //tight.purityErrUp = loose.purityErrUp; // is it ok to assign the same error also to the tight purity?
+  //tight.purityErrDown = loose.purityErrDown;
+  ////float factor = tight.purity/loose.purity;
+  ////tight.purityErrUp = loose.purityErrUp*factor;
+  ////tight.purityErrDown = loose.purityErrDown*factor;
 
   checkBoundaries( loose );
   checkBoundaries( tight );
