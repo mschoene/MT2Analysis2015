@@ -71,17 +71,6 @@ int main( int argc, char* argv[] ) {
   }
 
   
-  MT2Analysis<MT2EstimateSyst>* purity = 0;
-
-  if( type!=0 )
-    purity = MT2Analysis<MT2EstimateSyst>::readFromFile( gammaControlRegionDir + "/PurityFitsDataRC/purityFit.root", "purity" );
-
-  if( purity==0 && type!=0 ) {
-    std::cout << "-> Please run fitPurityGamma first. I need to get the purity from there." << std::endl;
-    std::cout << "-> Thank you for your cooperation." << std::endl;
-    exit(195);
-  }
-
 
   MT2Analysis<MT2EstimateTree>* Zinv = MT2Analysis<MT2EstimateTree>::readFromFile(Form("EventYields_mc_PHYS14_v4_dummy_%.0ffb/analyses.root", lumi), "ZJets");
   if( Zinv==0 ) {
@@ -101,8 +90,26 @@ int main( int argc, char* argv[] ) {
   else
     (*gammaCR_times_ZgammaRatio) = (*gammaCR) * (*ZgammaRatio);
 
+
+  //MT2Analysis<MT2EstimateSyst>* purity = 0;
+
   MT2Analysis<MT2EstimateSyst>* ZinvEstimateFromGamma = MT2EstimateSyst::makeAnalysisFromEstimate( "ZinvEstimateFromGamma", regionsSet, gammaCR_times_ZgammaRatio );
-  if( type!=0 ) (*ZinvEstimateFromGamma) *= (*purity);
+
+  if( type!=0 ) {
+
+    MT2Analysis<MT2EstimateSyst>* purity = MT2Analysis<MT2EstimateSyst>::readFromFile( gammaControlRegionDir + "/PurityFitsDataRC/purityFit.root", "purity" );
+
+    if( purity==0 ) {
+      std::cout << "-> Please run fitPurityGamma first. I need to get the purity from there." << std::endl;
+      std::cout << "-> Thank you for your cooperation." << std::endl;
+      exit(195);
+    }
+    ZinvEstimateFromGamma = new MT2Analysis<MT2EstimateSyst>( "ZinvEstimateFromGamma", regionsSet );
+    (*ZinvEstimateFromGamma) = (*purity);
+    (*ZinvEstimateFromGamma) *= 0.92; // flat f
+    (*ZinvEstimateFromGamma) *= (*gammaCR_times_ZgammaRatio);
+
+  }
 
 
   MT2Analysis<MT2EstimateSyst>* ZinvEstimate = combineDataAndMC( ZinvEstimateFromGamma, (MT2Analysis<MT2Estimate>*)Zinv );
@@ -111,8 +118,8 @@ int main( int argc, char* argv[] ) {
 
   ZinvEstimate->writeToFile( outFile );
   ZgammaRatio->addToFile( outFile );
-  if( purity!=0 )
-    purity->addToFile( outFile );
+  //if( purity!=0 )
+  //  purity->addToFile( outFile );
   Zinv->setName("Zinv");
   Zinv->addToFile( outFile );
 
