@@ -63,7 +63,7 @@ int main( int argc, char* argv[] ) {
 
   std::string samples = "PHYS14_v4_skimprune";
 
-  std::string gammaCRdir = "GammaControlRegion_" + samples + "_" + regionsSet;
+  std::string gammaCRdir(Form("GammaControlRegion_%s_%s_4fb", samples.c_str(), regionsSet.c_str()));
   
   doAllPurityPlots( gammaCRdir, samples, mc_or_data, "purityLoose" ); 
   doAllPurityPlots( gammaCRdir, samples, mc_or_data, "purity" ); 

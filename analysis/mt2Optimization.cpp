@@ -19,6 +19,10 @@
 #include "interface/MT2Estimate.h"
 #include "interface/MT2EstimateTree.h"
 
+
+
+bool ignoreQCD=true;
+
 int main( int argc, char* argv[] ){
 
   if( argc!=2 ) {
@@ -26,7 +30,7 @@ int main( int argc, char* argv[] ){
     exit(113);
   }
 
-  std::string outputdir = "MT2bins_noCR_v2";
+  std::string outputdir = "MT2bins_final_wLT";
   system(Form("mkdir -p %s", outputdir.c_str()));
 
   std::string dir( argv[1] );
@@ -62,11 +66,10 @@ int main( int argc, char* argv[] ){
   THStack* hmt2[nRegions];
 
   TCanvas* c[nRegions];
-  TCanvas* cCR[nRegions];
   gStyle->SetOptStat(0);
 
   int s=0;
-  int nBins=140;
+  int nBins=28;
   float mt2min=200.;
   float mt2max=3000.;
   float binWidth=(mt2max-mt2min)/nBins;
@@ -97,30 +100,6 @@ int main( int argc, char* argv[] ){
     }
     
 
-    float mt2CR_threshold=13e3;
-    float yCR=0;
-     
-    //std::cout << std::endl << "First thresholds for region " << iR->getName().c_str() << std::endl;
-
-    for(int i=nBins+1; i>0; --i){
-      
-      yCR += hmt2g[s]->GetBinContent(i);
- 
-      if( yCR > 2 && hmt2g[s]->GetBinCenter(i) - binWidth/2 < maxMT2 ){
-    	
-    	mt2CR_threshold = hmt2g[s]->GetBinCenter(i) - binWidth/2;
-    	//std::cout << mt2CR_threshold << std::endl;
-    	
-    	yCR=0;
-     	
-	break;      
-      }
-      
-    }  
-  
-    //Not CR
-    mt2CR_threshold=14e3;
-
     //TTree* this_data  = data  ->get(*iR)->tree;
     TTree* mt2qcd   = qcd   ->get(*iR)->tree;
     TTree* mt2zjets = zjets ->get(*iR)->tree;
@@ -144,20 +123,7 @@ int main( int argc, char* argv[] ){
     hmt2tt[s]->SetLineColor(855);
     
     hmt2[s]    =new THStack("hmt2", iR->getName().c_str());
-    
-    cCR[s]= new TCanvas(Form("%s%s.eps", "CR_", iR->getName().c_str()), Form("%s%s.eps", "CR_", iR->getName().c_str()), 600, 600);
-    cCR[s]->cd();
-    gPad->SetLogy();
-
-    hmt2g[s]->Draw("hist");
-
-    TLine* lCR=new TLine(mt2CR_threshold, 0, mt2CR_threshold, hmt2g[s]->GetMaximum());
-    lCR->SetLineColor(2);
-    lCR->SetLineWidth(3);
-    lCR->Draw("same");
-
-    cCR[s]->SaveAs(Form("%s/%s%s.eps", outputdir.c_str(), "CR_", iR->getName().c_str()));
-    
+        
     c[s]= new TCanvas(Form("%s.eps", iR->getName().c_str()), Form("%s.eps", iR->getName().c_str()), 600, 600);
     c[s]->cd();
     gPad->SetLogy();
@@ -225,11 +191,7 @@ int main( int argc, char* argv[] ){
     hmt2[s]->Draw("hist");
     
     float max = hmt2[s]->GetMaximum();
-    TLine* l1=new TLine(mt2CR_threshold, 0, mt2CR_threshold, max);
-    l1->SetLineColor(2);
-    l1->SetLineWidth(3);
-    l1->Draw("same");
-    
+
     float mt2_threshold=13e3;
     float nMT2bins=0;
     float y=0., yNext=0.;
@@ -242,88 +204,25 @@ int main( int argc, char* argv[] ){
     if(hmt2qcd[s]->Integral(1, iLast)/(hmt2qcd[s]->Integral(1, iLast)+hmt2z[s]->Integral(1, iLast)+hmt2w[s]->Integral(1, iLast)+hmt2tt[s]->Integral(1, iLast)) > 0.1)
       std::cout << "ATTENTION: QCD is already dominating! Inclusive fraction = " << hmt2qcd[s]->Integral(1, iLast)/(hmt2qcd[s]->Integral(1, iLast)+hmt2z[s]->Integral(1, iLast)+hmt2w[s]->Integral(1, iLast)+hmt2tt[s]->Integral(1, iLast))  << std::endl;
 
-    for(int i=1; i < nBins+1; ++i){
-
-      y += hmt2z[s]->GetBinContent(i);
-      y += hmt2w[s]->GetBinContent(i);
-      y += hmt2tt[s]->GetBinContent(i);      
-      yqcd += hmt2qcd[s]->GetBinContent(i);
-      yCR += hmt2g[s]->GetBinContent(i);
-
-      yNext += hmt2z[s]->GetBinContent(i+1);
-      yNext += hmt2w[s]->GetBinContent(i+1);
-      yNext += hmt2tt[s]->GetBinContent(i+1);
-      yqcdNext += hmt2qcd[s]->GetBinContent(i+1);
-      
-      if( yqcd/(y+yqcd) > 0.1 ){
-	
-    	y=0;
-    	yqcd=0;
-	yCR=0;
-	yNext=0;
-	yqcdNext=0;
-
-	continue;
-	
-      }
-      else {
-	
-	mt2_threshold = hmt2qcd[s]->GetBinCenter(i) - binWidth/2;
-	TLine* l=new TLine(mt2_threshold, 0, mt2_threshold, max);
-        l->SetLineColor(1);
-        l->SetLineWidth(3);
-        l->Draw("same");
-        c[s]->Update();
-
-	y=0;
-        yqcd=0;
-        yCR=0;
-	yNext=0;
-	yqcdNext=0;
-
-	break;
-	
-      }
-      
-    }
-    
-    if(mt2_threshold < maxMT2)
-      mt2_firstThreshold=mt2_threshold;
-    else
-      mt2_firstThreshold=mt2min;
-
-    mt2_threshold=13e3;
-    
+    // Last threshold
     for(int i=nBins+1; i>0; --i){
       
       y += hmt2z[s]->GetBinContent(i);
       y += hmt2w[s]->GetBinContent(i);
       y += hmt2tt[s]->GetBinContent(i);      
       yqcd += hmt2qcd[s]->GetBinContent(i);
-      yCR += hmt2g[s]->GetBinContent(i);
-
-      yNext += hmt2z[s]->GetBinContent(i-1);
-      yNext += hmt2w[s]->GetBinContent(i-1);
-      yNext += hmt2tt[s]->GetBinContent(i-1);
-      yqcdNext += hmt2qcd[s]->GetBinContent(i-1);
-      
-      if( y+yqcd+yNext+yqcdNext > 1. && yqcd/(y+yqcd) < 0.1  && ( hmt2qcd[s]->GetBinCenter(i) - binWidth/2 < mt2_threshold - 99. ) && hmt2qcd[s]->GetBinCenter(i) - binWidth/2 > mt2_firstThreshold + 99. &&  hmt2qcd[s]->GetBinCenter(i) - binWidth/2 < maxMT2 ){
-    	
-    	mt2_threshold = hmt2qcd[s]->GetBinCenter(i) - binWidth/2;	
-    	//std::cout << mt2_threshold << std::endl;
-
-//	if( mt2_threshold < mt2min + 59. )
-//	  mt2_threshold = mt2min;
     
-	TLine* l=new TLine(mt2_threshold, 0, mt2_threshold, max);
-	l->SetLineColor(1);
-	l->SetLineWidth(3);
-	l->Draw("same");
-	c[s]->Update();
-	
+      yNext = hmt2z[s]->GetBinContent(i-1);
+      yNext = hmt2w[s]->GetBinContent(i-1);
+      yNext = hmt2tt[s]->GetBinContent(i-1);
+      yqcdNext = hmt2qcd[s]->GetBinContent(i-1);
+      
+      if( y+yqcd+yNext+yqcdNext > 1. && yqcd/(y+yqcd) < 0.1  && ( hmt2qcd[s]->GetBinCenter(i) - binWidth/2 < mt2_threshold - 99. )  && hmt2qcd[s]->GetBinCenter(i) - binWidth/2 > 299. &&  hmt2qcd[s]->GetBinCenter(i) - binWidth/2 < maxMT2 ){
+    		
+    	mt2_threshold = hmt2qcd[s]->GetBinCenter(i) - binWidth/2;	
+
     	y=0;
     	yqcd=0;
-	yCR=0;
     	iLast=i;
 	++nMT2bins;
 	
@@ -338,54 +237,88 @@ int main( int argc, char* argv[] ){
       mt2_lastThreshold=mt2_firstThreshold;
 
     mt2_threshold=mt2_lastThreshold;
+    TLine* ll=new TLine(mt2_threshold, 0, mt2_threshold, max);
+    ll->SetLineColor(2);
+    ll->SetLineWidth(3);
+    ll->Draw("same");
+    c[s]->Update();
 
-    std::cout << mt2_threshold << std::endl;
 
-    for(int i=nBins+1; i > 0; --i){
-      
-      y += hmt2z[s]->GetBinContent(i);
-      y += hmt2w[s]->GetBinContent(i);
-      y += hmt2tt[s]->GetBinContent(i);      
-      yqcd += hmt2qcd[s]->GetBinContent(i);
-      yCR += hmt2g[s]->GetBinContent(i);
-
-      yNext += hmt2z[s]->GetBinContent(i-1);
-      yNext += hmt2w[s]->GetBinContent(i-1);
-      yNext += hmt2tt[s]->GetBinContent(i-1);
-      yqcdNext += hmt2qcd[s]->GetBinContent(i-1);
-      
-      if( y+yqcd+yNext+yqcdNext > 1. && hmt2qcd[s]->GetBinCenter(i) - binWidth/2  > mt2_firstThreshold + 99. && hmt2qcd[s]->GetBinCenter(i) - binWidth/2 < mt2_lastThreshold - 99. && hmt2qcd[s]->GetBinCenter(i) - binWidth/2 < mt2_threshold - 99. ){
-    	
-    	mt2_threshold = hmt2qcd[s]->GetBinCenter(i) - binWidth/2;	
-    	std::cout << mt2_threshold << std::endl;
+    //    std::cout << mt2_threshold << std::endl;
     
+    int nThreshold=5;
+    float mt2Threshold[nThreshold];
+    if( maxMT2 <= 575. ){
+
+      float mt2Threshold_[]={200., 300., 400., 500., 13e3};
+      nThreshold=5;
+      
+      for(int t=0; t < nThreshold; ++t)
+	mt2Threshold[t]=mt2Threshold_[t];
+
+    }
+    
+    else if( maxMT2 <= 1000. ){
+      float mt2Threshold_[]={200., 300., 400., 600., 800.};
+      nThreshold=5;
+
+      for(int t=0; t < nThreshold; ++t)
+	mt2Threshold[t]=mt2Threshold_[t];
+      
+    }
+    
+    else if( maxMT2 <= 1500. ){
+      float mt2Threshold_[]={200., 400., 600., 800., 1000.};
+      nThreshold=5;
+
+      for(int t=0; t < nThreshold; ++t)
+	mt2Threshold[t]=mt2Threshold_[t];
+      
+    }
+    else{
+      float mt2Threshold_[]={200., 400., 600., 800., 1000.};
+      nThreshold=5;
+
+      for(int t=0; t < nThreshold; ++t)
+	mt2Threshold[t]=mt2Threshold_[t];
+      
+    } 
+    
+    float isLast=true;
+    for(int t=nThreshold-1; t>=0; --t){
+      
+      if( isLast && (mt2Threshold[t]-mt2_lastThreshold <= 0. || mt2Threshold[t]-mt2_lastThreshold == 100.) ){	
+	
+	mt2_threshold=mt2Threshold[t];
+	isLast=false;
+	
+	std::cout << mt2_threshold << std::endl;
+
 	TLine* l=new TLine(mt2_threshold, 0, mt2_threshold, max);
 	l->SetLineColor(1);
 	l->SetLineWidth(3);
 	l->Draw("same");
 	c[s]->Update();
-	
-    	y=0;
-    	yqcd=0;
-	yCR=0;
-    	iLast=i;
-	++nMT2bins;
-	
-    	continue;      
+
       }
+      else if(!isLast) {
+	
+	mt2_threshold=mt2Threshold[t];
+
+	std::cout << mt2_threshold << std::endl;
+	
+	TLine* l=new TLine(mt2_threshold, 0, mt2_threshold, max);
+	l->SetLineColor(1);
+	l->SetLineWidth(3);
+	l->Draw("same");
+	c[s]->Update();
       
+      }
     }
     
-    std::cout << mt2_firstThreshold << std::endl;
-  
-//    if(iLast==nBins+1)
-//      std::cout << "Total yield = " << hmt2qcd[s]->Integral(1, iLast)+(hmt2qcd[s]->Integral(1, iLast)+hmt2z[s]->Integral(1, iLast)+hmt2w[s]->Integral(1, iLast)+hmt2tt[s]->Integral(1, iLast)) << ", of which QCD is " << hmt2qcd[s]->Integral(1, iLast)/(hmt2qcd[s]->Integral(1, iLast)+hmt2z[s]->Integral(1, iLast)+hmt2w[s]->Integral(1, iLast)+hmt2tt[s]->Integral(1, iLast)) << std::endl;
-    
-//    if(hmt2qcd[s]->Integral(1, iLast-1)/(hmt2qcd[s]->Integral(1, iLast-1)+hmt2z[s]->Integral(1, iLast-1)+hmt2w[s]->Integral(1, iLast-1)+hmt2tt[s]->Integral(1, iLast-1)) > 0.1)
-//      std::cout << "QCD fraction in first bin = " << hmt2qcd[s]->Integral(1, iLast-1)/(hmt2qcd[s]->Integral(1, iLast-1)+hmt2z[s]->Integral(1, iLast-1)+hmt2w[s]->Integral(1, iLast-1)+hmt2tt[s]->Integral(1, iLast-1)) << std::endl;
-
+    std::cout << "number of bins = " << nThreshold+1 << std::endl;
     c[s]->SaveAs(Form("%s/%s%s.eps", outputdir.c_str(), "",iR->getName().c_str()));
-
+    
     ++s;
   }
   

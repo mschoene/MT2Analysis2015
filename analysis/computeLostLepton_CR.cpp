@@ -45,36 +45,24 @@ float DeltaPhi(float phi1, float phi2);
 int main( int argc, char* argv[] ) {
 
 
-  if( argc!=2 ) {
-    std::cout << "USAGE: ./computeLostLepton [samplesFileName]" << std::endl;
-    std::cout << "Exiting." << std::endl;
-    exit(11);
+  std::string sampleName = "PHYS14_v4_skimprune";
+  if( argc>1 ) {
+    sampleName = std::string(argv[1]);
   }
-  
-  std::string sampleName(argv[1]);
+
   
   std::string samplesFileName = "../samples/samples_" + sampleName + ".dat";
   std::cout << std::endl << std::endl;
   std::cout << "-> Loading samples from file: " << samplesFileName << std::endl;
 
-  std::vector<MT2Sample> fSamples = MT2Sample::loadSamples(samplesFileName);
+  std::vector<MT2Sample> fSamples = MT2Sample::loadSamples(samplesFileName, 300, 599); // only top (tt, t, ttW, ttZ) and WJets
   if( fSamples.size()==0 ) {
     std::cout << "There must be an error: samples is empty!" << std::endl;
     exit(1209);
   }
 
-  //std::string outputdir = "EventYields_" + sampleName;
-  //system(Form("mkdir -p %s", outputdir.c_str()));
 
-  //std::string regionsSet = "13TeV_PHYS14";
-  //std::string regionsSet = "13TeV_PHYS14_hiHT"; 
-  //std::string regionsSet = "13TeV_PHYS14_hiJet_mergeHT";
-  //std::string regionsSet = "13TeV_PHYS14_loJet_hiHT";
-  //std::string regionsSet = "13TeV_PHYS14_noMT";
-  //std::string regionsSet = "13TeV_PHYS14_hiHT_noMT"; 
-  //std::string regionsSet = "13TeV_PHYS14_hiJet_mergeHT_noMT";
-  std::string regionsSet = "13TeV_PHYS14_loJet_hiHT_noMT";
-  //std::string regionsSet = "13TeV_CSA14";
+  std::string regionsSet = "zurich";
 
   TH1::AddDirectory(kFALSE); // stupid ROOT memory allocation needs this
 
@@ -83,7 +71,7 @@ int main( int argc, char* argv[] ) {
   for( unsigned i=0; i < fSamples.size(); ++i )
     (*lostLeptonEstimate) += ( computeYield( fSamples[i], regionsSet, lumi ) );
   
-  lostLeptonEstimate->writeToFile(Form("llep_PHYS14_Zurich_oldRegionProposal_%s_%.0ffb.root", regionsSet.c_str(), lumi));
+  lostLeptonEstimate->writeToFile(Form("llep_%s_%s_%.0ffb.root", sampleName.c_str(), regionsSet.c_str(), lumi));
 
   return 0;
   
@@ -110,33 +98,16 @@ MT2Analysis<MT2EstimateSyst> computeYield( const MT2Sample& sample, const std::s
     
   //ofstream ofs("events.log");
 
-  for( unsigned iEntry=0; iEntry<nentries; ++iEntry ) {
+  for( int iEntry=0; iEntry<nentries; ++iEntry ) {
 
     if( iEntry % 50000 == 0 ) std::cout << "    Entry: " << iEntry << " / " << nentries << std::endl;
 
     myTree.GetEntry(iEntry);
 
-    if( myTree.nMuons10 > 0 || myTree.nElectrons10 > 0 || myTree.nPFLep5LowMT > 0 || myTree.nPFHad10LowMT > 0) ; //CR
+    if( !myTree.passBaseline() ) continue;
+    //if( myTree.passLeptonVeto() && myTree.passIsoTrackVeto() ) continue; // OLD lost lepton CR
+    if( myTree.nLepLowMT==1 ) ; // New lost lepton CR
     else continue;
-
-    if( myTree.nVert==0 ) continue;
-    if( myTree.nJet40<2 ) continue;
-    //if( myTree.jet_pt[1]<100. ) continue;
-    if( myTree.deltaPhiMin<0.3 ) continue;
-    if( myTree.diffMetMht>0.5*myTree.met_pt ) continue;
-
-//    float jetCentral_pt[2];
-//    int njetsCentral = 0;
-//    for(int j=0; j<myTree.njet; ++j){
-//      if( fabs( myTree.jet_eta[j] ) < 2.5 ) {
-//        jetCentral_pt[njetsCentral] = myTree.jet_pt[j];
-//        ++njetsCentral;
-//      }
-//      if( njetsCentral >= 2 ) break;
-//    }
-//    if (jetCentral_pt[1] < 100. ) continue;
-
-    if( myTree.jet1_pt < 40. || myTree.jet2_pt < 40. ) continue;
 
     float ht   = myTree.ht;
     float met  = myTree.met_pt;

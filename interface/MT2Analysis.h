@@ -57,7 +57,9 @@ class MT2Analysis {
   const MT2Analysis& operator+=( const MT2Analysis& rhs);
   const MT2Analysis& operator-=( const MT2Analysis& rhs);
   const MT2Analysis& operator/=( const MT2Analysis& rhs);
-  const MT2Analysis& operator*=( const MT2Analysis& rhs);
+  const MT2Analysis<T>& operator*=( const MT2Analysis<T>& rhs);
+  //template<class T1>
+  //const MT2Analysis<T>& operator*=( const MT2Analysis<T1>& rhs);
 
   MT2Analysis operator* ( float k ) const;
   MT2Analysis operator/ ( float k ) const;
@@ -649,28 +651,6 @@ MT2Analysis<T>::MT2Analysis( const std::string& aname, const std::string& region
 
     regions_ = multiplyHTandSignal( htRegions, signalRegions );
 
-  } else if( regionsSet=="13TeV_PHYS14_loJet_hiHT_noMT" ){
-
-    std::set<MT2HTRegion> htRegions;
-    htRegions.insert(MT2HTRegion( 450.,   575.));
-    htRegions.insert(MT2HTRegion( 575.,  1000.));
-    htRegions.insert(MT2HTRegion(1000.,  1500.));
-    htRegions.insert(MT2HTRegion(1500.,    -1 ));
-
-    std::set<MT2SignalRegion> signalRegions;
-    signalRegions.insert(MT2SignalRegion(2,  3, 0,  0));
-    signalRegions.insert(MT2SignalRegion(4, 6, 0,  0));
-    signalRegions.insert(MT2SignalRegion(7, -1, 0,  0));
-    signalRegions.insert(MT2SignalRegion(2,  3, 1,  1));
-    signalRegions.insert(MT2SignalRegion(4, 6, 1,  1));
-    signalRegions.insert(MT2SignalRegion(7, -1, 1,  1));
-    signalRegions.insert(MT2SignalRegion(2,  3, 2,  2));
-    signalRegions.insert(MT2SignalRegion(4, 6, 2,  2));
-    signalRegions.insert(MT2SignalRegion(7, -1, 2,  2));
-    signalRegions.insert(MT2SignalRegion(2,  6, 3,  -1));
-    signalRegions.insert(MT2SignalRegion(7, -1, 3,  -1));
-  
-    regions_ = multiplyHTandSignal( htRegions, signalRegions );
 
   } else if( regionsSet=="13TeV_onlyHT" ) {
 
@@ -1210,8 +1190,35 @@ const MT2Analysis<T>& MT2Analysis<T>::operator/=( const MT2Analysis& rhs ) {
 
 
 
-template<class T> 
-const MT2Analysis<T>& MT2Analysis<T>::operator*=( const MT2Analysis& rhs ) {
+//template<class T>
+//template<class T1> 
+//const MT2Analysis<T>& MT2Analysis<T>::operator*=( const MT2Analysis<T1>& rhs ) {
+//
+//  std::set<MT2Region> regions = rhs.getRegions();
+//
+//  for( std::set<MT2Region>::iterator iR=regions.begin(); iR!=regions.end(); ++iR ) {
+//
+//    MT2Region thisRegion(*iR);
+//
+//    T* t1 = this->get(thisRegion); 
+//    T1* t2 = rhs.get(thisRegion); 
+//    if( t2==0 ) {
+//      std::cout << "[MT2Analysis::operator*= ERROR! Can't add MT2Analysis with different regional structures!" << std::endl;
+//      exit(111);
+//    }
+//
+//    *t1 *= *t2;
+//
+//  }
+//
+//
+//  return *this;
+//
+//}
+
+
+template<class T>
+const MT2Analysis<T>& MT2Analysis<T>::operator*=( const MT2Analysis<T>& rhs ) {
 
   std::set<MT2Region> regions = rhs.getRegions();
 

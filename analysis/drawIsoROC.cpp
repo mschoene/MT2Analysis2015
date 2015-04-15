@@ -100,19 +100,24 @@ void drawIsoRandomCone( const std::string& outputdir, TTree* tree_prompt, TTree*
     etaMax = 2.5;
   }
 
+
+  int nBins = 8;
+  float xMax = 20.;
+  //int nBins = 100;
+  //float xMax = 20.;
   
-  TH1D* h1_iso_prompt = new TH1D("iso_prompt", "", 100, 0., 20.);
+  TH1D* h1_iso_prompt = new TH1D("iso_prompt", "", nBins, 0., xMax );
   h1_iso_prompt->Sumw2();
-  TH1D* h1_iso_nip = new TH1D("iso_nip", "", 100, 0., 20.);
+  TH1D* h1_iso_nip = new TH1D("iso_nip", "", nBins, 0., xMax );
   h1_iso_nip->Sumw2();
-  TH1D* h1_iso_fake = new TH1D("iso_fake", "", 100, 0., 20.);
+  TH1D* h1_iso_fake = new TH1D("iso_fake", "", nBins, 0., xMax );
   h1_iso_fake->Sumw2();
 
-  TH1D* h1_isoRC_prompt = new TH1D("isoRC_prompt", "", 100, 0., 20.);
+  TH1D* h1_isoRC_prompt = new TH1D("isoRC_prompt", "", nBins, 0., xMax );
   h1_isoRC_prompt->Sumw2();
-  TH1D* h1_isoRC_nip = new TH1D("isoRC_nip", "", 100, 0., 20.);
+  TH1D* h1_isoRC_nip = new TH1D("isoRC_nip", "", nBins, 0., xMax );
   h1_isoRC_nip->Sumw2();
-  TH1D* h1_isoRC_fake = new TH1D("isoRC_fake", "", 100, 0., 20.);
+  TH1D* h1_isoRC_fake = new TH1D("isoRC_fake", "", nBins, 0., xMax );
   h1_isoRC_fake->Sumw2();
 
 
@@ -794,7 +799,8 @@ void drawVsMT2( const std::string& outputdir, const std::string& varName, const 
 
   float yMax_log, yMin_log;
   if( name=="prompt" ) {
-    yMin_log = 0.00001;
+    yMin_log = 0.001;
+    //yMin_log = 0.00001;
     yMax_log = 5.;
   } else if( name=="fake" ) {
     yMin_log = 0.001;

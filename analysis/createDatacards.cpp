@@ -44,6 +44,10 @@ int main( int argc, char* argv[] ) {
   std::string mc_fileName = dir + "/analyses.root";
 
 
+  std::string samplesName = "PHYS14_v4_skimprune";
+  std::string regionsName = "zurich";
+
+
   bool useMC_qcd  = true;
   bool useMC_zinv = false;
   bool useMC_llep = true;
@@ -71,14 +75,7 @@ int main( int argc, char* argv[] ) {
     qcd = MT2Analysis<MT2Estimate>::readFromFile( "MT2QCDEstimate.root" );
   qcd->setName("qcd");
 
-  //////CHANGE HERE for ITERATION 1
-  //MT2Analysis<MT2Estimate>* zinv  = MT2Analysis<MT2Estimate>::readFromFile( mc_fileName, "ZJets");
-  //zinv->setName("zinv");
-  //MT2Analysis<MT2Estimate>* wjets = MT2Analysis<MT2Estimate>::readFromFile( mc_fileName, "WJets");
-  //MT2Analysis<MT2Estimate>* top   = MT2Analysis<MT2Estimate>::readFromFile( mc_fileName, "Top"  );
-  //MT2Analysis<MT2Estimate>* llep = new MT2Analysis<MT2Estimate>( *top + *wjets );
-  //llep->setName( "llep" );
-  ////*llep += *wjets;
+
   
   MT2Analysis<MT2Estimate>* zinv;
   MT2Analysis<MT2Estimate>* zinvCR;
@@ -86,17 +83,11 @@ int main( int argc, char* argv[] ) {
   if( useMC_zinv )
     zinv = MT2Analysis<MT2Estimate>::readFromFile( mc_fileName, "ZJets");
   else {
-    ////zinv       = MT2Analysis<MT2Estimate>::readFromFile( mc_fileName, "ZJets");
-    ////zinv       = MT2Analysis<MT2Estimate>::readFromFile( "MT2ZinvEstimate.root", "ZinvEstimate");
-    //zinv       = MT2Analysis<MT2Estimate>::readFromFile( "ZinvEstimateFromGamma_PHYS14_v2_Zinv_zurich_4fb_type0/mc.root", "Zinv");
-    //zinvCR     = MT2Analysis<MT2Estimate>::readFromFile( "ZinvEstimateFromGamma_PHYS14_v2_Zinv_zurich_4fb_type0/mc.root", "gammaJet");
-    //zinv_ratio = MT2Analysis<MT2Estimate>::readFromFile( "ZinvEstimateFromGamma_PHYS14_v2_Zinv_zurich_4fb_type0/mc.root", "ZgammaRatio");
-
     zinv       = MT2Analysis<MT2Estimate>::readFromFile( mc_fileName, "ZJets");
     //    zinvCR     = MT2Analysis<MT2Estimate>::readFromFile( "GammaControlRegion_oldMT2_PHYS14_v2_Zinv_zurich/mc.root", "gammaCR");
     //    zinv_ratio = MT2Analysis<MT2Estimate>::readFromFile( "ZinvEstimateFromGamma_oldMT2_PHYS14_v2_Zinv_zurich_4fb_type0/MT2ZinvEstimate.root", "ZgammaRatio");
-    zinvCR     = MT2Analysis<MT2Estimate>::readFromFile( "GammaControlRegion_MT2fine_PHYS14_v2_Zinv_zurich/mc.root", "gammaCR");
-    zinv_ratio = MT2Analysis<MT2Estimate>::readFromFile( "ZinvEstimateFromGamma_MT2fine_PHYS14_v2_Zinv_zurich_4fb_type0/MT2ZinvEstimate.root", "ZgammaRatio");
+    zinvCR     = MT2Analysis<MT2Estimate>::readFromFile( Form("GammaControlRegion_%s_%s_%.0ffb/data.root", samplesName.c_str(), regionsName.c_str(), lumi), "gammaCR");
+    zinv_ratio = MT2Analysis<MT2Estimate>::readFromFile( Form("ZinvEstimateFromGamma_%s_%s_%.0ffb_type0/MT2ZinvEstimate.root", samplesName.c_str(), regionsName.c_str(), lumi), "ZgammaRatio");
   }
   zinv->setName("zinv");
   zinv->addToFile( mc_fileName, true );
@@ -108,16 +99,12 @@ int main( int argc, char* argv[] ) {
     MT2Analysis<MT2Estimate>* top   = MT2Analysis<MT2Estimate>::readFromFile( mc_fileName, "Top");
     llep = new MT2Analysis<MT2Estimate>( (*wjets) + (*top) );
   } else {
-    llep = MT2Analysis<MT2Estimate>::readFromFile( "llep_PHYS14_Zurich_MT2fine_13TeV_PHYS14_loJet_hiHT_noMT_4fb.root" );
-    //llep = MT2Analysis<MT2Estimate>::readFromFile( "llep_PHYS14_Zurich_oldRegionProposal_13TeV_PHYS14_loJet_hiHT_noMT_4fb.root" );
+    llep = MT2Analysis<MT2Estimate>::readFromFile( Form("llep_%s_%s_%.0ffb.root", samplesName.c_str(), regionsName.c_str(), lumi) );
   }
   llep->setName( "llep" );
   llep->addToFile( mc_fileName, true );
 
-
-  MT2Analysis<MT2Estimate>* llepCR = MT2Analysis<MT2Estimate>::readFromFile( "llep_PHYS14_Zurich_MT2fine_13TeV_PHYS14_loJet_hiHT_noMT_4fb.root" );
-  //MT2Analysis<MT2Estimate>* llepCR = MT2Analysis<MT2Estimate>::readFromFile( "llep_PHYS14_Zurich_oldRegionProposal_13TeV_PHYS14_loJet_hiHT_noMT_4fb.root" );
-  //MT2Analysis<MT2Estimate>* llepCR = llep;
+  MT2Analysis<MT2Estimate>* llepCR = MT2Analysis<MT2Estimate>::readFromFile( Form("llep_%s_%s_%.0ffb.root", samplesName.c_str(), regionsName.c_str(), lumi) );
 
 
   std::set<MT2Region> regions = data->getRegions();
@@ -154,7 +141,7 @@ int main( int argc, char* argv[] ) {
      unsigned iEmptyZinvBin=this_data->GetNbinsX()+1;
      int nEmptyCR=0;
 
-     for( unsigned iBin=1; iBin<this_data->GetNbinsX()+1; ++iBin ) {
+     for( int iBin=1; iBin<this_data->GetNbinsX()+1; ++iBin ) {
        
        if(this_data->GetBinLowEdge( iBin ) > iR->htMax() && iR->htMax()>0 ) continue;
 
@@ -175,7 +162,7 @@ int main( int argc, char* argv[] ) {
        datacard << "imax 1" << std::endl;
        datacard << "jmax 3" << std::endl;
        datacard << "kmax *" << std::endl;
-       datacard << "shapes * * FAKE" << std::endl;
+       //datacard << "shapes * * FAKE" << std::endl; // To fix instabilities of RooFit in case of too many bins
        datacard << "-------------" << std::endl;
        datacard << std::endl << std::endl;
 
@@ -183,7 +170,7 @@ int main( int argc, char* argv[] ) {
        datacard << std::fixed;
        datacard << std::setprecision(3) << std::endl << std::endl;
        datacard << "bin  " << binName<< std::endl;
-       datacard << "observation  " << this_data->GetBinContent(iBin) << std::endl;
+       datacard << "observation  " << round(this_data->GetBinContent(iBin)) << std::endl;
        datacard << "-------------" << std::endl;
        datacard << std::endl << std::endl;
 
@@ -358,7 +345,7 @@ int main( int argc, char* argv[] ) {
       TH1D* this_signal = signals[isig]->get(*iR)->yield;
 
 
-      for( unsigned iBin=1; iBin<this_signal->GetNbinsX()+1; ++iBin ) {
+      for( int iBin=1; iBin<this_signal->GetNbinsX()+1; ++iBin ) {
 
 	if( this_signal->GetBinLowEdge( iBin ) > iR->htMax() && iR->htMax()>0 ) continue;
 
@@ -456,7 +443,7 @@ void writeToTemplateFile( TFile* file, MT2Analysis<MT2Estimate>* analysis, float
 
       if( err_uncorr==0. ) continue;
 
-      for( unsigned iBin=1; iBin<h1->GetNbinsX()+1; ++iBin ) {
+      for( int iBin=1; iBin<h1->GetNbinsX()+1; ++iBin ) {
 
         float binContent = h1->GetBinContent(iBin);
 
@@ -505,7 +492,7 @@ void writeToTemplateFile_poisson( TFile* file, MT2Analysis<MT2Estimate>* analysi
       //Real uncertainty
       float k = 1.;
 
-      for( unsigned iBin=1; iBin<h1->GetNbinsX()+1; ++iBin ) {
+      for( int iBin=1; iBin<h1->GetNbinsX()+1; ++iBin ) {
 
         float binContent = h1->GetBinContent(iBin);
         int N_zinv = (int)binContent;
@@ -599,12 +586,12 @@ std::string gammaConvention( float yieldSR, int yieldCR, int position, const std
   }
   line << std::setprecision(precision);
 
-  for( unsigned i=0; i<position; ++i )
+  for( int i=0; i<position; ++i )
     line << " - ";
 
   line << syst;
 
-  for( unsigned i=position+1; i<4; ++i )
+  for( int i=position+1; i<4; ++i )
     line << " - ";
 
   std::string line_str = line.str();

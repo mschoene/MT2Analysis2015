@@ -146,7 +146,7 @@ int main( int argc, char* argv[] ) {
 
     std::cout << "-> Done looping on samples. Start merging." << std::endl;
 
-    MT2Analysis<MT2EstimateTree>* EventYield_top   = mergeYields( EventYield, cfg.regionsSet(), "Top", 300, 499 );
+    MT2Analysis<MT2EstimateTree>* EventYield_top   = mergeYields( EventYield, cfg.regionsSet(), "Top", 300, 499 ); // ttbar, single top, ttW, ttZ...
     MT2Analysis<MT2EstimateTree>* EventYield_qcd   = mergeYields( EventYield, cfg.regionsSet(), "QCD", 100, 199 );
     MT2Analysis<MT2EstimateTree>* EventYield_wjets = mergeYields( EventYield, cfg.regionsSet(), "WJets", 500, 599, "W+jets" );
     MT2Analysis<MT2EstimateTree>* EventYield_zjets = mergeYields( EventYield, cfg.regionsSet(), "ZJets", 600, 699, "Z+jets" );
@@ -225,7 +225,7 @@ int main( int argc, char* argv[] ) {
   if( dummyAnalysis ) { // use same as MC
 
     for( unsigned i=1; i < bgYields.size(); ++i ) (*data) += *(bgYields[i]);
-    randomizePoisson( data );
+    //randomizePoisson( data );
 
   } else {
 

@@ -56,8 +56,6 @@ prova: prova.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateSyst.o
 provaRead: provaRead.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateSyst.o
 	$(CC) -Wall $(INCLUDES) -o provaRead provaRead.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateSyst.o $(ROOTFLAG) $(EXTRALIBS)
 
-compareYield: compareYield.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateSyst.o MT2DrawTools.o
-	$(CC) -Wall $(INCLUDES) -o compareYield compareYield.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateSyst.o  MT2DrawTools.o $(ROOTFLAG) $(EXTRALIBS)
 
 printYield: printYield.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateSyst.o
 	$(CC) -Wall $(INCLUDES) -o printYield printYield.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateSyst.o $(ROOTFLAG) $(EXTRALIBS)
@@ -118,6 +116,16 @@ provaZinv: provaZinv.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateZinvGa
 provaRoofit: provaRoofit.cpp 
 	$(CC) -Wall $(INCLUDES) -o provaRoofit provaRoofit.cpp $(ROOTFLAG) $(EXTRALIBS)
 
+provaTemplate: provaTemplate.cpp 
+	$(CC) -Wall $(INCLUDES) -o provaTemplate provaTemplate.cpp $(ROOTFLAG) $(EXTRALIBS)
+
+
+printLowYields: printLowYields.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateZinvGamma.o MT2EstimateSyst.o MT2EstimateTree.o
+	$(CC) -Wall $(INCLUDES) -o printLowYields printLowYields.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateZinvGamma.o MT2EstimateSyst.o MT2EstimateTree.o $(ROOTFLAG) $(EXTRALIBS)
+
+
+computeTemplateSyst: computeTemplateSyst.cpp MT2Region.o MT2Estimate.o 
+	$(CC) -Wall $(INCLUDES) -o computeTemplateSyst computeTemplateSyst.cpp MT2Region.o MT2Estimate.o $(ROOTFLAG) $(EXTRALIBS)
 
 
 
