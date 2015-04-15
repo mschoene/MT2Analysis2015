@@ -78,21 +78,23 @@ int scaleFactors(string inputString,
   Float_t obj_eta[100];
   clone->SetBranchAddress((objectName+"_eta").c_str(), obj_eta);
   
-  TBranch* b1 = clone->Branch("weight_lepsf", &weight_lepsf, "weight_lepsf/F");
-  TBranch* b2 = clone->Branch("weight_lepsf_UP", &weight_lepsf_UP, "weight_lepsf_UP/F");
-  TBranch* b3 = clone->Branch("weight_lepsf_DN", &weight_lepsf_DN, "weight_lepsf_DN/F");
-  TBranch* b4 = clone->Branch("weight_btagsf", &weight_btagsf, "weight_btagsf/F");
-  TBranch* b5 = clone->Branch("weight_btagsf_UP", &weight_btagsf_UP, "weight_btagsf_UP/F");
-  TBranch* b6 = clone->Branch("weight_btagsf_DN", &weight_btagsf_DN, "weight_btagsf_DN/F");
-  TBranch* b7 = clone->Branch("weight_sigtrigsf", &weight_sigtrigsf, "weight_sigtrigsf/F");
-  TBranch* b8 = clone->Branch("weight_dileptrigsf", &weight_dileptrigsf, "weight_dileptrigsf/F");
-  TBranch* b9 = clone->Branch("weight_phottrigsf", &weight_phottrigsf, "weight_phottrigsf/F");
-  TBranch* b10 = clone->Branch("weight_pu", &weight_pu, "weight_pu/F");
-  TBranch* b11 = clone->Branch("weight_isr", &weight_isr, "weight_isr/F");
-  TBranch* b12 = clone->Branch("weight_scales_UP", &weight_scales_UP, "weight_scales_UP/F");
-  TBranch* b13 = clone->Branch("weight_scales_DN", &weight_scales_DN, "weight_scales_DN/F");
-  TBranch* b14 = clone->Branch("weight_pdfs_UP", &weight_pdfs_UP, "weight_pdfs_UP/F");
-  TBranch* b15 = clone->Branch("weight_pdfs_DN", &weight_pdfs_DN, "weight_pdfs_DN/F");
+  TTree *ft = new TTree("mt2_sf", "friend tree containing scale factors");
+  
+  TBranch* b1 = ft->Branch("weight_lepsf", &weight_lepsf, "weight_lepsf/F");
+  TBranch* b2 = ft->Branch("weight_lepsf_UP", &weight_lepsf_UP, "weight_lepsf_UP/F");
+  TBranch* b3 = ft->Branch("weight_lepsf_DN", &weight_lepsf_DN, "weight_lepsf_DN/F");
+  TBranch* b4 = ft->Branch("weight_btagsf", &weight_btagsf, "weight_btagsf/F");
+  TBranch* b5 = ft->Branch("weight_btagsf_UP", &weight_btagsf_UP, "weight_btagsf_UP/F");
+  TBranch* b6 = ft->Branch("weight_btagsf_DN", &weight_btagsf_DN, "weight_btagsf_DN/F");
+  TBranch* b7 = ft->Branch("weight_sigtrigsf", &weight_sigtrigsf, "weight_sigtrigsf/F");
+  TBranch* b8 = ft->Branch("weight_dileptrigsf", &weight_dileptrigsf, "weight_dileptrigsf/F");
+  TBranch* b9 = ft->Branch("weight_phottrigsf", &weight_phottrigsf, "weight_phottrigsf/F");
+  TBranch* b10 =ft->Branch("weight_pu", &weight_pu, "weight_pu/F");
+  TBranch* b11 =ft->Branch("weight_isr", &weight_isr, "weight_isr/F");
+  TBranch* b12 =ft->Branch("weight_scales_UP", &weight_scales_UP, "weight_scales_UP/F");
+  TBranch* b13 =ft->Branch("weight_scales_DN", &weight_scales_DN, "weight_scales_DN/F");
+  TBranch* b14 =ft->Branch("weight_pdfs_UP", &weight_pdfs_UP, "weight_pdfs_UP/F");
+  TBranch* b15 =ft->Branch("weight_pdfs_DN", &weight_pdfs_DN, "weight_pdfs_DN/F");
   
   TH2F* hS = (TH2F*) scaleFile->Get("h");
   
@@ -116,7 +118,7 @@ int scaleFactors(string inputString,
     weight_scales_DN=1.;
     weight_pdfs_UP=1.;
     weight_pdfs_DN=1.;
-    
+  
     if( objectName == "lep" )
       if(nobj>0)
 	for(int o=0; o<nobj; ++o){
@@ -126,30 +128,20 @@ int scaleFactors(string inputString,
 	  weight_lepsf *= hS->GetBinContent(binx, biny);
 	  weight_lepsf_UP *= ( hS->GetBinContent(binx, biny) + hS->GetBinError(binx, biny) );
 	  weight_lepsf_DN *= ( hS->GetBinContent(binx, biny) - hS->GetBinError(binx, biny) );
+
+	  if (weight_lepsf < 0.94)
+	    std::cout << weight_lepsf << "\t" << obj_pt[o] << "\t"  << obj_eta[o] << std::endl;
 	  
 	}
     
-    b1->Fill();
-    b2->Fill();
-    b3->Fill();
-    b4->Fill();
-    b5->Fill();
-    b6->Fill();
-    b7->Fill();
-    b8->Fill();
-    b9->Fill();
-    b10->Fill();
-    b11->Fill();
-    b12->Fill();
-    b13->Fill();
-    b14->Fill();
-    b15->Fill();
-   
+    ft->Fill();
+    
   }
   //-------------------------------------------------------------
 
 
-  clone->Write();
+  ft->Write();
+  delete ft;
   delete clone;
   out->Close();
   return 0;
