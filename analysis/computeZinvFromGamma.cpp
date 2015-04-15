@@ -101,8 +101,21 @@ int main( int argc, char* argv[] ) {
   else
     (*gammaCR_times_ZgammaRatio) = (*gammaCR) * (*ZgammaRatio);
 
-  MT2Analysis<MT2EstimateSyst>* ZinvEstimateFromGamma = MT2EstimateSyst::makeAnalysisFromEstimate( "ZinvEstimateFromGamma", regionsSet, gammaCR_times_ZgammaRatio );
-  if( type!=0 ) (*ZinvEstimateFromGamma) *= (*purity);
+
+
+
+  MT2Analysis<MT2EstimateSyst>* ZinvEstimateFromGamma;
+  if( type==0 ) {
+
+    ZinvEstimateFromGamma = MT2EstimateSyst::makeAnalysisFromEstimate( "ZinvEstimateFromGamma", regionsSet, gammaCR_times_ZgammaRatio );
+
+  } else {
+
+    ZinvEstimateFromGamma = new MT2Analysis<MT2EstimateSyst>("ZinvEstimateFromGamma", regionsSet);
+    (*ZinvEstimateFromGamma) = (*purity)*(*gammaCR_times_ZgammaRatio);
+    (*ZinvEstimateFromGamma) *= 0.92; // f
+
+  }
 
 
   MT2Analysis<MT2EstimateSyst>* ZinvEstimate = combineDataAndMC( ZinvEstimateFromGamma, (MT2Analysis<MT2Estimate>*)Zinv );
