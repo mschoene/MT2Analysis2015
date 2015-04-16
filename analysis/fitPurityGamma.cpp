@@ -59,6 +59,7 @@ int main( int argc, char* argv[] ) {
   if( argc>1 ) {
     mc_or_data = std::string(argv[1]);
     if( mc_or_data=="data" ) mc_or_data="DataRC";
+    if( mc_or_data=="dataRC" ) mc_or_data="DataRC";
     if( mc_or_data=="mc" ) mc_or_data="MC";
   }
 
