@@ -212,7 +212,9 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2An
     }
 
 
-    if( iso > 10. ) continue;
+    //// preselection
+    //if( iso > 20. ) continue;
+    ////if( iso > 10. ) continue;
 
     Double_t weight = myTree.evt_scale1fb*lumi; 
 
