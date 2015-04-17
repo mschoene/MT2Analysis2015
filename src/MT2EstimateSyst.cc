@@ -55,9 +55,9 @@ MT2EstimateSyst::MT2EstimateSyst( const std::string& aname, const MT2Region& are
 MT2EstimateSyst::MT2EstimateSyst( const MT2Estimate& rhs ) : MT2Estimate(rhs) {
 
   this->yield_systUp = new TH1D(*(rhs.yield));
-  this->yield_systDown = new TH1D(*(rhs.yield));
-
   this->yield_systUp   ->SetName(this->getHistoName("yield_systUp").c_str()); 
+
+  this->yield_systDown = new TH1D(*(rhs.yield));
   this->yield_systDown ->SetName(this->getHistoName("yield_systDown").c_str()); 
 
 }
@@ -232,6 +232,25 @@ const MT2EstimateSyst& MT2EstimateSyst::operator=( const MT2EstimateSyst& rhs ) 
   this->yield = new TH1D(*(rhs.yield));
   this->yield_systUp = new TH1D(*(rhs.yield_systUp));
   this->yield_systDown = new TH1D(*(rhs.yield_systDown));
+
+  this->setName( this->getName() );
+
+
+  return *this;
+
+}
+
+
+
+
+const MT2EstimateSyst& MT2EstimateSyst::operator=( const MT2Estimate& rhs ) {
+
+
+  this->region = new MT2Region(*(rhs.region));
+
+  this->yield = new TH1D(*(rhs.yield));
+  this->yield_systUp = new TH1D(*(rhs.yield));
+  this->yield_systDown = new TH1D(*(rhs.yield));
 
   this->setName( this->getName() );
 
