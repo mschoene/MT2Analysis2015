@@ -11,9 +11,10 @@
 
 #include "interface/MT2Analysis.h"
 #include "interface/MT2Estimate.h"
+#include "interface/MT2EstimateSyst.h"
 
 
-//bool use_gamma = false;
+
 bool use_gamma = true;
 
 double lumi = 4;
@@ -57,7 +58,7 @@ int main( int argc, char* argv[] ) {
   float err_llep_corr   = 0.;
   float err_llep_uncorr = 0.075;
   float err_llep_lepEff = 0.15;
-  float err_zinv_corr   = 0.2; // 20% on Z/gamma ratio
+  float err_zinv_corr   = 0.21; // 20% on Z/gamma ratio plus added in quadrature syst on templates (2%) and on f (4%) and MC stat on Rzg (5%) -> sqrt( 20*20 + 2*2 + 4*4 +5*5 ) = 21
   float err_zinv_uncorr = -1.; // will take histogram bin error
   float err_zinv_alpha_extra  = 0.2; // 20% extra uncertainty on alpha if using lower MT2 as CR
   float err_zinv_uncorr_2b = 1.0;
@@ -79,15 +80,14 @@ int main( int argc, char* argv[] ) {
   
   MT2Analysis<MT2Estimate>* zinv;
   MT2Analysis<MT2Estimate>* zinvCR;
-  MT2Analysis<MT2Estimate>* zinv_ratio;
+  MT2Analysis<MT2EstimateSyst>* zinv_ratio;
   if( useMC_zinv )
     zinv = MT2Analysis<MT2Estimate>::readFromFile( mc_fileName, "ZJets");
   else {
-    zinv       = MT2Analysis<MT2Estimate>::readFromFile( mc_fileName, "ZJets");
-    //    zinvCR     = MT2Analysis<MT2Estimate>::readFromFile( "GammaControlRegion_oldMT2_PHYS14_v2_Zinv_zurich/mc.root", "gammaCR");
-    //    zinv_ratio = MT2Analysis<MT2Estimate>::readFromFile( "ZinvEstimateFromGamma_oldMT2_PHYS14_v2_Zinv_zurich_4fb_type0/MT2ZinvEstimate.root", "ZgammaRatio");
-    zinvCR     = MT2Analysis<MT2Estimate>::readFromFile( Form("GammaControlRegion_%s_%s_%.0ffb/data.root", samplesName.c_str(), regionsName.c_str(), lumi), "gammaCR");
-    zinv_ratio = MT2Analysis<MT2Estimate>::readFromFile( Form("ZinvEstimateFromGamma_%s_%s_%.0ffb_type0/MT2ZinvEstimate.root", samplesName.c_str(), regionsName.c_str(), lumi), "ZgammaRatio");
+    //zinv       = MT2Analysis<MT2Estimate>::readFromFile( mc_fileName, "ZJets");
+    zinvCR      = MT2Analysis<MT2Estimate>    ::readFromFile( Form("GammaControlRegion_%s_%s_%.0ffb/data.root", samplesName.c_str(), regionsName.c_str(), lumi), "gammaCR");
+    zinv        = MT2Analysis<MT2Estimate>    ::readFromFile( Form("ZinvEstimateFromGamma_%s_%s_%.0ffb_type1/MT2ZinvEstimate.root", samplesName.c_str(), regionsName.c_str(), lumi), "ZinvEstimate");
+    zinv_ratio  = MT2Analysis<MT2EstimateSyst>::readFromFile( Form("ZinvEstimateFromGamma_%s_%s_%.0ffb_type1/MT2ZinvEstimate.root", samplesName.c_str(), regionsName.c_str(), lumi), "ZgammaRatio");
   }
   zinv->setName("zinv");
   zinv->addToFile( mc_fileName, true );
@@ -124,7 +124,8 @@ int main( int argc, char* argv[] ) {
      TH1D* this_llep = llep->get(*iR)->yield;
      TH1D* this_llepCR = llepCR->get(*iR)->yield;
      TH1D* this_zinvCR     = (use_gamma) ? zinvCR->get(*iR)->yield : 0;
-     TH1D* this_zinv_ratio = (use_gamma) ? zinv_ratio->get(*iR)->yield : 0;
+     TGraphAsymmErrors* this_zinv_ratio = (use_gamma) ? zinv_ratio->get(*iR)->getGraph() : 0;
+//     TGraphAsymmErrors* this_zinv_purity = (use_gamma) ? zinv_purity->get(*iR)->getGraph() : 0;
 
      float N_llep_CR = this_llepCR->Integral();
      std::string llepCR_name = iR->getName();
@@ -244,6 +245,20 @@ int main( int argc, char* argv[] ) {
 
            } else {
 
+             int Ngamma = round(this_zinvCR->GetBinContent(iBin));
+
+             Double_t x_tmp, R, R_errUp, R_errDown;
+             this_zinv_ratio->GetPoint( iBin, x_tmp, R);
+             R_errUp   = this_zinv_ratio->GetErrorYhigh( iBin );
+             R_errDown = this_zinv_ratio->GetErrorYlow ( iBin ); // these uncertainties on R are only due to purity (see computeZinvFromGamma)
+           
+             
+             datacard << "zinv_purity_" << binName << " lnN  - " << 1.+R_errUp/R << "/" << 1.-R_errDown/R << " - -" << std::endl;
+             datacard << "zinv_CRstat_" << binName << " gmN " << Ngamma << " - " << R << std::endl;
+
+
+
+/*
 	     bool isEmptyCR=false;
 
              int Ngamma = round(this_zinvCR->GetBinContent(iBin));
@@ -268,7 +283,8 @@ int main( int argc, char* argv[] ) {
 	     }
 	     else ;
 	     
-           }
+*/
+           } // if nbjets >= 2
 
          } // if use gamma
 
