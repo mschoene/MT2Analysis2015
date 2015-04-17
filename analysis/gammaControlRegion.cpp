@@ -218,6 +218,12 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet,
     bool isNIP    = isMatched && isQCD;
     bool isFake   = !isMatched;
 
+    float ht        = myTree.gamma_ht;
+    float met       = myTree.gamma_met_pt;
+    float mt2       = myTree.gamma_mt2;
+    float minMTBmet = myTree.gamma_minMTBMet;
+    int njets       = myTree.gamma_nJet40;
+    int nbjets      = myTree.gamma_nBJet20;    
 
 
 
@@ -228,55 +234,55 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet,
 
     if( isPrompt ) {
 
-      MT2EstimateZinvGamma* thisPrompt = prompt->get( myTree.gamma_ht, myTree.gamma_nJet40, myTree.gamma_nBJet40, myTree.gamma_met_pt, myTree.gamma_minMTBMet, myTree.gamma_mt2 );
+      MT2EstimateZinvGamma* thisPrompt = prompt->get( ht, njets, nbjets, met, minMTBmet, mt2 );
       if( thisPrompt==0 ) continue;
 
-      thisPrompt->yield->Fill(myTree.gamma_mt2, weight );
-      thisPrompt->fillIso( iso, weight, myTree.gamma_mt2 );
+      thisPrompt->yield->Fill(mt2, weight );
+      thisPrompt->fillIso( iso, weight, mt2 );
 
       if( passIso ) {
 
-        MT2EstimateZinvGamma* thisPrompt_pass = prompt_pass->get( myTree.gamma_ht, myTree.gamma_nJet40, myTree.gamma_nBJet40, myTree.gamma_met_pt, myTree.gamma_minMTBMet, myTree.gamma_mt2 );
+        MT2EstimateZinvGamma* thisPrompt_pass = prompt_pass->get( ht, njets, nbjets, met, minMTBmet, mt2 );
         if( thisPrompt_pass==0 ) continue;
 
-        thisPrompt_pass->yield->Fill(myTree.gamma_mt2, weight );
-        thisPrompt_pass->fillIso( iso, weight, myTree.gamma_mt2 );
+        thisPrompt_pass->yield->Fill(mt2, weight );
+        thisPrompt_pass->fillIso( iso, weight, mt2 );
 
       }
 
     } else if( isNIP ) { 
       
-      MT2EstimateZinvGamma* thisnip = nip->get( myTree.gamma_ht, myTree.gamma_nJet40, myTree.gamma_nBJet40, myTree.gamma_met_pt, myTree.gamma_minMTBMet, myTree.gamma_mt2 );
+      MT2EstimateZinvGamma* thisnip = nip->get( ht, njets, nbjets, met, minMTBmet, mt2 );
       if( thisnip==0 ) continue;
 
-      thisnip->yield->Fill(myTree.gamma_mt2, weight );
-      thisnip->fillIso( iso, weight, myTree.gamma_mt2 );
+      thisnip->yield->Fill(mt2, weight );
+      thisnip->fillIso( iso, weight, mt2 );
 
       if( passIso ) {
 
-        MT2EstimateZinvGamma* thisnip_pass = nip_pass->get( myTree.gamma_ht, myTree.gamma_nJet40, myTree.gamma_nBJet40, myTree.gamma_met_pt, myTree.gamma_minMTBMet, myTree.gamma_mt2 );
+        MT2EstimateZinvGamma* thisnip_pass = nip_pass->get( ht, njets, nbjets, met, minMTBmet, mt2 );
         if( thisnip_pass==0 ) continue;
 
-        thisnip_pass->yield->Fill(myTree.gamma_mt2, weight );
-        thisnip_pass->fillIso( iso, weight, myTree.gamma_mt2 );
+        thisnip_pass->yield->Fill(mt2, weight );
+        thisnip_pass->fillIso( iso, weight, mt2 );
 
       }
 
     } else if( isFake ) {
 
-      MT2EstimateZinvGamma* thisFake = fake->get( myTree.gamma_ht, myTree.gamma_nJet40, myTree.gamma_nBJet40, myTree.gamma_met_pt, myTree.gamma_minMTBMet, myTree.gamma_mt2 );
+      MT2EstimateZinvGamma* thisFake = fake->get( ht, njets, nbjets, met, minMTBmet, mt2 );
       if( thisFake==0 ) continue;
 
-      thisFake->yield->Fill(myTree.gamma_mt2, weight );
-      thisFake->fillIso( iso, weight, myTree.gamma_mt2 );
+      thisFake->yield->Fill(mt2, weight );
+      thisFake->fillIso( iso, weight, mt2 );
 
       if( passIso ) {
 
-        MT2EstimateZinvGamma* thisFake_pass = fake_pass->get( myTree.gamma_ht, myTree.gamma_nJet40, myTree.gamma_nBJet40, myTree.gamma_met_pt, myTree.gamma_minMTBMet, myTree.gamma_mt2 );
+        MT2EstimateZinvGamma* thisFake_pass = fake_pass->get( ht, njets, nbjets, met, minMTBmet, mt2 );
         if( thisFake_pass==0 ) continue;
 
-        thisFake_pass->yield->Fill(myTree.gamma_mt2, weight );
-        thisFake_pass->fillIso( iso, weight, myTree.gamma_mt2 );
+        thisFake_pass->yield->Fill(mt2, weight );
+        thisFake_pass->fillIso( iso, weight, mt2 );
 
       }
 
@@ -284,9 +290,9 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet,
 
 
     if( passIso ) {
-      MT2EstimateTree* thisTree = anaTree->get( myTree.gamma_ht, myTree.gamma_nJet40, myTree.gamma_nBJet40, myTree.gamma_met_pt, myTree.gamma_minMTBMet, myTree.gamma_mt2 );
+      MT2EstimateTree* thisTree = anaTree->get( ht, njets, nbjets, met, minMTBmet, mt2 );
       if( thisTree!=0 ) {
-        thisTree->yield->Fill(myTree.gamma_mt2, weight );
+        thisTree->yield->Fill(mt2, weight );
         if( isPrompt )
           thisTree->assignVar( "prompt", 2 );
         else if( isNIP )
