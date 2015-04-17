@@ -223,13 +223,13 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2An
 
     if( isPrompt ) {
 
-      MT2EstimateTree* thisPrompt = prompt->get( myTree.gamma_ht, myTree.gamma_nJet40, myTree.gamma_nBJet40, myTree.gamma_met_pt );
+      MT2EstimateTree* thisPrompt = prompt->get( myTree.gamma_ht, myTree.gamma_nJet40, myTree.gamma_nBJet20, myTree.gamma_met_pt );
       if( thisPrompt==0 ) continue;
 
       thisPrompt->yield->Fill(myTree.gamma_mt2, weight );
 
       thisPrompt->assignTree(myTree, lumi*myTree.evt_scale1fb);
-      thisPrompt->assignVars( myTree.gamma_ht, myTree.gamma_nJet40, myTree.gamma_nBJet40, myTree.gamma_met_pt, myTree.gamma_mt2 );
+      thisPrompt->assignVars( myTree.gamma_ht, myTree.gamma_nJet40, myTree.gamma_nBJet20, myTree.gamma_met_pt, myTree.gamma_mt2 );
       thisPrompt->assignVar( "genIso", myTree.gamma_genIso04[0] );
       thisPrompt->assignVar( "sietaieta", sietaieta );
       thisPrompt->assignVar( "iso", iso );
@@ -244,13 +244,13 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2An
 
     } else if( isNIP ) {
 
-      MT2EstimateTree* thisNIP = nip->get( myTree.gamma_ht, myTree.gamma_nJet40, myTree.gamma_nBJet40, myTree.gamma_met_pt );
+      MT2EstimateTree* thisNIP = nip->get( myTree.gamma_ht, myTree.gamma_nJet40, myTree.gamma_nBJet20, myTree.gamma_met_pt );
       if( thisNIP==0 ) continue;
 
       thisNIP->yield->Fill(myTree.gamma_mt2, weight );
 
       thisNIP->assignTree(myTree, lumi*myTree.evt_scale1fb);
-      thisNIP->assignVars( myTree.gamma_ht, myTree.gamma_nJet40, myTree.gamma_nBJet40, myTree.gamma_met_pt, myTree.gamma_mt2 );
+      thisNIP->assignVars( myTree.gamma_ht, myTree.gamma_nJet40, myTree.gamma_nBJet20, myTree.gamma_met_pt, myTree.gamma_mt2 );
       thisNIP->assignVar( "genIso", myTree.gamma_genIso04[0] );
       thisNIP->assignVar( "sietaieta", sietaieta );
       thisNIP->assignVar( "iso", iso );
@@ -265,13 +265,13 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2An
 
     } else if( isFake ) {
 
-      MT2EstimateTree* thisFake = fake->get( myTree.gamma_ht, myTree.gamma_nJet40, myTree.gamma_nBJet40, myTree.gamma_met_pt );
+      MT2EstimateTree* thisFake = fake->get( myTree.gamma_ht, myTree.gamma_nJet40, myTree.gamma_nBJet20, myTree.gamma_met_pt );
       if( thisFake==0 ) continue;
 
       thisFake->yield->Fill(myTree.gamma_mt2, weight );
 
       thisFake->assignTree(myTree, lumi*myTree.evt_scale1fb);
-      thisFake->assignVars( myTree.gamma_ht, myTree.gamma_nJet40, myTree.gamma_nBJet40, myTree.gamma_met_pt, myTree.gamma_mt2 );
+      thisFake->assignVars( myTree.gamma_ht, myTree.gamma_nJet40, myTree.gamma_nBJet20, myTree.gamma_met_pt, myTree.gamma_mt2 );
       thisFake->assignVar( "genIso", myTree.gamma_genIso04[0] );
       thisFake->assignVar( "sietaieta", sietaieta );
       thisFake->assignVar( "iso", iso );
