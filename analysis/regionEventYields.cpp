@@ -323,12 +323,12 @@ MT2Analysis<MT2EstimateTree>* computeYield( const MT2Sample& sample, const MT2Co
     float mt2  = myTree.mt2;
     float minMTBmet = myTree.minMTBMet;
     int njets  = myTree.nJet40;
-    int nbjets = myTree.nBJet40;
-
+    //int nbjets = myTree.nBJet40;
+    int nbjets = myTree.nBJet20;    
 
     Double_t weight = myTree.evt_scale1fb*lumi;
-
-
+    //weight *= myTree.weight_lepsf;
+   
     MT2EstimateTree* thisEstimate = analysis->get( ht, njets, nbjets, met, minMTBmet, mt2 );
     if( thisEstimate==0 ) continue;
 
