@@ -59,6 +59,7 @@ int main( int argc, char* argv[] ) {
   if( argc>1 ) {
     mc_or_data = std::string(argv[1]);
     if( mc_or_data=="data" ) mc_or_data="DataRC";
+    if( mc_or_data=="dataRC" ) mc_or_data="DataRC";
     if( mc_or_data=="mc" ) mc_or_data="MC";
   }
 
@@ -242,6 +243,8 @@ void fitSinglePurity( const std::string& outputdir, Purity& loose, Purity& tight
 
 void checkBoundaries( Purity& p ) {
 
+  if( p.purity > 1. ) p.purity = 1.;
+  if( p.purity < 0. ) p.purity = 0.;
   if( p.purity - p.purityErrDown < 0. ) p.purityErrDown = p.purity;
   if( p.purity + p.purityErrUp   > 1. ) p.purityErrUp   = 1. - p.purity;
 

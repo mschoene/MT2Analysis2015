@@ -32,16 +32,26 @@ class MT2EstimateSyst : public MT2Estimate {
   TH1D* yield_systDown;
 
   const MT2EstimateSyst& operator=( const MT2EstimateSyst& rhs );
+
   MT2EstimateSyst operator+( const MT2EstimateSyst& rhs ) const;
+  MT2EstimateSyst operator-( const MT2EstimateSyst& rhs ) const;
   MT2EstimateSyst operator*( const MT2EstimateSyst& rhs ) const;
   MT2EstimateSyst operator/( const MT2EstimateSyst& rhs ) const;
+
+  MT2EstimateSyst operator+( const MT2Estimate& rhs ) const;
+  MT2EstimateSyst operator-( const MT2Estimate& rhs ) const;
   MT2EstimateSyst operator*( const MT2Estimate& rhs ) const;
   MT2EstimateSyst operator/( const MT2Estimate& rhs ) const;
+
   const MT2EstimateSyst& operator+=( const MT2EstimateSyst& rhs );
-  const MT2EstimateSyst& operator/=( const MT2EstimateSyst& rhs );
+  const MT2EstimateSyst& operator-=( const MT2EstimateSyst& rhs );
   const MT2EstimateSyst& operator*=( const MT2EstimateSyst& rhs );
-  const MT2EstimateSyst& operator/=( const MT2Estimate& rhs );
+  const MT2EstimateSyst& operator/=( const MT2EstimateSyst& rhs );
+
+  const MT2EstimateSyst& operator+=( const MT2Estimate& rhs );
+  const MT2EstimateSyst& operator-=( const MT2Estimate& rhs );
   const MT2EstimateSyst& operator*=( const MT2Estimate& rhs );
+  const MT2EstimateSyst& operator/=( const MT2Estimate& rhs );
 
   MT2EstimateSyst operator/ ( float k ) const;
   MT2EstimateSyst operator* ( float k ) const;

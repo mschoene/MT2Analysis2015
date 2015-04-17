@@ -243,47 +243,134 @@ const MT2EstimateSyst& MT2EstimateSyst::operator=( const MT2EstimateSyst& rhs ) 
 
 
 
+
+
 MT2EstimateSyst MT2EstimateSyst::operator+( const MT2EstimateSyst& rhs ) const{
 
 
   if( *(this->region) != *(rhs.region) ) {
-    std::cout << "[MT2EstimateSyst::operator+] ERROR! Can't add MT2EstimateSyst with different MT2Regions!" << std::endl;
+    std::cout << "[MT2EstimateSyst::operator*] ERROR! Can't multiply MT2EstimateSyst with different MT2Regions!" << std::endl;
     exit(113);
   }
 
-  //MT2EstimateSyst result(*this);
-  //result.yield->Add(rhs.yield);
-  //result.yield_systUp->Add(rhs.yield_systUp);
-  //result.yield_systDown->Add(rhs.yield_systDown);
 
   MT2EstimateSyst result(*this);
-  result.yield->Add(rhs.yield);
-  result.yield_systUp->Add(rhs.yield_systUp);
-  result.yield_systDown->Add(rhs.yield_systDown);
 
-  //return *this;
+  for( int iBin=1; iBin<result.yield->GetNbinsX()+1; ++iBin ) {
+
+    float thisBin  = result.yield->GetBinContent(iBin);
+    float otherBin = rhs.yield->GetBinContent(iBin);
+
+    float thisBinUp  = result.yield_systUp->GetBinContent(iBin);
+    float otherBinUp = rhs.yield_systUp->GetBinContent(iBin);
+    float thisBinDown  = result.yield_systDown->GetBinContent(iBin);
+    float otherBinDown = rhs.yield_systDown->GetBinContent(iBin);
+
+    float thisErrUp = thisBinUp - thisBin;
+    float thisErrDown = thisBin - thisBinDown;
+    float otherErrUp = otherBinUp - otherBin;
+    float otherErrDown = otherBin - otherBinDown;
+
+    float newBin = thisBin+otherBin;
+    float newErrUp = sqrt( thisErrUp*thisErrUp + otherErrUp*otherErrUp );
+    float newErrDown = sqrt( thisErrDown*thisErrDown + otherErrDown*otherErrDown );
+
+    result.yield         ->SetBinContent( iBin, newBin );
+    result.yield_systUp  ->SetBinContent( iBin, newBin + newErrUp );
+    result.yield_systDown->SetBinContent( iBin, newBin - newErrDown );
+
+  }
+
   return result;
-  
+
 }
+
+
+
+MT2EstimateSyst MT2EstimateSyst::operator-( const MT2EstimateSyst& rhs ) const{
+
+
+  if( *(this->region) != *(rhs.region) ) {
+    std::cout << "[MT2EstimateSyst::operator*] ERROR! Can't multiply MT2EstimateSyst with different MT2Regions!" << std::endl;
+    exit(113);
+  }
+
+
+  MT2EstimateSyst result(*this);
+
+  for( int iBin=1; iBin<result.yield->GetNbinsX()+1; ++iBin ) {
+
+    float thisBin  = result.yield->GetBinContent(iBin);
+    float otherBin = rhs.yield->GetBinContent(iBin);
+
+    float thisBinUp  = result.yield_systUp->GetBinContent(iBin);
+    float otherBinUp = rhs.yield_systUp->GetBinContent(iBin);
+    float thisBinDown  = result.yield_systDown->GetBinContent(iBin);
+    float otherBinDown = rhs.yield_systDown->GetBinContent(iBin);
+
+    float thisErrUp = thisBinUp - thisBin;
+    float thisErrDown = thisBin - thisBinDown;
+    float otherErrUp = otherBinUp - otherBin;
+    float otherErrDown = otherBin - otherBinDown;
+
+    float newBin = thisBin-otherBin;
+    float newErrUp = sqrt( thisErrUp*thisErrUp + otherErrUp*otherErrUp );
+    float newErrDown = sqrt( thisErrDown*thisErrDown + otherErrDown*otherErrDown );
+
+    result.yield         ->SetBinContent( iBin, newBin );
+    result.yield_systUp  ->SetBinContent( iBin, newBin + newErrUp );
+    result.yield_systDown->SetBinContent( iBin, newBin - newErrDown );
+
+  }
+
+  return result;
+
+}
+
+
 
 
 MT2EstimateSyst MT2EstimateSyst::operator/( const MT2EstimateSyst& rhs ) const{
 
 
   if( *(this->region) != *(rhs.region) ) {
-    std::cout << "[MT2EstimateSyst::operator/] ERROR! Can't divide MT2EstimateSyst with different MT2Regions!" << std::endl;
+    std::cout << "[MT2EstimateSyst::operator*] ERROR! Can't multiply MT2EstimateSyst with different MT2Regions!" << std::endl;
     exit(113);
   }
 
-  MT2EstimateSyst result(*this);
-  result.yield->Divide(rhs.yield);
-  result.yield_systUp->Divide(rhs.yield_systUp);
-  result.yield_systDown->Divide(rhs.yield_systDown);
 
-  //return *this;
+  MT2EstimateSyst result(*this);
+
+  for( int iBin=1; iBin<result.yield->GetNbinsX()+1; ++iBin ) {
+
+    float thisBin  = result.yield->GetBinContent(iBin);
+    float otherBin = rhs.yield->GetBinContent(iBin);
+
+    float thisBinUp  = result.yield_systUp->GetBinContent(iBin);
+    float otherBinUp = rhs.yield_systUp->GetBinContent(iBin);
+    float thisBinDown  = result.yield_systDown->GetBinContent(iBin);
+    float otherBinDown = rhs.yield_systDown->GetBinContent(iBin);
+
+    float thisErrUp = thisBinUp - thisBin;
+    float thisErrDown = thisBin - thisBinDown;
+    float otherErrUp = otherBinUp - otherBin;
+    float otherErrDown = otherBin - otherBinDown;
+
+    float newBin = thisBin/otherBin;
+    float newErrUp = sqrt( thisErrUp*thisErrUp/(otherBin*otherBin) + otherErrUp*otherErrUp*thisBin*thisBin/(otherBin*otherBin*otherBin*otherBin) );
+    float newErrDown = sqrt( thisErrDown*thisErrDown/(otherBin*otherBin) + otherErrDown*otherErrDown*thisBin*thisBin/(otherBin*otherBin*otherBin*otherBin) );
+
+    result.yield         ->SetBinContent( iBin, newBin );
+    result.yield_systUp  ->SetBinContent( iBin, newBin + newErrUp );
+    result.yield_systDown->SetBinContent( iBin, newBin - newErrDown );
+
+  }
+
   return result;
 
 }
+
+
 
 
 MT2EstimateSyst MT2EstimateSyst::operator*( const MT2EstimateSyst& rhs ) const{
@@ -313,8 +400,8 @@ MT2EstimateSyst MT2EstimateSyst::operator*( const MT2EstimateSyst& rhs ) const{
     float otherErrDown = otherBin - otherBinDown;
 
     float newBin = thisBin*otherBin;
-    float newErrUp = sqrt( thisErrUp*otherErrUp + thisErrUp*otherErrUp );
-    float newErrDown = sqrt( thisErrDown*otherErrDown + thisErrDown*otherErrDown );
+    float newErrUp = sqrt( thisBin*thisBin*otherErrUp*otherErrUp + otherBin*otherBin*thisErrUp*thisErrUp );
+    float newErrDown = sqrt( thisBin*thisBin*otherErrDown*otherErrDown + otherBin*otherBin*thisErrDown*thisErrDown );
 
     result.yield         ->SetBinContent( iBin, newBin );
     result.yield_systUp  ->SetBinContent( iBin, newBin + newErrUp );
@@ -326,6 +413,78 @@ MT2EstimateSyst MT2EstimateSyst::operator*( const MT2EstimateSyst& rhs ) const{
 
 }
 
+
+
+MT2EstimateSyst MT2EstimateSyst::operator+( const MT2Estimate& rhs ) const{
+
+
+  if( *(this->region) != *(rhs.region) ) {
+    std::cout << "[MT2EstimateSyst::operator*] ERROR! Can't multiply MT2EstimateSyst with different MT2Regions!" << std::endl;
+    exit(113);
+  }
+
+  MT2EstimateSyst result(*this);
+
+  for( int iBin=1; iBin<result.yield->GetNbinsX()+1; ++iBin ) {
+
+    float thisBin  = result.yield->GetBinContent(iBin);
+    float otherBin = rhs.yield->GetBinContent(iBin);
+
+    float thisBinUp  = result.yield_systUp->GetBinContent(iBin);
+    float thisBinDown  = result.yield_systDown->GetBinContent(iBin);
+
+    float thisErrUp = thisBinUp - thisBin;
+    float thisErrDown = thisBin - thisBinDown;
+
+    float newBin     = thisBin+otherBin;
+    float newErrUp   = thisErrUp;
+    float newErrDown = thisErrDown;
+
+    result.yield         ->SetBinContent( iBin, newBin );
+    result.yield_systUp  ->SetBinContent( iBin, newBin + newErrUp );
+    result.yield_systDown->SetBinContent( iBin, newBin - newErrDown );
+
+  }
+
+  return result;
+
+}
+
+
+MT2EstimateSyst MT2EstimateSyst::operator-( const MT2Estimate& rhs ) const{
+
+
+  if( *(this->region) != *(rhs.region) ) {
+    std::cout << "[MT2EstimateSyst::operator*] ERROR! Can't multiply MT2EstimateSyst with different MT2Regions!" << std::endl;
+    exit(113);
+  }
+
+  MT2EstimateSyst result(*this);
+
+  for( int iBin=1; iBin<result.yield->GetNbinsX()+1; ++iBin ) {
+
+    float thisBin  = result.yield->GetBinContent(iBin);
+    float otherBin = rhs.yield->GetBinContent(iBin);
+
+    float thisBinUp  = result.yield_systUp->GetBinContent(iBin);
+    float thisBinDown  = result.yield_systDown->GetBinContent(iBin);
+
+    float thisErrUp = thisBinUp - thisBin;
+    float thisErrDown = thisBin - thisBinDown;
+
+    float newBin     = thisBin-otherBin;
+    float newErrUp   = thisErrUp;
+    float newErrDown = thisErrDown;
+
+    result.yield         ->SetBinContent( iBin, newBin );
+    result.yield_systUp  ->SetBinContent( iBin, newBin + newErrUp );
+    result.yield_systDown->SetBinContent( iBin, newBin - newErrDown );
+
+  }
+
+  return result;
+
+}
 
 
 MT2EstimateSyst MT2EstimateSyst::operator*( const MT2Estimate& rhs ) const{
@@ -398,6 +557,9 @@ MT2EstimateSyst MT2EstimateSyst::operator/( const MT2Estimate& rhs ) const{
   return result;
 
 }
+
+
+
 
 
 MT2EstimateSyst MT2EstimateSyst::operator*( float k ) const{
