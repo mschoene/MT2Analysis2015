@@ -45,7 +45,7 @@ float DeltaPhi(float phi1, float phi2);
 int main( int argc, char* argv[] ) {
 
 
-  std::string sampleName = "PHYS14_v4_skimprune";
+  std::string sampleName = "PHYS14_v5_skimprune";
   if( argc>1 ) {
     sampleName = std::string(argv[1]);
   }

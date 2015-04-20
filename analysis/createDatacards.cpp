@@ -249,10 +249,11 @@ int main( int argc, char* argv[] ) {
 
              Double_t x_tmp, R, R_errUp, R_errDown;
              this_zinv_ratio->GetPoint( iBin-1, x_tmp, R);
-	     R_errUp   = this_zinv_ratio->GetErrorYhigh( iBin -1 );
+             R_errUp   = this_zinv_ratio->GetErrorYhigh( iBin -1 );
              R_errDown = this_zinv_ratio->GetErrorYlow ( iBin -1 ); // these uncertainties on R are only due to purity (see computeZinvFromGamma)
                         
-             datacard << "zinv_purity_" << binName << " lnN  - " << 1.+R_errUp/R << "/" << 1.-R_errDown/R << " - -" << std::endl;
+             if( Ngamma>0 )
+               datacard << "zinv_purity_" << binName << " lnN  - " << 1.+R_errUp/R << "/" << 1.-R_errDown/R << " - -" << std::endl;
              datacard << "zinv_CRstat_" << binName << " gmN " << Ngamma << " - " << R << " - -" << std::endl;
 
 

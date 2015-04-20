@@ -52,7 +52,7 @@ float lumi = 4.; // fb-1
 int main( int argc, char* argv[] ) {
 
 
-  std::string samples = "PHYS14_v4_skimprune";
+  std::string samples = "PHYS14_v5_skimprune";
 
 
   std::string mc_or_data = "MC";

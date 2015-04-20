@@ -66,7 +66,7 @@ int main( int argc, char* argv[] ) {
 
 
 
-  std::string samplesFileName = "PHYS14_v4_skimprune";
+  std::string samplesFileName = "PHYS14_v5_skimprune";
   std::string samplesFile = "../samples/samples_" + samplesFileName + ".dat";
   
   std::vector<MT2Sample> samples = MT2Sample::loadSamples(samplesFile, 100, 299); // GJet and QCD

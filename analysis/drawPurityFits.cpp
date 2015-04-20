@@ -61,7 +61,7 @@ int main( int argc, char* argv[] ) {
     regionsSet = std::string(argv[2]);
   }
 
-  std::string samples = "PHYS14_v4_skimprune";
+  std::string samples = "PHYS14_v5_skimprune";
 
   std::string gammaCRdir(Form("GammaControlRegion_%s_%s_4fb", samples.c_str(), regionsSet.c_str()));
   

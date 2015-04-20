@@ -44,7 +44,7 @@ MT2Analysis<MT2EstimateSyst>* combineDataAndMC( MT2Analysis<MT2EstimateSyst>* da
 int main( int argc, char* argv[] ) {
 
 
-  std::string samples = "PHYS14_v4_skimprune";
+  std::string samples = "PHYS14_v5_skimprune";
   if( argc>1 ) {
     std::string samples_tmp(argv[1]); 
     samples = samples_tmp;
@@ -73,7 +73,7 @@ int main( int argc, char* argv[] ) {
 
   
 
-  MT2Analysis<MT2EstimateTree>* Zinv = MT2Analysis<MT2EstimateTree>::readFromFile(Form("EventYields_mc_PHYS14_v4_dummy_%.0ffb/analyses.root", lumi), "ZJets");
+  MT2Analysis<MT2EstimateTree>* Zinv = MT2Analysis<MT2EstimateTree>::readFromFile(Form("EventYields_mc_PHYS14_v5_dummy_%.0ffb/analyses.root", lumi), "ZJets");
   if( Zinv==0 ) {
     std::cout << "-> Please run regionEventYields on MC first. I need to get the Z->vv MC yields from there." << std::endl;
     std::cout << "-> Thank you for your cooperation." << std::endl;
