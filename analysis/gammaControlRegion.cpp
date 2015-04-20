@@ -12,11 +12,18 @@
 
 #include "TLorentzVector.h"
 #include "TH1F.h"
-#include "TRandom3.h"
 
 
 float lumi = 4.; //fb-1
 
+
+
+
+
+
+int round(float d) {
+  return (int)(floor(d + 0.5));
+}
 
 
 void computeYield( const MT2Sample& sample, const std::string& regionsSet, 
@@ -24,8 +31,7 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet,
                    MT2Analysis<MT2EstimateZinvGamma>* prompt, MT2Analysis<MT2EstimateZinvGamma>* prompt_pass, 
                    MT2Analysis<MT2EstimateZinvGamma>* nip, MT2Analysis<MT2EstimateZinvGamma>* nip_pass, 
                    MT2Analysis<MT2EstimateZinvGamma>* fake, MT2Analysis<MT2EstimateZinvGamma>* fake_pass, float isoCut );
-void randomizePoisson( MT2Analysis<MT2EstimateZinvGamma>* data );
-void randomizeSingleHisto( TRandom3 rand, TH1D* histo );
+void roundLikeData( MT2Analysis<MT2EstimateZinvGamma>* data );
 
 
 
@@ -139,7 +145,7 @@ int main( int argc, char* argv[] ) {
   eff->addToFile( outputdir + "/purityMC.root" );
 
   // emulate data:
-  //randomizePoisson(gammaCR);
+  roundLikeData(gammaCR);
   gammaCR->writeToFile( outputdir + "/data.root" );
   gammaCR_loose->addToFile( outputdir + "/data.root" );
   gammaCR_nipUp->addToFile( outputdir + "/data.root" );
@@ -329,43 +335,24 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet,
 
 
 
-void randomizePoisson( MT2Analysis<MT2EstimateZinvGamma>* data ) {
+void roundLikeData( MT2Analysis<MT2EstimateZinvGamma>* data ) {
 
-  TRandom3 rand(13);
 
 
   std::set<MT2Region> regions = data->getRegions();
 
   for( std::set<MT2Region>::iterator iR = regions.begin(); iR!=regions.end(); ++iR ) {
 
-    MT2Region thisRegion( (*iR) );
+    TH1D* thisYield = data->get(*iR)->yield;
 
-    randomizeSingleHisto(rand, data->get(thisRegion)->yield);
-    randomizeSingleHisto(rand, data->get(thisRegion)->iso);
+    for( int iBin=1; iBin<thisYield->GetNbinsX()+1; ++iBin ) {
 
-    for( unsigned i=0; i < data->get(thisRegion)->iso_bins_hist.size(); ++i ) {
-      randomizeSingleHisto(rand, data->get(thisRegion)->iso_bins_hist[i]);
-    }
+      float yield = thisYield->GetBinContent(iBin);
+      thisYield->SetBinContent(iBin, round( yield ));
+      thisYield->SetBinError(iBin, 0. );
 
-    data->get( thisRegion)->fakeDatasetsFromHistos();
+    } // for bins
 
-  }// for regions
-
-
+  } // for regions
 
 }
-
-
-
-void randomizeSingleHisto( TRandom3 rand, TH1D* histo ) {
-
-  for( int ibin=1; ibin<histo->GetXaxis()->GetNbins()+1; ++ibin ) {
-
-    int poisson_data = rand.Poisson(histo->GetBinContent(ibin));
-    histo->SetBinContent(ibin, poisson_data);
-    histo->SetBinError(ibin, 0.);
-
-  }  // for bins
-
-}
-
