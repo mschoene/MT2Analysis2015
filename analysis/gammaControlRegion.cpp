@@ -33,7 +33,7 @@ void randomizeSingleHisto( TRandom3 rand, TH1D* histo );
 int main( int argc, char* argv[] ) {
 
 
-  std::string samplesFileName = "PHYS14_v4_skimprune";
+  std::string samplesFileName = "PHYS14_v5_skimprune";
 
 
   std::string regionsSet = "zurich";
