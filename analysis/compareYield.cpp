@@ -26,11 +26,11 @@ int main() {
 
   TH1::AddDirectory(kFALSE); // stupid ROOT memory allocation needs this
 
-  std::string outputdir = "/scratch/mmasciov/CMSSW_7_2_3_GammaFunctions/src/MT2Analysis2015/analysis/YieldComparison/";
+  std::string outputdir = "/scratch/mmasciov/CMSSW_7_2_3_GammaFunctions/src/MT2Analysis2015/analysis/YieldComparison_isrSF/";
 
   //std::string firstInputFile = "/shome/mmasciov/analyses_fp.root";
-  std::string firstInputFile  = "/scratch/mmasciov/CMSSW_7_2_3_GammaFunctions/src/MT2Analysis2015/analysis/llep_PHYS14_v4_skimprune_zurich_4fb.root";
-  std::string secondInputFile = "/scratch/mmasciov/CMSSW_7_2_3_GammaFunctions/src/MT2Analysis2015/analysis/llep_PHYS14_Zurich_MT2final_13TeV_PHYS14_loJet_hiHT_noMT_4fb.root";
+  std::string firstInputFile  = "/scratch/mmasciov/CMSSW_7_2_3_GammaFunctions/src/MT2Analysis2015/analysis/llep_PHYS14_v5_isrSF_zurich_4fb_notScaled.root";
+  std::string secondInputFile = "/scratch/mmasciov/CMSSW_7_2_3_GammaFunctions/src/MT2Analysis2015/analysis/llep_PHYS14_v5_isrSF_zurich_4fb.root";
 
   MT2Analysis<MT2EstimateSyst>* analysisFirst = MT2Analysis<MT2EstimateSyst>::readFromFile(firstInputFile.c_str(), "llep");
  
@@ -79,9 +79,15 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2EstimateSyst>*  an
       h_first->Write();
       h_first->SetMarkerStyle(20);
       h_first->SetMarkerSize(1.6);
-
-      TCanvas* c1 = new TCanvas( "c1", "", 600, 600 );
+      
+      h_first->Sumw2();
+      
+      TCanvas* c1 = new TCanvas( "c1", "", 600, 700 );
       c1->cd();
+      TPad *pad1 = new TPad("pad1","pad1",0,0.3,1,1);
+      pad1->SetBottomMargin(0);
+      pad1->Draw();
+      pad1->cd();
 
       float xMin = h_first->GetXaxis()->GetXmin();
       float xMax = h_first->GetXaxis()->GetXmax();
@@ -96,12 +102,17 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2EstimateSyst>*  an
       h2_axes->Draw();
 
       THStack bgStack("bgStack", "");
+      TH1D* h_second = bgYields[0]->get(*iMT2)->yield;
+      h_second->Sumw2();
       for( unsigned i=0; i<bgYields.size(); ++i ) { // reverse ordered stack is prettier
         int index = bgYields.size() - i - 1;
-        TH1D* h_second = bgYields[index]->get(*iMT2)->yield;
-        h_second->SetFillColor( colors[index] );
-        h_second->SetLineColor( kBlack );
-        bgStack.Add(h_second);
+        TH1D* h_second_ = bgYields[index]->get(*iMT2)->yield;
+        h_second_->SetFillColor( colors[index] );
+        h_second_->SetLineColor( kBlack );
+	h_second_->Sumw2();
+        bgStack.Add(h_second_);
+	if( i>0 )
+	  h_second->Add(h_second_);
       }
 
       std::vector<std::string> niceNames = iMT2->getNiceNames();
@@ -125,24 +136,51 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2EstimateSyst>*  an
       legend->SetTextSize(0.038);
       legend->SetTextFont(42);
       legend->SetFillColor(0);
-      legend->AddEntry( h_first, "MC only", "P" );
-      histoFile->cd();
-      for( unsigned i=0; i<bgYields.size(); ++i ) {
-        TH1D* h_second = bgYields[i]->get(*iMT2)->yield;
-        legend->AddEntry( h_second, bgYields[i]->getName().c_str(), "F" );
-        h_second->Write();
-      }
-
-      histoFile->Close();
+      //legend->AddEntry( h_first, "MC only", "P" );
+      legend->AddEntry( h_first, "NO weight", "P" );
+      legend->AddEntry( h_second, "ISR central", "F" );
+//      histoFile->cd();
+//      for( unsigned i=0; i<bgYields.size(); ++i ) {
+//        TH1D* h_second = bgYields[i]->get(*iMT2)->yield;
+//        legend->AddEntry( h_second, bgYields[i]->getName().c_str(), "F" );
+//        h_second->Write();
+//      }
+//
+//      histoFile->Close();
 
       legend->Draw("same");
-      bgStack.Draw("histo same");
+      bgStack.Draw("histo, same");
       h_first->Draw("p, same");
 
       TPaveText* labelTop = MT2DrawTools::getLabelTop(lumi);
       labelTop->Draw("same");
 
       gPad->RedrawAxis();
+
+      c1->cd();
+      TPad *pad2 = new TPad("pad2","pad2",0,0,1,0.3);
+      pad2->SetTopMargin(0);
+      pad2->Draw();
+      pad2->cd();
+      
+      TH1D* h_ratio = (TH1D*) h_second->Clone("h_ratio");
+      h_ratio->SetStats(0);
+      h_ratio->Divide(h_first);
+      h_ratio->SetMarkerStyle(21);
+      h_ratio->SetMarkerSize(0.02);
+      h_ratio->GetXaxis()->SetTitle("M_{T2} [GeV]");
+      h_ratio->GetXaxis()->SetTitleSize(0.1);
+      h_ratio->GetXaxis()->SetTitleOffset(0.5);
+      h_ratio->GetXaxis()->SetLabelSize(0.05);
+      h_ratio->GetYaxis()->SetTitle("ratio");
+      h_ratio->GetYaxis()->SetTitleSize(0.1);
+      h_ratio->GetYaxis()->SetTitleOffset(0.5);
+      h_ratio->GetYaxis()->SetRangeUser(0.5, 1.5);
+      h_ratio->Draw("ep");
+
+      gPad->RedrawAxis();
+      
+      c1->cd();
 
       c1->SaveAs( Form("%s/mt2_%s.eps", fullPath.c_str(), iMT2->getName().c_str()) );
       c1->SaveAs( Form("%s/mt2_%s.png", fullPath.c_str(), iMT2->getName().c_str()) );

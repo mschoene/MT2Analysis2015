@@ -101,7 +101,7 @@ int main( int argc, char* argv[] ) {
 
   MT2Analysis<MT2Estimate>* gammaCR_times_ZgammaRatio = new MT2Analysis<MT2Estimate>( "gammaCR_times_ZgammaRatio", regionsSet );
   if( type==0 )
-    (*gammaCR_times_ZgammaRatio) = (*gamma_prompt) * (*ZgammaRatio);
+    (*gammaCR_times_ZgammaRatio) = (*gammaCR) * (*ZgammaRatio);
   else
     (*gammaCR_times_ZgammaRatio) = (*gammaCR) * (*ZgammaRatio) * (*purity);
 
@@ -118,7 +118,7 @@ int main( int argc, char* argv[] ) {
   ZgammaRatio->addToFile( outFile );
   Zinv->setName("Zinv");
   Zinv->addToFile( outFile );
-  if( purity !=0 ) purity->addToFile( outFile );
+  if( purity !=0 && type > 0 ) purity->addToFile( outFile );
 
   return 0;
 
