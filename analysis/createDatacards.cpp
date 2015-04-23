@@ -259,7 +259,7 @@ int main( int argc, char* argv[] ) {
                datacard << "zinv_purity_" << binName << " lnN  - " << 1.+p_errUp/p << "/" << 1.-p_errDown/p << " - -" << std::endl;
 
              float R = this_zinv_ratio->GetBinContent(iBin);
-             datacard << "zinv_CRstat_" << binName << " gmN " << Ngamma << " - " << R << " - -" << std::endl;
+             datacard << "zinv_CRstat_" << binName << " gmN " << Ngamma << " - " << R*p << " - -" << std::endl;
        
              float alphaErr = this_zinv_ratio->GetBinError(iBin)/R;
              datacard << "zinv_alphaErr_" << binName << " lnN  - " << 1.+alphaErr << " - -" << std::endl;
