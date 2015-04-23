@@ -16,6 +16,7 @@
 
 
 bool use_gamma = true;
+bool use_purity = true;
 
 double lumi = 4;
 
@@ -85,11 +86,18 @@ int main( int argc, char* argv[] ) {
   if( useMC_zinv )
     zinv = MT2Analysis<MT2Estimate>::readFromFile( mc_fileName, "ZJets");
   else {
-    //zinv       = MT2Analysis<MT2Estimate>::readFromFile( mc_fileName, "ZJets");
-    zinvCR      = MT2Analysis<MT2Estimate>    ::readFromFile( Form("GammaControlRegion_%s_%s_%.0ffb/data.root", samplesName.c_str(), regionsName.c_str(), lumi), "gammaCR");
-    zinv        = MT2Analysis<MT2Estimate>    ::readFromFile( Form("ZinvEstimateFromGamma_%s_%s_%.0ffb_type1/MT2ZinvEstimate.root", samplesName.c_str(), regionsName.c_str(), lumi), "ZinvEstimate");
-    zinv_ratio  = MT2Analysis<MT2Estimate>    ::readFromFile( Form("ZinvEstimateFromGamma_%s_%s_%.0ffb_type1/MT2ZinvEstimate.root", samplesName.c_str(), regionsName.c_str(), lumi), "ZgammaRatio");
-    purity      = MT2Analysis<MT2EstimateSyst>::readFromFile( Form("ZinvEstimateFromGamma_%s_%s_%.0ffb_type1/MT2ZinvEstimate.root", samplesName.c_str(), regionsName.c_str(), lumi), "purity");
+    if( use_purity ){
+      //zinv       = MT2Analysis<MT2Estimate>::readFromFile( mc_fileName, "ZJets");
+      zinvCR      = MT2Analysis<MT2Estimate>    ::readFromFile( Form("GammaControlRegion_%s_%s_%.0ffb/data.root", samplesName.c_str(), regionsName.c_str(), lumi), "gammaCR");
+      zinv        = MT2Analysis<MT2Estimate>    ::readFromFile( Form("ZinvEstimateFromGamma_%s_%s_%.0ffb_type1/MT2ZinvEstimate.root", samplesName.c_str(), regionsName.c_str(), lumi), "ZinvEstimate");
+      zinv_ratio  = MT2Analysis<MT2Estimate>    ::readFromFile( Form("ZinvEstimateFromGamma_%s_%s_%.0ffb_type1/MT2ZinvEstimate.root", samplesName.c_str(), regionsName.c_str(), lumi), "ZgammaRatio");
+      purity      = MT2Analysis<MT2EstimateSyst>::readFromFile( Form("ZinvEstimateFromGamma_%s_%s_%.0ffb_type1/MT2ZinvEstimate.root", samplesName.c_str(), regionsName.c_str(), lumi), "purity");
+    }
+    else{
+      zinvCR      = MT2Analysis<MT2Estimate>    ::readFromFile( Form("GammaControlRegion_%s_%s_%.0ffb/data.root", samplesName.c_str(), regionsName.c_str(), lumi), "gammaCR");
+      zinv        = MT2Analysis<MT2Estimate>    ::readFromFile( Form("ZinvEstimateFromGamma_%s_%s_%.0ffb_type0/MT2ZinvEstimate.root", samplesName.c_str(), regionsName.c_str(), lumi), "ZinvEstimate");
+      zinv_ratio  = MT2Analysis<MT2Estimate>    ::readFromFile( Form("ZinvEstimateFromGamma_%s_%s_%.0ffb_type0/MT2ZinvEstimate.root", samplesName.c_str(), regionsName.c_str(), lumi), "ZgammaRatio");
+    }
   }
   zinv->setName("zinv");
   zinv->addToFile( mc_fileName, true );
@@ -127,8 +135,10 @@ int main( int argc, char* argv[] ) {
      TH1D* this_llepCR = llepCR->get(*iR)->yield;
      TH1D* this_zinvCR     = (use_gamma) ? zinvCR->get(*iR)->yield : 0;
      TH1D* this_zinv_ratio     = (use_gamma) ? zinv_ratio->get(*iR)->yield : 0;
-     TGraphAsymmErrors* this_zinv_purity = (use_gamma) ? purity->get(*iR)->getGraph() : 0;
-//     TGraphAsymmErrors* this_zinv_purity = (use_gamma) ? zinv_purity->get(*iR)->getGraph() : 0;
+     
+     TGraphAsymmErrors* this_zinv_purity;
+     if ( use_purity ) this_zinv_purity = (use_gamma) ? purity->get(*iR)->getGraph() : 0;
+     //TGraphAsymmErrors* this_zinv_purity = (use_gamma) ? zinv_purity->get(*iR)->getGraph() : 0;
 
      float N_llep_CR = this_llepCR->Integral();
      std::string llepCR_name = iR->getName();
@@ -251,16 +261,23 @@ int main( int argc, char* argv[] ) {
              int Ngamma = round(this_zinvCR->GetBinContent(iBin));
 
              Double_t x_tmp, p, p_errUp, p_errDown;
-             this_zinv_purity->GetPoint( iBin-1, x_tmp, p);
-             p_errUp   = this_zinv_purity->GetErrorYhigh( iBin -1 );
-             p_errDown = this_zinv_purity->GetErrorYlow ( iBin -1 ); 
-                        
-             if( Ngamma>0 )
-               datacard << "zinv_purity_" << binName << " lnN  - " << 1.+p_errUp/p << "/" << 1.-p_errDown/p << " - -" << std::endl;
+	     if( use_purity ){
 
-             float R = this_zinv_ratio->GetBinContent(iBin);
-             datacard << "zinv_CRstat_" << binName << " gmN " << Ngamma << " - " << R*p << " - -" << std::endl;
-       
+	       this_zinv_purity->GetPoint( iBin-1, x_tmp, p);
+	       p_errUp   = this_zinv_purity->GetErrorYhigh( iBin -1 );
+	       p_errDown = this_zinv_purity->GetErrorYlow ( iBin -1 ); 
+	       
+	       if( Ngamma>0 )
+		 datacard << "zinv_purity_" << binName << " lnN  - " << 1.+p_errUp/p << "/" << 1.-p_errDown/p << " - -" << std::endl;
+	       
+	     }
+             
+	     float R = this_zinv_ratio->GetBinContent(iBin);
+             if( use_purity )
+	       datacard << "zinv_CRstat_" << binName << " gmN " << Ngamma << " - " << R*p << " - -" << std::endl;
+	     else 
+	       datacard << "zinv_CRstat_" << binName << " gmN " << Ngamma << " - " << R << " - -" << std::endl;
+
              float alphaErr = this_zinv_ratio->GetBinError(iBin)/R;
              datacard << "zinv_alphaErr_" << binName << " lnN  - " << 1.+alphaErr << " - -" << std::endl;
 
@@ -375,9 +392,6 @@ int main( int argc, char* argv[] ) {
         float mt2Min = this_signal->GetBinLowEdge( iBin );
         float mt2Max = (iBin==this_signal->GetNbinsX()) ?  -1. : this_signal->GetBinLowEdge( iBin+1 );
 
-	//if( this_signal->GetBinContent(iBin) < 1e-3 );
-	//if( this_signal->GetBinContent(iBin) < 1e-2 );
-	//if( this_signal->GetBinContent(iBin) < 1e-3 || this_signal->GetBinContent(iBin) > 1e-2 );
 	if( this_signal->GetBinContent(iBin) < 1e-1 );
 	else{
 	  
