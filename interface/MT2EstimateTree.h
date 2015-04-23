@@ -18,7 +18,7 @@ class MT2EstimateTree : public MT2Estimate {
   void initTree( );
   virtual void setName( const std::string& newName );
 
-  void assignTree( const MT2Tree& mt2tree, float w );
+  void assignTree( const MT2Tree& mt2tree, float w, const std::string& sel );
   void fillTree( const MT2Tree& mt2tree, float w , const std::string& sel);
  
   //void assignTree( const MT2Tree& mt2tree, float w );
@@ -49,7 +49,7 @@ class MT2EstimateTree : public MT2Estimate {
 
   float gamma_mt2;
   float gamma_ht;
-  float gamma_met;
+  float gamma_met_pt;
   int gamma_nJets;
   int gamma_nBJets;
 

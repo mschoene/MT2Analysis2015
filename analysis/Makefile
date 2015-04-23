@@ -23,6 +23,10 @@ computeLostLepton_CR: computeLostLepton_CR.cpp MT2Region.o MT2Sample.o MT2Estima
 computeZinvFromZll: computeZinvFromZll.cpp MT2Region.o MT2Sample.o MT2EstimateSyst.o MT2Estimate.o MT2EstimateTree.o MT2EstimateZinvGamma.o MT2EstimateZll.o
 	$(CC) -Wall $(INCLUDES) -o computeZinvFromZll computeZinvFromZll.cpp MT2Region.o MT2Sample.o MT2EstimateSyst.o MT2Estimate.o MT2EstimateTree.o MT2EstimateZinvGamma.o MT2EstimateZll.o $(ROOTFLAG) $(EXTRALIBS)
 
+
+computeZllGammaRatio: computeZllGammaRatio.cpp MT2Region.o MT2Estimate.o MT2EstimateTree.o  MT2Sample.o MT2EstimateSyst.o MT2Config.o
+	$(CC) -Wall $(INCLUDES) -o computeZllGammaRatio computeZllGammaRatio.cpp MT2Region.o MT2Estimate.o MT2DrawTools.o MT2EstimateTree.o  MT2Sample.o MT2EstimateSyst.o MT2Config.o $(ROOTFLAG) $(EXTRALIBS)
+
 drawZll: drawZll.cpp MT2Region.o MT2Estimate.o MT2EstimateTree.o  MT2Sample.o MT2EstimateSyst.o MT2Config.o
 	$(CC) -Wall $(INCLUDES) -o drawZll drawZll.cpp MT2Region.o MT2Estimate.o MT2DrawTools.o MT2EstimateTree.o  MT2Sample.o MT2EstimateSyst.o MT2Config.o $(ROOTFLAG) $(EXTRALIBS)
 

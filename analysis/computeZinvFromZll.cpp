@@ -8,7 +8,6 @@
 
 #include "../interface/MT2Analysis.h"
 #include "../interface/MT2EstimateZinvGamma.h"
-#include "../interface/MT2EstimateZll.h"
 #include "../interface/MT2EstimateTree.h"
 #include "../interface/MT2Region.h"
 #include "../interface/MT2Sample.h"
@@ -58,37 +57,30 @@ class MT2Config {
 float lumi = 4.;
 
 
-void computeYield_zll( const MT2Sample& sample, MT2Analysis<MT2EstimateZll>* analysis );
-
 MT2Analysis<MT2EstimateTree>* computeYield( const MT2Sample& sample, const MT2Config& cfg, float lumi=1. );
 MT2Analysis<MT2EstimateTree>* mergeYields( std::vector< MT2Analysis<MT2EstimateTree> *> EventYield, const std::string& regionsSet, const std::string& name, int id_min, int id_max=-1, const std::string& legendName="" );
 
 int main(int argc, char* argv[]) {
 
 
+  // std::string regionsSet = "zurich";
+  std::string regionsSet = "13TeV_inclusive";
+ if( argc>2 ) {
+    regionsSet = std::string(argv[2]);
+  }
 
-  if( argc!=2 ) {
-    std::cout << "USAGE: ./regionEventYields [configFileName]" << std::endl;
+  std::cout << "-> Using regions: " << regionsSet << std::endl;
+
+  
+  if( argc<2 ) {
+    std::cout << "USAGE: ./regionEventYields [configFileName] regionSet" << std::endl;
     std::cout << "Exiting." << std::endl;
     exit(11);
   }
-
+  
 
   std::string configFileName(argv[1]);
 
-  std::string outputdir = "Zll_" + configFileName;
-    double intpart;
-    double fracpart = modf(lumi, &intpart);
-    std::string suffix;
-    if( fracpart>0. )
-      suffix = std::string( Form("_dummy_%.0fp%.0ffb", intpart, 10.*fracpart ) );
-    else
-      suffix = std::string( Form("_dummy_%.0ffb", intpart ) );
-    outputdir += suffix;
-  
-
-
-  system(Form("mkdir -p %s", outputdir.c_str()));
 
   MT2Config cfg("cfgs/" + configFileName + ".txt");
 
@@ -100,41 +92,44 @@ int main(int argc, char* argv[]) {
 
   std::cout << std::endl << std::endl;
   std::cout << "-> Loading samples from file: " << samplesFileName << std::endl;
+
+
+
+  std::string outputdir = "Zll_" + cfg.mcSamples() + "_" + regionsSet;
+  //  std::string outputdir = "Zll_" + configFileName;
+    double intpart;
+    double fracpart = modf(lumi, &intpart);
+    std::string suffix;
+    if( fracpart>0. )
+      suffix = std::string( Form("_%.0fp%.0ffb", intpart, 10.*fracpart ) );
+    else
+      suffix = std::string( Form("_%.0ffb", intpart ) );
+    outputdir += suffix;
+  
+  system(Form("mkdir -p %s", outputdir.c_str()));
  
+
+
+
   //Zll
-  std::vector<MT2Sample> fSamples = MT2Sample::loadSamples(samplesFileName, "DYJetsToLL", 700, 720  ); // not interested in signal here
+  std::vector<MT2Sample> fSamples = MT2Sample::loadSamples(samplesFileName, "DYJetsToLL", 700, 799  ); // not interested in signal here
 
   if( fSamples.size()==0 ) {
     std::cout << "There must be an error: samples is empty!" << std::endl;
     exit(1209);
   }
 
+
   std::vector< MT2Analysis<MT2EstimateTree>* > EventYield;
   for( unsigned i=0; i<fSamples.size(); ++i ) 
     EventYield.push_back( computeYield( fSamples[i], cfg, lumi ) );
    
 
-  MT2Analysis<MT2EstimateTree>* EventYield_zll = mergeYields( EventYield, cfg.regionsSet(), "DYJets", 700, 799, "Other" );
+  MT2Analysis<MT2EstimateTree>* EventYield_zll = mergeYields( EventYield, cfg.regionsSet(), "DYJets", 700, 799, "DYJets" );
 
-
-
-  // std::string regionsSet = "zurich";
-  std::string regionsSet = "13TeV_inclusive";
 
 
   EventYield_zll->writeToFile(outputdir+"/Zll_analyses.root","UPDATE");
-
-
- 
-  /*
-  MT2Analysis<MT2EstimateZll>*  analysis_zll = new MT2Analysis<MT2EstimateZll>( "Zll", regionsSet );
-  for( unsigned i=0; i<fSamples.size(); ++i ) {
-    computeYield_zll( fSamples[i],  analysis_zll );
-  }
-  analysis_zll->writeToFile("provaZll.root");
-  */
-
-
 
 
   return 0;
@@ -181,15 +176,13 @@ MT2Analysis<MT2EstimateTree>* computeYield( const MT2Sample& sample, const MT2Co
   MT2Analysis<MT2EstimateTree>* analysis = new MT2Analysis<MT2EstimateTree>( sample.sname, regionsSet, sample.id );
 
 
-  //  if(  cfg.additionalStuff()=="zll"){
   MT2EstimateTree::addVar( analysis, "Z_pt" );
   MT2EstimateTree::addVar( analysis, "Z_phi" );
   MT2EstimateTree::addVar( analysis, "Z_mass" );
   MT2EstimateTree::addVar( analysis, "Z_lepId" );
- // }
-  
-  //  MT2EstimateTree::addVar( analysis, "" );
+  MT2EstimateTree::addVar( analysis, "nLep" );
 
+  
 
 
   int nentries = tree->GetEntries();
@@ -199,21 +192,39 @@ MT2Analysis<MT2EstimateTree>* computeYield( const MT2Sample& sample, const MT2Co
     if( iEntry % 50000 == 0 ) std::cout << "   Entry: " << iEntry << " / " << nentries << std::endl;
     myTree.GetEntry(iEntry);
 
-    if( !(myTree.passSelection("zll"))) continue; 
+     if( !(myTree.passSelection("zll"))) continue; 
+    /*
+    if(!( myTree.nVert > 0 )) continue;
+    //  if(!( myTree.nJet40 >= 2 )) continue;
+    if(!( myTree.zll_deltaPhiMin > 0.3 )) continue;
+    if(!( myTree.zll_diffMetMht < 0.5*myTree.zll_met_pt )) continue;
+       //  if(!( myTree.jet1_pt>40. )) continue;
+       //   if(!( myTree.jet2_pt>40. )) continue;
+    if(!( myTree.nlep>1 )) continue; 
 
-    //We are going to assume that the leading 2 leptons are the Z leptons
+    */
+
+     if(!( myTree.nlep==2 )) continue; 
+
+
+
+    //Sample  are the Z leptons
     //and thus that if they don't have the same flavor they are rejected
     if( !(myTree.lep_pdgId[0] == -myTree.lep_pdgId[1]) ) continue;
 
-    //Need the lorentz vectors of the first leptons first
+    //Need the lorentz vectors of the leptons first
     TLorentzVector *LVec = new TLorentzVector[50];
-    for(int i=0; i< 3; i++)
+    for(int i=0; i< 2; i++){
       LVec[i].SetPtEtaPhiM(myTree.lep_pt[i], myTree.lep_eta[i],myTree.lep_phi[i], myTree.lep_mass[i]);
+    }
 
 
-     //    double Z_invM_true = 91.19*91.19;
+
+    double Z_invM_true = 91.19;
     TLorentzVector z = LVec[0] + LVec[1]; //leptons invariant mass
-    double Z_invM_reco = z.M(); //Z mass
+    double M_ll = z.M(); //Z mass
+
+    //  if( abs(M_ll - Z_invM_true)>20.) continue;
 
     float ht   = myTree.ht;
     float met  = myTree.met_pt;
@@ -224,27 +235,27 @@ MT2Analysis<MT2EstimateTree>* computeYield( const MT2Sample& sample, const MT2Co
 
     Double_t weight = myTree.evt_scale1fb*lumi;
 
-    MT2EstimateTree* thisEstimate = analysis->get( ht, njets, nbjets, met, minMTBmet, mt2 );
-    if( thisEstimate==0 ) continue;
+    MT2EstimateTree* thisEstimate = analysis->get( myTree.zll_ht, njets, nbjets, myTree.zll_met_pt, minMTBmet, myTree.zll_mt2 );
+    if( thisEstimate==0 ) continue; 
 
     //Fills the variables defined in MT2EstimateTree to the tree
     //at leatst partially...
-    thisEstimate->fillTree(myTree, weight,"zll");
+    thisEstimate->fillTree(myTree, weight ,"zll");
 
-    //   if( cfg.additionalStuff()=="zll" ) {
     //initialize
     thisEstimate->assignVar("Z_pt", z.Perp() );
     thisEstimate->assignVar("Z_phi", z.Phi() );
     thisEstimate->assignVar("Z_mass", z.M() );
     thisEstimate->assignVar("Z_lepId", abs(myTree.lep_pdgId[0])  );
 
+
+
     //Fills the above variables into the tree
     thisEstimate->tree->Fill(); 
 
 
-
-    thisEstimate->yield->Fill(mt2, weight );
-    
+    thisEstimate->yield->Fill(myTree.zll_mt2, weight );
+  
   } // for entries
 
   //ofs.close();
@@ -292,100 +303,6 @@ MT2Analysis<MT2EstimateTree>* computeYield( const MT2Sample& sample, const MT2Co
 
 
 
-void computeYield_zll( const MT2Sample& sample, MT2Analysis<MT2EstimateZll>* analysis ) {
-
-  std::cout << std::endl << std::endl;
-  std::cout << "-> Starting computation for sample: " << sample.name << std::endl;
-
-  TFile* file = TFile::Open(sample.file.c_str());
-  std::cout << "-> Getting mt2 tree from file: " << sample.file << std::endl;
-  TTree* tree = (TTree*)file->Get("mt2");
-  
-  MT2Tree myTree;
-  myTree.loadGenStuff = false;
-  myTree.Init(tree);
-
-  std::cout << "-> Setting up MT2Analysis with name: " << sample.sname << std::endl;
-
-  int nentries = tree->GetEntries();  //  nentries = 10000;
-
-  for( unsigned iEntry=0; iEntry<nentries; ++iEntry ) {
-
-    if( iEntry % 50000 == 0 ) std::cout << "    Entry: " << iEntry << " / " << nentries << std::endl;
-    myTree.GetEntry(iEntry);
-    
-
-    if( !(myTree.passSelection("zll"))) continue; 
-
-    // if(myTree.nlep < 2 ) continue; //want at least 2 leptons new in the above sel.
-
-    //We are going to assume that the leading 2 leptons are the Z leptons
-    if( !(myTree.lep_pdgId[0] == -myTree.lep_pdgId[1]) ) continue;
-
-    //Need the lorentz vectors of the first leptons first
-    TLorentzVector *LVec = new TLorentzVector[50];
-    for(int i=0; i< 3; i++){
-      double pt = myTree.lep_pt[i];
-      double eta = myTree.lep_eta[i];
-      double phi = myTree.lep_phi[i];
-      double mass = myTree.lep_mass[i];
-      LVec[i].SetPtEtaPhiM(pt,eta, phi, mass );
-    }
-
- 
-    double Z_invM_true = 91.18*91.18;
-    TLorentzVector z = LVec[0] + LVec[1]; //leptons invariant mass
-    double Z_invM_reco = z.M();
-
-
-    /*
-    bool flag = 0; //Flag for continue, if true continue ie not wanted
-    //Now for the matching of the leptons, we need:
-    //same flavor, opposite sign, inv. mass close to the Z
-    double Z_invM = 91.18*91.18;
-    double minZ_invMdiff = 9000;
-    for(int i=0; i< myTree.nlep; i++){
-      for(int j=i+1; j<myTree.nlep; j++){
-	
-	if( !(myTree.lep_pdgId[i] == -myTree.lep_pdgId[j]) ) {
-	std::cout << "Id " << myTree.lep_pdgId[i] << " versus  " << myTree.lep_pdgId[j] << std::endl;	flag=1; //diff flavors=shit
-	  continue;}
-
-	if( abs(Z_invM - (LVec[i]+LVec[j])) < minZ_invMdiff )
-	  minZ_invMdiff = abs(Z_invM - LVec[i]*LVec[j]);
-	std::cout << "Difference = " << 
-	std::cout << "Inv Mass min "<< sqrt(LVec[i]*LVec[j]) << " versus min " << sqrt(minZ_invMdiff) << std::endl;
-      }
-    }
-    */    //  if(flag==1) continue;
-
-
-    MT2EstimateZll* thisEstimate = analysis->get( myTree.zll_ht, myTree.nJet40, myTree.nBJet40, myTree.zll_met_pt, myTree.minMTBMet, myTree.zll_mt2 );
-
-    if( thisEstimate==0 ) continue;
-
-    float weight = myTree.evt_scale1fb*lumi;
-    thisEstimate->yieldZll->Fill( Z_invM_reco, 1);
-    thisEstimate->yield->Fill(myTree.zll_mt2, weight);
-    
-
-    
-  } // for entries
-
-  analysis->finalize();
-
-
-  delete tree;
-
-  file->Close();
-  delete file;
-  
-
-}
-
-
-
-
 
 
 
@@ -401,7 +318,7 @@ MT2Analysis<MT2EstimateTree>* mergeYields( std::vector<MT2Analysis<MT2EstimateTr
 
        *(return_EventYield) += *(EventYield[i]);
 
-    }
+     }
 
   } // for EventYield
 

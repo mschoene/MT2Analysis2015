@@ -59,7 +59,7 @@ void MT2EstimateTree::initTree( ) {
   
   tree->Branch( "gamma_mt2", &gamma_mt2, "gamma_mt2/F");
   tree->Branch( "gamma_ht", &gamma_ht, "gamma_ht/F");
-  tree->Branch( "gamma_met", &gamma_met, "gamma_met/F");
+  tree->Branch( "gamma_met_pt", &gamma_met_pt, "gamma_met_pt/F");
   tree->Branch( "gamma_nJets", &gamma_nJets, "gamma_nJets/I");
   tree->Branch( "gamma_nBJets", &gamma_nBJets, "gamma_nBJets/I");
 
@@ -113,7 +113,6 @@ void MT2EstimateTree::addVar( MT2Analysis<MT2EstimateTree>* analysis, const std:
 //}
 
 
-
 //void MT2EstimateTree::addVarInt( MT2Analysis<MT2EstimateTree>* analysis, const std::string& name ) {
 //
 //
@@ -152,7 +151,7 @@ void MT2EstimateTree::assignVar( const std::string& name, float value ) {
 
 void MT2EstimateTree::fillTree( const MT2Tree& mt2tree, float w ,const std::string& sel) {
 
-  this->assignTree( mt2tree, w );
+  this->assignTree( mt2tree, w , sel);
 
   tree->Fill();
 
@@ -170,9 +169,9 @@ void MT2EstimateTree::fillTree_gamma( const MT2Tree& mt2tree, float w ) {
 
 
 
-void MT2EstimateTree::assignTree( const MT2Tree& mt2tree, float w ) {
+void MT2EstimateTree::assignTree( const MT2Tree& mt2tree, float w, const std::string& sel ) {
 
- 
+  if(sel==""){
   run    = mt2tree.run;
   lumi   = mt2tree.lumi;
   evt    = mt2tree.evt;
@@ -186,16 +185,40 @@ void MT2EstimateTree::assignTree( const MT2Tree& mt2tree, float w ) {
   nJets  = mt2tree.nJet40;
   nBJets = mt2tree.nBJet40;
 
+  }else if(sel=="gamma"){
+
+  run    = mt2tree.run;
+  lumi   = mt2tree.lumi;
+  evt    = mt2tree.evt;
+  weight = w;
+  id     = mt2tree.evt_id;
+
   gamma_mt2    = mt2tree.gamma_mt2;
   gamma_ht     = mt2tree.gamma_ht;
-  gamma_met    = mt2tree.gamma_met_pt;
+  gamma_met_pt = mt2tree.gamma_met_pt;
   gamma_nJets  = mt2tree.gamma_nJet40;
   gamma_nBJets = mt2tree.gamma_nBJet40;
 
-  zll_mt2    = mt2tree.zll_mt2;
-  zll_ht     = mt2tree.zll_ht;
-  zll_met_pt    = mt2tree.zll_met_pt;
-  zll_met_phi    = mt2tree.zll_met_phi;
+  }else if(sel=="zll"){
+
+  run    = mt2tree.run;
+  lumi   = mt2tree.lumi;
+  evt    = mt2tree.evt;
+  weight = w;
+  id     = mt2tree.evt_id;
+
+  mt2    = mt2tree.mt2;
+  ht     = mt2tree.ht;
+  met_pt    = mt2tree.met_pt;
+  met_phi    = mt2tree.met_phi;
+  nJets  = mt2tree.nJet40;
+  nBJets = mt2tree.nBJet40;
+
+  zll_mt2      = mt2tree.zll_mt2;
+  zll_ht       = mt2tree.zll_ht;
+  zll_met_pt   = mt2tree.zll_met_pt;
+  zll_met_phi  = mt2tree.zll_met_phi;
+  }
 
 }
   

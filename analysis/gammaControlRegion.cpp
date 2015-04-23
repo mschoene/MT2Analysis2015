@@ -294,7 +294,7 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet,
         else if( isFake )
           thisTree->assignVar( "prompt", 0 );
         thisTree->assignVar( "iso", iso );
-        thisTree->fillTree_gamma(myTree, weight );
+        thisTree->fillTree(myTree, weight,"gamma");
       }
     }
        
