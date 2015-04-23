@@ -82,16 +82,19 @@ int main( int argc, char* argv[] ) {
 
 
   MT2Analysis<MT2EstimateTree>* gammaCRtree = MT2Analysis<MT2EstimateTree>::readFromFile(gammaControlRegionDir + "/data.root", "gammaCRtree");
-  MT2Analysis<MT2Estimate>* ZgammaRatioMC = getInclusiveRatioMC( regionsSet, Zinv, gammaCRtree );
-  //MT2Analysis<MT2Estimate>* ZgammaRatioMC = new MT2Analysis<MT2Estimate>( "ZgammaRatioMC", regionsSet );
-  //(*ZgammaRatioMC) = ( (* (MT2Analysis<MT2Estimate>*)Zinv) / (*gamma_prompt) );
+  //MT2Analysis<MT2Estimate>* ZgammaRatioMC = getInclusiveRatioMC( regionsSet, Zinv, gammaCRtree );
+  MT2Analysis<MT2Estimate>* ZgammaRatioMC = new MT2Analysis<MT2Estimate>( "ZgammaRatioMC", regionsSet );
+  (*ZgammaRatioMC) = ( (* (MT2Analysis<MT2Estimate>*)Zinv) / (*gamma_prompt) );
+  
 
 
-  MT2Analysis<MT2EstimateSyst>* ZgammaRatio = MT2EstimateSyst::makeAnalysisFromEstimate( "ZgammaRatio", regionsSet, ZgammaRatioMC );
+  //MT2Analysis<MT2Estimate>* ZgammaRatio = MT2EstimateSyst::makeAnalysisFromEstimate( "ZgammaRatio", regionsSet, ZgammaRatioMC );
+  MT2Analysis<MT2Estimate>* ZgammaRatio = new MT2Analysis<MT2Estimate>( "ZgammaRatio", regionsSet );
+  (*ZgammaRatio) = (*ZgammaRatioMC);
+  MT2Analysis<MT2EstimateSyst>* purity;
   if( type > 0 ) {
-    MT2Analysis<MT2EstimateSyst>* purity = MT2Analysis<MT2EstimateSyst>::readFromFile( gammaControlRegionDir + "/PurityFitsDataRC/purityFit.root", "purity" );
-    (*ZgammaRatio) *= (*purity); // purity
-    (*ZgammaRatio) *= 0.92; // and f are absorbed into Z/g ratio
+    purity = MT2Analysis<MT2EstimateSyst>::readFromFile( gammaControlRegionDir + "/PurityFitsDataRC/purityFit.root", "purity" );
+    (*ZgammaRatio) *= 0.92; // f absorbed into Z/g ratio
   }
 
 
@@ -100,7 +103,7 @@ int main( int argc, char* argv[] ) {
   if( type==0 )
     (*gammaCR_times_ZgammaRatio) = (*gamma_prompt) * (*ZgammaRatio);
   else
-    (*gammaCR_times_ZgammaRatio) = (*gammaCR) * (*ZgammaRatio);
+    (*gammaCR_times_ZgammaRatio) = (*gammaCR) * (*ZgammaRatio) * (*purity);
 
 
 
@@ -115,6 +118,7 @@ int main( int argc, char* argv[] ) {
   ZgammaRatio->addToFile( outFile );
   Zinv->setName("Zinv");
   Zinv->addToFile( outFile );
+  if( purity !=0 ) purity->addToFile( outFile );
 
   return 0;
 
@@ -127,6 +131,9 @@ int main( int argc, char* argv[] ) {
 
 MT2Analysis<MT2Estimate>* getInclusiveRatioMC( const std::string& regionsSet, MT2Analysis<MT2EstimateTree>* Zinv, MT2Analysis<MT2EstimateTree>* gammaCRtree ) {
 
+
+  std::cout << "THIS FUNCTION IS BUGGED!!! DID YOU FIX THE BUG???" << std::endl;
+
   TH1::AddDirectory(kTRUE); // stupid ROOT memory allocation needs this
 
 
@@ -137,8 +144,11 @@ MT2Analysis<MT2Estimate>* getInclusiveRatioMC( const std::string& regionsSet, MT
 
   for( std::set<MT2Region>::iterator iR = regions.begin(); iR!=regions.end(); ++iR ) {
 
+    if( iR->nBJetsMin()>1 ) continue;
+
     TTree* thisTree_Zinv  = Zinv->get(*iR)->tree;
     TTree* thisTree_gamma = gammaCRtree->get(*iR)->tree;
+
 
     // loop on all regions and fill all histograms:
     for( std::set<MT2Region>::iterator iR2 = regions.begin(); iR2!=regions.end(); ++iR2 ) {
@@ -150,6 +160,8 @@ MT2Analysis<MT2Estimate>* getInclusiveRatioMC( const std::string& regionsSet, MT
       tmp_gamma->SetName("tmp_gamma");
       TH1D* tmp_Zinv  = new TH1D(*thisZinv); // so that it gets the same binning
       tmp_Zinv->SetName("tmp_Zinv");
+
+      tmp_gamma->Fill( 500., 10000.);
 
       thisTree_Zinv ->Project( "tmp_Zinv" , "mt2", "weight" );
       thisTree_gamma->Project( "tmp_gamma", "mt2", "weight*(prompt>1.5)" );
