@@ -61,14 +61,16 @@ public :
    Int_t           GenSusyMScan2;
    Int_t           GenSusyMScan3;
    Int_t           GenSusyMScan4;
-   Int_t           GenSusyMGluino;
+   //   Int_t           GenSusyMGluino;
+   Float_t           GenSusyMGluino;
    Int_t           GenSusyMGravitino;
    Int_t           GenSusyMStop;
    Int_t           GenSusyMSbottom;
    Int_t           GenSusyMStop2;
    Int_t           GenSusyMSbottom2;
    Int_t           GenSusyMSquark;
-   Int_t           GenSusyMNeutralino;
+   //   Int_t           GenSusyMNeutralino;
+   Float_t           GenSusyMNeutralino;
    Int_t           GenSusyMNeutralino2;
    Int_t           GenSusyMNeutralino3;
    Int_t           GenSusyMNeutralino4;
@@ -87,12 +89,14 @@ public :
    Float_t         deltaPhiMin_had;
    Float_t         met_rawPt;
    Float_t         met_rawPhi;
+   Int_t           nBJet20;
    Int_t           nBJet40;
    Int_t           nMuons10;
    Int_t           nElectrons10;
    Int_t           nTaus20;
    Int_t           nGammas20;
    Float_t         minMTBMet;
+   Int_t           nLepLowMT;
    Int_t           nPFLep5LowMT;
    Int_t           nPFHad10LowMT;
    Float_t         mt2_had;
@@ -103,6 +107,7 @@ public :
    Float_t         gamma_mt2;
    Float_t         zll_mt2;
    Int_t           gamma_nJet40;
+   Int_t           gamma_nBJet20;
    Int_t           gamma_nBJet40;
    Float_t         gamma_ht;
    Float_t         gamma_deltaPhiMin;
@@ -375,7 +380,22 @@ public :
    Float_t         evt_filter;
    Int_t           evt_nEvts;
    Int_t           evt_id;
-
+   Float_t weight_lepsf;
+   Float_t weight_lepsf_UP;
+   Float_t weight_lepsf_DN;
+   Float_t weight_btagsf;
+   Float_t weight_btagsf_UP;
+   Float_t weight_btagsf_DN;
+   Float_t weight_sigtrigsf;
+   Float_t weight_dileptrigsf;
+   Float_t weight_phottrigsf;
+   Float_t weight_pu;
+   Float_t weight_isr;
+   Float_t weight_scales_UP;
+   Float_t weight_scales_DN;
+   Float_t weight_pdfs_UP;
+   Float_t weight_pdfs_DN;
+   
    // List of branches
    TBranch        *b_run;   //!
    TBranch        *b_lumi;   //!
@@ -441,12 +461,14 @@ public :
    TBranch        *b_deltaPhiMin_had;   //!
    TBranch        *b_met_rawPt;   //!
    TBranch        *b_met_rawPhi;   //!
+   TBranch        *b_nBJet20;   //!
    TBranch        *b_nBJet40;   //!
    TBranch        *b_nMuons10;   //!
    TBranch        *b_nElectrons10;   //!
    TBranch        *b_nTaus20;   //!
    TBranch        *b_nGammas20;   //!
    TBranch        *b_minMTBMet;   //!
+   TBranch        *b_nLepLowMT;   //! 
    TBranch        *b_nPFLep5LowMT;   //!
    TBranch        *b_nPFHad10LowMT;   //!
    TBranch        *b_mt2_had;   //!
@@ -457,6 +479,7 @@ public :
    TBranch        *b_gamma_mt2;   //!
    TBranch        *b_zll_mt2;   //!
    TBranch        *b_gamma_nJet40;   //!
+   TBranch        *b_gamma_nBJet20;   //! 
    TBranch        *b_gamma_nBJet40;   //!
    TBranch        *b_gamma_ht;   //!
    TBranch        *b_gamma_deltaPhiMin;   //!
@@ -729,7 +752,22 @@ public :
    TBranch        *b_evt_filter;   //!
    TBranch        *b_evt_nEvts;   //!
    TBranch        *b_evt_id;   //!
-
+   TBranch *b_weight_lepsf;
+   TBranch *b_weight_lepsf_UP;
+   TBranch *b_weight_lepsf_DN;
+   TBranch *b_weight_btagsf;
+   TBranch *b_weight_btagsf_UP;
+   TBranch *b_weight_btagsf_DN;
+   TBranch *b_weight_sigtrigsf;
+   TBranch *b_weight_dileptrigsf;
+   TBranch *b_weight_phottrigsf;
+   TBranch *b_weight_pu;
+   TBranch *b_weight_isr;
+   TBranch *b_weight_scales_UP;
+   TBranch *b_weight_scales_DN;
+   TBranch *b_weight_pdfs_UP;
+   TBranch *b_weight_pdfs_DN;
+   
    bool loadGenStuff;
 
    MT2Tree(TTree *tree=0);
@@ -863,12 +901,14 @@ void MT2Tree::Init(TTree *tree)
    fChain->SetBranchAddress("deltaPhiMin_had", &deltaPhiMin_had, &b_deltaPhiMin_had);
    fChain->SetBranchAddress("met_rawPt", &met_rawPt, &b_met_rawPt);
    fChain->SetBranchAddress("met_rawPhi", &met_rawPhi, &b_met_rawPhi);
+   fChain->SetBranchAddress("nBJet20", &nBJet20, &b_nBJet20);
    fChain->SetBranchAddress("nBJet40", &nBJet40, &b_nBJet40);
    fChain->SetBranchAddress("nMuons10", &nMuons10, &b_nMuons10);
    fChain->SetBranchAddress("nElectrons10", &nElectrons10, &b_nElectrons10);
    fChain->SetBranchAddress("nTaus20", &nTaus20, &b_nTaus20);
    fChain->SetBranchAddress("nGammas20", &nGammas20, &b_nGammas20);
    fChain->SetBranchAddress("minMTBMet", &minMTBMet, &b_minMTBMet);
+   fChain->SetBranchAddress("nLepLowMT", &nLepLowMT, &b_nLepLowMT);
    fChain->SetBranchAddress("nPFLep5LowMT", &nPFLep5LowMT, &b_nPFLep5LowMT);
    fChain->SetBranchAddress("nPFHad10LowMT", &nPFHad10LowMT, &b_nPFHad10LowMT);
    fChain->SetBranchAddress("mt2_had", &mt2_had, &b_mt2_had);
@@ -879,6 +919,7 @@ void MT2Tree::Init(TTree *tree)
    fChain->SetBranchAddress("gamma_mt2", &gamma_mt2, &b_gamma_mt2);
    fChain->SetBranchAddress("zll_mt2", &zll_mt2, &b_zll_mt2);
    fChain->SetBranchAddress("gamma_nJet40", &gamma_nJet40, &b_gamma_nJet40);
+   fChain->SetBranchAddress("gamma_nBJet20", &gamma_nBJet20, &b_gamma_nBJet20);
    fChain->SetBranchAddress("gamma_nBJet40", &gamma_nBJet40, &b_gamma_nBJet40);
    fChain->SetBranchAddress("gamma_ht", &gamma_ht, &b_gamma_ht);
    fChain->SetBranchAddress("gamma_deltaPhiMin", &gamma_deltaPhiMin, &b_gamma_deltaPhiMin);
@@ -1153,6 +1194,22 @@ void MT2Tree::Init(TTree *tree)
    fChain->SetBranchAddress("evt_filter", &evt_filter, &b_evt_filter);
    fChain->SetBranchAddress("evt_nEvts", &evt_nEvts, &b_evt_nEvts);
    fChain->SetBranchAddress("evt_id", &evt_id, &b_evt_id);
+   fChain->SetBranchAddress("weight_lepsf", &weight_lepsf, &b_weight_lepsf);
+   fChain->SetBranchAddress("weight_lepsf_UP", &weight_lepsf_UP, &b_weight_lepsf_UP);
+   fChain->SetBranchAddress("weight_lepsf_DN", &weight_lepsf_DN, &b_weight_lepsf_DN);
+   fChain->SetBranchAddress("weight_btagsf", &weight_btagsf, &b_weight_btagsf);
+   fChain->SetBranchAddress("weight_btagsf_UP", &weight_btagsf_UP, &b_weight_btagsf_UP);
+   fChain->SetBranchAddress("weight_btagsf_DN", &weight_btagsf_DN, &b_weight_btagsf_DN);
+   fChain->SetBranchAddress("weight_sigtrigsf", &weight_sigtrigsf, &b_weight_sigtrigsf);
+   fChain->SetBranchAddress("weight_dileptrigsf", &weight_dileptrigsf, &b_weight_dileptrigsf);
+   fChain->SetBranchAddress("weight_phottrigsf", &weight_phottrigsf, &b_weight_phottrigsf);
+   fChain->SetBranchAddress("weight_pu", &weight_pu, &b_weight_pu);
+   fChain->SetBranchAddress("weight_isr", &weight_isr, &b_weight_isr);
+   fChain->SetBranchAddress("weight_scales_UP", &weight_scales_UP, &b_weight_scales_UP);
+   fChain->SetBranchAddress("weight_scales_DN", &weight_scales_DN, &b_weight_scales_DN);
+   fChain->SetBranchAddress("weight_pdfs_UP", &weight_pdfs_UP, &b_weight_pdfs_UP);
+   fChain->SetBranchAddress("weight_pdfs_DN", &weight_pdfs_UP, &b_weight_pdfs_UP);
+   
    Notify();
 }
 

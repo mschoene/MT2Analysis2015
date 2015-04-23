@@ -212,7 +212,7 @@ void MT2EstimateTree::assignTree( const MT2Tree& mt2tree, float w, const std::st
   met_pt    = mt2tree.met_pt;
   met_phi    = mt2tree.met_phi;
   nJets  = mt2tree.nJet40;
-  nBJets = mt2tree.nBJet40;
+  nBJets = mt2tree.nBJet20;
 
   zll_mt2      = mt2tree.zll_mt2;
   zll_ht       = mt2tree.zll_ht;
@@ -235,7 +235,7 @@ void MT2EstimateTree::assignTree_gamma( const MT2Tree& mt2tree, float w ) {
   ht     = mt2tree.gamma_ht;
   met_pt    = mt2tree.gamma_met_pt;
   nJets  = mt2tree.gamma_nJet40;
-  nBJets = mt2tree.gamma_nBJet40;
+  nBJets = mt2tree.gamma_nBJet20;
 
 }
 

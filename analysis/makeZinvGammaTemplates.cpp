@@ -66,7 +66,7 @@ int main( int argc, char* argv[] ) {
 
 
 
-  std::string samplesFileName = "PHYS14_v4_skimprune";
+  std::string samplesFileName = "PHYS14_v5_skimprune";
   std::string samplesFile = "../samples/samples_" + samplesFileName + ".dat";
   
   std::vector<MT2Sample> samples = MT2Sample::loadSamples(samplesFile, 100, 299); // GJet and QCD
@@ -162,6 +162,14 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2An
     gamma.SetPtEtaPhiM( myTree.gamma_pt[0], myTree.gamma_eta[0], myTree.gamma_phi[0], myTree.gamma_mass[0] );
 
 
+    float ht        = myTree.gamma_ht;
+    float met       = myTree.gamma_met_pt;
+    float mt2       = myTree.gamma_mt2;
+    float minMTBmet = myTree.gamma_minMTBMet;
+    int njets       = myTree.gamma_nJet40;
+    int nbjets      = myTree.gamma_nBJet20;    
+
+
 
     float iso = myTree.gamma_chHadIso[0];
 
@@ -190,9 +198,9 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2An
 
       if( isWorkingPrompt ) {
         // for prompts use only low-sensitivity regions:
-        if( myTree.gamma_mt2>300. ) continue;
-        if( myTree.gamma_ht>1000. ) continue;
-        if( myTree.gamma_nBJet40>0 ) continue;
+        if( mt2>300. ) continue;
+        if( ht>1000. ) continue;
+        if( nbjets>0 ) continue;
       }
 
 
@@ -221,21 +229,21 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2An
 
     if( isWorkingPrompt ) {
 
-      MT2EstimateZinvGamma* thisPrompt = prompt->get( myTree.gamma_ht, myTree.gamma_nJet40, myTree.gamma_nBJet40, myTree.gamma_met_pt );
+      MT2EstimateZinvGamma* thisPrompt = prompt->get( ht, njets, nbjets, met, minMTBmet, mt2 );
       if( thisPrompt==0 ) continue;
 
-      thisPrompt->yield->Fill(myTree.gamma_mt2, weight );
+      thisPrompt->yield->Fill(mt2, weight );
       thisPrompt->sietaieta->Fill(myTree.gamma_sigmaIetaIeta[0], weight );
-      thisPrompt->fillIso( iso, weight, myTree.gamma_mt2 );
+      thisPrompt->fillIso( iso, weight, mt2 );
 
     } else {
 
-      MT2EstimateZinvGamma* thisFake = fake->get( myTree.gamma_ht, myTree.gamma_nJet40, myTree.gamma_nBJet40, myTree.gamma_met_pt );
+      MT2EstimateZinvGamma* thisFake = fake->get( ht, njets, nbjets, met, minMTBmet, mt2 );
       if( thisFake==0 ) continue;
 
-      thisFake->yield->Fill(myTree.gamma_mt2, weight );
+      thisFake->yield->Fill(mt2, weight );
       thisFake->sietaieta->Fill(myTree.gamma_sigmaIetaIeta[0], weight );
-      thisFake->fillIso( iso, weight, myTree.gamma_mt2 );
+      thisFake->fillIso( iso, weight, mt2 );
 
     }
 

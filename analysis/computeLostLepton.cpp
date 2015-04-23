@@ -114,7 +114,7 @@ MT2Analysis<MT2EstimateSyst> computeYield( const MT2Sample& sample, const std::s
     float mt2  = myTree.mt2;
     float minMTBmet = myTree.minMTBMet;
     int njets  = myTree.nJet40;
-    int nbjets = myTree.nBJet40; 
+    int nbjets = myTree.nBJet20; 
 
     ////////To remove for next iteration
     //int nPFLep5LowMT = 0, nPFHad10LowMT = 0;
