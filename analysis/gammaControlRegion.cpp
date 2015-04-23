@@ -146,6 +146,7 @@ int main( int argc, char* argv[] ) {
 
   // emulate data:
   roundLikeData(gammaCR);
+  roundLikeData(gammaCR_loose);
   gammaCR->writeToFile( outputdir + "/data.root" );
   gammaCR_loose->addToFile( outputdir + "/data.root" );
   gammaCR_nipUp->addToFile( outputdir + "/data.root" );
