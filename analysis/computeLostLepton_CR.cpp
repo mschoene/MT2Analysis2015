@@ -114,7 +114,7 @@ MT2Analysis<MT2EstimateSyst> computeYield( const MT2Sample& sample, const std::s
     float mt2  = myTree.mt2;
     float minMTBmet = myTree.minMTBMet;
     int njets  = myTree.nJet40;
-    int nbjets = myTree.nBJet40; 
+    int nbjets = myTree.nBJet20; 
     
     int nMuons10 = myTree.nMuons10;
     int nElectrons10 = myTree.nElectrons10;
@@ -124,90 +124,90 @@ MT2Analysis<MT2EstimateSyst> computeYield( const MT2Sample& sample, const std::s
     int nlepveto = myTree.nMuons10 + myTree.nElectrons10 + myTree.nPFLep5LowMT + myTree.nPFHad10LowMT;
     int nlep_unique = nlepveto;
     
-    // do lepton overlap removal and 1L CR selections
-    if (nlepveto >= 1) {
-      std::vector<lepcand> all_cands;
-      std::vector<lepcand> unique_cands;
-      // check reco leptons - apply MT cut later
-      // do overlap with PFcands below
-      if ( nMuons10 > 0 || nElectrons10 > 0) {
-	for (int ilep = 0; ilep < myTree.nlep; ++ilep) {
-	  lepcand cand;
-	  cand.pt = myTree.lep_pt[ilep];
-	  cand.phi = myTree.lep_phi[ilep];
-	  cand.mt = sqrt( 2 * myTree.met_pt * cand.pt * ( 1 - cos( myTree.met_phi - cand.phi) ) );
-	  cand.eta = myTree.lep_eta[ilep];
-	  cand.pdgId = myTree.lep_pdgId[ilep];
-	  cand.isPFCand = false;
-
-	  // add cand to vector
-	  all_cands.push_back(cand);
-	} // loop over reco leps
-      }
-      // pf leptons: need to find cands passing selection. 
-      else if (nPFLep5LowMT > 0) {
-	for (int itrk = 0; itrk < myTree.nisoTrack; ++itrk) {
-	  lepcand cand;
-	  cand.pt = myTree.isoTrack_pt[itrk];
-	  cand.phi = myTree.isoTrack_phi[itrk];
-	  cand.pdgId = myTree.isoTrack_pdgId[itrk];
-	  if (cand.pt < 5.) continue;
-	  if (abs(cand.pdgId) != 11 && abs(cand.pdgId) != 13) continue;
-	  float absiso = myTree.isoTrack_absIso[itrk];
-	  if (absiso/cand.pt > 0.2) continue;
-	  cand.mt = sqrt( 2 * myTree.met_pt * cand.pt * ( 1 - cos( myTree.met_phi - cand.phi) ) );
-	  cand.eta = myTree.isoTrack_eta[itrk];
-	  cand.isPFCand = true;
-
-	  // cand passes cuts: add to vector
-	  if (cand.mt > 100.) continue;
-	  all_cands.push_back(cand);
-	} // loop on isoTracks
-      }
-      // pf hadrons: need to find cands passing selection. 
-      else if (myTree.nPFHad10LowMT > 0) {
-	for (int itrk = 0; itrk < myTree.nisoTrack; ++itrk) {
-	  lepcand cand;
-	  cand.pt = myTree.isoTrack_pt[itrk];
-	  cand.phi = myTree.isoTrack_phi[itrk];
-	  cand.pdgId = myTree.isoTrack_pdgId[itrk];
-	  if (cand.pt < 10.) continue;
-	  if (abs(cand.pdgId) != 211) continue;
-	  float absiso = myTree.isoTrack_absIso[itrk];
-	  if (absiso/cand.pt > 0.1) continue;
-	  cand.mt = sqrt( 2 * myTree.met_pt * cand.pt * ( 1 - cos( myTree.met_phi - cand.phi) ) );
-	  cand.eta = myTree.isoTrack_eta[itrk];
-	  cand.isPFCand = true;
-
-	  // cand passes cuts: add to vector
-	  if (cand.mt > 100.) continue;
-	  all_cands.push_back(cand);
-	} // loop on isoTracks
-      }
-
-      // check all_cands for overlaps
-      for (unsigned int icand = 0; icand < all_cands.size(); ++icand) {
-	bool keep = true;
-	for (unsigned int jcand = 0; jcand < all_cands.size(); ++jcand) {
-	  float dr = DeltaR(all_cands.at(icand).eta, all_cands.at(jcand).eta, all_cands.at(icand).phi, all_cands.at(jcand).phi);
-	  if (dr < 0.1) {
-	    // if overlap, check whether the cands have the same pdgId
-	    // keep the reco lepton in case of overlap with PF lepton
-	    if (all_cands.at(icand).pdgId == all_cands.at(jcand).pdgId && 
-		all_cands.at(icand).isPFCand && !all_cands.at(jcand).isPFCand) 
-	      keep = false;
-	  }
-	}
-	if (keep) unique_cands.push_back(all_cands.at(icand));
-      }
-      
-      nlep_unique = unique_cands.size() ; // useful counter
-
-      // check size of unique cands. if size == 1 and MT < 100, fill 1L CR plots
-      if (unique_cands.size() == 1 && unique_cands.at(0).mt < 100);
-      else continue;
-      
-    } // for 1L control region
+    //// do lepton overlap removal and 1L CR selections
+    //if (nlepveto >= 1) {
+    //  std::vector<lepcand> all_cands;
+    //  std::vector<lepcand> unique_cands;
+    //  // check reco leptons - apply MT cut later
+    //  // do overlap with PFcands below
+    //  if ( nMuons10 > 0 || nElectrons10 > 0) {
+    //	for (int ilep = 0; ilep < myTree.nlep; ++ilep) {
+    //	  lepcand cand;
+    //	  cand.pt = myTree.lep_pt[ilep];
+    //	  cand.phi = myTree.lep_phi[ilep];
+    //	  cand.mt = sqrt( 2 * myTree.met_pt * cand.pt * ( 1 - cos( myTree.met_phi - cand.phi) ) );
+    //	  cand.eta = myTree.lep_eta[ilep];
+    //	  cand.pdgId = myTree.lep_pdgId[ilep];
+    //	  cand.isPFCand = false;
+    //
+    //	  // add cand to vector
+    //	  all_cands.push_back(cand);
+    //	} // loop over reco leps
+    //  }
+    //  // pf leptons: need to find cands passing selection. 
+    //  else if (nPFLep5LowMT > 0) {
+    //	for (int itrk = 0; itrk < myTree.nisoTrack; ++itrk) {
+    //	  lepcand cand;
+    //	  cand.pt = myTree.isoTrack_pt[itrk];
+    //	  cand.phi = myTree.isoTrack_phi[itrk];
+    //	  cand.pdgId = myTree.isoTrack_pdgId[itrk];
+    //	  if (cand.pt < 5.) continue;
+    //	  if (abs(cand.pdgId) != 11 && abs(cand.pdgId) != 13) continue;
+    //	  float absiso = myTree.isoTrack_absIso[itrk];
+    //	  if (absiso/cand.pt > 0.2) continue;
+    //	  cand.mt = sqrt( 2 * myTree.met_pt * cand.pt * ( 1 - cos( myTree.met_phi - cand.phi) ) );
+    //	  cand.eta = myTree.isoTrack_eta[itrk];
+    //	  cand.isPFCand = true;
+    //
+    //	  // cand passes cuts: add to vector
+    //	  if (cand.mt > 100.) continue;
+    //	  all_cands.push_back(cand);
+    //	} // loop on isoTracks
+    //  }
+    //  // pf hadrons: need to find cands passing selection. 
+    //  else if (myTree.nPFHad10LowMT > 0) {
+    //	for (int itrk = 0; itrk < myTree.nisoTrack; ++itrk) {
+    //	  lepcand cand;
+    //	  cand.pt = myTree.isoTrack_pt[itrk];
+    //	  cand.phi = myTree.isoTrack_phi[itrk];
+    //	  cand.pdgId = myTree.isoTrack_pdgId[itrk];
+    //	  if (cand.pt < 10.) continue;
+    //	  if (abs(cand.pdgId) != 211) continue;
+    //	  float absiso = myTree.isoTrack_absIso[itrk];
+    //	  if (absiso/cand.pt > 0.1) continue;
+    //	  cand.mt = sqrt( 2 * myTree.met_pt * cand.pt * ( 1 - cos( myTree.met_phi - cand.phi) ) );
+    //	  cand.eta = myTree.isoTrack_eta[itrk];
+    //	  cand.isPFCand = true;
+    //
+    //	  // cand passes cuts: add to vector
+    //	  if (cand.mt > 100.) continue;
+    //	  all_cands.push_back(cand);
+    //	} // loop on isoTracks
+    //  }
+    //
+    //  // check all_cands for overlaps
+    //  for (unsigned int icand = 0; icand < all_cands.size(); ++icand) {
+    //	bool keep = true;
+    //	for (unsigned int jcand = 0; jcand < all_cands.size(); ++jcand) {
+    //	  float dr = DeltaR(all_cands.at(icand).eta, all_cands.at(jcand).eta, all_cands.at(icand).phi, all_cands.at(jcand).phi);
+    //	  if (dr < 0.1) {
+    //	    // if overlap, check whether the cands have the same pdgId
+    //	    // keep the reco lepton in case of overlap with PF lepton
+    //	    if (all_cands.at(icand).pdgId == all_cands.at(jcand).pdgId && 
+    //		all_cands.at(icand).isPFCand && !all_cands.at(jcand).isPFCand) 
+    //	      keep = false;
+    //	  }
+    //	}
+    //	if (keep) unique_cands.push_back(all_cands.at(icand));
+    //  }
+    //  
+    //  nlep_unique = unique_cands.size() ; // useful counter
+    //
+    //  // check size of unique cands. if size == 1 and MT < 100, fill 1L CR plots
+    //  if (unique_cands.size() == 1 && unique_cands.at(0).mt < 100);
+    //  else continue;
+    //  
+    //} // for 1L control region
 
     Double_t weight = myTree.evt_scale1fb*lumi;
 
