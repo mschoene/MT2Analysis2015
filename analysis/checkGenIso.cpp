@@ -25,7 +25,7 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2An
 int main( int argc, char* argv[] ) {
 
 
-  std::string samplesFileName = "PHYS14_v4_skimprune";
+  std::string samplesFileName = "PHYS14_v5_skimprune";
   //std::string samplesFileName = "CSA14_Zinv";
   if( argc>1 ) {
     std::string samplesFileName_tmp(argv[1]); 
