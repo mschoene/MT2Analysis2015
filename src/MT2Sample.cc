@@ -47,7 +47,6 @@ std::vector<MT2Sample> MT2Sample::loadSamples(const std::string& filename, const
 
   while( IN.getline(buffer, 200, '\n') ) {
 
-    // ok = false;                                                                                                                                                                                                               
     if (buffer[0] == '#') {
       continue; // Skip lines commented with '#'                                                                                                                                                                                 
     }
@@ -141,6 +140,10 @@ std::vector<MT2Sample> MT2Sample::loadSamples(const std::string& filename, const
     } else {
 
       for( unsigned i=1; i<fileNameParts.size(); ++i ) {
+        if( fileNameParts[i] == "root" ) break;
+        if( fileNameParts[i] == "babytree" ) continue;
+        if( fileNameParts[i] == "prune" ) continue;
+        if( fileNameParts[i] == "skim" ) continue;
         s.name += "_" + fileNameParts[i];
         s.sname += "_" + fileNameParts[i];
       }
