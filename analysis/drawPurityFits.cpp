@@ -49,7 +49,7 @@ int main( int argc, char* argv[] ) {
 
   MT2DrawTools::setStyle();
 
-  std::string mc_or_data = "MC";
+  std::string mc_or_data = "data";
   if( argc>1 ) {
     mc_or_data = std::string(argv[1]);
     if( mc_or_data=="data" ) mc_or_data = "DataRC"; // default is Random Cone
