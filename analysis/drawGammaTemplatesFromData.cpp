@@ -22,7 +22,7 @@ void setHistoTitle( MT2Analysis<MT2EstimateZinvGamma>* analysis, const std::stri
 int main( int argc, char* argv[] ) {
 
 
-  std::string samples = "PHYS14_v4_skimprune";
+  std::string samples = "PHYS14_v5_skimprune";
   if( argc>1 ) {
     std::string samples_tmp(argv[1]); 
     samples = samples_tmp;
