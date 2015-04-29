@@ -43,7 +43,7 @@ int main( int argc, char* argv[] ) {
   }
 
 
-  std::string samplesName = "PHYS14_v4_skimprune";
+  std::string samplesName = "PHYS14_v5_skimprune";
 
   std::string fileName = "gammaTemplatesDataFR_" + samplesName + "_" + regionsSet + ".root";
   MT2Analysis<MT2EstimateZinvGamma>* templatesPromptRaw = MT2Analysis<MT2EstimateZinvGamma>::readFromFile(fileName, "templatesPromptRaw");
