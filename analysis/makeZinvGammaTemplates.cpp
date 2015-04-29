@@ -174,16 +174,18 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2An
     float iso = myTree.gamma_chHadIso[0];
 
     float sietaieta = myTree.gamma_sigmaIetaIeta[0];
+    float id_thresh;
     bool sietaietaOK = false;
     if( fabs( gamma.Eta() )<1.479 ) {
-      if( sietaieta>0.010 && sietaieta<0.011 ) continue; // no man's land
+      id_thresh = 0.0106;
+      if( sietaieta>id_thresh && sietaieta<0.011 ) continue; // no man's land
       if( sietaieta>0.015 ) continue; // end of sidebands
-      sietaietaOK = (sietaieta < 0.01);
     } else {  
-      if( sietaieta>0.0266 && sietaieta<0.030 ) continue; // no man's land
+      id_thresh = 0.0266;
+      if( sietaieta>id_thresh && sietaieta<0.030 ) continue; // no man's land
       if( sietaieta>0.035 ) continue; // end of sidebands
-      sietaietaOK = (sietaieta < 0.03);
     }
+    sietaietaOK = (sietaieta < id_thresh);
 
     bool isWorkingPrompt = false;
 
