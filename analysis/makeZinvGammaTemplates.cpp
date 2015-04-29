@@ -202,6 +202,7 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2An
         // for prompts use only low-sensitivity regions:
         if( mt2>300. ) continue;
         if( ht>1000. ) continue;
+        if( njets>6 ) continue;
         if( nbjets>0 ) continue;
       }
 
