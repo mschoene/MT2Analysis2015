@@ -102,10 +102,10 @@ void drawIsoRandomCone( const std::string& outputdir, TTree* tree_prompt, TTree*
   }
 
 
-  int nBins = 8;
-  float xMax = 20.;
-  //int nBins = 100;
+  //int nBins = 8;
   //float xMax = 20.;
+  int nBins = 50;
+  float xMax = 10.;
   
   TH1D* h1_iso_prompt = new TH1D("iso_prompt", "", nBins, 0., xMax );
   h1_iso_prompt->Sumw2();
@@ -208,7 +208,7 @@ void drawCompare( const std::string& outputdir, const std::string& saveName, con
   }
   yMax *= 1.2;
 
-  float xMax = 20.;
+  float xMax = v[0]->GetXaxis()->GetXmax();
 
   TH2D* h2_axes = new TH2D( "axes", "", 10, 0., xMax, 10, 0., yMax );  
   h2_axes->SetYTitle("Normalized to Unity");
@@ -216,7 +216,7 @@ void drawCompare( const std::string& outputdir, const std::string& saveName, con
   c1->cd();
   h2_axes->Draw();
 
-  TH2D* h2_axes_log = new TH2D( "axes_log", "", 10, 0., xMax, 10, 0.000001, 5.*yMax );  
+  TH2D* h2_axes_log = new TH2D( "axes_log", "", 10, 0., xMax, 10, 0.0001, 5.*yMax );  
   h2_axes_log->SetYTitle("Normalized to Unity");
   h2_axes_log->SetXTitle(axisName.c_str());
   c1_log->cd();
