@@ -46,7 +46,8 @@ int main() {
 
 
 
-  std::string fileName = "GenIsoCheck_PHYS14_v4_skimprune_13TeV_inclusive/genIso.root";
+  //std::string fileName = "GenIsoCheck_PHYS14_v2_Zinv_noSietaieta_13TeV_inclusive/genIso.root";
+  std::string fileName = "GenIsoCheck_PHYS14_v5_skimprune_13TeV_inclusive/genIso.root";
 
   TFile* file = TFile::Open(fileName.c_str());
   TTree* tree_prompt = (TTree*)file->Get("prompt/HT450toInf_j2toInf_b0toInf/tree_prompt_HT450toInf_j2toInf_b0toInf");
@@ -292,10 +293,10 @@ void drawSietaieta( const std::string& outputdir, TTree* tree_prompt, TTree* tre
   if( eb_ee=="Barrel" ) {
     etaMin = 0.;
     etaMax = 1.479;
-    xMin = 0.007;
-    xMax = 0.02;
-    nBins = 65;
-    xCut = 0.010;
+    xMin = 0.008;
+    xMax = 0.015;
+    nBins = 70;
+    xCut = 0.0106;
     xSBmin = 0.011;
     xSBmax = 0.015;
     xMinLegend = 0.68;
@@ -305,12 +306,14 @@ void drawSietaieta( const std::string& outputdir, TTree* tree_prompt, TTree* tre
     etaMax = 2.5;
     xMin = 0.02;
     xMax = 0.035;
-    xCut = 0.030;
+    xCut = 0.0266;
     nBins = 50;
     xSBmin = 0.03;
     xSBmax = 0.035;
-    xMinLegend = 0.45;
-    xMaxLegend = 0.68;
+    //xMinLegend = 0.45;
+    //xMaxLegend = 0.68;
+    xMinLegend = 0.69;
+    xMaxLegend = 0.92;
   } else {
     std::cout << "Unkown ECAL region: " << eb_ee << std::endl;
     return;
@@ -330,6 +333,7 @@ void drawSietaieta( const std::string& outputdir, TTree* tree_prompt, TTree* tre
   tree_prompt->Project( "hprompt", "sietaieta", cut.c_str() );
   tree_nip   ->Project( "hnip"   , "sietaieta", cut.c_str() );
   tree_fake  ->Project( "hfake"  , "sietaieta", cut.c_str() );
+
 
   h1_fake->Add(h1_nip);
 
@@ -351,6 +355,7 @@ void drawSietaieta( const std::string& outputdir, TTree* tree_prompt, TTree* tre
   TH2D* h2_axes = new TH2D("axes", "", 10, xMin, xMax, 10, 0., yMax);
   h2_axes->SetXTitle("Photon #sigma_{i#eta i#eta}");
   h2_axes->SetYTitle("Events");
+  h2_axes->GetXaxis()->SetNdivisions(4, 5, 5);
   h2_axes->Draw();
 
   h1_prompt->SetFillColor(kOrange+1);
@@ -383,7 +388,7 @@ void drawSietaieta( const std::string& outputdir, TTree* tree_prompt, TTree* tre
   TLine* lineSB2 = new TLine( xSBmax, 0., xSBmax, yMax );
   lineSB2->SetLineStyle(2);
   lineSB2->SetLineWidth(2);
-  lineSB2->Draw("same");
+  //lineSB2->Draw("same");
 
   TLegend* legend;
   if( ptMin>0. ) {
@@ -392,12 +397,13 @@ void drawSietaieta( const std::string& outputdir, TTree* tree_prompt, TTree* tre
     else                 ptString = std::string(Form("%.0f < p_{T} < %.0f", ptMin, ptMax));
     legend = new TLegend( xMinLegend, 0.6, xMaxLegend, 0.88, Form("#splitline{%s}{%s}", eb_ee.c_str(), ptString.c_str()) );
   } else {
-    legend = new TLegend( xMinLegend, 0.67, xMaxLegend, 0.88, eb_ee.c_str());
+    legend = new TLegend( xMinLegend, 0.68, xMaxLegend, 0.89, eb_ee.c_str());
   }
   legend->SetTextSize(0.035);
   legend->SetFillColor(0);
   legend->AddEntry( h1_prompt, "Prompt", "F" );
   legend->AddEntry( h1_fake, "Fake", "F" );
+  legend->SetFillStyle(1);
   legend->Draw("same");
 
   TPaveText* labelTop = MT2DrawTools::getLabelTop(4.);
@@ -984,6 +990,7 @@ void drawIsoVsSigma( const std::string& outputdir, TTree* tree_fake, const std::
   h2_axes->SetXTitle( "#sigma_{i#eta i#eta}" );
   h2_axes->SetYTitle( "Charged Isolation [GeV]");
   //h2_axes->SetYTitle( "Isolation [GeV]");
+  h2_axes->GetXaxis()->SetNdivisions(4, 5, 5);
   h2_axes->Draw();
 
 
@@ -997,7 +1004,7 @@ void drawIsoVsSigma( const std::string& outputdir, TTree* tree_fake, const std::
   h1_iso2_vs_sigma->SetMarkerColor(kBlack);
   h1_iso2_vs_sigma->SetLineColor(kBlack);
 
-  TLine* lineCut = new TLine( 0.01, 0., 0.01, yMax );
+  TLine* lineCut = new TLine( 0.0106, 0., 0.0106, yMax );
   lineCut->SetLineColor(kBlack);
   lineCut->Draw("same");
 
