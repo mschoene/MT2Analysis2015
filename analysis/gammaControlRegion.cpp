@@ -39,6 +39,7 @@ void roundLikeData( MT2Analysis<MT2EstimateZinvGamma>* data );
 int main( int argc, char* argv[] ) {
 
 
+  //  std::string samplesFileName = "PHYS14_v4_skimprune";
   std::string samplesFileName = "PHYS14_v5_skimprune";
 
 
@@ -230,6 +231,7 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet,
     float mt2       = myTree.gamma_mt2;
     float minMTBmet = myTree.gamma_minMTBMet;
     int njets       = myTree.gamma_nJet40;
+    //    int nbjets      = myTree.gamma_nBJet40;    
     int nbjets      = myTree.gamma_nBJet20;    
 
 

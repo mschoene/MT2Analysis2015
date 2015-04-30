@@ -203,6 +203,7 @@ MT2Analysis<MT2EstimateTree>* computeYield( const MT2Sample& sample, const MT2Co
     if(!( myTree.nlep>1 )) continue; 
 
     */
+     //  if(!(myTree.nPFLep5LowMT==0 && myTree.nPFHad10LowMT==0)) continue;
 
      if(!( myTree.nlep==2 )) continue; 
 
@@ -213,7 +214,7 @@ MT2Analysis<MT2EstimateTree>* computeYield( const MT2Sample& sample, const MT2Co
     if( !(myTree.lep_pdgId[0] == -myTree.lep_pdgId[1]) ) continue;
 
     //Need the lorentz vectors of the leptons first
-    TLorentzVector *LVec = new TLorentzVector[50];
+    TLorentzVector *LVec = new TLorentzVector[5];
     for(int i=0; i< 2; i++){
       LVec[i].SetPtEtaPhiM(myTree.lep_pt[i], myTree.lep_eta[i],myTree.lep_phi[i], myTree.lep_mass[i]);
     }
@@ -231,16 +232,14 @@ MT2Analysis<MT2EstimateTree>* computeYield( const MT2Sample& sample, const MT2Co
     float mt2  = myTree.mt2;
     float minMTBmet = myTree.minMTBMet;
     int njets  = myTree.nJet40;
-    int nbjets = myTree.nBJet40;
+    //    int nbjets = myTree.nBJet40;
+    int nbjets = myTree.nBJet20;
 
     Double_t weight = myTree.evt_scale1fb*lumi;
 
     MT2EstimateTree* thisEstimate = analysis->get( myTree.zll_ht, njets, nbjets, myTree.zll_met_pt, minMTBmet, myTree.zll_mt2 );
     if( thisEstimate==0 ) continue; 
 
-    //Fills the variables defined in MT2EstimateTree to the tree
-    //at leatst partially...
-    thisEstimate->fillTree(myTree, weight ,"zll");
 
     //initialize
     thisEstimate->assignVar("Z_pt", z.Perp() );
@@ -248,10 +247,12 @@ MT2Analysis<MT2EstimateTree>* computeYield( const MT2Sample& sample, const MT2Co
     thisEstimate->assignVar("Z_mass", z.M() );
     thisEstimate->assignVar("Z_lepId", abs(myTree.lep_pdgId[0])  );
 
-
-
     //Fills the above variables into the tree
-    thisEstimate->tree->Fill(); 
+    //   thisEstimate->tree->Fill(); 
+
+    //Fills the variables defined in MT2EstimateTree to the tree
+    //at leatst partially...
+    thisEstimate->fillTree(myTree, weight ,"zll");
 
 
     thisEstimate->yield->Fill(myTree.zll_mt2, weight );

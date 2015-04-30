@@ -59,10 +59,16 @@ int main( int argc, char* argv[] ) {
   float err_llep_corr   = 0.;
   float err_llep_uncorr = 0.075;
   float err_llep_lepEff = 0.15;
-  float err_zinv_corr   = 0.21; // 20% on Z/gamma ratio plus added in quadrature syst on templates (2%) and on f (4%) and MC stat on Rzg (5%) -> sqrt( 20*20 + 2*2 + 4*4 +5*5 ) = 21
+ 
+  float err_zinv_corr   = 0.0671; //  added in quadrature syst on templates (2%) and on f (4%) and MC stat on Rzg (5%) -> sqrt( 2*2 + 4*4 +5*5 ) = 6.708
+
+  // to which normally the 20% on Z/gamma ratio plus added in quadratur
+  // but now we are going to do it uncorrelated bin by bin
+  // float err_zinv_corr   = 0.21; // 20% on Z/gamma ratio plus added in quadrature syst on templates (2%) and on f (4%) and MC stat on Rzg (5%) -> sqrt( 20*20 + 2*2 + 4*4 +5*5 ) = 21
+
   float err_zinv_uncorr = -1.; // will take histogram bin error
   float err_zinv_alpha_extra  = 0.2; // 20% extra uncertainty on alpha if using lower MT2 as CR
-  float err_zinv_uncorr_2b = 1.0;
+  float err_zinv_uncorr_2b = 1.0; //uncertainty of 100% for region with more than 1 b jets
   float err_sig_corr    = 0.1;
   float err_sig_uncorr  = 0.;
 
@@ -83,6 +89,9 @@ int main( int argc, char* argv[] ) {
   MT2Analysis<MT2Estimate>* zinvCR;
   MT2Analysis<MT2Estimate>* zinv_ratio;
   MT2Analysis<MT2EstimateSyst>* purity;
+
+  MT2Analysis<MT2EstimateSyst>* zll;
+
   if( useMC_zinv )
     zinv = MT2Analysis<MT2Estimate>::readFromFile( mc_fileName, "ZJets");
   else {
@@ -92,6 +101,9 @@ int main( int argc, char* argv[] ) {
       zinv        = MT2Analysis<MT2Estimate>    ::readFromFile( Form("ZinvEstimateFromGamma_%s_%s_%.0ffb_type1/MT2ZinvEstimate.root", samplesName.c_str(), regionsName.c_str(), lumi), "ZinvEstimate");
       zinv_ratio  = MT2Analysis<MT2Estimate>    ::readFromFile( Form("ZinvEstimateFromGamma_%s_%s_%.0ffb_type1/MT2ZinvEstimate.root", samplesName.c_str(), regionsName.c_str(), lumi), "ZgammaRatio");
       purity      = MT2Analysis<MT2EstimateSyst>::readFromFile( Form("ZinvEstimateFromGamma_%s_%s_%.0ffb_type1/MT2ZinvEstimate.root", samplesName.c_str(), regionsName.c_str(), lumi), "purity");
+
+      zll      = MT2Analysis<MT2EstimateSyst>::readFromFile( Form("ZllGammaRatio_%s_%s_%.0ffb/ZllRatio.root", samplesName.c_str(), regionsName.c_str(), lumi), "zll_ratio");
+
     }
     else{
       zinvCR      = MT2Analysis<MT2Estimate>    ::readFromFile( Form("GammaControlRegion_%s_%s_%.0ffb/data.root", samplesName.c_str(), regionsName.c_str(), lumi), "gammaCR");
@@ -135,7 +147,11 @@ int main( int argc, char* argv[] ) {
      TH1D* this_llepCR = llepCR->get(*iR)->yield;
      TH1D* this_zinvCR     = (use_gamma) ? zinvCR->get(*iR)->yield : 0;
      TH1D* this_zinv_ratio     = (use_gamma) ? zinv_ratio->get(*iR)->yield : 0;
-     
+ 
+     TH1D* this_zll = zll->get(*iR)->yield; 
+     TH1D* this_zll_up = zll->get(*iR)->yield_systUp; 
+     TH1D* this_zll_down = zll->get(*iR)->yield_systDown; 
+    
      TGraphAsymmErrors* this_zinv_purity;
      if ( use_purity ) this_zinv_purity = (use_gamma) ? purity->get(*iR)->getGraph() : 0;
      //TGraphAsymmErrors* this_zinv_purity = (use_gamma) ? zinv_purity->get(*iR)->getGraph() : 0;
@@ -238,10 +254,19 @@ int main( int argc, char* argv[] ) {
            // correlated:
            datacard << "zinv_ZGratio lnN   - " << 1.+err_zinv_corr << " - -" << std::endl;
 
-         }
+	   // uncorrelated: //from the Zll/gamma ratio
+	   float zll_value = this_zll->GetBin(iBin);
+	   float zll_errUp = 1.+ this_zll_up->GetBin(iBin)/zll_value;
+	   float zll_errDown = 1. - this_zll_down->GetBin(iBin)/zll_value;
+	   //datacard << "zinv_zll_" << binName << " lnN - " << thisError_zll_uncorr << " - -" << std::endl;
+	   if(zll_errDown < 0.1) zll_errDown = 0.1;
+	   datacard << "zinv_zll" << binName << " lnN  - " << zll_errUp << "/" << zll_errDown << " - -" << std::endl;
+
+          }
 
          // uncorrelated:
          float thisError_zinv_uncorr = 1. + this_zinv->GetBinError(iBin)/yield_zinv;
+
          if( !use_gamma ) {
 
            std::string iname = (iR->nBJetsMin()<2) ? "CRstat" : "MC";
