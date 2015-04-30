@@ -134,12 +134,12 @@ void drawIsoRandomCone( const std::string& outputdir, TTree* tree_prompt, TTree*
   tree_fake->Project( "isoRC_fake", "isoRC", cut.c_str() );
 
 
-  h1_iso_prompt->SetTitle("Prompt");
-  h1_iso_nip->SetTitle("NIP");
+  h1_iso_prompt->SetTitle("Prompt (direct)");
+  h1_iso_nip->SetTitle("Prompt (fragm.)");
   h1_iso_fake->SetTitle("Fake");
 
-  h1_isoRC_prompt->SetTitle("Prompt");
-  h1_isoRC_nip->SetTitle("NIP");
+  h1_isoRC_prompt->SetTitle("Prompt (direct)");
+  h1_isoRC_nip->SetTitle("Prompt (fragm.)");
   h1_isoRC_fake->SetTitle("Fake");
 
 
@@ -161,7 +161,7 @@ void drawIsoRandomCone( const std::string& outputdir, TTree* tree_prompt, TTree*
   TH1D* h1_iso_prompt_plus_nip = new TH1D(*h1_iso_prompt);
   h1_iso_prompt_plus_nip->SetName("iso_prompt_plus_nip");
   h1_iso_prompt_plus_nip->Add(h1_iso_nip);
-  h1_iso_prompt_plus_nip->SetTitle("Prompt+NIP");
+  h1_iso_prompt_plus_nip->SetTitle("Prompt (all)");
 
 
   std::vector<TH1D*> v2;
@@ -584,7 +584,7 @@ void drawROC( const std::string& outputdir, TTree* tree_prompt, TTree* tree_nip,
   roc_isoCN->Draw("psame");
   roc_isoCPN->Draw("psame");
 
-  wp_isoCP_tight->Draw("psame");
+  //wp_isoCP_tight->Draw("psame");
   wp_iso_tight->Draw("psame");
 
   gPad->RedrawAxis();
@@ -640,23 +640,9 @@ void drawTemplatesVsMT2( const std::string& outputdir, const std::string& varNam
   std::vector<TH1D*> templatesAbs_fake;
   std::vector<TH1D*> templatesAbs_NIP;
 
-  float k = (varName=="iso") ? 1. : 2.;
+  float xMax_rel = (varName=="iso") ? 0.1 : 0.2;
 
-  int nBinsPlusOne = 12;
-  Double_t isoBins[nBinsPlusOne];
-  isoBins[0]  = k*0.;
-  isoBins[1]  = k*0.005;
-  isoBins[2]  = k*0.01;
-  isoBins[3]  = k*0.02;
-  isoBins[4]  = k*0.03;
-  isoBins[5]  = k*0.04;
-  isoBins[6]  = k*0.05;
-  isoBins[7]  = k*0.06;
-  isoBins[8]  = k*0.07;
-  isoBins[9]  = k*0.08;
-  isoBins[10] = k*0.09;
-  isoBins[11] = k*0.1;
-
+  int nBins_rel = 25;
 
 
   for( unsigned i=0; i<bins.size()-1; ++i ) {
@@ -665,9 +651,9 @@ void drawTemplatesVsMT2( const std::string& outputdir, const std::string& varNam
     std::string fakeName(Form("fake%d", i));
     std::string NIPName(Form("NIP%d", i));
 
-    TH1D* h1_prompt = new TH1D(promptName.c_str(), "", nBinsPlusOne-1, isoBins);
-    TH1D* h1_fake   = new TH1D(  fakeName.c_str(), "", nBinsPlusOne-1, isoBins);
-    TH1D* h1_NIP   = new TH1D(  NIPName.c_str(), "", nBinsPlusOne-1, isoBins);
+    TH1D* h1_prompt = new TH1D(promptName.c_str(), "", nBins_rel, 0., xMax_rel);
+    TH1D* h1_fake   = new TH1D(  fakeName.c_str(), "", nBins_rel, 0., xMax_rel);
+    TH1D* h1_NIP    = new TH1D(  NIPName.c_str(),  "", nBins_rel, 0., xMax_rel);
     
     h1_prompt->Sumw2();
     h1_fake  ->Sumw2();
@@ -696,9 +682,9 @@ void drawTemplatesVsMT2( const std::string& outputdir, const std::string& varNam
 
     if( varName=="iso" ) {
 
-      h1_abs_prompt = new TH1D(promptNameAbs.c_str(), "", 20, 0., 30.);
-      h1_abs_fake   = new TH1D(  fakeNameAbs.c_str(), "", 20, 0., 30.);
-      h1_abs_NIP   = new TH1D(  NIPNameAbs.c_str(), "", 20, 0., 30.);
+      h1_abs_prompt = new TH1D(promptNameAbs.c_str(), "", nBins_rel, 0., 10.);
+      h1_abs_fake   = new TH1D(  fakeNameAbs.c_str(), "", nBins_rel, 0., 10.);
+      h1_abs_NIP   = new TH1D(  NIPNameAbs.c_str(), "", nBins_rel, 0., 10.);
 
     } else {
 
@@ -805,14 +791,14 @@ void drawVsMT2( const std::string& outputdir, const std::string& varName, const 
 
   float yMax_log, yMin_log;
   if( name=="prompt" ) {
-    yMin_log = 0.001;
+    yMin_log = 0.0001;
     //yMin_log = 0.00001;
     yMax_log = 5.;
   } else if( name=="fake" ) {
     yMin_log = 0.001;
     yMax_log = 50.;
   } else if( name=="NIP" ) {
-    yMin_log = 0.001;
+    yMin_log = 0.0001;
     yMax_log = 50.;
   }
   
@@ -854,14 +840,16 @@ void drawVsMT2( const std::string& outputdir, const std::string& varName, const 
 
   float xMin_label;
   float yMin_label;
-  if( name=="prompt" ) {
-    xMin_label = 0.2;
-    //xMin_label = 0.75;
-    yMin_label = 0.2;
-  } else if( name=="fake" || name=="NIP" ) {
-    xMin_label = 0.2;
-    yMin_label = 0.8;
-  }
+  //if( name=="prompt" ) {
+  //  //xMin_label = 0.2;
+  //  xMin_label = 0.67;
+  //  yMin_label = 0.3;
+  //} else if( name=="fake" || name=="NIP" ) {
+  //  xMin_label = 0.2;
+  //  yMin_label = 0.8;
+  //}
+  xMin_label = 0.2;
+  yMin_label = 0.78;
   
   TPaveText* labelPrompt     = new TPaveText( 0.22, 0.8, 0.49, 0.9, "brNDC" );
   TPaveText* labelPrompt_log = new TPaveText( xMin_label, yMin_label, xMin_label+0.2, yMin_label+0.1, "brNDC" );
@@ -872,14 +860,14 @@ void drawVsMT2( const std::string& outputdir, const std::string& varName, const 
   labelPrompt_log->SetTextSize(0.035);
   labelPrompt_log->SetTextAlign(11); // align left
   if( name=="prompt" ) {
-    labelPrompt    ->AddText( "Prompt" );
-    labelPrompt_log->AddText( "Prompt" );
+    labelPrompt    ->AddText( "Direct Prompt" );
+    labelPrompt_log->AddText( "Direct Prompt" );
   } else if( name=="fake" ) {
     labelPrompt    ->AddText( "Fake" );
     labelPrompt_log->AddText( "Fake" );
   } else if( name=="NIP" ) {
-    labelPrompt    ->AddText( "Non-GenIso" );
-    labelPrompt_log->AddText( "Non-GenIso" );
+    labelPrompt    ->AddText( "Fragm. Prompt" );
+    labelPrompt_log->AddText( "Fragm. Prompt" );
   }
   labelPrompt    ->AddText( "Photons" );
   labelPrompt_log->AddText( "Photons" );
@@ -946,8 +934,7 @@ void drawIsoVsSigma( const std::string& outputdir, TTree* tree_fake, const std::
   float xmax = 0.015;
 
   float iso1Max = 20.;
-  //float iso2Max = 30.;
-  float iso2Max = 60.;
+  float iso2Max = 30.;
 
   TH2D* h2_iso1_vs_sigma = new TH2D( "iso1_vs_sigma_2D", "", 20, xmin, xmax, 100, 0., iso1Max);
   TH2D* h2_iso2_vs_sigma = new TH2D( "iso2_vs_sigma_2D", "", 20, xmin, xmax, 100, 0., iso2Max);
@@ -984,7 +971,7 @@ void drawIsoVsSigma( const std::string& outputdir, TTree* tree_fake, const std::
   c1->cd();
 
 
-  float yMax = 20.;
+  float yMax = 30.;
 
   TH2D* h2_axes = new TH2D("axes", "", 10, xmin, xmax, 10, 0., yMax );
   h2_axes->SetXTitle( "#sigma_{i#eta i#eta}" );
@@ -1017,7 +1004,7 @@ void drawIsoVsSigma( const std::string& outputdir, TTree* tree_fake, const std::
   legend->SetFillColor( 0 );
   legend->AddEntry( h1_iso1_vs_sigma, longName1.c_str(), "P" );
   legend->AddEntry( h1_iso2_vs_sigma, longName2.c_str(), "P" );
-  //legend->Draw("same");
+  legend->Draw("same");
 
 
   h1_iso1_vs_sigma->Draw("p same");
