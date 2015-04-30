@@ -271,7 +271,7 @@ void MT2Estimate::getShit( TFile* file, const std::string& path ) {
 void MT2Estimate::print(const std::string& ofs){
 
   Int_t binXmin=1;
-  Int_t binXmax=5;
+  Int_t binXmax=-1;
 
   Double_t error;
   Double_t integral = yield->IntegralAndError(binXmin, binXmax, error);
