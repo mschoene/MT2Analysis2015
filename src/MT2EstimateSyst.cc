@@ -219,7 +219,23 @@ void MT2EstimateSyst::write() const {
 
 void MT2EstimateSyst::print(const std::string& ofs){
 
-  MT2Estimate::print( ofs );
+  Int_t binXmin=1;
+  Int_t binXmax=-1;
+
+  Double_t error;
+  Double_t integral = yield->Integral(binXmin, binXmax);
+  Double_t integral_up = yield_systUp->Integral(binXmin, binXmax);
+  Double_t integral_down = yield_systDown->Integral(binXmin, binXmax);
+  
+  error = fabs(integral_up-integral) > fabs(integral_down-integral) ? fabs(integral_up-integral) : fabs(integral_down-integral);
+
+				      
+  ofstream ofs_file;
+  ofs_file.open( ofs, std::ofstream::app );
+  if(integral >= 10)
+    ofs_file << std::fixed << std::setprecision(1) << " & " << integral << " $\\pm$ " << error;
+  else if(integral < 10)
+    ofs_file << std::fixed << std::setprecision(2) << " & " << integral << " $\\pm$ " << error;
 
 }
 
