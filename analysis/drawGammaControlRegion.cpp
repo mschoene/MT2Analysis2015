@@ -22,7 +22,7 @@ void compareRegions( const std::string& outputdir, std::vector<MT2Region> region
 int main( int argc, char* argv[] ) {
 
 
-  std::string samples = "PHYS14_v2_Zinv";
+  std::string samples = "PHYS14_v5_skimprune";
 
   std::string regionsSet = "zurich";
   if( argc>1 ) {
