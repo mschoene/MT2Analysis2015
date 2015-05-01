@@ -48,6 +48,8 @@ class MT2Analysis {
   void setFullName( const std::string& newName ) { fullName = newName; };
 
   const MT2Analysis& operator=( const MT2Analysis& rhs);
+  //template<class T2>
+  //const MT2Analysis<T>& operator=( const MT2Analysis<T2>& rhs);
 
   template<class T2>
   MT2Analysis<T> operator+( const MT2Analysis<T2>& rhs) const;
@@ -82,9 +84,9 @@ class MT2Analysis {
     return this->writeToFile(fileName,"UPDATE",overwrite);
   }
 
-  static void printFromFile (  const std::string& fileName, const std::string& ofs, const std::string& matchName="" );
-  static void print ( const std::vector<MT2Analysis*> analyses, const std::string& ofs, const std::string& matchName="" );
-  void print ( const std::string& ofs ) const;
+  static void printFromFile( const std::string& fileName, const std::string& ofs, const std::string& matchName="" );
+  static void print( const std::vector<MT2Analysis*> analyses, const std::string& ofs, const std::string& matchName="" );
+  void print( const std::string& ofs, MT2Region* matchRegion=0 ) const;
 
   void printRegions() const;
 
@@ -1028,6 +1030,39 @@ void MT2Analysis<T>::setName( const std::string& newName ) {
 
 // operator overloading:
 
+//template<class T> 
+//template<class T2> 
+//const MT2Analysis<T>& MT2Analysis<T>::operator=( const MT2Analysis<T2>& rhs ) {
+//
+//  regions_ = rhs.getRegions();
+//
+//  for( std::set<MT2Region>::iterator iR=regions_.begin(); iR!=regions_.end(); ++iR ) {
+//
+//    MT2Region thisRegion(*iR);
+//
+//    T* t1 = this->get(thisRegion); 
+//    T2* t2 = rhs.get(thisRegion); 
+//    if( t2==0 ) {
+//      std::cout << "[MT2Analysis::operator=] ERROR! Can't equate MT2Analysis with different regional structures!" << std::endl;
+//      exit(111);
+//    }
+//
+//    *t1 = *t2;
+//
+//    //if( t1==0 ) {
+//    //  t1 = new T(*t2);
+//    //} else {
+//    //  *t1 = *t2;
+//    //}
+//
+//  }
+//
+//  return *this;
+//
+//}
+
+
+// wonder why the above doesnt work (it apparently breaks MT2Estimate *= 0.92 in computeZinvFromGamma)
 template<class T> 
 const MT2Analysis<T>& MT2Analysis<T>::operator=( const MT2Analysis<T>& rhs ) {
 
@@ -1511,7 +1546,7 @@ void MT2Analysis<T>::print( std::vector<MT2Analysis<T>*> analyses, const std::st
 
 
 template<class T>
-void MT2Analysis<T>::print( const std::string& ofs ) const {
+void MT2Analysis<T>::print( const std::string& ofs, MT2Region* matchRegion ) const {
 
   ifstream isExist(ofs);
   if(isExist) {
@@ -1535,12 +1570,15 @@ void MT2Analysis<T>::print( const std::string& ofs ) const {
   for( std::set<MT2HTRegion>::iterator iHT=htRegions.begin(); iHT!=htRegions.end(); ++iHT ) {
     
     if( iHT->getNiceName() == oldName ) continue;
+    if( matchRegion && !(iHT->isIncluded( matchRegion->htRegion() )) ) continue;
     
     std::string htRegionName = iHT->getNiceName();
     ofs_file << htRegionName << std::endl;
 
     for ( std::set<MT2SignalRegion>::iterator iSR=sigRegions.begin(); iSR!=sigRegions.end(); ++iSR ){
       
+      if( matchRegion && !(iSR->isIncluded( matchRegion->sigRegion() )) ) continue;
+
       std::string sigRegionName = iSR->getNiceName();
       ofs_file << " & "  << sigRegionName;
 
@@ -1550,8 +1588,8 @@ void MT2Analysis<T>::print( const std::string& ofs ) const {
 
     for( std::set<MT2Region>::iterator imt2=mt2Regions.begin(); imt2!=mt2Regions.end(); ++imt2 ) {
              
-      if( *(imt2->htRegion()) != (*iHT) )
-        continue;
+      if( *(imt2->htRegion()) != (*iHT) ) continue;
+      if( matchRegion && !(imt2->isIncluded(matchRegion)) ) continue;
 
       T* thisT = this->get(*imt2);
       thisT->print( ofs );
