@@ -43,7 +43,7 @@ int main( int argc, char* argv[] ) {
   }
 
 
-  std::string samplesName = "PHYS14_v4_skimprune";
+  std::string samplesName = "PHYS14_v5_skimprune";
 
   std::string fileName = "gammaTemplatesDataFR_" + samplesName + "_" + regionsSet + ".root";
   MT2Analysis<MT2EstimateZinvGamma>* templatesPromptRaw = MT2Analysis<MT2EstimateZinvGamma>::readFromFile(fileName, "templatesPromptRaw");
@@ -84,8 +84,8 @@ MT2Analysis<MT2EstimateZinvGamma>* subtractFakes( const std::string& outputdir, 
     TH1D* thisFakeTempl = thisFake->iso;
     TH1D* thisPromptRawTempl = thisPromptRaw->iso;
 
-    int binMin = thisPromptRaw->iso->FindBin(8.);
-    int binMax = thisPromptRaw->iso->FindBin(20.) -1;
+    int binMin = thisPromptRaw->iso->FindBin(7.);
+    int binMax = thisPromptRaw->iso->FindBin(10.) -1;
     float intData = thisPromptRawTempl->Integral( binMin, binMax );
     float intMC   = thisFakeTempl     ->Integral( binMin, binMax );
     std::cout <<  binMin << std::endl;

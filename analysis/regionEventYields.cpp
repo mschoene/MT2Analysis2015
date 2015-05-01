@@ -31,7 +31,7 @@
 
 
 
-bool dummyAnalysis = true;
+bool dummyAnalysis;
 double lumi = 4.; // in fb-1
 
 
@@ -46,14 +46,10 @@ class MT2Config {
   std::string mcSamples()       const { return mcSamples_; };
   std::string sigSamples()      const { return sigSamples_; };
   std::string dataSamples()     const { return dataSamples_; };
-  std::string lostLeptonTag()   const { return lostLeptonTag_; };
-  std::string qcdTag()          const { return qcdTag_; };
-  std::string zinvTag()         const { return zinvTag_; };
   std::string additionalStuff() const { return additionalStuff_; };
 
   bool useMC() {
-    bool useEstimates = lostLeptonTag_!="" && qcdTag_!="" && zinvTag_!="";
-    return !useEstimates;
+    return mcSamples()!="";
   }
 
  private:
@@ -62,9 +58,6 @@ class MT2Config {
   std::string mcSamples_;
   std::string sigSamples_;
   std::string dataSamples_;
-  std::string lostLeptonTag_;
-  std::string qcdTag_;
-  std::string zinvTag_;
   std::string additionalStuff_;
 
 };
@@ -97,6 +90,8 @@ int main( int argc, char* argv[] ) {
 
   std::string configFileName(argv[1]);
 
+  MT2Config cfg("cfgs/" + configFileName + ".txt");
+  dummyAnalysis = cfg.dataSamples()=="datatest";
 
   std::string outputdir = "EventYields_" + configFileName;
   if( dummyAnalysis ) {
@@ -113,7 +108,6 @@ int main( int argc, char* argv[] ) {
     
   system(Form("mkdir -p %s", outputdir.c_str()));
 
-  MT2Config cfg("cfgs/" + configFileName + ".txt");
 
 
   TH1::AddDirectory(kFALSE); // stupid ROOT memory allocation needs this
@@ -157,18 +151,6 @@ int main( int argc, char* argv[] ) {
     bgYields.push_back( EventYield_zjets );
     bgYields.push_back( EventYield_top );
     //bgYields.push_back( EventYield_other );
-
-  } else { // use data driven BG estimates
-
-    MT2Analysis<MT2EstimateTree>* lostLepton = MT2Analysis<MT2EstimateTree>::readFromFile("MT2LostLeptonEstimate_" + cfg.lostLeptonTag() + ".root");
-
-    MT2Analysis<MT2EstimateTree>* qcd = MT2Analysis<MT2EstimateTree>::readFromFile("MT2QCDEstimate_" + cfg.qcdTag() + ".root");
-
-    MT2Analysis<MT2EstimateTree>* zinv = MT2Analysis<MT2EstimateTree>::readFromFile("MT2ZinvEstimate_" + cfg.zinvTag() + ".root");
-
-    bgYields.push_back( lostLepton );
-    bgYields.push_back( qcd );
-    bgYields.push_back( zinv );
 
   }
 
@@ -219,11 +201,12 @@ int main( int argc, char* argv[] ) {
   
 
   //MT2Analysis<MT2EstimateTree>* data = new MT2Analysis<MT2EstimateTree>( "data", cfg.regionsSet() );
-  MT2Analysis<MT2EstimateTree>* data = new MT2Analysis<MT2EstimateTree>( *(bgYields[0]) );
-  data->setName("data");
+  MT2Analysis<MT2EstimateTree>* data;
  
   if( dummyAnalysis ) { // use same as MC
 
+    data = new MT2Analysis<MT2EstimateTree>( *(bgYields[0]) );
+    data->setName("data");
     for( unsigned i=1; i < bgYields.size(); ++i ) (*data) += *(bgYields[i]);
     //randomizePoisson( data );
 
@@ -240,6 +223,7 @@ int main( int argc, char* argv[] ) {
       exit(1209);
     }
 
+    data = new MT2Analysis<MT2EstimateTree>( "data", cfg.regionsSet() );
     for( unsigned i=0; i<samples_data.size(); ++i ) (*data) += *(computeYield( samples_data[i], cfg ));
 
   }
@@ -325,7 +309,7 @@ MT2Analysis<MT2EstimateTree>* computeYield( const MT2Sample& sample, const MT2Co
     int njets  = myTree.nJet40;
     int nbjets = myTree.nBJet20;    
 
-    Double_t weight = myTree.evt_scale1fb*lumi;
+    Double_t weight = (isData) ? 1. : myTree.evt_scale1fb*lumi;
     //weight *= myTree.weight_lepsf;
    
     MT2EstimateTree* thisEstimate = analysis->get( ht, njets, nbjets, met, minMTBmet, mt2 );
@@ -614,9 +598,6 @@ MT2Config::MT2Config( const std::string& configFileName ) {
   mcSamples_ = "";
   sigSamples_ = "";
   dataSamples_ = "";
-  lostLeptonTag_ = "";
-  qcdTag_ = "";
-  zinvTag_ = "";
   additionalStuff_ = "";
 
   ifstream IN(configFileName.c_str());
@@ -644,36 +625,12 @@ MT2Config::MT2Config( const std::string& configFileName ) {
       sigSamples_ = std::string(StringValue);
     else if( name=="dataSamples" )
       dataSamples_ = std::string(StringValue);
-    else if( name=="lostLeptonTag" )
-      lostLeptonTag_ = std::string(StringValue);
-    else if( name=="qcdTag" )
-      qcdTag_ = std::string(StringValue);
-    else if( name=="zinvTag" )
-      zinvTag_ = std::string(StringValue);
     else if( name=="additionalStuff" )
       additionalStuff_ = std::string(StringValue);
 
   } // while getline
 
-  if( mcSamples_=="" && lostLeptonTag_=="" && qcdTag_=="" && zinvTag_=="" ) {
-    std::cout << "[MT2Config] ERROR! Config file missing BG estimates!" << std::endl;
-    exit(333);
-  }
 
-  if( mcSamples_!="" && ( lostLeptonTag_!="" || qcdTag_!="" || zinvTag_!="" ) ) {
-    std::cout << "[MT2Config] ERROR! Config file must have either a mcSamples line OR the lostLeptonTag/qcdTag/zinvTag lines. Not both!" << std::endl;
-    exit(335);
-  }
-
-  if( mcSamples_=="" && !( lostLeptonTag_!="" || qcdTag_!="" || zinvTag_!="" ) ) {
-    std::cout << "[MT2Config] ERROR! All three data-driven BG estimate tags need to be specified in the config (lostLeptonTag/qcdTag/zinvTag)!" << std::endl;
-    exit(337);
-  }
-
-  if( mcSamples_!="" && sigSamples_!="" ) {
-    std::cout << "[MT2Config] ERROR! Config file must have either a mcSamples line OR (exclusive OR) a sigSamples line together with BG estimate tags." << std::endl;
-    exit(339);
-  }
 
   std::cout << std::endl;
      

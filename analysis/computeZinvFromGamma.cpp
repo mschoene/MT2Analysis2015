@@ -81,7 +81,7 @@ int main( int argc, char* argv[] ) {
   }
 
 
-  MT2Analysis<MT2EstimateTree>* gammaCRtree = MT2Analysis<MT2EstimateTree>::readFromFile(gammaControlRegionDir + "/data.root", "gammaCRtree");
+  //MT2Analysis<MT2EstimateTree>* gammaCRtree = MT2Analysis<MT2EstimateTree>::readFromFile(gammaControlRegionDir + "/data.root", "gammaCRtree");
   //MT2Analysis<MT2Estimate>* ZgammaRatioMC = getInclusiveRatioMC( regionsSet, Zinv, gammaCRtree );
   MT2Analysis<MT2Estimate>* ZgammaRatioMC = new MT2Analysis<MT2Estimate>( "ZgammaRatioMC", regionsSet );
   (*ZgammaRatioMC) = ( (* (MT2Analysis<MT2Estimate>*)Zinv) / (*gamma_prompt) );
@@ -99,16 +99,19 @@ int main( int argc, char* argv[] ) {
 
 
 
-  MT2Analysis<MT2Estimate>* gammaCR_times_ZgammaRatio = new MT2Analysis<MT2Estimate>( "gammaCR_times_ZgammaRatio", regionsSet );
-  if( type==0 )
-    (*gammaCR_times_ZgammaRatio) = (*gammaCR) * (*ZgammaRatio);
-  else
-    (*gammaCR_times_ZgammaRatio) = (*gammaCR) * (*ZgammaRatio) * (*purity);
+  MT2Analysis<MT2EstimateSyst>* ZinvEstimateFromGamma = MT2EstimateSyst::makeAnalysisFromEstimate( "ZinvEstimateFromGamma", regionsSet, gammaCR );
+  (*ZinvEstimateFromGamma) *= (*ZgammaRatio);
+  if( type!=0 ) 
+    (*ZinvEstimateFromGamma) *= (*purity);
+
+ 
+  MT2Analysis<MT2EstimateSyst>* gamma_est = MT2EstimateSyst::makeAnalysisFromEstimate( "gamma_est", regionsSet, gammaCR );
+  if( type!=0 ) (*gamma_est) *= (*purity);
 
 
 
 
-  MT2Analysis<MT2EstimateSyst>* ZinvEstimateFromGamma = MT2EstimateSyst::makeAnalysisFromEstimate( "ZinvEstimateFromGamma", regionsSet, gammaCR_times_ZgammaRatio );
+  //MT2Analysis<MT2EstimateSyst>* ZinvEstimateFromGamma = MT2EstimateSyst::makeAnalysisFromEstimate( "ZinvEstimateFromGamma", regionsSet, gammaCR_times_ZgammaRatio );
 
   MT2Analysis<MT2EstimateSyst>* ZinvEstimate = combineDataAndMC( ZinvEstimateFromGamma, (MT2Analysis<MT2Estimate>*)Zinv );
 
@@ -118,6 +121,7 @@ int main( int argc, char* argv[] ) {
   ZgammaRatio->addToFile( outFile );
   Zinv->setName("Zinv");
   Zinv->addToFile( outFile );
+  gamma_est->addToFile( outFile );
   if( purity !=0 && type > 0 ) purity->addToFile( outFile );
 
   return 0;
