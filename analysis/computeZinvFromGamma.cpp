@@ -94,20 +94,19 @@ int main( int argc, char* argv[] ) {
   MT2Analysis<MT2EstimateSyst>* purity;
   if( type > 0 ) {
     purity = MT2Analysis<MT2EstimateSyst>::readFromFile( gammaControlRegionDir + "/PurityFitsDataRC/purityFit.root", "purity" );
-    (*ZgammaRatio) *= 0.92; // f absorbed into Z/g ratio
   }
 
 
-
-  MT2Analysis<MT2EstimateSyst>* ZinvEstimateFromGamma = MT2EstimateSyst::makeAnalysisFromEstimate( "ZinvEstimateFromGamma", regionsSet, gammaCR );
-  (*ZinvEstimateFromGamma) *= (*ZgammaRatio);
-  if( type!=0 ) 
-    (*ZinvEstimateFromGamma) *= (*purity);
-
- 
   MT2Analysis<MT2EstimateSyst>* gamma_est = MT2EstimateSyst::makeAnalysisFromEstimate( "gamma_est", regionsSet, gammaCR );
-  if( type!=0 ) (*gamma_est) *= (*purity);
+  if( type!=0 ) {
+    (*gamma_est) *= (*purity);
+    (*gamma_est) *= 0.92;
+  }
 
+
+  //MT2Analysis<MT2EstimateSyst>* ZinvEstimateFromGamma = MT2EstimateSyst::makeAnalysisFromEstimate( "ZinvEstimateFromGamma", regionsSet, gamma_est );
+  MT2Analysis<MT2EstimateSyst>* ZinvEstimateFromGamma = new MT2Analysis<MT2EstimateSyst>( "ZinvEstimateFromGamma", regionsSet );
+  (*ZinvEstimateFromGamma) = (*gamma_est) * (*ZgammaRatio);
 
 
 
