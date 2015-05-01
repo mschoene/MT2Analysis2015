@@ -15,13 +15,14 @@ int main() {
 //  std::string wjetsInputFile  = "/scratch/mmasciov/CMSSW_7_2_3_GammaFunctions/src/MT2Analysis2015/analysis/llep_WJets_PHYS14_v3_loJet_hiHT.root";
 //  MT2Analysis<MT2EstimateSyst>* analysisWJets = MT2Analysis<MT2EstimateSyst>::readFromFile(wjetsInputFile.c_str());
 
-  std::string llepInputFile  = "/scratch/mmasciov/CMSSW_7_2_3_GammaFunctions/src/MT2Analysis2015/analysis/llep_PHYS14_v5_skimprune_zurich_4fb.root";
+  std::string llepInputFile  = "llep_PHYS14_v5_skimprune_zurich_4fb.root";
   MT2Analysis<MT2EstimateSyst>* analysisllep = MT2Analysis<MT2EstimateSyst>::readFromFile(llepInputFile.c_str());
 
   // std::string GJetsInputFile  = "/scratch/mmasciov/CMSSW_7_2_3_GammaFunctions/src/MT2Analysis2015/analysis/GammaControlRegion_PHYS14_v5_skimprune_zurich_4fb/mc.root";
-  std::string GJetsInputFile  = "/scratch/mmasciov/CMSSW_7_2_3_GammaFunctions/src/MT2Analysis2015/analysis/ZinvEstimateFromGamma_PHYS14_v5_skimprune_zurich_4fb_type1/MT2ZinvEstimate.root";
+  std::string GJetsInputFile  = "ZinvEstimateFromGamma_PHYS14_v5_skimprune_zurich_4fb_type1/MT2ZinvEstimate.root";
   //  MT2Analysis<MT2EstimateSyst>* analysisGJets = MT2Analysis<MT2EstimateSyst>::readFromFile(GJetsInputFile.c_str(), "gammaCR");
-  MT2Analysis<MT2EstimateSyst>* analysisGJets = MT2Analysis<MT2EstimateSyst>::readFromFile(GJetsInputFile.c_str(), "ZinvEstimate");
+  MT2Analysis<MT2EstimateSyst>* zinv_est = MT2Analysis<MT2EstimateSyst>::readFromFile(GJetsInputFile.c_str(), "ZinvEstimate");
+  MT2Analysis<MT2EstimateSyst>* gjet_est = MT2Analysis<MT2EstimateSyst>::readFromFile(GJetsInputFile.c_str(), "gamma_est");
 
   //MT2Analysis<MT2EstimateSyst>* analysisSum = new MT2Analysis<MT2EstimateSyst>( (*analysisTop) );
   //(*analysisSum) += (*analysisWJets);
@@ -37,8 +38,12 @@ int main() {
   std::string ofsFullBkg = "llep_CR_zurich_PHYS14_v5.log";
   analysisllep->print(ofsFullBkg);
 
-  std::string ofsGJets = "ZJets_ESTIMATE_zurich_PHYS14_v5.log";
-  analysisGJets->print(ofsGJets);
+  std::string ofsZinv = "ZJets_ESTIMATE_zurich_PHYS14_v5.log";
+  MT2Region* region_b01 = new MT2Region( 450., -1., -1, -1, 0, 1); // all regions except b>=2
+  zinv_est->print(ofsZinv, region_b01);
+
+  std::string ofsGJets = "GJets_ESTIMATE_zurich_PHYS14_v5.log";
+  gjet_est->print(ofsGJets, region_b01);
 
 //  std::string SMST1bbbb_lDM_InputFile  = "/scratch/mmasciov/CMSSW_7_2_3_MT2Analysis2015/src/MT2Analysis2015/analysis/SMS_T1bbbb_1000_900_CR_phys14.root";
 //  MT2Analysis<MT2EstimateSyst>* analysisSignal_lDM = MT2Analysis<MT2EstimateSyst>::readFromFile(SMST1bbbb_lDM_InputFile.c_str());
