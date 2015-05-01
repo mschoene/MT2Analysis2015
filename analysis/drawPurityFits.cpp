@@ -113,7 +113,7 @@ void doAllPurityPlots( const std::string& gammaCRdir, const std::string& samples
     gr_purityMC->SetLineWidth( 2 );
 
 
-    float yMin = (purityName=="purity") ? 0.5 : 0.;
+    float yMin = (purityName=="purity") ? 0.7 : 0.;
 
 
     TH2D* axes = new TH2D( "axes", "", 10, thisPurityMC->yield->GetXaxis()->GetXmin(), thisPurityMC->yield->GetXaxis()->GetXmax(), 10, yMin, 1.0001 );
