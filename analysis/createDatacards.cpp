@@ -274,7 +274,7 @@ int main( int argc, char* argv[] ) {
              
 	     float R = this_zinv_ratio->GetBinContent(iBin);
              if( use_purity )
-	       datacard << "zinv_CRstat_" << binName << " gmN " << Ngamma << " - " << R*p << " - -" << std::endl;
+	       datacard << "zinv_CRstat_" << binName << " gmN " << Ngamma << " - " << R*p*0.92 << " - -" << std::endl;
 	     else 
 	       datacard << "zinv_CRstat_" << binName << " gmN " << Ngamma << " - " << R << " - -" << std::endl;
 
