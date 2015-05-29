@@ -8,11 +8,11 @@ inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/MT2production/PostProc
 
 
 # initialization
-outputFolder="/scratch/`whoami`/allSF/"
+outputFolder="/scratch/`whoami`/lepSF/"
 scaleFile="lepSF.root"
 
 # here I compile the root macro only once
-echo "gROOT->LoadMacro(\"allSF.C+\"); gSystem->Exit(0);" |root.exe -b -l ;
+echo "gROOT->LoadMacro(\"lepSF.C+\"); gSystem->Exit(0);" |root.exe -b -l ;
 
 
 while read line; 
@@ -25,9 +25,9 @@ do
 
     mkdir -p $outputFolder
     
-    echo "allSF(\"$name\",\"$inputFolder\",\"$outputFile\",\"$treeName\",\"$scaleFile\")"
-    echo "gROOT->LoadMacro(\"allSF.C\"); allSF(\"$name\",\"$inputFolder\",\"$outputFile\",\"$treeName\",\"$scaleFile\"); gSystem->Exit(0);" |root.exe -b -l ;
+    echo "lepSF(\"$name\",\"$inputFolder\",\"$outputFile\",\"$treeName\",\"$scaleFile\")"
+    echo "gROOT->LoadMacro(\"lepSF.C\"); lepSF(\"$name\",\"$inputFolder\",\"$outputFile\",\"$treeName\",\"$scaleFile\"); gSystem->Exit(0);" |root.exe -b -l ;
     
 done < postProcessing.cfg
 
-rm -f allSF_C.d allSF_C.so;
+rm -f lepSF_C.d lepSF_C.so;

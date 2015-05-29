@@ -5,14 +5,16 @@
 
 #include "TFile.h"
 #include "TH1D.h"
+#include "TH3D.h"
 #include "TList.h"
 #include "TObject.h"
 #include "TString.h"
 
 #include "interface/MT2Analysis.h"
 #include "interface/MT2Estimate.h"
+#include "interface/MT2EstimateSig.h"
 #include "interface/MT2EstimateSyst.h"
-
+#include "interface/MT2EstimateSigSyst.h"
 
 
 bool use_gamma = true;
@@ -28,6 +30,7 @@ int round(float d) {
 void writeToTemplateFile( TFile* file, MT2Analysis<MT2Estimate>* analysis, float err_uncorr );
 void writeToTemplateFile_poisson( TFile* file, MT2Analysis<MT2Estimate>* analysis, const std::string& name="stat" );
 MT2Analysis<MT2Estimate>* get( const std::string& name, std::vector< MT2Analysis<MT2Estimate>* > analyses, const std::string& name1, const std::string& name2="", const std::string& name3="", const std::string& name4="" );
+MT2Analysis<MT2EstimateSig>* get( const std::string& name, std::vector< MT2Analysis<MT2EstimateSig>* > analyses, const std::string& name1, const std::string& name2="", const std::string& name3="", const std::string& name4="" );
 std::string getSimpleSignalName( const std::string& longName );
 std::string gammaConvention( float yieldSR, int yieldCR, int position, const std::string& corrName, const std::string& uncorrName="", float testAlpha=1. );
 
@@ -370,54 +373,80 @@ int main( int argc, char* argv[] ) {
 
 
   // now create datacards for all signals
-  std::vector<MT2Analysis<MT2Estimate>*> signals = MT2Analysis<MT2Estimate>::readAllFromFile( mc_fileName, "SMS" );
-
+  std::vector<MT2Analysis<MT2EstimateSig>*> signals = MT2Analysis<MT2EstimateSig>::readAllFromFile( mc_fileName, "SMS" );
 
   for( unsigned  isig=0; isig<signals.size(); ++isig ) { 
 
-    std::string sigName = getSimpleSignalName( signals[isig]->getName() );
+    std::string sigName;
+    if( signals[isig]->getName().find("fullScan") != std::string::npos )
+      sigName = signals[isig]->getName();
+    else
+      sigName = getSimpleSignalName( signals[isig]->getName() );
+
+    //    std::string sigName = getSimpleSignalName( signals[isig]->getName() );
+    
     std::string path = dir + "/datacards_" + sigName;
     system(Form("mkdir -p %s", path.c_str()));
 
+    std::string path_mass = path;
 
     for( std::set<MT2Region>::iterator iR=regions.begin(); iR!=regions.end(); ++iR ) {
 
-      TH1D* this_signal = signals[isig]->get(*iR)->yield;
+      TH3D* this_signal3d = signals[isig]->get(*iR)->yield3d;
 
+      TH1D* this_signalParent = this_signal3d->ProjectionY("mParent");
+    
+      for( int iBinY=1; iBinY<this_signalParent->GetNbinsX()+1; ++iBinY ){
+	
+	TH1D* this_signalLSP = this_signal3d->ProjectionZ("mLSP", 0, -1, iBinY, iBinY);
 
-      for( int iBin=1; iBin<this_signal->GetNbinsX()+1; ++iBin ) {
+	for( int iBinZ=1; iBinZ < iBinY; ++iBinZ ) {
+	  	  
+	  float mParent = this_signalParent->GetBinLowEdge(iBinY);
+	  float mLSP = this_signalLSP->GetBinLowEdge(iBinZ);
+	   
+	  TH1D* this_signal = this_signal3d->ProjectionX("mt2", iBinY, iBinY, iBinZ, iBinZ);
 
-	if( this_signal->GetBinLowEdge( iBin ) > iR->htMax() && iR->htMax()>0 ) continue;
-
-        float mt2Min = this_signal->GetBinLowEdge( iBin );
-        float mt2Max = (iBin==this_signal->GetNbinsX()) ?  -1. : this_signal->GetBinLowEdge( iBin+1 );
-
-	if( this_signal->GetBinContent(iBin) < 1e-1 );
-	else{
+	  if( this_signal->Integral() < 1e-3 ) continue;
 	  
-	std::string binName;
-        if( mt2Max>=0. )
-          binName = std::string( Form("%s_m%.0fto%.0f", iR->getName().c_str(), mt2Min, mt2Max) );
-        else
-          binName = std::string( Form("%s_m%.0ftoInf", iR->getName().c_str(), mt2Min) );
-        
-        std::string templateDatacard( Form("%s/datacard_%s.txt", path_templ.c_str(), binName.c_str()) );
-        
-        std::string newDatacard( Form("%s/datacard_%s_%s.txt", path.c_str(), binName.c_str(), sigName.c_str()) );
-        
-        
-        float sig = this_signal->GetBinContent(iBin);
-        
-        std::string sedCommand( Form("sed 's/XXX/%.3f/g' %s > %s", sig, templateDatacard.c_str(), newDatacard.c_str()) );
-        system( sedCommand.c_str() );
-
-      }
-
-      } // for bins
-
+	  std::string massPoint = std::string( Form("_%.0f_%.0f", mParent, mLSP) );
+	  path_mass = path + "/" + sigName + massPoint;
+	  system(Form("mkdir -p %s", path_mass.c_str()));
+	  
+	  for( int iBin=1; iBin<this_signal->GetNbinsX()+1; ++iBin ) {
+	    
+	    if( this_signal->GetBinLowEdge( iBin ) > iR->htMax() && iR->htMax()>0 ) continue;
+	    
+	    float mt2Min = this_signal->GetBinLowEdge( iBin );
+	    float mt2Max = (iBin==this_signal->GetNbinsX()) ?  -1. : this_signal->GetBinLowEdge( iBin+1 );
+	    
+	    if( this_signal->GetBinContent(iBin) < 1e-3 );
+	    else{
+	      
+	      std::string binName;
+	      if( mt2Max>=0. )
+		binName = std::string( Form("%s_m%.0fto%.0f", iR->getName().c_str(), mt2Min, mt2Max) );
+	      else
+		binName = std::string( Form("%s_m%.0ftoInf", iR->getName().c_str(), mt2Min) );
+	      
+	      std::string templateDatacard( Form("%s/datacard_%s.txt", path_templ.c_str(), binName.c_str()) );
+	      
+	      std::string newDatacard( Form("%s/datacard_%s_%s_%.0f_%.0f.txt", path_mass.c_str(), binName.c_str(), sigName.c_str(), mParent, mLSP) );
+	      	      
+	      float sig = this_signal->GetBinContent(iBin);
+	      
+	      std::string sedCommand( Form("sed 's/XXX/%.3f/g' %s > %s", sig, templateDatacard.c_str(), newDatacard.c_str()) );
+	      system( sedCommand.c_str() );
+	      
+	    }
+	    
+	  } // for bins X (MT2)
+	} // for bins Z (mLSP)
+      }// for bins Y (mParent)
+      
     } // for regions
 
-    std::cout << "-> Created datacards in " << path << std::endl;
+    std::cout << "-> Created datacards in " << path_mass << std::endl;
        
   } // for signals
 
@@ -430,13 +459,33 @@ int main( int argc, char* argv[] ) {
 
 
 
-
-
 MT2Analysis<MT2Estimate>* get( const std::string& name, std::vector< MT2Analysis<MT2Estimate>* > analyses, const std::string& name1, const std::string& name2, const std::string& name3, const std::string& name4 ) {
 
 
   std::cout << "Looking for: " << name << std::endl;
   MT2Analysis<MT2Estimate>* returnAnalysis = new MT2Analysis<MT2Estimate>( name, analyses[0]->getHTRegions(), analyses[0]->getSignalRegions() );
+
+  for( unsigned i=0; i<analyses.size(); ++i ) {
+
+    if( analyses[i]->getName() == name1 || analyses[i]->getName() == name2 || analyses[i]->getName() == name3 || analyses[i]->getName() == name4 ) {
+      std::cout << "  added: " << analyses[i]->getName() << std::endl;
+      (*returnAnalysis) += (*analyses[i]);
+    }
+
+  }
+
+  return returnAnalysis;
+
+}
+
+
+
+
+MT2Analysis<MT2EstimateSig>* get( const std::string& name, std::vector< MT2Analysis<MT2EstimateSig>* > analyses, const std::string& name1, const std::string& name2, const std::string& name3, const std::string& name4 ) {
+
+
+  std::cout << "Looking for: " << name << std::endl;
+  MT2Analysis<MT2EstimateSig>* returnAnalysis = new MT2Analysis<MT2EstimateSig>( name, analyses[0]->getHTRegions(), analyses[0]->getSignalRegions() );
 
   for( unsigned i=0; i<analyses.size(); ++i ) {
 
