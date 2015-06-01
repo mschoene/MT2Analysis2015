@@ -93,6 +93,8 @@ class MT2EstimateSig {
   virtual void print(const std::string& ofs);
   
   virtual void randomizePoisson( float scale=1. );
+
+  virtual void fillYield( float mt2, int m1, int m2, float weight=1. );
   
  private:
   
