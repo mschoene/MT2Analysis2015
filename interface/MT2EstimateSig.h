@@ -1,5 +1,5 @@
-#ifndef MT2Estimate_h
-#define MT2Estimate_h
+#ifndef MT2EstimateSig_h
+#define MT2EstimateSig_h
 
 
 #include "MT2Region.h"
@@ -18,19 +18,20 @@
 
 
 
-class MT2Estimate {
+class MT2EstimateSig {
 
  public:
 
-  MT2Estimate( const MT2Estimate& rhs );  
-  MT2Estimate( const std::string& aname, const MT2Region& aregion );
-  virtual ~MT2Estimate();
+  MT2EstimateSig( const MT2EstimateSig& rhs );  
+  MT2EstimateSig( const std::string& aname, const MT2Region& aregion );
+  virtual ~MT2EstimateSig();
  
   // the region it refers to
   MT2Region* region;
 
   // the main data member: the yield histogram
   // classes that inherit from this one will add other data members
+  TH3D* yield3d;
   TH1D* yield;
 
   std::string getName() const { return name; };
@@ -56,32 +57,34 @@ class MT2Estimate {
     return region->getName();
   }
 
-  const MT2Estimate& operator=( const MT2Estimate& rhs );
-  MT2Estimate operator+( const MT2Estimate& rhs ) const;
-  MT2Estimate operator-( const MT2Estimate& rhs ) const;
-  MT2Estimate operator/( const MT2Estimate& rhs ) const;
-  MT2Estimate operator*( const MT2Estimate& rhs ) const;
-  const MT2Estimate& operator+=( const MT2Estimate& rhs );
-  const MT2Estimate& operator-=( const MT2Estimate& rhs );
-  const MT2Estimate& operator/=( const MT2Estimate& rhs );
-  const MT2Estimate& operator*=( const MT2Estimate& rhs );
+  const MT2EstimateSig& operator=( const MT2EstimateSig& rhs );
+  MT2EstimateSig operator+( const MT2EstimateSig& rhs ) const;
+  MT2EstimateSig operator-( const MT2EstimateSig& rhs ) const;
+  MT2EstimateSig operator/( const MT2EstimateSig& rhs ) const;
+  MT2EstimateSig operator*( const MT2EstimateSig& rhs ) const;
+  const MT2EstimateSig& operator+=( const MT2EstimateSig& rhs );
+  const MT2EstimateSig& operator-=( const MT2EstimateSig& rhs );
+  const MT2EstimateSig& operator/=( const MT2EstimateSig& rhs );
+  const MT2EstimateSig& operator*=( const MT2EstimateSig& rhs );
 
-  MT2Estimate operator/ ( float k ) const;
-  MT2Estimate operator* ( float k ) const;
-  const MT2Estimate& operator/=( float k );
-  const MT2Estimate& operator*=( float k );
+  MT2EstimateSig operator/ ( float k ) const;
+  MT2EstimateSig operator* ( float k ) const;
+  const MT2EstimateSig& operator/=( float k );
+  const MT2EstimateSig& operator*=( float k );
 
-  friend MT2Estimate operator*( float k, const MT2Estimate& rhs );
-  friend MT2Estimate operator/( float k, const MT2Estimate& rhs );
+  friend MT2EstimateSig operator*( float k, const MT2EstimateSig& rhs );
+  friend MT2EstimateSig operator/( float k, const MT2EstimateSig& rhs );
 
   virtual void finalize() {
     return this->addOverflow();
   }
 
   virtual void addOverflow();
+  void addOverflowSingleHisto( TH3D* yield3d );
   void addOverflowSingleHisto( TH1D* yield );
 
   virtual void write() const {
+    yield3d->Write();
     yield->Write();
   }
 

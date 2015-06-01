@@ -18,7 +18,7 @@ MT2Estimate::MT2Estimate( const std::string& aname, const MT2Region& aregion ) {
   int nBins;
   double* bins;
   region->getBins(nBins, bins);
-
+  
   yield = new TH1D(this->getHistoName("yield").c_str(), "", nBins, bins);
   yield->Sumw2();
 
@@ -41,7 +41,7 @@ MT2Estimate::~MT2Estimate() {
 
   delete region;
   delete yield;
-
+  
 }
 
 
@@ -74,21 +74,20 @@ void MT2Estimate::addOverflow() {
 
 
 void MT2Estimate::addOverflowSingleHisto( TH1D* yield ) {
-
+  
   yield->SetBinContent(yield->GetNbinsX(),
-      yield->GetBinContent(yield->GetNbinsX()  )+
-      yield->GetBinContent(yield->GetNbinsX()+1)  );
+			 yield->GetBinContent(yield->GetNbinsX()  )+
+			 yield->GetBinContent(yield->GetNbinsX()+1)  );
   yield->SetBinError(  yield->GetNbinsX(),
-      sqrt(yield->GetBinError(yield->GetNbinsX()  )*
-           yield->GetBinError(yield->GetNbinsX()  )+
-           yield->GetBinError(yield->GetNbinsX()+1)*
-           yield->GetBinError(yield->GetNbinsX()+1)  ));
-
+			 sqrt(yield->GetBinError(yield->GetNbinsX() )*
+			      yield->GetBinError(yield->GetNbinsX() )+
+			      yield->GetBinError(yield->GetNbinsX()+1)*
+			      yield->GetBinError(yield->GetNbinsX()+1)  ));
+  
   yield->SetBinContent(yield->GetNbinsX()+1, 0.);
   yield->SetBinError  (yield->GetNbinsX()+1, 0.);
-
+      
 }
-
 
 
 const MT2Estimate& MT2Estimate::operator=( const MT2Estimate& rhs ) {
@@ -97,7 +96,7 @@ const MT2Estimate& MT2Estimate::operator=( const MT2Estimate& rhs ) {
   this->region = new MT2Region(*(rhs.region));
 
   this->yield = new TH1D(*(rhs.yield));
-
+  
   this->setName(this->getName());
 
   return *this;

@@ -1,4 +1,4 @@
-#include "../interface/MT2EstimateTree.h"
+#include "../interface/MT2EstimateSigTree.h"
 
 #include <iostream>
 #include <iomanip>
@@ -8,7 +8,7 @@
 
 
 
-MT2EstimateTree::MT2EstimateTree( const std::string& aname, const MT2Region& aregion ) : MT2Estimate( aname, aregion ) {
+MT2EstimateSigTree::MT2EstimateSigTree( const std::string& aname, const MT2Region& aregion ) : MT2EstimateSig( aname, aregion ) {
 
   TH1::AddDirectory(kFALSE);
 
@@ -21,7 +21,7 @@ MT2EstimateTree::MT2EstimateTree( const std::string& aname, const MT2Region& are
 
 
 
-MT2EstimateTree::MT2EstimateTree( const MT2EstimateTree& rhs ) : MT2Estimate( rhs ) {
+MT2EstimateSigTree::MT2EstimateSigTree( const MT2EstimateSigTree& rhs ) : MT2EstimateSig( rhs ) {
 
   TH1::AddDirectory(kFALSE);
 
@@ -33,7 +33,7 @@ MT2EstimateTree::MT2EstimateTree( const MT2EstimateTree& rhs ) : MT2Estimate( rh
 
 
 
-MT2EstimateTree::~MT2EstimateTree() {
+MT2EstimateSigTree::~MT2EstimateSigTree() {
 
   delete tree;
 
@@ -42,7 +42,7 @@ MT2EstimateTree::~MT2EstimateTree() {
 
 
 
-void MT2EstimateTree::initTree() {
+void MT2EstimateSigTree::initTree() {
 
   tree->Branch( "run", &run, "run/I");
   tree->Branch( "lumi", &lumi, "lumi/I");
@@ -62,9 +62,9 @@ void MT2EstimateTree::initTree() {
 
 
 
-void MT2EstimateTree::setName( const std::string& newName ) {
+void MT2EstimateSigTree::setName( const std::string& newName ) {
 
-  MT2Estimate::setName(newName);
+  MT2EstimateSig::setName(newName);
 
   tree->SetName( this->getHistoName("tree").c_str() );
 
@@ -72,10 +72,10 @@ void MT2EstimateTree::setName( const std::string& newName ) {
 
 
 
-void MT2EstimateTree::addVar( MT2Analysis<MT2EstimateTree>* analysis, const std::string& name ) {
+void MT2EstimateSigTree::addVar( MT2Analysis<MT2EstimateSigTree>* analysis, const std::string& name ) {
 
 
-  for( std::set<MT2EstimateTree*>::iterator iD=analysis->data.begin(); iD!=analysis->data.end(); ++iD ) {
+  for( std::set<MT2EstimateSigTree*>::iterator iD=analysis->data.begin(); iD!=analysis->data.end(); ++iD ) {
 
     float* x = new float();
     (*iD)->extraVars[name] = x;
@@ -87,10 +87,10 @@ void MT2EstimateTree::addVar( MT2Analysis<MT2EstimateTree>* analysis, const std:
 }
 
 
-//void MT2EstimateTree::addVarFloat( MT2Analysis<MT2EstimateTree>* analysis, const std::string& name ) {
+//void MT2EstimateSigTree::addVarFloat( MT2Analysis<MT2EstimateSigTree>* analysis, const std::string& name ) {
 //
 //
-//  for( std::set<MT2EstimateTree*>::iterator iD=analysis->data.begin(); iD!=analysis->data.end(); ++iD ) {
+//  for( std::set<MT2EstimateSigTree*>::iterator iD=analysis->data.begin(); iD!=analysis->data.end(); ++iD ) {
 //
 //    float* x = new float();
 //    (*iD)->extraVars[name] = (size_t)x;
@@ -103,10 +103,10 @@ void MT2EstimateTree::addVar( MT2Analysis<MT2EstimateTree>* analysis, const std:
 
 
 
-//void MT2EstimateTree::addVarInt( MT2Analysis<MT2EstimateTree>* analysis, const std::string& name ) {
+//void MT2EstimateSigTree::addVarInt( MT2Analysis<MT2EstimateSigTree>* analysis, const std::string& name ) {
 //
 //
-//  for( std::set<MT2EstimateTree*>::iterator iD=analysis->data.begin(); iD!=analysis->data.end(); ++iD ) {
+//  for( std::set<MT2EstimateSigTree*>::iterator iD=analysis->data.begin(); iD!=analysis->data.end(); ++iD ) {
 //
 //    int* x = new int();
 //    (*iD)->extraVars[name] = (size_t)x;
@@ -119,7 +119,7 @@ void MT2EstimateTree::addVar( MT2Analysis<MT2EstimateTree>* analysis, const std:
 
 
 
-void MT2EstimateTree::assignVar( const std::string& name, float value ) {
+void MT2EstimateSigTree::assignVar( const std::string& name, float value ) {
 
   //&(extraVars[name]) = value;
   float* x = (float*)extraVars[name];
@@ -129,7 +129,7 @@ void MT2EstimateTree::assignVar( const std::string& name, float value ) {
 
 
 
-//void MT2EstimateTree::assignVar( const std::string& name, int value ) {
+//void MT2EstimateSigTree::assignVar( const std::string& name, int value ) {
 //
 //  int* x = (int*)extraVars[name];
 //  *x = value;
@@ -139,7 +139,7 @@ void MT2EstimateTree::assignVar( const std::string& name, float value ) {
 
 
 
-void MT2EstimateTree::fillTree( const MT2Tree& mt2tree, float w ) {
+void MT2EstimateSigTree::fillTree( const MT2Tree& mt2tree, float w ) {
 
   this->assignTree( mt2tree, w );
 
@@ -149,7 +149,7 @@ void MT2EstimateTree::fillTree( const MT2Tree& mt2tree, float w ) {
 
 
 
-void MT2EstimateTree::fillTree_gamma( const MT2Tree& mt2tree, float w ) {
+void MT2EstimateSigTree::fillTree_gamma( const MT2Tree& mt2tree, float w ) {
 
   this->assignTree_gamma( mt2tree, w );
 
@@ -159,7 +159,7 @@ void MT2EstimateTree::fillTree_gamma( const MT2Tree& mt2tree, float w ) {
 
 
 
-void MT2EstimateTree::assignTree( const MT2Tree& mt2tree, float w ) {
+void MT2EstimateSigTree::assignTree( const MT2Tree& mt2tree, float w ) {
 
   run    = mt2tree.run;
   lumi   = mt2tree.lumi;
@@ -176,7 +176,7 @@ void MT2EstimateTree::assignTree( const MT2Tree& mt2tree, float w ) {
 }
   
 
-void MT2EstimateTree::assignTree_gamma( const MT2Tree& mt2tree, float w ) {
+void MT2EstimateSigTree::assignTree_gamma( const MT2Tree& mt2tree, float w ) {
 
   run    = mt2tree.run;
   lumi   = mt2tree.lumi;
@@ -194,7 +194,7 @@ void MT2EstimateTree::assignTree_gamma( const MT2Tree& mt2tree, float w ) {
 
   
 
-void MT2EstimateTree::assignVars( float aht, int anJets, int anBJets, float amet, float amt2 ) {
+void MT2EstimateSigTree::assignVars( float aht, int anJets, int anBJets, float amet, float amt2 ) {
 
 
   mt2    = amt2;
@@ -209,9 +209,9 @@ void MT2EstimateTree::assignVars( float aht, int anJets, int anBJets, float amet
 
 
 
-void MT2EstimateTree::getShit( TFile* file, const std::string& path ) {
+void MT2EstimateSigTree::getShit( TFile* file, const std::string& path ) {
 
-  MT2Estimate::getShit(file, path);
+  MT2EstimateSig::getShit(file, path);
 
   tree = (TTree*)file->Get(Form("%s/%s", path.c_str(), tree->GetName()));
 
@@ -221,26 +221,26 @@ void MT2EstimateTree::getShit( TFile* file, const std::string& path ) {
 
 
 
-void MT2EstimateTree::write() const {
+void MT2EstimateSigTree::write() const {
 
-  MT2Estimate::write();
+  MT2EstimateSig::write();
   tree->Write();
 
 }
 
 
+void MT2EstimateSigTree::print(const std::string& ofs){
 
-void MT2EstimateTree::print(const std::string& ofs){
-
-  MT2Estimate::print( ofs );
+  MT2EstimateSig::print( ofs );
 
 }
 
 
-const MT2EstimateTree& MT2EstimateTree::operator=( const MT2EstimateTree& rhs ) {
+const MT2EstimateSigTree& MT2EstimateSigTree::operator=( const MT2EstimateSigTree& rhs ) {
 
   this->region = new MT2Region(*(rhs.region));
 
+  this->yield3d = new TH3D(*(rhs.yield3d));
   this->yield = new TH1D(*(rhs.yield));
 
   this->tree = rhs.tree->CloneTree(-1);
@@ -256,18 +256,19 @@ const MT2EstimateTree& MT2EstimateTree::operator=( const MT2EstimateTree& rhs ) 
 
 
 
-MT2EstimateTree MT2EstimateTree::operator+( const MT2EstimateTree& rhs ) const{
+MT2EstimateSigTree MT2EstimateSigTree::operator+( const MT2EstimateSigTree& rhs ) const{
 
 
   if( *(this->region) != *(rhs.region) ) {
-    std::cout << "[MT2EstimateTree::operator+] ERROR! Can't add MT2EstimateTree with different MT2Regions!" << std::endl;
+    std::cout << "[MT2EstimateSigTree::operator+] ERROR! Can't add MT2EstimateSigTree with different MT2Regions!" << std::endl;
     exit(113);
   }
 
 
-  MT2EstimateTree result(*this);
+  MT2EstimateSigTree result(*this);
   result.yield->Add(rhs.yield);
- 
+  result.yield3d->Add(rhs.yield3d);
+
   TList* list = new TList;
   list->Add(result.tree);
   list->Add(rhs.tree);
@@ -285,10 +286,10 @@ MT2EstimateTree MT2EstimateTree::operator+( const MT2EstimateTree& rhs ) const{
 
 
 
-//MT2EstimateTree MT2EstimateTree::operator*( float k ) const{
+//MT2EstimateSigTree MT2EstimateSigTree::operator*( float k ) const{
 //
 //std::cout << "aaaaaaaaaaaa here! " << std::endl;
-//  MT2EstimateTree result( this->getName(), *(this->region) );
+//  MT2EstimateSigTree result( this->getName(), *(this->region) );
 //  result.yield = new TH1D(*(this->yield));
 //  result.yield->Scale(k);
 //
@@ -330,9 +331,12 @@ MT2EstimateTree MT2EstimateTree::operator+( const MT2EstimateTree& rhs ) const{
 
 
 
-MT2EstimateTree MT2EstimateTree::operator*( float k ) const{
+MT2EstimateSigTree MT2EstimateSigTree::operator*( float k ) const{
 
-  MT2EstimateTree result( this->getName(), *(this->region) );
+  MT2EstimateSigTree result( this->getName(), *(this->region) );
+  result.yield3d = new TH3D(*(this->yield3d));
+  result.yield3d->Scale(k);
+  
   result.yield = new TH1D(*(this->yield));
   result.yield->Scale(k);
   
@@ -344,9 +348,12 @@ MT2EstimateTree MT2EstimateTree::operator*( float k ) const{
 }
 
 
-MT2EstimateTree MT2EstimateTree::operator/( float k ) const{
+MT2EstimateSigTree MT2EstimateSigTree::operator/( float k ) const{
 
-  MT2EstimateTree result( this->getName(), *(this->region) );
+  MT2EstimateSigTree result( this->getName(), *(this->region) );
+  result.yield3d = new TH3D(*(this->yield3d));
+  result.yield3d->Scale(1./k);
+  
   result.yield = new TH1D(*(this->yield));
   result.yield->Scale(1./k);
 
@@ -360,13 +367,14 @@ MT2EstimateTree MT2EstimateTree::operator/( float k ) const{
 
 
 
-const MT2EstimateTree& MT2EstimateTree::operator+=( const MT2EstimateTree& rhs ) {
+const MT2EstimateSigTree& MT2EstimateSigTree::operator+=( const MT2EstimateSigTree& rhs ) {
 
 
   if( rhs.tree->GetEntries()>0 ) {
 
     this->yield->Add(rhs.yield);
-  
+    this->yield3d->Add(rhs.yield3d);
+
     std::string oldName(this->tree->GetName());
 
     TList* list = new TList;
@@ -387,7 +395,7 @@ const MT2EstimateTree& MT2EstimateTree::operator+=( const MT2EstimateTree& rhs )
 
 
 
-//const MT2EstimateTree& MT2EstimateTree::operator*=( float k ) {
+//const MT2EstimateSigTree& MT2EstimateSigTree::operator*=( float k ) {
 //
 //
 //  this->yield->Scale(k);
@@ -434,18 +442,20 @@ const MT2EstimateTree& MT2EstimateTree::operator+=( const MT2EstimateTree& rhs )
 //}
 
 
-const MT2EstimateTree& MT2EstimateTree::operator*=( float k ) {
+const MT2EstimateSigTree& MT2EstimateSigTree::operator*=( float k ) {
 
   this->yield->Scale(k);
+  this->yield3d->Scale(k);
   // loop on entries and multiply weight
   return (*this);
 
 }
 
 
-const MT2EstimateTree& MT2EstimateTree::operator/=( float k ) {
+const MT2EstimateSigTree& MT2EstimateSigTree::operator/=( float k ) {
 
   this->yield->Scale(1./k);
+  this->yield3d->Scale(1./k);
   // loop on entries and multiply weight
   return (*this);
 
@@ -455,7 +465,7 @@ const MT2EstimateTree& MT2EstimateTree::operator/=( float k ) {
 
 // friend functions:
 
-MT2EstimateTree operator*( float k, const MT2EstimateTree& rhs ) {
+MT2EstimateSigTree operator*( float k, const MT2EstimateSigTree& rhs ) {
 
   return rhs*k;
 
@@ -463,7 +473,7 @@ MT2EstimateTree operator*( float k, const MT2EstimateTree& rhs ) {
 
 
 
-MT2EstimateTree operator/( float k, const MT2EstimateTree& rhs ) {
+MT2EstimateSigTree operator/( float k, const MT2EstimateSigTree& rhs ) {
 
   return rhs/k;
 
