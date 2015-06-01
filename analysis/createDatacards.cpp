@@ -390,67 +390,96 @@ int main( int argc, char* argv[] ) {
 
     std::string path_mass = path;
 
-    for( std::set<MT2Region>::iterator iR=regions.begin(); iR!=regions.end(); ++iR ) {
-
-      TH3D* this_signal3d = signals[isig]->get(*iR)->yield3d;
-
-      TH1D* this_signalParent = this_signal3d->ProjectionY("mParent");
-    
-      for( int iBinY=1; iBinY<this_signalParent->GetNbinsX()+1; ++iBinY ){
+    if( signals[isig]->getName().find("fullScan") != std::string::npos )
+      for( std::set<MT2Region>::iterator iR=regions.begin(); iR!=regions.end(); ++iR ) {
 	
-	TH1D* this_signalLSP = this_signal3d->ProjectionZ("mLSP", 0, -1, iBinY, iBinY);
-
-	for( int iBinZ=1; iBinZ < iBinY; ++iBinZ ) {
+	TH3D* this_signal3d = signals[isig]->get(*iR)->yield3d;
+	
+	TH1D* this_signalParent = this_signal3d->ProjectionY("mParent");
+	
+	for( int iBinY=1; iBinY<this_signalParent->GetNbinsX()+1; ++iBinY ){
+	  
+	  TH1D* this_signalLSP = this_signal3d->ProjectionZ("mLSP", 0, -1, iBinY, iBinY);
+	  
+	  for( int iBinZ=1; iBinZ < iBinY; ++iBinZ ) {
 	  	  
-	  float mParent = this_signalParent->GetBinLowEdge(iBinY);
-	  float mLSP = this_signalLSP->GetBinLowEdge(iBinZ);
-	   
-	  TH1D* this_signal = this_signal3d->ProjectionX("mt2", iBinY, iBinY, iBinZ, iBinZ);
-
-	  if( this_signal->Integral() < 1e-3 ) continue;
+	    float mParent = this_signalParent->GetBinLowEdge(iBinY);
+	    float mLSP = this_signalLSP->GetBinLowEdge(iBinZ);
+	    
+	    TH1D* this_signal = this_signal3d->ProjectionX("mt2", iBinY, iBinY, iBinZ, iBinZ);
+	    
+	    if( this_signal->Integral() < 1e-3 ) continue;
+	    
+	    for( int iBin=1; iBin<this_signal->GetNbinsX()+1; ++iBin ) {
+	      
+	      if( this_signal->GetBinLowEdge( iBin ) > iR->htMax() && iR->htMax()>0 ) continue;
+	      
+	      float mt2Min = this_signal->GetBinLowEdge( iBin );
+	      float mt2Max = (iBin==this_signal->GetNbinsX()) ?  -1. : this_signal->GetBinLowEdge( iBin+1 );
+	      
+	      if( this_signal->GetBinContent(iBin) < 1e-3 );
+	      else{
+		
+		std::string binName;
+		if( mt2Max>=0. )
+		  binName = std::string( Form("%s_m%.0fto%.0f", iR->getName().c_str(), mt2Min, mt2Max) );
+		else
+		  binName = std::string( Form("%s_m%.0ftoInf", iR->getName().c_str(), mt2Min) );
+		
+		std::string templateDatacard( Form("%s/datacard_%s.txt", path_templ.c_str(), binName.c_str()) );
+		
+		std::string newDatacard( Form("%s/datacard_%s_%s_%.0f_%.0f.txt", path_mass.c_str(), binName.c_str(), sigName.c_str(), mParent, mLSP) );
+		
+		float sig = this_signal->GetBinContent(iBin);
+		
+		std::string sedCommand( Form("sed 's/XXX/%.3f/g' %s > %s", sig, templateDatacard.c_str(), newDatacard.c_str()) );
+		system( sedCommand.c_str() );
+		
+	      }
+	      
+	    } // for bins X (MT2)
+	  } // for bins Z (mLSP)
+	}// for bins Y (mParent)      
+      } // for regions
+    
+    else
+      for( std::set<MT2Region>::iterator iR=regions.begin(); iR!=regions.end(); ++iR ) {
+	
+	TH1D* this_signal = signals[isig]->get(*iR)->yield;
+	
+	for( int iBin=1; iBin<this_signal->GetNbinsX()+1; ++iBin ) {
 	  
-	  std::string massPoint = std::string( Form("_%.0f_%.0f", mParent, mLSP) );
-	  path_mass = path + "/" + sigName + massPoint;
-	  system(Form("mkdir -p %s", path_mass.c_str()));
+	  if( this_signal->GetBinLowEdge( iBin ) > iR->htMax() && iR->htMax()>0 ) continue;
 	  
-	  for( int iBin=1; iBin<this_signal->GetNbinsX()+1; ++iBin ) {
+	  float mt2Min = this_signal->GetBinLowEdge( iBin );
+	  float mt2Max = (iBin==this_signal->GetNbinsX()) ?  -1. : this_signal->GetBinLowEdge( iBin+1 );
+	  
+	  if( this_signal->GetBinContent(iBin) < 1e-3 );
+	  else{
 	    
-	    if( this_signal->GetBinLowEdge( iBin ) > iR->htMax() && iR->htMax()>0 ) continue;
+	    std::string binName;
+	    if( mt2Max>=0. )
+	      binName = std::string( Form("%s_m%.0fto%.0f", iR->getName().c_str(), mt2Min, mt2Max) );
+	    else
+	      binName = std::string( Form("%s_m%.0ftoInf", iR->getName().c_str(), mt2Min) );
 	    
-	    float mt2Min = this_signal->GetBinLowEdge( iBin );
-	    float mt2Max = (iBin==this_signal->GetNbinsX()) ?  -1. : this_signal->GetBinLowEdge( iBin+1 );
+	    std::string templateDatacard( Form("%s/datacard_%s.txt", path_templ.c_str(), binName.c_str()) );
 	    
-	    if( this_signal->GetBinContent(iBin) < 1e-3 );
-	    else{
-	      
-	      std::string binName;
-	      if( mt2Max>=0. )
-		binName = std::string( Form("%s_m%.0fto%.0f", iR->getName().c_str(), mt2Min, mt2Max) );
-	      else
-		binName = std::string( Form("%s_m%.0ftoInf", iR->getName().c_str(), mt2Min) );
-	      
-	      std::string templateDatacard( Form("%s/datacard_%s.txt", path_templ.c_str(), binName.c_str()) );
-	      
-	      std::string newDatacard( Form("%s/datacard_%s_%s_%.0f_%.0f.txt", path_mass.c_str(), binName.c_str(), sigName.c_str(), mParent, mLSP) );
-	      	      
-	      float sig = this_signal->GetBinContent(iBin);
-	      
-	      std::string sedCommand( Form("sed 's/XXX/%.3f/g' %s > %s", sig, templateDatacard.c_str(), newDatacard.c_str()) );
-	      system( sedCommand.c_str() );
-	      
-	    }
+	    std::string newDatacard( Form("%s/datacard_%s_%s.txt", path.c_str(), binName.c_str(), sigName.c_str()) );
 	    
-	  } // for bins X (MT2)
-	} // for bins Z (mLSP)
-      }// for bins Y (mParent)
-      
-    } // for regions
-
+	    float sig = this_signal->GetBinContent(iBin);
+	    
+	    std::string sedCommand( Form("sed 's/XXX/%.3f/g' %s > %s", sig, templateDatacard.c_str(), newDatacard.c_str()) );
+	    system( sedCommand.c_str() );
+	    
+	  }
+	  
+	} // for bins X (MT2)
+      } // for regions
+    
     std::cout << "-> Created datacards in " << path_mass << std::endl;
        
   } // for signals
-
-
 
   return 0;
 
