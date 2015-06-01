@@ -117,8 +117,7 @@ int main( int argc, char* argv[] ) {
 
 
   std::vector<MT2Analysis<MT2EstimateTree>* > bgYields;
-
-
+  MT2Analysis<MT2EstimateTree>* dataYield;  
 
   if( cfg.useMC() ) { // use MC BG estimates
 
@@ -154,6 +153,12 @@ int main( int argc, char* argv[] ) {
     bgYields.push_back( EventYield_zjets );
     bgYields.push_back( EventYield_top );
     //bgYields.push_back( EventYield_other );
+
+    if( dummyAnalysis ) {
+    
+      dataYield   = mergeYields( EventYield, cfg.regionsSet(), "data", 100, 699 );
+    
+    } 
 
   }
 
@@ -203,40 +208,31 @@ int main( int argc, char* argv[] ) {
   } // if sig samples
   
 
-  //MT2Analysis<MT2EstimateTree>* data = new MT2Analysis<MT2EstimateTree>( "data", cfg.regionsSet() );
-  MT2Analysis<MT2EstimateTree>* data;
- 
-  if( dummyAnalysis ) { // use same as MC
-
-    data = new MT2Analysis<MT2EstimateTree>( *(bgYields[0]) );
-    data->setName("data");
-    for( unsigned i=1; i < bgYields.size(); ++i ) (*data) += *(bgYields[i]);
-    //randomizePoisson( data );
-
-  } else {
+  if( !dummyAnalysis ) {
 
     std::string samplesFile_data = "../samples/samples_" + cfg.dataSamples() + ".dat";
 
     std::cout << std::endl << std::endl;
     std::cout << "-> Loading data from file: " << samplesFile_data << std::endl;
 
-    std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data);
+    std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, 1, 99 );
     if( samples_data.size()==0 ) {
       std::cout << "There must be an error: samples_data is empty!" << std::endl;
       exit(1209);
     }
 
-    data = new MT2Analysis<MT2EstimateTree>( "data", cfg.regionsSet() );
-    for( unsigned i=0; i<samples_data.size(); ++i ) (*data) += *(computeYield( samples_data[i], cfg ));
+    std::vector< MT2Analysis<MT2EstimateTree>* > EventYield_data;
+    for( unsigned i=0; i < samples_data.size(); ++i )
+      EventYield_data.push_back( computeYield( samples_data[i], cfg, lumi ) );
+
+    dataYield   = mergeYields( EventYield_data, cfg.regionsSet(), "data", 1, 99 );
 
   }
 
-
-  drawYields( outputdir, data, bgYields );
-
+  drawYields( outputdir, dataYield, bgYields );
 
   // save MT2Analyses:
-  data->writeToFile(outputdir + "/analyses.root");
+  dataYield->writeToFile(outputdir + "/analyses.root");
   for( unsigned i=0; i<bgYields.size(); ++i )
     bgYields[i]->writeToFile(outputdir + "/analyses.root", "UPDATE");
   for( unsigned i=0; i<signals.size(); ++i )
