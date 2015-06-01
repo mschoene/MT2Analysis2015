@@ -346,6 +346,13 @@ void MT2EstimateSig::randomizePoisson( float scale ){
   
 }
 
+void MT2EstimateSig::fillYield( float mt2, int m1, int m2, float weight){
+
+  yield->Fill(mt2, weight);
+  yield3d->Fill(mt2, m1, m2, weight);
+
+}
+
 
 // friend functions
 

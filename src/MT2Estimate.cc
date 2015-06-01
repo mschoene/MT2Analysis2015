@@ -36,6 +36,29 @@ MT2Estimate::MT2Estimate( const MT2Estimate& rhs ) {
 }
 
 
+MT2Estimate::MT2Estimate( const MT2EstimateSig& rhs, const int& m1, const int& m2 ) {
+
+  name = rhs.getName();
+
+  region = new MT2Region(*(rhs.region));
+
+  TH3D* this_3d= new TH3D(*(rhs.yield3d));
+  
+  TH1D* this_mParent = this_3d->ProjectionY("mParent");
+
+  int iBinY = this_mParent->FindBin(m1);
+
+  TH1D* this_LSP = this_3d->ProjectionZ("mLSP", 0, -1, iBinY, iBinY);
+
+  int iBinZ = this_LSP->FindBin(m2);
+  
+  TH1D* this_mt2 = this_3d->ProjectionX("mt2", iBinY, iBinY, iBinZ, iBinZ);
+  
+  yield =  (TH1D*) this_mt2->Clone(this->getHistoName("yield").c_str());
+  yield->Sumw2();
+
+}
+
 
 MT2Estimate::~MT2Estimate() {
 
@@ -299,6 +322,12 @@ void MT2Estimate::randomizePoisson( float scale ){
   
 }
 
+
+void MT2Estimate::fillYield( float mt2, int m1, int m2, float weight ){
+
+  yield->Fill(mt2, weight);
+
+}
 
 // friend functions
 

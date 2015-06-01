@@ -3,6 +3,7 @@
 
 
 #include "MT2Region.h"
+#include "MT2EstimateSig.h"
 #include "TH3D.h"
 #include "TH1D.h"
 #include "TFile.h"
@@ -22,6 +23,7 @@ class MT2Estimate {
 
  public:
 
+  MT2Estimate( const MT2EstimateSig& rhs, const int& m1, const int& m2 );
   MT2Estimate( const MT2Estimate& rhs );  
   MT2Estimate( const std::string& aname, const MT2Region& aregion );
   virtual ~MT2Estimate();
@@ -91,6 +93,8 @@ class MT2Estimate {
   
   virtual void randomizePoisson( float scale=1. );
   
+  virtual void fillYield( float mt2, int m1, int m2, float weight=1. );
+
  private:
   
   std::string name;
