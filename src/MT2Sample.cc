@@ -111,9 +111,14 @@ std::vector<MT2Sample> MT2Sample::loadSamples(const std::string& filename, const
     s.kfact    = evt_kfactor;
     s.scale1fb = evt_scale1fb;
 
-    if( idMin>=0 && s.id<idMin ) continue;
-    if( idMax>=0 && s.id>idMax ) continue;
-
+    if( idMin>=0 && s.id<idMin ) {
+      file.Close();
+      continue;
+    }
+    if( idMax>=0 && s.id>idMax ) {
+      file.Close();
+      continue;
+    }
 
     bool isData = s.id>0 && s.id<100;
 
@@ -129,6 +134,7 @@ std::vector<MT2Sample> MT2Sample::loadSamples(const std::string& filename, const
         if( fileNameParts[i] == "babytree" ) continue;
         if( fileNameParts[i] == "prune" ) continue;
         if( fileNameParts[i] == "skim" ) continue;
+	if( fileNameParts[i] == "post" ) continue;
         s.name += "_" + fileNameParts[i];
         if( fileNameParts[i]=="PU" ) foundPU = true;
         if( !foundPU )
@@ -144,6 +150,7 @@ std::vector<MT2Sample> MT2Sample::loadSamples(const std::string& filename, const
         if( fileNameParts[i] == "babytree" ) continue;
         if( fileNameParts[i] == "prune" ) continue;
         if( fileNameParts[i] == "skim" ) continue;
+	if( fileNameParts[i] == "post" ) continue;
         s.name += "_" + fileNameParts[i];
         s.sname += "_" + fileNameParts[i];
       }
