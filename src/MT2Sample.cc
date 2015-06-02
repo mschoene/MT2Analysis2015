@@ -111,8 +111,10 @@ std::vector<MT2Sample> MT2Sample::loadSamples(const std::string& filename, const
     s.kfact    = evt_kfactor;
     s.scale1fb = evt_scale1fb;
 
-    if( idMin>=0 && s.id<idMin ) continue;
-    if( idMax>=0 && s.id>idMax ) continue;
+    if( (idMin>=0 && s.id<idMin) || (idMax>=0 && s.id>idMax) ) {
+      file->Close();
+      continue;
+    }
 
 
     bool isData = s.id>0 && s.id<100;
