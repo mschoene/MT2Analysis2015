@@ -34,23 +34,30 @@ int main( int argc, char* argv[] ) {
 
   MT2DrawTools::setStyle();
 
-  if( argc!=2 ) {
+  if( argc > 2 ) {
     std::cout << "USAGE: ./inclusivePlots [samplesFileName]" << std::endl;
     std::cout << "Exiting." << std::endl;
     exit(11);
   }
   
-  std::string sampleName(argv[1]);
-  
+  std::string sampleName;
+  if( argc == 2)
+    sampleName = argv[1];
+  else 
+    sampleName = "PHYS14_v5_plots";
+
   std::string samplesFileName = "../samples/samples_" + sampleName + ".dat";
   std::cout << std::endl << std::endl;
   std::cout << "-> Loading samples from file: " << samplesFileName << std::endl;
 
-  std::vector<MT2Sample> fSamples = MT2Sample::loadSamples(samplesFileName, 100, 699);
+  std::vector<MT2Sample> fSamples = MT2Sample::loadSamples(samplesFileName);
   if( fSamples.size()==0 ) {
     std::cout << "There must be an error: samples is empty!" << std::endl;
     exit(1209);
   }
+
+  std::vector<MT2Sample> bSamples = MT2Sample::loadSamples(samplesFileName, 100, 699);
+  std::vector<MT2Sample> sSamples = MT2Sample::loadSamples(samplesFileName, 1000);
   
   std::string outputdir = "Plots/"+sampleName;
   system(Form("mkdir -p %s", outputdir.c_str()));
@@ -108,27 +115,30 @@ int main( int argc, char* argv[] ) {
     h_nleps[i]->GetXaxis()->SetTitle("N(leptons)");
     h_nleps[i]->GetYaxis()->SetTitle("Events");
     
-    nbins = 300;
+    nbins = 120;
     xmax  = 3000.;
     std::string name_ht="ht"+fSamples[i].name;
     h_ht[i] = new TH1F(name_ht.c_str(), "H_{T}", nbins, xmin, xmax );
     h_ht[i]->GetXaxis()->SetTitle("H_{T} [GeV]");
-    h_ht[i]->GetYaxis()->SetTitle("Events/10 GeV");
-  
-    nbins = 100;
-    xmax  = 1000.;
+    h_ht[i]->GetYaxis()->SetTitle("Events/25 GeV");
+    h_ht[i]->SetMinimum(1.e-1);
+    
+    nbins = 60;
+    xmax  = 1500.;
     std::string name_met="met"+fSamples[i].name;
     h_met[i] = new TH1F(name_met.c_str(), "E_{T}^{miss}", nbins, xmin, xmax );
     h_met[i]->GetXaxis()->SetTitle("E_{T}^{miss} [GeV]");
-    h_met[i]->GetYaxis()->SetTitle("Events/10 GeV");
-   
-    nbins = 100;
-    xmax  = 1000.;
+    h_met[i]->GetYaxis()->SetTitle("Events/25 GeV");
+    h_met[i]->SetMinimum(1.e-1);
+
+    nbins = 60;
+    xmax  = 1500.;
     std::string name_mt2="mt2"+fSamples[i].name;
     h_mt2[i] = new TH1F(name_mt2.c_str(), "M_{T2}", nbins, xmin, xmax );
     h_mt2[i]->GetXaxis()->SetTitle("M_{T2} [GeV]");
-    h_mt2[i]->GetYaxis()->SetTitle("Events/10 GeV");
-    
+    h_mt2[i]->GetYaxis()->SetTitle("Events/25 GeV");
+    h_mt2[i]->SetMinimum(1.e-1);
+
     nbins = 32;
     xmax  = 3.2;
     std::string name_deltaPhiMin="mindPhi"+fSamples[i].name;
@@ -263,8 +273,17 @@ int main( int argc, char* argv[] ) {
       
     }// entries
     
-    std::cout << "Done with sample " << fSamples[i].name << std::endl << std::endl; 
- 
+    std::cout << "Done with sample " << fSamples[i].name << std::endl << std::endl;
+
+    delete tree;
+    
+    file->Close();
+    delete file;
+
+  }// samples
+  
+  for( unsigned i=0; i < bSamples.size(); ++i ){
+  
     h_njets_stack    ->Add(h_njets[i]);
     h_nbjets_stack   ->Add(h_nbjets[i]);
     h_nleps_stack    ->Add(h_nleps[i]);
@@ -274,49 +293,102 @@ int main( int argc, char* argv[] ) {
     h_deltaPhiMin_stack ->Add(h_deltaPhiMin[i]);
     h_diffMetMht_stack ->Add(h_diffMetMht[i]);
     
-    delete tree;
+  }// BG samples
+
+  int sigColors[]={1, 2, 6, 5, 7, 9};
+  for( unsigned i=0; i < sSamples.size(); ++i ){
     
-    file->Close();
-    delete file;
+    h_njets[i+bSamples.size()]      ->SetLineColor(sigColors[i]);
+    h_nbjets[i+bSamples.size()]     ->SetLineColor(sigColors[i]);
+    h_nleps[i+bSamples.size()]      ->SetLineColor(sigColors[i]);
+    h_ht[i+bSamples.size()]         ->SetLineColor(sigColors[i]);
+    h_met[i+bSamples.size()]        ->SetLineColor(sigColors[i]);
+    h_mt2[i+bSamples.size()]        ->SetLineColor(sigColors[i]);
+    h_deltaPhiMin[i+bSamples.size()]->SetLineColor(sigColors[i]);
+    h_diffMetMht[i+bSamples.size()] ->SetLineColor(sigColors[i]);
 
-  }// samples
-
-  system( "rm tmp.root" );
+    h_njets[i+bSamples.size()]      ->SetLineWidth(2);
+    h_nbjets[i+bSamples.size()]     ->SetLineWidth(2);
+    h_nleps[i+bSamples.size()]      ->SetLineWidth(2);
+    h_ht[i+bSamples.size()]         ->SetLineWidth(2);
+    h_met[i+bSamples.size()]        ->SetLineWidth(2);
+    h_mt2[i+bSamples.size()]        ->SetLineWidth(2);
+    h_deltaPhiMin[i+bSamples.size()]->SetLineWidth(2);
+    h_diffMetMht[i+bSamples.size()] ->SetLineWidth(2);    
+    
+    h_njets[i+bSamples.size()]      ->Scale(50);
+    h_nbjets[i+bSamples.size()]     ->Scale(50);
+    h_nleps[i+bSamples.size()]      ->Scale(50);
+    h_ht[i+bSamples.size()]         ->Scale(50);
+    h_met[i+bSamples.size()]        ->Scale(50);
+    h_mt2[i+bSamples.size()]        ->Scale(50);
+    h_deltaPhiMin[i+bSamples.size()]->Scale(50);
+    h_diffMetMht[i+bSamples.size()] ->Scale(50);
+    
+  }
 
 
   TPaveText* labelTop = MT2DrawTools::getLabelTopSimulation(lumi);
   
   //For inclusive plots:
+  std::vector< std::string > bgYields;
+  //bgYields.push_back("QCD");
+  bgYields.push_back("Z+jets");
+  bgYields.push_back("W+jets");
+  bgYields.push_back("Top");
+  
+  std::vector< int > colors;
+  //colors.push_back(401);
+  colors.push_back(419);
+  colors.push_back(417);
+  colors.push_back(855);
+
+  std::vector< std::string > sigYields;
+  sigYields.push_back("T1tttt 1500, 100 x50");
+  sigYields.push_back("T1bbbb 1500, 100 x50");
+  sigYields.push_back("T1qqqq 1400, 100 x50");
+  sigYields.push_back("T2tt 850, 100 x50");
+  sigYields.push_back("T2bb 900, 100 x50");
+  sigYields.push_back("T2qq 1200, 100 x50");
+
   std::vector< std::string > niceNames;
   niceNames.push_back("H_{T} > 450 GeV");
   niceNames.push_back("#geq 2j");
   niceNames.push_back("M_{T2} > 200 GeV");
+  TPaveText* regionText[niceNames.size()];
+  for( unsigned i=0; i<niceNames.size(); ++i ) {
+    
+    float yMax = 0.9-(float)i*0.04;
+    float yMin = yMax - 0.04;
+    regionText[i] = new TPaveText( 0.18, yMin, 0.55, yMax, "brNDC" );
+    //regionText[i]->SetTextSize(0.035);
+    regionText[i]->SetTextFont(42);
+    regionText[i]->SetFillColor(0);
+    regionText[i]->SetTextAlign(11);
+    regionText[i]->AddText( niceNames[i].c_str() );
 
-  std::vector< std::string > bgYields;
-  bgYields.push_back("QCD");
-  bgYields.push_back("Z+jets");
-  bgYields.push_back("W+jets");
-  bgYields.push_back("Top");
+  }
 
-  //  TLegend* legend = new TLegend( 0.7, 0.9-(bgYields.size()+1)*0.06, 0.93, 0.9 );
-  TLegend* legend = new TLegend( 0.7, 0.9-(bgYields.size()+1-1)*0.06, 0.93, 0.9 ); //Excluding QCD
-  legend->SetTextSize(0.038);
+
+  TLegend* legend = new TLegend( 0.6, 0.9-(bgYields.size()+sigYields.size()+1)*0.03, 0.93, 0.9 );
+  //  legend->SetTextSize(0.038);
   legend->SetTextFont(42);
   legend->SetFillColor(0);
   legend->SetLineColor(0);
   
   // Declaring empty histos for legend definition
   TH1F* hLegend[(int)bgYields.size()];
-  int colors[] = {401, 419, 417, 855};
-  //  for( unsigned b=0; b<bgYields.size(); ++b){ 
-  for( unsigned b=1; b<bgYields.size(); ++b){ //Excluding QCD
-
+  for( unsigned b=0; b<bgYields.size(); ++b){ 
+    
     hLegend[b] = new TH1F( bgYields[b].c_str(), "", 1, 0, 1 );
     hLegend[b]->SetFillColor(colors[b]);
 
     legend->AddEntry( hLegend[b], bgYields[b].c_str(), "F" );                                                                                                            	
 
   }
+  for( unsigned s=0; s<sigYields.size(); ++s )
+    legend->AddEntry( h_njets[s + bSamples.size()], sigYields[s].c_str(), "l" );
+  
 
   float YMax;
   
@@ -331,22 +403,14 @@ int main( int argc, char* argv[] ) {
   h_njets_stack ->SetMaximum(YMax);
   h_njets_stack ->Draw("hist");
 
+  for( unsigned s=0; s<sigYields.size(); ++s )
+    h_njets[s+bSamples.size()]->Draw("same");
+
   legend->Draw("same");
-  for( unsigned i=0; i<niceNames.size(); ++i ) {
-
-    float yMax = 0.9-(float)i*0.05;
-    float yMin = yMax - 0.05;
-    TPaveText* regionText = new TPaveText( 0.18, yMin, 0.55, yMax, "brNDC" );
-    regionText->SetTextSize(0.035);
-    regionText->SetTextFont(42);
-    regionText->SetFillColor(0);
-    regionText->SetTextAlign(11);
-    regionText->AddText( niceNames[i].c_str() );
-    regionText->Draw("same");
-
-  }
+  for( unsigned i=0; i<niceNames.size(); ++i )
+    regionText[i]->Draw("same");
   labelTop->Draw("same");
-  gPad->RedrawAxis();
+  //gPad->RedrawAxis();
 
   c1->Update();
 
@@ -361,23 +425,15 @@ int main( int argc, char* argv[] ) {
   h_nbjets_stack ->GetYaxis()->SetTitleOffset(1.5);
   h_nbjets_stack ->SetMaximum(YMax);
   h_nbjets_stack ->Draw("hist");
-
+  
+  for( unsigned s=0; s<sigYields.size(); ++s )
+    h_nbjets[s+bSamples.size()]->Draw("same");
+  
   legend->Draw("same");
-  for( unsigned i=0; i<niceNames.size(); ++i ) {
-
-    float yMax = 0.9-(float)i*0.05;
-    float yMin = yMax - 0.05;
-    TPaveText* regionText = new TPaveText( 0.18, yMin, 0.55, yMax, "brNDC" );
-    regionText->SetTextSize(0.035);
-    regionText->SetTextFont(42);
-    regionText->SetFillColor(0);
-    regionText->SetTextAlign(11);
-    regionText->AddText( niceNames[i].c_str() );
-    regionText->Draw("same");
-
-  }
+  for( unsigned i=0; i<niceNames.size(); ++i )
+    regionText[i]->Draw("same");
   labelTop->Draw("same");
-  gPad->RedrawAxis();
+  //gPad->RedrawAxis();
   
 
   c2->Update();
@@ -392,23 +448,15 @@ int main( int argc, char* argv[] ) {
   h_nleps_stack ->GetYaxis()->SetTitleOffset(1.5);
   h_nleps_stack ->SetMaximum(YMax);
   h_nleps_stack ->Draw("hist");
-
+  
+  for( unsigned s=0; s<sigYields.size(); ++s )
+    h_nleps[s+bSamples.size()]->Draw("same");
+  
   legend->Draw("same");
-  for( unsigned i=0; i<niceNames.size(); ++i ) {
-
-    float yMax = 0.9-(float)i*0.05;
-    float yMin = yMax - 0.05;
-    TPaveText* regionText = new TPaveText( 0.18, yMin, 0.55, yMax, "brNDC" );
-    regionText->SetTextSize(0.035);
-    regionText->SetTextFont(42);
-    regionText->SetFillColor(0);
-    regionText->SetTextAlign(11);
-    regionText->AddText( niceNames[i].c_str() );
-    regionText->Draw("same");
-
-  }
+  for( unsigned i=0; i<niceNames.size(); ++i )
+    regionText[i]->Draw("same");
   labelTop->Draw("same");
-  gPad->RedrawAxis();
+  //gPad->RedrawAxis();
   
   c3->Update();
   c3->SaveAs(Form("%s/inclusiveNleps.pdf", outputdir.c_str()));
@@ -420,29 +468,21 @@ int main( int argc, char* argv[] ) {
 
   h_ht_stack ->Draw("hist");
   h_ht_stack ->GetXaxis()->SetTitle("H_{T} [GeV]");
-  h_ht_stack ->GetYaxis()->SetTitle("Events/10 GeV");
+  h_ht_stack ->GetYaxis()->SetTitle("Events/25 GeV");
   h_ht_stack ->GetYaxis()->SetTitleOffset(1.5);
-  h_ht_stack ->SetMinimum(0.1);
+  h_ht_stack ->SetMinimum(1.e-1);
   h_ht_stack ->SetMaximum(YMax);
+  h_ht_stack ->GetYaxis()->SetRangeUser(1.e-1, YMax);
   h_ht_stack ->Draw("hist");
-  h_ht_stack ->Draw("same");
+  
+  for( unsigned s=0; s<sigYields.size(); ++s )
+    h_ht[s+bSamples.size()]->Draw("same");
 
   legend->Draw("same");
-  for( unsigned i=0; i<niceNames.size(); ++i ) {
-
-    float yMax = 0.9-(float)i*0.05;
-    float yMin = yMax - 0.05;
-    TPaveText* regionText = new TPaveText( 0.18, yMin, 0.55, yMax, "brNDC" );
-    regionText->SetTextSize(0.035);
-    regionText->SetTextFont(42);
-    regionText->SetFillColor(0);
-    regionText->SetTextAlign(11);
-    regionText->AddText( niceNames[i].c_str() );
-    regionText->Draw("same");
-
-  }
+  for( unsigned i=0; i<niceNames.size(); ++i )
+    regionText[i]->Draw("same");
   labelTop->Draw("same");
-  gPad->RedrawAxis();
+  //gPad->RedrawAxis();
 
 
   c4->Update();
@@ -455,28 +495,21 @@ int main( int argc, char* argv[] ) {
 
   h_met_stack ->Draw("hist");
   h_met_stack ->GetXaxis()->SetTitle("E_{T}^{miss} [GeV]");
-  h_met_stack ->GetYaxis()->SetTitle("Events/10 GeV");
+  h_met_stack ->GetYaxis()->SetTitle("Events/25 GeV");
   h_met_stack ->GetYaxis()->SetTitleOffset(1.5);
-  h_met_stack ->SetMinimum(0.1);
+  h_met_stack ->SetMinimum(1.e-1);
   h_met_stack ->SetMaximum(YMax);
+  h_met_stack ->GetYaxis()->SetRangeUser(1.e-1, YMax);
   h_met_stack ->Draw("hist");
-
+  
+  for( unsigned s=0; s<sigYields.size(); ++s )
+    h_met[s+bSamples.size()]->Draw("same");
+    
   legend->Draw("same");
-  for( unsigned i=0; i<niceNames.size(); ++i ) {
-
-    float yMax = 0.9-(float)i*0.05;
-    float yMin = yMax - 0.05;
-    TPaveText* regionText = new TPaveText( 0.18, yMin, 0.55, yMax, "brNDC" );
-    regionText->SetTextSize(0.035);
-    regionText->SetTextFont(42);
-    regionText->SetFillColor(0);
-    regionText->SetTextAlign(11);
-    regionText->AddText( niceNames[i].c_str() );
-    regionText->Draw("same");
-
-  }
+  for( unsigned i=0; i<niceNames.size(); ++i )
+    regionText[i]->Draw("same");
   labelTop->Draw("same");
-  gPad->RedrawAxis();
+  //gPad->RedrawAxis();
   
   c5->Update();
   c5->SaveAs(Form("%s/METinclusive.pdf", outputdir.c_str()));
@@ -488,28 +521,21 @@ int main( int argc, char* argv[] ) {
 
   h_mt2_stack ->Draw("hist");
   h_mt2_stack ->GetXaxis()->SetTitle("M_{T2} [GeV]");
-  h_mt2_stack ->GetYaxis()->SetTitle("Events/10 GeV");
+  h_mt2_stack ->GetYaxis()->SetTitle("Events/25 GeV");
   h_mt2_stack ->GetYaxis()->SetTitleOffset(1.5);
-  h_mt2_stack ->SetMinimum(0.1);
+  h_mt2_stack ->SetMinimum(1.e-1);
   h_mt2_stack ->SetMaximum(YMax);
+  h_mt2_stack ->GetYaxis()->SetRangeUser(1.e-1, YMax);
   h_mt2_stack ->Draw("hist");
 
+  for( unsigned s=0; s<sigYields.size(); ++s )
+    h_mt2[s+bSamples.size()]->Draw("same");
+  
   legend->Draw("same");
-  for( unsigned i=0; i<niceNames.size(); ++i ) {
-
-    float yMax = 0.9-(float)i*0.05;
-    float yMin = yMax - 0.05;
-    TPaveText* regionText = new TPaveText( 0.18, yMin, 0.55, yMax, "brNDC" );
-    regionText->SetTextSize(0.035);
-    regionText->SetTextFont(42);
-    regionText->SetFillColor(0);
-    regionText->SetTextAlign(11);
-    regionText->AddText( niceNames[i].c_str() );
-    regionText->Draw("same");
-
-  }
+  for( unsigned i=0; i<niceNames.size(); ++i )
+    regionText[i]->Draw("same");
   labelTop->Draw("same");
-  gPad->RedrawAxis();
+  //gPad->RedrawAxis();
 
   c6->Update();
   c6->SaveAs(Form("%s/MT2inclusive.pdf", outputdir.c_str()));
@@ -526,22 +552,14 @@ int main( int argc, char* argv[] ) {
   h_deltaPhiMin_stack ->SetMaximum(YMax);
   h_deltaPhiMin_stack ->Draw("hist");
  
+  for( unsigned s=0; s<sigYields.size(); ++s )
+    h_deltaPhiMin[s+bSamples.size()]->Draw("same");
+
   legend->Draw("same");
-  for( unsigned i=0; i<niceNames.size(); ++i ) {
-
-    float yMax = 0.9-(float)i*0.05;
-    float yMin = yMax - 0.05;
-    TPaveText* regionText = new TPaveText( 0.18, yMin, 0.55, yMax, "brNDC" );
-    regionText->SetTextSize(0.035);
-    regionText->SetTextFont(42);
-    regionText->SetFillColor(0);
-    regionText->SetTextAlign(11);
-    regionText->AddText( niceNames[i].c_str() );
-    regionText->Draw("same");
-
-  }
+  for( unsigned i=0; i<niceNames.size(); ++i )
+    regionText[i]->Draw("same");
   labelTop->Draw("same");
-  gPad->RedrawAxis();
+  //gPad->RedrawAxis();
   
   c7->Update();
   c7->SaveAs(Form("%s/inclusiveDeltaPhiMin.pdf", outputdir.c_str()));
@@ -559,22 +577,14 @@ int main( int argc, char* argv[] ) {
   h_diffMetMht_stack ->SetMaximum(YMax);
   h_diffMetMht_stack ->Draw("hist");
 
+  for( unsigned s=0; s<sigYields.size(); ++s )
+    h_diffMetMht[s+bSamples.size()]->Draw("same");
+
   legend->Draw("same");
-  for( unsigned i=0; i<niceNames.size(); ++i ) {
-
-    float yMax = 0.9-(float)i*0.05;
-    float yMin = yMax - 0.05;
-    TPaveText* regionText = new TPaveText( 0.18, yMin, 0.55, yMax, "brNDC" );
-    regionText->SetTextSize(0.035);
-    regionText->SetTextFont(42);
-    regionText->SetFillColor(0);
-    regionText->SetTextAlign(11);
-    regionText->AddText( niceNames[i].c_str() );
-    regionText->Draw("same");
-
-  }
+  for( unsigned i=0; i<niceNames.size(); ++i )
+    regionText[i]->Draw("same");
   labelTop->Draw("same");
-  gPad->RedrawAxis();
+  //gPad->RedrawAxis();
 
   c8->Update();
   c8->SaveAs(Form("%s/inclusivediffMetMht.pdf", outputdir.c_str()));
