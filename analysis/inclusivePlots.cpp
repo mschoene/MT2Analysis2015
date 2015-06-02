@@ -284,7 +284,7 @@ int main( int argc, char* argv[] ) {
   system( "rm tmp.root" );
 
 
-  TPaveText* labelTop = MT2DrawTools::getLabelTop(lumi);
+  TPaveText* labelTop = MT2DrawTools::getLabelTopSimulation(lumi);
   
   //For inclusive plots:
   std::vector< std::string > niceNames;
