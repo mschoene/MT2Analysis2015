@@ -116,7 +116,6 @@ std::vector<MT2Sample> MT2Sample::loadSamples(const std::string& filename, const
       continue;
     }
 
-
     bool isData = s.id>0 && s.id<100;
 
     s.sname = fileNameParts[0];
@@ -131,6 +130,7 @@ std::vector<MT2Sample> MT2Sample::loadSamples(const std::string& filename, const
         if( fileNameParts[i] == "babytree" ) continue;
         if( fileNameParts[i] == "prune" ) continue;
         if( fileNameParts[i] == "skim" ) continue;
+	if( fileNameParts[i] == "post" ) continue;
         s.name += "_" + fileNameParts[i];
         if( fileNameParts[i]=="PU" ) foundPU = true;
         if( !foundPU )
@@ -146,6 +146,7 @@ std::vector<MT2Sample> MT2Sample::loadSamples(const std::string& filename, const
         if( fileNameParts[i] == "babytree" ) continue;
         if( fileNameParts[i] == "prune" ) continue;
         if( fileNameParts[i] == "skim" ) continue;
+	if( fileNameParts[i] == "post" ) continue;
         s.name += "_" + fileNameParts[i];
         s.sname += "_" + fileNameParts[i];
       }
