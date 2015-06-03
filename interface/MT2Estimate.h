@@ -73,6 +73,8 @@ class MT2Estimate {
   const MT2Estimate& operator/=( float k );
   const MT2Estimate& operator*=( float k );
 
+  const MT2Estimate& getMassPoint( const MT2Estimate& rhs, int mParent, int mLSP ); 
+  
   friend MT2Estimate operator*( float k, const MT2Estimate& rhs );
   friend MT2Estimate operator/( float k, const MT2Estimate& rhs );
 

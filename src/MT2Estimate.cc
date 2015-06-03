@@ -76,8 +76,6 @@ void MT2Estimate::setName( const std::string& newName ) {
 }
 
 
-
-
 void MT2Estimate::addOverflow() {
 
   MT2Estimate::addOverflowSingleHisto( yield3d );
@@ -302,8 +300,34 @@ const MT2Estimate& MT2Estimate::operator/=( float k ) {
 }
 
 
+const MT2Estimate& MT2Estimate::getMassPoint( const MT2Estimate& rhs, int mParent, int mLSP ){
 
+  this->region = new MT2Region(*(rhs.region));
 
+  this->yield3d = new TH3D(*(rhs.yield3d));
+
+  TH1D* this_mParent = this->yield3d->ProjectionY("mParent");
+  int iBinY = this_mParent->FindBin(mParent);
+
+  TH1D* this_LSP = this->yield3d->ProjectionZ("mLSP", 0, -1, iBinY, iBinY);
+  int iBinZ = this_LSP->FindBin(mLSP);
+
+  TH1D* this_mt2 = this->yield3d->ProjectionX("mt2", iBinY, iBinY, iBinZ, iBinZ);
+
+  this->yield = (TH1D*) this_mt2->Clone();
+  this->yield ->Sumw2();
+  
+  this->yield3d ->Reset();
+  for( int iBin = 1; iBin < this->yield->GetNbinsX()+1; ++iBin )
+    this->yield3d ->Fill( this->yield->GetBinContent( iBin ), mParent, mLSP );
+  this->yield3d->Sumw2();
+
+  std::string massPointName( Form("%s_mParent%d_mLSP%d", this->getName().c_str(), mParent, mLSP ) );
+  this->setName(massPointName);
+
+  return *this;
+
+}
 
 
 void MT2Estimate::getShit( TFile* file, const std::string& path ) {
@@ -361,4 +385,3 @@ MT2Estimate operator/( float k, const MT2Estimate& rhs ) {
   return rhs/k;
 
 }
-
