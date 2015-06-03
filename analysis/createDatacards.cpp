@@ -370,7 +370,7 @@ int main( int argc, char* argv[] ) {
 
 
   // now create datacards for all signals
-  std::vector<MT2Analysis<MT2Estiamte>*> signals = MT2Analysis<MT2Estiamte>::readAllFromFile( mc_fileName, "SMS" );
+  std::vector<MT2Analysis<MT2Estimate>*> signals = MT2Analysis<MT2Estimate>::readAllFromFile( mc_fileName, "SMS" );
 
   for( unsigned  isig=0; isig<signals.size(); ++isig ) { 
 
