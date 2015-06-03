@@ -87,7 +87,20 @@ float MT2HTRegion::metMin() const {
 }
 
 
+bool MT2HTRegion::isInclusiveHT() const {
 
+  if( htMin<999. && ( htMax < 0 || htMax >= 1000. )) return true;
+  else return false;
+  
+}
+
+
+bool MT2HTRegion::metMinInclusiveHT( float ht ) const {
+  
+  float metMin = (ht<1000.) ? 200. : 30.;
+  return metMin;
+
+}
 
 std::string MT2HTRegion::getName() const {
 

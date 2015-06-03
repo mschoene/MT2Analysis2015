@@ -27,6 +27,8 @@ class MT2HTRegion {
   float htMax;
   float metMin() const;
 
+  bool isInclusiveHT() const;
+  bool metMinInclusiveHT( float ht ) const;
 
   bool operator==( const MT2HTRegion& rhs ) const;
   bool operator!=( const MT2HTRegion& rhs ) const;
@@ -133,6 +135,10 @@ class MT2Region {
   float htMin()   const { return htRegion_->htMin; };
   float htMax()   const { return htRegion_->htMax; };
   float metMin()  const { return htRegion_->metMin(); };
+  
+  bool isInclusiveHT()     const { return htRegion_->isInclusiveHT(); };
+  bool metMinInclusiveHT( float ht ) const { return htRegion_->metMinInclusiveHT(ht); };
+ 
   int nJetsMin()  const { return sigRegion_->nJetsMin; };
   int nJetsMax()  const { return sigRegion_->nJetsMax; };
   int nBJetsMin() const { return sigRegion_->nBJetsMin; };
