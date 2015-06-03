@@ -887,10 +887,13 @@ MT2Region* MT2Analysis<T>::getRegion( float ht, int njets, int nbjets, float met
     float htMin  = (*it)->region->htRegion()->htMin;
     float htMax  = (*it)->region->htRegion()->htMax;
     float metMin = (*it)->region->htRegion()->metMin();
-
+    bool isInclusiveHT = (*it)->region->htRegion()->isInclusiveHT();
+    float metMinInclusiveHT = (*it)->region->htRegion()->metMinInclusiveHT( ht );
+    
     if( ht<htMin ) continue;
     if( htMax>0. && ht>htMax ) continue;
-    if( metMin>0.&& met>0. && met<metMin ) continue;
+    if( !(isInclusiveHT) && metMin>0. && met>0. && met<metMin ) continue;
+    if( isInclusiveHT && metMinInclusiveHT>0. && met>0. && met<metMinInclusiveHT ) continue;
 
     int njetsmin  = (*it)->region->sigRegion()->nJetsMin;
     int njetsmax  = (*it)->region->sigRegion()->nJetsMax;
