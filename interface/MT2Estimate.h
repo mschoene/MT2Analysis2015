@@ -3,7 +3,6 @@
 
 
 #include "MT2Region.h"
-#include "MT2EstimateSig.h"
 #include "TH3D.h"
 #include "TH1D.h"
 #include "TFile.h"
@@ -23,7 +22,6 @@ class MT2Estimate {
 
  public:
 
-  MT2Estimate( const MT2EstimateSig& rhs, const int& m1, const int& m2 );
   MT2Estimate( const MT2Estimate& rhs );  
   MT2Estimate( const std::string& aname, const MT2Region& aregion );
   virtual ~MT2Estimate();
@@ -33,6 +31,7 @@ class MT2Estimate {
 
   // the main data member: the yield histogram
   // classes that inherit from this one will add other data members
+  TH3D* yield3d;
   TH1D* yield;
 
   std::string getName() const { return name; };
@@ -59,6 +58,7 @@ class MT2Estimate {
   }
 
   const MT2Estimate& operator=( const MT2Estimate& rhs );
+
   MT2Estimate operator+( const MT2Estimate& rhs ) const;
   MT2Estimate operator-( const MT2Estimate& rhs ) const;
   MT2Estimate operator/( const MT2Estimate& rhs ) const;
@@ -81,9 +81,11 @@ class MT2Estimate {
   }
 
   virtual void addOverflow();
+  void addOverflowSingleHisto( TH3D* yield3d );
   void addOverflowSingleHisto( TH1D* yield );
 
   virtual void write() const {
+    yield3d->Write();
     yield->Write();
   }
 
@@ -93,8 +95,6 @@ class MT2Estimate {
   
   virtual void randomizePoisson( float scale=1. );
   
-  virtual void fillYield( float mt2, int m1, int m2, float weight=1. );
-
  private:
   
   std::string name;

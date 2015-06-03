@@ -12,9 +12,7 @@
 
 #include "interface/MT2Analysis.h"
 #include "interface/MT2Estimate.h"
-#include "interface/MT2EstimateSig.h"
 #include "interface/MT2EstimateSyst.h"
-#include "interface/MT2EstimateSigSyst.h"
 
 
 bool use_gamma = true;
@@ -30,7 +28,6 @@ int round(float d) {
 void writeToTemplateFile( TFile* file, MT2Analysis<MT2Estimate>* analysis, float err_uncorr );
 void writeToTemplateFile_poisson( TFile* file, MT2Analysis<MT2Estimate>* analysis, const std::string& name="stat" );
 MT2Analysis<MT2Estimate>* get( const std::string& name, std::vector< MT2Analysis<MT2Estimate>* > analyses, const std::string& name1, const std::string& name2="", const std::string& name3="", const std::string& name4="" );
-MT2Analysis<MT2EstimateSig>* get( const std::string& name, std::vector< MT2Analysis<MT2EstimateSig>* > analyses, const std::string& name1, const std::string& name2="", const std::string& name3="", const std::string& name4="" );
 std::string getSimpleSignalName( const std::string& longName );
 std::string gammaConvention( float yieldSR, int yieldCR, int position, const std::string& corrName, const std::string& uncorrName="", float testAlpha=1. );
 
@@ -373,7 +370,7 @@ int main( int argc, char* argv[] ) {
 
 
   // now create datacards for all signals
-  std::vector<MT2Analysis<MT2EstimateSig>*> signals = MT2Analysis<MT2EstimateSig>::readAllFromFile( mc_fileName, "SMS" );
+  std::vector<MT2Analysis<MT2Estiamte>*> signals = MT2Analysis<MT2Estiamte>::readAllFromFile( mc_fileName, "SMS" );
 
   for( unsigned  isig=0; isig<signals.size(); ++isig ) { 
 
@@ -493,28 +490,6 @@ MT2Analysis<MT2Estimate>* get( const std::string& name, std::vector< MT2Analysis
 
   std::cout << "Looking for: " << name << std::endl;
   MT2Analysis<MT2Estimate>* returnAnalysis = new MT2Analysis<MT2Estimate>( name, analyses[0]->getHTRegions(), analyses[0]->getSignalRegions() );
-
-  for( unsigned i=0; i<analyses.size(); ++i ) {
-
-    if( analyses[i]->getName() == name1 || analyses[i]->getName() == name2 || analyses[i]->getName() == name3 || analyses[i]->getName() == name4 ) {
-      std::cout << "  added: " << analyses[i]->getName() << std::endl;
-      (*returnAnalysis) += (*analyses[i]);
-    }
-
-  }
-
-  return returnAnalysis;
-
-}
-
-
-
-
-MT2Analysis<MT2EstimateSig>* get( const std::string& name, std::vector< MT2Analysis<MT2EstimateSig>* > analyses, const std::string& name1, const std::string& name2, const std::string& name3, const std::string& name4 ) {
-
-
-  std::cout << "Looking for: " << name << std::endl;
-  MT2Analysis<MT2EstimateSig>* returnAnalysis = new MT2Analysis<MT2EstimateSig>( name, analyses[0]->getHTRegions(), analyses[0]->getSignalRegions() );
 
   for( unsigned i=0; i<analyses.size(); ++i ) {
 

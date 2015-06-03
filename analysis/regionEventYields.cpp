@@ -22,7 +22,6 @@
 #include "interface/MT2Region.h"
 #include "interface/MT2Analysis.h"
 #include "interface/MT2EstimateTree.h"
-#include "interface/MT2EstimateSigTree.h"
 #include "interface/MT2DrawTools.h"
 
 #include "TRandom3.h"
@@ -71,7 +70,6 @@ class MT2Config {
 void randomizePoisson( MT2Analysis<MT2EstimateTree>* data );
 template <class T>
 MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg, float lumi=1. );
-//MT2Analysis<MT2EstimateSigTree>* computeSigYield( const MT2Sample& sample, const MT2Config& cfg, float lumi=1. );
 MT2Analysis<MT2EstimateTree>* mergeYields( std::vector< MT2Analysis<MT2EstimateTree> *> EventYield, const std::string& regionsSet, const std::string& name, int id_min, int id_max=-1, const std::string& legendName="" );
 int matchPartonToJet( int index, MT2Tree* myTree );
 
@@ -164,7 +162,7 @@ int main( int argc, char* argv[] ) {
   }
 
   // load signal samples, if any
-  std::vector< MT2Analysis< MT2EstimateSigTree>* > signals;
+  std::vector< MT2Analysis< MT2EstimateTree>* > signals;
   if( cfg.mcSamples()!="" ) {
 
     std::string samplesFileName = "../samples/samples_" + cfg.mcSamples() + ".dat";
@@ -181,7 +179,7 @@ int main( int argc, char* argv[] ) {
     } else {
     
       for( unsigned i=0; i<fSamples.size(); ++i ) 
-        signals.push_back( computeYield<MT2EstimateSigTree>( fSamples[i], cfg, lumi ) );
+        signals.push_back( computeYield<MT2EstimateTree>( fSamples[i], cfg, lumi ) );
     
     } // if samples != 0
 
@@ -202,7 +200,7 @@ int main( int argc, char* argv[] ) {
     } else {
 
       for( unsigned i=0; i<fSamples.size(); ++i )
-        signals.push_back( computeYield<MT2EstimateSigTree>( fSamples[i], cfg, lumi ) );
+        signals.push_back( computeYield<MT2EstimateTree>( fSamples[i], cfg, lumi ) );
 
     } // if samples != 0
     
@@ -320,6 +318,12 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg, flo
     if( thisEstimate==0 ) continue;
 
 
+//    //////QCD
+//    if( ht > 575. && ht < 1000. && mt2 < 300. ) continue;
+//    else if( ht > 1000 && ht < 1500. && mt2 < 300. ) continue;
+//    else if( ht > 1500. && mt2 < 400. ) continue;
+//    //////
+
     if( cfg.additionalStuff()=="qgVars" ) {
 
       // initialize
@@ -395,17 +399,18 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg, flo
       thisEstimate->assignVar( "qglProd", qglProd );
       thisEstimate->assignVar( "qglAve", qglAve );
 
-      thisEstimate->assignTree(myTree, weight );
+      thisEstimate->assignTree( myTree, weight );
       thisEstimate->tree->Fill();
 
     } else {
 
-      thisEstimate->fillTree(myTree, weight );
+      thisEstimate->fillTree( myTree, weight );
 
     }
 
-    thisEstimate->fillYield(mt2, GenSusyMScan1, GenSusyMScan2, weight );
-        
+    thisEstimate->yield->Fill( mt2, weight );
+    thisEstimate->yield3d->Fill( mt2, GenSusyMScan1, GenSusyMScan2, weight );
+
   } // for entries
     
   //ofs.close();
