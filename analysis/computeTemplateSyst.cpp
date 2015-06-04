@@ -16,7 +16,7 @@ int main( int argc, char* argv[] ) {
   MT2DrawTools::setStyle();
 
 
-  std::string samples = "PHYS14_v4_skimprune";
+  std::string samples = "PHYS14_v5_skimprune";
   if( argc>1 ) {
     std::string samples_tmp(argv[1]); 
     samples = samples_tmp;

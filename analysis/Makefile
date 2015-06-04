@@ -15,7 +15,7 @@ EXTRALIBS := -L$(ROOTSYS)/lib -L$(ROOFIT_LIBDIR)/ -L$(CMSSW_BASE)/lib/slc6_amd64
 
 
 
-all: computeLostLepton_CR printYield printYield_CR fakeQCDestimate createDatacards regionEventYields
+all: computeLostLepton_CR printYield printYield_CR fakeQCDestimate createDatacards regionEventYields zllPurityTrees  zllPurity  zllPurityTopSplit
 
 
 computeLostLepton_CR: computeLostLepton_CR.cpp MT2Region.o MT2Sample.o MT2EstimateSyst.o MT2Estimate.o MT2DrawTools.o
@@ -31,6 +31,16 @@ computeZllGammaRatio: computeZllGammaRatio.cpp MT2Region.o MT2Estimate.o MT2Esti
 
 computeZllGammaRatio_HT_split: computeZllGammaRatio_HT_split.cpp MT2Region.o MT2Estimate.o MT2EstimateTree.o  MT2Sample.o MT2EstimateSyst.o MT2Config.o
 	$(CC) -Wall $(INCLUDES) -o computeZllGammaRatio_HT_split computeZllGammaRatio_HT_split.cpp MT2Region.o MT2Estimate.o MT2DrawTools.o MT2EstimateTree.o  MT2Sample.o MT2EstimateSyst.o MT2Config.o $(ROOTFLAG) $(EXTRALIBS)
+
+zllPurity: zllPurity.cpp MT2Region.o MT2Estimate.o MT2EstimateTree.o  MT2Sample.o MT2EstimateSyst.o MT2Config.o
+	$(CC) -Wall $(INCLUDES) -o zllPurity zllPurity.cpp MT2Region.o MT2Estimate.o MT2DrawTools.o MT2EstimateTree.o  MT2Sample.o MT2EstimateSyst.o MT2Config.o $(ROOTFLAG) $(EXTRALIBS)
+
+zllPurityTopSplit: zllPurityTopSplit.cpp MT2Region.o MT2Estimate.o MT2EstimateTree.o  MT2Sample.o MT2EstimateSyst.o MT2Config.o
+	$(CC) -Wall $(INCLUDES) -o zllPurityTopSplit zllPurityTopSplit.cpp MT2Region.o MT2Estimate.o MT2DrawTools.o MT2EstimateTree.o  MT2Sample.o MT2EstimateSyst.o MT2Config.o $(ROOTFLAG) $(EXTRALIBS)
+
+zllPurityTrees: zllPurityTrees.cpp MT2Region.o MT2Estimate.o MT2EstimateTree.o  MT2Sample.o MT2EstimateSyst.o MT2Config.o
+	$(CC) -Wall $(INCLUDES) -o zllPurityTrees zllPurityTrees.cpp MT2Region.o MT2Estimate.o MT2DrawTools.o MT2EstimateTree.o  MT2Sample.o MT2EstimateSyst.o MT2Config.o $(ROOTFLAG) $(EXTRALIBS)
+
 
 drawZll: drawZll.cpp MT2Region.o MT2Estimate.o MT2EstimateTree.o  MT2Sample.o MT2EstimateSyst.o MT2Config.o
 	$(CC) -Wall $(INCLUDES) -o drawZll drawZll.cpp MT2Region.o MT2Estimate.o MT2DrawTools.o MT2EstimateTree.o  MT2Sample.o MT2EstimateSyst.o MT2Config.o $(ROOTFLAG) $(EXTRALIBS)

@@ -64,7 +64,8 @@ int main( int argc, char* argv[] ) {
 
   // to which normally the 20% on Z/gamma ratio plus added in quadratur
   // but now we are going to do it uncorrelated bin by bin
-  // float err_zinv_corr   = 0.21; // 20% on Z/gamma ratio plus added in quadrature syst on templates (2%) and on f (4%) and MC stat on Rzg (5%) -> sqrt( 20*20 + 2*2 + 4*4 +5*5 ) = 21
+  //  float err_zinv_corr   = 0.21; // 20% on Z/gamma ratio plus added in quadrature syst on templates (2%) and on f (4%) and MC stat on Rzg (5%) -> sqrt( 20*20 + 2*2 + 4*4 +5*5 ) = 21
+  //  float err_zinv_corr   = 10.; // 1000% on Z/gamma ratio plus added in quadrature syst on templates (2%) and on f (4%) and MC stat on Rzg (5%) -> sqrt( 1000*1000 + 2*2 + 4*4 +5*5 ) = 1000
 
   float err_zinv_uncorr = -1.; // will take histogram bin error
   float err_zinv_alpha_extra  = 0.2; // 20% extra uncertainty on alpha if using lower MT2 as CR
@@ -90,7 +91,13 @@ int main( int argc, char* argv[] ) {
   MT2Analysis<MT2Estimate>* zinv_ratio;
   MT2Analysis<MT2EstimateSyst>* purity;
 
-  MT2Analysis<MT2EstimateSyst>* zll;
+  // MT2Analysis<MT2EstimateSyst>* zll;
+  MT2Analysis<MT2Estimate>* zll_mt2;
+  MT2Analysis<MT2Estimate>* zll_yield;
+  MT2Analysis<MT2Estimate>* zll_ht;
+  MT2Analysis<MT2Estimate>* zll_nJets;
+  MT2Analysis<MT2Estimate>* zll_nBJets;
+ 
 
   if( useMC_zinv )
     zinv = MT2Analysis<MT2Estimate>::readFromFile( mc_fileName, "ZJets");
@@ -102,7 +109,13 @@ int main( int argc, char* argv[] ) {
       zinv_ratio  = MT2Analysis<MT2Estimate>    ::readFromFile( Form("ZinvEstimateFromGamma_%s_%s_%.0ffb_type1/MT2ZinvEstimate.root", samplesName.c_str(), regionsName.c_str(), lumi), "ZgammaRatio");
       purity      = MT2Analysis<MT2EstimateSyst>::readFromFile( Form("ZinvEstimateFromGamma_%s_%s_%.0ffb_type1/MT2ZinvEstimate.root", samplesName.c_str(), regionsName.c_str(), lumi), "purity");
 
-      zll      = MT2Analysis<MT2EstimateSyst>::readFromFile( Form("ZllGammaRatio_%s_%s_%.0ffb/ZllRatio.root", samplesName.c_str(), regionsName.c_str(), lumi), "zll_ratio");
+      //  zll      = MT2Analysis<MT2EstimateSyst>::readFromFile( Form("ZllGammaRatio_%s_%s_%.0ffb/ZllRatio.root", samplesName.c_str(), regionsName.c_str(), lumi), "zll_ratio");
+
+      zll_mt2  = MT2Analysis<MT2Estimate>    ::readFromFile( Form("ZllGamma_Ratio_%s_%.0ffb/zll_ratio.root", samplesName.c_str(), lumi), "zll_ratio");
+      zll_yield  = MT2Analysis<MT2Estimate>    ::readFromFile( Form("ZllGamma_Ratio_%s_%.0ffb/zll_ratio.root", samplesName.c_str(), lumi), "zll_yield");
+      zll_ht  = MT2Analysis<MT2Estimate>    ::readFromFile( Form("ZllGamma_Ratio_%s_%.0ffb/zll_ratio.root", samplesName.c_str(), lumi), "zll_ht");
+      zll_nJets  = MT2Analysis<MT2Estimate>    ::readFromFile( Form("ZllGamma_Ratio_%s_%.0ffb/zll_ratio.root", samplesName.c_str(), lumi), "zll_nJets");
+      zll_nBJets  = MT2Analysis<MT2Estimate>    ::readFromFile( Form("ZllGamma_Ratio_%s_%.0ffb/zll_ratio.root", samplesName.c_str(), lumi), "zll_nBJets");
 
     }
     else{
@@ -136,6 +149,21 @@ int main( int argc, char* argv[] ) {
   std::string path_templ = dir + "/datacard_templates";
   system(Form("mkdir -p %s", path_templ.c_str()));
 
+
+  std::set<MT2Region> inclRegions=  zll_ht->getRegions();
+  MT2Region inclusiveRegion( (*inclRegions.begin() ) );
+
+  TH1D* this_zll_ht = zll_ht->get(inclusiveRegion)->yield;
+  TH1D* this_zll_yield = zll_yield->get(inclusiveRegion)->yield;
+  TH1D* this_zll_nJets = zll_nJets->get(inclusiveRegion)->yield;
+  TH1D* this_zll_nBJets = zll_nBJets->get(inclusiveRegion)->yield;
+  TH1D* this_zll_mt2 = zll_mt2->get(inclusiveRegion)->yield;
+ 
+     //for counting the amount of nuisances
+     int total_old = 0;
+     int total_new = 0;
+     int zinv_old = 0;
+     int zinv_new = 0;
   
   for( std::set<MT2Region>::iterator iR=regions.begin(); iR!=regions.end(); ++iR ) {
 
@@ -147,11 +175,14 @@ int main( int argc, char* argv[] ) {
      TH1D* this_llepCR = llepCR->get(*iR)->yield;
      TH1D* this_zinvCR     = (use_gamma) ? zinvCR->get(*iR)->yield : 0;
      TH1D* this_zinv_ratio     = (use_gamma) ? zinv_ratio->get(*iR)->yield : 0;
- 
-     TH1D* this_zll = zll->get(*iR)->yield; 
-     TH1D* this_zll_up = zll->get(*iR)->yield_systUp; 
-     TH1D* this_zll_down = zll->get(*iR)->yield_systDown; 
-    
+
+     /* 
+	TH1D* this_zll = zll->get(*iR)->yield; 
+	TH1D* this_zll_up = zll->get(*iR)->yield_systUp; 
+	TH1D* this_zll_down = zll->get(*iR)->yield_systDown; 
+     */
+
+   
      TGraphAsymmErrors* this_zinv_purity;
      if ( use_purity ) this_zinv_purity = (use_gamma) ? purity->get(*iR)->getGraph() : 0;
      //TGraphAsymmErrors* this_zinv_purity = (use_gamma) ? zinv_purity->get(*iR)->getGraph() : 0;
@@ -170,6 +201,7 @@ int main( int argc, char* argv[] ) {
          
      unsigned iEmptyZinvBin=this_data->GetNbinsX()+1;
      int nEmptyCR=0;
+
 
      for( int iBin=1; iBin<this_data->GetNbinsX()+1; ++iBin ) {
        
@@ -249,42 +281,137 @@ int main( int argc, char* argv[] ) {
 
        if( yield_zinv>0. || use_gamma ) {
 
-         if( iR->nBJetsMin()<2 ) { // 0 and 1 btag
+	 //	 if( iR->nBJetsMin()<2 ) { // 0 and 1 btag
+	 if( iR->nBJetsMin()< 3 ) { // 0 and 1 btag and now also 2 btag
 
-           // correlated:
+	  
+           // UNCORRELATED:
+	   // datacard << "zinv_ZGratio_" << binName << " lnN   - " << 1.+err_zinv_corr << " - -" << std::endl;
+	   
+
+	   // correlated:
            datacard << "zinv_ZGratio lnN   - " << 1.+err_zinv_corr << " - -" << std::endl;
 
 	   // uncorrelated: //from the Zll/gamma ratio
-	   float zll_value = this_zll->GetBin(iBin);
-	   float zll_errUp = 1.+ this_zll_up->GetBin(iBin)/zll_value;
-	   float zll_errDown = 1. - this_zll_down->GetBin(iBin)/zll_value;
-	   //datacard << "zinv_zll_" << binName << " lnN - " << thisError_zll_uncorr << " - -" << std::endl;
-	   if(zll_errDown < 0.1) zll_errDown = 0.1;
-	   datacard << "zinv_zll" << binName << " lnN  - " << zll_errUp << "/" << zll_errDown << " - -" << std::endl;
+	   /*
+	     float zll_value = this_zll->GetBin(iBin);
+	     float zll_errUp = 1.+ this_zll_up->GetBin(iBin)/zll_value;
+	     float zll_errDown = 1. - this_zll_down->GetBin(iBin)/zll_value;
+	     //datacard << "zinv_zll_" << binName << " lnN - " << thisError_zll_uncorr << " - -" << std::endl;
+	     if(zll_errDown < 0.1) zll_errDown = 0.1;
+	     datacard << "zinv_zll" << binName << " lnN  - " << zll_errUp << "/" << zll_errDown << " - -" << std::endl;
+	   */
 
-          }
+	   int bin_mt2_zll = mt2Max/100 - 2;
+	   if(bin_mt2_zll < 1){
+	     if(this_zll_yield->GetBinContent(9) < 5.){
+	       //Low yield -> do uncorrelated uncertainties
+	       datacard << "zinv_mt2_" << binName << " lnN  - " << 2 << " - -" << std::endl;
+	       zinv_new++;
+	     }else{
+	       float zll_mt2 = 1+ this_zll_mt2->GetBinError(9)/this_zll_mt2->GetBinContent(9) ;
+	       datacard << "zll_mt2_"<< 9 << " lnN - " << zll_mt2 << " - -" << std::endl;
+	     }
+	   }else{
+	     if(this_zll_yield->GetBinContent(bin_mt2_zll) < 5.){
+	       //Low yield -> do uncorrelated uncertainties
+	       datacard << "zinv_mt2_" << binName << " lnN  - " << 2 << " - -" << std::endl;
+	       zinv_new++;
+	     }else{
+	       float zll_mt2 = 1+ this_zll_mt2->GetBinError(bin_mt2_zll)/this_zll_mt2->GetBinContent(bin_mt2_zll) ;
+	       
+	       datacard << "zll_mt2_"<< bin_mt2_zll << " lnN - " << zll_mt2 << " - -" << std::endl;
+	     
+	     }
+	   }
+	 
+
+	   if((  bin_mt2_zll<1 && this_zll_yield->GetBinContent(9) < 5. )|| (this_zll_yield->GetBinContent(bin_mt2_zll) < 5.)){
+	     //doing nothing 
+	   }else{
+
+
+	     if(iR->htMax()<600){ 
+	       float zll_ht = 1+ this_zll_ht->GetBinError(1)/this_zll_ht->GetBinContent(1) ;
+	       datacard << "zll_ht_"<< 1 << " lnN - " << zll_ht << " - -" << std::endl;
+	  
+	     }else if(iR->htMax()<1001){
+	       float zll_ht = 1+ this_zll_ht->GetBinError(2)/this_zll_ht->GetBinContent(2) ;
+	       datacard << "zll_ht_"<< 2 << " lnN - " << zll_ht << " - -" << std::endl;
+	 
+	     }else if(iR->htMax()<1501 ){
+	       float zll_ht = 1+ this_zll_ht->GetBinError(3)/this_zll_ht->GetBinContent(3) ;
+	       datacard << "zll_ht_"<< 3 << " lnN - " << zll_ht << " - -" << std::endl;
+	     } else{
+	       float zll_ht = 1+ this_zll_ht->GetBinError(4)/this_zll_ht->GetBinContent(4) ;
+	       datacard << "zll_ht_"<< 4 << " lnN - " << zll_ht << " - -" << std::endl;
+	  
+	     }
+
+
+	     if(iR->nJetsMax()==3){
+	       float zll_nJets = 1+ this_zll_nJets->GetBinError(1)/this_zll_nJets->GetBinContent(1);
+	       datacard << "zll_nJets_"<< 1 << " lnN - " << zll_nJets << " - -" << std::endl;
+	   
+	     }else if(iR->nJetsMax()==6){
+	       float zll_nJets = 1+ this_zll_nJets->GetBinError(2)/this_zll_nJets->GetBinContent(2);
+	       datacard << "zll_nJets_"<< 2 << " lnN - " << zll_nJets << " - -" << std::endl;
+	 
+	     }else{
+	       float zll_nJets = 1+ this_zll_nJets->GetBinError(3)/this_zll_nJets->GetBinContent(3);
+	       datacard << "zll_nJets_"<< 3 << " lnN - " << zll_nJets << " - -" << std::endl;
+	   
+	     }
+
+
+	     if(iR->nBJetsMax()==0){
+	       float zll_nBJets = 1+ this_zll_nBJets->GetBinError(1)/this_zll_nBJets->GetBinContent(1);
+	       datacard << "zll_nBJets_"<< 1 << " lnN - " << zll_nBJets << " - -" << std::endl;
+	  
+	     }else if(iR->nBJetsMax()==1){
+	       float zll_nBJets = 1+ this_zll_nBJets->GetBinError(2)/this_zll_nBJets->GetBinContent(2);
+	       datacard << "zll_nBJets_"<< 2 << " lnN - " << zll_nBJets << " - -" << std::endl;
+	  
+	     }else if(iR->nBJetsMax()==2){
+	       float zll_nBJets = 1+ this_zll_nBJets->GetBinError(3)/this_zll_nBJets->GetBinContent(3);
+	       datacard << "zll_nBJets_"<< 3 << " lnN - " << zll_nBJets << " - -" << std::endl;
+	     }else{
+	       float zll_nBJets = 1+ this_zll_nBJets->GetBinError(4)/this_zll_nBJets->GetBinContent(4);
+	       datacard << "zll_nBJets_"<< 4 << " lnN - " << zll_nBJets << " - -" << std::endl;
+	   
+	     }
+	   }
+	   
+
+	 }//end of nBJet<2 (or < 3) if statement
+
 
          // uncorrelated:
          float thisError_zinv_uncorr = 1. + this_zinv->GetBinError(iBin)/yield_zinv;
 
          if( !use_gamma ) {
 
-           std::string iname = (iR->nBJetsMin()<2) ? "CRstat" : "MC";
-           datacard << "zinv_" << iname << "_" << binName << " lnN - " << thisError_zinv_uncorr << " - -" << std::endl;
+	   std::string iname = (iR->nBJetsMin()<3) ? "CRstat" : "MC";
+	   // std::string iname = (iR->nBJetsMin()<2) ? "CRstat" : "MC";
+	   datacard << "zinv_" << iname << "_" << binName << " lnN - " << thisError_zinv_uncorr << " - -" << std::endl;
 
          } else {
 
-           if( iR->nBJetsMin()>=2 ) {
+	   if( iR->nBJetsMin()>=3 ) {
+	   //	   if( iR->nBJetsMin()>=2 ) {
 
-//             if( yield_zinv>0. )
-//               datacard << "zinv_MC_" << binName << " lnN - " << thisError_zinv_uncorr << " - -" << std::endl;
-//	     else
+	     //             if( yield_zinv>0. )
+	     //               datacard << "zinv_MC_" << binName << " lnN - " << thisError_zinv_uncorr << " - -" << std::endl;
+	     //	     else
 	     datacard << "zinv_MC_" << binName << " lnN - " << 1.+err_zinv_uncorr_2b << " - -" << std::endl;
-
+	 
            } else {
+	     //else if( iR->nBJetsMin()<2) {
 
              int Ngamma = round(this_zinvCR->GetBinContent(iBin));
-
+	     //std::string iname = (iR->nBJetsMin()<2) ? "CRstat" : "MC";
+	     std::string iname = (iR->nBJetsMin()< 3) ? "CRstat" : "MC";
+           
              Double_t x_tmp, p, p_errUp, p_errDown;
 	     if( use_purity ){
 
@@ -292,22 +419,23 @@ int main( int argc, char* argv[] ) {
 	       p_errUp   = this_zinv_purity->GetErrorYhigh( iBin -1 );
 	       p_errDown = this_zinv_purity->GetErrorYlow ( iBin -1 ); 
 	       
-	       if( Ngamma>0 )
+	       if( Ngamma>0 ){
 		 datacard << "zinv_purity_" << binName << " lnN  - " << 1.+p_errUp/p << "/" << 1.-p_errDown/p << " - -" << std::endl;
-	       
-	     }
+	       }
+	     }//end if purity
              
 	     float R = this_zinv_ratio->GetBinContent(iBin);
-             if( use_purity )
+             if( use_purity ){
 	       datacard << "zinv_CRstat_" << binName << " gmN " << Ngamma << " - " << R*p << " - -" << std::endl;
-	     else 
+	     }else {
 	       datacard << "zinv_CRstat_" << binName << " gmN " << Ngamma << " - " << R << " - -" << std::endl;
+	     }
 
-             float alphaErr = this_zinv_ratio->GetBinError(iBin)/R;
-             datacard << "zinv_alphaErr_" << binName << " lnN  - " << 1.+alphaErr << " - -" << std::endl;
+	     float alphaErr = this_zinv_ratio->GetBinError(iBin)/R;
+	     // datacard << "zinv_alphaErr_" << binName << " lnN  - " << 1.+alphaErr << " - -" << std::endl;
+	         
 
-
-/*
+	     /*
 	     bool isEmptyCR=false;
 
              int Ngamma = round(this_zinvCR->GetBinContent(iBin));
@@ -445,6 +573,10 @@ int main( int argc, char* argv[] ) {
     std::cout << "-> Created datacards in " << path << std::endl;
        
   } // for signals
+
+
+  std::cout << zinv_old << std::endl;
+  std::cout << zinv_new + 16<< std::endl;
 
 
 

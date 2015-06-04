@@ -10,9 +10,9 @@
 
 
 ////////////////////////////////////////////////////////
-//
-//                    MT2HTRegion
-//
+//                                                    // 
+//                    MT2HTRegion                     //
+//                                                    //
 ////////////////////////////////////////////////////////
 
 
@@ -496,7 +496,7 @@ MT2Region::MT2Region( const std::string& regionName ) {
   std::string htRegionName = parts[0];
   std::string signalRegionName = "";
   for( unsigned i=1; i<parts.size(); ++i ) {
-    if( i==1 ) signalRegionName = parts[i] + "_";
+    if( i==1 ) signalRegionName += parts[i] + "_";
     else if( i==parts.size()-1 ) signalRegionName += parts[i];
     else signalRegionName = signalRegionName + parts[i] + "_";
   }
@@ -1710,8 +1710,12 @@ void MT2Region::getBins( int &nBins, double*& bins) const {
 
   else { // default binning
 
-    const int nBins_tmp                        = 5;
-    bins = new double[nBins_tmp+1]{200., 300., 400., 600., 1000., 1500.};
+    const int nBins_tmp                        = 7;
+    //const int nBins_tmp                        = 9;
+    //const int nBins_tmp                        = 5;
+    bins = new double[nBins_tmp+1]{200., 300., 400., 500., 600., 800., 1000., 1500.};
+    //bins = new double[nBins_tmp+1]{200., 300., 400., 500., 600., 700., 800., 900., 1000., 1500.};
+    //bins = new double[nBins_tmp+1]{200., 300., 400., 600., 1000., 1500.};
     //bins = new double[nBins_tmp+1]{200., 250., 300., 350., 400., 450., 550., 700., 1000.};
     nBins = nBins_tmp;
 

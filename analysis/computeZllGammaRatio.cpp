@@ -25,7 +25,9 @@
 
 #include <iostream>
 
-float lumi = 4.;
+float lumi = 0.1;
+
+//float lumi = 4.;
 
 int main(int argc, char* argv[]){
 
@@ -45,6 +47,10 @@ int main(int argc, char* argv[]){
   MT2Config cfg("cfgs/" + configFileName + ".txt");
   std::string samplesFileName = "../samples/samples_" + cfg.mcSamples() + ".dat"; 
   std::string samples = cfg.mcSamples();
+
+
+ regionsSet = cfg.regionsSet();
+
 
   std::string outputdir( Form("ZllGammaRatio_%s_%s_%.0ffb", samples.c_str(), regionsSet.c_str(), lumi ) );
 

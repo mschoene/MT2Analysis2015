@@ -54,7 +54,8 @@ class MT2Config {
 };
 
 
-float lumi = 4.;
+float lumi = 0.1;
+//float lumi = 4.;
 
 
 MT2Analysis<MT2EstimateTree>* computeYield( const MT2Sample& sample, const MT2Config& cfg, float lumi=1. );
@@ -192,21 +193,23 @@ MT2Analysis<MT2EstimateTree>* computeYield( const MT2Sample& sample, const MT2Co
     if( iEntry % 50000 == 0 ) std::cout << "   Entry: " << iEntry << " / " << nentries << std::endl;
     myTree.GetEntry(iEntry);
 
-     if( !(myTree.passSelection("zll"))) continue; 
+    if( !(myTree.passSelection("zll"))) continue; 
     /*
-    if(!( myTree.nVert > 0 )) continue;
-    //  if(!( myTree.nJet40 >= 2 )) continue;
-    if(!( myTree.zll_deltaPhiMin > 0.3 )) continue;
-    if(!( myTree.zll_diffMetMht < 0.5*myTree.zll_met_pt )) continue;
-       //  if(!( myTree.jet1_pt>40. )) continue;
-       //   if(!( myTree.jet2_pt>40. )) continue;
-    if(!( myTree.nlep>1 )) continue; 
+      if(!( myTree.nVert > 0 )) continue;
+      //  if(!( myTree.nJet40 >= 2 )) continue;
+      if(!( myTree.zll_deltaPhiMin > 0.3 )) continue;
+      if(!( myTree.zll_diffMetMht < 0.5*myTree.zll_met_pt )) continue;
+      //  if(!( myTree.jet1_pt>40. )) continue;
+      //   if(!( myTree.jet2_pt>40. )) continue;
+      if(!( myTree.nlep>1 )) continue; 
 
     */
-     //  if(!(myTree.nPFLep5LowMT==0 && myTree.nPFHad10LowMT==0)) continue;
+    //  if(!(myTree.nPFLep5LowMT==0 && myTree.nPFHad10LowMT==0)) continue;
 
-     if(!( myTree.nlep==2 )) continue; 
 
+    if(!( myTree.nlep==2 )) continue; 
+
+    if(myTree.met_pt>200) continue;
 
 
     //Sample  are the Z leptons

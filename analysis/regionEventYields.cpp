@@ -407,18 +407,18 @@ MT2Analysis<MT2EstimateTree>* computeYield( const MT2Sample& sample, const MT2Co
       thisEstimate->assignVar( "qglProd", qglProd );
       thisEstimate->assignVar( "qglAve", qglAve );
 
-      thisEstimate->assignTree(myTree, weight );
+      thisEstimate->assignTree(myTree, weight,"" );
       thisEstimate->tree->Fill();
 
     } else {
 
-      thisEstimate->fillTree(myTree, weight );
+      thisEstimate->fillTree(myTree, weight,"" );
 
     }
 
 
 
-    thisEstimate->yield->Fill(mt2, weight );
+    thisEstimate->yield->Fill(mt2, weight);
 
     
   } // for entries
