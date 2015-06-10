@@ -18,7 +18,7 @@
 bool use_gamma = true;
 bool use_purity = true;
 
-double lumi = 4;
+double lumi = 3;
 
 int round(float d) {
   return (int)(floor(d + 0.5));
@@ -49,7 +49,6 @@ int main( int argc, char* argv[] ) {
   std::string samplesName = "PHYS14_v5_skimprune";
   std::string regionsName = "zurich";
 
-
   bool useMC_qcd  = true;
   bool useMC_zinv = false;
   bool useMC_llep = true;
@@ -57,7 +56,8 @@ int main( int argc, char* argv[] ) {
   float err_qcd_corr    = 0.0;
   float err_qcd_uncorr  = 1.0; // 100% of QCD MC yield
   float err_llep_corr   = 0.;
-  float err_llep_uncorr = 0.075;
+  //float err_llep_uncorr = 0.075;
+  float err_llep_shape = 0.075;
   float err_llep_lepEff = 0.15;
   float err_zinv_corr   = 0.21; // 20% on Z/gamma ratio plus added in quadrature syst on templates (2%) and on f (4%) and MC stat on Rzg (5%) -> sqrt( 20*20 + 2*2 + 4*4 +5*5 ) = 21
   float err_zinv_uncorr = -1.; // will take histogram bin error
@@ -114,7 +114,7 @@ int main( int argc, char* argv[] ) {
   llep->setName( "llep" );
   llep->addToFile( mc_fileName, true );
 
-  MT2Analysis<MT2Estimate>* llepCR = MT2Analysis<MT2Estimate>::readFromFile( Form("llep_%s_%s_%.0ffb.root", samplesName.c_str(), regionsName.c_str(), lumi) );
+  MT2Analysis<MT2Estimate>* llepCR = MT2Analysis<MT2Estimate>::readFromFile( Form("llep_%s_%s_llep_%.0ffb.root", samplesName.c_str(), regionsName.c_str(), lumi) );
 
 
   std::set<MT2Region> regions = data->getRegions();
@@ -131,26 +131,37 @@ int main( int argc, char* argv[] ) {
      TH1D* this_data = data->get(*iR)->yield;
      TH1D* this_qcd  = qcd ->get(*iR)->yield;
      TH1D* this_zinv = zinv->get(*iR)->yield;
-     TH1D* this_llep = llep->get(*iR)->yield;
-     TH1D* this_llepCR = llepCR->get(*iR)->yield;
      TH1D* this_zinvCR     = (use_gamma) ? zinvCR->get(*iR)->yield : 0;
      TH1D* this_zinv_ratio     = (use_gamma) ? zinv_ratio->get(*iR)->yield : 0;
+     TH1D* this_llep = llep->get(*iR)->yield;
+     TH1D* this_llepCR;
+     if(iR->nJetsMin()>=7 && iR->nBJetsMin()>=1)
+       this_llepCR = llepCR->get(MT2Region(iR->htMin(), iR->htMax(), iR->nJetsMin(), iR->nJetsMax(), 1, 2))->yield;
+     else
+       this_llepCR = llepCR->get(*iR)->yield;
      
      TGraphAsymmErrors* this_zinv_purity;
      if ( use_purity ) this_zinv_purity = (use_gamma) ? purity->get(*iR)->getGraph() : 0;
      //TGraphAsymmErrors* this_zinv_purity = (use_gamma) ? zinv_purity->get(*iR)->getGraph() : 0;
 
      float N_llep_CR = this_llepCR->Integral();
-     std::string llepCR_name = iR->getName();
-     if( iR->mtCut()!="" ) { 
-       std::string choppedName = llepCR_name.substr(0, llepCR_name.size()-5);
-       llepCR_name = choppedName;
-       if( iR->mtCut()=="loMT" ) {
-         N_llep_CR += llepCR->get(MT2Region(iR->htMin(), iR->htMax(), iR->nJetsMin(), iR->nJetsMax(), iR->nBJetsMin(), iR->nBJetsMax(), "hiMT"))->yield->Integral();
-       } else {
-         N_llep_CR += llepCR->get(MT2Region(iR->htMin(), iR->htMax(), iR->nJetsMin(), iR->nJetsMax(), iR->nBJetsMin(), iR->nBJetsMax(), "loMT"))->yield->Integral();
-       }
+     std::string llepCR_name;
+     if(iR->nJetsMin()>=7 && iR->nBJetsMin()>=1){
+       MT2Region* thisCR = new MT2Region(iR->htMin(), iR->htMax(), iR->nJetsMin(), iR->nJetsMax(), 1, 2);
+       llepCR_name = thisCR->getName();
      }
+     else
+       llepCR_name = iR->getName();
+
+//     if( iR->mtCut()!="" ) { 
+//       std::string choppedName = llepCR_name.substr(0, llepCR_name.size()-5);
+//       llepCR_name = choppedName;
+//       if( iR->mtCut()=="loMT" ) {
+//         N_llep_CR += llepCR->get(MT2Region(iR->htMin(), iR->htMax(), iR->nJetsMin(), iR->nJetsMax(), iR->nBJetsMin(), iR->nBJetsMax(), "hiMT"))->yield->Integral();
+//       } else {
+//         N_llep_CR += llepCR->get(MT2Region(iR->htMin(), iR->htMax(), iR->nJetsMin(), iR->nJetsMax(), iR->nBJetsMin(), iR->nBJetsMax(), "loMT"))->yield->Integral();
+//       }
+//     }
          
      unsigned iEmptyZinvBin=this_data->GetNbinsX()+1;
      int nEmptyCR=0;
@@ -330,15 +341,18 @@ int main( int argc, char* argv[] ) {
          if( !use_gamma ) {
 
            datacard << "llep_CRstat_" << llepCR_name << "  lnN   - - " << llep_tot_err << " -" << std::endl;
-           datacard << "llep_shape_" << binName << " lnN - - " << 1.+err_llep_uncorr << " - " << std::endl;
+           //datacard << "llep_shape_" << binName << " lnN - - " << 1.+err_llep_uncorr << " - " << std::endl;
+	   datacard << "llep_shape_" << llepCR_name << " lnN - - " << 1.+err_llep_shape << " - " << std::endl;
 
          } else {
 
            datacard << "llep_lepeff_" << llepCR_name << "  lnN  - - " << 1.+err_llep_lepEff << " -" << std::endl;
-	   datacard << "llep_CRstat_" << gammaConvention( yield_llep, round(N_llep_CR), 2, llepCR_name, binName ) << std::endl;
+	   //datacard << "llep_CRstat_" << gammaConvention( yield_llep, round(N_llep_CR), 2, llepCR_name, binName ) << std::endl;
+           datacard << "llep_CRstat_" << gammaConvention( yield_llep, round(N_llep_CR), 2, llepCR_name ) << std::endl;
            if( yield_llep>0. ) {
              datacard << "llep_MCstat_" << binName << " lnN  - - " << 1.+this_llep->GetBinError(iBin)/yield_llep << " -" << std::endl;
-             datacard << "llep_shape_" << binName << " lnN - - " << 1.+err_llep_uncorr << " - " << std::endl;
+             //datacard << "llep_shape_" << binName << " lnN - - " << 1.+err_llep_uncorr << " - " << std::endl;
+	     datacard << "llep_shape_" << llepCR_name << " lnN - - " << 1.+err_llep_shape << " - " << std::endl;
            }
 
          }
@@ -386,6 +400,9 @@ int main( int argc, char* argv[] ) {
     system(Form("mkdir -p %s", path.c_str()));
 
     std::string path_mass = path;
+    float xs_norm=1.;
+    if( signals[isig]->getName().find("T2qq") != std::string::npos )
+      xs_norm=8./10.;
 
     if( signals[isig]->getName().find("fullScan") != std::string::npos )
       for( std::set<MT2Region>::iterator iR=regions.begin(); iR!=regions.end(); ++iR ) {
@@ -428,6 +445,7 @@ int main( int argc, char* argv[] ) {
 		std::string newDatacard( Form("%s/datacard_%s_%s_%.0f_%.0f.txt", path_mass.c_str(), binName.c_str(), sigName.c_str(), mParent, mLSP) );
 		
 		float sig = this_signal->GetBinContent(iBin);
+		sig*=xs_norm;
 		
 		std::string sedCommand( Form("sed 's/XXX/%.3f/g' %s > %s", sig, templateDatacard.c_str(), newDatacard.c_str()) );
 		system( sedCommand.c_str() );
@@ -465,7 +483,8 @@ int main( int argc, char* argv[] ) {
 	    std::string newDatacard( Form("%s/datacard_%s_%s.txt", path.c_str(), binName.c_str(), sigName.c_str()) );
 	    
 	    float sig = this_signal->GetBinContent(iBin);
-	    
+	    sig*=xs_norm;
+
 	    std::string sedCommand( Form("sed 's/XXX/%.3f/g' %s > %s", sig, templateDatacard.c_str(), newDatacard.c_str()) );
 	    system( sedCommand.c_str() );
 	    
