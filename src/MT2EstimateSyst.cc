@@ -708,9 +708,9 @@ const MT2EstimateSyst& MT2EstimateSyst::operator/=( const MT2EstimateSyst& rhs )
     this->yield_systUp  ->SetBinContent( iBin, newBin + newErrUp );
     this->yield_systDown->SetBinContent( iBin, newBin - newErrDown );
 
-    for( int iBinY=1; iBinY<result.yield3d->GetNbinsY()+1; ++iBinY)
-      for( int iBinZ=1; iBinZ<result.yield3d->GetNbinsZ()+1; ++iBinZ)
-        result.yield3d   ->SetBinContent( iBin, iBinY, iBinZ, newBin );
+    for( int iBinY=1; iBinY<this->yield3d->GetNbinsY()+1; ++iBinY)
+      for( int iBinZ=1; iBinZ<this->yield3d->GetNbinsZ()+1; ++iBinZ)
+        this->yield3d   ->SetBinContent( iBin, iBinY, iBinZ, newBin );
 
   }
 
@@ -746,9 +746,9 @@ const MT2EstimateSyst& MT2EstimateSyst::operator*=( const MT2EstimateSyst& rhs )
     this->yield_systUp  ->SetBinContent( iBin, newBin + newErrUp );
     this->yield_systDown->SetBinContent( iBin, newBin - newErrDown );
 
-    for( int iBinY=1; iBinY<result.yield3d->GetNbinsY()+1; ++iBinY)
-      for( int iBinZ=1; iBinZ<result.yield3d->GetNbinsZ()+1; ++iBinZ)
-        result.yield3d   ->SetBinContent( iBin, iBinY, iBinZ, newBin );
+    for( int iBinY=1; iBinY<this->yield3d->GetNbinsY()+1; ++iBinY)
+      for( int iBinZ=1; iBinZ<this->yield3d->GetNbinsZ()+1; ++iBinZ)
+        this->yield3d   ->SetBinContent( iBin, iBinY, iBinZ, newBin );
 
   }
 
@@ -780,9 +780,9 @@ const MT2EstimateSyst& MT2EstimateSyst::operator*=( const MT2Estimate& rhs ) {
     this->yield_systUp  ->SetBinContent( iBin, newBin + newErrUp );
     this->yield_systDown->SetBinContent( iBin, newBin - newErrDown );
 
-    for( int iBinY=1; iBinY<result.yield3d->GetNbinsY()+1; ++iBinY)
-      for( int iBinZ=1; iBinZ<result.yield3d->GetNbinsZ()+1; ++iBinZ)
-        result.yield3d   ->SetBinContent( iBin, iBinY, iBinZ, newBin );
+    for( int iBinY=1; iBinY<this->yield3d->GetNbinsY()+1; ++iBinY)
+      for( int iBinZ=1; iBinZ<this->yield3d->GetNbinsZ()+1; ++iBinZ)
+        this->yield3d   ->SetBinContent( iBin, iBinY, iBinZ, newBin );
 
   }
 
@@ -814,9 +814,9 @@ const MT2EstimateSyst& MT2EstimateSyst::operator/=( const MT2Estimate& rhs ) {
     this->yield_systUp  ->SetBinContent( iBin, newBin + newErrUp );
     this->yield_systDown->SetBinContent( iBin, newBin - newErrDown );
 
-    for( int iBinY=1; iBinY<result.yield3d->GetNbinsY()+1; ++iBinY)
-      for( int iBinZ=1; iBinZ<result.yield3d->GetNbinsZ()+1; ++iBinZ)
-        result.yield3d   ->SetBinContent( iBin, iBinY, iBinZ, newBin );
+    for( int iBinY=1; iBinY<this->yield3d->GetNbinsY()+1; ++iBinY)
+      for( int iBinZ=1; iBinZ<this->yield3d->GetNbinsZ()+1; ++iBinZ)
+        this->yield3d   ->SetBinContent( iBin, iBinY, iBinZ, newBin );
     
   }
 
