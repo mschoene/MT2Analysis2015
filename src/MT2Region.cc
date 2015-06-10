@@ -121,9 +121,9 @@ std::string MT2HTRegion::getNiceName() const {
   std::string htMax_str(Form("%.0f", htMax));
   char htPart[500];
   if( htMax==-1 ) 
-    sprintf( htPart, "H_{T} > %.0f GeV", htMin );
+    sprintf( htPart, "H_{T} > %.0f GeV, E_{T}^{miss} > %.0f GeV", htMin, this->metMin() );
   else
-    sprintf( htPart, "%.0f < H_{T} < %.0f GeV", htMin, htMax );
+    sprintf( htPart, "%.0f < H_{T} < %.0f GeV, E_{T}^{miss} > %.0f GeV", htMin, htMax, this->metMin() );
   std::string htPart_str(htPart);
 
  
@@ -329,7 +329,7 @@ std::string MT2SignalRegion::getNiceName() const {
   std::string niceName_b = getNiceJetName( "b", nBJetsMin,  nBJetsMax  );
 
   std::string niceName = niceName_j;
-  if( niceName!="" && niceName_b!="" ) niceName += ",  " + niceName_b;
+  if( niceName!="" && niceName_b!="" ) niceName += "," + niceName_b;
 
   if( mtCut=="loMT"  ) niceName += " (low M_{T})";
   else if( mtCut=="hiMT" ) niceName += " (high M_{T})";
@@ -344,13 +344,21 @@ std::string MT2SignalRegion::getNiceJetName( const std::string& pedix, int nmin,
   if( nmin==-1 && nmax==-1 ) return std::string("");
 
   char n[500];
+//  if( nmax==nmin )
+//    sprintf( n, "N(%s) = %d", pedix.c_str(), nmin );
+//  else {
+//    if( nmax==-1 )
+//      sprintf( n, "N(%s) #geq %d", pedix.c_str(), nmin );
+//    else
+//      sprintf( n, "%d #leq N(%s) #leq %d", nmin, pedix.c_str(), nmax );
+//  }
   if( nmax==nmin )
-    sprintf( n, "N(%s) = %d", pedix.c_str(), nmin );
+    sprintf( n, "%d%s", nmin, pedix.c_str() );
   else {
     if( nmax==-1 )
-      sprintf( n, "N(%s) #geq %d", pedix.c_str(), nmin );
+      sprintf( n, "#geq%d%s", nmin, pedix.c_str() );
     else
-      sprintf( n, "%d #leq N(%s) #leq %d", nmin, pedix.c_str(), nmax );
+      sprintf( n, "%d-%d%s", nmin, nmax, pedix.c_str() );
   }
 
   std::string nicename(n);
@@ -1719,8 +1727,8 @@ void MT2Region::getBins( int &nBins, double*& bins) const {
     bins = new double[nBins_tmp+1]{200., 1500.};
     nBins = nBins_tmp;
 
-  }
-
+  } 
+  
   else { // default binning
 
     const int nBins_tmp                        = 5;
@@ -1749,6 +1757,36 @@ std::vector< std::string > MT2Region::getNiceNames() const {
 
 }
 
+
+std::string MT2Region::getBinName(double& min, double& max) const {
+
+  char binName[500];
+  if( max < 0 )
+    sprintf( binName, "M_{T2} > %.0f GeV", min );
+  else
+    sprintf( binName, "%.0f < M_{T2} < %.0f GeV", min, max );
+  
+  std::string binName_str(binName);
+  
+  return binName_str;
+  
+}
+
+std::vector< std::string> MT2Region::getBinNames() const {
+  
+  int nBins;
+  double* bins;
+  this->getBins(nBins, bins);
+  
+  std::vector< std::string > names;
+  for( int i=1; i<nBins; ++i )
+    names.push_back( getBinName(bins[i-1], bins[i]) );
+  double lastbin=-1.;
+  names.push_back( getBinName(bins[nBins-1], lastbin) );
+
+  return names;
+
+}
 
 
 bool MT2Region::isIncluded( MT2Region* region ) const {

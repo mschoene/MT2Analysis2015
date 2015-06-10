@@ -356,6 +356,32 @@ void MT2Estimate::print(const std::string& ofs){
 
 }
 
+void MT2Estimate::print(ofstream& ofs_file){
+
+  Int_t binXmin=1;
+  Int_t binXmax=-1;
+
+  Double_t error;
+  Double_t integral = yield->IntegralAndError(binXmin, binXmax, error);
+
+  if(integral >= 10)
+    ofs_file << std::fixed << std::setprecision(1) << " & " << integral << " $\\pm$ " << error;
+  else if(integral < 10)
+    ofs_file << std::fixed << std::setprecision(2) << " & " << integral << " $\\pm$ " << error;
+
+}
+
+void MT2Estimate::print( ofstream& ofs_file, Int_t mt2_bin ){
+
+  Double_t error;
+  Double_t integral = yield->IntegralAndError(mt2_bin, mt2_bin, error);
+  
+  if(integral >= 10)
+    ofs_file << std::fixed << std::setprecision(1) << " & " << integral << " $\\pm$ " << error;
+  else if(integral < 10)
+    ofs_file << std::fixed << std::setprecision(2) << " & " << integral << " $\\pm$ " << error;
+  
+}
 
 void MT2Estimate::randomizePoisson( float scale ){
 
