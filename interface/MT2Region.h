@@ -124,6 +124,9 @@ class MT2Region {
   void getBins      ( int& nBins, double*& bins ) const;
   void getBins_qcdCR( int& nBins, double*& bins ) const;
 
+  std::string getBinName( double& min, double& max ) const;
+  std::vector< std::string > getBinNames() const;
+
   MT2HTRegion* htRegion() const {
     return htRegion_;
   }
