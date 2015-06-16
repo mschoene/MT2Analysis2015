@@ -121,7 +121,7 @@ void drawHisto( const std::string& outputdir, MT2Analysis<MT2EstimateTree>* data
     cut[6] = "diffMetMht/met<0.5";
     cut[7] = "mt2>200.";
 
-    if( !NminusOne ){
+    if( !doNminusOne ){
     
       if( selection == "" ) selection = Form("(mt2>200.)*weight");
       else selection = Form("(mt2>200. &&  %s)*weight", selection.c_str());
