@@ -53,9 +53,16 @@ void MT2EstimateTree::initTree() {
   tree->Branch( "mt2", &mt2, "mt2/F");
   tree->Branch( "ht", &ht, "ht/F");
   tree->Branch( "met", &met, "met/F");
+  tree->Branch( "deltaPhiMin", &deltaPhiMin, "deltaPhiMin/F");
+  tree->Branch("diffMetMht", &diffMetMht, "diffMetMht/F");
+  tree->Branch( "nVert", &nVert, "nVert/I");
   tree->Branch( "nJets", &nJets, "nJets/I");
   tree->Branch( "nBJets", &nBJets, "nBJets/I");
-  
+  tree->Branch( "nElectrons", &nElectrons, "nElectrons/I");
+  tree->Branch( "nMuons", &nMuons, "nMuons/I");
+  tree->Branch( "nPFLep", &nPFLep, "nPFLep/I");
+  tree->Branch( "nPFHad", &nPFHad, "nPFHad/I");
+
   tree->Branch( "GenSusyMScan1", &GenSusyMScan1, "GenSusyMScan1/I");
   tree->Branch( "GenSusyMScan2", &GenSusyMScan2, "GenSusyMScan2/I");
 
@@ -170,12 +177,18 @@ void MT2EstimateTree::assignTree( const MT2Tree& mt2tree, float w ) {
   weight = w;
   id     = mt2tree.evt_id;
 
-  mt2    = mt2tree.mt2;
-  ht     = mt2tree.ht;
-  met    = mt2tree.met_pt;
-  nJets  = mt2tree.nJet40;
-  nBJets = mt2tree.nBJet20;
-
+  mt2           = mt2tree.mt2;
+  ht            = mt2tree.ht;
+  met           = mt2tree.met_pt;
+  deltaPhiMin   = mt2tree.deltaPhiMin;
+  diffMetMht    = mt2tree.diffMetMht;
+  nJets         = mt2tree.nJet40;
+  nBJets        = mt2tree.nBJet20;
+  nElectrons    = mt2tree.nElectrons10;
+  nMuons        = mt2tree.nMuons10;
+  nPFLep        = mt2tree.nPFLep5LowMT;
+  nPFHad        = mt2tree.nPFHad10LowMT;
+  
   GenSusyMScan1 = mt2tree.GenSusyMScan1;
   GenSusyMScan2 = mt2tree.GenSusyMScan2;
   
@@ -190,11 +203,17 @@ void MT2EstimateTree::assignTree_gamma( const MT2Tree& mt2tree, float w ) {
   weight = w;
   id     = mt2tree.evt_id;
 
-  mt2    = mt2tree.gamma_mt2;
-  ht     = mt2tree.gamma_ht;
-  met    = mt2tree.gamma_met_pt;
-  nJets  = mt2tree.gamma_nJet40;
-  nBJets = mt2tree.gamma_nBJet20;
+  mt2           = mt2tree.gamma_mt2;
+  ht            = mt2tree.gamma_ht;
+  met           = mt2tree.gamma_met_pt;
+  dPhiMin       = mt2tree.gamma_dPhiMin;
+  diffMetMht    = mt2tree.gamma_diffMetMht;
+  nJets         = mt2tree.gamma_nJet40;
+  nBJets        = mt2tree.gamma_nBJet20;
+  nElectrons    = mt2tree.nElectrons10;
+  nMuons        = mt2tree.nMuons10;
+  nPFLep        = mt2tree.nPFLep5LowMT;
+  nPFHad        = mt2tree.nPFHad10LowMT;
 
   GenSusyMScan1 = mt2tree.GenSusyMScan1;
   GenSusyMScan2 = mt2tree.GenSusyMScan2;
