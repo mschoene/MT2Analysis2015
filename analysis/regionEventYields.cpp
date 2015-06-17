@@ -34,7 +34,7 @@
 
 
 bool dummyAnalysis;
-double lumi = 4.; // in fb-1
+double lumi = 4; // in fb-1
 
 
 
@@ -136,8 +136,11 @@ int main( int argc, char* argv[] ) {
 
     
     std::vector< MT2Analysis<MT2EstimateTree>* > EventYield;
-    for( unsigned i=0; i<fSamples.size(); ++i ) 
+    for( unsigned i=0; i<fSamples.size(); ++i ) {
+      int this_id = fSamples[i].id;
+      if( this_id>=200 && this_id<300 ) continue; // skip GJets
       EventYield.push_back( computeYield( fSamples[i], cfg, lumi ) );
+    }
     
 
 
