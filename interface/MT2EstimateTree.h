@@ -40,8 +40,18 @@ class MT2EstimateTree : public MT2Estimate {
   float mt2;
   float ht;
   float met;
+  float deltaPhiMin;
+  float diffMetMht;
+  int nVert;
   int nJets;
   int nBJets;
+  int nElectrons;
+  int nMuons;
+  int nPFLep;
+  int nPFHad;
+
+  int GenSusyMScan1;
+  int GenSusyMScan2;
 
   //std::map< std::string, size_t > extraVars;
   std::map< std::string, float* > extraVars;
@@ -59,8 +69,6 @@ class MT2EstimateTree : public MT2Estimate {
 
   friend MT2EstimateTree operator*( float k, const MT2EstimateTree& rhs );
   friend MT2EstimateTree operator/( float k, const MT2EstimateTree& rhs );
-
-
 
   virtual void finalize() {
   }

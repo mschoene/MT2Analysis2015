@@ -87,6 +87,8 @@ class MT2Analysis {
   static void printFromFile( const std::string& fileName, const std::string& ofs, const std::string& matchName="" );
   static void print( const std::vector<MT2Analysis*> analyses, const std::string& ofs, const std::string& matchName="" );
   void print( const std::string& ofs, MT2Region* matchRegion=0 ) const;
+  void print( ofstream& ofs_file, MT2Region* matchRegion=0 ) const;
+  void print( ofstream& ofs_file, MT2HTRegion* thisHTRegion=0 ) const;
 
   void printRegions() const;
 
@@ -335,6 +337,28 @@ MT2Analysis<T>::MT2Analysis( const std::string& aname, const std::string& region
     signalRegions.insert(MT2SignalRegion(7, -1, 2,  2));
     signalRegions.insert(MT2SignalRegion(2,  6, 3,  -1));
     signalRegions.insert(MT2SignalRegion(7, -1, 3,  -1));
+
+    regions_ = multiplyHTandSignal( htRegions, signalRegions );
+
+
+  } else if( regionsSet=="zurich_llep" ){
+
+    std::set<MT2HTRegion> htRegions;
+    htRegions.insert(MT2HTRegion( 450.,   575.));
+    htRegions.insert(MT2HTRegion( 575.,  1000.));
+    htRegions.insert(MT2HTRegion(1000.,  1500.));
+    htRegions.insert(MT2HTRegion(1500.,    -1 ));
+    
+    std::set<MT2SignalRegion> signalRegions;
+    signalRegions.insert(MT2SignalRegion(2,  3, 0,  0));
+    signalRegions.insert(MT2SignalRegion(4, 6, 0,  0));
+    signalRegions.insert(MT2SignalRegion(7, -1, 0,  0));
+    signalRegions.insert(MT2SignalRegion(2,  3, 1,  1));
+    signalRegions.insert(MT2SignalRegion(4, 6, 1,  1));
+    signalRegions.insert(MT2SignalRegion(2,  3, 2,  2));
+    signalRegions.insert(MT2SignalRegion(4, 6, 2,  2));
+    signalRegions.insert(MT2SignalRegion(7, -1, 1,  2));
+    signalRegions.insert(MT2SignalRegion(2,  6, 3,  -1));
 
     regions_ = multiplyHTandSignal( htRegions, signalRegions );
 
@@ -887,10 +911,13 @@ MT2Region* MT2Analysis<T>::getRegion( float ht, int njets, int nbjets, float met
     float htMin  = (*it)->region->htRegion()->htMin;
     float htMax  = (*it)->region->htRegion()->htMax;
     float metMin = (*it)->region->htRegion()->metMin();
-
+    bool isInclusiveHT = (*it)->region->htRegion()->isInclusiveHT();
+    float metMinInclusiveHT = (*it)->region->htRegion()->metMinInclusiveHT( ht );
+    
     if( ht<htMin ) continue;
     if( htMax>0. && ht>htMax ) continue;
-    if( metMin>0.&& met>0. && met<metMin ) continue;
+    if( !(isInclusiveHT) && metMin>0. && met>0. && met<metMin ) continue;
+    if( isInclusiveHT && metMinInclusiveHT>0. && met>0. && met<metMinInclusiveHT ) continue;
 
     int njetsmin  = (*it)->region->sigRegion()->nJetsMin;
     int njetsmax  = (*it)->region->sigRegion()->nJetsMax;
@@ -1604,6 +1631,46 @@ void MT2Analysis<T>::print( const std::string& ofs, MT2Region* matchRegion ) con
   } // for ht regions
 
   std::cout << "-> Printed analysis '" << name << "' to: " << ofs << std::endl;
+  
+}
+
+
+template<class T>
+void MT2Analysis<T>::print( ofstream& ofs_file, MT2Region* thisRegion ) const {
+
+  int nBins;
+  double* bins;
+  thisRegion->getBins(nBins, bins);
+  
+  T* thisT = this->get(*thisRegion);
+
+  for(int i=1; i < nBins+1; ++i){ 
+    thisT->print( ofs_file, i );
+  }
+  
+  ofs_file << "\\\\" << std::endl;
+  
+  //std::cout << "-> Printed analysis '" << name << "', HT region '"<< HTname << "' to: " << ofs << std::endl;
+  
+}
+
+
+template<class T>
+void MT2Analysis<T>::print( ofstream& ofs_file, MT2HTRegion* thisHTRegion ) const {
+
+  std::set<MT2SignalRegion> sigRegions = this->getSignalRegions();
+  for( std::set<MT2SignalRegion>::iterator iSig=sigRegions.begin(); iSig!=sigRegions.end(); ++iSig ) {
+    
+    MT2Region* thisRegion = new MT2Region(*thisHTRegion, *iSig);
+    
+    T* thisT = this->get(*thisRegion);
+    thisT->print( ofs_file );
+    
+  } // for signal regions                                                                                                                                                          
+  
+  ofs_file << "\\\\" << std::endl;
+  
+  //std::cout << "-> Printed analysis '" << name << "', HT region '"<< HTname << "' to: " << ofs << std::endl;
   
 }
 

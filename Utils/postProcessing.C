@@ -152,8 +152,8 @@ int postProcessing(string inputString,
   //-------------------------------------------------------------
 
   //Calculate scaling factor and put variables into tree 
-  unsigned long int nEventsTree = clone->GetEntries();
-  unsigned long int nEventsHisto = (unsigned long int) newH->GetBinContent(1); 					 
+  ULong64_t nEventsTree = clone->GetEntries();
+  ULong64_t nEventsHisto = (ULong64_t) newH->GetBinContent(1); 					 
 
   float scale1fb = xsec*kfactor*1000*filter/(Float_t)nEventsHisto;
  
@@ -180,7 +180,7 @@ int postProcessing(string inputString,
   TBranch* b2 = clone->Branch("evt_xsec", &xsec, "evt_xsec/F");
   TBranch* b3 = clone->Branch("evt_kfactor", &kfactor, "evt_kfactor/F");
   TBranch* b4 = clone->Branch("evt_filter", &filter, "evt_filter/F");
-  TBranch* b5 = clone->Branch("evt_nEvts", &nEventsHisto, "evt_nEvts/I");
+  TBranch* b5 = clone->Branch("evt_nEvts", &nEventsHisto, "evt_nEvts/l");
   TBranch* b6 = clone->Branch("evt_id", &id, "evt_id/I");
 
   for(unsigned long int i = 0; i < nEventsTree; i++) {

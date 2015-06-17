@@ -53,8 +53,18 @@ void MT2EstimateTree::initTree() {
   tree->Branch( "mt2", &mt2, "mt2/F");
   tree->Branch( "ht", &ht, "ht/F");
   tree->Branch( "met", &met, "met/F");
+  tree->Branch( "deltaPhiMin", &deltaPhiMin, "deltaPhiMin/F");
+  tree->Branch("diffMetMht", &diffMetMht, "diffMetMht/F");
+  tree->Branch( "nVert", &nVert, "nVert/I");
   tree->Branch( "nJets", &nJets, "nJets/I");
   tree->Branch( "nBJets", &nBJets, "nBJets/I");
+  tree->Branch( "nElectrons", &nElectrons, "nElectrons/I");
+  tree->Branch( "nMuons", &nMuons, "nMuons/I");
+  tree->Branch( "nPFLep", &nPFLep, "nPFLep/I");
+  tree->Branch( "nPFHad", &nPFHad, "nPFHad/I");
+
+  tree->Branch( "GenSusyMScan1", &GenSusyMScan1, "GenSusyMScan1/I");
+  tree->Branch( "GenSusyMScan2", &GenSusyMScan2, "GenSusyMScan2/I");
 
   tree->SetDirectory(0);
 
@@ -167,12 +177,21 @@ void MT2EstimateTree::assignTree( const MT2Tree& mt2tree, float w ) {
   weight = w;
   id     = mt2tree.evt_id;
 
-  mt2    = mt2tree.mt2;
-  ht     = mt2tree.ht;
-  met    = mt2tree.met_pt;
-  nJets  = mt2tree.nJet40;
-  nBJets = mt2tree.nBJet20;
-
+  mt2           = mt2tree.mt2;
+  ht            = mt2tree.ht;
+  met           = mt2tree.met_pt;
+  deltaPhiMin   = mt2tree.deltaPhiMin;
+  diffMetMht    = mt2tree.diffMetMht;
+  nJets         = mt2tree.nJet40;
+  nBJets        = mt2tree.nBJet20;
+  nElectrons    = mt2tree.nElectrons10;
+  nMuons        = mt2tree.nMuons10;
+  nPFLep        = mt2tree.nPFLep5LowMT;
+  nPFHad        = mt2tree.nPFHad10LowMT;
+  
+  GenSusyMScan1 = mt2tree.GenSusyMScan1;
+  GenSusyMScan2 = mt2tree.GenSusyMScan2;
+  
 }
   
 
@@ -184,11 +203,20 @@ void MT2EstimateTree::assignTree_gamma( const MT2Tree& mt2tree, float w ) {
   weight = w;
   id     = mt2tree.evt_id;
 
-  mt2    = mt2tree.gamma_mt2;
-  ht     = mt2tree.gamma_ht;
-  met    = mt2tree.gamma_met_pt;
-  nJets  = mt2tree.gamma_nJet40;
-  nBJets = mt2tree.gamma_nBJet20;
+  mt2           = mt2tree.gamma_mt2;
+  ht            = mt2tree.gamma_ht;
+  met           = mt2tree.gamma_met_pt;
+  dPhiMin       = mt2tree.gamma_dPhiMin;
+  diffMetMht    = mt2tree.gamma_diffMetMht;
+  nJets         = mt2tree.gamma_nJet40;
+  nBJets        = mt2tree.gamma_nBJet20;
+  nElectrons    = mt2tree.nElectrons10;
+  nMuons        = mt2tree.nMuons10;
+  nPFLep        = mt2tree.nPFLep5LowMT;
+  nPFHad        = mt2tree.nPFHad10LowMT;
+
+  GenSusyMScan1 = mt2tree.GenSusyMScan1;
+  GenSusyMScan2 = mt2tree.GenSusyMScan2;
 
 }
 
@@ -229,7 +257,6 @@ void MT2EstimateTree::write() const {
 }
 
 
-
 void MT2EstimateTree::print(const std::string& ofs){
 
   MT2Estimate::print( ofs );
@@ -241,6 +268,7 @@ const MT2EstimateTree& MT2EstimateTree::operator=( const MT2EstimateTree& rhs ) 
 
   this->region = new MT2Region(*(rhs.region));
 
+  this->yield3d = new TH3D(*(rhs.yield3d));
   this->yield = new TH1D(*(rhs.yield));
 
   this->tree = rhs.tree->CloneTree(-1);
@@ -267,7 +295,8 @@ MT2EstimateTree MT2EstimateTree::operator+( const MT2EstimateTree& rhs ) const{
 
   MT2EstimateTree result(*this);
   result.yield->Add(rhs.yield);
- 
+  result.yield3d->Add(rhs.yield3d);
+
   TList* list = new TList;
   list->Add(result.tree);
   list->Add(rhs.tree);
@@ -333,6 +362,9 @@ MT2EstimateTree MT2EstimateTree::operator+( const MT2EstimateTree& rhs ) const{
 MT2EstimateTree MT2EstimateTree::operator*( float k ) const{
 
   MT2EstimateTree result( this->getName(), *(this->region) );
+  result.yield3d = new TH3D(*(this->yield3d));
+  result.yield3d->Scale(k);
+  
   result.yield = new TH1D(*(this->yield));
   result.yield->Scale(k);
   
@@ -347,6 +379,9 @@ MT2EstimateTree MT2EstimateTree::operator*( float k ) const{
 MT2EstimateTree MT2EstimateTree::operator/( float k ) const{
 
   MT2EstimateTree result( this->getName(), *(this->region) );
+  result.yield3d = new TH3D(*(this->yield3d));
+  result.yield3d->Scale(1./k);
+  
   result.yield = new TH1D(*(this->yield));
   result.yield->Scale(1./k);
 
@@ -366,7 +401,8 @@ const MT2EstimateTree& MT2EstimateTree::operator+=( const MT2EstimateTree& rhs )
   if( rhs.tree->GetEntries()>0 ) {
 
     this->yield->Add(rhs.yield);
-  
+    this->yield3d->Add(rhs.yield3d);
+
     std::string oldName(this->tree->GetName());
 
     TList* list = new TList;
@@ -437,6 +473,7 @@ const MT2EstimateTree& MT2EstimateTree::operator+=( const MT2EstimateTree& rhs )
 const MT2EstimateTree& MT2EstimateTree::operator*=( float k ) {
 
   this->yield->Scale(k);
+  this->yield3d->Scale(k);
   // loop on entries and multiply weight
   return (*this);
 
@@ -446,6 +483,7 @@ const MT2EstimateTree& MT2EstimateTree::operator*=( float k ) {
 const MT2EstimateTree& MT2EstimateTree::operator/=( float k ) {
 
   this->yield->Scale(1./k);
+  this->yield3d->Scale(1./k);
   // loop on entries and multiply weight
   return (*this);
 

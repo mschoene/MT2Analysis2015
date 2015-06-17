@@ -100,6 +100,15 @@ TPaveText* MT2DrawTools::getLabelTop( float lumi ) {
 
 }
 
+TPaveText* MT2DrawTools::getLabelTopSimulation( float lumi ) {
+
+  char text[300];
+  sprintf( text, "CMS Simulation, %.1f fb^{-1} at #sqrt{s} = 13 TeV", lumi );
+  std::string text_str(text);
+  return getLabelTopSimulation(text_str);
+
+}
+
 
 
 TPaveText* MT2DrawTools::getLabelTop( const std::string& text ) {
@@ -116,7 +125,19 @@ TPaveText* MT2DrawTools::getLabelTop( const std::string& text ) {
 
 }
 
+TPaveText* MT2DrawTools::getLabelTopSimulation( const std::string& text ) {
 
+  TPaveText* label_top = new TPaveText(0.4,0.953,0.975,0.975, "brNDC");
+  label_top->SetBorderSize(0);
+  label_top->SetFillColor(kWhite);
+  label_top->SetTextSize(0.038);
+  label_top->SetTextAlign(31); // align right                                                                                                                                        
+  label_top->SetTextFont(62);
+  label_top->AddText(text.c_str());
+
+  return label_top;
+
+}
 
 
 TGraphAsymmErrors* MT2DrawTools::getPoissonGraph( TH1D* histo, bool drawZeros, const std::string& xerrType, float nSigma ) {
