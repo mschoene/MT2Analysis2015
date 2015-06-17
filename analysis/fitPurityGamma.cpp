@@ -55,13 +55,14 @@ int main( int argc, char* argv[] ) {
   std::string samples = "PHYS14_v5_skimprune";
 
 
-  std::string mc_or_data = "MC";
+  std::string mc_or_data = "DataRC";
   if( argc>1 ) {
     mc_or_data = std::string(argv[1]);
-    if( mc_or_data=="data" ) mc_or_data="DataRC";
-    if( mc_or_data=="dataRC" ) mc_or_data="DataRC";
-    if( mc_or_data=="mc" ) mc_or_data="MC";
   }
+
+  if( mc_or_data=="data" ) mc_or_data="DataRC";
+  if( mc_or_data=="dataRC" ) mc_or_data="DataRC";
+  if( mc_or_data=="mc" ) mc_or_data="MC";
 
 
 
