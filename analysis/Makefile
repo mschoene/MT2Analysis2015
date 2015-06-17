@@ -103,6 +103,9 @@ checkGenIso: checkGenIso.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateTr
 drawIsoROC: drawIsoROC.cpp MT2DrawTools.o
 	$(CC) -Wall $(INCLUDES) -o drawIsoROC drawIsoROC.cpp MT2DrawTools.o $(ROOTFLAG) $(EXTRALIBS)
 
+draw100pb: draw100pb.cpp MT2DrawTools.o
+	$(CC) -Wall $(INCLUDES) -o draw100pb draw100pb.cpp MT2DrawTools.o $(ROOTFLAG) $(EXTRALIBS)
+
 
 provaTree: provaTree.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateTree.o
 	$(CC) -Wall $(INCLUDES) -o provaTree provaTree.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateTree.o $(ROOTFLAG) $(EXTRALIBS)
