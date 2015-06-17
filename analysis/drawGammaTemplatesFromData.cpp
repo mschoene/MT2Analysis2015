@@ -118,8 +118,8 @@ void drawSinglePlot( const std::string& outputdir, const std::string& name, cons
 
   } else {
 
-    // normalize first one to unity
-    histosData[0]->Scale(1./histosData[0]->Integral() );
+    //// normalize first one to unity
+    //histosData[0]->Scale(1./histosData[0]->Integral() );
 
     // normalize other ones so that first bin has same content:
     for( unsigned i=1; i<histosData.size(); ++i ) 
@@ -143,7 +143,7 @@ void drawSinglePlot( const std::string& outputdir, const std::string& name, cons
   c1->cd();
   h2_axes->Draw();
 
-  TH2D* h2_axes_log = new TH2D("axes_log", "", 10, 0., xMax, 10, 0.0001, 3.*yMax );
+  TH2D* h2_axes_log = new TH2D("axes_log", "", 10, 0., xMax, 10, yMax/10000., 3.*yMax );
   h2_axes_log->SetXTitle( "Photon Charged Isolation [GeV]" );
   if( name=="Fake" )
     h2_axes_log->SetYTitle( Form("Events / %.2f GeV", histoMC->GetBinWidth(1)) );
