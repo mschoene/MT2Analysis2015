@@ -4,7 +4,7 @@
 
 void fillDummyScaleFactor(){
   
-  TFile* f= new TFile("scaleFactors.root", "RECREATE");
+  TFile* f= new TFile("lepSF.root", "RECREATE");
   
   int nBinsx=20;
   float minPt=0., maxPt=100.;

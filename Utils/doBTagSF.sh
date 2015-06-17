@@ -8,11 +8,12 @@ inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/MT2production/PostProc
 
 
 # initialization
-outputFolder="/scratch/`whoami`/allSF/"
-scaleFile="lepSF.root"
+outputFolder="/scratch/`whoami`/BTagSF/"
+objName="jet"
+#scaleFile="scaleFactors.root"
 
 # here I compile the root macro only once
-echo "gROOT->LoadMacro(\"allSF.C+\"); gSystem->Exit(0);" |root.exe -b -l ;
+echo "gROOT->LoadMacro(\"btagSF.C+\"); gSystem->Exit(0);" |root.exe -b -l ;
 
 
 while read line; 
@@ -20,14 +21,15 @@ do
     case "$line" in \#*) continue ;; esac; #skip commented lines
     if [ -z "$line" ]; then continue; fi;  #skip empty lines
     name=`echo $line |awk '{print $2}'`
-    name=$name"_post_skim"
+    name=$name"_post_skim_prune"
     outputFile=${outputFolder}/${name}".root";
 
+    
     mkdir -p $outputFolder
     
-    echo "allSF(\"$name\",\"$inputFolder\",\"$outputFile\",\"$treeName\",\"$scaleFile\")"
-    echo "gROOT->LoadMacro(\"allSF.C\"); allSF(\"$name\",\"$inputFolder\",\"$outputFile\",\"$treeName\",\"$scaleFile\"); gSystem->Exit(0);" |root.exe -b -l ;
+    echo "btagSF(\"$name\",\"$inputFolder\",\"$outputFile\",\"$treeName\",\"$objName\")"
+    echo "gROOT->LoadMacro(\"btagSF.C\"); btagSF(\"$name\",\"$inputFolder\",\"$outputFile\",\"$treeName\",\"$objName\"); gSystem->Exit(0);" |root.exe -b -l ;
     
 done < postProcessing.cfg
 
-rm -f allSF_C.d allSF_C.so;
+rm -f btagSF_C.d btagSF_C.so;

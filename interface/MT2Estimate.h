@@ -3,6 +3,7 @@
 
 
 #include "MT2Region.h"
+#include "TH3D.h"
 #include "TH1D.h"
 #include "TFile.h"
 
@@ -30,6 +31,7 @@ class MT2Estimate {
 
   // the main data member: the yield histogram
   // classes that inherit from this one will add other data members
+  TH3D* yield3d;
   TH1D* yield;
 
   std::string getName() const { return name; };
@@ -56,6 +58,7 @@ class MT2Estimate {
   }
 
   const MT2Estimate& operator=( const MT2Estimate& rhs );
+
   MT2Estimate operator+( const MT2Estimate& rhs ) const;
   MT2Estimate operator-( const MT2Estimate& rhs ) const;
   MT2Estimate operator/( const MT2Estimate& rhs ) const;
@@ -70,6 +73,8 @@ class MT2Estimate {
   const MT2Estimate& operator/=( float k );
   const MT2Estimate& operator*=( float k );
 
+  const MT2Estimate& getMassPoint( const MT2Estimate& rhs, int mParent, int mLSP ); 
+  
   friend MT2Estimate operator*( float k, const MT2Estimate& rhs );
   friend MT2Estimate operator/( float k, const MT2Estimate& rhs );
 
@@ -78,15 +83,19 @@ class MT2Estimate {
   }
 
   virtual void addOverflow();
+  void addOverflowSingleHisto( TH3D* yield3d );
   void addOverflowSingleHisto( TH1D* yield );
 
   virtual void write() const {
+    yield3d->Write();
     yield->Write();
   }
 
   virtual void getShit( TFile* file, const std::string& path );
   
-  virtual void print(const std::string& ofs);
+  virtual void print( const std::string& ofs );
+  virtual void print( ofstream& ofs_file );
+  virtual void print( ofstream& ofs_file, Int_t mt2_bin );
   
   virtual void randomizePoisson( float scale=1. );
   

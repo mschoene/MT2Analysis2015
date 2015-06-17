@@ -126,9 +126,9 @@ int main( int argc, char* argv[] ) {
 
   MT2Analysis<MT2EstimateSyst>* eff = MT2EstimateSyst::makeEfficiencyAnalysis( "eff", regionsSet, (MT2Analysis<MT2Estimate>*)prompt_pass, (MT2Analysis<MT2Estimate>*)prompt );
 
-  MT2Analysis<MT2EstimateSyst>* purityTight = MT2EstimateSyst::makeEfficiencyAnalysis( "purity", regionsSet, (MT2Analysis<MT2Estimate>*)prompt_pass, (MT2Analysis<MT2Estimate>*)gammaCR);
+  MT2Analysis<MT2EstimateSyst>* purityTight = MT2EstimateSyst::makeEfficiencyAnalysis( "purity", regionsSet, (MT2Analysis<MT2Estimate>*)matched_pass, (MT2Analysis<MT2Estimate>*)gammaCR);
 
-  MT2Analysis<MT2EstimateSyst>* purityLoose = MT2EstimateSyst::makeEfficiencyAnalysis( "purityLoose", regionsSet, (MT2Analysis<MT2Estimate>*)prompt, (MT2Analysis<MT2Estimate>*)gammaCR_loose );
+  MT2Analysis<MT2EstimateSyst>* purityLoose = MT2EstimateSyst::makeEfficiencyAnalysis( "purityLoose", regionsSet, (MT2Analysis<MT2Estimate>*)matched, (MT2Analysis<MT2Estimate>*)gammaCR_loose );
 
 
   gammaCR_loose->writeToFile( outputdir + "/mc.root" );

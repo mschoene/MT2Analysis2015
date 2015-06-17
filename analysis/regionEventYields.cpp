@@ -9,6 +9,7 @@
 #include "TMath.h"
 #include "TH1D.h"
 #include "TH2D.h"
+#include "TH3D.h"
 #include "THStack.h"
 #include "TCanvas.h"
 #include "TLegend.h"
@@ -31,7 +32,7 @@
 
 
 
-bool dummyAnalysis = true;
+bool dummyAnalysis;
 double lumi = 4.; // in fb-1
 
 
@@ -46,14 +47,10 @@ class MT2Config {
   std::string mcSamples()       const { return mcSamples_; };
   std::string sigSamples()      const { return sigSamples_; };
   std::string dataSamples()     const { return dataSamples_; };
-  std::string lostLeptonTag()   const { return lostLeptonTag_; };
-  std::string qcdTag()          const { return qcdTag_; };
-  std::string zinvTag()         const { return zinvTag_; };
   std::string additionalStuff() const { return additionalStuff_; };
 
   bool useMC() {
-    bool useEstimates = lostLeptonTag_!="" && qcdTag_!="" && zinvTag_!="";
-    return !useEstimates;
+    return mcSamples()!="";
   }
 
  private:
@@ -62,9 +59,6 @@ class MT2Config {
   std::string mcSamples_;
   std::string sigSamples_;
   std::string dataSamples_;
-  std::string lostLeptonTag_;
-  std::string qcdTag_;
-  std::string zinvTag_;
   std::string additionalStuff_;
 
 };
@@ -74,7 +68,8 @@ class MT2Config {
 
 
 void randomizePoisson( MT2Analysis<MT2EstimateTree>* data );
-MT2Analysis<MT2EstimateTree>* computeYield( const MT2Sample& sample, const MT2Config& cfg, float lumi=1. );
+template <class T>
+MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg, float lumi=1. );
 MT2Analysis<MT2EstimateTree>* mergeYields( std::vector< MT2Analysis<MT2EstimateTree> *> EventYield, const std::string& regionsSet, const std::string& name, int id_min, int id_max=-1, const std::string& legendName="" );
 int matchPartonToJet( int index, MT2Tree* myTree );
 
@@ -97,6 +92,8 @@ int main( int argc, char* argv[] ) {
 
   std::string configFileName(argv[1]);
 
+  MT2Config cfg("cfgs/" + configFileName + ".txt");
+  dummyAnalysis = cfg.dataSamples()=="datatest";
 
   std::string outputdir = "EventYields_" + configFileName;
   if( dummyAnalysis ) {
@@ -113,15 +110,13 @@ int main( int argc, char* argv[] ) {
     
   system(Form("mkdir -p %s", outputdir.c_str()));
 
-  MT2Config cfg("cfgs/" + configFileName + ".txt");
 
 
   TH1::AddDirectory(kFALSE); // stupid ROOT memory allocation needs this
 
 
   std::vector<MT2Analysis<MT2EstimateTree>* > bgYields;
-
-
+  MT2Analysis<MT2EstimateTree>* dataYield;  
 
   if( cfg.useMC() ) { // use MC BG estimates
 
@@ -133,14 +128,14 @@ int main( int argc, char* argv[] ) {
     std::vector<MT2Sample> fSamples = MT2Sample::loadSamples(samplesFileName, 1, 999); // not interested in signal here (see later)
     if( fSamples.size()==0 ) {
       std::cout << "There must be an error: samples is empty!" << std::endl;
-      exit(1209);
+      exit(120);
     }
 
 
     
     std::vector< MT2Analysis<MT2EstimateTree>* > EventYield;
     for( unsigned i=0; i<fSamples.size(); ++i ) 
-      EventYield.push_back( computeYield( fSamples[i], cfg, lumi ) );
+      EventYield.push_back( computeYield<MT2EstimateTree>( fSamples[i], cfg, lumi ) );
     
 
 
@@ -158,22 +153,16 @@ int main( int argc, char* argv[] ) {
     bgYields.push_back( EventYield_top );
     //bgYields.push_back( EventYield_other );
 
-  } else { // use data driven BG estimates
-
-    MT2Analysis<MT2EstimateTree>* lostLepton = MT2Analysis<MT2EstimateTree>::readFromFile("MT2LostLeptonEstimate_" + cfg.lostLeptonTag() + ".root");
-
-    MT2Analysis<MT2EstimateTree>* qcd = MT2Analysis<MT2EstimateTree>::readFromFile("MT2QCDEstimate_" + cfg.qcdTag() + ".root");
-
-    MT2Analysis<MT2EstimateTree>* zinv = MT2Analysis<MT2EstimateTree>::readFromFile("MT2ZinvEstimate_" + cfg.zinvTag() + ".root");
-
-    bgYields.push_back( lostLepton );
-    bgYields.push_back( qcd );
-    bgYields.push_back( zinv );
+    if( dummyAnalysis ) {
+    
+      dataYield   = mergeYields( EventYield, cfg.regionsSet(), "data", 100, 699 );
+    
+    } 
 
   }
 
   // load signal samples, if any
-  std::vector< MT2Analysis<MT2EstimateTree>* > signals;
+  std::vector< MT2Analysis< MT2EstimateTree>* > signals;
   if( cfg.mcSamples()!="" ) {
 
     std::string samplesFileName = "../samples/samples_" + cfg.mcSamples() + ".dat";
@@ -190,7 +179,7 @@ int main( int argc, char* argv[] ) {
     } else {
     
       for( unsigned i=0; i<fSamples.size(); ++i ) 
-        signals.push_back( computeYield( fSamples[i], cfg, lumi ) );
+        signals.push_back( computeYield<MT2EstimateTree>( fSamples[i], cfg, lumi ) );
     
     } // if samples != 0
 
@@ -211,45 +200,38 @@ int main( int argc, char* argv[] ) {
     } else {
 
       for( unsigned i=0; i<fSamples.size(); ++i )
-        signals.push_back( computeYield( fSamples[i], cfg, lumi ) );
+        signals.push_back( computeYield<MT2EstimateTree>( fSamples[i], cfg, lumi ) );
 
     } // if samples != 0
     
   } // if sig samples
   
 
-  //MT2Analysis<MT2EstimateTree>* data = new MT2Analysis<MT2EstimateTree>( "data", cfg.regionsSet() );
-  MT2Analysis<MT2EstimateTree>* data = new MT2Analysis<MT2EstimateTree>( *(bgYields[0]) );
-  data->setName("data");
- 
-  if( dummyAnalysis ) { // use same as MC
-
-    for( unsigned i=1; i < bgYields.size(); ++i ) (*data) += *(bgYields[i]);
-    //randomizePoisson( data );
-
-  } else {
+  if( !dummyAnalysis ) {
 
     std::string samplesFile_data = "../samples/samples_" + cfg.dataSamples() + ".dat";
 
     std::cout << std::endl << std::endl;
     std::cout << "-> Loading data from file: " << samplesFile_data << std::endl;
 
-    std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data);
+    std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, 1, 99 );
     if( samples_data.size()==0 ) {
       std::cout << "There must be an error: samples_data is empty!" << std::endl;
       exit(1209);
     }
 
-    for( unsigned i=0; i<samples_data.size(); ++i ) (*data) += *(computeYield( samples_data[i], cfg ));
+    std::vector< MT2Analysis<MT2EstimateTree>* > EventYield_data;
+    for( unsigned i=0; i < samples_data.size(); ++i )
+      EventYield_data.push_back( computeYield<MT2EstimateTree>( samples_data[i], cfg, lumi ) );
+
+    dataYield   = mergeYields( EventYield_data, cfg.regionsSet(), "data", 1, 99 );
 
   }
 
-
-  drawYields( outputdir, data, bgYields );
-
+  drawYields( outputdir, dataYield, bgYields );
 
   // save MT2Analyses:
-  data->writeToFile(outputdir + "/analyses.root");
+  dataYield->writeToFile(outputdir + "/analyses.root");
   for( unsigned i=0; i<bgYields.size(); ++i )
     bgYields[i]->writeToFile(outputdir + "/analyses.root", "UPDATE");
   for( unsigned i=0; i<signals.size(); ++i )
@@ -262,8 +244,8 @@ int main( int argc, char* argv[] ) {
 
 
 
-
-MT2Analysis<MT2EstimateTree>* computeYield( const MT2Sample& sample, const MT2Config& cfg, float lumi ) {
+template <class T>
+MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg, float lumi ) {
 
 
   std::string regionsSet = cfg.regionsSet();
@@ -288,19 +270,20 @@ MT2Analysis<MT2EstimateTree>* computeYield( const MT2Sample& sample, const MT2Co
 
 
   std::cout << "-> Setting up MT2Analysis with name: " << sample.sname << std::endl;
-  MT2Analysis<MT2EstimateTree>* analysis = new MT2Analysis<MT2EstimateTree>( sample.sname, regionsSet, sample.id );
-
+  MT2Analysis<T>* analysis = new MT2Analysis<T>( sample.sname, regionsSet, sample.id );
+  
+ 
   if( cfg.additionalStuff()=="qgVars" ) {
-    MT2EstimateTree::addVar( analysis, "partId0" );
-    MT2EstimateTree::addVar( analysis, "partId1" );
-    MT2EstimateTree::addVar( analysis, "partId2" );
-    MT2EstimateTree::addVar( analysis, "partId3" );
-    MT2EstimateTree::addVar( analysis, "qgl0" );
-    MT2EstimateTree::addVar( analysis, "qgl1" );
-    MT2EstimateTree::addVar( analysis, "qgl2" );
-    MT2EstimateTree::addVar( analysis, "qgl3" );
-    MT2EstimateTree::addVar( analysis, "qglProd" );
-    MT2EstimateTree::addVar( analysis, "qglAve" );
+    T::addVar( analysis, "partId0" );
+    T::addVar( analysis, "partId1" );
+    T::addVar( analysis, "partId2" );
+    T::addVar( analysis, "partId3" );
+    T::addVar( analysis, "qgl0" );
+    T::addVar( analysis, "qgl1" );
+    T::addVar( analysis, "qgl2" );
+    T::addVar( analysis, "qgl3" );
+    T::addVar( analysis, "qglProd" );
+    T::addVar( analysis, "qglAve" );
   }
   
 
@@ -324,13 +307,22 @@ MT2Analysis<MT2EstimateTree>* computeYield( const MT2Sample& sample, const MT2Co
     float minMTBmet = myTree.minMTBMet;
     int njets  = myTree.nJet40;
     int nbjets = myTree.nBJet20;    
-
-    Double_t weight = myTree.evt_scale1fb*lumi;
+    
+    float GenSusyMScan1 = myTree.GenSusyMScan1;
+    float GenSusyMScan2 = myTree.GenSusyMScan2;
+    
+    Double_t weight = (isData) ? 1. : myTree.evt_scale1fb*lumi;
     //weight *= myTree.weight_lepsf;
    
-    MT2EstimateTree* thisEstimate = analysis->get( ht, njets, nbjets, met, minMTBmet, mt2 );
+    T* thisEstimate = analysis->get( ht, njets, nbjets, met, minMTBmet, mt2 );
     if( thisEstimate==0 ) continue;
 
+
+//    //////QCD
+//    if( ht > 575. && ht < 1000. && mt2 < 300. ) continue;
+//    else if( ht > 1000 && ht < 1500. && mt2 < 300. ) continue;
+//    else if( ht > 1500. && mt2 < 400. ) continue;
+//    //////
 
     if( cfg.additionalStuff()=="qgVars" ) {
 
@@ -408,21 +400,20 @@ MT2Analysis<MT2EstimateTree>* computeYield( const MT2Sample& sample, const MT2Co
       thisEstimate->assignVar( "qglAve", qglAve );
 
       thisEstimate->assignTree(myTree, weight,"" );
-      thisEstimate->tree->Fill();
+    thisEstimate->tree->Fill();
 
     } else {
 
-      thisEstimate->fillTree(myTree, weight,"" );
-
+    thisEstimate->fillTree(myTree, weight,"" );
     }
 
+    thisEstimate->yield->Fill( mt2, weight );
+    thisEstimate->yield3d->Fill( mt2, GenSusyMScan1, GenSusyMScan2, weight );
 
+    //x   thisEstimate->yield->Fill(mt2, weight);
 
-    thisEstimate->yield->Fill(mt2, weight);
-
+      } // for entries
     
-  } // for entries
-
   //ofs.close();
 
   analysis->finalize();
@@ -435,11 +426,6 @@ MT2Analysis<MT2EstimateTree>* computeYield( const MT2Sample& sample, const MT2Co
   return analysis;
 
 }
-
-
-
-
-
 
 
 
@@ -463,8 +449,6 @@ MT2Analysis<MT2EstimateTree>* mergeYields( std::vector<MT2Analysis<MT2EstimateTr
   return return_EventYield;
 
 }
-
-
 
 
 void drawYields( const std::string& outputdir, MT2Analysis<MT2EstimateTree>* data, std::vector< MT2Analysis<MT2EstimateTree> *> bgYields ) {
@@ -602,8 +586,6 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2EstimateTree>* dat
 }
 
 
-
-
 MT2Config::MT2Config( const std::string& configFileName ) {
 
   std::cout << std::endl;
@@ -614,9 +596,6 @@ MT2Config::MT2Config( const std::string& configFileName ) {
   mcSamples_ = "";
   sigSamples_ = "";
   dataSamples_ = "";
-  lostLeptonTag_ = "";
-  qcdTag_ = "";
-  zinvTag_ = "";
   additionalStuff_ = "";
 
   ifstream IN(configFileName.c_str());
@@ -644,36 +623,12 @@ MT2Config::MT2Config( const std::string& configFileName ) {
       sigSamples_ = std::string(StringValue);
     else if( name=="dataSamples" )
       dataSamples_ = std::string(StringValue);
-    else if( name=="lostLeptonTag" )
-      lostLeptonTag_ = std::string(StringValue);
-    else if( name=="qcdTag" )
-      qcdTag_ = std::string(StringValue);
-    else if( name=="zinvTag" )
-      zinvTag_ = std::string(StringValue);
     else if( name=="additionalStuff" )
       additionalStuff_ = std::string(StringValue);
 
   } // while getline
 
-  if( mcSamples_=="" && lostLeptonTag_=="" && qcdTag_=="" && zinvTag_=="" ) {
-    std::cout << "[MT2Config] ERROR! Config file missing BG estimates!" << std::endl;
-    exit(333);
-  }
 
-  if( mcSamples_!="" && ( lostLeptonTag_!="" || qcdTag_!="" || zinvTag_!="" ) ) {
-    std::cout << "[MT2Config] ERROR! Config file must have either a mcSamples line OR the lostLeptonTag/qcdTag/zinvTag lines. Not both!" << std::endl;
-    exit(335);
-  }
-
-  if( mcSamples_=="" && !( lostLeptonTag_!="" || qcdTag_!="" || zinvTag_!="" ) ) {
-    std::cout << "[MT2Config] ERROR! All three data-driven BG estimate tags need to be specified in the config (lostLeptonTag/qcdTag/zinvTag)!" << std::endl;
-    exit(337);
-  }
-
-  if( mcSamples_!="" && sigSamples_!="" ) {
-    std::cout << "[MT2Config] ERROR! Config file must have either a mcSamples line OR (exclusive OR) a sigSamples line together with BG estimate tags." << std::endl;
-    exit(339);
-  }
 
   std::cout << std::endl;
      
@@ -702,9 +657,9 @@ void randomizePoisson( MT2Analysis<MT2EstimateTree>* data ) {
 
 	for( int ibin=1; ibin<h1_data->GetXaxis()->GetNbins()+1; ++ibin ) {
 
-	  int poisson_data = rand.Poisson(h1_data->GetBinContent(ibin));
-	  h1_data->SetBinContent(ibin, poisson_data);
-	  h1_data->SetBinError(ibin, 0.);
+	  int poisson_data = rand.Poisson(h1_data->GetBinContent(ibin, 0, 0));
+	  h1_data->SetBinContent(ibin, 0, 0, poisson_data);
+	  h1_data->SetBinError(ibin, 0, 0,  0.);
 	  
 	}  // for bins
 

@@ -22,7 +22,8 @@
 #define mt2_cxx
 #include "interface/mt2.h"
 
-float lumi = 5.; //fb-1
+float lumi = 4.; //fb-1
+//float lumi = 5.; //fb-1
 
 MT2Analysis<MT2EstimateSyst> computeYield( const MT2Sample& sample, const std::string& regionsSet, float lumi=1. );
 

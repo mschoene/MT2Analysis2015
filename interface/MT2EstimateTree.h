@@ -42,10 +42,25 @@ class MT2EstimateTree : public MT2Estimate {
 
   float mt2;
   float ht;
+
   float met_pt;
   float met_phi;
+
+  float deltaPhiMin;
+  float diffMetMht;
+  int nVert;
+
   int nJets;
   int nBJets;
+  int nElectrons;
+  int nMuons;
+  int nPFLep;
+  int nPFHad;
+
+  int GenSusyMScan1;
+  int GenSusyMScan2;
+
+  float dPhiMin;;
 
   float gamma_mt2;
   float gamma_ht;
@@ -75,8 +90,6 @@ class MT2EstimateTree : public MT2Estimate {
 
   friend MT2EstimateTree operator*( float k, const MT2EstimateTree& rhs );
   friend MT2EstimateTree operator/( float k, const MT2EstimateTree& rhs );
-
-
 
   virtual void finalize() {
   }

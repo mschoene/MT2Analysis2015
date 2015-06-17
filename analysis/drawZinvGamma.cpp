@@ -34,7 +34,7 @@ void drawFromTree( const std::string& outputdir, const std::string& varName, int
 int main( int argc, char* argv[] ) {
 
 
-  std::string samples = "PHYS14_v2_Zinv";
+  std::string samples = "PHYS14_v5_skimprune";
 
   std::string regionsSet = "zurich";
   if( argc>1 ) {

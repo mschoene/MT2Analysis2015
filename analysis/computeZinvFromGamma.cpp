@@ -11,6 +11,7 @@
 #include "interface/MT2Estimate.h"
 #include "interface/MT2EstimateTree.h"
 #include "interface/MT2EstimateSyst.h"
+#include "interface/MT2EstimateZinvGamma.h"
 
 #define mt2_cxx
 #include "../interface/mt2.h"
@@ -25,8 +26,8 @@
 
 
 
-//float lumi = 4.; // fb-1
-float lumi = 0.1; // fb-1
+float lumi = 4.; // fb-1
+//float lumi = 0.1; // fb-1
 
 
 
@@ -82,34 +83,38 @@ int main( int argc, char* argv[] ) {
   }
 
 
-  MT2Analysis<MT2EstimateTree>* gammaCRtree = MT2Analysis<MT2EstimateTree>::readFromFile(gammaControlRegionDir + "/data.root", "gammaCRtree");
+  //MT2Analysis<MT2EstimateTree>* gammaCRtree = MT2Analysis<MT2EstimateTree>::readFromFile(gammaControlRegionDir + "/data.root", "gammaCRtree");
   //MT2Analysis<MT2Estimate>* ZgammaRatioMC = getInclusiveRatioMC( regionsSet, Zinv, gammaCRtree );
   MT2Analysis<MT2Estimate>* ZgammaRatioMC = new MT2Analysis<MT2Estimate>( "ZgammaRatioMC", regionsSet );
   (*ZgammaRatioMC) = ( (* (MT2Analysis<MT2Estimate>*)Zinv) / (*gamma_prompt) );
   
 
-
+<
   //MT2Analysis<MT2Estimate>* ZgammaRatio = MT2EstimateSyst::makeAnalysisFromEstimate( "ZgammaRatio", regionsSet, ZgammaRatioMC );
   MT2Analysis<MT2Estimate>* ZgammaRatio = new MT2Analysis<MT2Estimate>( "ZgammaRatio", regionsSet );
   (*ZgammaRatio) = (*ZgammaRatioMC);
   MT2Analysis<MT2EstimateSyst>* purity;
   if( type > 0 ) {
     purity = MT2Analysis<MT2EstimateSyst>::readFromFile( gammaControlRegionDir + "/PurityFitsDataRC/purityFit.root", "purity" );
-    (*ZgammaRatio) *= 0.92; // f absorbed into Z/g ratio
+  }
+  if(purity == 0) 
+    std::cout << "WELL IF YOU COULD FUCKING PLEASE MAKE SURE THAT THERE IS SOMETHING IN THE PURITY THAT WOULD BE GREAT" << std::endl;
+
+
+  MT2Analysis<MT2EstimateSyst>* gamma_est = MT2EstimateSyst::makeAnalysisFromEstimate( "gamma_est", regionsSet, gammaCR );
+  if( type!=0 ) {
+    (*gamma_est) *= (*purity);
+    (*gamma_est) *= 0.92;
   }
 
-
-
-  MT2Analysis<MT2Estimate>* gammaCR_times_ZgammaRatio = new MT2Analysis<MT2Estimate>( "gammaCR_times_ZgammaRatio", regionsSet );
-  if( type==0 )
-    (*gammaCR_times_ZgammaRatio) = (*gammaCR) * (*ZgammaRatio);
-  else
-    (*gammaCR_times_ZgammaRatio) = (*gammaCR) * (*ZgammaRatio) * (*purity);
+  
+  //MT2Analysis<MT2EstimateSyst>* ZinvEstimateFromGamma = MT2EstimateSyst::makeAnalysisFromEstimate( "ZinvEstimateFromGamma", regionsSet, gamma_est );
+  MT2Analysis<MT2EstimateSyst>* ZinvEstimateFromGamma = new MT2Analysis<MT2EstimateSyst>( "ZinvEstimateFromGamma", regionsSet );
+  (*ZinvEstimateFromGamma) = (*gamma_est) * (*ZgammaRatio);
 
 
 
-
-  MT2Analysis<MT2EstimateSyst>* ZinvEstimateFromGamma = MT2EstimateSyst::makeAnalysisFromEstimate( "ZinvEstimateFromGamma", regionsSet, gammaCR_times_ZgammaRatio );
+  //MT2Analysis<MT2EstimateSyst>* ZinvEstimateFromGamma = MT2EstimateSyst::makeAnalysisFromEstimate( "ZinvEstimateFromGamma", regionsSet, gammaCR_times_ZgammaRatio );
 
   MT2Analysis<MT2EstimateSyst>* ZinvEstimate = combineDataAndMC( ZinvEstimateFromGamma, (MT2Analysis<MT2Estimate>*)Zinv );
 
@@ -118,12 +123,17 @@ int main( int argc, char* argv[] ) {
   ZinvEstimate->writeToFile( outFile );
   ZgammaRatio->addToFile( outFile );
   Zinv->setName("Zinv");
+
   Zinv->addToFile( outFile );
-  if( purity !=0 && type > 0 ) purity->addToFile( outFile );
+
+  gamma_est->addToFile( outFile );
+
+  if( !(purity ==0) && type > 0 ) purity->addToFile( outFile );
 
   return 0;
 
 }
+
 
 
 
