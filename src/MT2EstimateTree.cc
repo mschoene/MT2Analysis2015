@@ -206,7 +206,7 @@ void MT2EstimateTree::assignTree_gamma( const MT2Tree& mt2tree, float w ) {
   mt2           = mt2tree.gamma_mt2;
   ht            = mt2tree.gamma_ht;
   met           = mt2tree.gamma_met_pt;
-  dPhiMin       = mt2tree.gamma_dPhiMin;
+  deltaPhiMin   = mt2tree.gamma_deltaPhiMin;
   diffMetMht    = mt2tree.gamma_diffMetMht;
   nJets         = mt2tree.gamma_nJet40;
   nBJets        = mt2tree.gamma_nBJet20;
