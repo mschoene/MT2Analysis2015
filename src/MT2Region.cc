@@ -116,17 +116,37 @@ std::string MT2HTRegion::getName() const {
 }
 
 
+//std::string MT2HTRegion::getNiceName() const {
+//
+//  std::string htMax_str(Form("%.0f", htMax));
+//  char htPart[500];
+//  if( htMax==-1 ) 
+//    if( htMin >= 1000. )
+//      sprintf( htPart, "H_{T} > %.0f GeV, E_{T}^{miss} > %.0f GeV", htMin, this->metMin() );
+//    else
+//      sprintf( htPart, "H_{T} > %.0f GeV", htMin );
+//  else
+//    if( htMin >= 1000. )
+//      sprintf( htPart, "%.0f < H_{T} < %.0f GeV, E_{T}^{miss} > %.0f GeV", htMin, htMax, this->metMin() );
+//    else if( htMin < 1000. && htMax > 1000. )
+//      sprintf( htPart, "%.0f < H_{T} < %.0f GeV", htMin, htMax );
+//  std::string htPart_str(htPart);
+//
+// 
+//  return htPart_str;
+//
+//}
+
 std::string MT2HTRegion::getNiceName() const {
 
   std::string htMax_str(Form("%.0f", htMax));
   char htPart[500];
   if( htMax==-1 ) 
-    sprintf( htPart, "H_{T} > %.0f GeV, E_{T}^{miss} > %.0f GeV", htMin, this->metMin() );
+    sprintf( htPart, "H_{T} > %.0f GeV", htMin );
   else
-    sprintf( htPart, "%.0f < H_{T} < %.0f GeV, E_{T}^{miss} > %.0f GeV", htMin, htMax, this->metMin() );
+    sprintf( htPart, "%.0f < H_{T} < %.0f GeV", htMin, htMax );
   std::string htPart_str(htPart);
 
- 
   return htPart_str;
 
 }
@@ -329,7 +349,7 @@ std::string MT2SignalRegion::getNiceName() const {
   std::string niceName_b = getNiceJetName( "b", nBJetsMin,  nBJetsMax  );
 
   std::string niceName = niceName_j;
-  if( niceName!="" && niceName_b!="" ) niceName += "," + niceName_b;
+  if( niceName!="" && niceName_b!="" ) niceName += " , " + niceName_b;
 
   if( mtCut=="loMT"  ) niceName += " (low M_{T})";
   else if( mtCut=="hiMT" ) niceName += " (high M_{T})";
@@ -656,7 +676,7 @@ void MT2Region::getBins( int &nBins, double*& bins) const {
     const int nBins_tmp                        = 150;
     bins = new double[nBins_tmp+1];
     for( unsigned i=0; i<nBins_tmp+1; ++i ) 
-      bins[i] = (double)i*10.;
+      bins[i] = 200.+(double)i*10.;
     nBins = nBins_tmp;
 
 
