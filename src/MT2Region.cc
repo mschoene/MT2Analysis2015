@@ -540,12 +540,11 @@ void MT2Region::getBins( int &nBins, double*& bins) const {
 
   if( regionName == "HT450toInf_j2toInf_b0toInf" ) {  // this is the inclusive region
 
-    const int nBins_tmp                        = 150;
-    bins = new double[nBins_tmp+1];
-    for( unsigned i=0; i<nBins_tmp+1; ++i ) 
-      bins[i] = (double)i*10.;
+    const int nBins_tmp                        = 4;
+    bins = new double[nBins_tmp+1]{200., 300., 400., 600., 1000.};
+    //const int nBins_tmp                        = 5;
+    //bins = new double[nBins_tmp+1]{200., 300., 400., 600., 1000., 1500.};
     nBins = nBins_tmp;
-
 
   } 
 
