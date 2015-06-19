@@ -15,7 +15,7 @@
 
 
 float lumi = 4.; //fb-1
-
+bool alsoSignals = false;
 
 
 
@@ -28,9 +28,9 @@ int round(float d) {
 
 void computeYield( const MT2Sample& sample, const std::string& regionsSet, 
                    MT2Analysis<MT2EstimateTree>* anaTree,
-                   MT2Analysis<MT2EstimateZinvGamma>* prompt, MT2Analysis<MT2EstimateZinvGamma>* prompt_pass, 
-                   MT2Analysis<MT2EstimateZinvGamma>* nip, MT2Analysis<MT2EstimateZinvGamma>* nip_pass, 
-                   MT2Analysis<MT2EstimateZinvGamma>* fake, MT2Analysis<MT2EstimateZinvGamma>* fake_pass, float isoCut );
+                   MT2Analysis<MT2EstimateZinvGamma>* prompt=0, MT2Analysis<MT2EstimateZinvGamma>* prompt_pass=0, 
+                   MT2Analysis<MT2EstimateZinvGamma>* nip=0, MT2Analysis<MT2EstimateZinvGamma>* nip_pass=0, 
+                   MT2Analysis<MT2EstimateZinvGamma>* fake=0, MT2Analysis<MT2EstimateZinvGamma>* fake_pass=0, float isoCut=2.5 );
 void roundLikeData( MT2Analysis<MT2EstimateZinvGamma>* data );
 
 
@@ -71,7 +71,6 @@ int main( int argc, char* argv[] ) {
   system(Form("mkdir -p %s", outputdir.c_str()));
 
   
-
   MT2Analysis<MT2EstimateZinvGamma>* prompt = new MT2Analysis<MT2EstimateZinvGamma>( "prompt", regionsSet );
   MT2Analysis<MT2EstimateZinvGamma>* prompt_pass = new MT2Analysis<MT2EstimateZinvGamma>( "prompt_pass", regionsSet );
 
@@ -129,16 +128,46 @@ int main( int argc, char* argv[] ) {
   MT2Analysis<MT2EstimateSyst>* purityLoose = MT2EstimateSyst::makeEfficiencyAnalysis( "purityLoose", regionsSet, (MT2Analysis<MT2Estimate>*)matched, (MT2Analysis<MT2Estimate>*)gammaCR_loose );
 
 
-  gammaCR_loose->writeToFile( outputdir + "/mc.root" );
-  gammaCR->addToFile( outputdir + "/mc.root" );
-  prompt->addToFile( outputdir + "/mc.root" );
-  fake->addToFile( outputdir + "/mc.root" );
-  nip->addToFile( outputdir + "/mc.root" );
-  prompt_pass->addToFile( outputdir + "/mc.root" );
-  fake_pass->addToFile( outputdir + "/mc.root" );
-  nip_pass->addToFile( outputdir + "/mc.root" );
-  f->addToFile( outputdir + "/mc.root" );
-  f_pass->addToFile( outputdir + "/mc.root" );
+  std::string mcFile = outputdir + "/mc.root";
+
+  gammaCR_loose->writeToFile( mcFile, "RECREATE" );
+  gammaCR      ->addToFile( mcFile );
+  prompt       ->addToFile( mcFile );
+  fake         ->addToFile( mcFile );
+  nip          ->addToFile( mcFile );
+  prompt_pass  ->addToFile( mcFile );
+  fake_pass    ->addToFile( mcFile );
+  nip_pass     ->addToFile( mcFile );
+  f            ->addToFile( mcFile );
+  f_pass       ->addToFile( mcFile );
+
+
+
+  std::vector< MT2Analysis< MT2EstimateTree>* > signals;
+  if( alsoSignals ) {
+
+    std::cout << std::endl << std::endl;
+    std::cout << "-> Loading signal samples" << std::endl;
+    std::vector<MT2Sample> samples_sig = MT2Sample::loadSamples(samplesFile, "SMS");
+
+    for( unsigned i=0; i<samples_sig.size(); ++i ) {
+
+      MT2Analysis<MT2EstimateTree>* thisSig = new MT2Analysis<MT2EstimateTree>( samples_sig[i].sname, "13TeV_inclusive", samples_sig[i].id );
+      MT2EstimateTree::addVar( thisSig, "prompt" );
+      MT2EstimateTree::addVar( thisSig, "iso" );
+
+      computeYield( samples_sig[i], regionsSet, thisSig );
+
+      signals.push_back( thisSig );
+
+    }  // for signals
+
+  }
+
+
+
+  for( unsigned i=0; i<signals.size(); ++i )
+    signals[i]->addToFile( mcFile);
 
   purityTight->writeToFile( outputdir + "/purityMC.root" );
   purityLoose->addToFile( outputdir + "/purityMC.root" );
@@ -238,8 +267,9 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet,
     Double_t weight = myTree.evt_scale1fb*lumi; 
 
     bool passIso = iso<isoCut;
+std::cout << "xxx cout" << std::endl;
 
-    if( isPrompt ) {
+    if( isPrompt && prompt!=0 && prompt_pass!=0 ) {
 
       MT2EstimateZinvGamma* thisPrompt = prompt->get( ht, njets, nbjets, met, minMTBmet, mt2 );
       if( thisPrompt==0 ) continue;
@@ -257,7 +287,7 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet,
 
       }
 
-    } else if( isNIP ) { 
+    } else if( isNIP && nip!=0 && nip_pass!=0 ) { 
       
       MT2EstimateZinvGamma* thisnip = nip->get( ht, njets, nbjets, met, minMTBmet, mt2 );
       if( thisnip==0 ) continue;
@@ -275,7 +305,7 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet,
 
       }
 
-    } else if( isFake ) {
+    } else if( isFake && fake!=0 && fake_pass!=0 ) {
 
       MT2EstimateZinvGamma* thisFake = fake->get( ht, njets, nbjets, met, minMTBmet, mt2 );
       if( thisFake==0 ) continue;
@@ -316,12 +346,12 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet,
   } // for entries
 
 
-  prompt->finalize();
-  prompt_pass->finalize();
-  nip->finalize();
-  nip_pass->finalize();
-  fake->finalize();
-  fake_pass->finalize();
+  if( prompt!=0 ) prompt->finalize();
+  if( prompt_pass!=0 ) prompt_pass->finalize();
+  if( nip!=0 ) nip->finalize();
+  if( nip_pass!=0 ) nip_pass->finalize();
+  if( fake!=0 ) fake->finalize();
+  if( fake_pass!=0 ) fake_pass->finalize();
   anaTree->finalize();
   
 
