@@ -66,7 +66,6 @@ int main( int argc, char* argv[] ) {
 
   TH1::AddDirectory(kFALSE); // stupid ROOT memory allocation needs this
 
-
   std::string outputdir(Form("GammaControlRegion_%s_%s_%.0ffb", samplesFileName.c_str(), regionsSet.c_str(), lumi ));
   system(Form("mkdir -p %s", outputdir.c_str()));
 
@@ -148,7 +147,8 @@ int main( int argc, char* argv[] ) {
 
     std::cout << std::endl << std::endl;
     std::cout << "-> Loading signal samples" << std::endl;
-    std::vector<MT2Sample> samples_sig = MT2Sample::loadSamples(samplesFile, "SMS");
+    std::string samplesFile_signals = "samples_signalsSNT.txt";
+    std::vector<MT2Sample> samples_sig = MT2Sample::loadSamples(samplesFile_signals,1000 );
 
     for( unsigned i=0; i<samples_sig.size(); ++i ) {
 
@@ -164,10 +164,12 @@ int main( int argc, char* argv[] ) {
 
   }
 
-
-
   for( unsigned i=0; i<signals.size(); ++i )
     signals[i]->addToFile( mcFile);
+
+
+
+
 
   purityTight->writeToFile( outputdir + "/purityMC.root" );
   purityLoose->addToFile( outputdir + "/purityMC.root" );
@@ -267,7 +269,6 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet,
     Double_t weight = myTree.evt_scale1fb*lumi; 
 
     bool passIso = iso<isoCut;
-std::cout << "xxx cout" << std::endl;
 
     if( isPrompt && prompt!=0 && prompt_pass!=0 ) {
 
