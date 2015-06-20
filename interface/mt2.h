@@ -25,7 +25,7 @@ public :
    // Declaration of leaf types
    Int_t           run;
    Int_t           lumi;
-   Int_t           evt;
+   ULong64_t       evt;
    Int_t           isData;
    Float_t         xsec;
    Int_t           HLT_htXprescale;
@@ -378,7 +378,7 @@ public :
    Float_t         evt_xsec;
    Float_t         evt_kfactor;
    Float_t         evt_filter;
-   Int_t           evt_nEvts;
+   ULong64_t       evt_nEvts;
    Int_t           evt_id;
    Float_t weight_lepsf;
    Float_t weight_lepsf_UP;
