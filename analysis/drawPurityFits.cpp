@@ -15,6 +15,11 @@
 
 
 
+
+float lumi = 4.; // fb-1
+
+
+
 class PurityFit {
 
  public:
@@ -43,8 +48,6 @@ void doAllPurityPlots( const std::string& gammaCRdir, const std::string& samples
 void compareRegions( const std::string& outputdir, std::vector<MT2Region> regions, MT2Analysis<MT2EstimateSyst>* analysis, const std::string& suffix="" );
 
 
-
-float lumi = 4.; // fb-1
 
 
 int main( int argc, char* argv[] ) {
@@ -95,8 +98,12 @@ void doAllPurityPlots( const std::string& gammaCRdir, const std::string& samples
     //fits.push_back( PurityFit( "Jet Bins"  , "13TeV_onlyJet"   , MT2Analysis<MT2EstimateSyst>::readFromFile(gammaCRdir+"/PurityFitsMC_" + samples + "_13TeV_onlyJets/purityFit_"  + samples + "_13TeV_onlyJets.root" , purityName), 24, kAzure ));
     fits.push_back( PurityFit( "Template Fit" , "13TeV_inclusive" , MT2Analysis<MT2EstimateSyst>::readFromFile(gammaCRdir+"/PurityFitsMC/purityFit.root", purityName), 25, kOrange+1 ));
   } else {
-    fits.push_back( PurityFit( "Template Fit (MC)"  , "13TeV_inclusive" , MT2Analysis<MT2EstimateSyst>::readFromFile(gammaCRdir+"/PurityFitsMC/purityFit.root", purityName), 21, 29 ));
-    fits.push_back( PurityFit( "Template Fit (Data)", "13TeV_inclusive" , MT2Analysis<MT2EstimateSyst>::readFromFile(gammaCRdir+"/PurityFits" + mc_or_data + "/purityFit.root", purityName), 20, kOrange+1 ));
+    if( lumi<=1. ) {
+      fits.push_back( PurityFit( "Template Fit", "13TeV_inclusive" , MT2Analysis<MT2EstimateSyst>::readFromFile(gammaCRdir+"/PurityFits" + mc_or_data + "/purityFit.root", purityName), 20, kOrange+1 ));
+    } else {
+      fits.push_back( PurityFit( "Template Fit (MC)"  , "13TeV_inclusive" , MT2Analysis<MT2EstimateSyst>::readFromFile(gammaCRdir+"/PurityFitsMC/purityFit.root", purityName), 21, 29 ));
+      fits.push_back( PurityFit( "Template Fit (Data)", "13TeV_inclusive" , MT2Analysis<MT2EstimateSyst>::readFromFile(gammaCRdir+"/PurityFits" + mc_or_data + "/purityFit.root", purityName), 20, kOrange+1 ));
+    }
   }
 
 
@@ -135,7 +142,7 @@ void doAllPurityPlots( const std::string& gammaCRdir, const std::string& samples
     gr_purityMC->Draw("p same");
 
     //float xMin_legend = 0.6;
-    float xMin_legend = (mc_or_data=="MC" || fits.size()==1) ? 0.65 : 0.52;
+    float xMin_legend = (mc_or_data=="MC" || fits.size()==1) ? 0.6 : 0.52;
     TLegend* legend = new TLegend( xMin_legend, 0.2, 0.9, 0.2+0.06*(fits.size()+1.) );
     legend->SetTextSize(0.038); 
     legend->SetFillColor(0);

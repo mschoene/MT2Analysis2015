@@ -121,12 +121,11 @@ std::string MT2HTRegion::getNiceName() const {
   std::string htMax_str(Form("%.0f", htMax));
   char htPart[500];
   if( htMax==-1 ) 
-    sprintf( htPart, "H_{T} > %.0f GeV, E_{T}^{miss} > %.0f GeV", htMin, this->metMin() );
+    sprintf( htPart, "H_{T} > %.0f GeV", htMin );
   else
-    sprintf( htPart, "%.0f < H_{T} < %.0f GeV, E_{T}^{miss} > %.0f GeV", htMin, htMax, this->metMin() );
+    sprintf( htPart, "%.0f < H_{T} < %.0f GeV", htMin, htMax );
   std::string htPart_str(htPart);
 
- 
   return htPart_str;
 
 }
@@ -329,7 +328,7 @@ std::string MT2SignalRegion::getNiceName() const {
   std::string niceName_b = getNiceJetName( "b", nBJetsMin,  nBJetsMax  );
 
   std::string niceName = niceName_j;
-  if( niceName!="" && niceName_b!="" ) niceName += "," + niceName_b;
+  if( niceName!="" && niceName_b!="" ) niceName += ", " + niceName_b;
 
   if( mtCut=="loMT"  ) niceName += " (low M_{T})";
   else if( mtCut=="hiMT" ) niceName += " (high M_{T})";
