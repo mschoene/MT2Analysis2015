@@ -152,7 +152,7 @@ int main( int argc, char* argv[] ) {
 
     for( unsigned i=0; i<samples_sig.size(); ++i ) {
 
-      MT2Analysis<MT2EstimateTree>* thisSig = new MT2Analysis<MT2EstimateTree>( samples_sig[i].sname, "13TeV_inclusive", samples_sig[i].id );
+      MT2Analysis<MT2EstimateTree>* thisSig = new MT2Analysis<MT2EstimateTree>( samples_sig[i].sname, regionsSet, samples_sig[i].id );
       MT2EstimateTree::addVar( thisSig, "prompt" );
       MT2EstimateTree::addVar( thisSig, "iso" );
 
