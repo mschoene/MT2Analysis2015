@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <sstream>
 
 #include "interface/MT2Analysis.h"
 #include "interface/MT2Estimate.h"
@@ -30,7 +31,7 @@ struct BGTable {
 
 
 
-BGTable getTable( const std::string tableFileName );
+BGTable getTable( const std::string& tableFileName );
 std::string makeSingleLine( float yield, float statUp, float statDn, float systUp, float systDn );
 std::string getSingleErrPart( float up, float dn );
 
@@ -64,15 +65,18 @@ int main( int argc, char* argv[] ) {
 
     }
 
+    for( std::set<MT2Region>::iterator iR = selectedRegions.begin(); iR != selectedRegions.end(); ++iR )
+      std::cout << iR->getName() << std::endl;
+
 
     ofs << "\\begin{table}[htbp]" << std::endl; 
-    ofs << "\\caption{Background estimate yields for " << iHT->getNiceName() << std::endl;
-    ofs << "\\caption{Background estimate yields for " << iHT->getNiceName() << std::endl;
+    ofs << "\\caption{Background estimate yields for $" << iHT->getNiceName() << "$}" << std::endl;
+    ofs << "\\caption{Background estimate yields for $" << iHT->getNiceName() << "$}" << std::endl;
     ofs << "\\centering" << std::endl;
     ofs << "\\begin{tabular}{r";
     for( std::set<MT2Region>::iterator iR = selectedRegions.begin(); iR != selectedRegions.end(); ++iR )
       ofs << "|c";
-    ofs << std::endl;
+    ofs << "}" << std::endl;
     
     std::string zinvLine = "Invisible Z ";
     std::string llepLine = "Lost Lepton ";
@@ -80,15 +84,35 @@ int main( int argc, char* argv[] ) {
 
     for( std::set<MT2Region>::iterator iR = selectedRegions.begin(); iR != selectedRegions.end(); ++iR ) {
 
-      BGTable thisTable = getTable(Form("%s/datacard_templates/table_%s.txt", dir.c_str(), iR->getName().c_str()) );
+      int nBins;
+      double* bins;
+      iR->getBins(nBins, bins );
 
-      std::string thisZinvLine = makeSingleLine( thisTable.zinv, thisTable.zinv_statUp, thisTable.zinv_statDn, thisTable.zinv_systUp, thisTable.zinv_systDn );
-      
-      zinvLine = zinvLine + " & " + thisZinvLine;
+      for( int iBin=0; iBin<nBins-1; ++iBin ) {
+
+        std::string tableName;
+        if( bins[iBin+1]>0. )
+          tableName = std::string(Form("%s/datacard_templates/table_%s_m%.0lfto%.0lf.txt", dir.c_str(), iR->getName().c_str(), bins[iBin], bins[iBin+1]) );
+        else 
+          tableName = std::string(Form("%s/datacard_templates/table_%s_m%.0lftoInf.txt", dir.c_str(), iR->getName().c_str(), bins[iBin] ));
+
+        BGTable thisTable = getTable(tableName);
+
+        std::string thisZinvLine = makeSingleLine( thisTable.zinv, thisTable.zinv_statUp, thisTable.zinv_statDn, thisTable.zinv_systUp, thisTable.zinv_systDn );
+        std::string thisllepLine = makeSingleLine( thisTable.llep, thisTable.llep_statUp, thisTable.llep_statDn, thisTable.llep_systUp, thisTable.llep_systDn );
+        std::string thisqcdLine = makeSingleLine( thisTable.qcd, thisTable.qcd_statUp, thisTable.qcd_statDn, thisTable.qcd_systUp, thisTable.qcd_systDn );
+        
+        zinvLine = zinvLine + " & " + thisZinvLine;
+        llepLine = llepLine + " & " + thisllepLine;
+        qcdLine = qcdLine + " & " + thisqcdLine;
+
+      } // for mt2 bins
+
+      ofs << zinvLine << std::endl;
+      ofs << llepLine << std::endl;
+      ofs << qcdLine << std::endl;
 
     } // for selected regions
-
-    ofs << zinvLine << std::endl;
 
   } // for ht regions
 
@@ -103,7 +127,7 @@ int main( int argc, char* argv[] ) {
 
 
 
-BGTable getTable( const std::string tableFileName ) {
+BGTable getTable( const std::string& tableFileName ) {
 
   ifstream ifs( tableFileName.c_str() );
 
@@ -111,9 +135,16 @@ BGTable getTable( const std::string tableFileName ) {
 
   while( ifs.good() ) {
 
+
+    char thisLine[256];
+    ifs.getline( thisLine, 256 );
+    if( thisLine[0]=='#' ) continue;
+
+    std::istringstream thisLine_iss(thisLine);
+    
     std::string name;
     float yield, statUp, statDn, systUp, systDn;
-    ifs >> name >> yield >> statUp >> statDn >> systUp >> systDn;
+    thisLine_iss >> name >> yield >> statUp >> statDn >> systUp >> systDn;
 
     if( name=="zinv" ) {
       table.zinv = yield;
