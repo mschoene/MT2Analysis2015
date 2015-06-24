@@ -23,7 +23,7 @@
 #define mt2_cxx
 #include "interface/mt2.h"
 
-float lumi = 3.; //fb-1
+float lumi = 4.; //fb-1
 
 struct lepcand {
   
