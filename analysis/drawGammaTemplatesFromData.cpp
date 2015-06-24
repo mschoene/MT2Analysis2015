@@ -48,7 +48,7 @@ int main( int argc, char* argv[] ) {
   MT2Analysis<MT2EstimateZinvGamma>* templatesPromptRC  = MT2Analysis<MT2EstimateZinvGamma>::readFromFile("gammaTemplatesDataRC_" + samples + "_" + regionsSet + ".root", "templatesPrompt");
 
 
-  setHistoTitle( templatesFake, "Data #sigma_{i#eta i#eta} Sidebands" );
+  setHistoTitle( templatesFake, "#sigma_{i#eta i#eta} Sidebands" );
   setHistoTitle( templatesFakeMC, "MC Fakes" );
   setHistoTitle( templatesPromptRaw, "Data (all)" );
   setHistoTitle( templatesPrompt, "Data (fake removal)" );
@@ -160,7 +160,8 @@ void drawSinglePlot( const std::string& outputdir, const std::string& name, cons
   c1_log->cd();
   histoMC->Draw("L E same");
 
-  TLegend* legend = new TLegend( 0.46, yMinLegend, 0.9, 0.9 );
+  TLegend* legend = new TLegend( 0.56, yMinLegend, 0.9, 0.9 );
+  //TLegend* legend = new TLegend( 0.46, yMinLegend, 0.9, 0.9 );
   legend->SetFillColor(0);
   legend->SetTextSize(0.035);
 
