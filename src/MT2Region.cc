@@ -171,7 +171,7 @@ bool MT2HTRegion::operator<( const MT2HTRegion& rhs ) const {
 
 
 
-bool MT2HTRegion::isIncluded( MT2HTRegion* htRegion ) const {
+bool MT2HTRegion::isIncluded( const MT2HTRegion* htRegion ) const {
 
   bool returnBool = true;
 
@@ -462,7 +462,7 @@ bool MT2SignalRegion::operator<=( const MT2SignalRegion& rhs ) const {
 }
 
 
-bool MT2SignalRegion::isIncluded( MT2SignalRegion* sigRegion ) const {
+bool MT2SignalRegion::isIncluded( const MT2SignalRegion* sigRegion ) const {
 
   bool returnBool = true;
 
@@ -876,7 +876,7 @@ std::vector< std::string> MT2Region::getBinNames() const {
 }
 
 
-bool MT2Region::isIncluded( MT2Region* region ) const {
+bool MT2Region::isIncluded( const MT2Region* region ) const {
 
   return ( ( sigRegion_->isIncluded( region->sigRegion() ) ) && ( htRegion_->isIncluded( region->htRegion() ) ) );
 
