@@ -301,7 +301,8 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg, flo
 
     myTree.GetEntry(iEntry);
 
-    if( !myTree.passSelection() ) continue;
+    if( regionsSet!="13Tev_noCut" )
+      if( !myTree.passSelection() ) continue;
 
     float ht   = myTree.ht;
     float met  = myTree.met_pt;
