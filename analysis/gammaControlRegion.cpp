@@ -14,8 +14,8 @@
 #include "TH1F.h"
 
 
-float lumi = 0.1; //fb-1
-//float lumi = 4.; //fb-1
+//float lumi = 0.1; //fb-1
+float lumi = 10.; //fb-1
 
 
 
@@ -40,7 +40,6 @@ void roundLikeData( MT2Analysis<MT2EstimateZinvGamma>* data );
 int main( int argc, char* argv[] ) {
 
 
-  //  std::string samplesFileName = "PHYS14_v4_skimprune";
   std::string samplesFileName = "PHYS14_v5_skimprune";
 
 

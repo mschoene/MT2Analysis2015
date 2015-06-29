@@ -15,7 +15,7 @@
 
 
 
-float lumi = 4.; //fb-1
+float lumi = 20.; //fb-1
 
 
 
@@ -32,7 +32,7 @@ int main( int argc, char* argv[] ) {
 
 
 
-  std::string useMC = "MC";
+  std::string useMC = "dataRC";
 
   if( argc>1 ) {
 

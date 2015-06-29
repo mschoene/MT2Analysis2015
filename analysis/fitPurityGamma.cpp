@@ -45,7 +45,7 @@ void fitPurity( const std::string& outputdir, MT2EstimateSyst* purityLoose, MT2E
 void checkBoundaries( Purity& p );
 
 
-float lumi = 4.; // fb-1
+float lumi = 20.; // fb-1
 
 
 
