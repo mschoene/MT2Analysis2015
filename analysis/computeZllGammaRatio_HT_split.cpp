@@ -24,8 +24,8 @@
 #define mt2_cxx
 #include "interface/mt2.h"
 
-float lumi = 0.1;
-//float lumi = 4.;
+//float lumi = 0.1;
+float lumi = 4.;
 
 
 void drawRatios(std::string fullPath, float *binss, unsigned int size,  std::string zll_sel,  std::string gamma_sel, MT2Analysis<MT2Estimate>*  zll_ratio,  MT2Analysis<MT2EstimateTree>*  gamma, MT2Analysis<MT2EstimateTree>*  Zll, MT2Analysis<MT2Estimate>*  zll_yield, const MT2Region thisRegion, std::string cut, std::string cut_gamma);
@@ -81,7 +81,9 @@ int main(int argc, char* argv[]){
   gStyle->SetPalette(55,0);
   */
  
-  std::string gammaControlRegionDir = "GammaControlRegion_" + samples + "_" + regionsSet + "_0fb";
+  std::string gammaControlRegionDir = "GammaControlRegion_" + samples + "_" + regionsSet + suffix;
+
+  // std::string gammaControlRegionDir = "GammaControlRegion_" + samples + "_" + regionsSet + "_10fb";
 
  
   MT2Analysis<MT2EstimateTree>* gamma = MT2Analysis<MT2EstimateTree>::readFromFile(gammaControlRegionDir + "/data.root", "gammaCRtree");
@@ -92,7 +94,7 @@ int main(int argc, char* argv[]){
   }
 
 
-  std::string ZllDir = "Zll_" + samples + "_" + regionsSet;
+  std::string ZllDir = "Zll_CR_" + samples + "_" + regionsSet;
   //  std::string ZllDir = "Zll_" + samples + "_" + regionsSet;
 
   //  MT2Analysis<MT2EstimateTree>* Zll = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s_%0.ffb/Zll_analyses.root", ZllDir.c_str(), lumi), "DYJets");
@@ -108,9 +110,20 @@ int main(int argc, char* argv[]){
   MT2Analysis<MT2Estimate>* zll_ratio = new MT2Analysis<MT2Estimate>( "zll_ratio", "inclusive" );
   MT2Analysis<MT2Estimate>* zll_yield = new MT2Analysis<MT2Estimate>( "zll_yield", "inclusive" );
   //  MT2Analysis<MT2Estimate>* zll_ratio = new MT2Analysis<MT2Estimate>( "zll_ratio", "zurich" );
-  MT2Analysis<MT2Estimate>* zll_ht = new MT2Analysis<MT2Estimate>( "zll_ht", "13TeV_inclusive" ); 
-  MT2Analysis<MT2Estimate>* zll_nJets = new MT2Analysis<MT2Estimate>( "zll_nJets", "13TeV_inclusive" ); 
-  MT2Analysis<MT2Estimate>* zll_nBJets = new MT2Analysis<MT2Estimate>( "zll_nBJets", "13TeV_inclusive" );
+
+  //YIELDS
+  MT2Analysis<MT2Estimate>* zllY_pt = new MT2Analysis<MT2Estimate>( "zllY_pt", "13TeV_inclusive" ); 
+  MT2Analysis<MT2Estimate>* zllY_mt2 = new MT2Analysis<MT2Estimate>( "zllY_mt2", "13TeV_inclusive" ); 
+  MT2Analysis<MT2Estimate>* zllY_ht = new MT2Analysis<MT2Estimate>( "zllY_ht", "13TeV_inclusive" ); 
+  MT2Analysis<MT2Estimate>* zllY_nJets = new MT2Analysis<MT2Estimate>( "zllY_nJets", "13TeV_inclusive" ); 
+  MT2Analysis<MT2Estimate>* zllY_nBJets = new MT2Analysis<MT2Estimate>( "zllY_nBJets", "13TeV_inclusive" );
+
+  //RATIOS
+  MT2Analysis<MT2Estimate>* zllG_pt = new MT2Analysis<MT2Estimate>( "zllG_pt", "13TeV_inclusive" ); 
+  MT2Analysis<MT2Estimate>* zllG_mt2 = new MT2Analysis<MT2Estimate>( "zllG_mt2", "13TeV_inclusive" ); 
+  MT2Analysis<MT2Estimate>* zllG_ht = new MT2Analysis<MT2Estimate>( "zllG_ht", "13TeV_inclusive" ); 
+  MT2Analysis<MT2Estimate>* zllG_nJets = new MT2Analysis<MT2Estimate>( "zllG_nJets", "13TeV_inclusive" ); 
+  MT2Analysis<MT2Estimate>* zllG_nBJets = new MT2Analysis<MT2Estimate>( "zllG_nBJets", "13TeV_inclusive" );
   
 
   int counter_total_bins = 0;
@@ -153,10 +166,12 @@ int main(int argc, char* argv[]){
     std::string cut =  "weight*(abs(Z_mass-91.19)<10 &&nBJets<2)";
      std::string cut_gamma =  "weight*(prompt==2)";
   
-     drawRatios( outputdir, bins_mt2, sizeof(bins_mt2)/sizeof(float)-1 , "zll_mt2", "gamma_mt2" ,  zll_ratio,   gamma,  Zll,  zll_yield, thisRegion, cut, cut_gamma );
-     drawRatios( outputdir, bins_ht, sizeof(bins_ht)/sizeof(float)-1 , "zll_ht", "gamma_ht" ,  zll_ratio,   gamma,  Zll,  zll_yield, thisRegion, cut, cut_gamma );
-     drawRatios( outputdir, bins_nJets, sizeof(bins_nJets)/sizeof(float)-1 , "nJets", "gamma_nJets" ,  zll_ratio,   gamma,  Zll,  zll_yield, thisRegion, cut, cut_gamma );
-     drawRatios( outputdir, bins_nBJets, sizeof(bins_nBJets)/sizeof(float)-1 , "nBJets", "gamma_nBJets" ,  zll_ratio,   gamma,  Zll,  zll_yield, thisRegion, cut, cut_gamma );
+     drawRatios( outputdir, bins_mt2, sizeof(bins_mt2)/sizeof(float)-1 , "zll_mt2", "gamma_mt2" ,  zllG_mt2,   gamma,  Zll,  zllY_mt2, thisRegion, cut, cut_gamma );
+   
+     drawRatios( outputdir, bins_ht, sizeof(bins_ht)/sizeof(float)-1 , "zll_ht", "gamma_ht" ,  zllG_ht,   gamma,  Zll,  zllY_ht, thisRegion, cut, cut_gamma );
+    
+     drawRatios( outputdir, bins_nJets, sizeof(bins_nJets)/sizeof(float)-1 , "nJets", "gamma_nJets" ,  zllG_nJets,   gamma,  Zll,  zllY_nJets, thisRegion, cut, cut_gamma );
+     drawRatios( outputdir, bins_nBJets, sizeof(bins_nBJets)/sizeof(float)-1 , "nBJets", "gamma_nBJets" ,  zllG_nBJets,   gamma,  Zll,  zllY_nBJets, thisRegion, cut, cut_gamma );
  
 
 
@@ -1027,12 +1042,21 @@ int main(int argc, char* argv[]){
   //  std::string outFile_ht = outputdir + "/zll_ht.root";
   //  std::string outFile_nJets = outputdir + "/zll_nJets.root";
   //  std::string outFile_nBJets = outputdir + "/zll_nBJets.root";
-
+  /*
   zll_ratio->writeToFile( outFile );
   zll_ht->addToFile( outFile );
   zll_nJets->addToFile( outFile );
   zll_nBJets->addToFile( outFile );
   zll_yield->addToFile( outFile );
+  */
+
+  //  zll_ratio->writeToFile( outFile );
+  zllY_mt2->writeToFile(outFile);
+
+  zllG_ht->addToFile( outFile );
+  zllG_nJets->addToFile( outFile );
+  zllG_nBJets->addToFile( outFile );
+  zllG_mt2->addToFile( outFile );
 
   /*
   zll_ht->writeToFile( outFile_ht );
@@ -1100,7 +1124,7 @@ void drawRatios(std::string fullPath, float *binss, unsigned int size,  std::str
   zllT ->Project( "h_mt2" , zll_sel.c_str(), cut.c_str() );
   gammaT->Project( "g_mt2", gamma_sel.c_str(), cut_gamma.c_str() );
 
-  h_mt2->SetBinContent(size, h_mt2->GetBinContent(size) + h_mt2->GetBinContent(size+1));
+  h_mt2->SetBinContent(size, h_mt2->GetBinContent(size) + h_mt2->GetBinContent(size+1));//adding overflow
   g_mt2->SetBinContent(size, g_mt2->GetBinContent(size) + g_mt2->GetBinContent(size+1));
 
   int nBinss =  h_mt2->GetNbinsX();
@@ -1116,7 +1140,7 @@ void drawRatios(std::string fullPath, float *binss, unsigned int size,  std::str
 
   //Filling the YIELDS
   int yieldBins = h_mt2->GetNbinsX();
-    for(int bi = 1; bi <= yieldBins+1 ; bi++){
+    for(int bi = 1; bi <= yieldBins ; bi++){
       double value = h_mt2->GetBinContent(bi);
       double err = h_mt2->GetBinError(bi);
       zll_yield->get(thisRegion)->yield->SetBinContent( bi,   value);
@@ -1124,17 +1148,11 @@ void drawRatios(std::string fullPath, float *binss, unsigned int size,  std::str
     }
 
 
-    /*
-    TH2D* h2_axes_yield = new TH2D("axes_yield", "", 10, 0, 1500, 10, 0.1, 699);
+    /*TH2D* h2_axes_yield = new TH2D("axes_yield", "", 10, 0, 1500, 10, 0.1, 699);
     h2_axes_yield->SetXTitle("M_{T2} [GeV]");
-    h2_axes_yield->SetYTitle("Zll Yield");
-    h2_axes_yield->Draw();
-    
-    h_mt2->Draw("p same");
-    labelTop->Draw("same");
-    gPad->RedrawAxis();
-    //  gPad->SetLogy();
- 
+    h2_axes_yield->SetYTitle("Zll Yield");    h2_axes_yield->Draw();   
+    h_mt2->Draw("p same");    labelTop->Draw("same");
+    gPad->RedrawAxis();    //  gPad->SetLogy();
     //   canny->SaveAs( Form("%s/yield_mt2_%s.eps", outputdir.c_str(), thisRegion.getName().c_str() ) );
     //   canny->SaveAs( Form("%s/yield_mt2_%s.png", outputdir.c_str() , thisRegion.getName().c_str() ) );
         */
@@ -1156,8 +1174,9 @@ void drawRatios(std::string fullPath, float *binss, unsigned int size,  std::str
 
     h_mt2->Divide(g_mt2);  
     h_mt2_mc->Divide(g_mt2_mc);
-    h_mt2_mc->SetMarkerStyle(20); h_mt2_mc->SetMarkerSize(1.6);
-    h_mt2_mc->SetMarkerColor(46); h_mt2_mc->SetLineColor(46);
+    //   h_mt2_mc->SetMarkerStyle(20); h_mt2_mc->SetMarkerSize(1.6);
+    //   h_mt2_mc->SetMarkerColor(46); h_mt2_mc->SetLineColor(46);
+   h_mt2_mc->SetLineColor(kBlue+1); h_mt2_mc->SetLineWidth(2);
 
     TH2D* h2_axes = new TH2D("axes", "", 10, xMin, xMax, 10, 0., 0.5 );
     //    TH2D* h2_axes = new TH2D("axes", "", 10, 0, 1500, 10, 0., 0.5 );
@@ -1174,9 +1193,9 @@ void drawRatios(std::string fullPath, float *binss, unsigned int size,  std::str
     h2_axes->SetYTitle("Zll / #gamma Ratio");
     h2_axes->Draw();
 
-    h_mt2->DrawClone("p same");
-    h_mt2_mc->Draw("p same");
-   
+   h_mt2_mc->Draw("L same");
+     h_mt2->DrawClone("p same");
+     
     labelTop->Draw("same");
     gPad->RedrawAxis();
 
@@ -1185,7 +1204,7 @@ void drawRatios(std::string fullPath, float *binss, unsigned int size,  std::str
     legend->SetTextFont(42);
     legend->SetFillColor(0);
     legend->AddEntry( h_mt2 ,"Data", "P" );
-    legend->AddEntry( h_mt2_mc ,"Simulation", "P" );
+    legend->AddEntry( h_mt2_mc ,"Simulation", "L" );
     legend->Draw("same");
 
 
@@ -1240,7 +1259,7 @@ void drawRatios(std::string fullPath, float *binss, unsigned int size,  std::str
 
     //Filling the YIELDS
     int yieldBins_mt2 = h_mt2->GetNbinsX();
-    for(int bi = 1; bi <= yieldBins_mt2+1 ; bi++){
+    for(int bi = 1; bi <= yieldBins_mt2 ; bi++){
       double value = h_mt2->GetBinContent(bi);
       double err = h_mt2->GetBinError(bi);
       zll_ratio->get(thisRegion)->yield->SetBinContent( bi,   value);

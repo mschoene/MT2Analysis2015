@@ -1,4 +1,4 @@
- #include "TFile.h"
+#include "TFile.h"
 #include "TMath.h"
 #include "TF1.h"
 #include "TProfile.h"
@@ -32,8 +32,8 @@
 #include "interface/mt2.h"
 
 
-float lumi = 0.1;
-//float lumi = 4.;
+//float lumi = 0.1;
+float lumi = 4.;
 
 
 //This file creates the Zll trees used to estimate the backgrounds in the 
@@ -111,7 +111,7 @@ regionsSet = cfg.regionsSet();
     exit(1209);
   }
 
-  /*
+  
   std::vector< MT2Analysis<MT2EstimateTree>* > EventYield;
   for( unsigned i=0; i<fSamples.size(); ++i ) 
     EventYield.push_back( computeYield( fSamples[i], cfg, lumi, 1 ) );
@@ -134,7 +134,7 @@ regionsSet = cfg.regionsSet();
   bgYields.push_back( EventYield_top );
   //bgYields.push_back( EventYield_other );
 
-  */ 
+  
 
 
   std::vector< MT2Analysis<MT2EstimateTree>* > EventYield_of;
@@ -158,13 +158,13 @@ regionsSet = cfg.regionsSet();
   //  bgYields.push_back( EventYield_other );
 
  
-  //  drawYields( outputdir, EventYield_zll, bgYields );
+  drawYields( outputdir, EventYield_zll, bgYields );
 
   drawYields( outputdir_of, EventYield_zll_of, bgYields_of );
 
 
 
-  /*
+  
 
   
   std::string outFile = outputdir + "/ZllPurityTrees.root";
@@ -174,7 +174,7 @@ regionsSet = cfg.regionsSet();
   EventYield_qcd->addToFile( outFile );
   EventYield_wjets->addToFile( outFile );
   EventYield_zjets->addToFile( outFile );
-  */
+
  
   std::string outFile_of = outputdir_of + "/ZllPurityTrees_of.root";
 
@@ -315,8 +315,8 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2EstimateTree>* dat
     legend->SetTextFont(42);
     legend->SetFillColor(0);
 
-      legend->AddEntry( h1_data, "Zll", "F" );
-      //      legend->AddEntry( gr_data, "Zll", "P" );
+    legend->AddEntry( h1_data, "Zll", "F" );
+    //      legend->AddEntry( gr_data, "Zll", "P" );
     histoFile->cd();
     for( unsigned i=0; i<bgYields.size(); ++i ) {  
       TH1D* h1_bg = bgYields[i]->get(thisRegion)->yield;
@@ -410,6 +410,8 @@ MT2Analysis<MT2EstimateTree>* computeYield( const MT2Sample& sample, const MT2Co
   MT2EstimateTree::addVar( analysis, "Z_lepId" );
   MT2EstimateTree::addVar( analysis, "nLep" );
   MT2EstimateTree::addVar( analysis, "sample_Id");
+  MT2EstimateTree::addVar( analysis, "lep_pt0");
+  MT2EstimateTree::addVar( analysis, "lep_pt1");
   
 
 
@@ -470,6 +472,8 @@ MT2Analysis<MT2EstimateTree>* computeYield( const MT2Sample& sample, const MT2Co
     thisEstimate->assignVar("Z_mass", z.M() );
     thisEstimate->assignVar("Z_lepId", abs(myTree.lep_pdgId[0])  );
     thisEstimate->assignVar("sample_Id", myTree.evt_id);
+    thisEstimate->assignVar("lep_pt0", myTree.lep_pt[0] );
+    thisEstimate->assignVar("lep_pt1", myTree.lep_pt[1] );
 
     thisEstimate->fillTree(myTree, weight ,"zll");
 

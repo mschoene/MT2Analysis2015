@@ -26,7 +26,7 @@
 
 
 
-float lumi = 4.; // fb-1
+float lumi = 20.; // fb-1
 //float lumi = 0.1; // fb-1
 
 
@@ -89,7 +89,7 @@ int main( int argc, char* argv[] ) {
   (*ZgammaRatioMC) = ( (* (MT2Analysis<MT2Estimate>*)Zinv) / (*gamma_prompt) );
   
 
-<
+
   //MT2Analysis<MT2Estimate>* ZgammaRatio = MT2EstimateSyst::makeAnalysisFromEstimate( "ZgammaRatio", regionsSet, ZgammaRatioMC );
   MT2Analysis<MT2Estimate>* ZgammaRatio = new MT2Analysis<MT2Estimate>( "ZgammaRatio", regionsSet );
   (*ZgammaRatio) = (*ZgammaRatioMC);
@@ -97,8 +97,6 @@ int main( int argc, char* argv[] ) {
   if( type > 0 ) {
     purity = MT2Analysis<MT2EstimateSyst>::readFromFile( gammaControlRegionDir + "/PurityFitsDataRC/purityFit.root", "purity" );
   }
-  if(purity == 0) 
-    std::cout << "WELL IF YOU COULD FUCKING PLEASE MAKE SURE THAT THERE IS SOMETHING IN THE PURITY THAT WOULD BE GREAT" << std::endl;
 
 
   MT2Analysis<MT2EstimateSyst>* gamma_est = MT2EstimateSyst::makeAnalysisFromEstimate( "gamma_est", regionsSet, gammaCR );
