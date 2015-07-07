@@ -35,7 +35,7 @@ int main( int argc, char* argv[] ) {
 
   std::string regionsSet = "13TeV_inclusive";
 
-  std::string samplesFileName = "PHYS14_v2_Zinv_noSietaieta";
+  std::string samplesFileName = "PHYS14_v5_Zinv_noSietaieta";
   //std::string samplesFileName = "CSA14_Zinv";
 
   std::string samplesFile = "../samples/samples_" + samplesFileName + ".dat";
@@ -358,8 +358,10 @@ MT2Analysis<MT2EstimateTree> computeYield( const MT2Sample& sample, const std::s
     // remove prompt photons from QCD (remove double counting)
     if( sample.id>=100 && sample.id<199 ) {
       int mcMatchId = myTree.gamma_mcMatchId[0];
-      float genIso = myTree.gamma_genIso[0];
+      float genIso = myTree.gamma_genIso03[0];
       if((mcMatchId==22 || mcMatchId==7) && genIso<5.) continue;
+      //      float genIso = myTree.gamma_genIso[0];
+      //     if((mcMatchId==22 || mcMatchId==7) && genIso<5.) continue;
     }
     
 
@@ -372,7 +374,7 @@ MT2Analysis<MT2EstimateTree> computeYield( const MT2Sample& sample, const std::s
     thisEstimate->yield->Fill(myTree.gamma_mt2, weight );
 
 
-    thisEstimate->assignTree(myTree, lumi*myTree.evt_scale1fb);
+    thisEstimate->assignTree(myTree, lumi*myTree.evt_scale1fb,"gamma");
     thisEstimate->assignVars( myTree.gamma_ht, myTree.gamma_nJet40, myTree.gamma_nBJet40, myTree.gamma_met_pt, myTree.gamma_mt2 );
     thisEstimate->assignVar( "sietaieta", sietaieta );
     thisEstimate->assignVar( "iso", iso );

@@ -25,9 +25,8 @@
 
 #include <iostream>
 
-float lumi = 0.1;
-
-//float lumi = 4.;
+//float lumi = 0.1;
+float lumi = 4.;
 
 int main(int argc, char* argv[]){
 

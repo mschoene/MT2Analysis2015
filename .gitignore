@@ -7,3 +7,6 @@
 *.png
 *fuse_hidden*
 *~
+*#
+
+analysis/EventYields_*

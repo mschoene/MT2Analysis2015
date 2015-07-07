@@ -26,6 +26,7 @@
 
 
 #include <iostream>
+#include "string.h"
 
 
 #define mt2_cxx
@@ -36,7 +37,7 @@
 float lumi = 4.;
 
 
-void drawMll( const std::string& outputdir,  std::vector<MT2Analysis<MT2EstimateTree>* > bgYields );
+void drawMll( const std::string& outputdir,  std::vector<MT2Analysis<MT2EstimateTree>* > bgYields, bool of );
 
 void drawSFvsOF( const std::string& outputdir,  std::vector<MT2Analysis<MT2EstimateTree>* > bgYields,  std::vector<MT2Analysis<MT2EstimateTree>* > bgYields_of );
 
@@ -119,7 +120,6 @@ int main(int argc, char* argv[]){
     std::cout << "-> Please run zllPurityTrees first. I need to get the yields from there." << std::endl;    std::cout << "-> Thank you for your cooperation." << std::endl;    exit(197);
   }
 
-
   /*
   MT2Analysis<MT2EstimateTree>* qcd = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s_%0.ffb/ZllPurityTrees.root", ZllDir.c_str(),lumi ), "QCD");
   MT2Analysis<MT2EstimateTree>* top = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s_%0.ffb/ZllPurityTrees.root", ZllDir.c_str(), lumi), "Top");
@@ -151,6 +151,14 @@ int main(int argc, char* argv[]){
   MT2Analysis<MT2EstimateTree>* zjets_of = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s_%0.ffb%s/ZllPurityTrees_of.root", ZllDir_of.c_str(), lumi, suffix.c_str()), "ZJets");
   
 
+  Zll->setFullName("Z+jets");
+  wjets->setFullName("W+jets");
+  zjets->setFullName("Z#nu#nu+jets");
+
+  Zll_of->setFullName("Z+jets");
+  wjets_of->setFullName("W+jets");
+  zjets_of->setFullName("Z#nu#nu+jets");
+
 
   /*
   MT2Analysis<MT2EstimateTree>* qcd = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s_%0.ffb/ZllPurityTrees.root", ZllDir.c_str(), lumi), "QCD");
@@ -163,22 +171,21 @@ int main(int argc, char* argv[]){
   bgYields.push_back( Zll );
   bgYields.push_back( qcd );
   bgYields.push_back( wjets );
-  bgYields.push_back( zjets );
+  //  bgYields.push_back( zjets );
   bgYields.push_back( top );
 
   std::vector<MT2Analysis<MT2EstimateTree>* > bgYields_of; 
   bgYields_of.push_back( Zll_of );
   bgYields_of.push_back( qcd_of );
   bgYields_of.push_back( wjets_of );
-  bgYields_of.push_back( zjets_of );
+  //  bgYields_of.push_back( zjets_of );
   bgYields_of.push_back( top_of );
 
-  drawMll( outputdir, bgYields );
-  drawMll( outputdir_of, bgYields_of );
+  drawMll( outputdir, bgYields, 0 );
+  drawMll( outputdir_of, bgYields_of, 1 );
 
 
  
-
   return 0;
 }
 
@@ -208,7 +215,7 @@ int main(int argc, char* argv[]){
 
 
 
-void drawSFvsOF( const std::string& outputdir, std::vector< MT2Analysis<MT2EstimateTree> *> bgYields, std::vector< MT2Analysis<MT2EstimateTree> *> bgYields_of ) {
+void drawSFvsOF( const std::string& outputdir, std::vector< MT2Analysis<MT2EstimateTree> *> bgYields, std::vector< MT2Analysis<MT2EstimateTree> *> bgYields_of) {
 
   MT2DrawTools::setStyle();
 
@@ -221,7 +228,7 @@ void drawSFvsOF( const std::string& outputdir, std::vector< MT2Analysis<MT2Estim
     colors.push_back(430); // other = zll 
     colors.push_back(401); // qcd
     colors.push_back(417); // w+jets
-    colors.push_back(419); // z+jets
+    //    colors.push_back(419); // z+jets
     colors.push_back(855); // top
   }
 
@@ -244,7 +251,7 @@ void drawSFvsOF( const std::string& outputdir, std::vector< MT2Analysis<MT2Estim
     THStack bgStack_of("bgStack_of", "");
     for( unsigned i=0; i<bgYields.size(); i++ ) { // reverse ordered stack is prettier
       int index = bgYields.size() - i - 1;
-      if(i==4){
+      if(i==3){
 	for(int k=0; k<3; k++){
 	  TH1D* h1_bg = new TH1D("h1_bg","", 50, 0,250);
 	  TTree *bgTree = bgYields[index]->get(*iMT2)->tree;
@@ -281,7 +288,7 @@ void drawSFvsOF( const std::string& outputdir, std::vector< MT2Analysis<MT2Estim
 
 
 
-void drawMll( const std::string& outputdir, std::vector< MT2Analysis<MT2EstimateTree> *> bgYields ) {
+  void drawMll( const std::string& outputdir, std::vector< MT2Analysis<MT2EstimateTree> *> bgYields, bool of ) {
 
   MT2DrawTools::setStyle();
 
@@ -294,7 +301,7 @@ void drawMll( const std::string& outputdir, std::vector< MT2Analysis<MT2Estimate
     colors.push_back(430); // other = zll 
     colors.push_back(401); // qcd
     colors.push_back(417); // w+jets
-    colors.push_back(419); // z+jets
+    //  colors.push_back(419); // z+jets
     colors.push_back(855); // top
   }
 
@@ -383,8 +390,6 @@ void drawMll( const std::string& outputdir, std::vector< MT2Analysis<MT2Estimate
     legend->SetTextSize(0.038);
     legend->SetTextFont(42);
     legend->SetFillColor(0);
-
-    
     //   legend->AddEntry( h1_data, "Zll", "P" );
     //   legend->AddEntry( gr_data, "Zll", "P" );
     //   histoFile->cd();
@@ -431,11 +436,16 @@ void drawMll( const std::string& outputdir, std::vector< MT2Analysis<MT2Estimate
       c1->SaveAs(Form("%s/mt2_b%d_%s.png",fullPathPlots.c_str(),b,thisRegion.getName().c_str()) );
       c1->SaveAs(Form("%s/mt2_b%d_%s.pdf",fullPathPlots.c_str(),b,thisRegion.getName().c_str()) );
     */
-   
-    c1->SaveAs( Form("%s/mll_%s.eps", fullPathPlots.c_str(), thisRegion.getName().c_str()) );
-    c1->SaveAs( Form("%s/mll_%s.png", fullPathPlots.c_str(), thisRegion.getName().c_str()) );
-    c1->SaveAs( Form("%s/mll_%s.pdf", fullPathPlots.c_str(), thisRegion.getName().c_str()) );
-   
+
+    if( of == true){
+      c1->SaveAs( Form("%s/mll_of_%s.eps", fullPathPlots.c_str(), thisRegion.getName().c_str()) );
+      c1->SaveAs( Form("%s/mll_of_%s.png", fullPathPlots.c_str(), thisRegion.getName().c_str()) );
+      c1->SaveAs( Form("%s/mll_of_%s.pdf", fullPathPlots.c_str(), thisRegion.getName().c_str()) );
+    }else {
+      c1->SaveAs( Form("%s/mll_%s.eps", fullPathPlots.c_str(), thisRegion.getName().c_str()) );
+      c1->SaveAs( Form("%s/mll_%s.png", fullPathPlots.c_str(), thisRegion.getName().c_str()) );
+      c1->SaveAs( Form("%s/mll_%s.pdf", fullPathPlots.c_str(), thisRegion.getName().c_str()) );
+    }
 
 
 
@@ -495,7 +505,7 @@ void drawMll( const std::string& outputdir, std::vector< MT2Analysis<MT2Estimate
     drawPurity( fullPathPlots,  bins_mt2,sizeof(bins_mt2)/sizeof(float)-1,  "zll_mt2", bgYields , thisRegion  , cut2  );
     drawPurity( fullPathPlots,  bins_ht,sizeof(bins_ht)/sizeof(float)-1,  "zll_ht", bgYields , thisRegion, cut2 );
 
-   
+
   //NJETSCUT
    drawStacks( fullPathPlots,  bins_nBJets, sizeof(bins_nBJets)/sizeof(float)-1,  "nBJets", bgYields , thisRegion , cut_nJets3);
    drawPurity( fullPathPlots,  bins_nBJets,sizeof(bins_nBJets)/sizeof(float)-1,  "nBJets", bgYields , thisRegion , cut_nJets3);
@@ -549,7 +559,7 @@ void drawPurity(std::string fullPath, float *binss, unsigned int size,  std::str
   colors.push_back(430); // other = zll 
   colors.push_back(401); // qcd
   colors.push_back(417); // w+jets
-  colors.push_back(419); // z+jets
+  //colors.push_back(419); // z+jets
   colors.push_back(855); // top
 
   TH1F::AddDirectory(kTRUE);
@@ -672,7 +682,7 @@ void drawPurityTopSplit(std::string fullPath, float *binss, unsigned int size,  
   colors.push_back(430); // other = zll 
   colors.push_back(401); // qcd
   colors.push_back(417); // w+jets
-  colors.push_back(419); // z+jets
+  //  colors.push_back(419); // z+jets
   colors.push_back(855); // top
 
   TH1F::AddDirectory(kTRUE);
@@ -802,7 +812,7 @@ void drawPurityComparison(std::string fullPath, float *binss, unsigned int size,
   colors.push_back(430); // other = zll 
   colors.push_back(401); // qcd
   colors.push_back(417); // w+jets
-  colors.push_back(419); // z+jets
+  // colors.push_back(419); // z+jets
   colors.push_back(855); // top
 
   TH1F::AddDirectory(kTRUE);
@@ -926,7 +936,7 @@ void drawStacks(std::string fullPath, float *binss, unsigned int size,  std::str
   colors.push_back(430); // other = zll 
   colors.push_back(401); // qcd
   colors.push_back(417); // w+jets
-  colors.push_back(419); // z+jets
+  //  colors.push_back(419); // z+jets
   colors.push_back(855); // top
 
   TH1F::AddDirectory(kTRUE);
@@ -1005,7 +1015,7 @@ void drawStacks(std::string fullPath, float *binss, unsigned int size,  std::str
   for( unsigned i=0; i<bgYields.size(); ++i ) {  
     //  TH1D* h1_bg1 = bgYields[i]->get(thisRegion)->yield;
     //   legend->AddEntry( h1_bg1, bgYields[i]->getFullName().c_str(), "F" );
-  if(i==4){
+  if(i==3){
 	for(int k=0; k<3; k++){
 	  TH1D* h1_bg1 = new TH1D("h1_bg1","",10,0,2);
 	  h1_bg1->SetFillColor(855+5*(k+1));
