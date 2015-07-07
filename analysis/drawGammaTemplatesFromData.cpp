@@ -48,7 +48,7 @@ int main( int argc, char* argv[] ) {
   MT2Analysis<MT2EstimateZinvGamma>* templatesPromptRC  = MT2Analysis<MT2EstimateZinvGamma>::readFromFile("gammaTemplatesDataRC_" + samples + "_" + regionsSet + ".root", "templatesPrompt");
 
 
-  setHistoTitle( templatesFake, "Data #sigma_{i#eta i#eta} Sidebands" );
+  setHistoTitle( templatesFake, "#sigma_{i#eta i#eta} Sidebands" );
   setHistoTitle( templatesFakeMC, "MC Fakes" );
   setHistoTitle( templatesPromptRaw, "Data (all)" );
   setHistoTitle( templatesPrompt, "Data (fake removal)" );
@@ -118,8 +118,8 @@ void drawSinglePlot( const std::string& outputdir, const std::string& name, cons
 
   } else {
 
-    // normalize first one to unity
-    histosData[0]->Scale(1./histosData[0]->Integral() );
+    //// normalize first one to unity
+    //histosData[0]->Scale(1./histosData[0]->Integral() );
 
     // normalize other ones so that first bin has same content:
     for( unsigned i=1; i<histosData.size(); ++i ) 
@@ -143,7 +143,7 @@ void drawSinglePlot( const std::string& outputdir, const std::string& name, cons
   c1->cd();
   h2_axes->Draw();
 
-  TH2D* h2_axes_log = new TH2D("axes_log", "", 10, 0., xMax, 10, 0.0001, 3.*yMax );
+  TH2D* h2_axes_log = new TH2D("axes_log", "", 10, 0., xMax, 10, yMax/10000., 3.*yMax );
   h2_axes_log->SetXTitle( "Photon Charged Isolation [GeV]" );
   if( name=="Fake" )
     h2_axes_log->SetYTitle( Form("Events / %.2f GeV", histoMC->GetBinWidth(1)) );
@@ -160,7 +160,8 @@ void drawSinglePlot( const std::string& outputdir, const std::string& name, cons
   c1_log->cd();
   histoMC->Draw("L E same");
 
-  TLegend* legend = new TLegend( 0.46, yMinLegend, 0.9, 0.9 );
+  TLegend* legend = new TLegend( 0.56, yMinLegend, 0.9, 0.9 );
+  //TLegend* legend = new TLegend( 0.46, yMinLegend, 0.9, 0.9 );
   legend->SetFillColor(0);
   legend->SetTextSize(0.035);
 

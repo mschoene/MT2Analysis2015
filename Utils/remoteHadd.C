@@ -28,6 +28,7 @@ int hadd(string inputPath = "/mmasciov/CSA14v2_production/06Feb2015_csa14v2/",
   
   int start_s=clock();
 
+  system(Form("mkdir -p %s", outputPath.c_str()));
 
   system(Form("ls /pnfs/psi.ch/cms/trivcat/store/user/%s > listOfSamples_hadd.txt", inputPath.c_str()));
 
@@ -61,7 +62,8 @@ int hadd(string inputPath = "/mmasciov/CSA14v2_production/06Feb2015_csa14v2/",
 
     system(Form("ls /pnfs/psi.ch/cms/trivcat/store/user/%s%s > listOfFiles_preHadd.txt", inputPath.c_str(), sampleToHadd));
     
-    std::string fullInput_hadd = "dcap://t3se01.psi.ch:22125/pnfs/psi.ch/cms/trivcat/store/user/" + inputPath + sampleToHadd;
+    std::string fullInput_hadd = "dcap://t3se01.psi.ch:22125/" + std::string(sampleToHadd);
+    //std::string fullInput_hadd = "dcap://t3se01.psi.ch:22125/pnfs/psi.ch/cms/trivcat/store/user/" + inputPath + sampleToHadd;
 
     ifstream haddFileIN("listOfFiles_preHadd.txt");
     char haddFile[300];

@@ -38,21 +38,22 @@ int main( int argc, char* argv[] ) {
 
     useMC = std::string(argv[1]); 
 
-    if( useMC=="dataFR" ) useMC="DataFR"; // data Fake Removal
-    if( useMC=="dataRC" ) useMC="DataRC"; // data Random Cone
-    if( useMC=="data"   ) {
-      std::cout << std::endl;
-      std::cout << "-> Asking for 'data': will use data Random Cone. (default)" << std::endl;
-      std::cout << std::endl;
-      useMC="DataRC"; // (default for data)
-    }
-
-    if( useMC!="data" && useMC!="DataFR" && useMC!="MC" && useMC!="DataRC" ) {
-      std::cout << "ERROR! Second argument may only be 'MC' or 'dataFR' or 'dataRC'" << std::endl;
-      exit(1111);
-    }
-
   }
+
+  if( useMC=="dataFR" ) useMC="DataFR"; // data Fake Removal
+  if( useMC=="dataRC" ) useMC="DataRC"; // data Random Cone
+  if( useMC=="data"   ) {
+    std::cout << std::endl;
+    std::cout << "-> Asking for 'data': will use data Random Cone. (default)" << std::endl;
+    std::cout << std::endl;
+    useMC="DataRC"; // (default for data)
+  }
+
+  if( useMC!="data" && useMC!="DataFR" && useMC!="MC" && useMC!="DataRC" ) {
+    std::cout << "ERROR! Second argument may only be 'MC' or 'dataFR' or 'dataRC'" << std::endl;
+    exit(1111);
+  }
+
 
 
   //std::string regionsSet = "13TeV_onlyHT";

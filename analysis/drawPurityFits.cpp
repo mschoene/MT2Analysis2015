@@ -15,6 +15,11 @@
 
 
 
+
+float lumi = 4.; // fb-1
+
+
+
 class PurityFit {
 
  public:
@@ -44,16 +49,18 @@ void compareRegions( const std::string& outputdir, std::vector<MT2Region> region
 
 
 
+
 int main( int argc, char* argv[] ) {
 
 
   MT2DrawTools::setStyle();
 
-  std::string mc_or_data = "data";
+  std::string mc_or_data = "DataRC";
   if( argc>1 ) {
     mc_or_data = std::string(argv[1]);
-    if( mc_or_data=="data" ) mc_or_data = "DataRC"; // default is Random Cone
   }
+
+  if( mc_or_data=="data" ) mc_or_data = "DataRC"; // default is Random Cone
 
 
   std::string regionsSet = "zurich";
@@ -63,7 +70,7 @@ int main( int argc, char* argv[] ) {
 
   std::string samples = "PHYS14_v5_skimprune";
 
-  std::string gammaCRdir(Form("GammaControlRegion_%s_%s_4fb", samples.c_str(), regionsSet.c_str()));
+  std::string gammaCRdir(Form("GammaControlRegion_%s_%s_%.0ffb", samples.c_str(), regionsSet.c_str(), lumi));
   
   doAllPurityPlots( gammaCRdir, samples, mc_or_data, "purityLoose" ); 
   doAllPurityPlots( gammaCRdir, samples, mc_or_data, "purity" ); 
@@ -91,8 +98,12 @@ void doAllPurityPlots( const std::string& gammaCRdir, const std::string& samples
     //fits.push_back( PurityFit( "Jet Bins"  , "13TeV_onlyJet"   , MT2Analysis<MT2EstimateSyst>::readFromFile(gammaCRdir+"/PurityFitsMC_" + samples + "_13TeV_onlyJets/purityFit_"  + samples + "_13TeV_onlyJets.root" , purityName), 24, kAzure ));
     fits.push_back( PurityFit( "Template Fit" , "13TeV_inclusive" , MT2Analysis<MT2EstimateSyst>::readFromFile(gammaCRdir+"/PurityFitsMC/purityFit.root", purityName), 25, kOrange+1 ));
   } else {
-    fits.push_back( PurityFit( "Template Fit (MC)"  , "13TeV_inclusive" , MT2Analysis<MT2EstimateSyst>::readFromFile(gammaCRdir+"/PurityFitsMC/purityFit.root", purityName), 21, 29 ));
-    fits.push_back( PurityFit( "Template Fit (Data)", "13TeV_inclusive" , MT2Analysis<MT2EstimateSyst>::readFromFile(gammaCRdir+"/PurityFits" + mc_or_data + "/purityFit.root", purityName), 20, kOrange+1 ));
+    if( lumi<=1. ) {
+      fits.push_back( PurityFit( "Template Fit", "13TeV_inclusive" , MT2Analysis<MT2EstimateSyst>::readFromFile(gammaCRdir+"/PurityFits" + mc_or_data + "/purityFit.root", purityName), 20, kOrange+1 ));
+    } else {
+      fits.push_back( PurityFit( "Template Fit (MC)"  , "13TeV_inclusive" , MT2Analysis<MT2EstimateSyst>::readFromFile(gammaCRdir+"/PurityFitsMC/purityFit.root", purityName), 21, 29 ));
+      fits.push_back( PurityFit( "Template Fit (Data)", "13TeV_inclusive" , MT2Analysis<MT2EstimateSyst>::readFromFile(gammaCRdir+"/PurityFits" + mc_or_data + "/purityFit.root", purityName), 20, kOrange+1 ));
+    }
   }
 
 
@@ -110,6 +121,9 @@ void doAllPurityPlots( const std::string& gammaCRdir, const std::string& samples
 
     TGraphAsymmErrors* gr_purityMC = thisPurityMC->getGraph();
     gr_purityMC->SetLineColor( kBlack );
+    gr_purityMC->SetMarkerColor( kBlack );
+    gr_purityMC->SetMarkerStyle( 24 );
+    gr_purityMC->SetMarkerSize( 2 );
     gr_purityMC->SetLineWidth( 2 );
 
 
@@ -121,17 +135,18 @@ void doAllPurityPlots( const std::string& gammaCRdir, const std::string& samples
     axes->SetYTitle( "Photon Purity" );
     axes->Draw("");
 
-    TPaveText* labelTop = MT2DrawTools::getLabelTop();
+    TPaveText* labelTop = MT2DrawTools::getLabelTop(lumi);
     labelTop->Draw("same");
 
 
     gr_purityMC->Draw("p same");
 
-    float xMin_legend = (mc_or_data=="MC") ? 0.65 : 0.52;
+    //float xMin_legend = 0.6;
+    float xMin_legend = (mc_or_data=="MC" || fits.size()==1) ? 0.6 : 0.52;
     TLegend* legend = new TLegend( xMin_legend, 0.2, 0.9, 0.2+0.06*(fits.size()+1.) );
     legend->SetTextSize(0.038); 
     legend->SetFillColor(0);
-    legend->AddEntry( gr_purityMC, "MC Purity", "L" );
+    legend->AddEntry( gr_purityMC, "MC Purity", "PL" );
    
     for( unsigned i=0; i<fits.size(); ++i ) {
 

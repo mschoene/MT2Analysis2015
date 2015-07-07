@@ -33,7 +33,8 @@
 
 
 bool dummyAnalysis;
-double lumi = 20.; // in fb-1
+
+double lumi = 4; // in fb-1
 
 
 
@@ -134,9 +135,11 @@ int main( int argc, char* argv[] ) {
 
     
     std::vector< MT2Analysis<MT2EstimateTree>* > EventYield;
-    for( unsigned i=0; i<fSamples.size(); ++i ) 
+    for( unsigned i=0; i<fSamples.size(); ++i ) {
+      int this_id = fSamples[i].id;
+      if( this_id>=200 && this_id<300 ) continue; // skip GJets
       EventYield.push_back( computeYield<MT2EstimateTree>( fSamples[i], cfg, lumi ) );
-    
+    }
 
 
     std::cout << "-> Done looping on samples. Start merging." << std::endl;
@@ -299,7 +302,8 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg, flo
 
     myTree.GetEntry(iEntry);
 
-    if( !myTree.passSelection() ) continue;
+    if( regionsSet!="13Tev_noCut" )
+      if( !myTree.passSelection() ) continue;
 
     float ht   = myTree.ht;
     float met  = myTree.met_pt;

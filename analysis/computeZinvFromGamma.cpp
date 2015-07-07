@@ -118,7 +118,7 @@ int main( int argc, char* argv[] ) {
 
   std::string outFile = outputdir + "/MT2ZinvEstimate.root";
 
-  ZinvEstimate->writeToFile( outFile );
+  ZinvEstimate->writeToFile( outFile, "recreate" );
   ZgammaRatio->addToFile( outFile );
   Zinv->setName("Zinv");
 
