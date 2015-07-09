@@ -15,7 +15,7 @@
 
 
 
-float lumi = 4.; //fb-1
+float lumi = 5.; //fb-1
 
 
 
@@ -67,7 +67,7 @@ int main( int argc, char* argv[] ) {
 
 
 
-  std::string samplesFileName = "PHYS14_v5_skimprune";
+  std::string samplesFileName = "PHYS14_v6_skimprune";
   std::string samplesFile = "../samples/samples_" + samplesFileName + ".dat";
   
   std::vector<MT2Sample> samples = MT2Sample::loadSamples(samplesFile, 100, 299); // GJet and QCD
@@ -167,7 +167,7 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2An
     float met       = myTree.gamma_met_pt;
     float mt2       = myTree.gamma_mt2;
     float minMTBmet = myTree.gamma_minMTBMet;
-    int njets       = myTree.gamma_nJet40;
+    int njets       = myTree.gamma_nJet30;
     int nbjets      = myTree.gamma_nBJet20;    
 
 

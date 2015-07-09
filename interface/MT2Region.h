@@ -21,6 +21,7 @@ class MT2HTRegion {
   std::string getName() const;
 
   std::string getNiceName() const;
+  std::string getNiceNameLatex() const;
 
 
   float htMin;
@@ -59,6 +60,7 @@ class MT2SignalRegion {
 
   std::string getNameMt() const;
   std::string getNiceName() const;
+  std::string getNiceNameLatex() const;
   
   int nJetsMin; 
   int nJetsMax;
@@ -80,6 +82,7 @@ class MT2SignalRegion {
  private:
 
   std::string getNiceJetName( const std::string& pedix, int nmin, int nmax ) const;
+  std::string getNiceJetNameLatex( const std::string& pedix, int nmin, int nmax ) const;
   std::string getSingleJetString( const std::string& prefix, int n_min , int n_max=-1 ) const;
 
 };
@@ -120,12 +123,16 @@ class MT2Region {
 
 
   std::vector< std::string > getNiceNames() const;
+  std::vector< std::string > getNiceNamesLatex() const;
 
   void getBins      ( int& nBins, double*& bins ) const;
   void getBins_qcdCR( int& nBins, double*& bins ) const;
 
   std::string getBinName( double& min, double& max ) const;
   std::vector< std::string > getBinNames() const;
+
+  std::string getBinNameLatex( double& min, double& max ) const;
+  std::vector< std::string > getBinNamesLatex() const;
 
   MT2HTRegion* htRegion() const {
     return htRegion_;

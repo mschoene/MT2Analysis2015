@@ -19,7 +19,7 @@
 bool use_gamma = true;
 bool use_purity = true;
 
-double lumi = 4;
+double lumi = 5;
 
 int round(float d) {
   return (int)(floor(d + 0.5));
@@ -47,8 +47,9 @@ int main( int argc, char* argv[] ) {
   std::string mc_fileName = dir + "/analyses.root";
 
 
-  std::string samplesName = "PHYS14_v5_skimprune";
-  std::string regionsName = "zurich";
+  std::string samplesName = "PHYS14_v6_skimprune";
+  //  std::string regionsName = "zurich";
+  std::string regionsName = "darkMatter_max1b_all_2j_4j";
 
   bool useMC_qcd  = true;
   bool useMC_zinv = false;
@@ -115,7 +116,8 @@ int main( int argc, char* argv[] ) {
   llep->setName( "llep" );
   llep->addToFile( mc_fileName, true );
 
-  MT2Analysis<MT2Estimate>* llepCR = MT2Analysis<MT2Estimate>::readFromFile( Form("llep_%s_%s_llep_%.0ffb.root", samplesName.c_str(), regionsName.c_str(), lumi) );
+  //MT2Analysis<MT2Estimate>* llepCR = MT2Analysis<MT2Estimate>::readFromFile( Form("llep_%s_%s_llep_%.0ffb.root", samplesName.c_str(), regionsName.c_str(), lumi) );
+  MT2Analysis<MT2Estimate>* llepCR = MT2Analysis<MT2Estimate>::readFromFile( Form("llep_%s_%s_%.0ffb.root", samplesName.c_str(), regionsName.c_str(), lumi) );
 
 
   std::set<MT2Region> regions = data->getRegions();
@@ -136,9 +138,9 @@ int main( int argc, char* argv[] ) {
      TH1D* this_zinv_ratio     = (use_gamma) ? zinv_ratio->get(*iR)->yield : 0;
      TH1D* this_llep = llep->get(*iR)->yield;
      TH1D* this_llepCR;
-     if(iR->nJetsMin()>=7 && iR->nBJetsMin()>=1)
-       this_llepCR = llepCR->get(MT2Region(iR->htMin(), iR->htMax(), iR->nJetsMin(), iR->nJetsMax(), 1, 2))->yield;
-     else
+//     if(iR->nJetsMin()>=7 && iR->nBJetsMin()>=1)
+//       this_llepCR = llepCR->get(MT2Region(iR->htMin(), iR->htMax(), iR->nJetsMin(), iR->nJetsMax(), 1, 2))->yield;
+//     else
        this_llepCR = llepCR->get(*iR)->yield;
      
      TGraphAsymmErrors* this_zinv_purity;
@@ -147,11 +149,11 @@ int main( int argc, char* argv[] ) {
 
      float N_llep_CR = this_llepCR->Integral();
      std::string llepCR_name;
-     if(iR->nJetsMin()>=7 && iR->nBJetsMin()>=1){
-       MT2Region* thisCR = new MT2Region(iR->htMin(), iR->htMax(), iR->nJetsMin(), iR->nJetsMax(), 1, 2);
-       llepCR_name = thisCR->getName();
-     }
-     else
+//     if(iR->nJetsMin()>=7 && iR->nBJetsMin()>=1){
+//       MT2Region* thisCR = new MT2Region(iR->htMin(), iR->htMax(), iR->nJetsMin(), iR->nJetsMax(), 1, 2);
+//       llepCR_name = thisCR->getName();
+//     }
+//     else
        llepCR_name = iR->getName();
 
 //     if( iR->mtCut()!="" ) { 
@@ -466,12 +468,15 @@ int main( int argc, char* argv[] ) {
 
 
   // now create datacards for all signals
-  std::vector<MT2Analysis<MT2Estimate>*> signals = MT2Analysis<MT2Estimate>::readAllFromFile( mc_fileName, "SMS" );
+  //std::vector<MT2Analysis<MT2Estimate>*> signals = MT2Analysis<MT2Estimate>::readAllFromFile( mc_fileName, "SMS" );
+  std::vector<MT2Analysis<MT2Estimate>*> signals = MT2Analysis<MT2Estimate>::readAllFromFile( mc_fileName, "DarkMatter" );
 
   for( unsigned  isig=0; isig<signals.size(); ++isig ) { 
 
     std::string sigName;
     if( signals[isig]->getName().find("fullScan") != std::string::npos )
+      sigName = signals[isig]->getName();
+    else if( signals[isig]->getName().find("DarkMatter") != std::string::npos )
       sigName = signals[isig]->getName();
     else
       sigName = getSimpleSignalName( signals[isig]->getName() );

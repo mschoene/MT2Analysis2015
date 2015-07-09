@@ -23,7 +23,7 @@
 #define mt2_cxx
 #include "interface/mt2.h"
 
-float lumi = 4.; //fb-1
+float lumi = 5.; //fb-1
 
 struct lepcand {
   
@@ -45,7 +45,7 @@ float DeltaPhi(float phi1, float phi2);
 int main( int argc, char* argv[] ) {
 
 
-  std::string sampleName = "PHYS14_v5_skimprune";
+  std::string sampleName = "PHYS14_v6_skimprune";
   if( argc>1 ) {
     sampleName = std::string(argv[1]);
   }
@@ -62,8 +62,9 @@ int main( int argc, char* argv[] ) {
   }
 
 
-  //  std::string regionsSet = "zurich";
-  std::string regionsSet = "zurich_llep";
+//  //  std::string regionsSet = "zurich";
+//  std::string regionsSet = "zurich_llep";
+  std::string regionsSet = "darkMatter_max1b_all_2j_4j";
 
   TH1::AddDirectory(kFALSE); // stupid ROOT memory allocation needs this
 
@@ -114,7 +115,7 @@ MT2Analysis<MT2EstimateSyst> computeYield( const MT2Sample& sample, const std::s
     float met  = myTree.met_pt;
     float mt2  = myTree.mt2;
     float minMTBmet = myTree.minMTBMet;
-    int njets  = myTree.nJet40;
+    int njets  = myTree.nJet30;
     int nbjets = myTree.nBJet20; 
     
 //    //////QCD

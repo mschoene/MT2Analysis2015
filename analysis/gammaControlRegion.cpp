@@ -14,7 +14,7 @@
 #include "TH1F.h"
 
 
-float lumi = 4.; //fb-1
+float lumi = 5.; //fb-1
 bool alsoSignals = false;
 
 
@@ -39,7 +39,7 @@ void roundLikeData( MT2Analysis<MT2EstimateZinvGamma>* data );
 int main( int argc, char* argv[] ) {
 
 
-  std::string samplesFileName = "PHYS14_v5_skimprune";
+  std::string samplesFileName = "PHYS14_v6_skimprune";
 
 
   std::string regionsSet = "zurich";
@@ -260,7 +260,7 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet,
     float met       = myTree.gamma_met_pt;
     float mt2       = myTree.gamma_mt2;
     float minMTBmet = myTree.gamma_minMTBMet;
-    int njets       = myTree.gamma_nJet40;
+    int njets       = myTree.gamma_nJet30;
     int nbjets      = myTree.gamma_nBJet20;    
 
 

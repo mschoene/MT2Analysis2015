@@ -33,7 +33,7 @@
 
 
 bool dummyAnalysis;
-double lumi = 4; // in fb-1
+double lumi = 5; // in fb-1
 
 
 
@@ -301,14 +301,14 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg, flo
 
     myTree.GetEntry(iEntry);
 
-    if( regionsSet!="13Tev_noCut" )
+    if( regionsSet!="13TeV_noCut" )
       if( !myTree.passSelection() ) continue;
 
     float ht   = myTree.ht;
     float met  = myTree.met_pt;
     float mt2  = myTree.mt2;
     float minMTBmet = myTree.minMTBMet;
-    int njets  = myTree.nJet40;
+    int njets  = myTree.nJet30;
     int nbjets = myTree.nBJet20;    
     
     float GenSusyMScan1 = myTree.GenSusyMScan1;

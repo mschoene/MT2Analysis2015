@@ -25,7 +25,7 @@
 
 
 
-float lumi = 4.; // fb-1
+float lumi = 5.; // fb-1
 
 
 
@@ -44,14 +44,15 @@ MT2Analysis<MT2EstimateSyst>* combineDataAndMC( MT2Analysis<MT2EstimateSyst>* da
 int main( int argc, char* argv[] ) {
 
 
-  std::string samples = "PHYS14_v5_skimprune";
+  std::string samples = "PHYS14_v6_skimprune";
   if( argc>1 ) {
     std::string samples_tmp(argv[1]); 
     samples = samples_tmp;
   }
 
 
-  std::string regionsSet = "zurich";
+  //  std::string regionsSet = "zurich";
+  std::string regionsSet = "darkMatter_max1b_all_2j_4j";
 
   TH1::AddDirectory(kFALSE); // stupid ROOT memory allocation needs this
 
@@ -73,7 +74,7 @@ int main( int argc, char* argv[] ) {
 
   
 
-  MT2Analysis<MT2EstimateTree>* Zinv = MT2Analysis<MT2EstimateTree>::readFromFile(Form("EventYields_mc_PHYS14_v5_dummy_%.0ffb/analyses.root", lumi), "ZJets");
+  MT2Analysis<MT2EstimateTree>* Zinv = MT2Analysis<MT2EstimateTree>::readFromFile(Form("EventYields_mc_PHYS14_v6_max1b_all_2j_4j_dummy_%.0ffb/analyses.root", lumi), "ZJets");
   if( Zinv==0 ) {
     std::cout << "-> Please run regionEventYields on MC first. I need to get the Z->vv MC yields from there." << std::endl;
     std::cout << "-> Thank you for your cooperation." << std::endl;
