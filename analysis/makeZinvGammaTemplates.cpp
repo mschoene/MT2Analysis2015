@@ -1,3 +1,4 @@
+#include "interface/MT2Config.h"
 #include "interface/MT2Sample.h"
 #include "interface/MT2Region.h"
 #include "interface/MT2Analysis.h"
@@ -21,7 +22,7 @@ float lumi = 5.; //fb-1
 
 
 
-void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2Analysis<MT2EstimateZinvGamma>* prompt, MT2Analysis<MT2EstimateZinvGamma>* fake, const std::string& useMC );
+void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT2EstimateZinvGamma>* prompt, MT2Analysis<MT2EstimateZinvGamma>* fake );
 void setPoissonError( MT2Analysis<MT2EstimateZinvGamma>* data );
 //void randomizePoisson( MT2Analysis<MT2EstimateZinvGamma>* data );
 
@@ -31,14 +32,40 @@ void setPoissonError( MT2Analysis<MT2EstimateZinvGamma>* data );
 int main( int argc, char* argv[] ) {
 
 
+  std::cout << std::endl << std::endl;
+  std::cout << "------------------------------------------------------" << std::endl;
+  std::cout << "|                                                    |" << std::endl;
+  std::cout << "|                                                    |" << std::endl;
+  std::cout << "|          Running makeZinvGammaTemplates            |" << std::endl;
+  std::cout << "|                                                    |" << std::endl;
+  std::cout << "|                                                    |" << std::endl;
+  std::cout << "------------------------------------------------------" << std::endl;
+  std::cout << std::endl << std::endl;
 
-  std::string useMC = "DataRC";
 
-  if( argc>1 ) {
-
-    useMC = std::string(argv[1]); 
-
+ 
+  if( argc!=2 ) {
+    std::cout << "USAGE: ./makeZinvGammaTemplates [configFileName]" << std::endl;
+    std::cout << "Exiting." << std::endl;
+    exit(11);
   }
+
+
+  std::string configFileName(argv[1]);
+  MT2Config cfg(configFileName);
+
+
+
+  std::string useMC = cfg.gammaTemplateType();
+
+  if( argc>2 ) {
+
+    useMC = std::string(argv[2]); 
+    std::cout << std::endl;
+    std::cout << "-> Will disobey the cfg and use useMC = " << argv[2] << std::endl;
+    std::cout << std::endl;
+
+  } 
 
   if( useMC=="dataFR" ) useMC="DataFR"; // data Fake Removal
   if( useMC=="dataRC" ) useMC="DataRC"; // data Random Cone
@@ -50,25 +77,22 @@ int main( int argc, char* argv[] ) {
   }
 
   if( useMC!="data" && useMC!="DataFR" && useMC!="MC" && useMC!="DataRC" ) {
-    std::cout << "ERROR! Second argument may only be 'MC' or 'dataFR' or 'dataRC'" << std::endl;
+    std::cout << "ERROR! useMC may only be 'MC' or 'dataFR' or 'dataRC'" << std::endl;
     exit(1111);
   }
 
-
-
-  //std::string regionsSet = "13TeV_onlyHT";
-  std::string regionsSet = "13TeV_inclusive";
-  //std::string regionsSet = "13TeV_inclusive";
-  //std::string regionsSet = "13TeV_ZinvGammaPurity";
-  if( argc>2 ) {
-    std::string regionsSet_tmp(argv[2]); 
-    regionsSet = regionsSet_tmp;
-  }
+  std::cout << std::endl;
+  std::cout << "-> Starting to build templates with:" << std::endl;
+  std::cout << "      type   : " << useMC << std::endl;
+  std::cout << "      regions: " << cfg.gammaTemplateRegions() << std::endl;
+  std::cout << std::endl << std::endl;
 
 
 
-  std::string samplesFileName = "PHYS14_v6_skimprune";
-  std::string samplesFile = "../samples/samples_" + samplesFileName + ".dat";
+  std::string regionsSet = cfg.gammaTemplateRegions();
+
+
+  std::string samplesFile = "../samples/samples_" + cfg.mcSamples() + ".dat";
   
   std::vector<MT2Sample> samples = MT2Sample::loadSamples(samplesFile, 100, 299); // GJet and QCD
   if( samples.size()==0 ) {
@@ -81,8 +105,8 @@ int main( int argc, char* argv[] ) {
   TH1::AddDirectory(kFALSE); // stupid ROOT memory allocation needs this
 
 
-  std::string outputdir = "ZinvGammaPurity_" + samplesFileName + "_" + regionsSet;
-  system(Form("mkdir -p %s", outputdir.c_str()));
+  //std::string outputdir = cfg.getEventYieldDir() + "/gammaControlRegion/purity"; //"ZinvGammaPurity_" + samplesFileName + "_" + regionsSet;
+  //system(Form("mkdir -p %s", outputdir.c_str()));
 
 
   
@@ -90,7 +114,7 @@ int main( int argc, char* argv[] ) {
   MT2Analysis<MT2EstimateZinvGamma>* templatesFake   = new MT2Analysis<MT2EstimateZinvGamma>( "templatesFake", regionsSet );
 
   for( unsigned i=0; i<samples.size(); ++i ) {
-    computeYield( samples[i], regionsSet, templatesPrompt, templatesFake, useMC );
+    computeYield( samples[i], cfg, templatesPrompt, templatesFake );
   }
 
 
@@ -103,7 +127,7 @@ int main( int argc, char* argv[] ) {
 
 
   std::string templateFileName = "gammaTemplates" + useMC;
-  templateFileName = templateFileName + "_" + samplesFileName + "_" + regionsSet + ".root";
+  templateFileName = templateFileName + "_" + cfg.mcSamples() + "_" + cfg.gammaTemplateRegions() + ".root";
 
 
   templatesFake->writeToFile(templateFileName);
@@ -122,7 +146,7 @@ int main( int argc, char* argv[] ) {
 
 
 
-void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2Analysis<MT2EstimateZinvGamma>* prompt, MT2Analysis<MT2EstimateZinvGamma>* fake, const std::string& useMC ) {
+void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT2EstimateZinvGamma>* prompt, MT2Analysis<MT2EstimateZinvGamma>* fake ) {
 
 
   std::cout << std::endl << std::endl;
@@ -190,12 +214,12 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2An
 
     bool isWorkingPrompt = false;
 
-    if( useMC=="MC" ) {
+    if( cfg.gammaTemplateType()=="MC" ) {
 
       if( !sietaietaOK ) continue;
       isWorkingPrompt = myTree.gamma_mcMatchId[0]==22; // prompt = matched
 
-    } else if( useMC=="DataFR" ) { 
+    } else if( cfg.gammaTemplateType()=="DataFR" ) { 
 
       isWorkingPrompt = sietaietaOK;
 
@@ -208,7 +232,7 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2An
       }
 
 
-    } else if( useMC=="DataRC" ) { 
+    } else if( cfg.gammaTemplateType()=="DataRC" ) { 
 
       isWorkingPrompt = sietaietaOK;
 
@@ -218,7 +242,7 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2An
     } else {
 
       // this shouldnt be possible
-      std::cout << "-> NOPE. Don't know anything about useMC='" << useMC << "'." << std::endl;
+      std::cout << "-> NOPE. Don't know anything about cfg.gammaTemplateType()='" << cfg.gammaTemplateType() << "'." << std::endl;
       exit(191);
 
     }

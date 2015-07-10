@@ -3,7 +3,7 @@
 #include <fstream>
 #include <iomanip>
 #include <string>
-#include <cmath>
+//#include <cmath>
 
 
 #include "TMath.h"
@@ -23,6 +23,7 @@
 #include "interface/MT2Analysis.h"
 #include "interface/MT2EstimateTree.h"
 #include "interface/MT2DrawTools.h"
+#include "interface/MT2Config.h"
 
 #include "TRandom3.h"
 
@@ -32,53 +33,31 @@
 
 
 
-bool dummyAnalysis;
-double lumi = 5; // in fb-1
-
-
-
-class MT2Config {
-
- public:
-
-  MT2Config( const std::string& configFileName );
-
-  std::string regionsSet()      const { return regionsSet_; };
-  std::string mcSamples()       const { return mcSamples_; };
-  std::string sigSamples()      const { return sigSamples_; };
-  std::string dataSamples()     const { return dataSamples_; };
-  std::string additionalStuff() const { return additionalStuff_; };
-
-  bool useMC() {
-    return mcSamples()!="";
-  }
-
- private:
-
-  std::string regionsSet_;
-  std::string mcSamples_;
-  std::string sigSamples_;
-  std::string dataSamples_;
-  std::string additionalStuff_;
-
-};
-
-
-
 
 
 void randomizePoisson( MT2Analysis<MT2EstimateTree>* data );
 template <class T>
-MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg, float lumi=1. );
+MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg );
 MT2Analysis<MT2EstimateTree>* mergeYields( std::vector< MT2Analysis<MT2EstimateTree> *> EventYield, const std::string& regionsSet, const std::string& name, int id_min, int id_max=-1, const std::string& legendName="" );
 int matchPartonToJet( int index, MT2Tree* myTree );
 
 
-void drawYields( const std::string& outputdir, MT2Analysis<MT2EstimateTree>* data, std::vector<MT2Analysis<MT2EstimateTree>* > bgYields );
+void drawYields( const MT2Config& cfg, MT2Analysis<MT2EstimateTree>* data, std::vector<MT2Analysis<MT2EstimateTree>* > bgYields );
 
 
 
 int main( int argc, char* argv[] ) {
+
+
+  std::cout << std::endl << std::endl;
+  std::cout << "------------------------------------------------------" << std::endl;
+  std::cout << "|                                                    |" << std::endl;
+  std::cout << "|                                                    |" << std::endl;
+  std::cout << "|             Running regionEventYields              |" << std::endl;
+  std::cout << "|                                                    |" << std::endl;
+  std::cout << "|                                                    |" << std::endl;
+  std::cout << "------------------------------------------------------" << std::endl;
+  std::cout << std::endl << std::endl;
 
 
   if( argc!=2 ) {
@@ -88,28 +67,11 @@ int main( int argc, char* argv[] ) {
   }
 
 
-
-
   std::string configFileName(argv[1]);
+  MT2Config cfg(configFileName);
 
-  MT2Config cfg("cfgs/" + configFileName + ".txt");
-  dummyAnalysis = cfg.dataSamples()=="datatest";
-
-  std::string outputdir = "EventYields_" + configFileName;
-  if( dummyAnalysis ) {
-    double intpart;
-    double fracpart = modf(lumi, &intpart);
-    std::string suffix;
-    if( fracpart>0. )
-      suffix = std::string( Form("_dummy_%.0fp%.0ffb", intpart, 10.*fracpart ) );
-    else
-      suffix = std::string( Form("_dummy_%.0ffb", intpart ) );
-    outputdir += suffix;
-  }
-
-    
+  std::string outputdir = cfg.getEventYieldDir();
   system(Form("mkdir -p %s", outputdir.c_str()));
-
 
 
   TH1::AddDirectory(kFALSE); // stupid ROOT memory allocation needs this
@@ -119,7 +81,6 @@ int main( int argc, char* argv[] ) {
   MT2Analysis<MT2EstimateTree>* dataYield;  
 
   if( cfg.useMC() ) { // use MC BG estimates
-
 
     std::string samplesFileName = "../samples/samples_" + cfg.mcSamples() + ".dat";
     std::cout << std::endl << std::endl;
@@ -137,7 +98,7 @@ int main( int argc, char* argv[] ) {
     for( unsigned i=0; i<fSamples.size(); ++i ) {
       int this_id = fSamples[i].id;
       if( this_id>=200 && this_id<300 ) continue; // skip GJets
-      EventYield.push_back( computeYield<MT2EstimateTree>( fSamples[i], cfg, lumi ) );
+      EventYield.push_back( computeYield<MT2EstimateTree>( fSamples[i], cfg ));
     }
 
 
@@ -155,10 +116,8 @@ int main( int argc, char* argv[] ) {
     bgYields.push_back( EventYield_top );
     //bgYields.push_back( EventYield_other );
 
-    if( dummyAnalysis ) {
-    
+    if( cfg.dummyAnalysis() ) {
       dataYield   = mergeYields( EventYield, cfg.regionsSet(), "data", 100, 699 );
-    
     } 
 
   }
@@ -181,7 +140,7 @@ int main( int argc, char* argv[] ) {
     } else {
     
       for( unsigned i=0; i<fSamples.size(); ++i ) 
-        signals.push_back( computeYield<MT2EstimateTree>( fSamples[i], cfg, lumi ) );
+        signals.push_back( computeYield<MT2EstimateTree>( fSamples[i], cfg ) );
     
     } // if samples != 0
 
@@ -202,14 +161,14 @@ int main( int argc, char* argv[] ) {
     } else {
 
       for( unsigned i=0; i<fSamples.size(); ++i )
-        signals.push_back( computeYield<MT2EstimateTree>( fSamples[i], cfg, lumi ) );
+        signals.push_back( computeYield<MT2EstimateTree>( fSamples[i], cfg ) );
 
     } // if samples != 0
     
   } // if sig samples
   
 
-  if( !dummyAnalysis ) {
+  if( !cfg.dummyAnalysis() ) {
 
     std::string samplesFile_data = "../samples/samples_" + cfg.dataSamples() + ".dat";
 
@@ -224,13 +183,13 @@ int main( int argc, char* argv[] ) {
 
     std::vector< MT2Analysis<MT2EstimateTree>* > EventYield_data;
     for( unsigned i=0; i < samples_data.size(); ++i )
-      EventYield_data.push_back( computeYield<MT2EstimateTree>( samples_data[i], cfg, lumi ) );
+      EventYield_data.push_back( computeYield<MT2EstimateTree>( samples_data[i], cfg ) );
 
     dataYield   = mergeYields( EventYield_data, cfg.regionsSet(), "data", 1, 99 );
 
   }
 
-  drawYields( outputdir, dataYield, bgYields );
+  drawYields( cfg, dataYield, bgYields );
 
   // save MT2Analyses:
   dataYield->writeToFile(outputdir + "/analyses.root");
@@ -247,7 +206,7 @@ int main( int argc, char* argv[] ) {
 
 
 template <class T>
-MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg, float lumi ) {
+MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg ) {
 
 
   std::string regionsSet = cfg.regionsSet();
@@ -314,7 +273,7 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg, flo
     float GenSusyMScan1 = myTree.GenSusyMScan1;
     float GenSusyMScan2 = myTree.GenSusyMScan2;
     
-    Double_t weight = (isData) ? 1. : myTree.evt_scale1fb*lumi;
+    Double_t weight = (isData) ? 1. : myTree.evt_scale1fb*cfg.lumi();
     //weight *= myTree.weight_lepsf;
    
     T* thisEstimate = analysis->get( ht, njets, nbjets, met, minMTBmet, mt2 );
@@ -453,7 +412,7 @@ MT2Analysis<MT2EstimateTree>* mergeYields( std::vector<MT2Analysis<MT2EstimateTr
 }
 
 
-void drawYields( const std::string& outputdir, MT2Analysis<MT2EstimateTree>* data, std::vector< MT2Analysis<MT2EstimateTree> *> bgYields ) {
+void drawYields( const MT2Config& cfg, MT2Analysis<MT2EstimateTree>* data, std::vector< MT2Analysis<MT2EstimateTree> *> bgYields ) {
 
 
   MT2DrawTools::setStyle();
@@ -473,8 +432,8 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2EstimateTree>* dat
 
 
 
-  std::string fullPath = outputdir;
-  std::string fullPathPlots = outputdir + "/plots";
+  std::string fullPath = cfg.getEventYieldDir();
+  std::string fullPathPlots = fullPath + "/plots";
   system( Form("mkdir -p %s", fullPathPlots.c_str()) );
 
   std::set<MT2Region> MT2Regions = data->getRegions();
@@ -554,7 +513,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2EstimateTree>* dat
     legend->SetTextSize(0.038);
     legend->SetTextFont(42);
     legend->SetFillColor(0);
-    if( dummyAnalysis )
+    if( cfg.dummyAnalysis() )
       legend->AddEntry( gr_data, "Dummy", "P" );
     else
       legend->AddEntry( gr_data, "Data", "P" );
@@ -571,7 +530,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2EstimateTree>* dat
     bgStack.Draw("histo same");
     gr_data->Draw("p same");
 
-    TPaveText* labelTop = MT2DrawTools::getLabelTop(lumi);
+    TPaveText* labelTop = MT2DrawTools::getLabelTop(cfg.lumi());
     labelTop->Draw("same");
 
     gPad->RedrawAxis();
@@ -588,6 +547,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2EstimateTree>* dat
 }
 
 
+/*
 MT2Config::MT2Config( const std::string& configFileName ) {
 
   std::cout << std::endl;
@@ -635,7 +595,7 @@ MT2Config::MT2Config( const std::string& configFileName ) {
   std::cout << std::endl;
      
 }
-
+*/
 
 
 void randomizePoisson( MT2Analysis<MT2EstimateTree>* data ) {

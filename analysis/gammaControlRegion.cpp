@@ -1,3 +1,4 @@
+#include "interface/MT2Config.h"
 #include "interface/MT2Sample.h"
 #include "interface/MT2Region.h"
 #include "interface/MT2Analysis.h"
@@ -14,7 +15,6 @@
 #include "TH1F.h"
 
 
-float lumi = 5.; //fb-1
 bool alsoSignals = false;
 
 
@@ -26,7 +26,7 @@ int round(float d) {
 }
 
 
-void computeYield( const MT2Sample& sample, const std::string& regionsSet, 
+void computeYield( const MT2Sample& sample, const MT2Config& cfg, 
                    MT2Analysis<MT2EstimateTree>* anaTree,
                    MT2Analysis<MT2EstimateZinvGamma>* prompt=0, MT2Analysis<MT2EstimateZinvGamma>* prompt_pass=0, 
                    MT2Analysis<MT2EstimateZinvGamma>* nip=0, MT2Analysis<MT2EstimateZinvGamma>* nip_pass=0, 
@@ -39,17 +39,32 @@ void roundLikeData( MT2Analysis<MT2EstimateZinvGamma>* data );
 int main( int argc, char* argv[] ) {
 
 
-  std::string samplesFileName = "PHYS14_v6_skimprune";
+
+  std::cout << std::endl << std::endl;
+  std::cout << "------------------------------------------------------" << std::endl;
+  std::cout << "|                                                    |" << std::endl;
+  std::cout << "|                                                    |" << std::endl;
+  std::cout << "|            Running gammaControlRegion              |" << std::endl;
+  std::cout << "|                                                    |" << std::endl;
+  std::cout << "|                                                    |" << std::endl;
+  std::cout << "------------------------------------------------------" << std::endl;
+  std::cout << std::endl << std::endl;
 
 
-  std::string regionsSet = "zurich";
-  if( argc>1 ) {
-    regionsSet = std::string(argv[1]);
+  if( argc!=2 ) {
+    std::cout << "USAGE: ./gammaControlRegion [configFileName]" << std::endl;
+    std::cout << "Exiting." << std::endl;
+    exit(11);
   }
 
-  std::cout << "-> Using regions: " << regionsSet << std::endl;
+  
+  std::string configFileName(argv[1]);
+  MT2Config cfg(configFileName);
 
-  std::string samplesFile = "../samples/samples_" + samplesFileName + ".dat";
+
+
+
+  std::string samplesFile = "../samples/samples_" + cfg.mcSamples() + ".dat";
   
   std::vector<MT2Sample> samples_gammaJet = MT2Sample::loadSamples(samplesFile, "GJets");
   if( samples_gammaJet.size()==0 ) {
@@ -66,20 +81,21 @@ int main( int argc, char* argv[] ) {
 
   TH1::AddDirectory(kFALSE); // stupid ROOT memory allocation needs this
 
-  std::string outputdir(Form("GammaControlRegion_%s_%s_%.0ffb", samplesFileName.c_str(), regionsSet.c_str(), lumi ));
+  //std::string outputdir = "GammaControlRegion_%s_%s_%.0ffb", samplesFileName.c_str(), cfg.regionsSet.c_str(), cfg.lumi() ));
+  std::string outputdir = cfg.getEventYieldDir() + "/gammaControlRegion"; //"GammaControlRegion_" + cfg.name();
   system(Form("mkdir -p %s", outputdir.c_str()));
 
   
-  MT2Analysis<MT2EstimateZinvGamma>* prompt = new MT2Analysis<MT2EstimateZinvGamma>( "prompt", regionsSet );
-  MT2Analysis<MT2EstimateZinvGamma>* prompt_pass = new MT2Analysis<MT2EstimateZinvGamma>( "prompt_pass", regionsSet );
+  MT2Analysis<MT2EstimateZinvGamma>* prompt = new MT2Analysis<MT2EstimateZinvGamma>( "prompt", cfg.regionsSet() );
+  MT2Analysis<MT2EstimateZinvGamma>* prompt_pass = new MT2Analysis<MT2EstimateZinvGamma>( "prompt_pass", cfg.regionsSet() );
 
-  MT2Analysis<MT2EstimateZinvGamma>* fake = new MT2Analysis<MT2EstimateZinvGamma>( "fake", regionsSet );
-  MT2Analysis<MT2EstimateZinvGamma>* fake_pass = new MT2Analysis<MT2EstimateZinvGamma>( "fake_pass", regionsSet );
+  MT2Analysis<MT2EstimateZinvGamma>* fake = new MT2Analysis<MT2EstimateZinvGamma>( "fake", cfg.regionsSet() );
+  MT2Analysis<MT2EstimateZinvGamma>* fake_pass = new MT2Analysis<MT2EstimateZinvGamma>( "fake_pass", cfg.regionsSet() );
 
-  MT2Analysis<MT2EstimateZinvGamma>* nip = new MT2Analysis<MT2EstimateZinvGamma>( "nip", regionsSet );
-  MT2Analysis<MT2EstimateZinvGamma>* nip_pass = new MT2Analysis<MT2EstimateZinvGamma>( "nip_pass", regionsSet );
+  MT2Analysis<MT2EstimateZinvGamma>* nip = new MT2Analysis<MT2EstimateZinvGamma>( "nip", cfg.regionsSet() );
+  MT2Analysis<MT2EstimateZinvGamma>* nip_pass = new MT2Analysis<MT2EstimateZinvGamma>( "nip_pass", cfg.regionsSet() );
 
-  MT2Analysis<MT2EstimateTree>* tree = new MT2Analysis<MT2EstimateTree>( "gammaCRtree", regionsSet );
+  MT2Analysis<MT2EstimateTree>* tree = new MT2Analysis<MT2EstimateTree>( "gammaCRtree", cfg.regionsSet() );
   MT2EstimateTree::addVar( tree, "prompt" );
   MT2EstimateTree::addVar( tree, "iso" );
   
@@ -88,43 +104,43 @@ int main( int argc, char* argv[] ) {
   float isoCut = 2.5; // GeV (absolute iso)
 
   for( unsigned i=0; i<samples_gammaJet.size(); ++i ) {
-    computeYield( samples_gammaJet[i], regionsSet, tree, prompt, prompt_pass, nip, nip_pass, fake, fake_pass, isoCut );
+    computeYield( samples_gammaJet[i], cfg, tree, prompt, prompt_pass, nip, nip_pass, fake, fake_pass, isoCut );
   }
 
   for( unsigned i=0; i<samples_qcd.size(); ++i ) {
-    computeYield( samples_qcd[i], regionsSet, tree, prompt, prompt_pass, nip, nip_pass, fake, fake_pass, isoCut );
+    computeYield( samples_qcd[i], cfg, tree, prompt, prompt_pass, nip, nip_pass, fake, fake_pass, isoCut );
   }
 
 
-  MT2Analysis<MT2EstimateZinvGamma>* gammaCR_loose = new MT2Analysis<MT2EstimateZinvGamma>( "gammaCR_loose",  regionsSet );
+  MT2Analysis<MT2EstimateZinvGamma>* gammaCR_loose = new MT2Analysis<MT2EstimateZinvGamma>( "gammaCR_loose",  cfg.regionsSet() );
   (*gammaCR_loose) = (*prompt) + (*nip) + (*fake);
  
  
-  MT2Analysis<MT2EstimateZinvGamma>* gammaCR         = new MT2Analysis<MT2EstimateZinvGamma>( "gammaCR", regionsSet );
-  MT2Analysis<MT2EstimateZinvGamma>* gammaCR_nipUp   = new MT2Analysis<MT2EstimateZinvGamma>( "gammaCR_nipUp", regionsSet );
-  MT2Analysis<MT2EstimateZinvGamma>* gammaCR_nipDown = new MT2Analysis<MT2EstimateZinvGamma>( "gammaCR_nipDown", regionsSet );
+  MT2Analysis<MT2EstimateZinvGamma>* gammaCR         = new MT2Analysis<MT2EstimateZinvGamma>( "gammaCR", cfg.regionsSet() );
+  MT2Analysis<MT2EstimateZinvGamma>* gammaCR_nipUp   = new MT2Analysis<MT2EstimateZinvGamma>( "gammaCR_nipUp", cfg.regionsSet() );
+  MT2Analysis<MT2EstimateZinvGamma>* gammaCR_nipDown = new MT2Analysis<MT2EstimateZinvGamma>( "gammaCR_nipDown", cfg.regionsSet() );
   (*gammaCR        ) = (*prompt_pass) + (*fake_pass) +     (*nip_pass);
   (*gammaCR_nipUp  ) = (*prompt_pass) + (*fake_pass) + 2. *(*nip_pass);
   (*gammaCR_nipDown) = (*prompt_pass) + (*fake_pass) + 0.5*(*nip_pass);
   
  
-  MT2Analysis<MT2EstimateZinvGamma>* matched = new MT2Analysis<MT2EstimateZinvGamma>( "matched", regionsSet ); 
+  MT2Analysis<MT2EstimateZinvGamma>* matched = new MT2Analysis<MT2EstimateZinvGamma>( "matched", cfg.regionsSet() ); 
   (*matched) = (*prompt) + (*nip);
 
-  MT2Analysis<MT2EstimateZinvGamma>* matched_pass = new MT2Analysis<MT2EstimateZinvGamma>( "matched_pass", regionsSet ); 
+  MT2Analysis<MT2EstimateZinvGamma>* matched_pass = new MT2Analysis<MT2EstimateZinvGamma>( "matched_pass", cfg.regionsSet() ); 
   (*matched_pass) = (*prompt_pass) + (*nip_pass);
 
 
-  MT2Analysis<MT2EstimateSyst>* f = MT2EstimateSyst::makeEfficiencyAnalysis( "f", regionsSet, (MT2Analysis<MT2Estimate>*)prompt, (MT2Analysis<MT2Estimate>*)matched );
-  MT2Analysis<MT2EstimateSyst>* f_pass = MT2EstimateSyst::makeEfficiencyAnalysis( "f_pass", regionsSet, (MT2Analysis<MT2Estimate>*)prompt_pass, (MT2Analysis<MT2Estimate>*)matched_pass );
+  MT2Analysis<MT2EstimateSyst>* f = MT2EstimateSyst::makeEfficiencyAnalysis( "f", cfg.regionsSet(), (MT2Analysis<MT2Estimate>*)prompt, (MT2Analysis<MT2Estimate>*)matched );
+  MT2Analysis<MT2EstimateSyst>* f_pass = MT2EstimateSyst::makeEfficiencyAnalysis( "f_pass", cfg.regionsSet(), (MT2Analysis<MT2Estimate>*)prompt_pass, (MT2Analysis<MT2Estimate>*)matched_pass );
 
 
 
-  MT2Analysis<MT2EstimateSyst>* eff = MT2EstimateSyst::makeEfficiencyAnalysis( "eff", regionsSet, (MT2Analysis<MT2Estimate>*)prompt_pass, (MT2Analysis<MT2Estimate>*)prompt );
+  MT2Analysis<MT2EstimateSyst>* eff = MT2EstimateSyst::makeEfficiencyAnalysis( "eff", cfg.regionsSet(), (MT2Analysis<MT2Estimate>*)prompt_pass, (MT2Analysis<MT2Estimate>*)prompt );
 
-  MT2Analysis<MT2EstimateSyst>* purityTight = MT2EstimateSyst::makeEfficiencyAnalysis( "purity", regionsSet, (MT2Analysis<MT2Estimate>*)matched_pass, (MT2Analysis<MT2Estimate>*)gammaCR);
+  MT2Analysis<MT2EstimateSyst>* purityTight = MT2EstimateSyst::makeEfficiencyAnalysis( "purity", cfg.regionsSet(), (MT2Analysis<MT2Estimate>*)matched_pass, (MT2Analysis<MT2Estimate>*)gammaCR);
 
-  MT2Analysis<MT2EstimateSyst>* purityLoose = MT2EstimateSyst::makeEfficiencyAnalysis( "purityLoose", regionsSet, (MT2Analysis<MT2Estimate>*)matched, (MT2Analysis<MT2Estimate>*)gammaCR_loose );
+  MT2Analysis<MT2EstimateSyst>* purityLoose = MT2EstimateSyst::makeEfficiencyAnalysis( "purityLoose", cfg.regionsSet(), (MT2Analysis<MT2Estimate>*)matched, (MT2Analysis<MT2Estimate>*)gammaCR_loose );
 
 
   std::string mcFile = outputdir + "/mc.root";
@@ -152,11 +168,11 @@ int main( int argc, char* argv[] ) {
 
     for( unsigned i=0; i<samples_sig.size(); ++i ) {
 
-      MT2Analysis<MT2EstimateTree>* thisSig = new MT2Analysis<MT2EstimateTree>( samples_sig[i].sname, regionsSet, samples_sig[i].id );
+      MT2Analysis<MT2EstimateTree>* thisSig = new MT2Analysis<MT2EstimateTree>( samples_sig[i].sname, cfg.regionsSet(), samples_sig[i].id );
       MT2EstimateTree::addVar( thisSig, "prompt" );
       MT2EstimateTree::addVar( thisSig, "iso" );
 
-      computeYield( samples_sig[i], regionsSet, thisSig );
+      computeYield( samples_sig[i], cfg, thisSig );
 
       signals.push_back( thisSig );
 
@@ -197,7 +213,7 @@ int main( int argc, char* argv[] ) {
 
 
 
-void computeYield( const MT2Sample& sample, const std::string& regionsSet, 
+void computeYield( const MT2Sample& sample, const MT2Config& cfg,
                    MT2Analysis<MT2EstimateTree>* anaTree,
                    MT2Analysis<MT2EstimateZinvGamma>* prompt, MT2Analysis<MT2EstimateZinvGamma>* prompt_pass, 
                    MT2Analysis<MT2EstimateZinvGamma>* nip, MT2Analysis<MT2EstimateZinvGamma>* nip_pass, 
@@ -266,7 +282,7 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet,
 
 
 
-    Double_t weight = myTree.evt_scale1fb*lumi; 
+    Double_t weight = myTree.evt_scale1fb*cfg.lumi(); 
 
     bool passIso = iso<isoCut;
 
