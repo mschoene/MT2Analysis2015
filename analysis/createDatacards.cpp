@@ -11,6 +11,7 @@
 #include "TString.h"
 #include "RooHistError.h"
 
+#include "interface/MT2Config.h"
 #include "interface/MT2Analysis.h"
 #include "interface/MT2Estimate.h"
 #include "interface/MT2EstimateSyst.h"
@@ -19,7 +20,6 @@
 bool use_gamma = true;
 bool use_purity = true;
 
-double lumi = 5;
 
 int round(float d) {
   return (int)(floor(d + 0.5));
@@ -37,19 +37,32 @@ std::string gammaConvention( float yieldSR, int yieldCR, int position, const std
 int main( int argc, char* argv[] ) {
 
 
+  std::cout << std::endl << std::endl;
+  std::cout << "------------------------------------------------------" << std::endl;
+  std::cout << "|                                                    |" << std::endl;
+  std::cout << "|                                                    |" << std::endl;
+  std::cout << "|              Running createDatacards               |" << std::endl;
+  std::cout << "|                                                    |" << std::endl;
+  std::cout << "|                                                    |" << std::endl;
+  std::cout << "------------------------------------------------------" << std::endl;
+  std::cout << std::endl << std::endl;
+
+
   if( argc!=2 ) {
-    std::cout << "USAGE: ./createDatacards [dir]" << std::endl;
-    exit(113);
-  } 
+    std::cout << "USAGE: ./createDatacards [configFileName]" << std::endl;
+    std::cout << "Exiting." << std::endl;
+    exit(11);
+  }
 
 
-  std::string dir( argv[1] );
+  std::string configFileName(argv[1]);
+  MT2Config cfg(configFileName);
+
+
+
+  std::string dir = cfg.getEventYieldDir();
   std::string mc_fileName = dir + "/analyses.root";
 
-
-  std::string samplesName = "PHYS14_v6_skimprune";
-  //  std::string regionsName = "zurich";
-  std::string regionsName = "darkMatter_max1b_all_2j_4j";
 
   bool useMC_qcd  = true;
   bool useMC_zinv = false;
@@ -68,8 +81,8 @@ int main( int argc, char* argv[] ) {
   float err_sig_corr    = 0.1;
   float err_sig_uncorr  = 0.;
 
-  float llep_weighted   = 0.0314378*lumi;
-  float zinv_weighted   = 0.0011701*lumi;
+  float llep_weighted   = 0.0314378*cfg.lumi();
+  float zinv_weighted   = 0.0011701*cfg.lumi();
 
   MT2Analysis<MT2Estimate>* data  = MT2Analysis<MT2Estimate>::readFromFile( mc_fileName, "data" );
   MT2Analysis<MT2Estimate>* qcd;
@@ -88,17 +101,16 @@ int main( int argc, char* argv[] ) {
   if( useMC_zinv )
     zinv = MT2Analysis<MT2Estimate>::readFromFile( mc_fileName, "ZJets");
   else {
+    zinvCR      = MT2Analysis<MT2Estimate>    ::readFromFile( dir + "/gammaControlRegion/data.root", "gammaCR");
     if( use_purity ){
       //zinv       = MT2Analysis<MT2Estimate>::readFromFile( mc_fileName, "ZJets");
-      zinvCR      = MT2Analysis<MT2Estimate>    ::readFromFile( Form("GammaControlRegion_%s_%s_%.0ffb/data.root", samplesName.c_str(), regionsName.c_str(), lumi), "gammaCR");
-      zinv        = MT2Analysis<MT2Estimate>    ::readFromFile( Form("ZinvEstimateFromGamma_%s_%s_%.0ffb_type1/MT2ZinvEstimate.root", samplesName.c_str(), regionsName.c_str(), lumi), "ZinvEstimate");
-      zinv_ratio  = MT2Analysis<MT2Estimate>    ::readFromFile( Form("ZinvEstimateFromGamma_%s_%s_%.0ffb_type1/MT2ZinvEstimate.root", samplesName.c_str(), regionsName.c_str(), lumi), "ZgammaRatio");
-      purity      = MT2Analysis<MT2EstimateSyst>::readFromFile( Form("ZinvEstimateFromGamma_%s_%s_%.0ffb_type1/MT2ZinvEstimate.root", samplesName.c_str(), regionsName.c_str(), lumi), "purity");
+      zinv        = MT2Analysis<MT2Estimate>    ::readFromFile( dir + "/zinvFromGamma.root", "ZinvEstimate");
+      zinv_ratio  = MT2Analysis<MT2Estimate>    ::readFromFile( dir + "/zinvFromGamma.root", "ZgammaRatio");
+      purity      = MT2Analysis<MT2EstimateSyst>::readFromFile( dir + "/zinvFromGamma.root", "purity");
     }
     else{
-      zinvCR      = MT2Analysis<MT2Estimate>    ::readFromFile( Form("GammaControlRegion_%s_%s_%.0ffb/data.root", samplesName.c_str(), regionsName.c_str(), lumi), "gammaCR");
-      zinv        = MT2Analysis<MT2Estimate>    ::readFromFile( Form("ZinvEstimateFromGamma_%s_%s_%.0ffb_type0/MT2ZinvEstimate.root", samplesName.c_str(), regionsName.c_str(), lumi), "ZinvEstimate");
-      zinv_ratio  = MT2Analysis<MT2Estimate>    ::readFromFile( Form("ZinvEstimateFromGamma_%s_%s_%.0ffb_type0/MT2ZinvEstimate.root", samplesName.c_str(), regionsName.c_str(), lumi), "ZgammaRatio");
+      zinv        = MT2Analysis<MT2Estimate>    ::readFromFile( dir + "/zinvFromGamma_noPurity.root", "ZinvEstimate");
+      zinv_ratio  = MT2Analysis<MT2Estimate>    ::readFromFile( dir + "/zinvFromGamma_noPurity.root", "ZgammaRatio");
     }
   }
   zinv->setName("zinv");
@@ -111,13 +123,14 @@ int main( int argc, char* argv[] ) {
     MT2Analysis<MT2Estimate>* top   = MT2Analysis<MT2Estimate>::readFromFile( mc_fileName, "Top");
     llep = new MT2Analysis<MT2Estimate>( (*wjets) + (*top) );
   } else {
-    llep = MT2Analysis<MT2Estimate>::readFromFile( Form("llep_%s_%s_%.0ffb.root", samplesName.c_str(), regionsName.c_str(), lumi) );
+    llep = MT2Analysis<MT2Estimate>::readFromFile( cfg.getEventYieldDir() + "/llepEstimate.root" );
   }
   llep->setName( "llep" );
   llep->addToFile( mc_fileName, true );
 
   //MT2Analysis<MT2Estimate>* llepCR = MT2Analysis<MT2Estimate>::readFromFile( Form("llep_%s_%s_llep_%.0ffb.root", samplesName.c_str(), regionsName.c_str(), lumi) );
-  MT2Analysis<MT2Estimate>* llepCR = MT2Analysis<MT2Estimate>::readFromFile( Form("llep_%s_%s_%.0ffb.root", samplesName.c_str(), regionsName.c_str(), lumi) );
+  MT2Analysis<MT2Estimate>* llepCR = MT2Analysis<MT2Estimate>::readFromFile( cfg.getEventYieldDir() + "/llepEstimate.root" );
+
 
 
   std::set<MT2Region> regions = data->getRegions();
