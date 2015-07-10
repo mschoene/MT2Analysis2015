@@ -69,8 +69,6 @@ int main( int argc, char* argv[] ) {
   TH1::AddDirectory(kFALSE); // stupid ROOT memory allocation needs this
 
 
-  std::string outputdir = cfg.getEventYieldDir() + "/zinvFromGamma/";
-  system(Form("mkdir -p %s", outputdir.c_str()));
 
 
   std::string gammaControlRegionDir = cfg.getEventYieldDir() + "/gammaControlRegion"; //(Form("GammaControlRegion_%s_%s_%.0ffb", samples.c_str(), regionsSet.c_str(), lumi));
@@ -127,7 +125,9 @@ int main( int argc, char* argv[] ) {
 
   MT2Analysis<MT2EstimateSyst>* ZinvEstimate = combineDataAndMC( ZinvEstimateFromGamma, (MT2Analysis<MT2Estimate>*)Zinv );
 
-  std::string outFile = outputdir + "/MT2ZinvEstimate.root";
+  std::string outFile = cfg.getEventYieldDir() + "/zinvFromGamma";
+  if( type==0 ) outFile += "_noPurity";
+  outFile += ".root";
 
   ZinvEstimate->writeToFile( outFile, "recreate" );
   ZgammaRatio->addToFile( outFile );
