@@ -7,3 +7,6 @@ make all
 # ./makeZinvGammaTemplates $1 MC
 # ./fitPurityGamma $1 MC
 # ./drawPurityFits $1 
+./computeZinvFromGamma $1
+./computeLostLepton_CR $1
+./createDatacards $1
