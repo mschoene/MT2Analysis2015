@@ -1255,13 +1255,13 @@ Bool_t MT2Tree::passIsoTrackVeto(){
 Bool_t MT2Tree::passBaseline(TString sel)
 {
   if (sel=="gamma")
-    return nVert > 0 && gamma_nJet30 >= 2 && 
+    return nVert > 0 && 
+      //gamma_nJet30 >= 2 && 
       gamma_deltaPhiMin > 0.3 && 
-      gamma_diffMetMht < 0.5*gamma_met_pt && 
-      gamma_jet1_pt > 30. && gamma_jet2_pt > 30. ;
+      gamma_diffMetMht < 0.5*gamma_met_pt;
   else
     return nVert > 0 && 
-      (nJet30 >= 2 || sel=="monojet") &&
+      //(nJet30 >= 2 || sel=="monojet") &&
       deltaPhiMin > 0.3 && 
       diffMetMht < 0.5*met_pt;
   
