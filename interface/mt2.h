@@ -380,8 +380,8 @@ public :
    Float_t         evt_xsec;
    Float_t         evt_kfactor;
    Float_t         evt_filter;
-   //   ULong64_t       evt_nEvts;
-   Int_t       evt_nEvts;
+   ULong64_t       evt_nEvts;
+   //Int_t       evt_nEvts;
    Int_t           evt_id;
    Float_t weight_lepsf;
    Float_t weight_lepsf_UP;
@@ -1254,17 +1254,17 @@ Bool_t MT2Tree::passIsoTrackVeto(){
 
 Bool_t MT2Tree::passBaseline(TString sel)
 {
-  if (sel=="")
-    return nVert > 0 && nJet30 >= 2 &&
-      deltaPhiMin > 0.3 && 
-      diffMetMht < 0.5*met_pt && 
-      jet1_pt > 30. && jet2_pt > 30. ;
-  else if (sel=="gamma")
+  if (sel=="gamma")
     return nVert > 0 && gamma_nJet30 >= 2 && 
       gamma_deltaPhiMin > 0.3 && 
       gamma_diffMetMht < 0.5*gamma_met_pt && 
       gamma_jet1_pt > 30. && gamma_jet2_pt > 30. ;
   else
+    return nVert > 0 && 
+      (nJet30 >= 2 || sel=="monojet") &&
+      deltaPhiMin > 0.3 && 
+      diffMetMht < 0.5*met_pt;
+  
     return kFALSE;
 }
 

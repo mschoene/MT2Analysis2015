@@ -302,14 +302,14 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg, flo
     myTree.GetEntry(iEntry);
 
     if( regionsSet!="13TeV_noCut" )
-      if( !myTree.passSelection() ) continue;
+      if( !myTree.passSelection(cfg.additionalStuff()) ) continue;
 
     float ht   = myTree.ht;
     float met  = myTree.met_pt;
-    float mt2  = myTree.mt2;
     float minMTBmet = myTree.minMTBMet;
     int njets  = myTree.nJet30;
     int nbjets = myTree.nBJet20;    
+    float mt2  = (njets>1) ? myTree.mt2 : myTree.jet_pt[0];
     
     float GenSusyMScan1 = myTree.GenSusyMScan1;
     float GenSusyMScan2 = myTree.GenSusyMScan2;
