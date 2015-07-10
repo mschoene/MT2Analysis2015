@@ -20,6 +20,7 @@
 #include "TGraphAsymmErrors.h"
 
 
+#include "../interface/MT2Config.h"
 #include "../interface/MT2Analysis.h"
 #include "../interface/MT2Region.h"
 #include "../interface/MT2Estimate.h"
@@ -45,20 +46,43 @@ void fitPurity( const std::string& outputdir, MT2EstimateSyst* purityLoose, MT2E
 void checkBoundaries( Purity& p );
 
 
-float lumi = 5.; // fb-1
 
 
 
 int main( int argc, char* argv[] ) {
 
 
-  std::string samples = "PHYS14_v6_skimprune";
+  std::cout << std::endl << std::endl;
+  std::cout << "------------------------------------------------------" << std::endl;
+  std::cout << "|                                                    |" << std::endl;
+  std::cout << "|                                                    |" << std::endl;
+  std::cout << "|              Running fitPurityGamma                |" << std::endl;
+  std::cout << "|                                                    |" << std::endl;
+  std::cout << "|                                                    |" << std::endl;
+  std::cout << "------------------------------------------------------" << std::endl;
+  std::cout << std::endl << std::endl;
 
 
-  std::string mc_or_data = "DataRC";
-  if( argc>1 ) {
-    mc_or_data = std::string(argv[1]);
+  if( argc<2 ) {
+    std::cout << "USAGE: ./fitPurityGamma [configFileName]" << std::endl;
+    std::cout << "Exiting." << std::endl;
+    exit(11);
   }
+
+
+  std::string configFileName(argv[1]);
+  MT2Config cfg(configFileName);
+
+
+  std::string mc_or_data = cfg.gammaTemplateType();
+  if( argc>2 ) {
+
+    mc_or_data = std::string(argv[2]); 
+    std::cout << std::endl;
+    std::cout << "-> Will disobey the cfg and use mc_or_data = " << argv[2] << std::endl;
+    std::cout << std::endl;
+
+  } 
 
   if( mc_or_data=="data" ) mc_or_data="DataRC";
   if( mc_or_data=="dataRC" ) mc_or_data="DataRC";
@@ -66,21 +90,16 @@ int main( int argc, char* argv[] ) {
 
 
 
-  std::string regionsSet = "zurich";
-  if( argc>2 ) {
-    regionsSet = std::string(argv[2]);
-  }
-
 
 
   TH1::AddDirectory(kFALSE);
 
 
-  std::string gammaCRdir(Form("GammaControlRegion_%s_%s_%.0ffb", samples.c_str(), regionsSet.c_str(), lumi ));
+  std::string gammaCRdir = cfg.getEventYieldDir() + "/gammaControlRegion"; //(Form("GammaControlRegion_%s_%s_%.0ffb", samples.c_str(), regionsSet.c_str(), lumi ));
   MT2Analysis<MT2EstimateZinvGamma>* gammaJet_data = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( gammaCRdir + "/data.root", "gammaCR_loose" );
 
-  MT2Analysis<MT2EstimateZinvGamma>* templates_prompt = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( "gammaTemplates" + mc_or_data + "_" + samples + "_13TeV_inclusive.root", "templatesPrompt" );
-  MT2Analysis<MT2EstimateZinvGamma>* templates_fake   = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( "gammaTemplates" + mc_or_data + "_" + samples + "_13TeV_inclusive.root", "templatesFake" );
+  MT2Analysis<MT2EstimateZinvGamma>* templates_prompt = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( "gammaTemplates" + mc_or_data + "_" + cfg.mcSamples() + "_" + cfg.gammaTemplateRegions() + ".root", "templatesPrompt" );
+  MT2Analysis<MT2EstimateZinvGamma>* templates_fake   = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( "gammaTemplates" + mc_or_data + "_" + cfg.mcSamples() + "_" + cfg.gammaTemplateRegions() + ".root", "templatesFake" );
 
 
   std::string outputdir = gammaCRdir + "/PurityFits" + mc_or_data;
@@ -88,8 +107,8 @@ int main( int argc, char* argv[] ) {
 
   std::set<MT2Region> regions = gammaJet_data->getRegions();
 
-  MT2Analysis<MT2EstimateSyst>* purityLoose = new MT2Analysis<MT2EstimateSyst>( "purityLoose", regionsSet );
-  MT2Analysis<MT2EstimateSyst>* purityTight = new MT2Analysis<MT2EstimateSyst>( "purity"     , regionsSet );
+  MT2Analysis<MT2EstimateSyst>* purityLoose = new MT2Analysis<MT2EstimateSyst>( "purityLoose", cfg.regionsSet() );
+  MT2Analysis<MT2EstimateSyst>* purityTight = new MT2Analysis<MT2EstimateSyst>( "purity"     , cfg.regionsSet() );
 
 
   for( std::set<MT2Region>::iterator iR=regions.begin(); iR!=regions.end(); ++iR ) {
