@@ -14,6 +14,7 @@
 #include "TGraphAsymmErrors.h"
 #include "TVector2.h"
 
+#include "interface/MT2Config.h"
 #include "interface/MT2Sample.h"
 #include "interface/MT2Region.h"
 #include "interface/MT2Analysis.h"
@@ -23,7 +24,6 @@
 #define mt2_cxx
 #include "interface/mt2.h"
 
-float lumi = 5.; //fb-1
 
 struct lepcand {
   
@@ -36,7 +36,7 @@ struct lepcand {
 
 };
 
-MT2Analysis<MT2EstimateSyst> computeYield( const MT2Sample& sample, const std::string& regionsSet, float lumi=1. );
+MT2Analysis<MT2EstimateSyst> computeYield( const MT2Sample& sample, const MT2Config& cfg );
 
 float DeltaR(float eta1, float eta2, float phi1, float phi2);
 
@@ -45,13 +45,30 @@ float DeltaPhi(float phi1, float phi2);
 int main( int argc, char* argv[] ) {
 
 
-  std::string sampleName = "PHYS14_v6_skimprune";
-  if( argc>1 ) {
-    sampleName = std::string(argv[1]);
+  std::cout << std::endl << std::endl;
+  std::cout << "------------------------------------------------------" << std::endl;
+  std::cout << "|                                                    |" << std::endl;
+  std::cout << "|                                                    |" << std::endl;
+  std::cout << "|           Running computeLostLepton_CR             |" << std::endl;
+  std::cout << "|                                                    |" << std::endl;
+  std::cout << "|                                                    |" << std::endl;
+  std::cout << "------------------------------------------------------" << std::endl;
+  std::cout << std::endl << std::endl;
+
+
+  if( argc!=2 ) {
+    std::cout << "USAGE: ./computeLostLepton_CR [configFileName]" << std::endl;
+    std::cout << "Exiting." << std::endl;
+    exit(11);
   }
 
+
+  std::string configFileName(argv[1]);
+  MT2Config cfg(configFileName);
+
+
   
-  std::string samplesFileName = "../samples/samples_" + sampleName + ".dat";
+  std::string samplesFileName = "../samples/samples_" + cfg.mcSamples() + ".dat";
   std::cout << std::endl << std::endl;
   std::cout << "-> Loading samples from file: " << samplesFileName << std::endl;
 
@@ -62,18 +79,14 @@ int main( int argc, char* argv[] ) {
   }
 
 
-//  //  std::string regionsSet = "zurich";
-//  std::string regionsSet = "zurich_llep";
-  std::string regionsSet = "darkMatter_max1b_all_2j_4j";
-
   TH1::AddDirectory(kFALSE); // stupid ROOT memory allocation needs this
 
   
-  MT2Analysis<MT2EstimateSyst>* lostLeptonEstimate = new MT2Analysis<MT2EstimateSyst> ( "llep", regionsSet );  
+  MT2Analysis<MT2EstimateSyst>* lostLeptonEstimate = new MT2Analysis<MT2EstimateSyst> ( "llep", cfg.regionsSet() );  
   for( unsigned i=0; i < fSamples.size(); ++i )
-    (*lostLeptonEstimate) += ( computeYield( fSamples[i], regionsSet, lumi ) );
+    (*lostLeptonEstimate) += ( computeYield( fSamples[i], cfg ) );
   
-  lostLeptonEstimate->writeToFile(Form("llep_%s_%s_%.0ffb.root", sampleName.c_str(), regionsSet.c_str(), lumi));
+  lostLeptonEstimate->writeToFile( cfg.getEventYieldDir() + "/llepEstimate.root" ); //Form("llep_%s_%s_%.0ffb.root", sampleName.c_str(), regionsSet.c_str(), lumi));
 
   return 0;
   
@@ -82,7 +95,7 @@ int main( int argc, char* argv[] ) {
 
 
 
-MT2Analysis<MT2EstimateSyst> computeYield( const MT2Sample& sample, const std::string& regionsSet, float lumi ) {
+MT2Analysis<MT2EstimateSyst> computeYield( const MT2Sample& sample, const MT2Config& cfg ) {
 
   std::cout << std::endl << std::endl;
   std::cout << "-> Starting computation for sample: " << sample.name << std::endl;
@@ -94,7 +107,7 @@ MT2Analysis<MT2EstimateSyst> computeYield( const MT2Sample& sample, const std::s
   myTree.Init(tree);
 
   std::cout << "-> Setting up MT2Analysis with name: " << sample.sname << std::endl;
-  MT2Analysis<MT2EstimateSyst> analysis( sample.sname, regionsSet, sample.id );
+  MT2Analysis<MT2EstimateSyst> analysis( sample.sname, cfg.regionsSet(), sample.id );
 
   int nentries = tree->GetEntries();
     
@@ -217,7 +230,7 @@ MT2Analysis<MT2EstimateSyst> computeYield( const MT2Sample& sample, const std::s
     //  
     //} // for 1L control region
 
-    Double_t weight = myTree.evt_scale1fb*lumi;
+    Double_t weight = myTree.evt_scale1fb*cfg.lumi();
 
     //float fullweight_btagUp = weight;
     //float fullweight_btagDown = weight;
