@@ -1175,7 +1175,7 @@ void MT2Region::getBins( int &nBins, double*& bins) const {
     nBins = nBins_tmp;
 
    
-  } else if( regionName == "HT450toInf_j1to1_b0toInf" ){ // monojet region
+  } else if( regionName == "HT450toInf_j1_b0toInf" ){ // monojet region
 
     const int nBins_tmp                        = 4;
     bins = new double[nBins_tmp+1]{450., 550., 700., 1000., 1500.};
