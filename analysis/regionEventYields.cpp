@@ -42,7 +42,6 @@ MT2Analysis<MT2EstimateTree>* mergeYields( std::vector< MT2Analysis<MT2EstimateT
 int matchPartonToJet( int index, MT2Tree* myTree );
 
 
-void drawYields( const MT2Config& cfg, MT2Analysis<MT2EstimateTree>* data, std::vector<MT2Analysis<MT2EstimateTree>* > bgYields );
 
 
 
@@ -60,7 +59,7 @@ int main( int argc, char* argv[] ) {
   std::cout << std::endl << std::endl;
 
 
-  if( argc!=2 ) {
+  if( argc<2 ) {
     std::cout << "USAGE: ./regionEventYields [configFileName]" << std::endl;
     std::cout << "Exiting." << std::endl;
     exit(11);
@@ -70,6 +69,18 @@ int main( int argc, char* argv[] ) {
   std::string configFileName(argv[1]);
   MT2Config cfg(configFileName);
 
+
+  bool onlyData = false;
+  bool onlyMC   = false;
+  if( argc > 2 ) {
+    std::string dataMC(argv[2]);
+    if( dataMC=="data" ) onlyData = true;
+    else if( dataMC=="MC" ) onlyMC = true;
+    else {
+      std::cout << "-> You passed a second argument that isn't 'data' nor 'MC', so I don't know what to do about it." << std::endl;
+    }
+  }
+
   std::string outputdir = cfg.getEventYieldDir();
   system(Form("mkdir -p %s", outputdir.c_str()));
 
@@ -77,10 +88,10 @@ int main( int argc, char* argv[] ) {
   TH1::AddDirectory(kFALSE); // stupid ROOT memory allocation needs this
 
 
-  std::vector<MT2Analysis<MT2EstimateTree>* > bgYields;
-  MT2Analysis<MT2EstimateTree>* dataYield;  
+  std::vector<MT2Analysis<MT2EstimateTree>* > yields;
+  //MT2Analysis<MT2EstimateTree>* dataYield;  
 
-  if( cfg.useMC() ) { // use MC BG estimates
+  if( cfg.useMC() && !onlyData ) { // use MC BG estimates
 
     std::string samplesFileName = "../samples/samples_" + cfg.mcSamples() + ".dat";
     std::cout << std::endl << std::endl;
@@ -98,33 +109,44 @@ int main( int argc, char* argv[] ) {
     for( unsigned i=0; i<fSamples.size(); ++i ) {
       int this_id = fSamples[i].id;
       if( this_id>=200 && this_id<300 ) continue; // skip GJets
+      if( this_id>=700 && this_id<800 ) continue; // skip DY
       EventYield.push_back( computeYield<MT2EstimateTree>( fSamples[i], cfg ));
     }
 
 
     std::cout << "-> Done looping on samples. Start merging." << std::endl;
 
+    std::cout << "     merging Top..." << std::endl;
     MT2Analysis<MT2EstimateTree>* EventYield_top   = mergeYields( EventYield, cfg.regionsSet(), "Top", 300, 499 ); // ttbar, single top, ttW, ttZ...
+    std::cout << "     merging QCD..." << std::endl;
     MT2Analysis<MT2EstimateTree>* EventYield_qcd   = mergeYields( EventYield, cfg.regionsSet(), "QCD", 100, 199 );
+    std::cout << "     merging WJets..." << std::endl;
     MT2Analysis<MT2EstimateTree>* EventYield_wjets = mergeYields( EventYield, cfg.regionsSet(), "WJets", 500, 599, "W+jets" );
+    std::cout << "     merging ZJets..." << std::endl;
     MT2Analysis<MT2EstimateTree>* EventYield_zjets = mergeYields( EventYield, cfg.regionsSet(), "ZJets", 600, 699, "Z+jets" );
     //MT2Analysis<MT2EstimateTree>* EventYield_other = mergeYields( EventYield, cfg.regionsSet(), "Diboson", 700, 899, "Other" );
+    std::cout << "-> Done merging." << std::endl;
 
-    bgYields.push_back( EventYield_qcd );
-    bgYields.push_back( EventYield_wjets );
-    bgYields.push_back( EventYield_zjets );
-    bgYields.push_back( EventYield_top );
-    //bgYields.push_back( EventYield_other );
+    yields.push_back( EventYield_qcd );
+    yields.push_back( EventYield_wjets );
+    yields.push_back( EventYield_zjets );
+    yields.push_back( EventYield_top );
+    //yields.push_back( EventYield_other );
 
     if( cfg.dummyAnalysis() ) {
-      dataYield   = mergeYields( EventYield, cfg.regionsSet(), "data", 100, 699 );
-    } 
+      MT2Analysis<MT2EstimateTree>* dataYield   = mergeYields( EventYield, cfg.regionsSet(), "data", 100, 699 );
+      yields.push_back( dataYield );
+    } //else {
+      //dataYield = new MT2Analysis<MT2EstimateTree>( "data", cfg.regionsSet(), 1 );
+    //}
 
-  }
+  } // if MC samples
+
+
 
   // load signal samples, if any
   std::vector< MT2Analysis< MT2EstimateTree>* > signals;
-  if( cfg.mcSamples()!="" ) {
+  if( cfg.mcSamples()!="" && cfg.additionalStuff()!="noSignals" && !onlyData ) {
 
     std::string samplesFileName = "../samples/samples_" + cfg.mcSamples() + ".dat";
     std::cout << std::endl << std::endl;
@@ -146,7 +168,7 @@ int main( int argc, char* argv[] ) {
 
   } // if mc samples
 
-  else if ( cfg.sigSamples()!="" ){
+  else if ( cfg.sigSamples()!="" && !onlyData ) {
 
     std::string samplesFileName = "../samples/samples_" + cfg.sigSamples() + ".dat";
     std::cout << std::endl << std::endl;
@@ -168,14 +190,14 @@ int main( int argc, char* argv[] ) {
   } // if sig samples
   
 
-  if( !cfg.dummyAnalysis() ) {
+  if( !cfg.dummyAnalysis() && cfg.dataSamples()!="" && !onlyMC ) {
 
     std::string samplesFile_data = "../samples/samples_" + cfg.dataSamples() + ".dat";
 
     std::cout << std::endl << std::endl;
     std::cout << "-> Loading data from file: " << samplesFile_data << std::endl;
 
-    std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, 1, 99 );
+    std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data); //, 1, 99 );
     if( samples_data.size()==0 ) {
       std::cout << "There must be an error: samples_data is empty!" << std::endl;
       exit(1209);
@@ -185,18 +207,31 @@ int main( int argc, char* argv[] ) {
     for( unsigned i=0; i < samples_data.size(); ++i )
       EventYield_data.push_back( computeYield<MT2EstimateTree>( samples_data[i], cfg ) );
 
-    dataYield   = mergeYields( EventYield_data, cfg.regionsSet(), "data", 1, 99 );
+    //dataYield   = mergeYields( EventYield_data, cfg.regionsSet(), "data"); //, 1, 99 );
+    MT2Analysis<MT2EstimateTree>* dataYield   = EventYield_data[0];
+    dataYield->setName("data");
+
+    yields.push_back( dataYield );
 
   }
 
-  drawYields( cfg, dataYield, bgYields );
+
+  if( yields.size()==0 ) {
+    std::cout << "-> Didn't end up with a single yield... something's wrong." << std::endl;
+    exit(87);
+  }
+
 
   // save MT2Analyses:
-  dataYield->writeToFile(outputdir + "/analyses.root");
-  for( unsigned i=0; i<bgYields.size(); ++i )
-    bgYields[i]->writeToFile(outputdir + "/analyses.root", "UPDATE");
+  //dataYield->writeToFile(outputdir + "/analyses.root");
+  yields[0]->writeToFile(outputdir + "/analyses.root");
+  for( unsigned i=1; i<yields.size(); ++i )
+    yields[i]->writeToFile(outputdir + "/analyses.root", "UPDATE");
   for( unsigned i=0; i<signals.size(); ++i )
     signals[i]->writeToFile(outputdir + "/analyses.root", "UPDATE");
+
+  cfg.saveAs(outputdir + "/config.txt");
+  //cfg.saveAs(outputdir + "/" + configFileName + ".txt");
 
   return 0;
 
@@ -412,190 +447,7 @@ MT2Analysis<MT2EstimateTree>* mergeYields( std::vector<MT2Analysis<MT2EstimateTr
 }
 
 
-void drawYields( const MT2Config& cfg, MT2Analysis<MT2EstimateTree>* data, std::vector< MT2Analysis<MT2EstimateTree> *> bgYields ) {
 
-
-  MT2DrawTools::setStyle();
-
-  std::vector<int> colors;
-  if( bgYields.size()==3 ) { // estimates
-    colors.push_back(402); 
-    colors.push_back(430); 
-    colors.push_back(418); 
-  } else { // mc
-    colors.push_back(401); // qcd
-    colors.push_back(417); // w+jets
-    colors.push_back(419); // z+jets
-    colors.push_back(855); // top
-    //colors.push_back(); // other
-  }
-
-
-
-  std::string fullPath = cfg.getEventYieldDir();
-  std::string fullPathPlots = fullPath + "/plots";
-  system( Form("mkdir -p %s", fullPathPlots.c_str()) );
-
-  std::set<MT2Region> MT2Regions = data->getRegions();
-  
-  for( std::set<MT2Region>::iterator iMT2 = MT2Regions.begin(); iMT2!=MT2Regions.end(); ++iMT2 ) {
-  
-
-    //std::string fullPath = outputdir + "/" + iHT->getName() + "/" + iSR->getName();
-    //std::string mkdircommand = "mkdir -p " + fullPath;
-    //system( mkdircommand.c_str() );
-
-
-    MT2Region thisRegion( (*iMT2) );
-
-
-    TH1D* h1_data = data->get(thisRegion)->yield;
-
-    TFile* histoFile = TFile::Open( Form("%s/histograms_%s.root", fullPath.c_str(), thisRegion.getName().c_str()), "recreate" );
-    histoFile->cd();
-    h1_data->Write();
-
-    TGraphAsymmErrors* gr_data = MT2DrawTools::getPoissonGraph(h1_data);
-    gr_data->SetMarkerStyle(20);
-    gr_data->SetMarkerSize(1.6);
-
-
-    THStack bgStack("bgStack", "");
-    for( unsigned i=0; i<bgYields.size(); ++i ) { // reverse ordered stack is prettier
-      int index = bgYields.size() - i - 1;
-      TH1D* h1_bg = bgYields[index]->get(thisRegion)->yield;
-      h1_bg->SetFillColor( colors[index] );
-      h1_bg->SetLineColor( kBlack );
-      bgStack.Add(h1_bg);
-    }
-
-
-    TCanvas* c1 = new TCanvas( "c1", "", 600, 600 );
-    c1->cd();
-
-    float xMin = h1_data->GetXaxis()->GetXmin();
-    float xMax = h1_data->GetXaxis()->GetXmax();
-    float yMax1 = h1_data->GetMaximum()*1.5;
-    float yMax2 = 1.5*(h1_data->GetMaximum() + sqrt(h1_data->GetMaximum()));
-    float yMax3 = 1.5*(bgStack.GetMaximum());
-    float yMax = (yMax1>yMax2) ? yMax1 : yMax2;
-    if( yMax3 > yMax ) yMax = yMax3;
-    //float yMax = TMath::Max( h1_data->GetMaximum()*1.5, (h1_data->GetMaximum() + h1_data->GetBinError(h1_data->GetMaximumBin()))*1.2);
-    //float yMax = h1_data->GetMaximum()*1.5;
-    if( h1_data->GetNbinsX()<2 ) yMax *=3.;
-
-    TH2D* h2_axes = new TH2D("axes", "", 10, xMin, xMax, 10, 0., yMax );
-    h2_axes->SetXTitle("M_{T2} [GeV]");
-    h2_axes->SetYTitle("Entries");
-
-    h2_axes->Draw();
-   
-
-
-    std::vector<std::string> niceNames = thisRegion.getNiceNames();
-
-    for( unsigned i=0; i<niceNames.size(); ++i ) {
-
-      float yMax = 0.9-(float)i*0.05;
-      float yMin = yMax - 0.05;
-      TPaveText* regionText = new TPaveText( 0.18, yMin, 0.55, yMax, "brNDC" );
-      regionText->SetTextSize(0.035);
-      regionText->SetTextFont(42);
-      regionText->SetFillColor(0);
-      regionText->SetTextAlign(11);
-      regionText->AddText( niceNames[i].c_str() );
-      regionText->Draw("same");
-  
-    }
-    
-
-    TLegend* legend = new TLegend( 0.7, 0.9-(bgYields.size()+1)*0.06, 0.93, 0.9 );
-    legend->SetTextSize(0.038);
-    legend->SetTextFont(42);
-    legend->SetFillColor(0);
-    if( cfg.dummyAnalysis() )
-      legend->AddEntry( gr_data, "Dummy", "P" );
-    else
-      legend->AddEntry( gr_data, "Data", "P" );
-    histoFile->cd();
-    for( unsigned i=0; i<bgYields.size(); ++i ) {  
-      TH1D* h1_bg = bgYields[i]->get(thisRegion)->yield;
-      legend->AddEntry( h1_bg, bgYields[i]->getFullName().c_str(), "F" );
-      h1_bg->Write();
-    }
-
-    histoFile->Close();
-
-    legend->Draw("same");
-    bgStack.Draw("histo same");
-    gr_data->Draw("p same");
-
-    TPaveText* labelTop = MT2DrawTools::getLabelTop(cfg.lumi());
-    labelTop->Draw("same");
-
-    gPad->RedrawAxis();
-
-    c1->SaveAs( Form("%s/mt2_%s.eps", fullPathPlots.c_str(), thisRegion.getName().c_str()) );
-    c1->SaveAs( Form("%s/mt2_%s.png", fullPathPlots.c_str(), thisRegion.getName().c_str()) );
-    c1->SaveAs( Form("%s/mt2_%s.pdf", fullPathPlots.c_str(), thisRegion.getName().c_str()) );
-
-    delete c1;
-    delete h2_axes;
-
-  }// for MT2 regions
-
-}
-
-
-/*
-MT2Config::MT2Config( const std::string& configFileName ) {
-
-  std::cout << std::endl;
-  std::cout << "-> Reading config file: " << configFileName << std::endl;
-  std::cout << std::endl;
-
-  regionsSet_ = "";
-  mcSamples_ = "";
-  sigSamples_ = "";
-  dataSamples_ = "";
-  additionalStuff_ = "";
-
-  ifstream IN(configFileName.c_str());
-  char buffer[200];
-  char StringValue[1000];
-
-
-  while( IN.getline(buffer, 200, '\n') ) {
-
-    if (buffer[0] == '#') {
-      continue; // Skip lines commented with '#'                                                                                                                                                                                 
-    }
-
-    std::cout << buffer << std::endl;
-
-    char name_c[200];
-    sscanf(buffer, "%s %s", name_c, StringValue);
-    std::string name(name_c);
-
-    if( name=="regionsSet" )
-      regionsSet_ = std::string(StringValue);
-    else if( name=="mcSamples" )
-      mcSamples_ = std::string(StringValue);
-    else if( name=="sigSamples" )
-      sigSamples_ = std::string(StringValue);
-    else if( name=="dataSamples" )
-      dataSamples_ = std::string(StringValue);
-    else if( name=="additionalStuff" )
-      additionalStuff_ = std::string(StringValue);
-
-  } // while getline
-
-
-
-  std::cout << std::endl;
-     
-}
-*/
 
 
 void randomizePoisson( MT2Analysis<MT2EstimateTree>* data ) {
