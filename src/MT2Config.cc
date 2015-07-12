@@ -109,19 +109,40 @@ bool MT2Config::dummyAnalysis() const {
 
 std::string MT2Config::getEventYieldDir() const {
 
-  std::string outputdir = "EventYields_" + name_ + "_";
-  if( this->dummyAnalysis() ) outputdir += "dummy_";
+  std::string outputdir = "EventYields_" + name_;
+  if( this->dummyAnalysis() ) outputdir += "_dummy";
 
-  double intpart;
-  double fracpart = modf(lumi_, &intpart);
-  std::string suffix;
-  if( fracpart>0. )
-    suffix = std::string( Form("%.0fp%.0ffb", intpart, 10.*fracpart ) );
-  else
-    suffix = std::string( Form("%.0ffb", intpart ) );
-  outputdir += suffix;
+  //double intpart;
+  //double fracpart = modf(lumi_, &intpart);
+  //std::string suffix;
+  //if( fracpart>0. )
+  //  suffix = std::string( Form("%.0fp%.0ffb", intpart, 10.*fracpart ) );
+  //else
+  //  suffix = std::string( Form("%.0ffb", intpart ) );
+  //outputdir += suffix;
 
   return outputdir;
 
 }
 
+
+void MT2Config::saveAs( const std::string& filename ) const {
+
+
+  ofstream ofs(filename.c_str());
+
+  ofs << "#name " << name_ << std::endl;
+
+  ofs << "lumi "  << lumi_  << std::endl;
+  ofs << "regionsSet " << regionsSet_ << std::endl;
+  if( mcSamples_!="" )       ofs << "mcSamples " << mcSamples_ << std::endl;
+  if( sigSamples_!="" )      ofs << "sigSamples " << sigSamples_ << std::endl;
+  if( dataSamples_!="" )     ofs << "dataSamples " << dataSamples_ << std::endl;
+  if( additionalStuff_!="" ) ofs << "additionalStuff " << additionalStuff_ << std::endl;
+
+  ofs << "gammaTemplateRegions " << gammaTemplateRegions_ << std::endl;
+  ofs << "gammaTemplateType " << gammaTemplateType_ << std::endl;
+
+  std::cout << "[MT2Config] Saved config file as '" << filename << "'." << std::endl;
+
+}
