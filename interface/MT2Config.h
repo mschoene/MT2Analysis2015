@@ -27,6 +27,8 @@ class MT2Config {
 
   std::string getEventYieldDir() const;
 
+  void saveAs( const std::string& filename ) const;
+
  private:
 
   std::string name_;
