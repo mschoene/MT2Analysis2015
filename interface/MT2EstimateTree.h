@@ -39,7 +39,9 @@ class MT2EstimateTree : public MT2Estimate {
 
   float mt2;
   float ht;
-  float met;
+  float met_pt;
+  float met_phi;
+
   float deltaPhiMin;
   float diffMetMht;
   int nVert;

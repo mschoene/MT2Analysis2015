@@ -596,8 +596,15 @@ void MT2Region::getBins( int &nBins, double*& bins) const {
 
   if( regionName == "HT450toInf_j2toInf_b0toInf" ) {  // this is the inclusive region
 
+<<<<<<< HEAD
     const int nBins_tmp                        = 4;
     bins = new double[nBins_tmp+1]{200., 300., 400., 600., 1000.};
+=======
+    const int nBins_tmp                        = 7;
+    bins = new double[nBins_tmp+1]{200., 300., 400., 500., 600., 800., 1000., 1500. };
+    //    const int nBins_tmp                        = 4;
+    //    bins = new double[nBins_tmp+1]{200., 300., 400., 600., 1000.};
+>>>>>>> e9c4691... CherryPick2, shall conflicts rise?
     //const int nBins_tmp                        = 5;
     //bins = new double[nBins_tmp+1]{200., 300., 400., 600., 1000., 1500.};
     nBins = nBins_tmp;
@@ -1136,6 +1143,7 @@ void MT2Region::getBins( int &nBins, double*& bins) const {
     bins = new double[nBins_tmp+1]{200., 400., 600., 800., 1500.};
     nBins = nBins_tmp;
 
+<<<<<<< HEAD
   } else if( regionName == "HT1000to1500_j4toInf_b0to1" ){
 
     const int nBins_tmp                        = 5;
@@ -1188,6 +1196,12 @@ void MT2Region::getBins( int &nBins, double*& bins) const {
 
     const int nBins_tmp                        = 4;
     bins = new double[nBins_tmp+1]{200., 300., 400., 600., 1000.};
+=======
+    const int nBins_tmp                        = 7;
+    bins = new double[nBins_tmp+1]{200., 300., 400., 500.,  600., 800, 1000., 1500};
+    //    const int nBins_tmp                        = 4;
+    // bins = new double[nBins_tmp+1]{200., 300., 400., 600., 1000.};
+>>>>>>> e9c4691... CherryPick2, shall conflicts rise?
     //const int nBins_tmp                        = 5;
     //bins = new double[nBins_tmp+1]{200., 300., 400., 600., 1000., 1500.};
     nBins = nBins_tmp;

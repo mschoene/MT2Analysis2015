@@ -4,11 +4,14 @@
 #include <fstream>
 #include <cmath>
 
+<<<<<<< HEAD
 #include "TH1F.h"
 
 
 
 MT2Config::MT2Config( const std::string& name ) {
+=======
+>>>>>>> e9c4691... CherryPick2, shall conflicts rise?
 
   name_ = name;
 

@@ -42,7 +42,9 @@ MT2EstimateTree::~MT2EstimateTree() {
 
 
 
-void MT2EstimateTree::initTree() {
+
+
+void MT2EstimateTree::initTree( ) {
 
   tree->Branch( "run", &run, "run/I");
   tree->Branch( "lumi", &lumi, "lumi/I");
@@ -52,12 +54,22 @@ void MT2EstimateTree::initTree() {
 
   tree->Branch( "mt2", &mt2, "mt2/F");
   tree->Branch( "ht", &ht, "ht/F");
-  tree->Branch( "met", &met, "met/F");
+
+  tree->Branch( "met_pt", &met_pt, "met_pt/F");
+  tree->Branch( "met_phi", &met_phi, "met_phi/F");
+  tree->Branch( "nJets", &nJets, "nJets/I");
+  tree->Branch( "nBJets", &nBJets, "nBJets/I");
+  
+  tree->Branch( "gamma_mt2", &gamma_mt2, "gamma_mt2/F");
+  tree->Branch( "gamma_ht", &gamma_ht, "gamma_ht/F");
+  tree->Branch( "gamma_met_pt", &gamma_met_pt, "gamma_met_pt/F");
+  tree->Branch( "gamma_nJets", &gamma_nJets, "gamma_nJets/I");
+  tree->Branch( "gamma_nBJets", &gamma_nBJets, "gamma_nBJets/I");
+
   tree->Branch( "deltaPhiMin", &deltaPhiMin, "deltaPhiMin/F");
   tree->Branch("diffMetMht", &diffMetMht, "diffMetMht/F");
   tree->Branch( "nVert", &nVert, "nVert/I");
-  tree->Branch( "nJets", &nJets, "nJets/I");
-  tree->Branch( "nBJets", &nBJets, "nBJets/I");
+
   tree->Branch( "nElectrons", &nElectrons, "nElectrons/I");
   tree->Branch( "nMuons", &nMuons, "nMuons/I");
   tree->Branch( "nPFLep", &nPFLep, "nPFLep/I");
@@ -66,9 +78,14 @@ void MT2EstimateTree::initTree() {
   tree->Branch( "GenSusyMScan1", &GenSusyMScan1, "GenSusyMScan1/I");
   tree->Branch( "GenSusyMScan2", &GenSusyMScan2, "GenSusyMScan2/I");
 
-  tree->SetDirectory(0);
+  tree->Branch( "zll_mt2", &zll_mt2, "zll_mt2/F");
+  tree->Branch( "zll_ht", &zll_ht, "zll_ht/F");
+  tree->Branch( "zll_met_pt", &zll_met_pt, "zll_met_pt/F");
+  tree->Branch( "zll_met_phi", &zll_met_phi, "zll_met_phi/F");
 
+  tree->SetDirectory(0);
 }
+
 
 
 
@@ -151,8 +168,8 @@ void MT2EstimateTree::assignVar( const std::string& name, float value ) {
 
 void MT2EstimateTree::fillTree( const MT2Tree& mt2tree, float w ) {
 
-  this->assignTree( mt2tree, w );
 
+  this->assignTree( mt2tree, w , sel);
   tree->Fill();
 
 }
@@ -162,36 +179,97 @@ void MT2EstimateTree::fillTree( const MT2Tree& mt2tree, float w ) {
 void MT2EstimateTree::fillTree_gamma( const MT2Tree& mt2tree, float w ) {
 
   this->assignTree_gamma( mt2tree, w );
-
   tree->Fill();
 
 }
 
 
 
-void MT2EstimateTree::assignTree( const MT2Tree& mt2tree, float w ) {
 
-  run    = mt2tree.run;
-  lumi   = mt2tree.lumi;
-  evt    = mt2tree.evt;
-  weight = w;
-  id     = mt2tree.evt_id;
+void MT2EstimateTree::assignTree( const MT2Tree& mt2tree, float w, const std::string& sel ) {
 
-  mt2           = mt2tree.mt2;
-  ht            = mt2tree.ht;
-  met           = mt2tree.met_pt;
-  deltaPhiMin   = mt2tree.deltaPhiMin;
-  diffMetMht    = mt2tree.diffMetMht;
-  nJets         = mt2tree.nJet40;
-  nBJets        = mt2tree.nBJet20;
-  nElectrons    = mt2tree.nElectrons10;
-  nMuons        = mt2tree.nMuons10;
-  nPFLep        = mt2tree.nPFLep5LowMT;
-  nPFHad        = mt2tree.nPFHad10LowMT;
+  if(sel==""){
+    run    = mt2tree.run;
+    lumi   = mt2tree.lumi;
+    evt    = mt2tree.evt;
+    weight = w;
+    id     = mt2tree.evt_id;
+
+    mt2    = mt2tree.mt2;
+    ht     = mt2tree.ht;
+    met_pt    = mt2tree.met_pt;
+    met_phi    = mt2tree.met_phi;
+    nJets  = mt2tree.nJet40;
+    nBJets = mt2tree.nBJet20;
+
+    deltaPhiMin   = mt2tree.deltaPhiMin;
+    diffMetMht    = mt2tree.diffMetMht;
+    nElectrons    = mt2tree.nElectrons10;
+    nMuons        = mt2tree.nMuons10;
+    nPFLep        = mt2tree.nPFLep5LowMT;
+    nPFHad        = mt2tree.nPFHad10LowMT;
   
-  GenSusyMScan1 = mt2tree.GenSusyMScan1;
-  GenSusyMScan2 = mt2tree.GenSusyMScan2;
+    GenSusyMScan1 = mt2tree.GenSusyMScan1;
+    GenSusyMScan2 = mt2tree.GenSusyMScan2;
+ 
+
+  }else if(sel=="gamma"){
+
+    run    = mt2tree.run;
+    lumi   = mt2tree.lumi;
+    evt    = mt2tree.evt;
+    weight = w;
+    id     = mt2tree.evt_id;
+
+    gamma_mt2    = mt2tree.gamma_mt2;
+    gamma_ht     = mt2tree.gamma_ht;
+    gamma_met_pt = mt2tree.gamma_met_pt;
+    gamma_nJets  = mt2tree.gamma_nJet40;
+    gamma_nBJets = mt2tree.gamma_nBJet20;
+
+    deltaPhiMin   = mt2tree.deltaPhiMin;
+    diffMetMht    = mt2tree.diffMetMht;
+    nElectrons    = mt2tree.nElectrons10;
+    nMuons        = mt2tree.nMuons10;
+    nPFLep        = mt2tree.nPFLep5LowMT;
+    nPFHad        = mt2tree.nPFHad10LowMT;
   
+    GenSusyMScan1 = mt2tree.GenSusyMScan1;
+    GenSusyMScan2 = mt2tree.GenSusyMScan2;
+ 
+  }else if(sel=="zll"){
+
+    run    = mt2tree.run;
+    lumi   = mt2tree.lumi;
+    evt    = mt2tree.evt;
+    weight = w;
+    id     = mt2tree.evt_id;
+
+
+    mt2    = mt2tree.mt2;
+    ht     = mt2tree.ht;
+    met_pt    = mt2tree.met_pt;
+    met_phi    = mt2tree.met_phi;
+    nJets  = mt2tree.nJet40;
+    nBJets = mt2tree.nBJet20;
+
+    zll_mt2      = mt2tree.zll_mt2;
+    zll_ht       = mt2tree.zll_ht;
+    zll_met_pt   = mt2tree.zll_met_pt;
+    zll_met_phi  = mt2tree.zll_met_phi;
+ 
+    deltaPhiMin   = mt2tree.deltaPhiMin;
+    diffMetMht    = mt2tree.diffMetMht;
+    nElectrons    = mt2tree.nElectrons10;
+    nMuons        = mt2tree.nMuons10;
+    nPFLep        = mt2tree.nPFLep5LowMT;
+    nPFHad        = mt2tree.nPFHad10LowMT;
+  
+    GenSusyMScan1 = mt2tree.GenSusyMScan1;
+    GenSusyMScan2 = mt2tree.GenSusyMScan2;
+  } //end of if selections
+
+ 
 }
   
 

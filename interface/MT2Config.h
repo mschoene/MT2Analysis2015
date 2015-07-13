@@ -7,11 +7,26 @@ class MT2Config {
 
  public:
 
+<<<<<<< HEAD
   MT2Config( const std::string& configFileName );
 
   std::string name() const { return name_; };
 
   float lumi()      const { return lumi_; };
+=======
+// this is the basic Estimate class: 
+// it refers to a region, and it has a yield histogram
+// other more complex classes (like LostLepton estimates)
+// should inherit from this one, 
+// and add further specialized data members
+
+
+
+
+class MT2Config {
+ public:
+  MT2Config( const std::string& configFileName );
+>>>>>>> e9c4691... CherryPick2, shall conflicts rise?
   std::string regionsSet()      const { return regionsSet_; };
   std::string mcSamples()       const { return mcSamples_; };
   std::string sigSamples()      const { return sigSamples_; };
