@@ -1,0 +1,5 @@
+lumi 4
+regionsSet 13TeV_inclusive
+mcSamples PHYS14_v6_skimprune
+dataSamples Run2015B_firstData
+additionalStuff noSignals
