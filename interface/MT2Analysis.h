@@ -79,7 +79,7 @@ class MT2Analysis {
 
   static MT2Analysis* readFromFile( const std::string& fileName, const std::string& matchName="" );
   static std::vector<MT2Analysis*> readAllFromFile( const std::string& fileName, const std::string& matchName="", bool verbose=true );
-  void writeToFile( const std::string& fileName, const std::string& option="RECREATE", bool overwrite=false );
+  void writeToFile( const std::string& fileName, const std::string& option="UPDATE", bool overwrite=true );
   void addToFile( const std::string& fileName, bool overwrite=false ) {
     return this->writeToFile(fileName,"UPDATE",overwrite);
   }
