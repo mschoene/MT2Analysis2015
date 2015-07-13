@@ -223,15 +223,13 @@ int main( int argc, char* argv[] ) {
 
 
   // save MT2Analyses:
-  //dataYield->writeToFile(outputdir + "/analyses.root");
   yields[0]->writeToFile(outputdir + "/analyses.root");
   for( unsigned i=1; i<yields.size(); ++i )
-    yields[i]->writeToFile(outputdir + "/analyses.root", "UPDATE");
+    yields[i]->writeToFile(outputdir + "/analyses.root");
   for( unsigned i=0; i<signals.size(); ++i )
-    signals[i]->writeToFile(outputdir + "/analyses.root", "UPDATE");
+    signals[i]->writeToFile(outputdir + "/analyses.root");
 
   cfg.saveAs(outputdir + "/config.txt");
-  //cfg.saveAs(outputdir + "/" + configFileName + ".txt");
 
   return 0;
 
