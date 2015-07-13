@@ -28,15 +28,44 @@ public :
    ULong64_t       evt;
    Int_t           isData;
    Float_t         xsec;
-   Int_t           HLT_htXprescale;
-   Int_t           HLT_DoubleEl;
-   Int_t           HLT_Photons;
-   Int_t           HLT_SingleMu;
-   Int_t           HLT_ht350met100;
-   Int_t           HLT_MET150;
-   Int_t           HLT_MuEG;
-   Int_t           HLT_HT650;
-   Int_t           HLT_DoubleMu;
+//   Int_t           HLT_htXprescale;
+//   Int_t           HLT_DoubleEl;
+//   Int_t           HLT_Photons;
+//   Int_t           HLT_SingleMu;
+//   Int_t           HLT_ht350met100;
+//   Int_t           HLT_MET150;
+//   Int_t           HLT_MuEG;
+//   Int_t           HLT_HT650;
+//   Int_t           HLT_DoubleMu;
+   Float_t         HLT_HT900;
+   Float_t         HLT_photon120;
+   Float_t         HLT_photon165_HE10;
+   Float_t         HLT_photon155;
+   Float_t         HLT_ht475prescale;
+   Float_t         HLT_SingleMu;
+   Float_t         HLT_SingleEl;
+   Float_t         HLT_MET170;
+   Float_t         HLT_ht350prescale;
+   Float_t         HLT_ht350met100;
+   Float_t         HLT_photon175;
+   Float_t         HLT_HT800;
+   Float_t         HLT_MuEG;
+   Float_t         HLT_DiJet;
+   Float_t         HLT_DoubleEl;
+   Float_t         HLT_DoubleMu;
+   Float_t         Flag_EcalDeadCellTriggerPrimitiveFilter;
+   Float_t         Flag_trkPOG_manystripclus53X;
+   Float_t         Flag_ecalLaserCorrFilter;
+   Float_t         Flag_trkPOG_toomanystripclus53X;
+   Float_t         Flag_hcalLaserEventFilter;
+   Float_t         Flag_trkPOG_logErrorTooManyClusters;
+   Float_t         Flag_trkPOGFilters;
+   Float_t         Flag_trackingFailureFilter;
+   Float_t         Flag_CSCTightHaloFilter;
+   Float_t         Flag_HBHENoiseFilter;
+   Float_t         Flag_goodVertices;
+   Float_t         Flag_METFilters;
+   Float_t         Flag_eeBadScFilter;
    Float_t         puWeight;
    Int_t           nTrueInt;
    Float_t         genWeight;
@@ -405,15 +434,44 @@ public :
    TBranch        *b_evt;   //!
    TBranch        *b_isData;   //!
    TBranch        *b_xsec;   //!
-   TBranch        *b_HLT_htXprescale;   //!
-   TBranch        *b_HLT_DoubleEl;   //!
-   TBranch        *b_HLT_Photons;   //!
+//   TBranch        *b_HLT_htXprescale;   //!
+//   TBranch        *b_HLT_DoubleEl;   //!
+//   TBranch        *b_HLT_Photons;   //!
+//   TBranch        *b_HLT_SingleMu;   //!
+//   TBranch        *b_HLT_ht350met100;   //!
+//   TBranch        *b_HLT_MET150;   //!
+//   TBranch        *b_HLT_MuEG;   //!
+//   TBranch        *b_HLT_HT650;   //!
+//   TBranch        *b_HLT_DoubleMu;   //!
+   TBranch        *b_HLT_HT900;   //!
+   TBranch        *b_HLT_photon120;   //!
+   TBranch        *b_HLT_photon165_HE10;   //!
+   TBranch        *b_HLT_photon155;   //!
+   TBranch        *b_HLT_ht475prescale;   //!
    TBranch        *b_HLT_SingleMu;   //!
+   TBranch        *b_HLT_SingleEl;   //!
+   TBranch        *b_HLT_MET170;   //!
+   TBranch        *b_HLT_ht350prescale;   //!
    TBranch        *b_HLT_ht350met100;   //!
-   TBranch        *b_HLT_MET150;   //!
+   TBranch        *b_HLT_photon175;   //!
+   TBranch        *b_HLT_HT800;   //!
    TBranch        *b_HLT_MuEG;   //!
-   TBranch        *b_HLT_HT650;   //!
+   TBranch        *b_HLT_DiJet;   //!
+   TBranch        *b_HLT_DoubleEl;   //!
    TBranch        *b_HLT_DoubleMu;   //!
+   TBranch        *b_Flag_EcalDeadCellTriggerPrimitiveFilter;   //!
+   TBranch        *b_Flag_trkPOG_manystripclus53X;   //!
+   TBranch        *b_Flag_ecalLaserCorrFilter;   //!
+   TBranch        *b_Flag_trkPOG_toomanystripclus53X;   //!
+   TBranch        *b_Flag_hcalLaserEventFilter;   //!
+   TBranch        *b_Flag_trkPOG_logErrorTooManyClusters;   //!
+   TBranch        *b_Flag_trkPOGFilters;   //!
+   TBranch        *b_Flag_trackingFailureFilter;   //!
+   TBranch        *b_Flag_CSCTightHaloFilter;   //!
+   TBranch        *b_Flag_HBHENoiseFilter;   //!
+   TBranch        *b_Flag_goodVertices;   //!
+   TBranch        *b_Flag_METFilters;   //!
+   TBranch        *b_Flag_eeBadScFilter;   //!
    TBranch        *b_puWeight;   //!
    TBranch        *b_nTrueInt;   //!
    TBranch        *b_genWeight;   //!
@@ -847,15 +905,44 @@ void MT2Tree::Init(TTree *tree)
    fChain->SetBranchAddress("evt", &evt, &b_evt);
    fChain->SetBranchAddress("isData", &isData, &b_isData);
    fChain->SetBranchAddress("xsec", &xsec, &b_xsec);
-   fChain->SetBranchAddress("HLT_htXprescale", &HLT_htXprescale, &b_HLT_htXprescale);
-   fChain->SetBranchAddress("HLT_DoubleEl", &HLT_DoubleEl, &b_HLT_DoubleEl);
-   fChain->SetBranchAddress("HLT_Photons", &HLT_Photons, &b_HLT_Photons);
+//   fChain->SetBranchAddress("HLT_htXprescale", &HLT_htXprescale, &b_HLT_htXprescale);
+//   fChain->SetBranchAddress("HLT_DoubleEl", &HLT_DoubleEl, &b_HLT_DoubleEl);
+//   fChain->SetBranchAddress("HLT_Photons", &HLT_Photons, &b_HLT_Photons);
+//   fChain->SetBranchAddress("HLT_SingleMu", &HLT_SingleMu, &b_HLT_SingleMu);
+//   fChain->SetBranchAddress("HLT_ht350met100", &HLT_ht350met100, &b_HLT_ht350met100);
+//   fChain->SetBranchAddress("HLT_MET150", &HLT_MET150, &b_HLT_MET150);
+//   fChain->SetBranchAddress("HLT_MuEG", &HLT_MuEG, &b_HLT_MuEG);
+//   fChain->SetBranchAddress("HLT_HT650", &HLT_HT650, &b_HLT_HT650);
+//   fChain->SetBranchAddress("HLT_DoubleMu", &HLT_DoubleMu, &b_HLT_DoubleMu);
+   fChain->SetBranchAddress("HLT_HT900", &HLT_HT900, &b_HLT_HT900);
+   fChain->SetBranchAddress("HLT_photon120", &HLT_photon120, &b_HLT_photon120);
+   fChain->SetBranchAddress("HLT_photon165_HE10", &HLT_photon165_HE10, &b_HLT_photon165_HE10);
+   fChain->SetBranchAddress("HLT_photon155", &HLT_photon155, &b_HLT_photon155);
+   fChain->SetBranchAddress("HLT_ht475prescale", &HLT_ht475prescale, &b_HLT_ht475prescale);
    fChain->SetBranchAddress("HLT_SingleMu", &HLT_SingleMu, &b_HLT_SingleMu);
+   fChain->SetBranchAddress("HLT_SingleEl", &HLT_SingleEl, &b_HLT_SingleEl);
+   fChain->SetBranchAddress("HLT_MET170", &HLT_MET170, &b_HLT_MET170);
+   fChain->SetBranchAddress("HLT_ht350prescale", &HLT_ht350prescale, &b_HLT_ht350prescale);
    fChain->SetBranchAddress("HLT_ht350met100", &HLT_ht350met100, &b_HLT_ht350met100);
-   fChain->SetBranchAddress("HLT_MET150", &HLT_MET150, &b_HLT_MET150);
+   fChain->SetBranchAddress("HLT_photon175", &HLT_photon175, &b_HLT_photon175);
+   fChain->SetBranchAddress("HLT_HT800", &HLT_HT800, &b_HLT_HT800);
    fChain->SetBranchAddress("HLT_MuEG", &HLT_MuEG, &b_HLT_MuEG);
-   fChain->SetBranchAddress("HLT_HT650", &HLT_HT650, &b_HLT_HT650);
+   fChain->SetBranchAddress("HLT_DiJet", &HLT_DiJet, &b_HLT_DiJet);
+   fChain->SetBranchAddress("HLT_DoubleEl", &HLT_DoubleEl, &b_HLT_DoubleEl);
    fChain->SetBranchAddress("HLT_DoubleMu", &HLT_DoubleMu, &b_HLT_DoubleMu);
+   fChain->SetBranchAddress("Flag_EcalDeadCellTriggerPrimitiveFilter", &Flag_EcalDeadCellTriggerPrimitiveFilter, &b_Flag_EcalDeadCellTriggerPrimitiveFilter);
+   fChain->SetBranchAddress("Flag_trkPOG_manystripclus53X", &Flag_trkPOG_manystripclus53X, &b_Flag_trkPOG_manystripclus53X);
+   fChain->SetBranchAddress("Flag_ecalLaserCorrFilter", &Flag_ecalLaserCorrFilter, &b_Flag_ecalLaserCorrFilter);
+   fChain->SetBranchAddress("Flag_trkPOG_toomanystripclus53X", &Flag_trkPOG_toomanystripclus53X, &b_Flag_trkPOG_toomanystripclus53X);
+   fChain->SetBranchAddress("Flag_hcalLaserEventFilter", &Flag_hcalLaserEventFilter, &b_Flag_hcalLaserEventFilter);
+   fChain->SetBranchAddress("Flag_trkPOG_logErrorTooManyClusters", &Flag_trkPOG_logErrorTooManyClusters, &b_Flag_trkPOG_logErrorTooManyClusters);
+   fChain->SetBranchAddress("Flag_trkPOGFilters", &Flag_trkPOGFilters, &b_Flag_trkPOGFilters);
+   fChain->SetBranchAddress("Flag_trackingFailureFilter", &Flag_trackingFailureFilter, &b_Flag_trackingFailureFilter);
+   fChain->SetBranchAddress("Flag_CSCTightHaloFilter", &Flag_CSCTightHaloFilter, &b_Flag_CSCTightHaloFilter);
+   fChain->SetBranchAddress("Flag_HBHENoiseFilter", &Flag_HBHENoiseFilter, &b_Flag_HBHENoiseFilter);
+   fChain->SetBranchAddress("Flag_goodVertices", &Flag_goodVertices, &b_Flag_goodVertices);
+   fChain->SetBranchAddress("Flag_METFilters", &Flag_METFilters, &b_Flag_METFilters);
+   fChain->SetBranchAddress("Flag_eeBadScFilter", &Flag_eeBadScFilter, &b_Flag_eeBadScFilter);
    fChain->SetBranchAddress("puWeight", &puWeight, &b_puWeight);
    fChain->SetBranchAddress("nTrueInt", &nTrueInt, &b_nTrueInt);
    fChain->SetBranchAddress("genWeight", &genWeight, &b_genWeight);
