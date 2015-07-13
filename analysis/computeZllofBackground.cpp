@@ -33,7 +33,7 @@
 
 
 //float lumi = 0.1;
-float lumi = 4.;
+float lumi = 1.;
 
 
 void drawMll( const std::string& outputdir,  std::vector<MT2Analysis<MT2EstimateTree>* > bgYields, MT2Analysis<MT2EstimateTree>* data, bool of ); 
@@ -205,59 +205,71 @@ int main(int argc, char* argv[]){
     MT2Region thisRegion( (*iMT2) );
 
     THStack bgStack("bgStack", "");
-    TH1D* histo_bg = new TH1D("histo_bg", "", 48, 80, 2000);
+    TH1D* histo_bg = new TH1D("histo_bg", "", 1, 0, 10000);
 
+    histo_bg->Sumw2();
 
+ 
     for( unsigned i=0; i<bgYields.size(); ++i ) { // reverse ordered stack is prettier
       int index = bgYields.size() - i - 1;
       TH1D* h1_bg = new TH1D("h1_bg","", 100, 0,250);
-      TH1D* h1_bg2 = new TH1D("h1_bg2","", 48 , 80,2000);
+      TH1D* h1_bg2 = new TH1D("h1_bg2","", 1 , 0,10000);
       if(of==1){ h1_bg->Rebin(4);
       }     else{ h1_bg->Rebin(); }
       TTree *bgTree = bgYields[index]->get(*iMT2)->tree;
       bgTree->Project("h1_bg","Z_mass","weight");
-      bgTree->Project("h1_bg2","Z_mass","weight");
-      h1_bg->SetFillColor( colors[index] );
+      h1_bg2->Sumw2();
+ 
+      bgTree->Project("h1_bg2","Z_mass","weight*(Z_mass>80.)");
+     h1_bg->SetFillColor( colors[index] );
       h1_bg->SetLineColor( kBlack );
       histo_bg->Add(h1_bg2);
       bgStack.Add(h1_bg);
     }
 
+  
     TH1D* h_data = new TH1D("h_data","", 100, 0,250);
-    TH1D* histo_data = new TH1D("histo_data","", 48, 80,2000);
+    TH1D* histo_data = new TH1D("histo_data","", 1, 0, 10000);
     if(of==1){ h_data->Rebin(4);
     }     else{ h_data->Rebin(); }
-   
 
+ 
     TTree *data_Tree = data->get(*iMT2)->tree;
+
     data_Tree->Project("h_data","Z_mass","weight");
-    data_Tree->Project("histo_data","Z_mass","weight");
+    data_Tree->Project("histo_data","Z_mass","weight*(Z_mass>80.)");
     
-    randomizePoisson( h_data );
+    // randomizePoisson( h_data );
     randomizePoisson( histo_data );
    
     h_data->SetMarkerStyle(20);
     h_data->SetMarkerColor(kBlack);
- 
+
+
     int binMin = histo_data->GetXaxis()->FindBin(80);
-    int binMax = histo_data->GetXaxis()->FindBin(2000);
+    int binMax = histo_data->GetXaxis()->FindBin(10000);
     int binMin_bg = histo_bg->GetXaxis()->FindBin(80);
-    int binMax_bg = histo_bg->GetXaxis()->FindBin(2000);
-    double int_err;  
-    double int_err_bg;  
-    //double int_data =  histo_data->Integral("width");
-    //  double int_bg =    histo_bg->Integral("width") ;
+    int binMax_bg = histo_bg->GetXaxis()->FindBin(10000);
+    double int_err=0; 
+    double int_err_bg =0;
+    // double int_data =  histo_data->Integral(binMin, binMax);
+    // double int_bg =    histo_bg->Integral(binMin, binMax) ;
 
-    double int_data =  histo_data->IntegralAndError(binMin, binMax, int_err, "width");
-    double int_bg =    histo_bg->IntegralAndError(binMin_bg, binMax_bg, int_err_bg, "width") ;
-
-    std::cout << int_data << std::endl;
-    std::cout << int_bg << std::endl;
-    std::cout << int_err << std::endl;
-    std::cout << int_data/int_bg << std::endl;
-    std::cout << sqrt( (int_err*int_err/(int_bg*int_bg)) + (int_data*int_data*int_err_bg*int_err_bg/(int_bg*int_bg*int_bg*int_bg)) ) << std::endl;
+ 
+    
+    double int_data =  histo_data->IntegralAndError(binMin, binMax, int_err, "");
+    double int_bg =    histo_bg->IntegralAndError(binMin_bg, binMax_bg, int_err_bg, "") ;
 
 
+
+
+    std::cout << "Data = " <<  int_data <<  " +- " << int_err << "  in %: " << int_err/int_data*100 << std::endl;
+    std::cout << "MC = " << int_bg  << " +- " << int_err_bg << "  in %: " << int_err_bg/int_bg*100 << std::endl;
+    std::cout << "R = " <<  int_data/int_bg << " +- " << sqrt( (int_err*int_err/(int_bg*int_bg)) ) << " (DATA) " << " +- " << sqrt( (int_data*int_data*int_err_bg*int_err_bg/(int_bg*int_bg*int_bg*int_bg)) ) << " (MC) " << std::endl;
+
+   std::cout << sqrt( (int_err*int_err/(int_bg*int_bg)) + (int_data*int_data*int_err_bg*int_err_bg/(int_bg*int_bg*int_bg*int_bg)) ) << std::endl;
+
+    
 
 
     TCanvas* c1 = new TCanvas( "c1", "", 600, 600 );
@@ -322,6 +334,19 @@ int main(int argc, char* argv[]){
     }
 
 
+    histo_data->SetLineColor(kBlue);
+    histo_data->SetLineWidth(2);
+   histo_bg->SetLineWidth(2);
+    histo_data->Draw("");
+    histo_bg->Draw("same");
+
+    // gPad->SetLogy();
+
+   if( of == true){
+      c1->SaveAs( Form("%s/fuck_%s.eps", fullPathPlots.c_str(), thisRegion.getName().c_str()) );
+      c1->SaveAs( Form("%s/fuck_%s.png", fullPathPlots.c_str(), thisRegion.getName().c_str()) );
+      c1->SaveAs( Form("%s/fuck_%s.pdf", fullPathPlots.c_str(), thisRegion.getName().c_str()) );
+   }
 
     /*
     float bins_nJets[] = {2,4,7,12};

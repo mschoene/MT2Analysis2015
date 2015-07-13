@@ -5,7 +5,6 @@
 #include <string>
 #include <cmath>
 
-
 #include "../interface/MT2Analysis.h"
 #include "../interface/MT2EstimateZinvGamma.h"
 #include "../interface/MT2EstimateTree.h"
@@ -15,7 +14,6 @@
 
 #define mt2_cxx
 #include "../interface/mt2.h"
-
 
 #include "TMath.h"
 #include "TH1D.h"
@@ -27,7 +25,7 @@
 
 
 class MT2Config {
- public:
+public:
   MT2Config( const std::string& configFileName );
   std::string regionsSet()      const { return regionsSet_; };
   std::string mcSamples()       const { return mcSamples_; };
@@ -42,8 +40,7 @@ class MT2Config {
     bool useEstimates = lostLeptonTag_!="" && qcdTag_!="" && zinvTag_!="";
     return !useEstimates; }
 
- private:
-
+private:
   std::string regionsSet_;
   std::string mcSamples_;
   std::string sigSamples_;
@@ -58,7 +55,6 @@ class MT2Config {
 //float lumi = 0.1;
 //float lumi = 1.;
 float lumi = 4.;
-
 
 
 int round(float d) {
@@ -148,20 +144,15 @@ int main(int argc, char* argv[]) {
   }
 
 
-
   MT2Analysis<MT2Estimate>* alpha = new MT2Analysis<MT2Estimate>( "alpha", regionsSet );
-
 
   MT2Analysis<MT2Estimate>* yield_zll = new MT2Analysis<MT2Estimate>( "Zll", regionsSet );
   *yield_zll = (* (MT2Analysis<MT2Estimate>*) EventYield_zll);
 
-
   MT2Analysis<MT2Estimate>* yield_zinv = new MT2Analysis<MT2Estimate>( "ZJets", regionsSet );
   *yield_zinv = (* (MT2Analysis<MT2Estimate>*) Zinv);
 
-
   EventYield_zll->writeToFile(outputdir+"/Zll_analyses.root");
-
 
   yield_zll->writeToFile(outputdir+"/mc.root");
   yield_zinv->addToFile(outputdir+"/mc.root");
@@ -174,7 +165,6 @@ int main(int argc, char* argv[]) {
 
 
   return 0;
-
 }
 
 
