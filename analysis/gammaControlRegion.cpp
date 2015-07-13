@@ -14,11 +14,9 @@
 #include "TH1F.h"
 
 
-//float lumi = 0.1; //fb-1
-float lumi = 10.; //fb-1
+float lumi = 0.1; //fb-1
 
 
-float lumi = 4.; //fb-1
 bool alsoSignals = false;
 
 

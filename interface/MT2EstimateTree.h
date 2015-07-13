@@ -42,7 +42,6 @@ class MT2EstimateTree : public MT2Estimate {
 
   float mt2;
   float ht;
-
   float met_pt;
   float met_phi;
 
