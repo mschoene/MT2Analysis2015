@@ -90,11 +90,26 @@ TStyle* MT2DrawTools::setStyle() {
 }
 
 
+std::string MT2DrawTools::getLumiText( float lumi ) {
+
+  std::string returnText;
+  if( lumi>=0.1 )
+    returnText = (std::string)Form(" %.1f fb^{-1}", lumi);
+  else if( lumi>0.01 )
+    returnText = (std::string)Form(" %.0f pb^{-1}", 1000.*lumi);
+  else 
+    returnText = (std::string)Form(" %.1f pb^{-1}", 1000.*lumi);
+
+  return returnText;
+
+}
+
+
 
 TPaveText* MT2DrawTools::getLabelTop( float lumi ) {
 
   char text[300];
-  sprintf( text, "CMS Preliminary, %.1f fb^{-1} at #sqrt{s} = 13 TeV", lumi );
+  sprintf( text, "CMS Preliminary, %s at #sqrt{s} = 13 TeV", getLumiText(lumi).c_str() );
   std::string text_str(text);
   return getLabelTop(text_str);
 
