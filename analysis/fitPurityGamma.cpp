@@ -101,6 +101,11 @@ int main( int argc, char* argv[] ) {
   MT2Analysis<MT2EstimateZinvGamma>* templates_prompt = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( "gammaTemplates" + mc_or_data + "_" + cfg.mcSamples() + "_" + cfg.gammaTemplateRegions() + ".root", "templatesPrompt" );
   MT2Analysis<MT2EstimateZinvGamma>* templates_fake   = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( "gammaTemplates" + mc_or_data + "_" + cfg.mcSamples() + "_" + cfg.gammaTemplateRegions() + ".root", "templatesFake" );
 
+  MT2EstimateZinvGamma* templatePrompt, *templateFake;
+  if( cfg.gammaTemplateRegions()=="13TeV_inclusive" ) { // just get them once
+    templatePrompt = templates_prompt->get( MT2Region("HT450toInf_j2toInf_b0toInf") );
+    templateFake   = templates_fake  ->get( MT2Region("HT450toInf_j2toInf_b0toInf") );
+  }
 
   std::string outputdir = gammaCRdir + "/PurityFits" + mc_or_data;
   system( Form( "mkdir -p %s/singleFits", outputdir.c_str()) );
@@ -117,8 +122,10 @@ int main( int argc, char* argv[] ) {
 
     MT2EstimateZinvGamma* thisEstimate = gammaJet_data->get( *iR );
 
-    MT2EstimateZinvGamma* templatePrompt = templates_prompt->get( *(templates_prompt->matchRegion( *iR )) );
-    MT2EstimateZinvGamma* templateFake   = templates_fake  ->get( *(templates_fake  ->matchRegion( *iR )) );
+    if( cfg.gammaTemplateRegions()!="13TeV_inclusive" ) {
+      templatePrompt = templates_prompt->get( *(templates_prompt->matchRegion( *iR )) );
+      templateFake   = templates_fake  ->get( *(templates_fake  ->matchRegion( *iR )) );
+    }
 
     MT2EstimateSyst* thisLoosePurity = purityLoose->get( *iR );
     std::string nameLoose = thisLoosePurity->yield->GetName();
