@@ -26,7 +26,7 @@ int main( int argc, char* argv[] ) {
 
 
   if( argc<2 ) {
-    std::cout << "USAGE: ./drawDataMC [configFileName]" << std::endl;
+    std::cout << "USAGE: ./drawDataMC [configFileName] [lumi/shape]" << std::endl;
     std::cout << "Exiting." << std::endl;
     exit(11);
   }
@@ -36,6 +36,16 @@ int main( int argc, char* argv[] ) {
 
   std::string configFileName(argv[1]);
   MT2Config cfg(configFileName);
+
+  if( argc>2 ) {
+    std::string normType(argv[2]);
+    if( normType=="lumi" ) shapeNorm=false;
+    else if( normType=="shape" ) shapeNorm=true;
+    else {
+      std::cout << "-> Only 'lumi' and 'shape' are supported normTypes." << std::endl;
+      exit(17);
+    }
+  }
 
 
   std::string dirMC = cfg.getEventYieldDir();
@@ -60,7 +70,12 @@ int main( int argc, char* argv[] ) {
 
 
 
-  drawYields( cfg, data, mc, "mt2", "mt2", "ht>900.", 50, 0., 300., "M_{T2}", "GeV" );
+  drawYields( cfg, data, mc, "nVert", "nVert", "ht>900. && nJets>1", 50, 0.5, 50.5, "Number of Vertices", "" );
+  drawYields( cfg, data, mc, "mt2", "mt2", "ht>900. && nJets>1", 50, 0., 300., "M_{T2}", "GeV" );
+  drawYields( cfg, data, mc, "met", "met", "ht>900. && nJets>1", 40, 30., 430., "Missing E_{T}", "GeV" );
+  drawYields( cfg, data, mc, "ht" , "ht" , "ht>900. && nJets>1", 25, 900., 3400., "H_{T}", "GeV" );
+  drawYields( cfg, data, mc, "nJets", "nJets", "ht>900. && nJets>1", 10, 1.5, 11.5, "Number of Jets (p_{T} > 30 GeV)", "" );
+  drawYields( cfg, data, mc, "nBJets", "nBJets", "ht>900. && nJets>1", 6, -0.5, 5.5, "Number of b-Jets (p_{T} > 20 GeV)", "" );
 
   
   return 0;
@@ -72,7 +87,7 @@ int main( int argc, char* argv[] ) {
 void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, std::vector<MT2Analysis<MT2EstimateTree>* >  bgYields, const std::string& saveName, const std::string& varName, const std::string& selection, int nBins, float xMin, float xMax, std::string axisName, const std::string& units ) {
 
 
-  float binWidth = xMax/nBins;
+  float binWidth = (xMax-xMin)/nBins;
   if( axisName=="" ) axisName = varName;
 
 
@@ -91,6 +106,7 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, std::vector<
   }
 
   std::string fullPathPlots = cfg.getEventYieldDir() + "/plotsDataMC";
+  if( shapeNorm ) fullPathPlots += "_shape";
   system( Form("mkdir -p %s", fullPathPlots.c_str()) );
 
   TH1::AddDirectory(kTRUE); // stupid ROOT memory allocation needs this
@@ -104,7 +120,7 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, std::vector<
 
     TTree* tree_data = data->get(thisRegion)->tree;
     TH1D* h1_data = new TH1D("h1_data", "", nBins, xMin, xMax );
-    tree_data->Project( "h1_data", "mt2", selection.c_str() );
+    tree_data->Project( "h1_data", varName.c_str(), selection.c_str() );
 
     TGraphAsymmErrors* gr_data = MT2DrawTools::getPoissonGraph(h1_data);
     gr_data->SetMarkerStyle(20);
@@ -117,9 +133,9 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, std::vector<
       std::string thisName = "h1_" + bgYields[i]->getName();
       TH1D* h1_mc = new TH1D( thisName.c_str(), "", nBins, xMin, xMax );
       if( selection!="" )
-        tree_mc->Project( thisName.c_str(), "mt2", Form("weight*(%s)", selection.c_str()) );
+        tree_mc->Project( thisName.c_str(), varName.c_str(), Form("weight*(%s)", selection.c_str()) );
       else
-        tree_mc->Project( thisName.c_str(), "mt2", "weight" );
+        tree_mc->Project( thisName.c_str(), varName.c_str(), "weight" );
       histos_mc.push_back(h1_mc);
     }
 
@@ -152,9 +168,11 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, std::vector<
     TCanvas* c1_log = new TCanvas( "c1_log", "", 600, 600 );
     c1_log->SetLogy();
 
-    float yMax1 = h1_data->GetMaximum()*1.5;
-    float yMax2 = 1.5*(h1_data->GetMaximum() + sqrt(h1_data->GetMaximum()));
-    float yMax3 = 1.5*(bgStack.GetMaximum());
+   
+    float yMaxScale = 1.1;
+    float yMax1 = h1_data->GetMaximum()*yMaxScale;
+    float yMax2 = yMaxScale*(h1_data->GetMaximum() + sqrt(h1_data->GetMaximum()));
+    float yMax3 = yMaxScale*(bgStack.GetMaximum());
     float yMax = (yMax1>yMax2) ? yMax1 : yMax2;
     if( yMax3 > yMax ) yMax = yMax3;
     //float yMax = TMath::Max( h1_data->GetMaximum()*1.5, (h1_data->GetMaximum() + h1_data->GetBinError(h1_data->GetMaximumBin()))*1.2);
@@ -183,7 +201,7 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, std::vector<
 
 
    
-    TH2D* h2_axes_log = new TH2D("axes_log", "", 10, xMin, xMax, 10, 0.1, yMax*5. );
+    TH2D* h2_axes_log = new TH2D("axes_log", "", 10, xMin, xMax, 10, 0.1, yMax*1.6 );
     h2_axes_log->SetXTitle(xAxisTitle.c_str());
     h2_axes_log->SetYTitle(yAxisTitle.c_str());
 
@@ -205,20 +223,23 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, std::vector<
       regionText->SetTextAlign(11);
       regionText->AddText( niceNames[i].c_str() );
 
-      c1->cd();
-      regionText->Draw("same");
+      //c1->cd();
+      //regionText->Draw("same");
   
-      c1_log->cd();
-      regionText->Draw("same");
+      //c1_log->cd();
+      //regionText->Draw("same");
   
     }
     
 
     if( shapeNorm ) {
-      TPaveText* normText = new TPaveText( 0.4, 0.85, 0.8, 0.9, "brNDC" );
+      TPaveText* normText = new TPaveText( 0.35, 0.8, 0.75, 0.9, "brNDC" );
       normText->SetFillColor(0);
       normText->SetTextSize(0.035);
-      normText->AddText( "Shape Norm." );
+      normText->AddText( "#splitline{Shape}{Norm.}" );
+      c1->cd();
+      normText->Draw("same");
+      c1_log->cd();
       normText->Draw("same");
     }
 
@@ -260,6 +281,14 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, std::vector<
 
     delete c1;
     delete h2_axes;
+
+    delete c1_log;
+    delete h2_axes_log;
+
+    delete h1_data;
+  
+    for( unsigned i=0; i<histos_mc.size(); ++i )
+      delete histos_mc[i];
 
   }// for MT2 regions
 

@@ -281,8 +281,6 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg ) {
   }
   
 
-  //bool isData = sample.id<100 && sample.id>0;
-  bool isData;
 
 
   int nentries = tree->GetEntries();
@@ -296,7 +294,6 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg ) {
     if( regionsSet!="13TeV_noCut" )
       if( !myTree.passSelection(cfg.additionalStuff()) ) continue;
 
-    isData = myTree.isData;
     
     float ht   = myTree.ht;
     float met  = myTree.met_pt;
@@ -308,8 +305,13 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg ) {
     float GenSusyMScan1 = myTree.GenSusyMScan1;
     float GenSusyMScan2 = myTree.GenSusyMScan2;
     
-    Double_t weight = (isData) ? 1. : myTree.evt_scale1fb*cfg.lumi();
+    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi();
     //weight *= myTree.weight_lepsf;
+
+    //if( isData ) {
+    //  if( !(myTree.HLT_HT800) ) continue;
+    //}
+
    
     T* thisEstimate = analysis->get( ht, njets, nbjets, met, minMTBmet, mt2 );
     if( thisEstimate==0 ) continue;
