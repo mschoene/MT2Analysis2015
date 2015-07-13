@@ -177,6 +177,8 @@ void MT2EstimateTree::assignTree( const MT2Tree& mt2tree, float w ) {
   weight = w;
   id     = mt2tree.evt_id;
 
+  nVert  = mt2tree.nVert;
+
   mt2           = mt2tree.mt2;
   ht            = mt2tree.ht;
   met           = mt2tree.met_pt;
@@ -202,6 +204,8 @@ void MT2EstimateTree::assignTree_gamma( const MT2Tree& mt2tree, float w ) {
   evt    = mt2tree.evt;
   weight = w;
   id     = mt2tree.evt_id;
+
+  nVert  = mt2tree.nVert;
 
   mt2           = mt2tree.gamma_mt2;
   ht            = mt2tree.gamma_ht;
