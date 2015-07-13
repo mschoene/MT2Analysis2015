@@ -188,17 +188,17 @@ int main( int argc, char* argv[] ) {
 
 
   purityTight->writeToFile( outputdir + "/purityMC.root" );
-  purityLoose->addToFile( outputdir + "/purityMC.root" );
-  eff->addToFile( outputdir + "/purityMC.root" );
+  purityLoose->writeToFile( outputdir + "/purityMC.root" );
+  eff->writeToFile( outputdir + "/purityMC.root" );
 
   // emulate data:
   roundLikeData(gammaCR);
   roundLikeData(gammaCR_loose);
   gammaCR->writeToFile( outputdir + "/data.root" );
-  gammaCR_loose->addToFile( outputdir + "/data.root" );
-  gammaCR_nipUp->addToFile( outputdir + "/data.root" );
-  gammaCR_nipDown->addToFile( outputdir + "/data.root" );
-  tree->addToFile( outputdir + "/data.root" );
+  gammaCR_loose->writeToFile( outputdir + "/data.root" );
+  gammaCR_nipUp->writeToFile( outputdir + "/data.root" );
+  gammaCR_nipDown->writeToFile( outputdir + "/data.root" );
+  tree->writeToFile( outputdir + "/data.root" );
  
 
   return 0;
