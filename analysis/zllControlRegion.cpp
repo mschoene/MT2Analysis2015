@@ -53,8 +53,7 @@ private:
 
 
 //float lumi = 0.1;
-//float lumi = 1.;
-float lumi = 4.;
+float lumi = 1.;
 
 
 int round(float d) {
