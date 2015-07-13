@@ -26,7 +26,7 @@ int main( int argc, char* argv[] ) {
 
 
   if( argc<2 ) {
-    std::cout << "USAGE: ./drawDataMC [configFileName]" << std::endl;
+    std::cout << "USAGE: ./drawDataMC [configFileName] [lumi/shape]" << std::endl;
     std::cout << "Exiting." << std::endl;
     exit(11);
   }
@@ -36,6 +36,16 @@ int main( int argc, char* argv[] ) {
 
   std::string configFileName(argv[1]);
   MT2Config cfg(configFileName);
+
+  if( argc>2 ) {
+    std::string normType(argv[2]);
+    if( normType=="lumi" ) shapeNorm=false;
+    else if( normType=="shape" ) shapeNorm=true;
+    else {
+      std::cout << "-> Only 'lumi' and 'shape' are supported normTypes." << std::endl;
+      exit(17);
+    }
+  }
 
 
   std::string dirMC = cfg.getEventYieldDir();
@@ -60,10 +70,12 @@ int main( int argc, char* argv[] ) {
 
 
 
+  drawYields( cfg, data, mc, "nVert", "nVert", "ht>900. && nJets>1", 50, 0.5, 50.5, "Number of Vertices", "" );
   drawYields( cfg, data, mc, "mt2", "mt2", "ht>900. && nJets>1", 50, 0., 300., "M_{T2}", "GeV" );
-  drawYields( cfg, data, mc, "ht" , "ht" , "ht>900. && nJets>1", 20, 900., 3000., "H_{T}", "GeV" );
-  drawYields( cfg, data, mc, "nJets", "nJets", "ht>900. && nJets>1", 8, 1.5, 9.5, "N_{j} (p_{T} > 30 GeV)", "" );
-  drawYields( cfg, data, mc, "nBJets", "nBJets", "ht>900. && nJets>1", 5, -0.5, 4.5, "N_{b} (p_{T} > 20 GeV)", "" );
+  drawYields( cfg, data, mc, "met", "met", "ht>900. && nJets>1", 40, 30., 430., "Missing E_{T}", "GeV" );
+  drawYields( cfg, data, mc, "ht" , "ht" , "ht>900. && nJets>1", 25, 900., 3400., "H_{T}", "GeV" );
+  drawYields( cfg, data, mc, "nJets", "nJets", "ht>900. && nJets>1", 10, 1.5, 11.5, "Number of Jets (p_{T} > 30 GeV)", "" );
+  drawYields( cfg, data, mc, "nBJets", "nBJets", "ht>900. && nJets>1", 6, -0.5, 5.5, "Number of b-Jets (p_{T} > 20 GeV)", "" );
 
   
   return 0;
@@ -75,7 +87,7 @@ int main( int argc, char* argv[] ) {
 void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, std::vector<MT2Analysis<MT2EstimateTree>* >  bgYields, const std::string& saveName, const std::string& varName, const std::string& selection, int nBins, float xMin, float xMax, std::string axisName, const std::string& units ) {
 
 
-  float binWidth = xMax/nBins;
+  float binWidth = (xMax-xMin)/nBins;
   if( axisName=="" ) axisName = varName;
 
 
