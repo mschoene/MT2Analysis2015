@@ -281,8 +281,8 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg ) {
   }
   
 
-  bool isData = sample.id<100 && sample.id>0;
-
+  //bool isData = sample.id<100 && sample.id>0;
+  bool isData;
 
 
   int nentries = tree->GetEntries();
@@ -296,6 +296,8 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg ) {
     if( regionsSet!="13TeV_noCut" )
       if( !myTree.passSelection(cfg.additionalStuff()) ) continue;
 
+    isData = myTree.isData;
+    
     float ht   = myTree.ht;
     float met  = myTree.met_pt;
     float minMTBmet = myTree.minMTBMet;
