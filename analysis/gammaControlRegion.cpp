@@ -274,10 +274,10 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
 
     float ht        = myTree.gamma_ht;
     float met       = myTree.gamma_met_pt;
-    float mt2       = myTree.gamma_mt2;
     float minMTBmet = myTree.gamma_minMTBMet;
     int njets       = myTree.gamma_nJet30;
     int nbjets      = myTree.gamma_nBJet20;    
+    float mt2       = (njets>1) ? myTree.gamma_mt2 : myTree.gamma_jet1_pt;
 
 
 
