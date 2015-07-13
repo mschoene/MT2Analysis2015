@@ -223,15 +223,13 @@ int main( int argc, char* argv[] ) {
 
 
   // save MT2Analyses:
-  //dataYield->writeToFile(outputdir + "/analyses.root");
   yields[0]->writeToFile(outputdir + "/analyses.root");
   for( unsigned i=1; i<yields.size(); ++i )
-    yields[i]->writeToFile(outputdir + "/analyses.root", "UPDATE");
+    yields[i]->writeToFile(outputdir + "/analyses.root");
   for( unsigned i=0; i<signals.size(); ++i )
-    signals[i]->writeToFile(outputdir + "/analyses.root", "UPDATE");
+    signals[i]->writeToFile(outputdir + "/analyses.root");
 
   cfg.saveAs(outputdir + "/config.txt");
-  //cfg.saveAs(outputdir + "/" + configFileName + ".txt");
 
   return 0;
 
@@ -283,8 +281,6 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg ) {
   }
   
 
-  bool isData = sample.id<100 && sample.id>0;
-
 
 
   int nentries = tree->GetEntries();
@@ -298,6 +294,7 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg ) {
     if( regionsSet!="13TeV_noCut" )
       if( !myTree.passSelection(cfg.additionalStuff()) ) continue;
 
+    
     float ht   = myTree.ht;
     float met  = myTree.met_pt;
     float minMTBmet = myTree.minMTBMet;
@@ -308,8 +305,13 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg ) {
     float GenSusyMScan1 = myTree.GenSusyMScan1;
     float GenSusyMScan2 = myTree.GenSusyMScan2;
     
-    Double_t weight = (isData) ? 1. : myTree.evt_scale1fb*cfg.lumi();
+    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi();
     //weight *= myTree.weight_lepsf;
+
+    //if( isData ) {
+    //  if( !(myTree.HLT_HT800) ) continue;
+    //}
+
    
     T* thisEstimate = analysis->get( ht, njets, nbjets, met, minMTBmet, mt2 );
     if( thisEstimate==0 ) continue;
@@ -396,12 +398,12 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg ) {
       thisEstimate->assignVar( "qglProd", qglProd );
       thisEstimate->assignVar( "qglAve", qglAve );
 
-      thisEstimate->assignTree( myTree, weight , "");
+      thisEstimate->assignTree( myTree, weight);
       thisEstimate->tree->Fill();
 
     } else {
 
-      thisEstimate->fillTree( myTree, weight ,"");
+      thisEstimate->fillTree( myTree, weight);
 
     }
 

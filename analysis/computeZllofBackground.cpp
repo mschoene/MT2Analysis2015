@@ -33,14 +33,14 @@
 
 
 //float lumi = 0.1;
-float lumi = 1.;
+//float lumi = 1.;
 
 
-void drawMll( const std::string& outputdir,  std::vector<MT2Analysis<MT2EstimateTree>* > bgYields, MT2Analysis<MT2EstimateTree>* data, bool of ); 
+void drawMll( const std::string& outputdir,  std::vector<MT2Analysis<MT2EstimateTree>* > bgYields, MT2Analysis<MT2EstimateTree>* data, bool of, float lumi ); 
 
 void randomizePoisson( TH1* histo );
 
-void drawStacks(std::string fullPath, float *binss, unsigned int size,  std::string name, std::vector<MT2Analysis<MT2EstimateTree>* > bgYields,  MT2Analysis<MT2EstimateTree>* data,const MT2Region thisRegion, std::string cut);
+void drawStacks(std::string fullPath, float *binss, unsigned int size,  std::string name, std::vector<MT2Analysis<MT2EstimateTree>* > bgYields,  MT2Analysis<MT2EstimateTree>* data,const MT2Region thisRegion, std::string cut, float lumi);
 
 
 
@@ -60,15 +60,15 @@ int main(int argc, char* argv[]){
   }
 
   std::string configFileName(argv[1]);
-  MT2Config cfg("cfgs/" + configFileName + ".txt");
+  MT2Config cfg( configFileName);
   std::string samplesFileName = "../samples/samples_" + cfg.mcSamples() + ".dat"; 
   std::string samples = cfg.mcSamples();
 
   regionsSet = cfg.regionsSet();
 
 
-  std::string outputdir( Form("ZllData_%s_%s_%.0ffb", samples.c_str(), regionsSet.c_str(), lumi ) );
-  std::string outputdir_of( Form("ZllData_OF_%s_%s_%.0ffb", samples.c_str(), regionsSet.c_str(), lumi ) );
+  std::string outputdir( Form("ZllData_%s", configFileName.c_str() ) );
+  std::string outputdir_of( Form("ZllData_OF_%s", configFileName.c_str()  ) );
 
 
   std::cout << "-> Using regions: " << regionsSet << std::endl;
@@ -76,7 +76,7 @@ int main(int argc, char* argv[]){
   TH1::AddDirectory(kFALSE); // stupid ROOT memory allocation needs this
 
   double intpart;
-  double fracpart = modf(lumi, &intpart);
+  double fracpart = modf(cfg.lumi(), &intpart);
   std::string suffix;
   if( fracpart>0. )
     suffix = std::string( Form("_%.0fp%.0ffb", intpart, 10.*fracpart ) );
@@ -92,33 +92,34 @@ int main(int argc, char* argv[]){
 
 
 
-  std::string ZllDir = "ZllPurity_" + samples + "_" + regionsSet;
-  std::string ZllDir_of = "ZllPurity_OF_" + samples + "_" + regionsSet;
+  std::string ZllDir = "ZllPurity_" + configFileName;
+  std::string ZllDir_of = "ZllPurity_OF_" + configFileName;
 
 
-  MT2Analysis<MT2EstimateTree>* Zll = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s_%0.ffb%s/ZllPurityTrees.root", ZllDir.c_str(), lumi, suffix.c_str()), "DYJets");
+  MT2Analysis<MT2EstimateTree>* Zll = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s/ZllPurityTrees.root", ZllDir.c_str() ), "DYJets");
   if( Zll==0 ) {
     std::cout << "-> Please run zllPurityTrees first. I need to get the yields from there." << std::endl;    std::cout << "-> Thank you for your cooperation." << std::endl;    exit(197);
   }
 
 
+
   
-  MT2Analysis<MT2EstimateTree>* qcd = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s_%0.ffb%s/ZllPurityTrees.root", ZllDir.c_str(),lumi, suffix.c_str() ), "QCD");
-  MT2Analysis<MT2EstimateTree>* top = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s_%0.ffb%s/ZllPurityTrees.root", ZllDir.c_str(), lumi, suffix.c_str()), "Top");
-  MT2Analysis<MT2EstimateTree>* wjets = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s_%0.ffb%s/ZllPurityTrees.root", ZllDir.c_str(), lumi, suffix.c_str()), "WJets");
-  MT2Analysis<MT2EstimateTree>* zjets = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s_%0.ffb%s/ZllPurityTrees.root", ZllDir.c_str(), lumi, suffix.c_str()), "ZJets");
+  MT2Analysis<MT2EstimateTree>* qcd = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s/ZllPurityTrees.root", ZllDir.c_str()  ), "QCD");
+  MT2Analysis<MT2EstimateTree>* top = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s/ZllPurityTrees.root", ZllDir.c_str() ), "Top");
+  MT2Analysis<MT2EstimateTree>* wjets = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s/ZllPurityTrees.root", ZllDir.c_str() ), "WJets");
+  MT2Analysis<MT2EstimateTree>* zjets = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s/ZllPurityTrees.root", ZllDir.c_str() ), "ZJets");
 
 
   //OPPOSITE FLAVOR TREES
-  MT2Analysis<MT2EstimateTree>* Zll_of = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s_%0.ffb%s/ZllPurityTrees_of.root", ZllDir_of.c_str(), lumi, suffix.c_str()), "DYJets");
+  MT2Analysis<MT2EstimateTree>* Zll_of = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s/ZllPurityTrees_of.root", ZllDir_of.c_str() ), "DYJets");
 
-  MT2Analysis<MT2EstimateTree>* qcd_of = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s_%0.ffb%s/ZllPurityTrees_of.root", ZllDir_of.c_str(),lumi, suffix.c_str() ), "QCD");
-  MT2Analysis<MT2EstimateTree>* top_of = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s_%0.ffb%s/ZllPurityTrees_of.root", ZllDir_of.c_str(), lumi, suffix.c_str()), "Top");
-  MT2Analysis<MT2EstimateTree>* wjets_of = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s_%0.ffb%s/ZllPurityTrees_of.root", ZllDir_of.c_str(), lumi, suffix.c_str()), "WJets");
-  MT2Analysis<MT2EstimateTree>* zjets_of = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s_%0.ffb%s/ZllPurityTrees_of.root", ZllDir_of.c_str(), lumi, suffix.c_str()), "ZJets");
+  MT2Analysis<MT2EstimateTree>* qcd_of = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s/ZllPurityTrees_of.root", ZllDir_of.c_str()  ), "QCD");
+  MT2Analysis<MT2EstimateTree>* top_of = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s/ZllPurityTrees_of.root", ZllDir_of.c_str() ), "Top");
+  MT2Analysis<MT2EstimateTree>* wjets_of = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s/ZllPurityTrees_of.root", ZllDir_of.c_str() ), "WJets");
+  MT2Analysis<MT2EstimateTree>* zjets_of = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s/ZllPurityTrees_of.root", ZllDir_of.c_str() ), "ZJets");
   
 
-  MT2Analysis<MT2EstimateTree>* data = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s_%0.ffb%s/ZllPurityTrees_fake_of.root", ZllDir_of.c_str(), lumi, suffix.c_str()), "fake");
+  MT2Analysis<MT2EstimateTree>* data = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s/ZllPurityTrees_fake_of.root", ZllDir_of.c_str() ) , "fake");
 
   data->setFullName("Data");
 
@@ -146,9 +147,9 @@ int main(int argc, char* argv[]){
   //  bgYields_of.push_back( zjets_of );
   bgYields_of.push_back( top_of );
 
-  // drawMll( outputdir, bgYields, 0 );
+  // drawMll( outputdir, bgYields, 0 , cfg.lumi() );
 
-  drawMll( outputdir_of, bgYields_of, data,  1 );
+  drawMll( outputdir_of, bgYields_of, data,  1, cfg.lumi() );
 
 
  
@@ -174,7 +175,7 @@ int main(int argc, char* argv[]){
 
 
 
-  void drawMll( const std::string& outputdir, std::vector< MT2Analysis<MT2EstimateTree> *> bgYields,  MT2Analysis<MT2EstimateTree> * data, bool of ) {
+void drawMll( const std::string& outputdir, std::vector< MT2Analysis<MT2EstimateTree> *> bgYields,  MT2Analysis<MT2EstimateTree> * data, bool of , float lumi) {
 
   MT2DrawTools::setStyle();
 
@@ -221,7 +222,7 @@ int main(int argc, char* argv[]){
       h1_bg2->Sumw2();
  
       bgTree->Project("h1_bg2","Z_mass","weight*(Z_mass>80.)");
-     h1_bg->SetFillColor( colors[index] );
+      h1_bg->SetFillColor( colors[index] );
       h1_bg->SetLineColor( kBlack );
       histo_bg->Add(h1_bg2);
       bgStack.Add(h1_bg);
@@ -267,7 +268,7 @@ int main(int argc, char* argv[]){
     std::cout << "MC = " << int_bg  << " +- " << int_err_bg << "  in %: " << int_err_bg/int_bg*100 << std::endl;
     std::cout << "R = " <<  int_data/int_bg << " +- " << sqrt( (int_err*int_err/(int_bg*int_bg)) ) << " (DATA) " << " +- " << sqrt( (int_data*int_data*int_err_bg*int_err_bg/(int_bg*int_bg*int_bg*int_bg)) ) << " (MC) " << std::endl;
 
-   std::cout << sqrt( (int_err*int_err/(int_bg*int_bg)) + (int_data*int_data*int_err_bg*int_err_bg/(int_bg*int_bg*int_bg*int_bg)) ) << std::endl;
+    std::cout << sqrt( (int_err*int_err/(int_bg*int_bg)) + (int_data*int_data*int_err_bg*int_err_bg/(int_bg*int_bg*int_bg*int_bg)) ) << std::endl;
 
     
 
@@ -336,19 +337,21 @@ int main(int argc, char* argv[]){
 
     histo_data->SetLineColor(kBlue);
     histo_data->SetLineWidth(2);
-   histo_bg->SetLineWidth(2);
+    histo_bg->SetLineWidth(2);
     histo_data->Draw("");
     histo_bg->Draw("same");
 
     // gPad->SetLogy();
 
-   if( of == true){
+    if( of == true){
       c1->SaveAs( Form("%s/fuck_%s.eps", fullPathPlots.c_str(), thisRegion.getName().c_str()) );
       c1->SaveAs( Form("%s/fuck_%s.png", fullPathPlots.c_str(), thisRegion.getName().c_str()) );
       c1->SaveAs( Form("%s/fuck_%s.pdf", fullPathPlots.c_str(), thisRegion.getName().c_str()) );
-   }
+    }
 
-    /*
+    
+
+
     float bins_nJets[] = {2,4,7,12};
     float bins_nBJets[] = {0,1,2,3,6};
     //in MT2
@@ -378,22 +381,23 @@ int main(int argc, char* argv[]){
     }
 
     std::string cut_nJets3 = "weight*(abs(Z_mass-91.19)<10&&nJets>2)";
-    */   
+   
+
 
     /* leave commeted
-    drawStacks( fullPathPlots,  bins_nJets,sizeof(bins_nJets)/sizeof(float)-1,  "nJets", bgYields , thisRegion, cut );
-    drawStacks( fullPathPlots,  bins_nBJets,sizeof(bins_nBJets)/sizeof(float)-1,  "nBJets", bgYields , thisRegion , cut);
-    drawStacks( fullPathPlots,  bins_mt2,sizeof(bins_mt2)/sizeof(float)-1,  "zll_mt2", bgYields , thisRegion  , cut  );
-    drawStacks( fullPathPlots,  bins_ht,sizeof(bins_ht)/sizeof(float)-1,  "zll_ht", bgYields , thisRegion, cut );
+       drawStacks( fullPathPlots,  bins_nJets,sizeof(bins_nJets)/sizeof(float)-1,  "nJets", bgYields , thisRegion, cut );
+       drawStacks( fullPathPlots,  bins_nBJets,sizeof(bins_nBJets)/sizeof(float)-1,  "nBJets", bgYields , thisRegion , cut);
+       drawStacks( fullPathPlots,  bins_mt2,sizeof(bins_mt2)/sizeof(float)-1,  "mt2", bgYields , thisRegion  , cut  );
+       drawStacks( fullPathPlots,  bins_ht,sizeof(bins_ht)/sizeof(float)-1,  "ht", bgYields , thisRegion, cut );
     */
 
-    /*
-    drawStacks( fullPathPlots,  bins_nJets,sizeof(bins_nJets)/sizeof(float)-1,  "nJets", bgYields , data,thisRegion, cut2 );
-    drawStacks( fullPathPlots,  bins_nBJets,sizeof(bins_nBJets)/sizeof(float)-1,  "nBJets", bgYields , data, thisRegion , cut2);
-    drawStacks( fullPathPlots,  bins_mt2,sizeof(bins_mt2)/sizeof(float)-1,  "zll_mt2", bgYields , data, thisRegion  , cut2  );
-    drawStacks( fullPathPlots,  bins_ht,sizeof(bins_ht)/sizeof(float)-1,  "zll_ht", bgYields , data, thisRegion, cut2 );
     
-    */
+    drawStacks( fullPathPlots,  bins_nJets,sizeof(bins_nJets)/sizeof(float)-1,  "nJets", bgYields , data,thisRegion, cut2, lumi );
+    drawStacks( fullPathPlots,  bins_nBJets,sizeof(bins_nBJets)/sizeof(float)-1,  "nBJets", bgYields , data, thisRegion , cut2 , lumi);
+    drawStacks( fullPathPlots,  bins_mt2,sizeof(bins_mt2)/sizeof(float)-1,  "mt2", bgYields , data, thisRegion  , cut2 , lumi );
+    drawStacks( fullPathPlots,  bins_ht,sizeof(bins_ht)/sizeof(float)-1,  "ht", bgYields , data, thisRegion, cut2  , lumi );
+    
+   
 
     delete c1;
     delete h2_axes;
@@ -415,7 +419,7 @@ int main(int argc, char* argv[]){
 
 
 
-void drawStacks(std::string fullPath, float *binss, unsigned int size,  std::string name, std::vector<MT2Analysis<MT2EstimateTree>* > bgYields,  MT2Analysis<MT2EstimateTree>* data, const MT2Region thisRegion, std::string cut){
+void drawStacks(std::string fullPath, float *binss, unsigned int size,  std::string name, std::vector<MT2Analysis<MT2EstimateTree>* > bgYields,  MT2Analysis<MT2EstimateTree>* data, const MT2Region thisRegion, std::string cut , float lumi){
  
   std::vector<int> colors;
   colors.push_back(430); // other = zll 

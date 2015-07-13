@@ -188,17 +188,17 @@ int main( int argc, char* argv[] ) {
 
 
   purityTight->writeToFile( outputdir + "/purityMC.root" );
-  purityLoose->addToFile( outputdir + "/purityMC.root" );
-  eff->addToFile( outputdir + "/purityMC.root" );
+  purityLoose->writeToFile( outputdir + "/purityMC.root" );
+  eff->writeToFile( outputdir + "/purityMC.root" );
 
   // emulate data:
   roundLikeData(gammaCR);
   roundLikeData(gammaCR_loose);
   gammaCR->writeToFile( outputdir + "/data.root" );
-  gammaCR_loose->addToFile( outputdir + "/data.root" );
-  gammaCR_nipUp->addToFile( outputdir + "/data.root" );
-  gammaCR_nipDown->addToFile( outputdir + "/data.root" );
-  tree->addToFile( outputdir + "/data.root" );
+  gammaCR_loose->writeToFile( outputdir + "/data.root" );
+  gammaCR_nipUp->writeToFile( outputdir + "/data.root" );
+  gammaCR_nipDown->writeToFile( outputdir + "/data.root" );
+  tree->writeToFile( outputdir + "/data.root" );
  
 
   return 0;
@@ -274,10 +274,10 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
 
     float ht        = myTree.gamma_ht;
     float met       = myTree.gamma_met_pt;
-    float mt2       = myTree.gamma_mt2;
     float minMTBmet = myTree.gamma_minMTBMet;
     int njets       = myTree.gamma_nJet30;
     int nbjets      = myTree.gamma_nBJet20;    
+    float mt2       = (njets>1) ? myTree.gamma_mt2 : myTree.gamma_jet1_pt;
 
 
 

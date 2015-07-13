@@ -26,12 +26,13 @@
 #include "interface/mt2.h"
 
 //float lumi = 0.1;
-float lumi = 4.;
+//float lumi = 4.;
 
 
-void drawRatios(std::string fullPath, float *binss, unsigned int size,  std::string zll_sel,  std::string gamma_sel, MT2Analysis<MT2Estimate>*  zll_ratio,  MT2Analysis<MT2EstimateTree>*  gamma, MT2Analysis<MT2EstimateTree>*  Zll, MT2Analysis<MT2Estimate>*  zll_yield, const MT2Region thisRegion, std::string cut, std::string cut_gamma);
 
-void drawCorrelation(std::string fullPath, float *binss, unsigned int size,  float *binss2, unsigned int size2,  std::string zll_sel,  std::string zll_sel2, MT2Analysis<MT2EstimateTree>*  Zll,  const MT2Region thisRegion, std::string cut );
+void drawRatios(std::string fullPath, float *binss, unsigned int size,  std::string zll_sel,  std::string gamma_sel, MT2Analysis<MT2Estimate>*  zll_ratio,  MT2Analysis<MT2EstimateTree>*  gamma, MT2Analysis<MT2EstimateTree>*  Zll, MT2Analysis<MT2Estimate>*  zll_yield, const MT2Region thisRegion, std::string cut, std::string cut_gamma, float lumi);
+
+void drawCorrelation(std::string fullPath, float *binss, unsigned int size,  float *binss2, unsigned int size2,  std::string zll_sel,  std::string zll_sel2, MT2Analysis<MT2EstimateTree>*  Zll,  const MT2Region thisRegion, std::string cut , float lumi);
 
 
 //void drawRatios(std::string fullPath, float *binss, unsigned int size,  std::string name ,  MT2Analysis<MT2Estimate>*  zll_ratio,  MT2Analysis<MT2EstimateTree>*  gamma, MT2Analysis<MT2EstimateTree>*  Zll, MT2Analysis<MT2Estimate>*  zll_yield, const MT2Region thisRegion, std::string cut);
@@ -52,21 +53,20 @@ int main(int argc, char* argv[]){
     exit(11);
   }
   std::string configFileName(argv[1]);
-  MT2Config cfg("cfgs/" + configFileName + ".txt");
+  MT2Config cfg( configFileName);
   std::string samplesFileName = "../samples/samples_" + cfg.mcSamples() + ".dat"; 
   std::string samples = cfg.mcSamples();
 
-  std::string outputdir = "ZllGamma_Ratio_" + cfg.mcSamples();
-  //  std::string outputdir = "ZllGamma_Ratio_" + regionsSet;
-  //  std::string outputdir = "Zll_" + configFileName;
+  std::string outputdir = "ZllGamma_Ratio_" + configFileName ;
+
   double intpart;
-  double fracpart = modf(lumi, &intpart);
+  double fracpart = modf(cfg.lumi(), &intpart);
   std::string suffix;
   if( fracpart>0. )
     suffix = std::string( Form("_%.0fp%.0ffb", intpart, 10.*fracpart ) );
   else
     suffix = std::string( Form("_%.0ffb", intpart ) );
-  outputdir += suffix;
+  //  outputdir += suffix;
   
   system(Form("mkdir -p %s", outputdir.c_str()));
  
@@ -77,7 +77,8 @@ int main(int argc, char* argv[]){
   gStyle->SetOptTitle(0);
   MT2DrawTools::setStyle();
  
-  std::string gammaControlRegionDir = "GammaControlRegion_" + samples + "_" + regionsSet + suffix;
+  std::string gammaControlRegionDir = "EventYields_" + configFileName + "_dummy/gammaControlRegion" ;
+  //  std::string gammaControlRegionDir = "GammaControlRegion_" + samples + "_" + regionsSet ;
  
   MT2Analysis<MT2EstimateTree>* gamma = MT2Analysis<MT2EstimateTree>::readFromFile(gammaControlRegionDir + "/data.root", "gammaCRtree");
   if( gamma==0 ) {
@@ -87,10 +88,10 @@ int main(int argc, char* argv[]){
   }
 
 
-  std::string ZllDir = "Zll_CR_" + samples + "_" + regionsSet;
+  std::string ZllDir = "Zll_CR_" + configFileName;
 
   //  MT2Analysis<MT2EstimateTree>* Zll = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s_%0.ffb/Zll_analyses.root", ZllDir.c_str(), lumi), "DYJets");
-  MT2Analysis<MT2EstimateTree>* Zll = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s%s/Zll_analyses.root", ZllDir.c_str(), suffix.c_str()), "DYJets");
+  MT2Analysis<MT2EstimateTree>* Zll = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s/Zll_analyses.root", ZllDir.c_str()) , "DYJets");
   if( Zll==0 ) {
     std::cout << "-> Please run computeZinvFromZll first. I need to get the Z->ll MC yields from there." << std::endl;
     std::cout << "-> Thank you for your cooperation." << std::endl;
@@ -134,7 +135,7 @@ int main(int argc, char* argv[]){
   TTree *zllT =  Zll->get(RegIncl)->tree;
   TTree *gammaT =  gamma->get(RegIncl)->tree;
 
-  TPaveText* labelTop = MT2DrawTools::getLabelTop(lumi);
+  TPaveText* labelTop = MT2DrawTools::getLabelTop(cfg.lumi() );
  
 
   for( std::set<MT2Region>::iterator iMT2 = MT2Regions.begin(); iMT2!=MT2Regions.end(); ++iMT2 ) {
@@ -173,31 +174,34 @@ int main(int argc, char* argv[]){
     int size_nJets = sizeof(bins_nJets2)/sizeof(float)-1;
     int size_nBJets = sizeof(bins_nBJets2)/sizeof(float)-1;
   
-    
-    drawRatios( outputdir, bins_mt2, sizeof(bins_mt2)/sizeof(float)-1 , "zll_mt2", "gamma_mt2" ,  zllG_mt2,   gamma,  Zll,  zllY_mt2, thisRegion, cut, cut_gamma );
+    float lumi = cfg.lumi();    
+
+    //draw ratio also fills the ratio and yield estimates
+    drawRatios( outputdir, bins_mt2, sizeof(bins_mt2)/sizeof(float)-1 , "mt2", "mt2" ,  zllG_mt2,   gamma,  Zll,  zllY_mt2, thisRegion, cut, cut_gamma, lumi  );
    
-    drawRatios( outputdir, bins_ht, sizeof(bins_ht)/sizeof(float)-1 , "zll_ht", "gamma_ht" ,  zllG_ht,   gamma,  Zll,  zllY_ht, thisRegion, cut, cut_gamma );
+    drawRatios( outputdir, bins_ht, sizeof(bins_ht)/sizeof(float)-1 , "ht", "ht" ,  zllG_ht,   gamma,  Zll,  zllY_ht, thisRegion, cut, cut_gamma, lumi );
     
-    drawRatios( outputdir, bins_nJets, sizeof(bins_nJets)/sizeof(float)-1 , "nJets", "gamma_nJets" ,  zllG_nJets,   gamma,  Zll,  zllY_nJets, thisRegion, cut, cut_gamma );
-    drawRatios( outputdir, bins_nBJets, sizeof(bins_nBJets)/sizeof(float)-1 , "nBJets", "gamma_nBJets" ,  zllG_nBJets,   gamma,  Zll,  zllY_nBJets, thisRegion, cut, cut_gamma );
+    drawRatios( outputdir, bins_nJets, sizeof(bins_nJets)/sizeof(float)-1 , "nJets", "nJets" ,  zllG_nJets,   gamma,  Zll,  zllY_nJets, thisRegion, cut, cut_gamma, lumi );
+    drawRatios( outputdir, bins_nBJets, sizeof(bins_nBJets)/sizeof(float)-1 , "nBJets", "nBJets" ,  zllG_nBJets,   gamma,  Zll,  zllY_nBJets, thisRegion, cut, cut_gamma , lumi);
    
+ 
 
+    drawCorrelation( outputdir , bins_mt22, size_mt2 ,  bins_ht2, size_ht,  "mt2", "ht",  Zll, thisRegion,  cut_corr, lumi );
+    drawCorrelation( outputdir , bins_mt22, size_mt2 ,  bins_nJets2, size_nJets,  "mt2", "nJets",  Zll, thisRegion,  cut_corr , lumi);
+    drawCorrelation( outputdir , bins_mt22, size_mt2 ,  bins_nBJets2, size_nBJets,  "mt2", "nBJets",  Zll, thisRegion,  cut_corr , lumi);
 
-    drawCorrelation( outputdir , bins_mt22, size_mt2 ,  bins_ht2, size_ht,  "zll_mt2", "zll_ht",  Zll, thisRegion,  cut_corr );
-    drawCorrelation( outputdir , bins_mt22, size_mt2 ,  bins_nJets2, size_nJets,  "zll_mt2", "nJets",  Zll, thisRegion,  cut_corr );
-    drawCorrelation( outputdir , bins_mt22, size_mt2 ,  bins_nBJets2, size_nBJets,  "zll_mt2", "nBJets",  Zll, thisRegion,  cut_corr );
+    drawCorrelation( outputdir , bins_ht2, size_ht  ,  bins_nJets2, size_nJets ,  "ht", "nJets",  Zll, thisRegion,  cut_corr , lumi);
+//  drawCorrelation( outputdir , bins_ht,sizeof(bins_ht)/sizeof(float)-1   ,  bins_nJets, sizeof(bins_nJets)/sizeof(float)-1  ,  "ht", "nJets",  Zll, thisRegion,  cut_corr );
+    drawCorrelation( outputdir , bins_ht2, size_ht ,  bins_nBJets2, size_nBJets,  "ht", "nBJets",  Zll, thisRegion,  cut_corr, lumi );
 
-    drawCorrelation( outputdir , bins_ht2, size_ht  ,  bins_nJets2, size_nJets ,  "zll_ht", "nJets",  Zll, thisRegion,  cut_corr );
-//  drawCorrelation( outputdir , bins_ht,sizeof(bins_ht)/sizeof(float)-1   ,  bins_nJets, sizeof(bins_nJets)/sizeof(float)-1  ,  "zll_ht", "nJets",  Zll, thisRegion,  cut_corr );
-    drawCorrelation( outputdir , bins_ht2, size_ht ,  bins_nBJets2, size_nBJets,  "zll_ht", "nBJets",  Zll, thisRegion,  cut_corr );
-
-    drawCorrelation( outputdir , bins_nJets2, size_nJets ,  bins_nBJets2, size_nBJets,  "nJets", "nBJets",  Zll, thisRegion,  cut_corr );
+    drawCorrelation( outputdir , bins_nJets2, size_nJets ,  bins_nBJets2, size_nBJets,  "nJets", "nBJets",  Zll, thisRegion,  cut_corr, lumi );
   
-
+   
 
 
   }
   
+
   //FOR THE Z MASS PLOT
   TH1D* h_Zmass = new TH1D("h_Zmass","h_Zmass", 60, 60, 120);  //  h_Zmass->Sumw2();
   zllT->Project("h_Zmass", "Z_mass","weight");
@@ -206,7 +210,8 @@ int main(int argc, char* argv[]){
   h_Zmass->SetLineWidth(2);
   h_Zmass->SetLineColor(kBlue+1);
 
-  TH2D* h2_axes2 = new TH2D("axes2", "", 10, 60, 120 , 10, 0., 170 );
+  double yMaximum = h_Zmass->GetMaximum()*1.1;
+  TH2D* h2_axes2 = new TH2D("axes2", "", 10, 60, 120 , 10, 0., yMaximum );
   h2_axes2->SetXTitle("M_{ll} [GeV]");
   h2_axes2->SetYTitle("Entries");
   h2_axes2->Draw();
@@ -264,7 +269,7 @@ int main(int argc, char* argv[]){
 
 
 
-void drawRatios(std::string fullPath, float *binss, unsigned int size,  std::string zll_sel,  std::string gamma_sel, MT2Analysis<MT2Estimate>*  zll_ratio,  MT2Analysis<MT2EstimateTree>*  gamma, MT2Analysis<MT2EstimateTree>*  Zll, MT2Analysis<MT2Estimate>*  zll_yield, const MT2Region thisRegion, std::string cut, std::string cut_gamma){
+void drawRatios(std::string fullPath, float *binss, unsigned int size,  std::string zll_sel,  std::string gamma_sel, MT2Analysis<MT2Estimate>*  zll_ratio,  MT2Analysis<MT2EstimateTree>*  gamma, MT2Analysis<MT2EstimateTree>*  Zll, MT2Analysis<MT2Estimate>*  zll_yield, const MT2Region thisRegion, std::string cut, std::string cut_gamma, float lumi){
  
   std::vector<int> colors;
   colors.push_back(430); // other = zll 
@@ -285,7 +290,7 @@ void drawRatios(std::string fullPath, float *binss, unsigned int size,  std::str
   float meanX[size+1];
   float meanX_err[size+1];
 
-  for(int i = 0; i < size; ++i){
+  for(unsigned int i = 0; i < size; ++i){
     TH1D* histo_x= new TH1D("histo_x","",100, bins[i], bins[i+1] );
     zllT->Project( "histo_x",zll_sel.c_str(), cut.c_str());
     histo_x->GetMean();
@@ -504,7 +509,7 @@ void drawRatios(std::string fullPath, float *binss, unsigned int size,  std::str
 
 
 
-void drawCorrelation(std::string fullPath, float *binss, unsigned int size,  float *binss2, unsigned int size2,  std::string zll_sel,  std::string zll_sel2, MT2Analysis<MT2EstimateTree>*  Zll,  const MT2Region thisRegion, std::string cut){
+void drawCorrelation(std::string fullPath, float *binss, unsigned int size,  float *binss2, unsigned int size2,  std::string zll_sel,  std::string zll_sel2, MT2Analysis<MT2EstimateTree>*  Zll,  const MT2Region thisRegion, std::string cut, float lumi){
 
 
   gStyle->SetPadRightMargin(0.15);

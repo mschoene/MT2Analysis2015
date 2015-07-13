@@ -21,7 +21,6 @@
 #include "interface/MT2Config.h"
 
 
-
 #include "../interface/MT2DrawTools.h"
 
 
@@ -33,14 +32,14 @@
 
 
 //float lumi = 0.1;
-float lumi = 1.;
+//float lumi = 1.;
 
 
 //This file creates the Zll trees used to estimate the backgrounds in the 
 //Zll control region.
 //Then run zllPurity to get the nice plots and figures.
 
-void drawYields( const std::string& outputdir, MT2Analysis<MT2EstimateTree>* data_zll, std::vector<MT2Analysis<MT2EstimateTree>* > bgYields );
+void drawYields( const std::string& outputdir, MT2Analysis<MT2EstimateTree>* data_zll, std::vector<MT2Analysis<MT2EstimateTree>* > bgYields, float lumi );
 
 MT2Analysis<MT2EstimateTree>* computeYield( const MT2Sample& sample, const MT2Config& cfg, float lumi=1., bool doSameFlavor=1 );
 
@@ -64,15 +63,15 @@ int main(int argc, char* argv[]){
  
 
   std::string configFileName(argv[1]);
-  MT2Config cfg("cfgs/" + configFileName + ".txt");
+  MT2Config cfg(configFileName);
   std::string samplesFileName = "../samples/samples_" + cfg.mcSamples() + ".dat"; 
   std::string samples = cfg.mcSamples();
 
 regionsSet = cfg.regionsSet();
 
 
-  std::string outputdir( Form("ZllPurity_%s_%s_%.0ffb", samples.c_str(), regionsSet.c_str(), lumi ) );
-  std::string outputdir_of( Form("ZllPurity_OF_%s_%s_%.0ffb", samples.c_str(), regionsSet.c_str(), lumi ) );
+ std::string outputdir( Form("ZllPurity_%s", configFileName.c_str() ) );
+ std::string outputdir_of( Form("ZllPurity_OF_%s", configFileName.c_str()) );
 
  
   std::cout << "-> Using regions: " << regionsSet << std::endl;
@@ -85,26 +84,20 @@ regionsSet = cfg.regionsSet();
   //std::string outputdir = "ZllGammaRatio_"+ cfg.mcSamples + regionsSet ;
   //  std::string outputdir = "Zll_" + configFileName;
   double intpart;
-  double fracpart = modf(lumi, &intpart);
+  double fracpart = modf(cfg.lumi(), &intpart);
   std::string suffix;
   if( fracpart>0. )
     suffix = std::string( Form("_%.0fp%.0ffb", intpart, 10.*fracpart ) );
   else
     suffix = std::string( Form("_%.0ffb", intpart ) );
-  outputdir += suffix;
-  outputdir_of += suffix;
+  //  outputdir += suffix;
+  //  outputdir_of += suffix;
   
   system(Form("mkdir -p %s", outputdir.c_str()));
 
 
  
   std::cout << "-> Using regions: " << regionsSet << std::endl;
-
-  //  std::string samplesName = "PHYS14_v5_skimprune";
-  // std::string regionsName = "zurich";
-
-
-  // std::string samplesFileName = "../samples/samples_" + cfg.mcSamples() + ".dat";
   std::cout << std::endl << std::endl;
   std::cout << "-> Loading samples from file: " << samplesFileName << std::endl;
 
@@ -117,7 +110,7 @@ regionsSet = cfg.regionsSet();
   
   std::vector< MT2Analysis<MT2EstimateTree>* > EventYield;
   for( unsigned i=0; i<fSamples.size(); ++i ) 
-    EventYield.push_back( computeYield( fSamples[i], cfg, lumi, 1 ) );
+    EventYield.push_back( computeYield( fSamples[i], cfg, cfg.lumi(), 1 ) );
     
  
   std::vector<MT2Analysis<MT2EstimateTree>* > bgYields; 
@@ -129,20 +122,18 @@ regionsSet = cfg.regionsSet();
   MT2Analysis<MT2EstimateTree>* EventYield_qcd   = mergeYields( EventYield, cfg.regionsSet(), "QCD", 100, 199 );
   MT2Analysis<MT2EstimateTree>* EventYield_wjets = mergeYields( EventYield, cfg.regionsSet(), "WJets", 500, 599, "W+jets" );
   MT2Analysis<MT2EstimateTree>* EventYield_zjets = mergeYields( EventYield, cfg.regionsSet(), "ZJets", 600, 699, "Z+jets" );
-  //MT2Analysis<MT2EstimateTree>* EventYield_other = mergeYields( EventYield, cfg.regionsSet(), "Diboson", 700, 899, "Other" );
 
   bgYields.push_back( EventYield_qcd );
   bgYields.push_back( EventYield_wjets );
   bgYields.push_back( EventYield_zjets );
   bgYields.push_back( EventYield_top );
-  //bgYields.push_back( EventYield_other );
-
+ 
   
 
 
   std::vector< MT2Analysis<MT2EstimateTree>* > EventYield_of;
   for( unsigned i=0; i<fSamples.size(); ++i ) 
-    EventYield_of.push_back( computeYield( fSamples[i], cfg, lumi, 0 ) );
+    EventYield_of.push_back( computeYield( fSamples[i], cfg, cfg.lumi(), 0 ) );
     
   MT2Analysis<MT2EstimateTree>* EventYield_zll_of = mergeYields( EventYield_of, cfg.regionsSet(), "DYJets", 700, 799, "DYJets" );
 
@@ -152,18 +143,16 @@ regionsSet = cfg.regionsSet();
   MT2Analysis<MT2EstimateTree>* EventYield_qcd_of   = mergeYields( EventYield_of, cfg.regionsSet(), "QCD", 100, 199 );
   MT2Analysis<MT2EstimateTree>* EventYield_wjets_of = mergeYields( EventYield_of, cfg.regionsSet(), "WJets", 500, 599, "W+jets" );
   MT2Analysis<MT2EstimateTree>* EventYield_zjets_of = mergeYields( EventYield_of, cfg.regionsSet(), "ZJets", 600, 699, "Z+jets" );
-  //MT2Analysis<MT2EstimateTree>* EventYield_other = mergeYields( EventYield, cfg.regionsSet(), "Diboson", 700, 899, "Other" );
-
+ 
   bgYields_of.push_back( EventYield_qcd_of );
   bgYields_of.push_back( EventYield_wjets_of );
   bgYields_of.push_back( EventYield_zjets_of );
   bgYields_of.push_back( EventYield_top_of );
-  //  bgYields.push_back( EventYield_other );
 
  
-  drawYields( outputdir, EventYield_zll, bgYields );
 
-  drawYields( outputdir_of, EventYield_zll_of, bgYields_of );
+  drawYields( outputdir, EventYield_zll, bgYields, cfg.lumi() );
+  drawYields( outputdir_of, EventYield_zll_of, bgYields_of, cfg.lumi() );
 
 
 
@@ -190,9 +179,9 @@ regionsSet = cfg.regionsSet();
 
   std::vector< MT2Analysis<MT2EstimateTree>* > EventYield_fake_of;
   for( unsigned i=0; i<fSamples.size(); ++i ) 
-    EventYield_fake_of.push_back( computeYield_fake( fSamples[i], cfg, lumi, 0 ) );
+    EventYield_fake_of.push_back( computeYield_fake( fSamples[i], cfg, cfg.lumi(), 0 ) );
     
-
+  
   MT2Analysis<MT2EstimateTree>* EventYield_fakeData_of = mergeYields( EventYield_fake_of, cfg.regionsSet(), "fake", 100, 800, "" );
 
   std::string outFile_fake_of = outputdir_of + "/ZllPurityTrees_fake_of.root";
@@ -227,7 +216,7 @@ regionsSet = cfg.regionsSet();
 
 
 
-void drawYields( const std::string& outputdir, MT2Analysis<MT2EstimateTree>* data, std::vector< MT2Analysis<MT2EstimateTree> *> bgYields ) {
+void drawYields( const std::string& outputdir, MT2Analysis<MT2EstimateTree>* data, std::vector< MT2Analysis<MT2EstimateTree> *> bgYields, float lumi ) {
 
 
   MT2DrawTools::setStyle();
@@ -439,7 +428,7 @@ MT2Analysis<MT2EstimateTree>* computeYield( const MT2Sample& sample, const MT2Co
     if(!(myTree.passSelection("zll"))) continue; 
     if(!(myTree.nlep==2)) continue; 
 
-    if(myTree.mt2>200) continue;
+    //  if(myTree.mt2>200) continue; //change once we have more data
 
     //Sample  are the Z leptons
     //and thus that if they don't have the same flavor they are rejected
@@ -470,7 +459,7 @@ MT2Analysis<MT2EstimateTree>* computeYield( const MT2Sample& sample, const MT2Co
     float met  = myTree.met_pt;
     float mt2  = myTree.mt2;
     float minMTBmet = myTree.minMTBMet;
-    int njets  = myTree.nJet40;
+    int njets  = myTree.nJet30;
     //    int nbjets = myTree.nBJet40;
     int nbjets = myTree.nBJet20;
 
@@ -478,7 +467,6 @@ MT2Analysis<MT2EstimateTree>* computeYield( const MT2Sample& sample, const MT2Co
 
     MT2EstimateTree* thisEstimate = analysis->get( myTree.zll_ht, njets, nbjets, myTree.zll_met_pt, minMTBmet, myTree.zll_mt2 );
     if( thisEstimate==0 ) continue; 
-
 
     //initialize
     thisEstimate->assignVar("Z_pt", z.Perp() );
@@ -489,7 +477,7 @@ MT2Analysis<MT2EstimateTree>* computeYield( const MT2Sample& sample, const MT2Co
     thisEstimate->assignVar("lep_pt0", myTree.lep_pt[0] );
     thisEstimate->assignVar("lep_pt1", myTree.lep_pt[1] );
 
-    thisEstimate->fillTree(myTree, weight ,"zll");
+    thisEstimate->fillTree_zll(myTree, weight);
 
     thisEstimate->yield->Fill(myTree.zll_mt2, weight );
   
@@ -557,7 +545,8 @@ MT2Analysis<MT2EstimateTree>* computeYield_fake( const MT2Sample& sample, const 
 
     if(!(myTree.passSelection("zll"))) continue; 
     if(!(myTree.nlep==2)) continue; 
-    if(myTree.mt2>200) continue;
+    //don't forget to change back for more data
+    //  if(myTree.mt2>200) continue;
     //Sample  are the Z leptons
     //and thus that if they don't have the same flavor they are rejected
     if(doSameFlavor==1 && !(myTree.lep_pdgId[0] == -myTree.lep_pdgId[1]) )     continue;
@@ -577,7 +566,7 @@ MT2Analysis<MT2EstimateTree>* computeYield_fake( const MT2Sample& sample, const 
     float met  = myTree.met_pt;
     float mt2  = myTree.mt2;
     float minMTBmet = myTree.minMTBMet;
-    int njets  = myTree.nJet40; 
+    int njets  = myTree.nJet30; 
     int nbjets = myTree.nBJet20;
 
     Double_t weight = myTree.evt_scale1fb*lumi;
@@ -599,7 +588,7 @@ MT2Analysis<MT2EstimateTree>* computeYield_fake( const MT2Sample& sample, const 
     thisEstimate->assignVar("lep_pt0", myTree.lep_pt[0] );
     thisEstimate->assignVar("lep_pt1", myTree.lep_pt[1] );
 
-    thisEstimate->fillTree(myTree, weight ,"zll");
+    thisEstimate->fillTree_zll(myTree, weight);
 
     thisEstimate->yield->Fill(myTree.zll_mt2, weight );
   
