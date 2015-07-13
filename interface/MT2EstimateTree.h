@@ -18,8 +18,8 @@ class MT2EstimateTree : public MT2Estimate {
   void initTree();
   virtual void setName( const std::string& newName );
 
-  void assignTree( const MT2Tree& mt2tree, float w );
-  void fillTree( const MT2Tree& mt2tree, float w );
+  void assignTree( const MT2Tree& mt2tree, float w, const std::string& sel );
+  void fillTree( const MT2Tree& mt2tree, float w , const std::string& sel);
 
   void assignTree_gamma( const MT2Tree& mt2tree, float w );
   void fillTree_gamma( const MT2Tree& mt2tree, float w );
@@ -45,6 +45,7 @@ class MT2EstimateTree : public MT2Estimate {
   float deltaPhiMin;
   float diffMetMht;
   int nVert;
+
   int nJets;
   int nBJets;
   int nElectrons;
@@ -55,6 +56,19 @@ class MT2EstimateTree : public MT2Estimate {
   int GenSusyMScan1;
   int GenSusyMScan2;
 
+  float dPhiMin;;
+
+  float gamma_mt2;
+  float gamma_ht;
+  float gamma_met_pt;
+  int gamma_nJets;
+  int gamma_nBJets;
+
+  float zll_mt2;
+  float zll_ht;
+  float zll_met_pt;
+  float zll_met_phi;
+ 
   //std::map< std::string, size_t > extraVars;
   std::map< std::string, float* > extraVars;
  

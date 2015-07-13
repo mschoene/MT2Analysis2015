@@ -166,7 +166,7 @@ void MT2EstimateTree::assignVar( const std::string& name, float value ) {
 
 
 
-void MT2EstimateTree::fillTree( const MT2Tree& mt2tree, float w ) {
+void MT2EstimateTree::fillTree( const MT2Tree& mt2tree, float w , const std::string& sel ) {
 
 
   this->assignTree( mt2tree, w , sel);
@@ -283,7 +283,7 @@ void MT2EstimateTree::assignTree_gamma( const MT2Tree& mt2tree, float w ) {
 
   mt2           = mt2tree.gamma_mt2;
   ht            = mt2tree.gamma_ht;
-  met           = mt2tree.gamma_met_pt;
+  met_pt        = mt2tree.gamma_met_pt;
   deltaPhiMin   = mt2tree.gamma_deltaPhiMin;
   diffMetMht    = mt2tree.gamma_diffMetMht;
   nJets         = mt2tree.gamma_nJet40;
@@ -305,7 +305,7 @@ void MT2EstimateTree::assignVars( float aht, int anJets, int anBJets, float amet
 
   mt2    = amt2;
   ht     = aht;
-  met    = amet;
+  met_pt    = amet;
   nJets  = anJets;
   nBJets = anBJets;
 

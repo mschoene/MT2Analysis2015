@@ -15,12 +15,6 @@
 #include "TH1F.h"
 
 
-<<<<<<< HEAD
-=======
-float lumi = 0.1; //fb-1
-
-
->>>>>>> e9c4691... CherryPick2, shall conflicts rise?
 bool alsoSignals = false;
 
 
