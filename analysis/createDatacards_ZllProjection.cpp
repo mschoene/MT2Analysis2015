@@ -18,7 +18,7 @@
 bool use_gamma = true;
 bool use_purity = true;
 
-double lumi = 20;
+double lumi = 4;
 
 int round(float d) {
   return (int)(floor(d + 0.5));
@@ -59,9 +59,10 @@ int main( int argc, char* argv[] ) {
   //float err_llep_uncorr = 0.075;
   float err_llep_shape = 0.075;
   float err_llep_lepEff = 0.15;
- float err_zinv_corr   = 0.0671; //  added in quadrature syst on templates (2%) and on f (4%) and MC stat on Rzg (5%) -> sqrt( 2*2 + 4*4 +5*5 ) = 6.708
+  // float err_zinv_corr   = 0.0671; //  added in quadrature syst on templates (2%) and on f (4%) and MC stat on Rzg (5%) -> sqrt( 2*2 + 4*4 +5*5 ) = 6.708
+  float err_zinv_corr   = 0.05; //  added in quadrature syst on templates (2%) and on f (4%) -> sqrt( 2*2 + 4*4  ) approx = 5
 
- //float err_zinv_corr   = 0.21; // 20% on Z/gamma ratio plus added in quadrature syst on templates (2%) and on f (4%) and MC stat on Rzg (5%) -> sqrt( 20*20 + 2*2 + 4*4 +5*5 ) = 21
+  //float err_zinv_corr   = 0.21; // 20% on Z/gamma ratio plus added in quadrature syst on templates (2%) and on f (4%) and MC stat on Rzg (5%) -> sqrt( 20*20 + 2*2 + 4*4 +5*5 ) = 21
   float err_zinv_uncorr = -1.; // will take histogram bin error
   float err_zinv_alpha_extra  = 0.2; // 20% extra uncertainty on alpha if using lower MT2 as CR
   float err_zinv_uncorr_2b = 1.0;
@@ -305,7 +306,7 @@ int main( int argc, char* argv[] ) {
 	     std::cout << "EMPTY BIN at " << binName << std::endl;
 	     emptyZllBins+=1;
 	   }else{
-	     float zll_mt2 = 1+ this_zll_mt2->GetBinError(bin_mt2_zll);
+	     float zll_mt2 = 1+ this_zll_mt2->GetBinError(bin_mt2_zll) ; //change back here
 	     datacard << "zll_mt2_"<< int(mt2Min)  << " lnN - " << zll_mt2 << " - -" << std::endl; 
 	     //	     datacard << "zll_mt2_"<< bin_mt2_zll << " lnN - " << zll_mt2 << " - -" << std::endl; 
 	   }
@@ -317,47 +318,47 @@ int main( int argc, char* argv[] ) {
 	     //doing nothing, already taken care of by 100% uncorr uncertainty
 	   }else{
 	     if(iR->htMax()<600){ 
-	       float zll_ht = 1+ this_zll_ht->GetBinError(1)/this_zll_ht->GetBinContent(1) ;
+	       float zll_ht = 1+ this_zll_ht->GetBinError(1) ;
 	       datacard << "zll_ht_"<< int(iR->htMin()) << " lnN - " << zll_ht << " - -" << std::endl;
 	  
 	     }else if(iR->htMax()<1001){
-	       float zll_ht = 1+ this_zll_ht->GetBinError(2)/this_zll_ht->GetBinContent(2) ;
+	       float zll_ht = 1+ this_zll_ht->GetBinError(2) ;
 	       datacard << "zll_ht_"<< int(iR->htMin())  << " lnN - " << zll_ht << " - -" << std::endl;
 	 
 	     }else if(iR->htMax()<1501 ){
-	       float zll_ht = 1+ this_zll_ht->GetBinError(3)/this_zll_ht->GetBinContent(3) ;
+	       float zll_ht = 1+ this_zll_ht->GetBinError(3);
 	       datacard << "zll_ht_"<<  int(iR->htMin()) << " lnN - " << zll_ht << " - -" << std::endl;
 	     } else{
-	       float zll_ht = 1+ this_zll_ht->GetBinError(4)/this_zll_ht->GetBinContent(4) ;
+	       float zll_ht = 1+ this_zll_ht->GetBinError(4) ;
 	       datacard << "zll_ht_"<< int(iR->htMin())  << " lnN - " << zll_ht << " - -" << std::endl;	  
 	     }
 
 	     if(iR->nJetsMax()==3){
-	       float zll_nJets = 1+ this_zll_nJets->GetBinError(1)/this_zll_nJets->GetBinContent(1);
+	       float zll_nJets = 1+ this_zll_nJets->GetBinError(1) ;
 	       datacard << "zll_nJets_"<< iR->nJetsMin() << " lnN - " << zll_nJets << " - -" << std::endl;
 	   
 	     }else if(iR->nJetsMax()==6){
-	       float zll_nJets = 1+ this_zll_nJets->GetBinError(2)/this_zll_nJets->GetBinContent(2);
+	       float zll_nJets = 1+ this_zll_nJets->GetBinError(2) ;
 	       datacard << "zll_nJets_"<< iR->nJetsMin() << " lnN - " << zll_nJets << " - -" << std::endl;
 	 
 	     }else{
-	       float zll_nJets = 1+ this_zll_nJets->GetBinError(3)/this_zll_nJets->GetBinContent(3);
+	       float zll_nJets = 1+ this_zll_nJets->GetBinError(3);
 	       datacard << "zll_nJets_"<< iR->nJetsMin() << " lnN - " << zll_nJets << " - -" << std::endl;	   
 	     }
 
 	     if(iR->nBJetsMax()==0){
-	       float zll_nBJets = 1+ this_zll_nBJets->GetBinError(1)/this_zll_nBJets->GetBinContent(1);
+	       float zll_nBJets = 1+ this_zll_nBJets->GetBinError(1);
 	       datacard << "zll_nBJets_"<< iR->nBJetsMin() << " lnN - " << zll_nBJets << " - -" << std::endl;
 	  
 	     }else if(iR->nBJetsMax()==1){
-	       float zll_nBJets = 1+ this_zll_nBJets->GetBinError(2)/this_zll_nBJets->GetBinContent(2);
+	       float zll_nBJets = 1+ this_zll_nBJets->GetBinError(2) ;
 	       datacard << "zll_nBJets_"<< iR->nBJetsMin()  << " lnN - " << zll_nBJets << " - -" << std::endl;
 	  
 	     }else if(iR->nBJetsMax()==2){
-	       float zll_nBJets = 1+ this_zll_nBJets->GetBinError(3)/this_zll_nBJets->GetBinContent(3);
+	       float zll_nBJets = 1+ this_zll_nBJets->GetBinError(3);
 	       datacard << "zll_nBJets_"<< 3 << " lnN - " << zll_nBJets << " - -" << std::endl;
 	     }else{
-	       float zll_nBJets = 1+ this_zll_nBJets->GetBinError(4)/this_zll_nBJets->GetBinContent(4);
+	       float zll_nBJets = 1+ this_zll_nBJets->GetBinError(4);
 	       datacard << "zll_nBJets_"<< 4 << " lnN - " << zll_nBJets << " - -" << std::endl;	   
 	     }
 	   }//end of if yield <5 statement
