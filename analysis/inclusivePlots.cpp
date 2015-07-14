@@ -37,16 +37,42 @@ int main( int argc, char* argv[] ) {
 
   MT2DrawTools::setStyle();
 
+//  if( argc!=2 ) {
+//    std::cout << "USAGE: ./inclusivePlots [dir]" << std::endl;
+//    exit(113);
+//  }
+//
+//  std::string dir( argv[1] );
+//  std::string mc_fileName = dir + "/analyses.root";
+  
+
+  std::cout << std::endl << std::endl;
+  std::cout << "------------------------------------------------------" << std::endl;
+  std::cout << "|                                                    |" << std::endl;
+  std::cout << "|                                                    |" << std::endl;
+  std::cout << "|              Running createDatacards               |" << std::endl;
+  std::cout << "|                                                    |" << std::endl;
+  std::cout << "|                                                    |" << std::endl;
+  std::cout << "------------------------------------------------------" << std::endl;
+  std::cout << std::endl << std::endl;
+
+
   if( argc!=2 ) {
-    std::cout << "USAGE: ./inclusivePlots [dir]" << std::endl;
-    exit(113);
+    std::cout << "USAGE: ./createDatacards [configFileName]" << std::endl;
+    std::cout << "Exiting." << std::endl;
+    exit(11);
   }
 
 
-  std::string dir( argv[1] );
+  std::string configFileName(argv[1]);
+  MT2Config cfg(configFileName);
+
+
+  std::string dir = cfg.getEventYieldDir();
   std::string mc_fileName = dir + "/analyses.root";
 
   std::string outputdir = dir + "/inclusivePlots";
+
 
   MT2Analysis<MT2EstimateTree>* data  = MT2Analysis<MT2EstimateTree>::readFromFile( mc_fileName, "data" );
   

@@ -60,7 +60,7 @@ int main( int argc, char* argv[] ) {
 
 
   if( argc<2 ) {
-    std::cout << "USAGE: ./regionEventYields [configFileName]" << std::endl;
+    std::cout << "USAGE: ./regionEventYields [configFileName] [data/MC]" << std::endl;
     std::cout << "Exiting." << std::endl;
     exit(11);
   }
@@ -197,7 +197,7 @@ int main( int argc, char* argv[] ) {
     std::cout << std::endl << std::endl;
     std::cout << "-> Loading data from file: " << samplesFile_data << std::endl;
 
-    std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data); //, 1, 99 );
+    std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, "JetHT"); //, 1, 99 );
     if( samples_data.size()==0 ) {
       std::cout << "There must be an error: samples_data is empty!" << std::endl;
       exit(1209);
@@ -398,12 +398,12 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg ) {
       thisEstimate->assignVar( "qglProd", qglProd );
       thisEstimate->assignVar( "qglAve", qglAve );
 
-      thisEstimate->assignTree( myTree, weight);
+      thisEstimate->assignTree( myTree, weight );
       thisEstimate->tree->Fill();
 
     } else {
 
-      thisEstimate->fillTree( myTree, weight);
+      thisEstimate->fillTree( myTree, weight );
 
     }
 
