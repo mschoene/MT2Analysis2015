@@ -82,7 +82,13 @@ int main( int argc, char* argv[] ) {
   TH1::AddDirectory(kFALSE); // stupid ROOT memory allocation needs this
 
   
-  MT2Analysis<MT2EstimateSyst>* lostLeptonEstimate = new MT2Analysis<MT2EstimateSyst> ( "llep", cfg.regionsSet() );  
+  std::string regionsSet;
+  if( cfg.regionsSet()=="zurich" )
+    regionsSet="zurich_llep";
+  else
+    regionsSet=cfg.regionsSet();
+
+  MT2Analysis<MT2EstimateSyst>* lostLeptonEstimate = new MT2Analysis<MT2EstimateSyst> ( "llep", regionsSet );  
   for( unsigned i=0; i < fSamples.size(); ++i )
     (*lostLeptonEstimate) += ( computeYield( fSamples[i], cfg ) );
   
@@ -106,8 +112,15 @@ MT2Analysis<MT2EstimateSyst> computeYield( const MT2Sample& sample, const MT2Con
   MT2Tree myTree;
   myTree.Init(tree);
 
+  std::string regionsSet;
+  if( cfg.regionsSet()=="zurich" )
+    regionsSet="zurich_llep";
+  else
+    regionsSet=cfg.regionsSet();
+  
+
   std::cout << "-> Setting up MT2Analysis with name: " << sample.sname << std::endl;
-  MT2Analysis<MT2EstimateSyst> analysis( sample.sname, cfg.regionsSet(), sample.id );
+  MT2Analysis<MT2EstimateSyst> analysis( sample.sname, regionsSet, sample.id );
 
   int nentries = tree->GetEntries();
     

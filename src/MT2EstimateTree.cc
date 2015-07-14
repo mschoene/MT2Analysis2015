@@ -268,7 +268,6 @@ void MT2EstimateTree::assignTree_gamma( const MT2Tree& mt2tree, float w ) {
 
 void MT2EstimateTree::assignVars( float aht, int anJets, int anBJets, float amet, float amt2 ) {
 
-
   mt2    = amt2;
   ht     = aht;
   met    = amet;
