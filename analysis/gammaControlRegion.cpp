@@ -28,6 +28,7 @@ int round(float d) {
 
 void computeYield( const MT2Sample& sample, const MT2Config& cfg, 
                    MT2Analysis<MT2EstimateTree>* anaTree,
+                   MT2Analysis<MT2EstimateTree>* anaTree_pass,
                    MT2Analysis<MT2EstimateZinvGamma>* prompt=0, MT2Analysis<MT2EstimateZinvGamma>* prompt_pass=0, 
                    MT2Analysis<MT2EstimateZinvGamma>* nip=0, MT2Analysis<MT2EstimateZinvGamma>* nip_pass=0, 
                    MT2Analysis<MT2EstimateZinvGamma>* fake=0, MT2Analysis<MT2EstimateZinvGamma>* fake_pass=0 );
@@ -107,18 +108,28 @@ int main( int argc, char* argv[] ) {
     MT2Analysis<MT2EstimateZinvGamma>* nip = new MT2Analysis<MT2EstimateZinvGamma>( "nip", cfg.regionsSet() );
     MT2Analysis<MT2EstimateZinvGamma>* nip_pass = new MT2Analysis<MT2EstimateZinvGamma>( "nip_pass", cfg.regionsSet() );
 
-    MT2Analysis<MT2EstimateTree>* tree = new MT2Analysis<MT2EstimateTree>( "gammaCRtree", cfg.regionsSet() );
+    MT2Analysis<MT2EstimateTree>* tree = new MT2Analysis<MT2EstimateTree>( "gammaCRtree_loose", cfg.regionsSet() );
     MT2EstimateTree::addVar( tree, "prompt" );
     MT2EstimateTree::addVar( tree, "iso" );
+    MT2EstimateTree::addVar( tree, "sietaieta" );
+    MT2EstimateTree::addVar( tree, "ptGamma" );
+    MT2EstimateTree::addVar( tree, "etaGamma" );
+    
+    MT2Analysis<MT2EstimateTree>* tree_pass = new MT2Analysis<MT2EstimateTree>( "gammaCRtree", cfg.regionsSet() );
+    MT2EstimateTree::addVar( tree_pass, "prompt" );
+    MT2EstimateTree::addVar( tree_pass, "iso" );
+    MT2EstimateTree::addVar( tree_pass, "sietaieta" );
+    MT2EstimateTree::addVar( tree_pass, "ptGamma" );
+    MT2EstimateTree::addVar( tree_pass, "etaGamma" );
     
 
 
     for( unsigned i=0; i<samples_gammaJet.size(); ++i ) {
-      computeYield( samples_gammaJet[i], cfg, tree, prompt, prompt_pass, nip, nip_pass, fake, fake_pass );
+      computeYield( samples_gammaJet[i], cfg, tree, tree_pass, prompt, prompt_pass, nip, nip_pass, fake, fake_pass );
     }
 
     for( unsigned i=0; i<samples_qcd.size(); ++i ) {
-      computeYield( samples_qcd[i], cfg, tree, prompt, prompt_pass, nip, nip_pass, fake, fake_pass );
+      computeYield( samples_qcd[i], cfg, tree, tree_pass, prompt, prompt_pass, nip, nip_pass, fake, fake_pass );
     }
 
 
@@ -178,13 +189,17 @@ int main( int argc, char* argv[] ) {
 
       for( unsigned i=0; i<samples_sig.size(); ++i ) {
 
-        MT2Analysis<MT2EstimateTree>* thisSig = new MT2Analysis<MT2EstimateTree>( samples_sig[i].sname, cfg.regionsSet(), samples_sig[i].id );
+        MT2Analysis<MT2EstimateTree>* thisSig = new MT2Analysis<MT2EstimateTree>( samples_sig[i].sname + "_loose", cfg.regionsSet(), samples_sig[i].id );
         MT2EstimateTree::addVar( thisSig, "prompt" );
         MT2EstimateTree::addVar( thisSig, "iso" );
 
-        computeYield( samples_sig[i], cfg, thisSig );
+        MT2Analysis<MT2EstimateTree>* thisSig_pass = new MT2Analysis<MT2EstimateTree>( samples_sig[i].sname, cfg.regionsSet(), samples_sig[i].id );
+        MT2EstimateTree::addVar( thisSig_pass, "prompt" );
+        MT2EstimateTree::addVar( thisSig_pass, "iso" );
 
-        signals.push_back( thisSig );
+        computeYield( samples_sig[i], cfg, thisSig, thisSig_pass );
+
+        signals.push_back( thisSig_pass );
 
       }  // for signals
 
@@ -204,6 +219,7 @@ int main( int argc, char* argv[] ) {
       gammaCR_nipUp->writeToFile( outputdir + "/data.root" );
       gammaCR_nipDown->writeToFile( outputdir + "/data.root" );
       tree->writeToFile( outputdir + "/data.root" );
+      tree_pass->writeToFile( outputdir + "/data.root" );
 
     } // if dummy
 
@@ -233,17 +249,27 @@ int main( int argc, char* argv[] ) {
 
     } else {
 
-      MT2Analysis<MT2EstimateTree>* dataTree = new MT2Analysis<MT2EstimateTree>( "gammaCRtree", cfg.regionsSet() );
+      MT2Analysis<MT2EstimateTree>* dataTree = new MT2Analysis<MT2EstimateTree>( "gammaCRtree_loose", cfg.regionsSet() );
       MT2EstimateTree::addVar( dataTree, "iso" );
+      MT2EstimateTree::addVar( dataTree, "sietaieta" );
+      MT2EstimateTree::addVar( dataTree, "ptGamma" );
+      MT2EstimateTree::addVar( dataTree, "etaGamma" );
+
+      MT2Analysis<MT2EstimateTree>* dataTree_pass = new MT2Analysis<MT2EstimateTree>( "gammaCRtree", cfg.regionsSet() );
+      MT2EstimateTree::addVar( dataTree_pass, "iso" );
+      MT2EstimateTree::addVar( dataTree_pass, "sietaieta" );
+      MT2EstimateTree::addVar( dataTree_pass, "ptGamma" );
+      MT2EstimateTree::addVar( dataTree_pass, "etaGamma" );
 
       MT2Analysis<MT2EstimateZinvGamma>* dataCR_loose = new MT2Analysis<MT2EstimateZinvGamma>( "gammaCR_loose",  cfg.regionsSet() );
       MT2Analysis<MT2EstimateZinvGamma>* dataCR       = new MT2Analysis<MT2EstimateZinvGamma>( "gammaCR",  cfg.regionsSet() );
     
       for( unsigned i=0; i<samples_data.size(); ++i ) {
-        computeYield( samples_data[i], cfg, dataTree, dataCR_loose, dataCR );
+        computeYield( samples_data[i], cfg, dataTree, dataTree_pass, dataCR_loose, dataCR );
       }
 
       dataTree->writeToFile( outputdir + "/data.root" );
+      dataTree_pass->writeToFile( outputdir + "/data.root" );
       dataCR_loose->writeToFile( outputdir + "/data.root" );
       dataCR->writeToFile( outputdir + "/data.root" );
 
@@ -265,6 +291,7 @@ int main( int argc, char* argv[] ) {
 
 void computeYield( const MT2Sample& sample, const MT2Config& cfg,
                    MT2Analysis<MT2EstimateTree>* anaTree,
+                   MT2Analysis<MT2EstimateTree>* anaTree_pass,
                    MT2Analysis<MT2EstimateZinvGamma>* prompt, MT2Analysis<MT2EstimateZinvGamma>* prompt_pass, 
                    MT2Analysis<MT2EstimateZinvGamma>* nip, MT2Analysis<MT2EstimateZinvGamma>* nip_pass, 
                    MT2Analysis<MT2EstimateZinvGamma>* fake, MT2Analysis<MT2EstimateZinvGamma>* fake_pass ) {
@@ -333,6 +360,7 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
     bool passIso = iso<isoCut;
 
     MT2EstimateTree* thisTree = anaTree->get( ht, njets, nbjets, met, minMTBmet, mt2 );
+    MT2EstimateTree* thisTree_pass = anaTree_pass->get( ht, njets, nbjets, met, minMTBmet, mt2 );
     if( thisTree==0 ) continue;
 
 
@@ -347,7 +375,8 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
 
       if( isPrompt ) {
 
-        if( passIso ) thisTree->assignVar( "prompt", 2 );
+        thisTree->assignVar( "prompt", 2 );
+        if( passIso ) thisTree_pass->assignVar( "prompt", 2 );
 
         if( prompt!=0 && prompt_pass!=0 ) {
 
@@ -372,7 +401,8 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
 
       } else if( isNIP ) {
 
-        if( passIso ) thisTree->assignVar( "prompt", 1 );
+        thisTree->assignVar( "prompt", 1 );
+        if( passIso ) thisTree_pass->assignVar( "prompt", 1 );
 
         if( nip!=0 && nip_pass!=0 ) { 
         
@@ -396,7 +426,8 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
 
       } else if( isFake ) {
 
-        if( passIso ) thisTree->assignVar( "prompt", 0 );
+        thisTree->assignVar( "prompt", 0 );
+        if( passIso ) thisTree_pass->assignVar( "prompt", 0 );
 
         if( fake!=0 && fake_pass!=0 ) {
 
@@ -444,11 +475,20 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
     }  // if is data
 
 
+    thisTree->yield->Fill(mt2, weight );
+    thisTree->assignVar( "iso", iso );
+    thisTree->assignVar( "sietaieta", myTree.gamma_sigmaIetaIeta[0] );
+    thisTree->assignVar( "ptGamma", myTree.gamma_pt[0] );
+    thisTree->assignVar( "etaGamma", myTree.gamma_eta[0] );
+    thisTree->fillTree_gamma(myTree, weight );
 
     if( passIso ) {
-      thisTree->yield->Fill(mt2, weight );
-      thisTree->assignVar( "iso", iso );
-      thisTree->fillTree_gamma(myTree, weight );
+      thisTree_pass->yield->Fill(mt2, weight );
+      thisTree_pass->assignVar( "iso", iso );
+      thisTree_pass->assignVar( "sietaieta", myTree.gamma_sigmaIetaIeta[0] );
+      thisTree_pass->assignVar( "ptGamma", myTree.gamma_pt[0] );
+      thisTree_pass->assignVar( "etaGamma", myTree.gamma_eta[0] );
+      thisTree_pass->fillTree_gamma(myTree, weight );
     }
 
     
@@ -462,6 +502,7 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
   if( fake!=0 ) fake->finalize();
   if( fake_pass!=0 ) fake_pass->finalize();
   anaTree->finalize();
+  anaTree_pass->finalize();
   
 
   delete tree;

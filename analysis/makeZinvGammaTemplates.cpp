@@ -52,12 +52,26 @@ int main( int argc, char* argv[] ) {
   MT2Config cfg(configFileName);
 
 
+  bool useMC = true;
+
+  if( argc>2 ) {
+    std::string data_or_mc = std::string(argv[2]); 
+    if( data_or_mc=="data" || data_or_mc=="Data" || data_or_mc=="DATA" ) useMC=false;
+    else if( data_or_mc!="mc" && data_or_mc!="MC" ) {
+      std::cout << std::endl;
+      std::cout << "-> WARNING! Second argument should be 'data' or 'MC'." << std::endl;
+      std::cout << "Exiting." << std::endl;
+      std::cout << std::endl;
+      exit(817);
+    }
+  } 
+
 
   std::string templateType = cfg.gammaTemplateType();
 
-  if( argc>2 ) {
+  if( argc>3 ) {
 
-    templateType = std::string(argv[2]); 
+    templateType = std::string(argv[3]); 
     std::cout << std::endl;
     std::cout << "-> Will disobey the cfg and use templateType = " << argv[2] << std::endl;
     std::cout << std::endl;
@@ -70,6 +84,9 @@ int main( int argc, char* argv[] ) {
     exit(1111);
   }
 
+
+
+
   std::cout << std::endl;
   std::cout << "-> Starting to build templates with:" << std::endl;
   std::cout << "      type   : " << templateType << std::endl;
@@ -81,9 +98,10 @@ int main( int argc, char* argv[] ) {
   std::string regionsSet = cfg.gammaTemplateRegions();
 
 
-  std::string samplesFile = "../samples/samples_" + cfg.mcSamples() + ".dat";
+  std::string samplesName = (useMC) ? cfg.mcSamples() : cfg.dataSamples();
+  std::string samplesFile = "../samples/samples_" + samplesName + ".dat";
   
-  std::vector<MT2Sample> samples = MT2Sample::loadSamples(samplesFile, 100, 299); // GJet and QCD
+  std::vector<MT2Sample> samples = (useMC) ? MT2Sample::loadSamples(samplesFile, 100, 299) : MT2Sample::loadSamples(samplesFile, "SinglePhoton");
   if( samples.size()==0 ) {
     std::cout << "There must be an error: didn't find any good files in " << samplesFile << "!" << std::endl;
     exit(1209);
@@ -116,7 +134,7 @@ int main( int argc, char* argv[] ) {
 
 
   std::string templateFileName = "gammaTemplates" + templateType;
-  templateFileName = templateFileName + "_" + cfg.mcSamples() + "_" + cfg.gammaTemplateRegions() + ".root";
+  templateFileName = templateFileName + "_" + samplesName + "_" + cfg.gammaTemplateRegions() + ".root";
 
 
   templatesFake->writeToFile(templateFileName);
@@ -241,7 +259,7 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
     //if( iso > 20. ) continue;
     ////if( iso > 10. ) continue;
 
-    Double_t weight = myTree.evt_scale1fb*cfg.lumi(); 
+    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi(); 
 
 
     if( isWorkingPrompt ) {
