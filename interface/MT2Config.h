@@ -12,6 +12,8 @@ class MT2Config {
   std::string name() const { return name_; };
 
   float lumi()      const { return lumi_; };
+
+ 
   std::string regionsSet()      const { return regionsSet_; };
   std::string mcSamples()       const { return mcSamples_; };
   std::string sigSamples()      const { return sigSamples_; };
