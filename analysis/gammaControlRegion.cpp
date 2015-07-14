@@ -108,14 +108,14 @@ int main( int argc, char* argv[] ) {
     MT2Analysis<MT2EstimateZinvGamma>* nip = new MT2Analysis<MT2EstimateZinvGamma>( "nip", cfg.regionsSet() );
     MT2Analysis<MT2EstimateZinvGamma>* nip_pass = new MT2Analysis<MT2EstimateZinvGamma>( "nip_pass", cfg.regionsSet() );
 
-    MT2Analysis<MT2EstimateTree>* tree = new MT2Analysis<MT2EstimateTree>( "gammaCRtree_loose", cfg.regionsSet() );
+    MT2Analysis<MT2EstimateTree>* tree = new MT2Analysis<MT2EstimateTree>( "gammaCRtree_loose", "13TeV_inclusive" );
     MT2EstimateTree::addVar( tree, "prompt" );
     MT2EstimateTree::addVar( tree, "iso" );
     MT2EstimateTree::addVar( tree, "sietaieta" );
     MT2EstimateTree::addVar( tree, "ptGamma" );
     MT2EstimateTree::addVar( tree, "etaGamma" );
     
-    MT2Analysis<MT2EstimateTree>* tree_pass = new MT2Analysis<MT2EstimateTree>( "gammaCRtree", cfg.regionsSet() );
+    MT2Analysis<MT2EstimateTree>* tree_pass = new MT2Analysis<MT2EstimateTree>( "gammaCRtree", "13TeV_inclusive" );
     MT2EstimateTree::addVar( tree_pass, "prompt" );
     MT2EstimateTree::addVar( tree_pass, "iso" );
     MT2EstimateTree::addVar( tree_pass, "sietaieta" );
@@ -251,13 +251,13 @@ int main( int argc, char* argv[] ) {
 
     } else {
 
-      MT2Analysis<MT2EstimateTree>* dataTree = new MT2Analysis<MT2EstimateTree>( "gammaCRtree_loose", cfg.regionsSet() );
+      MT2Analysis<MT2EstimateTree>* dataTree = new MT2Analysis<MT2EstimateTree>( "gammaCRtree_loose", "13TeV_inclusive" );
       MT2EstimateTree::addVar( dataTree, "iso" );
       MT2EstimateTree::addVar( dataTree, "sietaieta" );
       MT2EstimateTree::addVar( dataTree, "ptGamma" );
       MT2EstimateTree::addVar( dataTree, "etaGamma" );
 
-      MT2Analysis<MT2EstimateTree>* dataTree_pass = new MT2Analysis<MT2EstimateTree>( "gammaCRtree", cfg.regionsSet() );
+      MT2Analysis<MT2EstimateTree>* dataTree_pass = new MT2Analysis<MT2EstimateTree>( "gammaCRtree", "13TeV_inclusive" );
       MT2EstimateTree::addVar( dataTree_pass, "iso" );
       MT2EstimateTree::addVar( dataTree_pass, "sietaieta" );
       MT2EstimateTree::addVar( dataTree_pass, "ptGamma" );
