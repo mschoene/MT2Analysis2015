@@ -43,7 +43,6 @@ class MT2EstimateTree : public MT2Estimate {
   float mt2;
   float ht;
   float met;
-  float met_phi;
 
   float deltaPhiMin;
   float diffMetMht;
@@ -59,7 +58,7 @@ class MT2EstimateTree : public MT2Estimate {
   int GenSusyMScan1;
   int GenSusyMScan2;
 
-  float dPhiMin;;
+  float dPhiMin;
 
  
   //std::map< std::string, size_t > extraVars;
