@@ -67,16 +67,15 @@ int main(int argc, char* argv[]){
   std::string samplesFileName = "../samples/samples_" + cfg.mcSamples() + ".dat"; 
   std::string samples = cfg.mcSamples();
 
-regionsSet = cfg.regionsSet();
+  regionsSet = cfg.regionsSet();
 
 
- std::string outputdir( Form("ZllPurity_%s", configFileName.c_str() ) );
- std::string outputdir_of( Form("ZllPurity_OF_%s", configFileName.c_str()) );
+  std::string outputdir( Form("ZllPurity_%s", configFileName.c_str() ) );
+  std::string outputdir_of( Form("ZllPurity_OF_%s", configFileName.c_str()) );
 
  
   std::cout << "-> Using regions: " << regionsSet << std::endl;
 
- 
 
   TH1::AddDirectory(kFALSE); // stupid ROOT memory allocation needs this
 
@@ -101,12 +100,40 @@ regionsSet = cfg.regionsSet();
   std::cout << std::endl << std::endl;
   std::cout << "-> Loading samples from file: " << samplesFileName << std::endl;
 
+
+
+  //DATA
+  std::string samplesFile_data = "../samples/samples_" + cfg.dataSamples() + ".dat";
+  std::cout << std::endl << std::endl;
+  std::cout << "-> Loading data from file: " << samplesFile_data << std::endl;
+  std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, "Double");
+
+  std::vector< MT2Analysis<MT2EstimateTree>* > dataTree;
+  std::vector< MT2Analysis<MT2EstimateTree>* > dataTree_of;
+
+  if( samples_data.size()==0 ) {
+    std::cout << std::endl;
+    std::cout << "-> WARNING!! Didn't find any data in file: " << samplesFile_data << "!" << std::endl;
+    std::cout << "-> Exiting." << std::endl;
+    std::cout << std::endl;
+  } else {
+ 
+    // = new MT2Analysis<MT2EstimateTree>( "zllCRtree", cfg.regionsSet() );   
+    for( unsigned i=0; i<samples_data.size(); ++i ) {
+      dataTree.push_back( computeYield( samples_data[i], cfg, cfg.lumi(),1 ));
+      dataTree_of.push_back( computeYield( samples_data[i], cfg, cfg.lumi(),0 ));
+    }
+  }
+  MT2Analysis<MT2EstimateTree>* EventYield_data = mergeYields( dataTree, cfg.regionsSet(), "data", 0, 10000, "" );
+  MT2Analysis<MT2EstimateTree>* EventYield_data_of = mergeYields( dataTree_of, cfg.regionsSet(), "data_of", 0, 10000, "" );
+
+
+    //MC
   std::vector<MT2Sample> fSamples = MT2Sample::loadSamples(samplesFileName, 1, 999); // not interested in signal here (see later)
   if( fSamples.size()==0 ) {
     std::cout << "There must be an error: samples is empty!" << std::endl;
     exit(1209);
   }
-
   
   std::vector< MT2Analysis<MT2EstimateTree>* > EventYield;
   for( unsigned i=0; i<fSamples.size(); ++i ) 
@@ -176,7 +203,7 @@ regionsSet = cfg.regionsSet();
   EventYield_wjets_of->addToFile( outFile_of );
   EventYield_zjets_of->addToFile( outFile_of );
   
-
+  /*
   std::vector< MT2Analysis<MT2EstimateTree>* > EventYield_fake_of;
   for( unsigned i=0; i<fSamples.size(); ++i ) 
     EventYield_fake_of.push_back( computeYield_fake( fSamples[i], cfg, cfg.lumi(), 0 ) );
@@ -187,7 +214,12 @@ regionsSet = cfg.regionsSet();
   std::string outFile_fake_of = outputdir_of + "/ZllPurityTrees_fake_of.root";
 
   EventYield_fakeData_of->writeToFile( outFile_fake_of );
- 
+  */
+  std::string outFile_data = outputdir + "/ZllPurityTrees_data.root";
+  EventYield_data->writeToFile(outFile_data);
+
+  std::string outFile_data_of = outputdir_of + "/ZllPurityTrees_data_of.root";
+  EventYield_data_of->writeToFile(outFile_data_of);
 
   return 0;
 }
@@ -426,9 +458,10 @@ MT2Analysis<MT2EstimateTree>* computeYield( const MT2Sample& sample, const MT2Co
     myTree.GetEntry(iEntry);
 
     if(!(myTree.passSelection("zll"))) continue; 
+  
     if(!(myTree.nlep==2)) continue; 
-
-    //  if(myTree.mt2>200) continue; //change once we have more data
+    
+    if(myTree.mt2>200) continue; //change once we have more data
 
     //Sample  are the Z leptons
     //and thus that if they don't have the same flavor they are rejected
@@ -463,7 +496,7 @@ MT2Analysis<MT2EstimateTree>* computeYield( const MT2Sample& sample, const MT2Co
     //    int nbjets = myTree.nBJet40;
     int nbjets = myTree.nBJet20;
 
-    Double_t weight = myTree.evt_scale1fb*lumi;
+    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi(); 
 
     MT2EstimateTree* thisEstimate = analysis->get( myTree.zll_ht, njets, nbjets, myTree.zll_met_pt, minMTBmet, myTree.zll_mt2 );
     if( thisEstimate==0 ) continue; 
