@@ -16,9 +16,6 @@
 
 
 
-float lumi = 5.; //fb-1
-
-
 
 
 
@@ -56,34 +53,26 @@ int main( int argc, char* argv[] ) {
 
 
 
-  std::string useMC = cfg.gammaTemplateType();
+  std::string templateType = cfg.gammaTemplateType();
 
   if( argc>2 ) {
 
-    useMC = std::string(argv[2]); 
+    templateType = std::string(argv[2]); 
     std::cout << std::endl;
-    std::cout << "-> Will disobey the cfg and use useMC = " << argv[2] << std::endl;
+    std::cout << "-> Will disobey the cfg and use templateType = " << argv[2] << std::endl;
     std::cout << std::endl;
 
   } 
 
-  if( useMC=="dataFR" ) useMC="DataFR"; // data Fake Removal
-  if( useMC=="dataRC" ) useMC="DataRC"; // data Random Cone
-  if( useMC=="data"   ) {
-    std::cout << std::endl;
-    std::cout << "-> Asking for 'data': will use data Random Cone. (default)" << std::endl;
-    std::cout << std::endl;
-    useMC="DataRC"; // (default for data)
-  }
 
-  if( useMC!="data" && useMC!="DataFR" && useMC!="MC" && useMC!="DataRC" ) {
-    std::cout << "ERROR! useMC may only be 'MC' or 'dataFR' or 'dataRC'" << std::endl;
+  if( templateType!="FR" && templateType!="MC" && templateType!="RC" ) {
+    std::cout << "ERROR! templateType may only be 'MC' or 'FR' or 'RC'" << std::endl;
     exit(1111);
   }
 
   std::cout << std::endl;
   std::cout << "-> Starting to build templates with:" << std::endl;
-  std::cout << "      type   : " << useMC << std::endl;
+  std::cout << "      type   : " << templateType << std::endl;
   std::cout << "      regions: " << cfg.gammaTemplateRegions() << std::endl;
   std::cout << std::endl << std::endl;
 
@@ -118,15 +107,15 @@ int main( int argc, char* argv[] ) {
   }
 
 
-  if( useMC=="DataFR" || useMC=="DataRC" ) {
+  if( templateType=="FR" || templateType=="RC" ) {
     setPoissonError( templatesFake );
     setPoissonError( templatesPrompt );
-    if( useMC=="DataFR" ) templatesPrompt->setName("templatesPromptRaw");
+    if( templateType=="FR" ) templatesPrompt->setName("templatesPromptRaw");
   }
 
 
 
-  std::string templateFileName = "gammaTemplates" + useMC;
+  std::string templateFileName = "gammaTemplates" + templateType;
   templateFileName = templateFileName + "_" + cfg.mcSamples() + "_" + cfg.gammaTemplateRegions() + ".root";
 
 
@@ -219,7 +208,7 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
       if( !sietaietaOK ) continue;
       isWorkingPrompt = myTree.gamma_mcMatchId[0]==22; // prompt = matched
 
-    } else if( cfg.gammaTemplateType()=="DataFR" ) { 
+    } else if( cfg.gammaTemplateType()=="FR" ) { 
 
       isWorkingPrompt = sietaietaOK;
 
@@ -232,7 +221,7 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
       }
 
 
-    } else if( cfg.gammaTemplateType()=="DataRC" ) { 
+    } else if( cfg.gammaTemplateType()=="RC" ) { 
 
       isWorkingPrompt = sietaietaOK;
 
@@ -252,7 +241,7 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
     //if( iso > 20. ) continue;
     ////if( iso > 10. ) continue;
 
-    Double_t weight = myTree.evt_scale1fb*lumi; 
+    Double_t weight = myTree.evt_scale1fb*cfg.lumi(); 
 
 
     if( isWorkingPrompt ) {

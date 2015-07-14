@@ -86,11 +86,7 @@ int main( int argc, char* argv[] ) {
 
   } 
 
-  if( mc_or_data=="data" ) mc_or_data="DataRC";
-  if( mc_or_data=="dataRC" ) mc_or_data="DataRC";
   if( mc_or_data=="mc" ) mc_or_data="MC";
-
-
 
 
   doAllPurityPlots( cfg, mc_or_data, "purityLoose" ); 

@@ -26,7 +26,7 @@ MT2Config::MT2Config( const std::string& name ) {
   additionalStuff_ = "";
 
   gammaTemplateRegions_ = "13TeV_inclusive"; // default
-  gammaTemplateType_    = "DataRC"; // default
+  gammaTemplateType_    = "RC"; // default
   gammaIsoCut_    = 2.5; // default
 
 
@@ -77,17 +77,9 @@ MT2Config::MT2Config( const std::string& name ) {
     exit(761);
   }
 
-  if( gammaTemplateType_=="dataFR" ) gammaTemplateType_="DataFR"; // data Fake Removal
-  if( gammaTemplateType_=="dataRC" ) gammaTemplateType_="DataRC"; // data Random Cone
-  if( gammaTemplateType_=="data"   ) {
-    std::cout << std::endl;
-    std::cout << "[MT2Config::gammaTemplateType] Asking for 'data': will use data Random Cone. (default)" << std::endl;
-    std::cout << std::endl;
-    gammaTemplateType_="DataRC"; // (default for data)
-  }
 
-  if( gammaTemplateType_!="data" && gammaTemplateType_!="DataFR" && gammaTemplateType_!="MC" && gammaTemplateType_!="DataRC" ) {
-    std::cout << "[MT2Config::gammaTemplateType] ERROR! gammaTemplateType may only be 'MC' or 'DataFR' or 'DataRC'" << std::endl;
+  if( gammaTemplateType_!="FR" && gammaTemplateType_!="MC" && gammaTemplateType_!="RC" ) {
+    std::cout << "[MT2Config::gammaTemplateType] ERROR! gammaTemplateType may only be 'MC' or 'FR' or 'RC'" << std::endl;
     exit(1111);
   }
 
