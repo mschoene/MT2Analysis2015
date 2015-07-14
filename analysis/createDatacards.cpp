@@ -118,12 +118,12 @@ int main( int argc, char* argv[] ) {
       zinv_ratio  = MT2Analysis<MT2Estimate>    ::readFromFile( dir + "/zinvFromGamma.root", "ZgammaRatio");
       purity      = MT2Analysis<MT2EstimateSyst>::readFromFile( dir + "/zinvFromGamma.root", "purity");
   
-      zll      = MT2Analysis<MT2Estimate>::readFromFile( Form("ZllGamma_Ratio_%s_13TeV_inclusive/zll_ratio.root", configFileName.c_str() ), "zllY_mt2");
-      zll_mt2  = MT2Analysis<MT2Estimate>::readFromFile( Form("ZllGamma_Ratio_%s_13TeV_inclusive/zll_ratio.root", configFileName.c_str() ), "zllG_mt2");
-      zll_yield  = MT2Analysis<MT2Estimate>::readFromFile( Form("ZllGamma_Ratio_%s_13TeV_inclusive/zll_ratio.root", configFileName.c_str() ), "zllY_mt2");
-      zll_ht  = MT2Analysis<MT2Estimate>::readFromFile( Form("ZllGamma_Ratio_%s_13TeV_inclusive/zll_ratio.root", configFileName.c_str() ), "zllG_ht");
-      zll_nJets  = MT2Analysis<MT2Estimate>::readFromFile( Form("ZllGamma_Ratio_%s_13TeV_inclusive/zll_ratio.root", configFileName.c_str()  ), "zllG_nJets");
-      zll_nBJets  = MT2Analysis<MT2Estimate>::readFromFile( Form("ZllGamma_Ratio_%s_13TeV_inclusive/zll_ratio.root", configFileName.c_str() ), "zllG_nBJets");
+      zll        = MT2Analysis<MT2Estimate>::readFromFile( dir + "/zllGammaRatio/zll_ratio.root", "zllY_mt2");
+      zll_mt2    = MT2Analysis<MT2Estimate>::readFromFile( dir + "/zllGammaRatio/zll_ratio.root", "zllG_mt2");
+      zll_yield  = MT2Analysis<MT2Estimate>::readFromFile( dir + "/zllGammaRatio/zll_ratio.root", "zllY_mt2");
+      zll_ht     = MT2Analysis<MT2Estimate>::readFromFile( dir + "/zllGammaRatio/zll_ratio.root", "zllG_ht");
+      zll_nJets  = MT2Analysis<MT2Estimate>::readFromFile( dir + "/zllGammaRatio/zll_ratio.root", "zllG_nJets");
+      zll_nBJets = MT2Analysis<MT2Estimate>::readFromFile( dir + "/zllGammaRatio/zll_ratio.root", "zllG_nBJets");
 
     }
     else{

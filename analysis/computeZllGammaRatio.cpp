@@ -25,10 +25,6 @@
 #define mt2_cxx
 #include "interface/mt2.h"
 
-//float lumi = 0.1;
-//float lumi = 4.;
-
-
 
 void drawRatios(std::string fullPath, float *binss, unsigned int size,  std::string zll_sel,  std::string gamma_sel, MT2Analysis<MT2Estimate>*  zll_ratio,  MT2Analysis<MT2EstimateTree>*  gamma, MT2Analysis<MT2EstimateTree>*  Zll, MT2Analysis<MT2Estimate>*  zll_yield, const MT2Region thisRegion, std::string cut, std::string cut_gamma, float lumi);
 
@@ -40,45 +36,41 @@ void drawCorrelation(std::string fullPath, float *binss, unsigned int size,  flo
 
 int main(int argc, char* argv[]){
 
-  std::string regionsSet = "zurich";
-  if( argc>2 ) {
-    regionsSet = std::string(argv[2]);
-  }
+  
+  std::cout << std::endl << std::endl;
+  std::cout << "------------------------------------------------------" << std::endl;
+  std::cout << "|                                                    |" << std::endl;
+  std::cout << "|                                                    |" << std::endl;
+  std::cout << "|           Running computeZinvFromGamma             |" << std::endl;
+  std::cout << "|                                                    |" << std::endl;
+  std::cout << "|                                                    |" << std::endl;
+  std::cout << "------------------------------------------------------" << std::endl;
+  std::cout << std::endl << std::endl;
 
-  std::cout << "-> Using regions: " << regionsSet << std::endl;
 
-  if( argc<2 ) {
-    std::cout << "USAGE: ./coputeZllGammaRatio [configFileName] regionSet" << std::endl;
+  if( argc!=2 ) {
+    std::cout << "USAGE: ./computeZllGammaRatio [configFileName]" << std::endl;
     std::cout << "Exiting." << std::endl;
     exit(11);
   }
+
+
   std::string configFileName(argv[1]);
-  MT2Config cfg( configFileName);
-  std::string samplesFileName = "../samples/samples_" + cfg.mcSamples() + ".dat"; 
-  std::string samples = cfg.mcSamples();
+  MT2Config cfg(configFileName);
 
-  std::string outputdir = "ZllGamma_Ratio_" + configFileName ;
-
-  double intpart;
-  double fracpart = modf(cfg.lumi(), &intpart);
-  std::string suffix;
-  if( fracpart>0. )
-    suffix = std::string( Form("_%.0fp%.0ffb", intpart, 10.*fracpart ) );
-  else
-    suffix = std::string( Form("_%.0ffb", intpart ) );
-  //  outputdir += suffix;
-  
-  system(Form("mkdir -p %s", outputdir.c_str()));
- 
+  std::string regionsSet = cfg.regionsSet();
   std::cout << "-> Using regions: " << regionsSet << std::endl;
 
+  std::string samples = cfg.mcSamples();
 
+  std::string outputdir = cfg.getEventYieldDir() + "/zllGammaRatio";
+  system(Form("mkdir -p %s", outputdir.c_str()));
+
+  std::string gammaControlRegionDir = cfg.getEventYieldDir() + "/gammaControlRegion";
+  std::string ZllDir = cfg.getEventYieldDir() + "/zllControlRegion";
 
   gStyle->SetOptTitle(0);
   MT2DrawTools::setStyle();
- 
-  std::string gammaControlRegionDir = "EventYields_" + configFileName + "_dummy/gammaControlRegion" ;
-  //  std::string gammaControlRegionDir = "GammaControlRegion_" + samples + "_" + regionsSet ;
  
   MT2Analysis<MT2EstimateTree>* gamma = MT2Analysis<MT2EstimateTree>::readFromFile(gammaControlRegionDir + "/data.root", "gammaCRtree");
   if( gamma==0 ) {
@@ -86,11 +78,7 @@ int main(int argc, char* argv[]){
     std::cout << "-> Thank you for your cooperation." << std::endl;
     exit(193);
   }
-
-
-  std::string ZllDir = "Zll_CR_" + configFileName;
-
-  //  MT2Analysis<MT2EstimateTree>* Zll = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s_%0.ffb/Zll_analyses.root", ZllDir.c_str(), lumi), "DYJets");
+ 
   MT2Analysis<MT2EstimateTree>* Zll = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s/Zll_analyses.root", ZllDir.c_str()) , "DYJets");
   if( Zll==0 ) {
     std::cout << "-> Please run computeZinvFromZll first. I need to get the Z->ll MC yields from there." << std::endl;
@@ -147,24 +135,15 @@ int main(int argc, char* argv[]){
 
 
     float bins_nJets[] = {2,4,7,12};
-    float bins_nBJets[] = {0,1,2,3,6};
-  
+    float bins_nBJets[] = {0,1,2,3,6}; 
+    float bins_mt2[] = {200,300,400,500, 600, 800, 1000, 1500 };
+    float bins_ht[] =  {450,575,1000,1500,2000};
 
     float bins_nJets2[] = {2,3,4,5,6,7,8,9,10,11,12};
     float bins_nBJets2[] = {0,1,2,3,4,5,6};
     float bins_mt22[] = {200,250,300,350, 400,450,500,550, 600,650,700, 800, 900,1000, 1100, 1200,1300, 1400, 1500, 1600,1700 };
-    float bins_ht2[] =  { 450,500,550, 600,650,700,750,  800, 900, 1000,1100, 1200, 1300,1400, 1500,1600};
-
-
-    //in MT2
-    // float bins_mt2[] = {200,300,400,500, 600,  1500 };
-
-    //  float bins_mt2[] = {200,300,400,500, 600, 800,  1500 };
-    float bins_mt2[] = {200,300,400,500, 600, 800, 1000, 1500 };
-    //in HT
-    float bins_ht[] =  {450,575,1000,1500,2000};
+    float bins_ht2[] =  {450,500,550, 600,650,700,750, 800, 900, 1000,1100, 1200, 1300,1400, 1500,1600};
  
-    //    float bins_mt2[] = {200,300,400,500, 600, 800, 1000, 1500 , 1900};
     std::string cut =  "weight*(abs(Z_mass-91.19)<10 &&nBJets<2)";
     std::string cut_corr =  "weight*(abs(Z_mass-91.19)<10 )";
     std::string cut_gamma =  "weight*(prompt==2)";
@@ -196,9 +175,6 @@ int main(int argc, char* argv[]){
 
     drawCorrelation( outputdir , bins_nJets2, size_nJets ,  bins_nBJets2, size_nBJets,  "nJets", "nBJets",  Zll, thisRegion,  cut_corr, lumi );
   
-   
-
-
   }
   
 
@@ -250,22 +226,8 @@ int main(int argc, char* argv[]){
   */
 
   return 0;
+
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
