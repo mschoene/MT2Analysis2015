@@ -57,12 +57,16 @@ int main( int argc, char* argv[] ) {
   MT2Analysis<MT2EstimateTree>* data = MT2Analysis<MT2EstimateTree>::readFromFile(dataFile, "gammaCRtree_loose");
 
 
-  drawYields( cfg, data, mc, "nVert", "nVert", "ht>900. && nJets>1", 50, 0.5, 50.5, "Number of Vertices", "" );
-//drawYields( cfg, data, mc, "mt2", "mt2", "ht>900. && nJets>1", 50, 0., 300., "M_{T2}", "GeV" );
-//drawYields( cfg, data, mc, "met", "met", "ht>900. && nJets>1", 40, 30., 430., "Missing E_{T}", "GeV" );
-//drawYields( cfg, data, mc, "ht" , "ht" , "ht>900. && nJets>1", 25, 900., 3400., "H_{T}", "GeV" );
-//drawYields( cfg, data, mc, "nJets", "nJets", "ht>900. && nJets>1", 10, 1.5, 11.5, "Number of Jets (p_{T} > 30 GeV)", "" );
-//drawYields( cfg, data, mc, "nBJets", "nBJets", "ht>900. && nJets>1", 6, -0.5, 5.5, "Number of b-Jets (p_{T} > 20 GeV)", "" );
+  drawYields( cfg, data, mc, "nVert" , "nVert", "", 50, 0.5, 50.5, "Number of Vertices", "" );
+  drawYields( cfg, data, mc, "mt2"   , "mt2", "", 15, 0., 750., "M_{T2}", "GeV" );
+  drawYields( cfg, data, mc, "met"   , "met", "", 18, 30., 930., "Missing E_{T}", "GeV" );
+  drawYields( cfg, data, mc, "ht"    , "ht" , "", 14, 450., 1150., "H_{T}", "GeV" );
+  drawYields( cfg, data, mc, "nJets" , "nJets", "", 10, 1.5, 11.5, "Number of Jets (p_{T} > 30 GeV)", "" );
+  drawYields( cfg, data, mc, "nBJets", "nBJets", "", 6, -0.5, 5.5, "Number of b-Jets (p_{T} > 20 GeV)", "" );
+  drawYields( cfg, data, mc, "ptGamma", "ptGamma", "", 14, 170., 870., "Photon p_{T}", "GeV" );
+  drawYields( cfg, data, mc, "etaGamma", "etaGamma", "", 10, -2.5, 2.5, "Photon #eta", "" );
+  drawYields( cfg, data, mc, "sietaieta", "sietaieta", "", 12, 0.0075, 0.0111, "Photon #sigma_{i#eta i#eta}", "" );
+  drawYields( cfg, data, mc, "iso", "iso", "", 25, 0., 10., "Photon Charged Isolation", "GeV" );
 
   
   return 0;
@@ -82,9 +86,9 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, MT2Analysis<
 
 
   std::vector<int> colors;
-  colors.push_back(402); 
-  colors.push_back(430); 
-  colors.push_back(418); 
+  colors.push_back(18); 
+  colors.push_back(38); 
+  colors.push_back(46); 
 
 
   std::string fullPathPlots = cfg.getEventYieldDir() + "/gammaControlRegion/plotsDataMC";
@@ -112,13 +116,13 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, MT2Analysis<
 
     TH1D* h1_mc_prompt = new TH1D( Form("%s_prompt", mc->getName().c_str()), "", nBins, xMin, xMax );
     h1_mc_prompt->Sumw2();
-    h1_mc_prompt->SetTitle("Prompt Photons");
+    h1_mc_prompt->SetTitle("Prompt");
     TH1D* h1_mc_nip = new TH1D( Form("%s_nip", mc->getName().c_str()), "", nBins, xMin, xMax );
     h1_mc_nip->Sumw2();
-    h1_mc_prompt->SetTitle("Fragm. Photons");
+    h1_mc_nip->SetTitle("Fragm.");
     TH1D* h1_mc_fake = new TH1D( Form("%s_fake", mc->getName().c_str()), "", nBins, xMin, xMax );
     h1_mc_fake->Sumw2();
-    h1_mc_prompt->SetTitle("Fakes");
+    h1_mc_fake->SetTitle("Fakes");
 
 
     TTree* tree_mc = mc->get(thisRegion)->tree;
@@ -187,11 +191,19 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, MT2Analysis<
     else
       xAxisTitle = (std::string)(Form("%s", axisName.c_str()) );
 
+
+    std::string binWidthText;
+    if( binWidth>1. )         binWidthText = (std::string)Form("%.0f", binWidth);
+    else if( binWidth>0.1 )   binWidthText = (std::string)Form("%.1f", binWidth);
+    else if( binWidth>0.01 )  binWidthText = (std::string)Form("%.2f", binWidth);
+    else if( binWidth>0.001 ) binWidthText = (std::string)Form("%.3f", binWidth);
+    else                      binWidthText = (std::string)Form("%.4f", binWidth);
+
     std::string yAxisTitle;
     if( units!="" ) 
-      yAxisTitle = (std::string)(Form("Events / (%.0f %s)", binWidth, units.c_str()));
+      yAxisTitle = (std::string)(Form("Events / (%s %s)", binWidthText.c_str(), units.c_str()));
     else
-      yAxisTitle = (std::string)(Form("Events / (%.0f)", binWidth));
+      yAxisTitle = (std::string)(Form("Events / (%s)", binWidthText.c_str()));
 
     TH2D* h2_axes = new TH2D("axes", "", 10, xMin, xMax, 10, 0., yMax );
     h2_axes->SetXTitle(xAxisTitle.c_str());
@@ -231,10 +243,10 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, MT2Analysis<
       regionText->Draw("same");
   
     }
-    
+
 
     if( shapeNorm ) {
-      TPaveText* normText = new TPaveText( 0.35, 0.8, 0.75, 0.9, "brNDC" );
+      TPaveText* normText = new TPaveText( 0.45, 0.8, 0.68, 0.9, "brNDC" );
       normText->SetFillColor(0);
       normText->SetTextSize(0.035);
       normText->AddText( "#splitline{Shape}{Norm.}" );
@@ -244,6 +256,7 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, MT2Analysis<
       normText->Draw("same");
     }
 
+    
 
     TLegend* legend = new TLegend( 0.7, 0.9-(histos_mc.size()+1)*0.06, 0.93, 0.9 );
     legend->SetTextSize(0.038);
