@@ -15,7 +15,19 @@ EXTRALIBS := -L$(ROOTSYS)/lib -L$(ROOFIT_LIBDIR)/ -L$(CMSSW_BASE)/lib/slc6_amd64
 
 
 
-all: computeLostLepton_CR fakeQCDestimate createDatacards regionEventYields gammaControlRegion makeZinvGammaTemplates computeZinvFromGamma fitPurityGamma
+all: computeLostLepton_CR fakeQCDestimate createDatacards regionEventYields gammaControlRegion makeZinvGammaTemplates computeZinvFromGamma fitPurityGamma zllControlRegion zllPurityTrees computeZllGammaRatio computeZllofBackground
+
+zllPurityTrees: zllPurityTrees.cpp MT2Region.o MT2Sample.o MT2EstimateSyst.o MT2Estimate.o MT2DrawTools.o MT2Config.o MT2EstimateTree.o
+	$(CC) -Wall $(INCLUDES) -o zllPurityTrees zllPurityTrees.cpp MT2Region.o MT2Sample.o MT2EstimateSyst.o MT2Estimate.o MT2DrawTools.o MT2Config.o MT2EstimateTree.o $(ROOTFLAG) $(EXTRALIBS) -fpermissive
+
+computeZllGammaRatio: computeZllGammaRatio.cpp MT2Region.o MT2Sample.o MT2EstimateSyst.o MT2Estimate.o MT2DrawTools.o MT2Config.o MT2EstimateTree.o
+	$(CC) -Wall $(INCLUDES) -o computeZllGammaRatio computeZllGammaRatio.cpp MT2Region.o MT2Sample.o MT2EstimateSyst.o MT2Estimate.o MT2DrawTools.o MT2Config.o MT2EstimateTree.o $(ROOTFLAG) $(EXTRALIBS) -fpermissive
+
+computeZllofBackground: computeZllofBackground.cpp MT2Region.o MT2Sample.o MT2EstimateSyst.o MT2Estimate.o MT2DrawTools.o MT2Config.o MT2EstimateTree.o
+	$(CC) -Wall $(INCLUDES) -o computeZllofBackground computeZllofBackground.cpp MT2Region.o MT2Sample.o MT2EstimateSyst.o MT2Estimate.o MT2DrawTools.o MT2Config.o MT2EstimateTree.o $(ROOTFLAG) $(EXTRALIBS) -fpermissive
+
+zllControlRegion: zllControlRegion.cpp MT2Region.o MT2Sample.o MT2EstimateSyst.o MT2Estimate.o MT2DrawTools.o MT2Config.o MT2EstimateTree.o
+	$(CC) -Wall $(INCLUDES) -o zllControlRegion zllControlRegion.cpp MT2Region.o MT2Sample.o MT2EstimateSyst.o MT2Estimate.o MT2DrawTools.o MT2Config.o MT2EstimateTree.o $(ROOTFLAG) $(EXTRALIBS) -fpermissive
 
 computeLostLepton_CR: computeLostLepton_CR.cpp MT2Region.o MT2Sample.o MT2EstimateSyst.o MT2Estimate.o MT2DrawTools.o MT2Config.o
 	$(CC) -Wall $(INCLUDES) -o computeLostLepton_CR computeLostLepton_CR.cpp MT2Region.o MT2Sample.o MT2EstimateSyst.o MT2Estimate.o MT2DrawTools.o MT2Config.o $(ROOTFLAG) $(EXTRALIBS) -fpermissive

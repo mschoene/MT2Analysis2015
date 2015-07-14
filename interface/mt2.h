@@ -1328,8 +1328,13 @@ void MT2Tree::Show(Long64_t entry)
 
 Bool_t MT2Tree::passSelection(TString sel)
 {
+  if(sel=="zll"){
+    return passBaseline(sel);
+  }else{
   return passBaseline(sel) && passLeptonVeto() && passIsoTrackVeto();
+  }
 }
+
 
 Bool_t MT2Tree::passLeptonVeto(){
   return nMuons10==0 && nElectrons10==0;
@@ -1339,21 +1344,32 @@ Bool_t MT2Tree::passIsoTrackVeto(){
   return nPFLep5LowMT==0 && nPFHad10LowMT==0;
 }
 
+
+
 Bool_t MT2Tree::passBaseline(TString sel)
 {
   if (sel=="gamma")
     return nVert > 0 && 
-      //gamma_nJet30 >= 2 && 
+      // gamma_nJet30 >= 2 && 
       gamma_deltaPhiMin > 0.3 && 
       gamma_diffMetMht < 0.5*gamma_met_pt;
+  else if (sel=="zll")
+    return nVert > 0 &&
+      // nJet30 >= 2 && 
+      zll_deltaPhiMin > 0.3 && 
+      zll_diffMetMht < 0.5*zll_met_pt && 
+      nlep > 1 ;
   else
     return nVert > 0 && 
       //(nJet30 >= 2 || sel=="monojet") &&
       deltaPhiMin > 0.3 && 
       diffMetMht < 0.5*met_pt;
   
-    return kFALSE;
+  return kFALSE;
 }
+
+
+
 
 //Bool_t MT2Tree::passBaseline(TString sel)
 //{
