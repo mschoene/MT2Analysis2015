@@ -583,8 +583,7 @@ int main( int argc, char* argv[] ) {
 
   } // for regions
 
-  std::cout << "EMPTY ZLL BINS AMOUNT TOOO  " << emptyZllBins << std::endl;
-
+ 
 
 
   // now create datacards for all signals
