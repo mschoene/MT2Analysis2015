@@ -74,19 +74,19 @@ int main( int argc, char* argv[] ) {
   MT2Config cfg(configFileName);
 
 
-  std::string mc_or_data = cfg.gammaTemplateType();
+  std::string mc_or_data_templates = cfg.gammaTemplateType();
   if( argc>2 ) {
 
-    mc_or_data = std::string(argv[2]); 
+    mc_or_data_templates = std::string(argv[2]); 
     std::cout << std::endl;
-    std::cout << "-> Will disobey the cfg and use mc_or_data = " << argv[2] << std::endl;
+    std::cout << "-> Will disobey the cfg and use mc_or_data_templates = " << argv[2] << std::endl;
     std::cout << std::endl;
 
   } 
 
-  if( mc_or_data=="data" ) mc_or_data="DataRC";
-  if( mc_or_data=="dataRC" ) mc_or_data="DataRC";
-  if( mc_or_data=="mc" ) mc_or_data="MC";
+  if( mc_or_data_templates=="data" ) mc_or_data_templates="DataRC";
+  if( mc_or_data_templates=="dataRC" ) mc_or_data_templates="DataRC";
+  if( mc_or_data_templates=="mc" ) mc_or_data_templates="MC";
 
 
 
@@ -98,8 +98,8 @@ int main( int argc, char* argv[] ) {
   std::string gammaCRdir = cfg.getEventYieldDir() + "/gammaControlRegion"; //(Form("GammaControlRegion_%s_%s_%.0ffb", samples.c_str(), regionsSet.c_str(), lumi ));
   MT2Analysis<MT2EstimateZinvGamma>* gammaJet_data = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( gammaCRdir + "/data.root", "gammaCR_loose" );
 
-  MT2Analysis<MT2EstimateZinvGamma>* templates_prompt = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( "gammaTemplates" + mc_or_data + "_" + cfg.mcSamples() + "_" + cfg.gammaTemplateRegions() + ".root", "templatesPrompt" );
-  MT2Analysis<MT2EstimateZinvGamma>* templates_fake   = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( "gammaTemplates" + mc_or_data + "_" + cfg.mcSamples() + "_" + cfg.gammaTemplateRegions() + ".root", "templatesFake" );
+  MT2Analysis<MT2EstimateZinvGamma>* templates_prompt = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( "gammaTemplates" + mc_or_data_templates + "_" + cfg.mcSamples() + "_" + cfg.gammaTemplateRegions() + ".root", "templatesPrompt" );
+  MT2Analysis<MT2EstimateZinvGamma>* templates_fake   = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( "gammaTemplates" + mc_or_data_templates + "_" + cfg.mcSamples() + "_" + cfg.gammaTemplateRegions() + ".root", "templatesFake" );
 
   MT2EstimateZinvGamma* templatePrompt, *templateFake;
   if( cfg.gammaTemplateRegions()=="13TeV_inclusive" ) { // just get them once
@@ -107,7 +107,7 @@ int main( int argc, char* argv[] ) {
     templateFake   = templates_fake  ->get( MT2Region("HT450toInf_j2toInf_b0toInf") );
   }
 
-  std::string outputdir = gammaCRdir + "/PurityFits" + mc_or_data;
+  std::string outputdir = gammaCRdir + "/PurityFits" + mc_or_data_templates;
   system( Form( "mkdir -p %s/singleFits", outputdir.c_str()) );
 
   std::set<MT2Region> regions = gammaJet_data->getRegions();
