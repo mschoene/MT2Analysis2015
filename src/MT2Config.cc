@@ -27,6 +27,7 @@ MT2Config::MT2Config( const std::string& name ) {
 
   gammaTemplateRegions_ = "13TeV_inclusive"; // default
   gammaTemplateType_    = "DataRC"; // default
+  gammaIsoCut_    = 2.5; // default
 
 
   std::ifstream IN(configFileName.c_str());
@@ -62,6 +63,8 @@ MT2Config::MT2Config( const std::string& name ) {
       gammaTemplateRegions_ = std::string(StringValue);
     else if( this_name=="gammaTemplateType" )
       gammaTemplateType_ = std::string(StringValue);
+    else if( this_name=="gammaIsoCut" )
+      gammaIsoCut_ = atof(StringValue);
 
   } // while getline
 
@@ -142,6 +145,7 @@ void MT2Config::saveAs( const std::string& filename ) const {
 
   ofs << "gammaTemplateRegions " << gammaTemplateRegions_ << std::endl;
   ofs << "gammaTemplateType " << gammaTemplateType_ << std::endl;
+  ofs << "gammaIsoCut " << gammaIsoCut_ << std::endl;
 
   std::cout << "[MT2Config] Saved config file as '" << filename << "'." << std::endl;
 
