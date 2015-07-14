@@ -65,8 +65,8 @@ int main( int argc, char* argv[] ) {
   std::string dir = cfg.getEventYieldDir();
   std::string mc_fileName = dir + "/analyses.root";
 
-  std::string samplesName = "PHYS14_v5_skimprune";
-  std::string regionsName = "zurich";
+  //  std::string samplesName = "PHYS14_v5_skimprune";
+  //  std::string regionsName = "zurich";
 
 
   bool useMC_qcd  = true;
@@ -122,22 +122,21 @@ int main( int argc, char* argv[] ) {
   else {
     zinvCR      = MT2Analysis<MT2Estimate>    ::readFromFile( dir + "/gammaControlRegion/data.root", "gammaCR");
     if( use_purity ){
-      zinvCR      = MT2Analysis<MT2Estimate>    ::readFromFile( Form("GammaControlRegion_%s_%s_%.0ffb/data.root", samplesName.c_str(), regionsName.c_str(), cfg.lumi()), "gammaCR");
-      zinv        = MT2Analysis<MT2Estimate>    ::readFromFile( Form("ZinvEstimateFromGamma_%s_%s_%.0ffb_type1/MT2ZinvEstimate.root", samplesName.c_str(), regionsName.c_str(), cfg.lumi()), "ZinvEstimate");
-      zinv_ratio  = MT2Analysis<MT2Estimate>    ::readFromFile( Form("ZinvEstimateFromGamma_%s_%s_%.0ffb_type1/MT2ZinvEstimate.root", samplesName.c_str(), regionsName.c_str(), cfg.lumi()), "ZgammaRatio");
-      purity      = MT2Analysis<MT2EstimateSyst>::readFromFile( Form("ZinvEstimateFromGamma_%s_%s_%.0ffb_type1/MT2ZinvEstimate.root", samplesName.c_str(), regionsName.c_str(), cfg.lumi()), "purity");
- 
-      zll      = MT2Analysis<MT2Estimate>::readFromFile( Form("ZllGamma_Ratio_%s_%.0ffb/zll_ratio.root", samplesName.c_str(), cfg.lumi()), "zllY_mt2");
-      zll_mt2  = MT2Analysis<MT2Estimate>    ::readFromFile( Form("ZllGamma_Ratio_%s_%.0ffb/zll_ratio.root", samplesName.c_str(), cfg.lumi()), "zllG_mt2");
-      zll_yield  = MT2Analysis<MT2Estimate>    ::readFromFile( Form("ZllGamma_Ratio_%s_%.0ffb/zll_ratio.root", samplesName.c_str(), cfg.lumi()), "zllY_mt2");
-      zll_ht  = MT2Analysis<MT2Estimate>    ::readFromFile( Form("ZllGamma_Ratio_%s_%.0ffb/zll_ratio.root", samplesName.c_str(), cfg.lumi()), "zllG_ht");
-      zll_nJets  = MT2Analysis<MT2Estimate>    ::readFromFile( Form("ZllGamma_Ratio_%s_%.0ffb/zll_ratio.root", samplesName.c_str(), cfg.lumi()), "zllG_nJets");
-      zll_nBJets  = MT2Analysis<MT2Estimate>    ::readFromFile( Form("ZllGamma_Ratio_%s_%.0ffb/zll_ratio.root", samplesName.c_str(), cfg.lumi()), "zllG_nBJets");
+      zinv        = MT2Analysis<MT2Estimate>    ::readFromFile( dir + "/zinvFromGamma.root", "ZinvEstimate");
+      zinv_ratio  = MT2Analysis<MT2Estimate>    ::readFromFile( dir + "/zinvFromGamma.root", "ZgammaRatio");
+      purity      = MT2Analysis<MT2EstimateSyst>::readFromFile( dir + "/zinvFromGamma.root", "purity");
+  
+      zll      = MT2Analysis<MT2Estimate>::readFromFile( Form("ZllGamma_Ratio_%s_13TeV_inclusive/zll_ratio.root", configFileName.c_str() ), "zllY_mt2");
+      zll_mt2  = MT2Analysis<MT2Estimate>::readFromFile( Form("ZllGamma_Ratio_%s_13TeV_inclusive/zll_ratio.root", configFileName.c_str() ), "zllG_mt2");
+      zll_yield  = MT2Analysis<MT2Estimate>::readFromFile( Form("ZllGamma_Ratio_%s_13TeV_inclusive/zll_ratio.root", configFileName.c_str() ), "zllY_mt2");
+      zll_ht  = MT2Analysis<MT2Estimate>::readFromFile( Form("ZllGamma_Ratio_%s_13TeV_inclusive/zll_ratio.root", configFileName.c_str() ), "zllG_ht");
+      zll_nJets  = MT2Analysis<MT2Estimate>::readFromFile( Form("ZllGamma_Ratio_%s_13TeV_inclusive/zll_ratio.root", configFileName.c_str()  ), "zllG_nJets");
+      zll_nBJets  = MT2Analysis<MT2Estimate>::readFromFile( Form("ZllGamma_Ratio_%s_13TeV_inclusive/zll_ratio.root", configFileName.c_str() ), "zllG_nBJets");
 
    }   else{
       zinv        = MT2Analysis<MT2Estimate>    ::readFromFile( dir + "/zinvFromGamma_noPurity.root", "ZinvEstimate");
       zinv_ratio  = MT2Analysis<MT2Estimate>    ::readFromFile( dir + "/zinvFromGamma_noPurity.root", "ZgammaRatio");
-    }
+   }
   }
   zinv->setName("zinv");
   zinv->addToFile( mc_fileName, true );
