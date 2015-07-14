@@ -19,7 +19,7 @@
 bool shapeNorm = true;
 
 
-void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, std::vector<MT2Analysis<MT2EstimateTree>* >  bgYields, const std::string& saveName, const std::string& varName, const std::string& selection, int nBins, float xMin, float xMax, std::string axisName="", const std::string& units="" );
+void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, MT2Analysis<MT2EstimateTree>* mc, const std::string& saveName, const std::string& varName, const std::string& selection, int nBins, float xMin, float xMax, std::string axisName="", const std::string& units="" );
 
 
 int main( int argc, char* argv[] ) {
@@ -50,34 +50,23 @@ int main( int argc, char* argv[] ) {
 
 
 
-  std::string mcFile = cfg.getEventYieldDir() + "/analyses.root";
-  std::string dataFile = cfg.getEventYieldDir() + "/analyses.root";
+  std::string mcFile = cfg.getEventYieldDir() + "/gammaControlRegion/mc.root";
+  std::string dataFile = cfg.getEventYieldDir() + "/gammaControlRegion/data.root";
 
-  MT2Analysis<MT2EstimateTree>* zjets = MT2Analysis<MT2EstimateTree>::readFromFile(mcFile, "ZJets");
-  zjets->setFullName("Z+Jets");
-  MT2Analysis<MT2EstimateTree>* wjets = MT2Analysis<MT2EstimateTree>::readFromFile(mcFile, "WJets");
-  wjets->setFullName("W+Jets");
-  MT2Analysis<MT2EstimateTree>* top   = MT2Analysis<MT2EstimateTree>::readFromFile(mcFile, "Top");
-  top->setFullName("Top");
-  MT2Analysis<MT2EstimateTree>* qcd   = MT2Analysis<MT2EstimateTree>::readFromFile(mcFile, "QCD");
-  qcd->setFullName("QCD");
-
-  MT2Analysis<MT2EstimateTree>* data = MT2Analysis<MT2EstimateTree>::readFromFile(dataFile, "data");
-  data->setFullName("Data");
-
-  std::vector< MT2Analysis<MT2EstimateTree>* > mc;
-  mc.push_back(qcd);
-  mc.push_back(wjets);
-  mc.push_back(zjets);
-  mc.push_back(top);
+  MT2Analysis<MT2EstimateTree>* mc   = MT2Analysis<MT2EstimateTree>::readFromFile(mcFile, "gammaCRtree_loose");
+  MT2Analysis<MT2EstimateTree>* data = MT2Analysis<MT2EstimateTree>::readFromFile(dataFile, "gammaCRtree_loose");
 
 
-  drawYields( cfg, data, mc, "nVert", "nVert", "ht>900. && nJets>1", 50, 0.5, 50.5, "Number of Vertices", "" );
-  drawYields( cfg, data, mc, "mt2", "mt2", "ht>900. && nJets>1", 50, 0., 300., "M_{T2}", "GeV" );
-  drawYields( cfg, data, mc, "met", "met", "ht>900. && nJets>1", 40, 30., 430., "Missing E_{T}", "GeV" );
-  drawYields( cfg, data, mc, "ht" , "ht" , "ht>900. && nJets>1", 25, 900., 3400., "H_{T}", "GeV" );
-  drawYields( cfg, data, mc, "nJets", "nJets", "ht>900. && nJets>1", 10, 1.5, 11.5, "Number of Jets (p_{T} > 30 GeV)", "" );
-  drawYields( cfg, data, mc, "nBJets", "nBJets", "ht>900. && nJets>1", 6, -0.5, 5.5, "Number of b-Jets (p_{T} > 20 GeV)", "" );
+  drawYields( cfg, data, mc, "nVert" , "nVert", "", 50, 0.5, 50.5, "Number of Vertices", "" );
+  drawYields( cfg, data, mc, "mt2"   , "mt2", "", 15, 0., 750., "M_{T2}", "GeV" );
+  drawYields( cfg, data, mc, "met"   , "met", "", 18, 30., 930., "Missing E_{T}", "GeV" );
+  drawYields( cfg, data, mc, "ht"    , "ht" , "", 14, 450., 1150., "H_{T}", "GeV" );
+  drawYields( cfg, data, mc, "nJets" , "nJets", "", 10, 1.5, 11.5, "Number of Jets (p_{T} > 30 GeV)", "" );
+  drawYields( cfg, data, mc, "nBJets", "nBJets", "", 6, -0.5, 5.5, "Number of b-Jets (p_{T} > 20 GeV)", "" );
+  drawYields( cfg, data, mc, "ptGamma", "ptGamma", "", 14, 170., 870., "Photon p_{T}", "GeV" );
+  drawYields( cfg, data, mc, "etaGamma", "etaGamma", "", 10, -2.5, 2.5, "Photon #eta", "" );
+  drawYields( cfg, data, mc, "sietaieta", "sietaieta", "", 12, 0.0075, 0.0111, "Photon #sigma_{i#eta i#eta}", "" );
+  drawYields( cfg, data, mc, "iso", "iso", "", 25, 0., 10., "Photon Charged Isolation", "GeV" );
 
   
   return 0;
@@ -86,7 +75,9 @@ int main( int argc, char* argv[] ) {
 
 
 
-void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, std::vector<MT2Analysis<MT2EstimateTree>* >  bgYields, const std::string& saveName, const std::string& varName, const std::string& selection, int nBins, float xMin, float xMax, std::string axisName, const std::string& units ) {
+void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, MT2Analysis<MT2EstimateTree>*  mc, const std::string& saveName, const std::string& varName, const std::string& selection, int nBins, float xMin, float xMax, std::string axisName, const std::string& units ) {
+
+
 
 
   float binWidth = (xMax-xMin)/nBins;
@@ -95,19 +86,12 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, std::vector<
 
 
   std::vector<int> colors;
-  if( bgYields.size()==3 ) { // estimates
-    colors.push_back(402); 
-    colors.push_back(430); 
-    colors.push_back(418); 
-  } else { // mc
-    colors.push_back(401); // qcd
-    colors.push_back(417); // w+jets
-    colors.push_back(419); // z+jets
-    colors.push_back(855); // top
-    //colors.push_back(); // other
-  }
+  colors.push_back(18); 
+  colors.push_back(38); 
+  colors.push_back(46); 
 
-  std::string fullPathPlots = cfg.getEventYieldDir() + "/plotsDataMC";
+
+  std::string fullPathPlots = cfg.getEventYieldDir() + "/gammaControlRegion/plotsDataMC";
   if( shapeNorm ) fullPathPlots += "_shape";
   system( Form("mkdir -p %s", fullPathPlots.c_str()) );
 
@@ -129,18 +113,36 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, std::vector<
     gr_data->SetMarkerSize(1.2);
 
 
-    std::vector< TH1D* > histos_mc;
-    for( unsigned i=0; i<bgYields.size(); ++i ) { 
-      TTree* tree_mc = (bgYields[i]->get(thisRegion)->tree);
-      std::string thisName = "h1_" + bgYields[i]->getName();
-      TH1D* h1_mc = new TH1D( thisName.c_str(), "", nBins, xMin, xMax );
-      h1_mc->Sumw2();
-      if( selection!="" )
-        tree_mc->Project( thisName.c_str(), varName.c_str(), Form("weight*(%s)", selection.c_str()) );
-      else
-        tree_mc->Project( thisName.c_str(), varName.c_str(), "weight" );
-      histos_mc.push_back(h1_mc);
+
+    TH1D* h1_mc_prompt = new TH1D( Form("%s_prompt", mc->getName().c_str()), "", nBins, xMin, xMax );
+    h1_mc_prompt->Sumw2();
+    h1_mc_prompt->SetTitle("Prompt");
+    TH1D* h1_mc_nip = new TH1D( Form("%s_nip", mc->getName().c_str()), "", nBins, xMin, xMax );
+    h1_mc_nip->Sumw2();
+    h1_mc_nip->SetTitle("Fragm.");
+    TH1D* h1_mc_fake = new TH1D( Form("%s_fake", mc->getName().c_str()), "", nBins, xMin, xMax );
+    h1_mc_fake->Sumw2();
+    h1_mc_fake->SetTitle("Fakes");
+
+
+    TTree* tree_mc = mc->get(thisRegion)->tree;
+
+    if( selection!="" ) {
+      tree_mc->Project( h1_mc_prompt->GetName(), varName.c_str(), Form("weight*(%s && prompt==2)", selection.c_str()) );
+      tree_mc->Project( h1_mc_nip   ->GetName(), varName.c_str(), Form("weight*(%s && prompt==1)", selection.c_str()) );
+      tree_mc->Project( h1_mc_fake  ->GetName(), varName.c_str(), Form("weight*(%s && prompt==0)", selection.c_str()) );
+    } else {
+      tree_mc->Project( h1_mc_prompt->GetName(), varName.c_str(), "weight*(prompt==2)" );
+      tree_mc->Project( h1_mc_nip   ->GetName(), varName.c_str(), "weight*(prompt==1)" );
+      tree_mc->Project( h1_mc_fake  ->GetName(), varName.c_str(), "weight*(prompt==0)" );
     }
+
+
+    std::vector< TH1D* > histos_mc;
+    histos_mc.push_back( h1_mc_prompt );
+    histos_mc.push_back( h1_mc_nip );
+    histos_mc.push_back( h1_mc_fake );
+    
 
     TH1::AddDirectory(kFALSE); // stupid ROOT memory allocation needs this
 
@@ -158,7 +160,7 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, std::vector<
 
     THStack bgStack("bgStack", "");
     for( unsigned i=0; i<histos_mc.size(); ++i ) { 
-      int index = bgYields.size() - i - 1;
+      int index = histos_mc.size() - i - 1;
       histos_mc[index]->SetFillColor( colors[index] );
       histos_mc[index]->SetLineColor( kBlack );
       if( shapeNorm )
@@ -189,11 +191,19 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, std::vector<
     else
       xAxisTitle = (std::string)(Form("%s", axisName.c_str()) );
 
+
+    std::string binWidthText;
+    if( binWidth>1. )         binWidthText = (std::string)Form("%.0f", binWidth);
+    else if( binWidth>0.1 )   binWidthText = (std::string)Form("%.1f", binWidth);
+    else if( binWidth>0.01 )  binWidthText = (std::string)Form("%.2f", binWidth);
+    else if( binWidth>0.001 ) binWidthText = (std::string)Form("%.3f", binWidth);
+    else                      binWidthText = (std::string)Form("%.4f", binWidth);
+
     std::string yAxisTitle;
     if( units!="" ) 
-      yAxisTitle = (std::string)(Form("Events / (%.0f %s)", binWidth, units.c_str()));
+      yAxisTitle = (std::string)(Form("Events / (%s %s)", binWidthText.c_str(), units.c_str()));
     else
-      yAxisTitle = (std::string)(Form("Events / (%.0f)", binWidth));
+      yAxisTitle = (std::string)(Form("Events / (%s)", binWidthText.c_str()));
 
     TH2D* h2_axes = new TH2D("axes", "", 10, xMin, xMax, 10, 0., yMax );
     h2_axes->SetXTitle(xAxisTitle.c_str());
@@ -226,17 +236,17 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, std::vector<
       regionText->SetTextAlign(11);
       regionText->AddText( niceNames[i].c_str() );
 
-      //c1->cd();
-      //regionText->Draw("same");
+      c1->cd();
+      regionText->Draw("same");
   
-      //c1_log->cd();
-      //regionText->Draw("same");
+      c1_log->cd();
+      regionText->Draw("same");
   
     }
-    
+
 
     if( shapeNorm ) {
-      TPaveText* normText = new TPaveText( 0.35, 0.8, 0.75, 0.9, "brNDC" );
+      TPaveText* normText = new TPaveText( 0.45, 0.8, 0.68, 0.9, "brNDC" );
       normText->SetFillColor(0);
       normText->SetTextSize(0.035);
       normText->AddText( "#splitline{Shape}{Norm.}" );
@@ -246,14 +256,15 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, std::vector<
       normText->Draw("same");
     }
 
+    
 
-    TLegend* legend = new TLegend( 0.7, 0.9-(bgYields.size()+1)*0.06, 0.93, 0.9 );
+    TLegend* legend = new TLegend( 0.7, 0.9-(histos_mc.size()+1)*0.06, 0.93, 0.9 );
     legend->SetTextSize(0.038);
     legend->SetTextFont(42);
     legend->SetFillColor(0);
     legend->AddEntry( gr_data, "Data", "P" );
     for( unsigned i=0; i<histos_mc.size(); ++i ) {  
-      legend->AddEntry( histos_mc[i], bgYields[i]->getFullName().c_str(), "F" );
+      legend->AddEntry( histos_mc[i], histos_mc[i]->GetTitle(), "F" );
     }
 
 
