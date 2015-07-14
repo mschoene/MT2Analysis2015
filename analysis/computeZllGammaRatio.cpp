@@ -80,7 +80,7 @@ int main(int argc, char* argv[]){
   std::string gammaControlRegionDir = "EventYields_" + configFileName + "_dummy/gammaControlRegion" ;
   //  std::string gammaControlRegionDir = "GammaControlRegion_" + samples + "_" + regionsSet ;
  
-  MT2Analysis<MT2EstimateTree>* gamma = MT2Analysis<MT2EstimateTree>::readFromFile(gammaControlRegionDir + "/data.root", "gammaCRtree_pass");
+  MT2Analysis<MT2EstimateTree>* gamma = MT2Analysis<MT2EstimateTree>::readFromFile(gammaControlRegionDir + "/data.root", "gammaCRtree");
   if( gamma==0 ) {
     std::cout << "-> Please run gammaControlRegion first. I need to get the gammaCR yields from there." << std::endl;
     std::cout << "-> Thank you for your cooperation." << std::endl;
