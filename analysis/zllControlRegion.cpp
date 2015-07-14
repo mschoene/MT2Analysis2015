@@ -25,12 +25,6 @@
 #include "TLorentzVector.h"
 
 
-
-
-//float lumi = 0.1;
-//float lumi = 1.;
-
-
 int round(float d) {
   return (int)(floor(d + 0.5));
 }
@@ -44,50 +38,53 @@ void roundLikeData( MT2Analysis<MT2Estimate>* data );
 int main(int argc, char* argv[]) {
 
 
-   std::string regionsSet = "zurich";
-  // std::string regionsSet = "13TeV_inclusive";
- if( argc>2 ) {
-    regionsSet = std::string(argv[2]);
-  }
+  std::cout << "------------------------------------------------------" << std::endl;
+  std::cout << "|                                                    |" << std::endl;
+  std::cout << "|                                                    |" << std::endl;
+  std::cout << "|            Running gammaControlRegion              |" << std::endl;
+  std::cout << "|                                                    |" << std::endl;
+  std::cout << "|                                                    |" << std::endl;
+  std::cout << "------------------------------------------------------" << std::endl;
+  std::cout << std::endl << std::endl;
 
-  std::cout << "-> Using regions: " << regionsSet << std::endl;
 
-  
   if( argc<2 ) {
-    std::cout << "USAGE: ./regionEventYields [configFileName] regionSet" << std::endl;
+    std::cout << "USAGE: ./zllControlRegion [configFileName] [data/MC]" << std::endl;
     std::cout << "Exiting." << std::endl;
     exit(11);
   }
-  
+
 
   std::string configFileName(argv[1]);
+  MT2Config cfg(configFileName);
+
+  bool onlyData = false;
+  //  bool onlyMC   = false;
+  bool onlyMC   = true;
+  if( argc > 2 ) {
+    std::string dataMC(argv[2]);
+    if( dataMC=="data" ) onlyData = true;
+    else if( dataMC=="MC" ) onlyMC = true;
+    else {
+      std::cout << "-> You passed a second argument that isn't 'data' nor 'MC', so I don't know what to do about it." << std::endl;
+    }
+  }
 
 
-  MT2Config cfg( configFileName);
+  TH1::AddDirectory(kFALSE); //stupid ROOT memory allocation needs this
+
+  std::string outputdir = cfg.getEventYieldDir() + "/zllControlRegion";
+  system(Form("mkdir -p %s", outputdir.c_str()));
 
 
-  TH1::AddDirectory(kFALSE); // stupid ROOT memory allocation needs this
+  std::string regionsSet = "13TeV_inclusive";
+  std::cout << "-> Using regions: " << regionsSet << std::endl;
 
+  
   std::string samplesFileName = "../samples/samples_" + cfg.mcSamples() + ".dat";
-  //  std::string samplesFileName = "../samples/samples_samples_PHYS14_skimprune.dat";
 
   std::cout << std::endl << std::endl;
   std::cout << "-> Loading samples from file: " << samplesFileName << std::endl;
-
-
-  std::string outputdir = "Zll_CR_" + configFileName;
-    double intpart;
-    double fracpart = modf(cfg.lumi(), &intpart);
-    std::string suffix;
-    if( fracpart>0. )
-      suffix = std::string( Form("_%.0fp%.0ffb", intpart, 10.*fracpart ) );
-    else
-      suffix = std::string( Form("_%.0ffb", intpart ) );
-    //   outputdir += suffix;
-  
-  system(Form("mkdir -p %s", outputdir.c_str()));
- 
-
 
 
   //Zll
@@ -107,15 +104,12 @@ int main(int argc, char* argv[]) {
   MT2Analysis<MT2EstimateTree>* EventYield_zll = mergeYields( EventYield, cfg.regionsSet(), "DYJets", 700, 799, "DYJets" );
 
 
-
-  MT2Analysis<MT2EstimateTree>* Zinv = MT2Analysis<MT2EstimateTree>::readFromFile(Form("EventYields_%s_dummy/analyses.root",  configFileName.c_str()), "ZJets");
-  //  MT2Analysis<MT2EstimateTree>* Zinv = MT2Analysis<MT2EstimateTree>::readFromFile(Form("EventYields_mc_PHYS14_v5_dummy%s/analyses.root", suffix.c_str()), "ZJets");
+  MT2Analysis<MT2EstimateTree>* Zinv = MT2Analysis<MT2EstimateTree>::readFromFile(cfg.getEventYieldDir() + "/analyses.root", "ZJets");
   if( Zinv==0 ) {
     std::cout << "-> Please run regionEventYields on MC first. I need to get the Z->vv MC yields from there." << std::endl;
     std::cout << "-> Thank you for your cooperation." << std::endl;
     exit(197);
   }
-
 
   MT2Analysis<MT2Estimate>* alpha = new MT2Analysis<MT2Estimate>( "alpha", regionsSet );
 
@@ -136,22 +130,9 @@ int main(int argc, char* argv[]) {
   roundLikeData(yield_zll); 
   yield_zll->addToFile(outputdir+"/data.root");
 
-
   return 0;
+
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 void roundLikeData( MT2Analysis<MT2Estimate>* data ) {
@@ -168,19 +149,6 @@ void roundLikeData( MT2Analysis<MT2Estimate>* data ) {
   } // for regions
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 MT2Analysis<MT2EstimateTree>* computeYield( const MT2Sample& sample, const MT2Config& cfg, float lumi ) {
 
@@ -227,18 +195,6 @@ MT2Analysis<MT2EstimateTree>* computeYield( const MT2Sample& sample, const MT2Co
     myTree.GetEntry(iEntry);
 
     if( !(myTree.passSelection("zll")) ) continue; 
-    /*
-      if(!( myTree.nVert > 0 )) continue;
-      //  if(!( myTree.nJet40 >= 2 )) continue;
-      if(!( myTree.zll_deltaPhiMin > 0.3 )) continue;
-      if(!( myTree.zll_diffMetMht < 0.5*myTree.zll_met_pt )) continue;
-      //  if(!( myTree.jet1_pt>40. )) continue;
-      //   if(!( myTree.jet2_pt>40. )) continue;
-      if(!( myTree.nlep>1 )) continue; 
-
-    */
-    //  if(!(myTree.nPFLep5LowMT==0 && myTree.nPFHad10LowMT==0)) continue;
-
 
     if(!( myTree.nlep==2 )) continue; 
 
@@ -293,8 +249,6 @@ MT2Analysis<MT2EstimateTree>* computeYield( const MT2Sample& sample, const MT2Co
   
   } // for entries
 
-  //ofs.close();
-
   analysis->finalize();
   
   delete tree;
@@ -305,41 +259,6 @@ MT2Analysis<MT2EstimateTree>* computeYield( const MT2Sample& sample, const MT2Co
   return analysis;
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 MT2Analysis<MT2EstimateTree>* mergeYields( std::vector<MT2Analysis<MT2EstimateTree> *> EventYield, const std::string& regionsSet, const std::string& name, int id_min, int id_max, const std::string& legendName ) {
 
