@@ -104,7 +104,7 @@ int main( int argc, char* argv[] ) {
   (*ZgammaRatio) = (*ZgammaRatioMC);
   MT2Analysis<MT2EstimateSyst>* purity;
   if( type > 0 ) {
-    purity = MT2Analysis<MT2EstimateSyst>::readFromFile( gammaControlRegionDir + "/PurityFitsDataRC/purityFit.root", "purity" );
+    purity = MT2Analysis<MT2EstimateSyst>::readFromFile( gammaControlRegionDir + "/PurityFitsRC/purityFit.root", "purity" );
   }
 
 

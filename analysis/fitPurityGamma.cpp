@@ -84,8 +84,6 @@ int main( int argc, char* argv[] ) {
 
   } 
 
-  if( mc_or_data_templates=="data" ) mc_or_data_templates="DataRC";
-  if( mc_or_data_templates=="dataRC" ) mc_or_data_templates="DataRC";
   if( mc_or_data_templates=="mc" ) mc_or_data_templates="MC";
 
 

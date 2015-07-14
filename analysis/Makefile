@@ -88,6 +88,9 @@ drawFirstData: drawFirstData.cpp MT2Region.o MT2Estimate.o MT2DrawTools.o MT2Est
 drawDataMC: drawDataMC.cpp MT2Region.o MT2Estimate.o MT2DrawTools.o MT2EstimateTree.o MT2Config.o
 	$(CC) -Wall $(INCLUDES) -o drawDataMC drawDataMC.cpp MT2Region.o MT2Estimate.o MT2DrawTools.o MT2EstimateTree.o MT2Config.o  $(ROOTFLAG) $(EXTRALIBS)
 
+drawGammaHLTTurnOn: drawGammaHLTTurnOn.cpp MT2Region.o MT2Estimate.o MT2DrawTools.o MT2EstimateTree.o MT2Config.o MT2Sample.o
+	$(CC) -Wall $(INCLUDES) -o drawGammaHLTTurnOn drawGammaHLTTurnOn.cpp MT2Region.o MT2Estimate.o MT2DrawTools.o MT2EstimateTree.o MT2Config.o MT2Sample.o $(ROOTFLAG) $(EXTRALIBS)
+
 drawZinvGamma: drawZinvGamma.cpp MT2Region.o MT2Estimate.o MT2DrawTools.o MT2EstimateTree.o
 	$(CC) -Wall $(INCLUDES) -o drawZinvGamma drawZinvGamma.cpp MT2Region.o MT2Estimate.o MT2DrawTools.o MT2EstimateTree.o  $(ROOTFLAG) $(EXTRALIBS)
 
