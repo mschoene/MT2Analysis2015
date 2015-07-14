@@ -176,6 +176,8 @@ int main( int argc, char* argv[] ) {
     nip_pass     ->writeToFile( mcFile );
     f            ->writeToFile( mcFile );
     f_pass       ->writeToFile( mcFile );
+    tree         ->writeToFile( mcFile );
+    tree_pass    ->writeToFile( mcFile );
 
 
 
