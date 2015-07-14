@@ -598,8 +598,8 @@ void MT2Region::getBins( int &nBins, double*& bins) const {
 
     const int nBins_tmp                        = 7;
     bins = new double[nBins_tmp+1]{200., 300., 400., 500., 600., 800., 1000., 1500. };
-    //    const int nBins_tmp                        = 4;
-    //    bins = new double[nBins_tmp+1]{200., 300., 400., 600., 1000.};
+    //  const int nBins_tmp                        = 4;
+    //  bins = new double[nBins_tmp+1]{200., 300., 400., 600., 1000.};
     //const int nBins_tmp                        = 5;
     //bins = new double[nBins_tmp+1]{200., 300., 400., 600., 1000., 1500.};
     nBins = nBins_tmp;
@@ -1138,7 +1138,6 @@ void MT2Region::getBins( int &nBins, double*& bins) const {
     bins = new double[nBins_tmp+1]{200., 400., 600., 800., 1500.};
     nBins = nBins_tmp;
 
-
   } else if( regionName == "HT1000to1500_j4toInf_b0to1" ){
 
     const int nBins_tmp                        = 5;
@@ -1188,11 +1187,11 @@ void MT2Region::getBins( int &nBins, double*& bins) const {
   //////END DARKMATTER
 
   else { // default binning
-
+ 
     const int nBins_tmp                        = 7;
-    bins = new double[nBins_tmp+1]{200., 300., 400., 500.,  600., 800, 1000., 1500};
-    //    const int nBins_tmp                        = 4;
-    // bins = new double[nBins_tmp+1]{200., 300., 400., 600., 1000.};
+    bins = new double[nBins_tmp+1]{200., 300., 400., 500., 600., 800., 1000., 1500. };
+    //const int nBins_tmp                        = 4;
+    //bins = new double[nBins_tmp+1]{200., 300., 400., 600., 1000.};
     //const int nBins_tmp                        = 5;
     //bins = new double[nBins_tmp+1]{200., 300., 400., 600., 1000., 1500.};
     nBins = nBins_tmp;
@@ -1357,3 +1356,8 @@ bool MT2Region::operator<=( const MT2Region& rhs ) const {
 
 
 //  LocalWords:  tmp
+
+
+
+
+
