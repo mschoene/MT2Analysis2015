@@ -4,7 +4,7 @@ make all
 ./gammaControlRegion $1
 ./makeZinvGammaTemplates $1
 ./fitPurityGamma $1
-# ./makeZinvGammaTemplates $1 MC
+# ./makeZinvGammaTemplates $1 MC MC
 # ./fitPurityGamma $1 MC
 # ./drawPurityFits $1 
 ./computeZinvFromGamma $1
