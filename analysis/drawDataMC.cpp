@@ -48,18 +48,21 @@ int main( int argc, char* argv[] ) {
   }
 
 
-  std::string dirMC = cfg.getEventYieldDir();
 
-  MT2Analysis<MT2EstimateTree>* zjets = MT2Analysis<MT2EstimateTree>::readFromFile(dirMC + "/analyses.root", "ZJets");
+
+  std::string mcFile = cfg.getEventYieldDir() + "/analyses.root";
+  std::string dataFile = cfg.getEventYieldDir() + "/analyses.root";
+
+  MT2Analysis<MT2EstimateTree>* zjets = MT2Analysis<MT2EstimateTree>::readFromFile(mcFile, "ZJets");
   zjets->setFullName("Z+Jets");
-  MT2Analysis<MT2EstimateTree>* wjets = MT2Analysis<MT2EstimateTree>::readFromFile(dirMC + "/analyses.root", "WJets");
+  MT2Analysis<MT2EstimateTree>* wjets = MT2Analysis<MT2EstimateTree>::readFromFile(mcFile, "WJets");
   wjets->setFullName("W+Jets");
-  MT2Analysis<MT2EstimateTree>* top   = MT2Analysis<MT2EstimateTree>::readFromFile(dirMC + "/analyses.root", "Top");
+  MT2Analysis<MT2EstimateTree>* top   = MT2Analysis<MT2EstimateTree>::readFromFile(mcFile, "Top");
   top->setFullName("Top");
-  MT2Analysis<MT2EstimateTree>* qcd   = MT2Analysis<MT2EstimateTree>::readFromFile(dirMC + "/analyses.root", "QCD");
+  MT2Analysis<MT2EstimateTree>* qcd   = MT2Analysis<MT2EstimateTree>::readFromFile(mcFile, "QCD");
   qcd->setFullName("QCD");
 
-  MT2Analysis<MT2EstimateTree>* data   = MT2Analysis<MT2EstimateTree>::readFromFile(dirMC + "/analyses.root", "data");
+  MT2Analysis<MT2EstimateTree>* data = MT2Analysis<MT2EstimateTree>::readFromFile(dataFile, "data");
   data->setFullName("Data");
 
   std::vector< MT2Analysis<MT2EstimateTree>* > mc;
@@ -67,7 +70,6 @@ int main( int argc, char* argv[] ) {
   mc.push_back(wjets);
   mc.push_back(zjets);
   mc.push_back(top);
-
 
 
   drawYields( cfg, data, mc, "nVert", "nVert", "ht>900. && nJets>1", 50, 0.5, 50.5, "Number of Vertices", "" );
@@ -132,6 +134,7 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, std::vector<
       TTree* tree_mc = (bgYields[i]->get(thisRegion)->tree);
       std::string thisName = "h1_" + bgYields[i]->getName();
       TH1D* h1_mc = new TH1D( thisName.c_str(), "", nBins, xMin, xMax );
+      h1_mc->Sumw2();
       if( selection!="" )
         tree_mc->Project( thisName.c_str(), varName.c_str(), Form("weight*(%s)", selection.c_str()) );
       else
