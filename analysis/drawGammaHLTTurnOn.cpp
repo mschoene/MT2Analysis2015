@@ -76,6 +76,9 @@ void drawTurnOn( const MT2Config& cfg, MT2Sample sample ) {
   TH1D* h1_num = new TH1D( "num", "", nBins, xMin, xMax );
   TH1D* h1_denom = new TH1D( "denom", "", nBins, xMin, xMax );
 
+  TH1D* h1_num_eb = new TH1D( "num_eb", "", nBins, xMin, xMax );
+  TH1D* h1_denom_eb = new TH1D( "denom_eb", "", nBins, xMin, xMax );
+
 
   int nentries = tree->GetEntries();
 
@@ -93,15 +96,23 @@ void drawTurnOn( const MT2Config& cfg, MT2Sample sample ) {
     float iso = myTree.gamma_chHadIso[0];
     if( iso>10. ) continue; // loose iso
 
-    if( myTree.gamma_sigmaIetaIeta[0]>0.0106 ) continue;
+    if( fabs(myTree.gamma_eta[0])<1.479 && myTree.gamma_sigmaIetaIeta[0]>0.0106 ) continue;
+    if( fabs(myTree.gamma_eta[0])>1.479 && myTree.gamma_sigmaIetaIeta[0]>0.0266 ) continue;
 
     //TLorentzVector gamma;
     //gamma.SetPtEtaPhiM( myTree.gamma_pt[0], myTree.gamma_eta[0], myTree.gamma_phi[0], myTree.gamma_mass[0] );
 
 
     if( myTree.HLT_photon120 ) {
+
       h1_denom->Fill( myTree.gamma_pt[0] );
       if( myTree.HLT_photon165_HE10 ) h1_num->Fill( myTree.gamma_pt[0] );
+
+      if( fabs(myTree.gamma_eta[0])<1.479 ) {
+        h1_denom_eb->Fill( myTree.gamma_pt[0] );
+        if( myTree.HLT_photon165_HE10 ) h1_num_eb->Fill( myTree.gamma_pt[0] );
+      }
+
     }
 
   }  // for entries
@@ -120,15 +131,29 @@ void drawTurnOn( const MT2Config& cfg, MT2Sample sample ) {
   lineOne->Draw("same");
 
   TEfficiency* eff = new TEfficiency( *h1_num, *h1_denom );
-  eff->SetMarkerStyle(20);
+  eff->SetMarkerStyle(24);
   eff->SetMarkerSize(1.6);
   eff->SetMarkerColor(46);
   eff->SetLineColor(46);
 
+  TEfficiency* eff_eb = new TEfficiency( *h1_num_eb, *h1_denom_eb );
+  eff_eb->SetMarkerStyle(20);
+  eff_eb->SetMarkerSize(1.6);
+  eff_eb->SetMarkerColor(46);
+  eff_eb->SetLineColor(46);
+
   eff->Draw("p same");
+  eff_eb->Draw("p same");
 
   TPaveText* labelTop = MT2DrawTools::getLabelTop(0.0073);
   labelTop->Draw("same");
+
+  TLegend* legend = new TLegend( 0.2, 0.65, 0.45, 0.8 );
+  legend->SetFillColor(0);
+  legend->SetTextSize(0.038);
+  legend->AddEntry( eff, "All Photons", "P" );
+  legend->AddEntry( eff_eb, "EB Only", "P" );
+  legend->Draw("same");
 
   gPad->RedrawAxis();
 
