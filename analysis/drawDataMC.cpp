@@ -81,6 +81,10 @@ int main( int argc, char* argv[] ) {
   drawYields( cfg, data, mc, "nJets" , "nJets" , selection, 10, 1.5, 11.5, "Number of Jets (p_{T} > 30 GeV)", "" );
   drawYields( cfg, data, mc, "nBJets", "nBJets", selection, 6, -0.5, 5.5, "Number of b-Jets (p_{T} > 20 GeV)", "" );
 
+  drawYields( cfg, data, mc, "mt2_tail"   , "mt2"   , selection, 100, 0., 1000., "M_{T2}", "GeV" );
+  drawYields( cfg, data, mc, "met_tail"   , "met"   , selection, 100,  0., 1000., "Missing E_{T}", "GeV" );
+  drawYields( cfg, data, mc, "ht_tail"    , "ht"    , selection, 100, 900., 10900., "H_{T}", "GeV" );
+
   
   return 0;
 
