@@ -24,6 +24,8 @@ class MT2Config {
   std::string gammaTemplateRegions() const { return gammaTemplateRegions_; };
   float gammaIsoCut() const { return gammaIsoCut_; };
 
+  void set_gammaTemplateType( const std::string& newType ) { gammaTemplateType_ = newType; };
+
   bool useMC() const;
 
   bool dummyAnalysis() const;
