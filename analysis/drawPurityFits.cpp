@@ -167,6 +167,8 @@ void doAllPurityPlots( const MT2Config& cfg, const std::string& mc_or_data, cons
     legend->SetFillColor(0);
     legend->AddEntry( gr_purityMC, "MC Purity", "PL" );
    
+    std::vector<TGraphAsymmErrors*> graphs;
+
     for( unsigned i=0; i<fits.size(); ++i ) {
 
       MT2EstimateSyst* thisPurityFit = fits[i].purity->get( *iR );
@@ -175,13 +177,18 @@ void doAllPurityPlots( const MT2Config& cfg, const std::string& mc_or_data, cons
       graph->SetMarkerColor( fits[i].color );
       graph->SetLineColor( fits[i].color );
       graph->SetMarkerSize( 1.3 );
-      graph->Draw("Psame");
+      graphs.push_back(graph);
 
       legend->AddEntry( graph, fits[i].niceName.c_str(), "P" );
 
     }
 
     legend->Draw("same");
+
+    for( unsigned i=0; i<graphs.size(); ++i ) {
+      graphs[i]->Draw("Psame");
+    }
+
 
     std::vector<std::string> regionNames = iR->getNiceNames();
     TPaveText* labelRegion = new TPaveText( 0.23, 0.18, 0.48, 0.29, "brNDC" );
