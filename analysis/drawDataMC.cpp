@@ -72,12 +72,14 @@ int main( int argc, char* argv[] ) {
   mc.push_back(top);
 
 
-  drawYields( cfg, data, mc, "nVert", "nVert", "ht>900. && nJets>1", 50, 0.5, 50.5, "Number of Vertices", "" );
-  drawYields( cfg, data, mc, "mt2", "mt2", "ht>900. && nJets>1", 50, 0., 300., "M_{T2}", "GeV" );
-  drawYields( cfg, data, mc, "met", "met", "ht>900. && nJets>1", 40, 30., 430., "Missing E_{T}", "GeV" );
-  drawYields( cfg, data, mc, "ht" , "ht" , "ht>900. && nJets>1", 25, 900., 3400., "H_{T}", "GeV" );
-  drawYields( cfg, data, mc, "nJets", "nJets", "ht>900. && nJets>1", 10, 1.5, 11.5, "Number of Jets (p_{T} > 30 GeV)", "" );
-  drawYields( cfg, data, mc, "nBJets", "nBJets", "ht>900. && nJets>1", 6, -0.5, 5.5, "Number of b-Jets (p_{T} > 20 GeV)", "" );
+  std::string selection = "ht>900. && nJets>1 && met>30.";
+
+  drawYields( cfg, data, mc, "nVert" , "nVert" , selection, 50, 0.5, 50.5, "Number of Vertices", "" );
+  drawYields( cfg, data, mc, "mt2"   , "mt2"   , selection, 30, 0., 300., "M_{T2}", "GeV" );
+  drawYields( cfg, data, mc, "met"   , "met"   , selection, 40, 30., 430., "Missing E_{T}", "GeV" );
+  drawYields( cfg, data, mc, "ht"    , "ht"    , selection, 25, 900., 3400., "H_{T}", "GeV" );
+  drawYields( cfg, data, mc, "nJets" , "nJets" , selection, 10, 1.5, 11.5, "Number of Jets (p_{T} > 30 GeV)", "" );
+  drawYields( cfg, data, mc, "nBJets", "nBJets", selection, 6, -0.5, 5.5, "Number of b-Jets (p_{T} > 20 GeV)", "" );
 
   
   return 0;
@@ -163,6 +165,8 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, std::vector<
       histos_mc[index]->SetLineColor( kBlack );
       if( shapeNorm )
         histos_mc[index]->Scale( scaleFactor );
+      else
+        histos_mc[index]->Scale( 0.8 );
       bgStack.Add(histos_mc[index]);
     }
 
