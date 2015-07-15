@@ -103,14 +103,14 @@ void drawTurnOn( const MT2Config& cfg, MT2Sample sample ) {
     //gamma.SetPtEtaPhiM( myTree.gamma_pt[0], myTree.gamma_eta[0], myTree.gamma_phi[0], myTree.gamma_mass[0] );
 
 
-    if( myTree.HLT_photon120 ) {
+    if( myTree.HLT_Photon120 ) {
 
       h1_denom->Fill( myTree.gamma_pt[0] );
-      if( myTree.HLT_photon165_HE10 ) h1_num->Fill( myTree.gamma_pt[0] );
+      if( myTree.HLT_Photon165_HE10 ) h1_num->Fill( myTree.gamma_pt[0] );
 
       if( fabs(myTree.gamma_eta[0])<1.479 ) {
         h1_denom_eb->Fill( myTree.gamma_pt[0] );
-        if( myTree.HLT_photon165_HE10 ) h1_num_eb->Fill( myTree.gamma_pt[0] );
+        if( myTree.HLT_Photon165_HE10 ) h1_num_eb->Fill( myTree.gamma_pt[0] );
       }
 
     }
@@ -145,7 +145,7 @@ void drawTurnOn( const MT2Config& cfg, MT2Sample sample ) {
   eff->Draw("p same");
   eff_eb->Draw("p same");
 
-  TPaveText* labelTop = MT2DrawTools::getLabelTop(0.0073);
+  TPaveText* labelTop = MT2DrawTools::getLabelTop(cfg.lumi());
   labelTop->Draw("same");
 
   TLegend* legend = new TLegend( 0.2, 0.65, 0.45, 0.8 );

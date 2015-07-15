@@ -28,27 +28,23 @@ public :
    ULong64_t       evt;
    Int_t           isData;
    Float_t         xsec;
-//   Int_t           HLT_htXprescale;
-//   Int_t           HLT_DoubleEl;
-//   Int_t           HLT_Photons;
-//   Int_t           HLT_SingleMu;
-//   Int_t           HLT_ht350met100;
-//   Int_t           HLT_MET150;
-//   Int_t           HLT_MuEG;
-//   Int_t           HLT_HT650;
-//   Int_t           HLT_DoubleMu;
-   Float_t         HLT_HT900;
-   Float_t         HLT_photon120;
-   Float_t         HLT_photon165_HE10;
-   Float_t         HLT_photon155;
+   Float_t         HLT_PFMET170;
+   Float_t         HLT_Photon90_R9Id90_HE10_IsoM;
+   Float_t         HLT_Photon75_R9Id90_HE10_IsoM;
+   Float_t         HLT_Photon120;
+   Float_t         HLT_Photon75;
+   Float_t         HLT_Photon165_HE10;
+   Float_t         HLT_Photon120_R9Id90_HE10_IsoM;
+   Float_t         HLT_Photon90;
+   Float_t         HLT_PFHT350_PFMET100;
    Float_t         HLT_ht475prescale;
    Float_t         HLT_SingleMu;
    Float_t         HLT_SingleEl;
-   Float_t         HLT_MET170;
+   Float_t         HLT_PFHT800;
    Float_t         HLT_ht350prescale;
-   Float_t         HLT_ht350met100;
-   Float_t         HLT_photon175;
-   Float_t         HLT_HT800;
+   Float_t         HLT_Photon155;
+   Float_t         HLT_PFHT900;
+   Float_t         HLT_Photon175;
    Float_t         HLT_MuEG;
    Float_t         HLT_DiJet;
    Float_t         HLT_DoubleEl;
@@ -434,27 +430,23 @@ public :
    TBranch        *b_evt;   //!
    TBranch        *b_isData;   //!
    TBranch        *b_xsec;   //!
-//   TBranch        *b_HLT_htXprescale;   //!
-//   TBranch        *b_HLT_DoubleEl;   //!
-//   TBranch        *b_HLT_Photons;   //!
-//   TBranch        *b_HLT_SingleMu;   //!
-//   TBranch        *b_HLT_ht350met100;   //!
-//   TBranch        *b_HLT_MET150;   //!
-//   TBranch        *b_HLT_MuEG;   //!
-//   TBranch        *b_HLT_HT650;   //!
-//   TBranch        *b_HLT_DoubleMu;   //!
-   TBranch        *b_HLT_HT900;   //!
-   TBranch        *b_HLT_photon120;   //!
-   TBranch        *b_HLT_photon165_HE10;   //!
-   TBranch        *b_HLT_photon155;   //!
+   TBranch        *b_HLT_PFMET170;   //!
+   TBranch        *b_HLT_Photon90_R9Id90_HE10_IsoM;   //!
+   TBranch        *b_HLT_Photon75_R9Id90_HE10_IsoM;   //!
+   TBranch        *b_HLT_Photon120;   //!
+   TBranch        *b_HLT_Photon75;   //!
+   TBranch        *b_HLT_Photon165_HE10;   //!
+   TBranch        *b_HLT_Photon120_R9Id90_HE10_IsoM;   //!
+   TBranch        *b_HLT_Photon90;   //!
+   TBranch        *b_HLT_PFHT350_PFMET100;   //!
    TBranch        *b_HLT_ht475prescale;   //!
    TBranch        *b_HLT_SingleMu;   //!
    TBranch        *b_HLT_SingleEl;   //!
-   TBranch        *b_HLT_MET170;   //!
+   TBranch        *b_HLT_PFHT800;   //!
    TBranch        *b_HLT_ht350prescale;   //!
-   TBranch        *b_HLT_ht350met100;   //!
-   TBranch        *b_HLT_photon175;   //!
-   TBranch        *b_HLT_HT800;   //!
+   TBranch        *b_HLT_Photon155;   //!
+   TBranch        *b_HLT_PFHT900;   //!
+   TBranch        *b_HLT_Photon175;   //!
    TBranch        *b_HLT_MuEG;   //!
    TBranch        *b_HLT_DiJet;   //!
    TBranch        *b_HLT_DoubleEl;   //!
@@ -905,27 +897,23 @@ void MT2Tree::Init(TTree *tree)
    fChain->SetBranchAddress("evt", &evt, &b_evt);
    fChain->SetBranchAddress("isData", &isData, &b_isData);
    fChain->SetBranchAddress("xsec", &xsec, &b_xsec);
-//   fChain->SetBranchAddress("HLT_htXprescale", &HLT_htXprescale, &b_HLT_htXprescale);
-//   fChain->SetBranchAddress("HLT_DoubleEl", &HLT_DoubleEl, &b_HLT_DoubleEl);
-//   fChain->SetBranchAddress("HLT_Photons", &HLT_Photons, &b_HLT_Photons);
-//   fChain->SetBranchAddress("HLT_SingleMu", &HLT_SingleMu, &b_HLT_SingleMu);
-//   fChain->SetBranchAddress("HLT_ht350met100", &HLT_ht350met100, &b_HLT_ht350met100);
-//   fChain->SetBranchAddress("HLT_MET150", &HLT_MET150, &b_HLT_MET150);
-//   fChain->SetBranchAddress("HLT_MuEG", &HLT_MuEG, &b_HLT_MuEG);
-//   fChain->SetBranchAddress("HLT_HT650", &HLT_HT650, &b_HLT_HT650);
-//   fChain->SetBranchAddress("HLT_DoubleMu", &HLT_DoubleMu, &b_HLT_DoubleMu);
-   fChain->SetBranchAddress("HLT_HT900", &HLT_HT900, &b_HLT_HT900);
-   fChain->SetBranchAddress("HLT_photon120", &HLT_photon120, &b_HLT_photon120);
-   fChain->SetBranchAddress("HLT_photon165_HE10", &HLT_photon165_HE10, &b_HLT_photon165_HE10);
-   fChain->SetBranchAddress("HLT_photon155", &HLT_photon155, &b_HLT_photon155);
+   fChain->SetBranchAddress("HLT_PFMET170", &HLT_PFMET170, &b_HLT_PFMET170);
+   fChain->SetBranchAddress("HLT_Photon90_R9Id90_HE10_IsoM", &HLT_Photon90_R9Id90_HE10_IsoM, &b_HLT_Photon90_R9Id90_HE10_IsoM);
+   fChain->SetBranchAddress("HLT_Photon75_R9Id90_HE10_IsoM", &HLT_Photon75_R9Id90_HE10_IsoM, &b_HLT_Photon75_R9Id90_HE10_IsoM);
+   fChain->SetBranchAddress("HLT_Photon120", &HLT_Photon120, &b_HLT_Photon120);
+   fChain->SetBranchAddress("HLT_Photon75", &HLT_Photon75, &b_HLT_Photon75);
+   fChain->SetBranchAddress("HLT_Photon165_HE10", &HLT_Photon165_HE10, &b_HLT_Photon165_HE10);
+   fChain->SetBranchAddress("HLT_Photon120_R9Id90_HE10_IsoM", &HLT_Photon120_R9Id90_HE10_IsoM, &b_HLT_Photon120_R9Id90_HE10_IsoM);
+   fChain->SetBranchAddress("HLT_Photon90", &HLT_Photon90, &b_HLT_Photon90);
+   fChain->SetBranchAddress("HLT_PFHT350_PFMET100", &HLT_PFHT350_PFMET100, &b_HLT_PFHT350_PFMET100);
    fChain->SetBranchAddress("HLT_ht475prescale", &HLT_ht475prescale, &b_HLT_ht475prescale);
    fChain->SetBranchAddress("HLT_SingleMu", &HLT_SingleMu, &b_HLT_SingleMu);
    fChain->SetBranchAddress("HLT_SingleEl", &HLT_SingleEl, &b_HLT_SingleEl);
-   fChain->SetBranchAddress("HLT_MET170", &HLT_MET170, &b_HLT_MET170);
+   fChain->SetBranchAddress("HLT_PFHT800", &HLT_PFHT800, &b_HLT_PFHT800);
    fChain->SetBranchAddress("HLT_ht350prescale", &HLT_ht350prescale, &b_HLT_ht350prescale);
-   fChain->SetBranchAddress("HLT_ht350met100", &HLT_ht350met100, &b_HLT_ht350met100);
-   fChain->SetBranchAddress("HLT_photon175", &HLT_photon175, &b_HLT_photon175);
-   fChain->SetBranchAddress("HLT_HT800", &HLT_HT800, &b_HLT_HT800);
+   fChain->SetBranchAddress("HLT_Photon155", &HLT_Photon155, &b_HLT_Photon155);
+   fChain->SetBranchAddress("HLT_PFHT900", &HLT_PFHT900, &b_HLT_PFHT900);
+   fChain->SetBranchAddress("HLT_Photon175", &HLT_Photon175, &b_HLT_Photon175);
    fChain->SetBranchAddress("HLT_MuEG", &HLT_MuEG, &b_HLT_MuEG);
    fChain->SetBranchAddress("HLT_DiJet", &HLT_DiJet, &b_HLT_DiJet);
    fChain->SetBranchAddress("HLT_DoubleEl", &HLT_DoubleEl, &b_HLT_DoubleEl);
@@ -1392,7 +1380,7 @@ Bool_t MT2Tree::passGammaAdditionalSelection(int sampleId)
 {
 
   if( ngamma==0 ) return kFALSE;
-  if( gamma_pt[0]<170. ) return kFALSE;
+  if( gamma_pt[0]<180. ) return kFALSE;
   //if( gamma_mt2<200. ) return kFALSE;     
   if( mt2>200. ) return kFALSE; // orthogonal to signal region
 

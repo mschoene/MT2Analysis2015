@@ -16,7 +16,7 @@
 
 
 
-bool shapeNorm = true;
+bool shapeNorm = false;
 
 
 void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, MT2Analysis<MT2EstimateTree>* mc, const std::string& saveName, const std::string& varName, const std::string& selection, int nBins, float xMin, float xMax, std::string axisName="", const std::string& units="" );
@@ -56,17 +56,35 @@ int main( int argc, char* argv[] ) {
   MT2Analysis<MT2EstimateTree>* mc   = MT2Analysis<MT2EstimateTree>::readFromFile(mcFile, "gammaCRtree_loose");
   MT2Analysis<MT2EstimateTree>* data = MT2Analysis<MT2EstimateTree>::readFromFile(dataFile, "gammaCRtree_loose");
 
+  std::string selection = "ptGamma>180. && nJets>1 && iso<2.5";
 
-  drawYields( cfg, data, mc, "nVert" , "nVert", "", 50, 0.5, 50.5, "Number of Vertices", "" );
-  drawYields( cfg, data, mc, "mt2"   , "mt2", "", 15, 0., 750., "M_{T2}", "GeV" );
-  drawYields( cfg, data, mc, "met"   , "met", "", 18, 30., 930., "Missing E_{T}", "GeV" );
-  drawYields( cfg, data, mc, "ht"    , "ht" , "", 14, 450., 1150., "H_{T}", "GeV" );
-  drawYields( cfg, data, mc, "nJets" , "nJets", "", 10, 1.5, 11.5, "Number of Jets (p_{T} > 30 GeV)", "" );
-  drawYields( cfg, data, mc, "nBJets", "nBJets", "", 6, -0.5, 5.5, "Number of b-Jets (p_{T} > 20 GeV)", "" );
-  drawYields( cfg, data, mc, "ptGamma", "ptGamma", "", 14, 170., 870., "Photon p_{T}", "GeV" );
-  drawYields( cfg, data, mc, "etaGamma", "etaGamma", "", 10, -2.5, 2.5, "Photon #eta", "" );
-  drawYields( cfg, data, mc, "sietaieta", "sietaieta", "", 12, 0.0075, 0.0111, "Photon #sigma_{i#eta i#eta}", "" );
-  drawYields( cfg, data, mc, "iso", "iso", "", 25, 0., 10., "Photon Charged Isolation", "GeV" );
+  drawYields( cfg, data, mc, "nVert"     , "nVert"    , selection, 25, 0.5, 50.5, "Number of Vertices", "" );
+  drawYields( cfg, data, mc, "mt2"       , "mt2"      , selection, 15, 0., 750., "M_{T2}", "GeV" );
+  drawYields( cfg, data, mc, "met"       , "met"      , selection, 18, 30., 930., "Missing E_{T}", "GeV" );
+  drawYields( cfg, data, mc, "ht"        , "ht"       , selection, 22, 450., 1550., "H_{T}", "GeV" );
+  drawYields( cfg, data, mc, "nJets"     , "nJets"    , selection, 10, 1.5, 11.5, "Number of Jets (p_{T} > 30 GeV)", "" );
+  drawYields( cfg, data, mc, "nBJets"    , "nBJets"   , selection, 6, -0.5, 5.5, "Number of b-Jets (p_{T} > 20 GeV)", "" );
+  drawYields( cfg, data, mc, "jet1_pt"   , "jet1_pt"  , selection, 16, 100., 900., "Leading Jet p_{T}", "GeV" );
+  drawYields( cfg, data, mc, "jet2_pt"   , "jet2_pt"  , selection, 13, 30., 680., "Subleading Jet p_{T}", "GeV" );
+  drawYields( cfg, data, mc, "ptGamma"   , "ptGamma"  , selection, 14, 180., 880, "Photon p_{T}", "GeV" );
+  drawYields( cfg, data, mc, "etaGamma"  , "etaGamma" , selection, 10, -2.5, 2.5, "Photon #eta", "" );
+  drawYields( cfg, data, mc, "sietaieta" , "sietaieta", selection, 12, 0.0075, 0.0111, "Photon #sigma_{i#eta i#eta}", "" );
+  drawYields( cfg, data, mc, "iso"       , "iso"      , selection, 20, 0., 10., "Photon Charged Isolation", "GeV" );
+
+  selection = "ptGamma>180. && nJets>1";
+
+  drawYields( cfg, data, mc, "loose_nVert"     , "nVert"    , selection, 25, 0.5, 50.5, "Number of Vertices", "" );
+  drawYields( cfg, data, mc, "loose_mt2"       , "mt2"      , selection, 15, 0., 750., "M_{T2}", "GeV" );
+  drawYields( cfg, data, mc, "loose_met"       , "met"      , selection, 18, 30., 930., "Missing E_{T}", "GeV" );
+  drawYields( cfg, data, mc, "loose_ht"        , "ht"       , selection, 22, 450., 1550., "H_{T}", "GeV" );
+  drawYields( cfg, data, mc, "loose_nJets"     , "nJets"    , selection, 10, 1.5, 11.5, "Number of Jets (p_{T} > 30 GeV)", "" );
+  drawYields( cfg, data, mc, "loose_nBJets"    , "nBJets"   , selection, 6, -0.5, 5.5, "Number of b-Jets (p_{T} > 20 GeV)", "" );
+  drawYields( cfg, data, mc, "loose_jet1_pt"   , "jet1_pt"  , selection, 16, 100., 900., "Leading Jet p_{T}", "GeV" );
+  drawYields( cfg, data, mc, "loose_jet2_pt"   , "jet2_pt"  , selection, 13, 30., 680., "Subleading Jet p_{T}", "GeV" );
+  drawYields( cfg, data, mc, "loose_ptGamma"   , "ptGamma"  , selection, 14, 180., 880, "Photon p_{T}", "GeV" );
+  drawYields( cfg, data, mc, "loose_etaGamma"  , "etaGamma" , selection, 10, -2.5, 2.5, "Photon #eta", "" );
+  drawYields( cfg, data, mc, "loose_sietaieta" , "sietaieta", selection, 12, 0.0075, 0.0111, "Photon #sigma_{i#eta i#eta}", "" );
+  drawYields( cfg, data, mc, "loose_iso"       , "iso"      , selection, 20, 0., 10., "Photon Charged Isolation", "GeV" );
 
   
   return 0;
@@ -165,6 +183,8 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, MT2Analysis<
       histos_mc[index]->SetLineColor( kBlack );
       if( shapeNorm )
         histos_mc[index]->Scale( scaleFactor );
+      else 
+        histos_mc[index]->Scale( 1.27 );
       bgStack.Add(histos_mc[index]);
     }
 
@@ -193,10 +213,10 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, MT2Analysis<
 
 
     std::string binWidthText;
-    if( binWidth>1. )         binWidthText = (std::string)Form("%.0f", binWidth);
-    else if( binWidth>0.1 )   binWidthText = (std::string)Form("%.1f", binWidth);
-    else if( binWidth>0.01 )  binWidthText = (std::string)Form("%.2f", binWidth);
-    else if( binWidth>0.001 ) binWidthText = (std::string)Form("%.3f", binWidth);
+    if( binWidth>=1. )         binWidthText = (std::string)Form("%.0f", binWidth);
+    else if( binWidth>=0.1 )   binWidthText = (std::string)Form("%.1f", binWidth);
+    else if( binWidth>=0.01 )  binWidthText = (std::string)Form("%.2f", binWidth);
+    else if( binWidth>=0.001 ) binWidthText = (std::string)Form("%.3f", binWidth);
     else                      binWidthText = (std::string)Form("%.4f", binWidth);
 
     std::string yAxisTitle;
