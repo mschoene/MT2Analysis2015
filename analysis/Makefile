@@ -112,8 +112,8 @@ drawGammaControlRegion: drawGammaControlRegion.cpp MT2Region.o MT2Estimate.o MT2
 drawGammaControlRegionDataMC: drawGammaControlRegionDataMC.cpp MT2Region.o MT2Estimate.o MT2EstimateTree.o MT2DrawTools.o MT2Config.o
 	$(CC) -Wall $(INCLUDES) -o drawGammaControlRegionDataMC drawGammaControlRegionDataMC.cpp MT2Region.o MT2Estimate.o MT2EstimateTree.o MT2DrawTools.o MT2Config.o $(ROOTFLAG) $(EXTRALIBS)
 
-fitPurityGamma: fitPurityGamma.cpp  MT2Region.o MT2Estimate.o MT2EstimateZinvGamma.o  MT2EstimateSyst.o MT2Config.o
-	$(CC) -Wall $(INCLUDES) -o fitPurityGamma fitPurityGamma.cpp MT2Region.o MT2Estimate.o MT2EstimateZinvGamma.o MT2EstimateSyst.o MT2Config.o $(ROOTFLAG) $(EXTRALIBS)
+fitPurityGamma: fitPurityGamma.cpp  MT2Region.o MT2Estimate.o MT2EstimateZinvGamma.o  MT2EstimateSyst.o MT2Config.o MT2DrawTools.o
+	$(CC) -Wall $(INCLUDES) -o fitPurityGamma fitPurityGamma.cpp MT2Region.o MT2Estimate.o MT2EstimateZinvGamma.o MT2EstimateSyst.o MT2Config.o MT2DrawTools.o $(ROOTFLAG) $(EXTRALIBS)
 
 fitIsoVsSietaieta: fitIsoVsSietaieta.cpp  MT2Region.o MT2Estimate.o MT2EstimateTree.o MT2Sample.o MT2DrawTools.o
 	$(CC) -Wall $(INCLUDES) -o fitIsoVsSietaieta fitIsoVsSietaieta.cpp MT2Region.o MT2Estimate.o MT2EstimateTree.o MT2Sample.o MT2DrawTools.o $(ROOTFLAG) $(EXTRALIBS)
