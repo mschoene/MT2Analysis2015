@@ -20,6 +20,7 @@
 #include "TGraphAsymmErrors.h"
 
 
+#include "../interface/MT2DrawTools.h"
 #include "../interface/MT2Config.h"
 #include "../interface/MT2Analysis.h"
 #include "../interface/MT2Region.h"
@@ -41,8 +42,8 @@ struct Purity {
 
 
 
-void fitSinglePurity( const std::string& outputdir, Purity& loose, Purity& tight, RooRealVar* x, RooDataSet* data, TH1D* h1_templPrompt, TH1D* h1_templFake );
-void fitPurity( const std::string& outputdir, MT2EstimateSyst* purityLoose, MT2EstimateSyst* purityTight, RooRealVar* x, std::vector<RooDataSet*> data, TH1D* templPrompt, TH1D* templFake );
+void fitSinglePurity( const MT2Config& cfg, Purity& loose, Purity& tight, RooRealVar* x, RooDataSet* data, TH1D* h1_templPrompt, TH1D* h1_templFake );
+void fitPurity( const MT2Config& cfg, MT2EstimateSyst* purityLoose, MT2EstimateSyst* purityTight, RooRealVar* x, std::vector<RooDataSet*> data, TH1D* templPrompt, TH1D* templFake );
 void checkBoundaries( Purity& p );
 
 
@@ -74,20 +75,20 @@ int main( int argc, char* argv[] ) {
   MT2Config cfg(configFileName);
 
 
-  std::string mc_or_data_templates = cfg.gammaTemplateType();
   if( argc>2 ) {
 
-    mc_or_data_templates = std::string(argv[2]); 
+    std::string mc_or_data_templates = std::string(argv[2]); 
+    if( mc_or_data_templates=="mc" ) mc_or_data_templates="MC";
     std::cout << std::endl;
-    std::cout << "-> Will disobey the cfg and use mc_or_data_templates = " << argv[2] << std::endl;
+    std::cout << "-> Will disobey the cfg and use mc_or_data_templates = " << mc_or_data_templates << std::endl;
+    cfg.set_gammaTemplateType(mc_or_data_templates);
     std::cout << std::endl;
 
   } 
 
-  if( mc_or_data_templates=="mc" ) mc_or_data_templates="MC";
 
 
-
+  MT2DrawTools::setStyle();
 
 
   TH1::AddDirectory(kFALSE);
@@ -96,8 +97,8 @@ int main( int argc, char* argv[] ) {
   std::string gammaCRdir = cfg.getEventYieldDir() + "/gammaControlRegion"; //(Form("GammaControlRegion_%s_%s_%.0ffb", samples.c_str(), regionsSet.c_str(), lumi ));
   MT2Analysis<MT2EstimateZinvGamma>* gammaJet_data = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( gammaCRdir + "/data.root", "gammaCR_loose" );
 
-  MT2Analysis<MT2EstimateZinvGamma>* templates_prompt = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( "gammaTemplates" + mc_or_data_templates + "_" + cfg.mcSamples() + "_" + cfg.gammaTemplateRegions() + ".root", "templatesPrompt" );
-  MT2Analysis<MT2EstimateZinvGamma>* templates_fake   = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( "gammaTemplates" + mc_or_data_templates + "_" + cfg.mcSamples() + "_" + cfg.gammaTemplateRegions() + ".root", "templatesFake" );
+  MT2Analysis<MT2EstimateZinvGamma>* templates_prompt = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( "gammaTemplates" + cfg.gammaTemplateType() + "_" + cfg.mcSamples() + "_" + cfg.gammaTemplateRegions() + ".root", "templatesPrompt" );
+  MT2Analysis<MT2EstimateZinvGamma>* templates_fake   = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( "gammaTemplates" + cfg.gammaTemplateType() + "_" + cfg.mcSamples() + "_" + cfg.gammaTemplateRegions() + ".root", "templatesFake" );
 
   MT2EstimateZinvGamma* templatePrompt, *templateFake;
   if( cfg.gammaTemplateRegions()=="13TeV_inclusive" ) { // just get them once
@@ -105,7 +106,7 @@ int main( int argc, char* argv[] ) {
     templateFake   = templates_fake  ->get( MT2Region("HT450toInf_j2toInf_b0toInf") );
   }
 
-  std::string outputdir = gammaCRdir + "/PurityFits" + mc_or_data_templates;
+  std::string outputdir = gammaCRdir + "/PurityFits" + cfg.gammaTemplateType();
   system( Form( "mkdir -p %s/singleFits", outputdir.c_str()) );
 
   std::set<MT2Region> regions = gammaJet_data->getRegions();
@@ -131,13 +132,14 @@ int main( int argc, char* argv[] ) {
     MT2EstimateSyst* thisTightPurity = purityTight->get( *iR );
     std::string nameTight = thisTightPurity->yield->GetName();
 
-    fitPurity( outputdir, thisLoosePurity, thisTightPurity, thisEstimate->x_, thisEstimate->iso_bins, templatePrompt->iso, templateFake->iso);
+    fitPurity( cfg, thisLoosePurity, thisTightPurity, thisEstimate->x_, thisEstimate->iso_bins, templatePrompt->iso, templateFake->iso);
 
     thisLoosePurity->yield->SetName( nameLoose.c_str() );
     thisTightPurity->yield->SetName( nameTight.c_str() );
 
   }
     
+
 
   purityLoose->writeToFile( outputdir + "/purityFit.root" );
   purityTight->addToFile( outputdir + "/purityFit.root" );
@@ -150,7 +152,7 @@ int main( int argc, char* argv[] ) {
 
 
 
-void fitPurity( const std::string& outputdir, MT2EstimateSyst* purityLoose, MT2EstimateSyst* purityTight, RooRealVar* x, std::vector<RooDataSet*> data, TH1D* templPrompt, TH1D* templFake ) {
+void fitPurity( const MT2Config& cfg, MT2EstimateSyst* purityLoose, MT2EstimateSyst* purityTight, RooRealVar* x, std::vector<RooDataSet*> data, TH1D* templPrompt, TH1D* templFake ) {
 
 
   for( unsigned i=0; i<data.size(); ++i ) {
@@ -158,7 +160,7 @@ void fitPurity( const std::string& outputdir, MT2EstimateSyst* purityLoose, MT2E
     int ibin = i+1;
 
     Purity loose, tight;
-    fitSinglePurity( outputdir, loose, tight, x, data[i], templPrompt, templFake );
+    fitSinglePurity( cfg, loose, tight, x, data[i], templPrompt, templFake );
 
     purityLoose->yield         ->SetBinContent( ibin, loose.purity );
     purityLoose->yield_systUp  ->SetBinContent( ibin, loose.purity + loose.purityErrUp );
@@ -179,11 +181,11 @@ void fitPurity( const std::string& outputdir, MT2EstimateSyst* purityLoose, MT2E
 
 
 
-void fitSinglePurity( const std::string& outputdir, Purity& loose, Purity& tight, RooRealVar* x, RooDataSet* data, TH1D* h1_templPrompt, TH1D* h1_templFake ) {
+void fitSinglePurity( const MT2Config& cfg, Purity& loose, Purity& tight, RooRealVar* x, RooDataSet* data, TH1D* h1_templPrompt, TH1D* h1_templFake ) {
 
 
   float dataIntegral = data->sumEntries();
-  float thresh = 2.5;
+  float thresh = cfg.gammaIsoCut();
   float data_pass = data->sumEntries(Form("x<%f", thresh));
 
   if( dataIntegral == 0. ) {
@@ -249,10 +251,16 @@ void fitSinglePurity( const std::string& outputdir, Purity& loose, Purity& tight
   TCanvas* c1 = new TCanvas("c1", "", 600, 600);
   gPad->SetLeftMargin(0.15);
   TH2D* h2_axes = new TH2D("axes", "", 10, 0., xMaxFit, 10, 0., xframe->GetMaximum()*1.1 );
+  h2_axes->SetXTitle("Photon Charged Isolation [GeV]");
+  h2_axes->SetYTitle("Events");
   h2_axes->Draw();
   xframe->GetYaxis()->SetTitleOffset(1.4); 
   xframe->Draw("same");
 
+  TPaveText* labelTop = MT2DrawTools::getLabelTop(cfg.lumi());
+  labelTop->Draw("same");
+
+  std::string outputdir = cfg.getEventYieldDir() + "/gammaControlRegion/PurityFits" + cfg.gammaTemplateType();
   c1->SaveAs(Form("%s/singleFits/purityFit_%s.eps", outputdir.c_str(), data->GetName()));
   c1->SaveAs(Form("%s/singleFits/purityFit_%s.png", outputdir.c_str(), data->GetName()));
   c1->SaveAs(Form("%s/singleFits/purityFit_%s.pdf", outputdir.c_str(), data->GetName()));
