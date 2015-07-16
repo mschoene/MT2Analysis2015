@@ -186,7 +186,7 @@ void fitSinglePurity( const MT2Config& cfg, Purity& loose, Purity& tight, RooRea
 
   float dataIntegral = data->sumEntries();
   float thresh = cfg.gammaIsoCut();
-  float data_pass = data->sumEntries(Form("x<%f", thresh));
+  //float data_pass = data->sumEntries(Form("x<%f", thresh));
 
   if( dataIntegral == 0. ) {
     loose.purity=-1;
@@ -206,8 +206,8 @@ void fitSinglePurity( const MT2Config& cfg, Purity& loose, Purity& tight, RooRea
   RooHistPdf pdfPrompt("pdfPrompt", "", *x, templPrompt );
   RooHistPdf pdfFake  ("pdfFake"  , "", *x, templFake   );
 
-  RooRealVar sigFrac("promptFrac","fraction of prompt",0.9,0.,1.) ;
-  RooAddPdf  model("model","", RooArgList(pdfPrompt,pdfFake), sigFrac) ;
+  RooRealVar sigFrac ("promptFrac" ,"fraction of prompt",0.9,0.,1.);
+  RooAddPdf  model ("model" ,"", RooArgList(pdfPrompt,pdfFake), sigFrac);
 
   int nBins = h1_templPrompt->GetNbinsX();
   float xMin = h1_templPrompt->GetXaxis()->GetXmin();
@@ -215,18 +215,28 @@ void fitSinglePurity( const MT2Config& cfg, Purity& loose, Purity& tight, RooRea
 
   float xMaxFit = 0.9999*xMax;
   x->setRange( "fittingRange", 0., xMaxFit );
-  model.fitTo(*data, SumW2Error(kTRUE), Minos(kTRUE), Range("fittingRange")); 
+  model .fitTo(*data, SumW2Error(kTRUE), Minos(kTRUE), Range("fittingRange")); 
 
   loose.purity = sigFrac.getVal();
   loose.purityErrUp = sigFrac.getErrorHi();
   loose.purityErrDown = -sigFrac.getErrorLo();
 
-  int cutBin = h1_templPrompt->FindBin(thresh) - 1;
+  float sig = sigFrac.getVal()*dataIntegral;
+  float bg  = (1.-sigFrac.getVal())*dataIntegral;
 
+  int cutBin = h1_templPrompt->FindBin(thresh) - 1;
   float sigEff = h1_templPrompt->Integral(1, cutBin)/h1_templPrompt->Integral(1,nBins);
-  tight.purity        = sigEff * loose.purity        * dataIntegral / data_pass;
-  tight.purityErrUp   = sigEff * loose.purityErrUp   * dataIntegral / data_pass;
-  tight.purityErrDown = sigEff * loose.purityErrDown * dataIntegral / data_pass;
+  float bgEff  = h1_templFake  ->Integral(1, cutBin)/h1_templFake  ->Integral(1,nBins);
+
+  float sig_pass = sigEff*sig;
+  float bg_pass  = bgEff*bg;
+
+  float purity_tight = sig_pass/(sig_pass + bg_pass);
+
+  tight.purity        = purity_tight;
+  tight.purityErrUp   = loose.purityErrUp   * tight.purity / loose.purity;
+  tight.purityErrDown = loose.purityErrDown * tight.purity / loose.purity;
+
 
   //float sigPassCut = sigFrac.getVal()*sigEff;
   //float bgEff = h1_templFake->Integral(1, cutBin)/h1_templFake->Integral(1,nBins);
