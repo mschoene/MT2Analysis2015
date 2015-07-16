@@ -69,9 +69,9 @@ void drawTurnOn( const MT2Config& cfg, MT2Sample sample ) {
   myTree.Init(tree);
 
 
-  int nBins = 10;
+  int nBins = 13;
   float xMin = 120.;
-  float xMax = 220.;
+  float xMax = 250.;
 
   TH1D* h1_num = new TH1D( "num", "", nBins, xMin, xMax );
   TH1D* h1_denom = new TH1D( "denom", "", nBins, xMin, xMax );
@@ -148,7 +148,7 @@ void drawTurnOn( const MT2Config& cfg, MT2Sample sample ) {
   TPaveText* labelTop = MT2DrawTools::getLabelTop(cfg.lumi());
   labelTop->Draw("same");
 
-  TLegend* legend = new TLegend( 0.2, 0.65, 0.45, 0.8 );
+  TLegend* legend = new TLegend( 0.55, 0.25, 0.8, 0.4 );
   legend->SetFillColor(0);
   legend->SetTextSize(0.038);
   legend->AddEntry( eff, "All Photons", "P" );

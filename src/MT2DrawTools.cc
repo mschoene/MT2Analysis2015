@@ -157,6 +157,15 @@ TPaveText* MT2DrawTools::getLabelTopSimulation( const std::string& text ) {
 
 TGraphAsymmErrors* MT2DrawTools::getPoissonGraph( TH1D* histo, bool drawZeros, const std::string& xerrType, float nSigma ) {
 
+
+  int nBins = histo->GetNbinsX();
+  int emptyBins=0;
+  for( unsigned i=1; i<nBins; ++i ) {
+    if( histo->GetBinContent(i)==0 ) emptyBins += 1;
+  }
+  if( (float)emptyBins/(float)nBins > 0.4 ) drawZeros=false;
+
+
   TGraphAsymmErrors* graph = new TGraphAsymmErrors(0);
 
   for( int iBin=1; iBin<(histo->GetXaxis()->GetNbins()+1); ++iBin ) {

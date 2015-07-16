@@ -78,12 +78,12 @@ int main( int argc, char* argv[] ) {
   drawYields( cfg, data, mc, "mt2"   , "mt2"   , selection, 30, 0., 300., "M_{T2}", "GeV" );
   drawYields( cfg, data, mc, "met"   , "met"   , selection, 40, 30., 430., "Missing E_{T}", "GeV" );
   drawYields( cfg, data, mc, "ht"    , "ht"    , selection, 25, 900., 3400., "H_{T}", "GeV" );
-  drawYields( cfg, data, mc, "nJets" , "nJets" , selection, 10, 1.5, 11.5, "Number of Jets (p_{T} > 30 GeV)", "" );
-  drawYields( cfg, data, mc, "nBJets", "nBJets", selection, 6, -0.5, 5.5, "Number of b-Jets (p_{T} > 20 GeV)", "" );
+  drawYields( cfg, data, mc, "nJets" , "nJets" , selection, 12, 1.5, 13.5, "Number of Jets (p_{T} > 30 GeV)", "" );
+  drawYields( cfg, data, mc, "nBJets", "nBJets", selection, 7, -0.5, 6.5, "Number of b-Jets (p_{T} > 20 GeV)", "" );
 
-  drawYields( cfg, data, mc, "mt2_tail"   , "mt2"   , selection, 100, 0., 1000., "M_{T2}", "GeV" );
-  drawYields( cfg, data, mc, "met_tail"   , "met"   , selection, 100,  0., 1000., "Missing E_{T}", "GeV" );
-  drawYields( cfg, data, mc, "ht_tail"    , "ht"    , selection, 100, 900., 10900., "H_{T}", "GeV" );
+  drawYields( cfg, data, mc, "mt2_tail"   , "mt2"   , selection, 100, 0., 5000., "M_{T2}", "GeV" );
+  drawYields( cfg, data, mc, "met_tail"   , "met"   , selection, 100,  0., 5000., "Missing E_{T}", "GeV" );
+  drawYields( cfg, data, mc, "ht_tail"    , "ht"    , selection, 120, 900., 12900., "H_{T}", "GeV" );
 
   
   return 0;
@@ -161,6 +161,8 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, std::vector<
     }
 
     float scaleFactor = h1_data->Integral()/mc_sum->Integral();
+    if( shapeNorm )
+      std::cout << "SF: " << scaleFactor << std::endl;
 
     THStack bgStack("bgStack", "");
     for( unsigned i=0; i<histos_mc.size(); ++i ) { 
