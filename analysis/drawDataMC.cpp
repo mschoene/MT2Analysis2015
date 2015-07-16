@@ -161,6 +161,8 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, std::vector<
     }
 
     float scaleFactor = h1_data->Integral()/mc_sum->Integral();
+    if( shapeNorm )
+      std::cout << "SF: " << scaleFactor << std::endl;
 
     THStack bgStack("bgStack", "");
     for( unsigned i=0; i<histos_mc.size(); ++i ) { 
