@@ -35,12 +35,7 @@ int postProcessing(string inputString="input",
 		   string crabExt="");
 
 
-//int run(string cfg="postProcessing_74X.cfg",
-//	string treeName="tree", 
-//	string inputFolder = "/pnfs/psi.ch/cms/trivcat/store/user/casal/babies/PHYS14_Production_QCDpt_noSietaieta/", 
-//	string outputFolder = "./test/",  
-//	string fileExtension = "_post.root"){
-int run(string cfg="postProcessing.cfg",
+int run(string cfg="postProcessing_74X_50ns.cfg",
 	string treeName="tree", 
 	string inputFolder = "/pnfs/psi.ch/cms/trivcat/store/user/casal/babies/PHYS14_Production_QCDpt_noSietaieta/", 
 	string outputFolder = "./test/",  
@@ -113,7 +108,7 @@ int postProcessing(string inputString,
   else
     fullInputString = dcap + inputFolder + "/" + inputString + "/mt2*.root";
   //string fullInputString = dcap + inputFolder + "/" + inputString + "/mt2_14.root";
-  int chainReturn = chain->Add(fullInputString.c_str()  );
+  int chainReturn = chain->Add( fullInputString.c_str() );
   if (chainReturn < 1) {
     cout << "ERROR: input folder/fileName is not well defined. Exit!" << endl;
     cout << "fullInputString: " << fullInputString << endl;
@@ -148,13 +143,11 @@ int postProcessing(string inputString,
   }
   newH->SetBinContent(1,allHistoEntries);
   newSumW->SetBinContent(1,allSumGenWeight);
-  
 
   // This line should be uncommented for all the branches that we want to overwrite.
   // If the branch is not in the input tree, we don't need this.
   //
   //t->SetBranchStatus("scale1fb", 0);
-
 
   
   TFile *out = TFile::Open(outputFile.c_str(), "RECREATE");
@@ -179,18 +172,19 @@ int postProcessing(string inputString,
 //  Int_t nEventsHisto = (Int_t) newH->GetBinContent(1); 					 
 
   float genWeight_=1.0;
-  float genWeight;
+  float genWeight=0;
   clone->SetBranchAddress("genWeight", &genWeight);
   if(nEventsTree>0){
     clone->GetEntry(0);
-    genWeight_ = genWeight;
+    genWeight_ = fabs(genWeight);
   }
+
   ULong64_t sumGenWeightsHisto = (ULong64_t)  newSumW->GetBinContent(1);
   ULong64_t nEffEventsHisto = ( (double) 1.0*sumGenWeightsHisto/genWeight_  > (ULong64_t) (1.0*sumGenWeightsHisto/genWeight_ + 0.5) ) ? (ULong64_t) (1.0*sumGenWeightsHisto/genWeight_)+1 : (ULong64_t) (1.0*sumGenWeightsHisto/genWeight_);
 
   float scale1fb_noGenWeight = xsec*kfactor*1000*filter/(Float_t)nEffEventsHisto;
   float scale1fb_sumGenWeights = xsec*kfactor*1000*filter/(Float_t)sumGenWeightsHisto;
-  float scale1fb;
+  float scale1fb = xsec*kfactor*1000*filter*genWeight_/(Float_t)sumGenWeightsHisto;
   //  float scale1fb = xsec*kfactor*1000*filter/(Float_t)nEventsHisto;
  
   if (nEventsHisto < nEventsTree) // this should not happen
@@ -201,9 +195,8 @@ int postProcessing(string inputString,
     cout << "WARNING: histogram count has more events than tree. This should only happen if tree was skimmed" << endl
 	 << "#events histo: "  << nEventsHisto << endl
 	 << "#events tree: "  << nEventsTree << endl;
-    
-
-  int isData; 
+  
+  int isData=0; 
   clone->SetBranchAddress("isData",&isData);
   clone->GetEntry(0); 
   if(isData){
@@ -223,11 +216,8 @@ int postProcessing(string inputString,
   TBranch* b9 = clone->Branch("evt_sumGenWeights", &sumGenWeightsHisto, "evt_sumGenWeights/l");
   TBranch* b10 = clone->Branch("evt_id", &id, "evt_id/I");
 
-  for(unsigned long int i = 0; i < nEventsTree; i++) {
+  for(Long64_t i = 0; i < (Long64_t) nEventsTree; i++) {
     
-    clone->GetEntry(i);
-    scale1fb = xsec*kfactor*1000*filter*genWeight/(Float_t)sumGenWeightsHisto;
-      
     b1->Fill();
     b2->Fill();
     b3->Fill();
