@@ -1,16 +1,18 @@
 #!/bin/bash
 
 # --- configuration (consider to move this into a separate file) ---
-treeName="tree"
-inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/MT2production/080415/"
-productionName="080415"
+treeName="mt2"
+#inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/casal/babies/MT2_CMGTools-from-CMSSW_7_4_3/prod74Xdata_Run2015B_dimanche1207/"
+inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/pandolf/babies/chunks/PHYS14_jet30_v2/"
+#inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/pandolf/babies/chunks/PHYS14_jet30_v2_addSignals_v3/"
+productionName="Phys14MC_jet30_noMT2skim"
 fileExt="_post.root"
+isCrab=0
 # --------------------------
 
 
-
 # initialization
-jobsLogsFolder="./$productionName"
+jobsLogsFolder="./${productionName}"
 outputFolder="/pnfs/psi.ch/cms/trivcat/store/user/`whoami`/MT2production/PostProcessed/"$productionName/
 workingFolder="/scratch/`whoami`/"$productionName
 
@@ -77,6 +79,11 @@ do
     
     outputFile=${workingFolder}/${name}$fileExt;
 
+    if [ ${isCrab} = 1 ]; then
+	crabExt=$(ls $inputFolder/$name/)
+    else
+	crabExt=""
+    fi;
 
     cat <<EOF > batchScript_${name}.sh
 #!/bin/bash
@@ -108,8 +115,8 @@ eval \`scramv1 runtime -sh\`
 mkdir -p $workingFolder
 gfal-mkdir -p srm://t3se01.psi.ch/$outputFolder
 
-echo "postProcessing(\"$name\",\"$inputFolder\",\"$outputFile\",\"$treeName\",$filter,$kfactor,$xsec,$id);"
-echo "gROOT->LoadMacro(\"postProcessing.C\"); postProcessing(\"$name\",\"$inputFolder\",\"$outputFile\",\"$treeName\",$filter,$kfactor,$xsec,$id); gSystem->Exit(0);" |root.exe -b -l ;
+echo "postProcessing(\"$name\",\"$inputFolder\",\"$outputFile\",\"$treeName\",$filter,$kfactor,$xsec,$id,\"$crabExt\");"
+echo "gROOT->LoadMacro(\"postProcessing.C\"); postProcessing(\"$name\",\"$inputFolder\",\"$outputFile\",\"$treeName\",$filter,$kfactor,$xsec,$id,\"$crabExt\"); gSystem->Exit(0);" |root.exe -b -l ;
 
 #mv $outputFile $outputFolder
 gfal-copy file://$outputFile srm://t3se01.psi.ch/$outputFolder
@@ -131,6 +138,7 @@ EOF
 qsub batchScript_${name}.sh;
 rm batchScript_${name}.sh;
 
+#done < postProcessing_74X.cfg
 done < postProcessing.cfg
 
 rm -f postProcessing_C.d postProcessing_C.so;
