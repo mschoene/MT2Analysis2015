@@ -155,14 +155,12 @@ int postProcessing(string inputString,
 
   clone = chain->CloneTree(-1, "fast"); 
   clone->SetName("mt2");
-
   
   //if(SortBasketsByEntry)
   // clone = t->CloneTree(-1, "fastSortBasketsByEntry");
   //else 
   // clone = t->CloneTree(-1, "fast");
   
-
   //-------------------------------------------------------------
 
   //Calculate scaling factor and put variables into tree 
@@ -172,21 +170,50 @@ int postProcessing(string inputString,
 //  Int_t nEventsHisto = (Int_t) newH->GetBinContent(1); 					 
 
   float genWeight_=1.0;
-  float genWeight=0;
-  clone->SetBranchAddress("genWeight", &genWeight);
-  if(nEventsTree>0){
-    clone->GetEntry(0);
-    genWeight_ = fabs(genWeight);
+  float genWeight=0.;
+  chain->SetBranchAddress("genWeight", &genWeight);
+  
+  int isData=0; 
+  chain->SetBranchAddress("isData",&isData);
+
+  if( nEventsTree > 0 ){
+
+    chain->GetEntry(0);
+
+    if(isData)
+      genWeight_ = 0.;
+    else
+      genWeight_ = fabs(genWeight);
+
   }
 
-  ULong64_t sumGenWeightsHisto = (ULong64_t)  newSumW->GetBinContent(1);
-  ULong64_t nEffEventsHisto = ( (double) 1.0*sumGenWeightsHisto/genWeight_  > (ULong64_t) (1.0*sumGenWeightsHisto/genWeight_ + 0.5) ) ? (ULong64_t) (1.0*sumGenWeightsHisto/genWeight_)+1 : (ULong64_t) (1.0*sumGenWeightsHisto/genWeight_);
 
-  float scale1fb_noGenWeight = xsec*kfactor*1000*filter/(Float_t)nEffEventsHisto;
-  float scale1fb_sumGenWeights = xsec*kfactor*1000*filter/(Float_t)sumGenWeightsHisto;
-  float scale1fb = xsec*kfactor*1000*filter*genWeight_/(Float_t)sumGenWeightsHisto;
   //  float scale1fb = xsec*kfactor*1000*filter/(Float_t)nEventsHisto;
- 
+  ULong64_t sumGenWeightsHisto; 
+  ULong64_t nEffEventsHisto; 
+  float scale1fb_noGenWeight;
+  float scale1fb_sumGenWeights;
+  float scale1fb;
+
+  if(isData){
+    
+    sumGenWeightsHisto = (ULong64_t) 0;
+    nEffEventsHisto = nEventsHisto;
+    
+    scale1fb_noGenWeight = 0.0;
+    scale1fb_sumGenWeights = 0.0;
+    
+  }
+  else{
+    
+    sumGenWeightsHisto = (ULong64_t)  newSumW->GetBinContent(1);
+    nEffEventsHisto = ( (double) 1.0*sumGenWeightsHisto/genWeight_  > (ULong64_t) (1.0*sumGenWeightsHisto/genWeight_ + 0.5) ) ? (ULong64_t) (1.0*sumGenWeightsHisto/genWeight_)+1 : (ULong64_t) (1.0*sumGenWeightsHisto/genWeight_);
+  
+    scale1fb_noGenWeight = xsec*kfactor*1000*filter/(Float_t)nEffEventsHisto;
+    scale1fb_sumGenWeights = xsec*kfactor*1000*filter/(Float_t)sumGenWeightsHisto;
+
+  }
+  
   if (nEventsHisto < nEventsTree) // this should not happen
     cout << "ERROR: histogram count has less events than tree. This indicates something went wrong" << endl
 	 << "#events histo: "  << nEventsHisto << endl
@@ -195,16 +222,7 @@ int postProcessing(string inputString,
     cout << "WARNING: histogram count has more events than tree. This should only happen if tree was skimmed" << endl
 	 << "#events histo: "  << nEventsHisto << endl
 	 << "#events tree: "  << nEventsTree << endl;
-  
-  int isData=0; 
-  clone->SetBranchAddress("isData",&isData);
-  clone->GetEntry(0); 
-  if(isData){
-    //data should never be rescaled with scale1fb when making plots
-    //set scaler to zero so that user cannot miss the mistake
-    scale1fb = 0.0; 
-  }
-  
+    
   TBranch* b1 = clone->Branch("evt_scale1fb", &scale1fb, "evt_scale1fb/F");
   TBranch* b2 = clone->Branch("evt_scale1fb_noGenWeight", &scale1fb_noGenWeight, "evt_scale1fb_noGenWeights/F");
   TBranch* b3 = clone->Branch("evt_scale1fb_sumGenWeights", &scale1fb_sumGenWeights, "evt_scale1fb_sumGenWeights/F");
@@ -217,6 +235,16 @@ int postProcessing(string inputString,
   TBranch* b10 = clone->Branch("evt_id", &id, "evt_id/I");
 
   for(Long64_t i = 0; i < (Long64_t) nEventsTree; i++) {
+    
+    chain->GetEntry(i);
+    if(isData){
+      //data should never be rescaled with scale1fb when making plots
+      //set scaler to zero so that user cannot miss the mistake
+      scale1fb = 0.0; 
+    }
+    else{
+      scale1fb= xsec*kfactor*1000*filter*genWeight/(Float_t)sumGenWeightsHisto;
+    }
     
     b1->Fill();
     b2->Fill();

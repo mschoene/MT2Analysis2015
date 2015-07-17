@@ -5,7 +5,7 @@ treeName="mt2"
 #inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/casal/babies/MT2_CMGTools-from-CMSSW_7_4_3/prod74Xdata_Run2015B_dimanche1207/"
 inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/MT2production/74X/Spring15_50ns/afs/cern.ch/work/m/mmasciov/CMSSW_7_4_7_MT2/src/CMGTools/TTHAnalysis/cfg/16July2015/"
 #inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/pandolf/babies/chunks/PHYS14_jet30_v2_addSignals_v3/"
-productionName="16July2015_noMT2skim"
+productionName="17July2015_noMT2skim"
 fileExt="_post.root"
 isCrab=0
 # --------------------------
