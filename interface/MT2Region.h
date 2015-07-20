@@ -108,7 +108,7 @@ class MT2Region {
 
   MT2Region( const std::string& regionName );
 
-  MT2Region( float htMin, float htMax=-1, int njmin=-1, int njmax=-1, int nbmin=-1, int nbmax=-1, const std::string& mtCut="" ) {
+  MT2Region( float htMin, float htMax=-1, int njmin=2, int njmax=-1, int nbmin=-1, int nbmax=-1, const std::string& mtCut="" ) {
     htRegion_ = new MT2HTRegion( htMin, htMax );
     sigRegion_ = new MT2SignalRegion( njmin, njmax, nbmin, nbmax, mtCut );
   }

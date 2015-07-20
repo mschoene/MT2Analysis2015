@@ -97,7 +97,7 @@ int main( int argc, char* argv[] ) {
     std::cout << std::endl << std::endl;
     std::cout << "-> Loading samples from file: " << samplesFileName << std::endl;
 
-    std::vector<MT2Sample> fSamples = MT2Sample::loadSamples(samplesFileName, 1, 999); // not interested in signal here (see later)
+    std::vector<MT2Sample> fSamples = MT2Sample::loadSamples(samplesFileName, 100, 999); // not interested in signal here (see later)
     if( fSamples.size()==0 ) {
       std::cout << "There must be an error: samples is empty!" << std::endl;
       exit(120);
@@ -190,7 +190,7 @@ int main( int argc, char* argv[] ) {
   } // if sig samples
   
 
-  if( !cfg.dummyAnalysis() && cfg.dataSamples()!="" && !onlyMC ) {
+  if( !(cfg.dummyAnalysis()) && cfg.dataSamples()!="" && !onlyMC ) {
 
     std::string samplesFile_data = "../samples/samples_" + cfg.dataSamples() + ".dat";
 
@@ -301,6 +301,7 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg ) {
     int njets  = myTree.nJet30;
     int nbjets = myTree.nBJet20;    
     float mt2  = (njets>1) ? myTree.mt2 : myTree.jet_pt[0];
+    //float mt2  = myTree.mt2;
     
     float GenSusyMScan1 = myTree.GenSusyMScan1;
     float GenSusyMScan2 = myTree.GenSusyMScan2;
