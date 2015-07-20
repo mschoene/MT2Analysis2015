@@ -1,0 +1,5 @@
+lumi 4
+regionsSet zurich
+mcSamples 74X_v1_skimprune
+dataSamples datatest
+additionalStuff noSignals
