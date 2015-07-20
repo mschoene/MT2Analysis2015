@@ -214,6 +214,14 @@ MT2Analysis<MT2EstimateTree>* computeYield( const MT2Sample& sample, const MT2Co
   MT2EstimateTree::addVar( analysis, "Z_lepId" );
   MT2EstimateTree::addVar( analysis, "nLep" );
 
+  MT2EstimateTree::addVar( analysis, "lep_pt0");
+  MT2EstimateTree::addVar( analysis, "lep_pt1");
+  MT2EstimateTree::addVar( analysis, "lep_eta0");
+  MT2EstimateTree::addVar( analysis, "lep_eta1");
+  MT2EstimateTree::addVar( analysis, "raw_mt2");
+  
+  MT2EstimateTree::addVar( analysis, "HLT_DoubleMu");
+  MT2EstimateTree::addVar( analysis, "HLT_DoubleEl");
   
 
 
@@ -224,11 +232,23 @@ MT2Analysis<MT2EstimateTree>* computeYield( const MT2Sample& sample, const MT2Co
     if( iEntry % 50000 == 0 ) std::cout << "   Entry: " << iEntry << " / " << nentries << std::endl;
     myTree.GetEntry(iEntry);
 
-    //  if( !(myTree.passSelection("zll")) ) continue; 
+    //if( !(myTree.passSelection("zll")) ) continue; 
 
     if(!( myTree.nlep==2 )) continue; 
+    //baseline
 
-    //  if( myTree.mt2 >200 ) continue; //change back when more data
+    if(myTree.nVert < 0) continue;
+    if(myTree.nJet30 < 2  ) continue;
+    if(myTree.zll_deltaPhiMin < 0.3) continue;
+    if(myTree.zll_diffMetMht > 0.5*myTree.zll_met_pt) continue;
+
+
+    if( myTree.mt2 >200 ) continue; //change back when more data
+
+    // if( myTree.isData && !(myTree.HLT_DoubleMu || myTree.HLT_DoubleEl) ) continue;
+
+    // if(myTree.lep_pt[0]<25) continue;
+    //  if(myTree.lep_pt[1]<20) continue;
 
 
     //Sample  are the Z leptons
@@ -241,13 +261,11 @@ MT2Analysis<MT2EstimateTree>* computeYield( const MT2Sample& sample, const MT2Co
       LVec[i].SetPtEtaPhiM(myTree.lep_pt[i], myTree.lep_eta[i],myTree.lep_phi[i], myTree.lep_mass[i]);
     }
 
-
-
     double Z_invM_true = 91.19;
     TLorentzVector z = LVec[0] + LVec[1]; //leptons invariant mass
     double M_ll = z.M(); //Z mass
 
-    if( abs(M_ll - Z_invM_true)>10.) continue;
+    //  if( abs(M_ll - Z_invM_true)>20.) continue;
 
     float ht   = myTree.ht;
     float met  = myTree.met_pt;
@@ -267,6 +285,16 @@ MT2Analysis<MT2EstimateTree>* computeYield( const MT2Sample& sample, const MT2Co
     thisEstimate->assignVar("Z_phi", z.Phi() );
     thisEstimate->assignVar("Z_mass", z.M() );
     thisEstimate->assignVar("Z_lepId", abs(myTree.lep_pdgId[0])  );
+
+    thisEstimate->assignVar("nLep", myTree.nlep );
+    thisEstimate->assignVar("lep_pt0", myTree.lep_pt[0] );
+    thisEstimate->assignVar("lep_pt1", myTree.lep_pt[1] );
+    thisEstimate->assignVar("lep_eta0", myTree.lep_eta[0] );
+    thisEstimate->assignVar("lep_eta1", myTree.lep_eta[1] );
+    thisEstimate->assignVar("raw_mt2", myTree.mt2 );
+
+    thisEstimate->assignVar("HLT_DoubleMu", myTree.HLT_DoubleMu );
+    thisEstimate->assignVar("HLT_DoubleEl", myTree.HLT_DoubleEl );
 
     //Fills the above variables into the tree
     //   thisEstimate->tree->Fill(); 
