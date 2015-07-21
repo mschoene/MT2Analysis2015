@@ -32,7 +32,9 @@ int postProcessing(string inputString="input",
 		   string outputFile="output.root",
 		   string treeName="tree",
 		   float filter=1.0, float kfactor=1.0, float xsec=-1.0, int id=1,
-		   string crabExt="");
+		   string crabExt="",
+		   string inputPU="",
+		   string PUvar="nTrueInt");
 
 
 int run(string cfg="postProcessing_74X_50ns.cfg",
@@ -40,7 +42,9 @@ int run(string cfg="postProcessing_74X_50ns.cfg",
 	string inputFolder = "/pnfs/psi.ch/cms/trivcat/store/user/casal/babies/PHYS14_Production_QCDpt_noSietaieta/", 
 	string outputFolder = "./test/",  
 	string fileExtension = "_post.root",
-        string crabExt = ""){
+        string crabExt = "",
+	string inputPU = "",
+	string PUvar = "nTrueInt"){
   
   // for measuring timing
   time_t start = time(0);
@@ -97,7 +101,9 @@ int postProcessing(string inputString,
 		   string outputFile,
 		   string treeName,
 		   float filter, float kfactor, float xsec, int id,
-		   string crabExt)
+		   string crabExt,
+		   string inputPU,
+		   string PUvar)
 {
   TChain* chain = new TChain(treeName.c_str());
   // Add all files in the input folder
@@ -114,6 +120,17 @@ int postProcessing(string inputString,
     cout << "fullInputString: " << fullInputString << endl;
     return 1;
   }
+
+  TChain* chain_pu = new TChain(treeName.c_str());
+  chain_pu->Add(inputPU.c_str());
+  
+  TH1D* hPU_data = new TH1D("hPU_data", "", 100, 0, 100);
+  hPU_data->Sumw2();
+
+  chain_pu->Project("hPU_data", "nVert");
+  
+  ULong64_t nEntries = chain_pu->GetEntries();
+  hPU_data->Scale(1.0/nEntries);
   
   // here I set the "Count" histograms
   TIter nextfile(chain->GetListOfFiles());
@@ -149,9 +166,6 @@ int postProcessing(string inputString,
   //
   //t->SetBranchStatus("scale1fb", 0);
 
-  TFile *puIN = TFile::Open("/shome/mmasciov/PUProfile_JetHT.root");
-  TH1D* hPU_data = (TH1D*) puIN->Get("hPU_data");
-  
   TFile *out = TFile::Open(outputFile.c_str(), "RECREATE");
   TTree *clone = new TTree("mt2", "post processed baby tree for mt2 analysis");
 
@@ -180,6 +194,9 @@ int postProcessing(string inputString,
   
   int nVert=0;
   chain->SetBranchAddress("nVert", &nVert);
+  
+  int nTrueInt=0;
+  chain->SetBranchAddress("nTrueInt", &nTrueInt);
 
   if( nEventsTree > 0 ){
 
@@ -193,16 +210,18 @@ int postProcessing(string inputString,
   }
 
 
-
-  TH1D* hPU = new TH1D("hPU", "", 100, 0, 100);
-  hPU->Sumw2();
+  TH1D* hPU = (TH1D*) hPU_data->Clone("hPU");
+  hPU->Reset();
   
-  chain->Project("hPU", "nVert");
+  if(PUvar == "nVert")
+    chain->Project("hPU", "nVert");
+  else
+    chain->Project("hPU", "nTrueInt");
+
   hPU->Scale(1.0/nEventsTree);
   
   TH1D* hPU_r = (TH1D*) hPU_data->Clone("hPU_r");
   hPU_r->Divide(hPU);
-
 
   //  float scale1fb = xsec*kfactor*1000*filter/(Float_t)nEventsHisto;
   ULong64_t sumGenWeightsHisto; 
@@ -264,7 +283,9 @@ int postProcessing(string inputString,
     else{
       scale1fb= xsec*kfactor*1000*filter*genWeight/(Float_t)sumGenWeightsHisto;
       
-      int puBin = (int) hPU_r->GetXaxis()->FindBin(nVert);
+      int nPU = ( PUvar == "nVert") ? nVert : nTrueInt;
+      
+      int puBin = (int) hPU_r->GetXaxis()->FindBin(nPU);
       puWeight = hPU_r->GetBinContent(puBin);
 
     }
