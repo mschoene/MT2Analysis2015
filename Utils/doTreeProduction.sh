@@ -8,6 +8,8 @@ inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/MT2production/74X/Spri
 productionName="21July2015_noMT2skim"
 fileExt="_post.root"
 isCrab=0
+inputPU="/scratch/pandolf/data2015_50ns_DCSonly/JetHT_Run2015B.root"
+PUvar="nTrueInt"
 # --------------------------
 
 
@@ -115,8 +117,8 @@ eval \`scramv1 runtime -sh\`
 mkdir -p $workingFolder
 gfal-mkdir -p srm://t3se01.psi.ch/$outputFolder
 
-echo "postProcessing(\"$name\",\"$inputFolder\",\"$outputFile\",\"$treeName\",$filter,$kfactor,$xsec,$id,\"$crabExt\");"
-echo "gROOT->LoadMacro(\"postProcessing.C\"); postProcessing(\"$name\",\"$inputFolder\",\"$outputFile\",\"$treeName\",$filter,$kfactor,$xsec,$id,\"$crabExt\"); gSystem->Exit(0);" |root.exe -b -l ;
+echo "postProcessing(\"$name\",\"$inputFolder\",\"$outputFile\",\"$treeName\",$filter,$kfactor,$xsec,$id,\"$crabExt\", \"$inputPU\", \"$PUvar\");"
+echo "gROOT->LoadMacro(\"postProcessing.C\"); postProcessing(\"$name\",\"$inputFolder\",\"$outputFile\",\"$treeName\",$filter,$kfactor,$xsec,$id,\"$crabExt\",\"$inputPU\",\"$PUvar\"); gSystem->Exit(0);" |root.exe -b -l ;
 
 #mv $outputFile $outputFolder
 gfal-copy file://$outputFile srm://t3se01.psi.ch/$outputFolder
