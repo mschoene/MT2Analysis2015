@@ -149,6 +149,8 @@ int postProcessing(string inputString,
   //
   //t->SetBranchStatus("scale1fb", 0);
 
+  TFile *puIN = TFile::Open("/shome/mmasciov/PUProfile_JetHT.root");
+  TH1D* hPU_data = (TH1D*) puIN->Get("hPU_data");
   
   TFile *out = TFile::Open(outputFile.c_str(), "RECREATE");
   TTree *clone = new TTree("mt2", "post processed baby tree for mt2 analysis");
@@ -175,6 +177,9 @@ int postProcessing(string inputString,
   
   int isData=0; 
   chain->SetBranchAddress("isData",&isData);
+  
+  int nVert=0;
+  chain->SetBranchAddress("nVert", &nVert);
 
   if( nEventsTree > 0 ){
 
@@ -188,12 +193,24 @@ int postProcessing(string inputString,
   }
 
 
+
+  TH1D* hPU = new TH1D("hPU", "", 100, 0, 100);
+  hPU->Sumw2();
+  
+  chain->Project("hPU", "nVert");
+  hPU->Scale(1.0/nEventsTree);
+  
+  TH1D* hPU_r = (TH1D*) hPU_data->Clone("hPU_r");
+  hPU_r->Divide(hPU);
+
+
   //  float scale1fb = xsec*kfactor*1000*filter/(Float_t)nEventsHisto;
   ULong64_t sumGenWeightsHisto; 
   ULong64_t nEffEventsHisto; 
   float scale1fb_noGenWeight;
   float scale1fb_sumGenWeights;
   float scale1fb;
+  float puWeight;
 
   if(isData){
     
@@ -233,6 +250,7 @@ int postProcessing(string inputString,
   TBranch* b8 = clone->Branch("evt_nEffectiveEvts", &nEffEventsHisto, "evt_nEffectiveEvts/l");
   TBranch* b9 = clone->Branch("evt_sumGenWeights", &sumGenWeightsHisto, "evt_sumGenWeights/l");
   TBranch* b10 = clone->Branch("evt_id", &id, "evt_id/I");
+  TBranch* b11 = clone->Branch("evt_puWeight", &puWeight, "evt_puWeight/F");
 
   for(Long64_t i = 0; i < (Long64_t) nEventsTree; i++) {
     
@@ -241,9 +259,14 @@ int postProcessing(string inputString,
       //data should never be rescaled with scale1fb when making plots
       //set scaler to zero so that user cannot miss the mistake
       scale1fb = 0.0; 
+      puWeight = 1.0;
     }
     else{
       scale1fb= xsec*kfactor*1000*filter*genWeight/(Float_t)sumGenWeightsHisto;
+      
+      int puBin = (int) hPU_r->GetXaxis()->FindBin(nVert);
+      puWeight = hPU_r->GetBinContent(puBin);
+
     }
     
     b1->Fill();
@@ -256,13 +279,18 @@ int postProcessing(string inputString,
     b8->Fill();
     b9->Fill();
     b10->Fill();
-
+    b11->Fill();
+    
   }
   //-------------------------------------------------------------
 
   delete chain; 
 
 
+  hPU_r->Write();
+  delete hPU_r;
+  delete hPU;
+  delete hPU_data;
   newH->Write();
   delete newH;
   newSumW->Write();
