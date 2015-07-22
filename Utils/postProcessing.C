@@ -129,7 +129,7 @@ int postProcessing(string inputString,
 
   chain_pu->Project("hPU_data", "nVert", "HLT_PFHT800 || HLT_ht475prescale");
   
-  ULong64_t nEntries = chain_pu->GetEntries();
+  ULong64_t nEntries = hPU_data->Integral();
   hPU_data->Scale(1.0/nEntries);
   
   // here I set the "Count" histograms
