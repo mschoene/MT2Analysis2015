@@ -127,7 +127,7 @@ int postProcessing(string inputString,
   TH1D* hPU_data = new TH1D("hPU_data", "", 100, 0, 100);
   hPU_data->Sumw2();
 
-  chain_pu->Project("hPU_data", "nVert");
+  chain_pu->Project("hPU_data", "nVert", "HLT_PFHT800 || HLT_ht475prescale");
   
   ULong64_t nEntries = chain_pu->GetEntries();
   hPU_data->Scale(1.0/nEntries);
@@ -149,12 +149,19 @@ int postProcessing(string inputString,
       newH->SetDirectory(0);  
       isFirst=false;
       
-      newSumW = (TH1D*) sumW->Clone();
+      if(sumW){
+	newSumW = (TH1D*) sumW->Clone();
+      }
+      else
+	newSumW = (TH1D*) countH->Clone();
       newSumW->SetDirectory(0);  
-      isFirst=false;      
+
     }
     allHistoEntries += countH->GetBinContent(1);
-    allSumGenWeight += sumW->GetBinContent(1);
+    if(sumW)
+      allSumGenWeight += sumW->GetBinContent(1);
+    else
+      allSumGenWeight += countH->GetBinContent(1);
     f->Close();
     delete f;      
   }
@@ -169,6 +176,7 @@ int postProcessing(string inputString,
   TFile *out = TFile::Open(outputFile.c_str(), "RECREATE");
   TTree *clone = new TTree("mt2", "post processed baby tree for mt2 analysis");
 
+  chain->SetBranchStatus("puWeight", 0);
   clone = chain->CloneTree(-1, "fast"); 
   clone->SetName("mt2");
   
@@ -269,7 +277,7 @@ int postProcessing(string inputString,
   TBranch* b8 = clone->Branch("evt_nEffectiveEvts", &nEffEventsHisto, "evt_nEffectiveEvts/l");
   TBranch* b9 = clone->Branch("evt_sumGenWeights", &sumGenWeightsHisto, "evt_sumGenWeights/l");
   TBranch* b10 = clone->Branch("evt_id", &id, "evt_id/I");
-  TBranch* b11 = clone->Branch("evt_puWeight", &puWeight, "evt_puWeight/F");
+  TBranch* b11 = clone->Branch("puWeight", &puWeight, "puWeight/F");
 
   for(Long64_t i = 0; i < (Long64_t) nEventsTree; i++) {
     
