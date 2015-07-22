@@ -577,7 +577,8 @@ void fillFromTree( TTree* tree, TH1D* yield_2b_extrapMC, TH1D* yield_2b_extrapDa
 
     float p_mc = histo_p->GetBinContent( histo_p->FindBin(njets) );
 
-    float correction_mc = 0.5*njets*(njets-1.)*p_mc*p_mc*pow(1.-p_mc, njets-2);
+    float correction_mc = 0.5*njets*(njets-1.)*p_mc*p_mc/((1.-p_mc)*(1.-p_mc)); 
+    //float correction_mc = 0.5*njets*(njets-1.)*p_mc*p_mc*pow(1.-p_mc, njets-2);
     float correction_data = correction_mc;
     //float correction_data = 0.5*njets*(njets-1.)*p_data*p_data*pow(1.-p_data, njets-2);
 
