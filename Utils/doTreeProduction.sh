@@ -4,10 +4,12 @@
 treeName="mt2"
 #inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/casal/babies/MT2_CMGTools-from-CMSSW_7_4_3/prod74Xdata_Run2015B_dimanche1207/"
 inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/MT2production/74X/Spring15_50ns/afs/cern.ch/work/m/mmasciov/CMSSW_7_4_7_MT2/src/CMGTools/TTHAnalysis/cfg/16July2015/"
-#inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/pandolf/babies/chunks/PHYS14_jet30_v2_addSignals_v3/"
-productionName="17July2015_noMT2skim"
+#inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/pandolf/babies/chunks/PHYS14_jet30_v2/"
+productionName="22July2015_noMT2skim"
 fileExt="_post.root"
 isCrab=0
+inputPU="/shome/mmasciov/JetHT_Run2015B.root"
+PUvar="nVert"
 # --------------------------
 
 
@@ -115,8 +117,8 @@ eval \`scramv1 runtime -sh\`
 mkdir -p $workingFolder
 gfal-mkdir -p srm://t3se01.psi.ch/$outputFolder
 
-echo "postProcessing(\"$name\",\"$inputFolder\",\"$outputFile\",\"$treeName\",$filter,$kfactor,$xsec,$id,\"$crabExt\");"
-echo "gROOT->LoadMacro(\"postProcessing.C\"); postProcessing(\"$name\",\"$inputFolder\",\"$outputFile\",\"$treeName\",$filter,$kfactor,$xsec,$id,\"$crabExt\"); gSystem->Exit(0);" |root.exe -b -l ;
+echo "postProcessing(\"$name\",\"$inputFolder\",\"$outputFile\",\"$treeName\",$filter,$kfactor,$xsec,$id,\"$crabExt\", \"$inputPU\", \"$PUvar\");"
+echo "gROOT->LoadMacro(\"postProcessing.C\"); postProcessing(\"$name\",\"$inputFolder\",\"$outputFile\",\"$treeName\",$filter,$kfactor,$xsec,$id,\"$crabExt\",\"$inputPU\",\"$PUvar\"); gSystem->Exit(0);" |root.exe -b -l ;
 
 #mv $outputFile $outputFolder
 gfal-copy file://$outputFile srm://t3se01.psi.ch/$outputFolder

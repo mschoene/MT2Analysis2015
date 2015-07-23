@@ -32,7 +32,9 @@ int postProcessing(string inputString="input",
 		   string outputFile="output.root",
 		   string treeName="tree",
 		   float filter=1.0, float kfactor=1.0, float xsec=-1.0, int id=1,
-		   string crabExt="");
+		   string crabExt="",
+		   string inputPU="",
+		   string PUvar="nTrueInt");
 
 
 int run(string cfg="postProcessing_74X_50ns.cfg",
@@ -40,7 +42,9 @@ int run(string cfg="postProcessing_74X_50ns.cfg",
 	string inputFolder = "/pnfs/psi.ch/cms/trivcat/store/user/casal/babies/PHYS14_Production_QCDpt_noSietaieta/", 
 	string outputFolder = "./test/",  
 	string fileExtension = "_post.root",
-        string crabExt = ""){
+        string crabExt = "",
+	string inputPU = "",
+	string PUvar = "nTrueInt"){
   
   // for measuring timing
   time_t start = time(0);
@@ -97,7 +101,9 @@ int postProcessing(string inputString,
 		   string outputFile,
 		   string treeName,
 		   float filter, float kfactor, float xsec, int id,
-		   string crabExt)
+		   string crabExt,
+		   string inputPU,
+		   string PUvar)
 {
   TChain* chain = new TChain(treeName.c_str());
   // Add all files in the input folder
@@ -114,6 +120,17 @@ int postProcessing(string inputString,
     cout << "fullInputString: " << fullInputString << endl;
     return 1;
   }
+
+  TChain* chain_pu = new TChain(treeName.c_str());
+  chain_pu->Add(inputPU.c_str());
+  
+  TH1D* hPU_data = new TH1D("hPU_data", "", 100, 0, 100);
+  hPU_data->Sumw2();
+
+  chain_pu->Project("hPU_data", "nVert", "HLT_PFHT800 || HLT_ht475prescale");
+  
+  ULong64_t nEntries = hPU_data->Integral();
+  hPU_data->Scale(1.0/nEntries);
   
   // here I set the "Count" histograms
   TIter nextfile(chain->GetListOfFiles());
@@ -132,12 +149,19 @@ int postProcessing(string inputString,
       newH->SetDirectory(0);  
       isFirst=false;
       
-      newSumW = (TH1D*) sumW->Clone();
+      if(sumW){
+	newSumW = (TH1D*) sumW->Clone();
+      }
+      else
+	newSumW = (TH1D*) countH->Clone();
       newSumW->SetDirectory(0);  
-      isFirst=false;      
+
     }
     allHistoEntries += countH->GetBinContent(1);
-    allSumGenWeight += sumW->GetBinContent(1);
+    if(sumW)
+      allSumGenWeight += sumW->GetBinContent(1);
+    else
+      allSumGenWeight += countH->GetBinContent(1);
     f->Close();
     delete f;      
   }
@@ -149,10 +173,10 @@ int postProcessing(string inputString,
   //
   //t->SetBranchStatus("scale1fb", 0);
 
-  
   TFile *out = TFile::Open(outputFile.c_str(), "RECREATE");
   TTree *clone = new TTree("mt2", "post processed baby tree for mt2 analysis");
 
+  chain->SetBranchStatus("puWeight", 0);
   clone = chain->CloneTree(-1, "fast"); 
   clone->SetName("mt2");
   
@@ -175,6 +199,12 @@ int postProcessing(string inputString,
   
   int isData=0; 
   chain->SetBranchAddress("isData",&isData);
+  
+  int nVert=0;
+  chain->SetBranchAddress("nVert", &nVert);
+  
+  int nTrueInt=0;
+  chain->SetBranchAddress("nTrueInt", &nTrueInt);
 
   if( nEventsTree > 0 ){
 
@@ -188,12 +218,26 @@ int postProcessing(string inputString,
   }
 
 
+  TH1D* hPU = (TH1D*) hPU_data->Clone("hPU");
+  hPU->Reset();
+  
+  if(PUvar == "nVert")
+    chain->Project("hPU", "nVert");
+  else
+    chain->Project("hPU", "nTrueInt");
+
+  hPU->Scale(1.0/nEventsTree);
+  
+  TH1D* hPU_r = (TH1D*) hPU_data->Clone("hPU_r");
+  hPU_r->Divide(hPU);
+
   //  float scale1fb = xsec*kfactor*1000*filter/(Float_t)nEventsHisto;
   ULong64_t sumGenWeightsHisto; 
   ULong64_t nEffEventsHisto; 
   float scale1fb_noGenWeight;
   float scale1fb_sumGenWeights;
   float scale1fb;
+  float puWeight;
 
   if(isData){
     
@@ -233,6 +277,7 @@ int postProcessing(string inputString,
   TBranch* b8 = clone->Branch("evt_nEffectiveEvts", &nEffEventsHisto, "evt_nEffectiveEvts/l");
   TBranch* b9 = clone->Branch("evt_sumGenWeights", &sumGenWeightsHisto, "evt_sumGenWeights/l");
   TBranch* b10 = clone->Branch("evt_id", &id, "evt_id/I");
+  TBranch* b11 = clone->Branch("puWeight", &puWeight, "puWeight/F");
 
   for(Long64_t i = 0; i < (Long64_t) nEventsTree; i++) {
     
@@ -241,9 +286,16 @@ int postProcessing(string inputString,
       //data should never be rescaled with scale1fb when making plots
       //set scaler to zero so that user cannot miss the mistake
       scale1fb = 0.0; 
+      puWeight = 1.0;
     }
     else{
       scale1fb= xsec*kfactor*1000*filter*genWeight/(Float_t)sumGenWeightsHisto;
+      
+      int nPU = ( PUvar == "nVert") ? nVert : nTrueInt;
+      
+      int puBin = (int) hPU_r->GetXaxis()->FindBin(nPU);
+      puWeight = hPU_r->GetBinContent(puBin);
+
     }
     
     b1->Fill();
@@ -256,13 +308,18 @@ int postProcessing(string inputString,
     b8->Fill();
     b9->Fill();
     b10->Fill();
-
+    b11->Fill();
+    
   }
   //-------------------------------------------------------------
 
   delete chain; 
 
 
+  hPU_r->Write();
+  delete hPU_r;
+  delete hPU;
+  delete hPU_data;
   newH->Write();
   delete newH;
   newSumW->Write();
