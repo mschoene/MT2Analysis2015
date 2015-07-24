@@ -110,6 +110,7 @@ int main( int argc, char* argv[] ) {
       int this_id = fSamples[i].id;
       if( this_id>=200 && this_id<300 ) continue; // skip GJets
       if( this_id>=700 && this_id<800 ) continue; // skip DY
+      //if( !(this_id>=600 && this_id<700) ) continue; // only Zinv
       EventYield.push_back( computeYield<MT2EstimateTree>( fSamples[i], cfg ));
     }
 
@@ -305,7 +306,7 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg ) {
     float GenSusyMScan1 = myTree.GenSusyMScan1;
     float GenSusyMScan2 = myTree.GenSusyMScan2;
     
-    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi();
+    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi()*myTree.puWeight;
     //weight *= myTree.weight_lepsf;
 
     //if( isData ) {
