@@ -154,17 +154,17 @@ int main(int argc, char* argv[]){
 
     float bins_nJets[] = {2,4,7,12};
     float bins_nBJets[] = {0,1,2,3,6}; 
-    float bins_mt2[] = {200,300,400, 1500 };
+    float bins_mt2[] = {200,300,400, 1000 };
     //  float bins_mt2[] = {200,300,400,500, 600, 800, 1000, 1500 };
     float bins_ht[] =  {450,575,1000,1500,2000};
   
 
-   std::string cut =  "weight*(ht>180 && abs(Z_mass-91.19)<25 && lep_pt0>25 && lep_pt1>20 &&( HLT_DoubleMu||HLT_DoubleEl) )";
+   std::string cut =  "weight*(mt2>200 && abs(Z_mass-91.19)<15 && lep_pt0>25 && lep_pt1>20 &&( HLT_DoubleMu||HLT_DoubleEl) )";
     //std::string cut =  "weight*(ht>450 && abs(Z_mass-91.19)<25 )";
     //    std::string cut =  "weight*(abs(Z_mass-91.19)<20)";
     //    std::string cut =  "weight*(abs(Z_mass-91.19)<10 &&nBJets<2)";
     std::string cut_corr =  "weight*(abs(Z_mass-91.19)<10 )";
-    std::string cut_gamma =  "weight*(ht>180 && prompt==2)*1.27";
+    std::string cut_gamma =  "weight*( prompt==2)*1.27";
 
     
     int size_mt2 = sizeof(bins_mt2)/sizeof(float)-1;
@@ -316,7 +316,7 @@ void drawRatios(std::string fullPath, float *binss, unsigned int size,  std::str
   
   zll_data_tree ->Project( "h_mt2" , zll_sel.c_str(), cut.c_str() );
   //will have to add the purity here at some point soon (for now just 0.95)
-  gamma_data_tree->Project( "g_mt2", gamma_sel.c_str(),  "weight*0.92*(ht>180)" );
+  gamma_data_tree->Project( "g_mt2", gamma_sel.c_str(),  "weight*0.92 " );
 
   std::cout <<  h_mt2->GetMean() << std::endl;
   std::cout <<  g_mt2->GetMean() << std::endl;
@@ -441,9 +441,9 @@ void drawRatios(std::string fullPath, float *binss, unsigned int size,  std::str
       regionText->SetTextFont(42);
       regionText->SetFillColor(0);
       regionText->SetTextAlign(11);
-      if(i==0)
-	regionText->AddText( "H_{T} > 180 GeV" );
-      else
+      //   if(i==0)
+      //	regionText->AddText( "H_{T} > 180 GeV" );
+      //  else
 	regionText->AddText( niceNames2[i].c_str() );
       regionText->Draw("same");
     }

@@ -105,6 +105,7 @@ int main(int argc, char* argv[]){
   std::cout << std::endl << std::endl;
   std::cout << "-> Loading data from file: " << samplesFile_data << std::endl;
   std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, "Double");
+  // std::vector<MT2Sample> samples_data_of = MT2Sample::loadSamples(samplesFile_data, "MuonEG");
 
   std::vector< MT2Analysis<MT2EstimateTree>* > dataTree;
   std::vector< MT2Analysis<MT2EstimateTree>* > dataTree_of;
