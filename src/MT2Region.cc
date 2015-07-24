@@ -130,6 +130,19 @@ std::string MT2HTRegion::getNiceName() const {
 
 }
 
+std::string MT2HTRegion::getNiceNameLatex() const {
+
+  std::string htMax_str(Form("%.0f", htMax));
+  char htPart[500];
+  if( htMax==-1 ) 
+    sprintf( htPart, "H$_{\\mathrm{T}} > %.0f$~GeV", htMin );
+  else
+    sprintf( htPart, "$%.0f < $H$_{\\mathrm{T}} < %.0f$~GeV", htMin, htMax );
+  std::string htPart_str(htPart);
+
+  return htPart_str;
+
+}
 
 
 
@@ -366,6 +379,50 @@ std::string MT2SignalRegion::getNiceJetName( const std::string& pedix, int nmin,
 
 }
 
+std::string MT2SignalRegion::getNiceNameLatex() const {
+
+  std::string niceName_j = getNiceJetNameLatex( "j", nJetsMin,  nJetsMax  );
+  std::string niceName_b = getNiceJetNameLatex( "b", nBJetsMin,  nBJetsMax  );
+
+  std::string niceName = niceName_j;
+  if( niceName!="" && niceName_b!="" ) niceName += ", " + niceName_b;
+
+  if( mtCut=="loMT"  ) niceName += " (low M_{T})";
+  else if( mtCut=="hiMT" ) niceName += " (high M_{T})";
+
+  return niceName;
+
+}
+
+
+std::string MT2SignalRegion::getNiceJetNameLatex( const std::string& pedix, int nmin, int nmax ) const {
+
+  if( nmin==-1 && nmax==-1 ) return std::string("");
+
+  char n[500];
+//  if( nmax==nmin )
+//    sprintf( n, "N(%s) = %d", pedix.c_str(), nmin );
+//  else {
+//    if( nmax==-1 )
+//      sprintf( n, "N(%s) #geq %d", pedix.c_str(), nmin );
+//    else
+//      sprintf( n, "%d #leq N(%s) #leq %d", nmin, pedix.c_str(), nmax );
+//  }
+  if( nmax==nmin )
+    sprintf( n, "$%d$%s", nmin, pedix.c_str() );
+  else {
+    if( nmax==-1 )
+      sprintf( n, "$\\geq%d$%s", nmin, pedix.c_str() );
+    else
+      sprintf( n, "$%d-%d$%s", nmin, nmax, pedix.c_str() );
+  }
+
+  std::string nicename(n);
+
+  return nicename;
+
+}
+
 
 
 
@@ -539,8 +596,10 @@ void MT2Region::getBins( int &nBins, double*& bins) const {
 
   if( regionName == "HT450toInf_j2toInf_b0toInf" ) {  // this is the inclusive region
 
-    const int nBins_tmp                        = 4;
-    bins = new double[nBins_tmp+1]{200., 300., 400., 600., 1000.};
+    const int nBins_tmp                        = 7;
+    bins = new double[nBins_tmp+1]{200., 300., 400., 500., 600., 800., 1000., 1500. };
+    //  const int nBins_tmp                        = 4;
+    //  bins = new double[nBins_tmp+1]{200., 300., 400., 600., 1000.};
     //const int nBins_tmp                        = 5;
     //bins = new double[nBins_tmp+1]{200., 300., 400., 600., 1000., 1500.};
     nBins = nBins_tmp;
@@ -814,11 +873,325 @@ void MT2Region::getBins( int &nBins, double*& bins) const {
     nBins = nBins_tmp;
 
   } 
-  
-  else { // default binning
+  ////// DARK MATTER
+  else if( regionName == "HT450to575_j2_b0" ){
+    
+    const int nBins_tmp                        = 4;
+    bins = new double[nBins_tmp+1]{200., 300., 400., 500., 1500.};
+    nBins = nBins_tmp;
+    
+  } else if( regionName == "HT450to575_j2_b1" ){
 
     const int nBins_tmp                        = 4;
-    bins = new double[nBins_tmp+1]{200., 300., 400., 600., 1000.};
+    bins = new double[nBins_tmp+1]{200., 300., 400., 500., 1500.};
+    nBins = nBins_tmp;
+
+  } else if( regionName == "HT450to575_j2_b0toInf" ){
+    
+    const int nBins_tmp                        = 4;
+    bins = new double[nBins_tmp+1]{200., 300., 400., 500., 1500.};
+    nBins = nBins_tmp;
+    
+  } else if( regionName == "HT450to575_j2_b0to1" ){
+    
+    const int nBins_tmp                        = 4;
+    bins = new double[nBins_tmp+1]{200., 300., 400., 500., 1500.};
+    nBins = nBins_tmp;
+    
+  } else if( regionName == "HT450to575_j3_b0" ){ 
+    
+    const int nBins_tmp                        = 4;
+    bins = new double[nBins_tmp+1]{200., 300., 400., 500., 1500.};
+    nBins = nBins_tmp;
+    
+  } else if( regionName == "HT450to575_j3_b1" ){
+
+    const int nBins_tmp                        = 4;
+    bins = new double[nBins_tmp+1]{200., 300., 400., 500., 1500.};
+    nBins = nBins_tmp;
+
+  } else if( regionName == "HT450to575_j3_b0to1" ){ 
+    
+    const int nBins_tmp                        = 4;
+    bins = new double[nBins_tmp+1]{200., 300., 400., 500., 1500.};
+    nBins = nBins_tmp;
+    
+  } else if( regionName == "HT450to575_j2_b0toInf" ){
+    
+    const int nBins_tmp                        = 4;
+    bins = new double[nBins_tmp+1]{200., 300., 400., 500., 1500.};
+    nBins = nBins_tmp;
+    
+  } 
+
+  else if( regionName == "HT575to1000_j2_b0" ){
+
+    const int nBins_tmp                        = 5;
+    bins = new double[nBins_tmp+1]{200., 300., 400., 600., 800., 1500.};
+    nBins = nBins_tmp;
+
+  } else if( regionName == "HT575to1000_j2_b1" ){
+
+    const int nBins_tmp                        = 5;
+    bins = new double[nBins_tmp+1]{200., 300., 400., 600., 800., 1500.};
+    nBins = nBins_tmp;
+
+  } else if( regionName == "HT575to1000_j2_b0to1" ){
+
+    const int nBins_tmp                        = 5;
+    bins = new double[nBins_tmp+1]{200., 300., 400., 600., 800., 1500.};
+    nBins = nBins_tmp;
+
+  } else if( regionName == "HT575to1000_j2_b0toInf" ){
+
+    const int nBins_tmp                        = 5;
+    bins = new double[nBins_tmp+1]{200., 300., 400., 600., 800., 1500.};
+    nBins = nBins_tmp;
+
+  } else if( regionName == "HT575to1000_j3_b0" ){
+
+    const int nBins_tmp                        = 5;
+    bins = new double[nBins_tmp+1]{200., 300., 400., 600., 800., 1500.};
+    nBins = nBins_tmp;
+
+  } else if( regionName == "HT575to1000_j3_b1" ){
+
+    const int nBins_tmp                        = 5;
+    bins = new double[nBins_tmp+1]{200., 300., 400., 600., 800., 1500.};
+    nBins = nBins_tmp;
+
+  } else if( regionName == "HT575to1000_j3_b0to1" ){
+
+    const int nBins_tmp                        = 5;
+    bins = new double[nBins_tmp+1]{200., 300., 400., 600., 800., 1500.};
+    nBins = nBins_tmp;
+
+  } else if( regionName == "HT575to1000_j3_b0toInf" ){
+
+    const int nBins_tmp                        = 5;
+    bins = new double[nBins_tmp+1]{200., 300., 400., 600., 800., 1500.};
+    nBins = nBins_tmp;
+
+  } 
+
+  else if( regionName == "HT1000to1500_j2_b0" ){
+
+    const int nBins_tmp                        = 5;
+    bins = new double[nBins_tmp+1]{200., 400., 600., 800., 1000., 1500.};
+    nBins = nBins_tmp;
+
+  } else if( regionName == "HT1000to1500_j2_b1" ){
+
+    const int nBins_tmp                        = 4;
+    bins = new double[nBins_tmp+1]{200., 400., 600., 800., 1500.};
+    nBins = nBins_tmp;
+
+  } else if( regionName == "HT1000to1500_j2_b0to1" ){
+
+    const int nBins_tmp                        = 5;
+    bins = new double[nBins_tmp+1]{200., 400., 600., 800., 1000., 1500.};
+    nBins = nBins_tmp;
+
+  } else if( regionName == "HT1000to1500_j2_b0toInf" ){
+
+    const int nBins_tmp                        = 5;
+    bins = new double[nBins_tmp+1]{200., 400., 600., 800., 1000., 1500.};
+    nBins = nBins_tmp;
+
+  } else if( regionName == "HT1000to1500_j3_b0" ){
+
+    const int nBins_tmp                        = 5;
+    bins = new double[nBins_tmp+1]{200., 400., 600., 800., 1000., 1500.};
+    nBins = nBins_tmp;
+
+  } else if( regionName == "HT1000to1500_j3_b1" ){
+
+    const int nBins_tmp                        = 4;
+    bins = new double[nBins_tmp+1]{200., 400., 600., 800., 1500.};
+    nBins = nBins_tmp;
+
+  } else if( regionName == "HT1000to1500_j3_b0to1" ){
+
+    const int nBins_tmp                        = 5;
+    bins = new double[nBins_tmp+1]{200., 400., 600., 800., 1000., 1500.};
+    nBins = nBins_tmp;
+
+  } else if( regionName == "HT1000to1500_j3_b0toInf" ){
+
+    const int nBins_tmp                        = 5;
+    bins = new double[nBins_tmp+1]{200., 400., 600., 800., 1000., 1500.};
+    nBins = nBins_tmp;
+
+  }
+
+  else if( regionName == "HT1500toInf_j2_b0" ){
+
+    const int nBins_tmp                        = 5;
+    bins = new double[nBins_tmp+1]{200., 400., 600., 800., 1000., 1500.};
+    nBins = nBins_tmp;
+
+  } else if( regionName == "HT1500toInf_j2_b1" ){
+
+    const int nBins_tmp                        = 3;
+    bins = new double[nBins_tmp+1]{200., 400., 600., 1500.};
+    nBins = nBins_tmp;
+
+  } else if( regionName == "HT1500toInf_j2_b0to1" ){
+
+    const int nBins_tmp                        = 5;
+    bins = new double[nBins_tmp+1]{200., 400., 600., 800., 1000., 1500.};
+    nBins = nBins_tmp;
+
+  } else if( regionName == "HT1500toInf_j2_b0toInf" ){
+
+    const int nBins_tmp                        = 5;
+    bins = new double[nBins_tmp+1]{200., 400., 600., 800., 1000., 1500.};
+    nBins = nBins_tmp;
+
+  } else if( regionName == "HT1500toInf_j3_b0" ){
+
+    const int nBins_tmp                        = 5;
+    bins = new double[nBins_tmp+1]{200., 400., 600., 800., 1000., 1500.};
+    nBins = nBins_tmp;
+
+  } else if( regionName == "HT1500toInf_j3_b1" ){
+
+    const int nBins_tmp                        = 3;
+    bins = new double[nBins_tmp+1]{200., 400., 600., 1500.};
+    nBins = nBins_tmp;
+
+  } else if( regionName == "HT1500toInf_j3_b0to1" ){
+
+    const int nBins_tmp                        = 5;
+    bins = new double[nBins_tmp+1]{200., 400., 600., 800., 1000., 1500.};
+    nBins = nBins_tmp;
+
+  } else if( regionName == "HT1500toInf_j3_b0toInf" ){
+
+    const int nBins_tmp                        = 5;
+    bins = new double[nBins_tmp+1]{200., 400., 600., 800., 1000., 1500.};
+    nBins = nBins_tmp;
+
+  } 
+
+  else if( regionName == "HT450to575_j4toInf_b0" ){
+
+    const int nBins_tmp                        = 4;
+    bins = new double[nBins_tmp+1]{200., 300., 400., 500., 1500.};
+    nBins = nBins_tmp;
+
+  } else if( regionName == "HT450to575_j4toInf_b1" ){
+
+    const int nBins_tmp                        = 4;
+    bins = new double[nBins_tmp+1]{200., 300., 400., 500., 1500.};
+    nBins = nBins_tmp;
+
+  } else if( regionName == "HT450to575_j4toInf_b0to1" ){
+
+    const int nBins_tmp                        = 4;
+    bins = new double[nBins_tmp+1]{200., 300., 400., 500., 1500.};
+    nBins = nBins_tmp;
+
+  } else if( regionName == "HT450to575_j4toInf_b0toInf" ){
+
+    const int nBins_tmp                        = 4;
+    bins = new double[nBins_tmp+1]{200., 300., 400., 500., 1500.};
+    nBins = nBins_tmp;
+
+  } 
+
+  else if( regionName == "HT575to1000_j4toInf_b0" ){
+
+    const int nBins_tmp                        = 5;
+    bins = new double[nBins_tmp+1]{200., 300., 400., 600., 800., 1500.};
+    nBins = nBins_tmp;
+
+  } else if( regionName == "HT575to1000_j4toInf_b1" ){
+
+    const int nBins_tmp                        = 4;
+    bins = new double[nBins_tmp+1]{200., 300., 400., 600., 1500.};
+    nBins = nBins_tmp;
+
+  } else if( regionName == "HT575to1000_j4toInf_b0to1" ){
+
+    const int nBins_tmp                        = 5;
+    bins = new double[nBins_tmp+1]{200., 300., 400., 600., 800., 1500.};
+    nBins = nBins_tmp;
+
+  } else if( regionName == "HT575to1000_j4toInf_b0toInf" ){
+
+    const int nBins_tmp                        = 5;
+    bins = new double[nBins_tmp+1]{200., 300., 400., 600., 800., 1500.};
+    nBins = nBins_tmp;
+
+  } 
+  
+  else if( regionName == "HT1000to1500_j4toInf_b0" ){
+
+    const int nBins_tmp                        = 5;
+    bins = new double[nBins_tmp+1]{200., 400., 600., 800., 1000., 1500.};
+    nBins = nBins_tmp;
+
+  } else if( regionName == "HT1000to1500_j4toInf_b1" ){
+
+    const int nBins_tmp                        = 4;
+    bins = new double[nBins_tmp+1]{200., 400., 600., 800., 1500.};
+    nBins = nBins_tmp;
+
+  } else if( regionName == "HT1000to1500_j4toInf_b0to1" ){
+
+    const int nBins_tmp                        = 5;
+    bins = new double[nBins_tmp+1]{200., 400., 600., 800., 1000., 1500.};
+    nBins = nBins_tmp;
+
+  } else if( regionName == "HT1000to1500_j4toInf_b0toInf" ){
+
+    const int nBins_tmp                        = 5;
+    bins = new double[nBins_tmp+1]{200., 400., 600., 800., 1000., 1500.};
+    nBins = nBins_tmp;
+
+  } 
+  
+  else if( regionName == "HT1500toInf_j4toInf_b0" ){
+
+    const int nBins_tmp                        = 5;
+    bins = new double[nBins_tmp+1]{200., 400., 600., 800., 1000., 1500.};
+    nBins = nBins_tmp;
+
+  } else if( regionName == "HT1500toInf_j4toInf_b1" ){
+
+    const int nBins_tmp                        = 3;
+    bins = new double[nBins_tmp+1]{200., 400., 600., 1500.};
+    nBins = nBins_tmp;
+
+  } else if( regionName == "HT1500toInf_j4toInf_b0to1" ){
+
+    const int nBins_tmp                        = 5;
+    bins = new double[nBins_tmp+1]{200., 400., 600., 800., 1000., 1500.};
+    nBins = nBins_tmp;
+
+  } else if( regionName == "HT1500toInf_j4toInf_b0toInf" ){
+
+    const int nBins_tmp                        = 5;
+    bins = new double[nBins_tmp+1]{200., 400., 600., 800., 1000., 1500.};
+    nBins = nBins_tmp;
+
+   
+  } else if( regionName == "HT450toInf_j1_b0toInf" ){ // monojet region
+
+    const int nBins_tmp                        = 4;
+    bins = new double[nBins_tmp+1]{450., 550., 700., 1000., 1500.};
+    nBins = nBins_tmp;
+
+  } 
+  //////END DARKMATTER
+
+  else { // default binning
+ 
+    const int nBins_tmp                        = 7;
+    bins = new double[nBins_tmp+1]{200., 300., 400., 500., 600., 800., 1000., 1500. };
+    //const int nBins_tmp                        = 4;
+    //bins = new double[nBins_tmp+1]{200., 300., 400., 600., 1000.};
     //const int nBins_tmp                        = 5;
     //bins = new double[nBins_tmp+1]{200., 300., 400., 600., 1000., 1500.};
     nBins = nBins_tmp;
@@ -844,6 +1217,16 @@ std::vector< std::string > MT2Region::getNiceNames() const {
 
 }
 
+std::vector< std::string > MT2Region::getNiceNamesLatex() const {
+
+  std::vector< std::string > names;
+  names.push_back(htRegion_->getNiceNameLatex());
+  names.push_back(sigRegion_->getNiceNameLatex());
+
+  return names;
+
+}
+
 
 std::string MT2Region::getBinName(double& min, double& max) const {
 
@@ -852,6 +1235,20 @@ std::string MT2Region::getBinName(double& min, double& max) const {
     sprintf( binName, "M_{T2} > %.0f GeV", min );
   else
     sprintf( binName, "%.0f < M_{T2} < %.0f GeV", min, max );
+  
+  std::string binName_str(binName);
+  
+  return binName_str;
+  
+}
+
+std::string MT2Region::getBinNameLatex(double& min, double& max) const {
+
+  char binName[500];
+  if( max < 0 )
+    sprintf( binName, "M$_{\\mathrm{T2}} > %.0f$~GeV", min );
+  else
+    sprintf( binName, "$%.0f < $M$_{\\mathrm{T2}} < %.0f$~GeV", min, max );
   
   std::string binName_str(binName);
   
@@ -870,6 +1267,22 @@ std::vector< std::string> MT2Region::getBinNames() const {
     names.push_back( getBinName(bins[i-1], bins[i]) );
   double lastbin=-1.;
   names.push_back( getBinName(bins[nBins-1], lastbin) );
+
+  return names;
+
+}
+
+std::vector< std::string> MT2Region::getBinNamesLatex() const {
+  
+  int nBins;
+  double* bins;
+  this->getBins(nBins, bins);
+  
+  std::vector< std::string > names;
+  for( int i=1; i<nBins; ++i )
+    names.push_back( getBinNameLatex(bins[i-1], bins[i]) );
+  double lastbin=-1.;
+  names.push_back( getBinNameLatex(bins[nBins-1], lastbin) );
 
   return names;
 
@@ -943,3 +1356,8 @@ bool MT2Region::operator<=( const MT2Region& rhs ) const {
 
 
 //  LocalWords:  tmp
+
+
+
+
+
