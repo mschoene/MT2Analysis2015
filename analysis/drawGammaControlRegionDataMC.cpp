@@ -64,8 +64,6 @@ int main( int argc, char* argv[] ) {
   drawYields( cfg, data, mc, "ht"        , "ht"       , selection, 22, 450., 1550., "H_{T}", "GeV" );
   drawYields( cfg, data, mc, "nJets"     , "nJets"    , selection, 10, 1.5, 11.5, "Number of Jets (p_{T} > 30 GeV)", "" );
   drawYields( cfg, data, mc, "nBJets"    , "nBJets"   , selection, 6, -0.5, 5.5, "Number of b-Jets (p_{T} > 20 GeV)", "" );
-  drawYields( cfg, data, mc, "jet1_pt"   , "jet1_pt"  , selection, 16, 100., 900., "Leading Jet p_{T}", "GeV" );
-  drawYields( cfg, data, mc, "jet2_pt"   , "jet2_pt"  , selection, 13, 30., 680., "Subleading Jet p_{T}", "GeV" );
   drawYields( cfg, data, mc, "ptGamma"   , "ptGamma"  , selection, 18, 180., 1080, "Photon p_{T}", "GeV" );
   drawYields( cfg, data, mc, "etaGamma"  , "etaGamma" , selection, 10, -2.5, 2.5, "Photon #eta", "" );
   drawYields( cfg, data, mc, "sietaieta" , "sietaieta", selection, 12, 0.0075, 0.0111, "Photon #sigma_{i#eta i#eta}", "" );
