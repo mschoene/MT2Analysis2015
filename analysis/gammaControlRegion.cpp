@@ -368,7 +368,7 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
     int nbjets      = myTree.gamma_nBJet20;    
     float mt2       = (njets>1) ? myTree.gamma_mt2 : myTree.gamma_jet1_pt;
 
-    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi(); 
+    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi()*myTree.puWeight; 
 
     bool passIso = iso<isoCut;
 

@@ -72,12 +72,17 @@ int main( int argc, char* argv[] ) {
   mc.push_back(top);
 
 
-  std::string selection = "ht>900. && nJets>1 && met>30.";
+  std::string selection = "weight*(ht>900. && nJets>1 && met>30.)";
+
+  //drawYields( cfg, data, mc, "nVert_noW" , "nVert" , selection, 50, 0.5, 50.5, "Number of Vertices", "" );
+
+
+  selection = "weight*(ht>900. && nJets>1 && met>30.)";
 
   drawYields( cfg, data, mc, "nVert" , "nVert" , selection, 50, 0.5, 50.5, "Number of Vertices", "" );
-  drawYields( cfg, data, mc, "mt2"   , "mt2"   , selection, 30, 0., 300., "M_{T2}", "GeV" );
-  drawYields( cfg, data, mc, "met"   , "met"   , selection, 40, 30., 430., "Missing E_{T}", "GeV" );
-  drawYields( cfg, data, mc, "ht"    , "ht"    , selection, 25, 900., 3400., "H_{T}", "GeV" );
+  drawYields( cfg, data, mc, "mt2"   , "mt2"   , selection, 60, 0., 300., "M_{T2}", "GeV" );
+  drawYields( cfg, data, mc, "met"   , "met"   , selection, 80, 30., 430., "Missing E_{T}", "GeV" );
+  drawYields( cfg, data, mc, "ht"    , "ht"    , selection, 50, 900., 3400., "H_{T}", "GeV" );
   drawYields( cfg, data, mc, "nJets" , "nJets" , selection, 12, 1.5, 13.5, "Number of Jets (p_{T} > 30 GeV)", "" );
   drawYields( cfg, data, mc, "nBJets", "nBJets", selection, 7, -0.5, 6.5, "Number of b-Jets (p_{T} > 20 GeV)", "" );
 
@@ -142,9 +147,9 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, std::vector<
       TH1D* h1_mc = new TH1D( thisName.c_str(), "", nBins, xMin, xMax );
       h1_mc->Sumw2();
       if( selection!="" )
-        tree_mc->Project( thisName.c_str(), varName.c_str(), Form("weight*(%s)", selection.c_str()) );
+        tree_mc->Project( thisName.c_str(), varName.c_str(), Form("%s", selection.c_str()) );
       else
-        tree_mc->Project( thisName.c_str(), varName.c_str(), "weight" );
+        tree_mc->Project( thisName.c_str(), varName.c_str(), "" );
       histos_mc.push_back(h1_mc);
     }
 
@@ -171,8 +176,6 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, std::vector<
       histos_mc[index]->SetLineColor( kBlack );
       if( shapeNorm )
         histos_mc[index]->Scale( scaleFactor );
-      else
-        histos_mc[index]->Scale( 0.8 );
       bgStack.Add(histos_mc[index]);
     }
 
