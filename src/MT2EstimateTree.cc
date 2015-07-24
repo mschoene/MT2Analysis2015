@@ -42,22 +42,28 @@ MT2EstimateTree::~MT2EstimateTree() {
 
 
 
-void MT2EstimateTree::initTree() {
+
+
+void MT2EstimateTree::initTree( ) {
 
   tree->Branch( "run", &run, "run/I");
   tree->Branch( "lumi", &lumi, "lumi/I");
   tree->Branch( "evt", &evt, "evt/i");
   tree->Branch( "weight", &weight, "weight/F");
+  tree->Branch( "puWeight", &puWeight, "puWeight/F");
   tree->Branch( "id", &id, "id/I");
 
   tree->Branch( "mt2", &mt2, "mt2/F");
   tree->Branch( "ht", &ht, "ht/F");
+
   tree->Branch( "met", &met, "met/F");
+  tree->Branch( "nJets", &nJets, "nJets/I");
+  tree->Branch( "nBJets", &nBJets, "nBJets/I");
+  
   tree->Branch( "deltaPhiMin", &deltaPhiMin, "deltaPhiMin/F");
   tree->Branch("diffMetMht", &diffMetMht, "diffMetMht/F");
   tree->Branch( "nVert", &nVert, "nVert/I");
-  tree->Branch( "nJets", &nJets, "nJets/I");
-  tree->Branch( "nBJets", &nBJets, "nBJets/I");
+
   tree->Branch( "nElectrons", &nElectrons, "nElectrons/I");
   tree->Branch( "nMuons", &nMuons, "nMuons/I");
   tree->Branch( "nPFLep", &nPFLep, "nPFLep/I");
@@ -67,8 +73,8 @@ void MT2EstimateTree::initTree() {
   tree->Branch( "GenSusyMScan2", &GenSusyMScan2, "GenSusyMScan2/I");
 
   tree->SetDirectory(0);
-
 }
+
 
 
 
@@ -149,51 +155,90 @@ void MT2EstimateTree::assignVar( const std::string& name, float value ) {
 
 
 
-void MT2EstimateTree::fillTree( const MT2Tree& mt2tree, float w ) {
-
-  this->assignTree( mt2tree, w );
-
+void MT2EstimateTree::fillTree( const MT2Tree& mt2tree, float w  ) {
+  this->assignTree( mt2tree, w  );
   tree->Fill();
-
 }
 
 
 
 void MT2EstimateTree::fillTree_gamma( const MT2Tree& mt2tree, float w ) {
-
   this->assignTree_gamma( mt2tree, w );
-
   tree->Fill();
+}
 
+
+void MT2EstimateTree::fillTree_zll( const MT2Tree& mt2tree, float w ) {
+  this->assignTree_zll( mt2tree, w );
+  tree->Fill();
 }
 
 
 
-void MT2EstimateTree::assignTree( const MT2Tree& mt2tree, float w ) {
+
+void MT2EstimateTree::assignTree( const MT2Tree& mt2tree, float w  ) {
+
+    run    = mt2tree.run;
+    lumi   = mt2tree.lumi;
+    evt    = mt2tree.evt;
+    weight = w;
+    puWeight = mt2tree.puWeight;
+    id     = mt2tree.evt_id;
+
+    mt2    = mt2tree.mt2;
+    ht     = mt2tree.ht;
+    met    = mt2tree.met_pt;
+
+    nJets  = mt2tree.nJet30;
+    nBJets = mt2tree.nBJet20;
+
+    deltaPhiMin   = mt2tree.deltaPhiMin;
+    diffMetMht    = mt2tree.diffMetMht;
+    nElectrons    = mt2tree.nElectrons10;
+    nMuons        = mt2tree.nMuons10;
+    nPFLep        = mt2tree.nPFLep5LowMT;
+    nPFHad        = mt2tree.nPFHad10LowMT;
+    
+    nVert  = mt2tree.nVert;
+
+    GenSusyMScan1 = mt2tree.GenSusyMScan1;
+    GenSusyMScan2 = mt2tree.GenSusyMScan2;
+ 
+}
+  
+
+void MT2EstimateTree::assignTree_zll( const MT2Tree& mt2tree, float w ) {
 
   run    = mt2tree.run;
   lumi   = mt2tree.lumi;
   evt    = mt2tree.evt;
   weight = w;
+  puWeight = mt2tree.puWeight;
   id     = mt2tree.evt_id;
 
-  mt2           = mt2tree.mt2;
-  ht            = mt2tree.ht;
-  met           = mt2tree.met_pt;
-  deltaPhiMin   = mt2tree.deltaPhiMin;
-  diffMetMht    = mt2tree.diffMetMht;
-  nJets         = mt2tree.nJet40;
+  nVert  = mt2tree.nVert;
+
+  mt2           = mt2tree.zll_mt2;
+  ht            = mt2tree.zll_ht;
+  met           = mt2tree.zll_met_pt;
+
+  deltaPhiMin   = mt2tree.zll_deltaPhiMin;
+  diffMetMht    = mt2tree.zll_diffMetMht;
+
+
+  nJets         = mt2tree.nJet30;
   nBJets        = mt2tree.nBJet20;
+
   nElectrons    = mt2tree.nElectrons10;
   nMuons        = mt2tree.nMuons10;
   nPFLep        = mt2tree.nPFLep5LowMT;
   nPFHad        = mt2tree.nPFHad10LowMT;
-  
+
   GenSusyMScan1 = mt2tree.GenSusyMScan1;
   GenSusyMScan2 = mt2tree.GenSusyMScan2;
-  
+
 }
-  
+
 
 void MT2EstimateTree::assignTree_gamma( const MT2Tree& mt2tree, float w ) {
 
@@ -201,14 +246,17 @@ void MT2EstimateTree::assignTree_gamma( const MT2Tree& mt2tree, float w ) {
   lumi   = mt2tree.lumi;
   evt    = mt2tree.evt;
   weight = w;
+  puWeight = mt2tree.puWeight;
   id     = mt2tree.evt_id;
+
+  nVert  = mt2tree.nVert;
 
   mt2           = mt2tree.gamma_mt2;
   ht            = mt2tree.gamma_ht;
   met           = mt2tree.gamma_met_pt;
   deltaPhiMin   = mt2tree.gamma_deltaPhiMin;
   diffMetMht    = mt2tree.gamma_diffMetMht;
-  nJets         = mt2tree.gamma_nJet40;
+  nJets         = mt2tree.gamma_nJet30;
   nBJets        = mt2tree.gamma_nBJet20;
   nElectrons    = mt2tree.nElectrons10;
   nMuons        = mt2tree.nMuons10;
@@ -223,7 +271,6 @@ void MT2EstimateTree::assignTree_gamma( const MT2Tree& mt2tree, float w ) {
   
 
 void MT2EstimateTree::assignVars( float aht, int anJets, int anBJets, float amet, float amt2 ) {
-
 
   mt2    = amt2;
   ht     = aht;
@@ -412,6 +459,8 @@ const MT2EstimateTree& MT2EstimateTree::operator+=( const MT2EstimateTree& rhs )
     this->tree->SetName( oldName.c_str() );
 
     this->initTree();
+
+    delete list;
 
   }
 

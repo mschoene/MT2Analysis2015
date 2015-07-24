@@ -20,6 +20,8 @@
 #include "TGraphAsymmErrors.h"
 
 
+#include "../interface/MT2DrawTools.h"
+#include "../interface/MT2Config.h"
 #include "../interface/MT2Analysis.h"
 #include "../interface/MT2Region.h"
 #include "../interface/MT2Estimate.h"
@@ -40,66 +42,89 @@ struct Purity {
 
 
 
-void fitSinglePurity( const std::string& outputdir, Purity& loose, Purity& tight, RooRealVar* x, RooDataSet* data, TH1D* h1_templPrompt, TH1D* h1_templFake );
-void fitPurity( const std::string& outputdir, MT2EstimateSyst* purityLoose, MT2EstimateSyst* purityTight, RooRealVar* x, std::vector<RooDataSet*> data, TH1D* templPrompt, TH1D* templFake );
+void fitSinglePurity( const MT2Config& cfg, Purity& loose, Purity& tight, RooRealVar* x, RooDataSet* data, TH1D* h1_templPrompt, TH1D* h1_templFake );
+void fitPurity( const MT2Config& cfg, MT2EstimateSyst* purityLoose, MT2EstimateSyst* purityTight, RooRealVar* x, std::vector<RooDataSet*> data, TH1D* templPrompt, TH1D* templFake );
 void checkBoundaries( Purity& p );
 
 
-float lumi = 4.; // fb-1
 
 
 
 int main( int argc, char* argv[] ) {
 
 
-  std::string samples = "PHYS14_v5_skimprune";
+  std::cout << std::endl << std::endl;
+  std::cout << "------------------------------------------------------" << std::endl;
+  std::cout << "|                                                    |" << std::endl;
+  std::cout << "|                                                    |" << std::endl;
+  std::cout << "|              Running fitPurityGamma                |" << std::endl;
+  std::cout << "|                                                    |" << std::endl;
+  std::cout << "|                                                    |" << std::endl;
+  std::cout << "------------------------------------------------------" << std::endl;
+  std::cout << std::endl << std::endl;
 
 
-  std::string mc_or_data = "DataRC";
-  if( argc>1 ) {
-    mc_or_data = std::string(argv[1]);
+  if( argc<2 ) {
+    std::cout << "USAGE: ./fitPurityGamma [configFileName]" << std::endl;
+    std::cout << "Exiting." << std::endl;
+    exit(11);
   }
 
-  if( mc_or_data=="data" ) mc_or_data="DataRC";
-  if( mc_or_data=="dataRC" ) mc_or_data="DataRC";
-  if( mc_or_data=="mc" ) mc_or_data="MC";
+
+  std::string configFileName(argv[1]);
+  MT2Config cfg(configFileName);
 
 
-
-  std::string regionsSet = "zurich";
   if( argc>2 ) {
-    regionsSet = std::string(argv[2]);
-  }
 
+    std::string mc_or_data_templates = std::string(argv[2]); 
+    if( mc_or_data_templates=="mc" ) mc_or_data_templates="MC";
+    std::cout << std::endl;
+    std::cout << "-> Will disobey the cfg and use mc_or_data_templates = " << mc_or_data_templates << std::endl;
+    cfg.set_gammaTemplateType(mc_or_data_templates);
+    std::cout << std::endl;
+
+  } 
+
+
+
+  MT2DrawTools::setStyle();
 
 
   TH1::AddDirectory(kFALSE);
 
 
-  std::string gammaCRdir(Form("GammaControlRegion_%s_%s_%.0ffb", samples.c_str(), regionsSet.c_str(), lumi ));
+  std::string gammaCRdir = cfg.getEventYieldDir() + "/gammaControlRegion"; //(Form("GammaControlRegion_%s_%s_%.0ffb", samples.c_str(), regionsSet.c_str(), lumi ));
   MT2Analysis<MT2EstimateZinvGamma>* gammaJet_data = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( gammaCRdir + "/data.root", "gammaCR_loose" );
 
-  MT2Analysis<MT2EstimateZinvGamma>* templates_prompt = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( "gammaTemplates" + mc_or_data + "_" + samples + "_13TeV_inclusive.root", "templatesPrompt" );
-  MT2Analysis<MT2EstimateZinvGamma>* templates_fake   = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( "gammaTemplates" + mc_or_data + "_" + samples + "_13TeV_inclusive.root", "templatesFake" );
+  MT2Analysis<MT2EstimateZinvGamma>* templates_prompt = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( "gammaTemplates" + cfg.gammaTemplateType() + "_" + cfg.mcSamples() + "_" + cfg.gammaTemplateRegions() + ".root", "templatesPrompt" );
+  MT2Analysis<MT2EstimateZinvGamma>* templates_fake   = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( "gammaTemplates" + cfg.gammaTemplateType() + "_" + cfg.mcSamples() + "_" + cfg.gammaTemplateRegions() + ".root", "templatesFake" );
 
+  MT2EstimateZinvGamma* templatePrompt, *templateFake;
+  if( cfg.gammaTemplateRegions()=="13TeV_inclusive" ) { // just get them once
+    templatePrompt = templates_prompt->get( MT2Region("HT450toInf_j2toInf_b0toInf") );
+    templateFake   = templates_fake  ->get( MT2Region("HT450toInf_j2toInf_b0toInf") );
+  }
 
-  std::string outputdir = gammaCRdir + "/PurityFits" + mc_or_data;
+  std::string outputdir = gammaCRdir + "/PurityFits" + cfg.gammaTemplateType();
   system( Form( "mkdir -p %s/singleFits", outputdir.c_str()) );
 
   std::set<MT2Region> regions = gammaJet_data->getRegions();
 
-  MT2Analysis<MT2EstimateSyst>* purityLoose = new MT2Analysis<MT2EstimateSyst>( "purityLoose", regionsSet );
-  MT2Analysis<MT2EstimateSyst>* purityTight = new MT2Analysis<MT2EstimateSyst>( "purity"     , regionsSet );
+  MT2Analysis<MT2EstimateSyst>* purityLoose = new MT2Analysis<MT2EstimateSyst>( "purityLoose", cfg.regionsSet() );
+  MT2Analysis<MT2EstimateSyst>* purityTight = new MT2Analysis<MT2EstimateSyst>( "purity"     , cfg.regionsSet() );
 
 
   for( std::set<MT2Region>::iterator iR=regions.begin(); iR!=regions.end(); ++iR ) {
 
-    if( iR->nBJetsMin()>1 ) continue;
+    if( iR->nBJetsMin()>2 ) continue;
 
     MT2EstimateZinvGamma* thisEstimate = gammaJet_data->get( *iR );
 
-    MT2EstimateZinvGamma* templatePrompt = templates_prompt->get( *(templates_prompt->matchRegion( *iR )) );
-    MT2EstimateZinvGamma* templateFake   = templates_fake  ->get( *(templates_fake  ->matchRegion( *iR )) );
+    if( cfg.gammaTemplateRegions()!="13TeV_inclusive" ) {
+      templatePrompt = templates_prompt->get( *(templates_prompt->matchRegion( *iR )) );
+      templateFake   = templates_fake  ->get( *(templates_fake  ->matchRegion( *iR )) );
+    }
 
     MT2EstimateSyst* thisLoosePurity = purityLoose->get( *iR );
     std::string nameLoose = thisLoosePurity->yield->GetName();
@@ -107,13 +132,14 @@ int main( int argc, char* argv[] ) {
     MT2EstimateSyst* thisTightPurity = purityTight->get( *iR );
     std::string nameTight = thisTightPurity->yield->GetName();
 
-    fitPurity( outputdir, thisLoosePurity, thisTightPurity, thisEstimate->x_, thisEstimate->iso_bins, templatePrompt->iso, templateFake->iso);
+    fitPurity( cfg, thisLoosePurity, thisTightPurity, thisEstimate->x_, thisEstimate->iso_bins, templatePrompt->iso, templateFake->iso);
 
     thisLoosePurity->yield->SetName( nameLoose.c_str() );
     thisTightPurity->yield->SetName( nameTight.c_str() );
 
   }
     
+
 
   purityLoose->writeToFile( outputdir + "/purityFit.root" );
   purityTight->addToFile( outputdir + "/purityFit.root" );
@@ -126,7 +152,7 @@ int main( int argc, char* argv[] ) {
 
 
 
-void fitPurity( const std::string& outputdir, MT2EstimateSyst* purityLoose, MT2EstimateSyst* purityTight, RooRealVar* x, std::vector<RooDataSet*> data, TH1D* templPrompt, TH1D* templFake ) {
+void fitPurity( const MT2Config& cfg, MT2EstimateSyst* purityLoose, MT2EstimateSyst* purityTight, RooRealVar* x, std::vector<RooDataSet*> data, TH1D* templPrompt, TH1D* templFake ) {
 
 
   for( unsigned i=0; i<data.size(); ++i ) {
@@ -134,7 +160,7 @@ void fitPurity( const std::string& outputdir, MT2EstimateSyst* purityLoose, MT2E
     int ibin = i+1;
 
     Purity loose, tight;
-    fitSinglePurity( outputdir, loose, tight, x, data[i], templPrompt, templFake );
+    fitSinglePurity( cfg, loose, tight, x, data[i], templPrompt, templFake );
 
     purityLoose->yield         ->SetBinContent( ibin, loose.purity );
     purityLoose->yield_systUp  ->SetBinContent( ibin, loose.purity + loose.purityErrUp );
@@ -155,12 +181,12 @@ void fitPurity( const std::string& outputdir, MT2EstimateSyst* purityLoose, MT2E
 
 
 
-void fitSinglePurity( const std::string& outputdir, Purity& loose, Purity& tight, RooRealVar* x, RooDataSet* data, TH1D* h1_templPrompt, TH1D* h1_templFake ) {
+void fitSinglePurity( const MT2Config& cfg, Purity& loose, Purity& tight, RooRealVar* x, RooDataSet* data, TH1D* h1_templPrompt, TH1D* h1_templFake ) {
 
 
   float dataIntegral = data->sumEntries();
-  float thresh = 2.5;
-  float data_pass = data->sumEntries(Form("x<%f", thresh));
+  float thresh = cfg.gammaIsoCut();
+  //float data_pass = data->sumEntries(Form("x<%f", thresh));
 
   if( dataIntegral == 0. ) {
     loose.purity=-1;
@@ -180,8 +206,8 @@ void fitSinglePurity( const std::string& outputdir, Purity& loose, Purity& tight
   RooHistPdf pdfPrompt("pdfPrompt", "", *x, templPrompt );
   RooHistPdf pdfFake  ("pdfFake"  , "", *x, templFake   );
 
-  RooRealVar sigFrac("promptFrac","fraction of prompt",0.9,0.,1.) ;
-  RooAddPdf  model("model","", RooArgList(pdfPrompt,pdfFake), sigFrac) ;
+  RooRealVar sigFrac ("promptFrac" ,"fraction of prompt",0.9,0.,1.);
+  RooAddPdf  model ("model" ,"", RooArgList(pdfPrompt,pdfFake), sigFrac);
 
   int nBins = h1_templPrompt->GetNbinsX();
   float xMin = h1_templPrompt->GetXaxis()->GetXmin();
@@ -189,18 +215,28 @@ void fitSinglePurity( const std::string& outputdir, Purity& loose, Purity& tight
 
   float xMaxFit = 0.9999*xMax;
   x->setRange( "fittingRange", 0., xMaxFit );
-  model.fitTo(*data, SumW2Error(kTRUE), Minos(kTRUE), Range("fittingRange")); 
+  model .fitTo(*data, SumW2Error(kTRUE), Minos(kTRUE), Range("fittingRange")); 
 
   loose.purity = sigFrac.getVal();
   loose.purityErrUp = sigFrac.getErrorHi();
   loose.purityErrDown = -sigFrac.getErrorLo();
 
-  int cutBin = h1_templPrompt->FindBin(thresh) - 1;
+  float sig = sigFrac.getVal()*dataIntegral;
+  float bg  = (1.-sigFrac.getVal())*dataIntegral;
 
+  int cutBin = h1_templPrompt->FindBin(thresh) - 1;
   float sigEff = h1_templPrompt->Integral(1, cutBin)/h1_templPrompt->Integral(1,nBins);
-  tight.purity        = sigEff * loose.purity        * dataIntegral / data_pass;
-  tight.purityErrUp   = sigEff * loose.purityErrUp   * dataIntegral / data_pass;
-  tight.purityErrDown = sigEff * loose.purityErrDown * dataIntegral / data_pass;
+  float bgEff  = h1_templFake  ->Integral(1, cutBin)/h1_templFake  ->Integral(1,nBins);
+
+  float sig_pass = sigEff*sig;
+  float bg_pass  = bgEff*bg;
+
+  float purity_tight = sig_pass/(sig_pass + bg_pass);
+
+  tight.purity        = purity_tight;
+  tight.purityErrUp   = loose.purityErrUp   * tight.purity / loose.purity;
+  tight.purityErrDown = loose.purityErrDown * tight.purity / loose.purity;
+
 
   //float sigPassCut = sigFrac.getVal()*sigEff;
   //float bgEff = h1_templFake->Integral(1, cutBin)/h1_templFake->Integral(1,nBins);
@@ -225,10 +261,16 @@ void fitSinglePurity( const std::string& outputdir, Purity& loose, Purity& tight
   TCanvas* c1 = new TCanvas("c1", "", 600, 600);
   gPad->SetLeftMargin(0.15);
   TH2D* h2_axes = new TH2D("axes", "", 10, 0., xMaxFit, 10, 0., xframe->GetMaximum()*1.1 );
+  h2_axes->SetXTitle("Photon Charged Isolation [GeV]");
+  h2_axes->SetYTitle("Events");
   h2_axes->Draw();
   xframe->GetYaxis()->SetTitleOffset(1.4); 
   xframe->Draw("same");
 
+  TPaveText* labelTop = MT2DrawTools::getLabelTop(cfg.lumi());
+  labelTop->Draw("same");
+
+  std::string outputdir = cfg.getEventYieldDir() + "/gammaControlRegion/PurityFits" + cfg.gammaTemplateType();
   c1->SaveAs(Form("%s/singleFits/purityFit_%s.eps", outputdir.c_str(), data->GetName()));
   c1->SaveAs(Form("%s/singleFits/purityFit_%s.png", outputdir.c_str(), data->GetName()));
   c1->SaveAs(Form("%s/singleFits/purityFit_%s.pdf", outputdir.c_str(), data->GetName()));

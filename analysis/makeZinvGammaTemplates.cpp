@@ -1,3 +1,4 @@
+#include "interface/MT2Config.h"
 #include "interface/MT2Sample.h"
 #include "interface/MT2Region.h"
 #include "interface/MT2Analysis.h"
@@ -15,13 +16,10 @@
 
 
 
-float lumi = 4.; //fb-1
 
 
 
-
-
-void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2Analysis<MT2EstimateZinvGamma>* prompt, MT2Analysis<MT2EstimateZinvGamma>* fake, const std::string& useMC );
+void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT2EstimateZinvGamma>* prompt, MT2Analysis<MT2EstimateZinvGamma>* fake );
 void setPoissonError( MT2Analysis<MT2EstimateZinvGamma>* data );
 //void randomizePoisson( MT2Analysis<MT2EstimateZinvGamma>* data );
 
@@ -31,46 +29,79 @@ void setPoissonError( MT2Analysis<MT2EstimateZinvGamma>* data );
 int main( int argc, char* argv[] ) {
 
 
+  std::cout << std::endl << std::endl;
+  std::cout << "------------------------------------------------------" << std::endl;
+  std::cout << "|                                                    |" << std::endl;
+  std::cout << "|                                                    |" << std::endl;
+  std::cout << "|          Running makeZinvGammaTemplates            |" << std::endl;
+  std::cout << "|                                                    |" << std::endl;
+  std::cout << "|                                                    |" << std::endl;
+  std::cout << "------------------------------------------------------" << std::endl;
+  std::cout << std::endl << std::endl;
 
-  std::string useMC = "DataRC";
 
-  if( argc>1 ) {
-
-    useMC = std::string(argv[1]); 
-
+ 
+  if( argc<2 ) {
+    std::cout << "USAGE: ./makeZinvGammaTemplates [configFileName]" << std::endl;
+    std::cout << "Exiting." << std::endl;
+    exit(11);
   }
 
-  if( useMC=="dataFR" ) useMC="DataFR"; // data Fake Removal
-  if( useMC=="dataRC" ) useMC="DataRC"; // data Random Cone
-  if( useMC=="data"   ) {
-    std::cout << std::endl;
-    std::cout << "-> Asking for 'data': will use data Random Cone. (default)" << std::endl;
-    std::cout << std::endl;
-    useMC="DataRC"; // (default for data)
-  }
 
-  if( useMC!="data" && useMC!="DataFR" && useMC!="MC" && useMC!="DataRC" ) {
-    std::cout << "ERROR! Second argument may only be 'MC' or 'dataFR' or 'dataRC'" << std::endl;
+  std::string configFileName(argv[1]);
+  MT2Config cfg(configFileName);
+
+
+  bool useMC = true;
+
+  if( argc>2 ) {
+    std::string data_or_mc = std::string(argv[2]); 
+    if( data_or_mc=="data" || data_or_mc=="Data" || data_or_mc=="DATA" ) useMC=false;
+    else if( data_or_mc!="mc" && data_or_mc!="MC" ) {
+      std::cout << std::endl;
+      std::cout << "-> WARNING! Second argument should be 'data' or 'MC'." << std::endl;
+      std::cout << "Exiting." << std::endl;
+      std::cout << std::endl;
+      exit(817);
+    }
+  } 
+
+
+  std::string templateType = cfg.gammaTemplateType();
+
+  if( argc>3 ) {
+
+    templateType = std::string(argv[3]); 
+    std::cout << std::endl;
+    std::cout << "-> Will disobey the cfg and use templateType = " << argv[2] << std::endl;
+    std::cout << std::endl;
+
+  } 
+
+
+  if( templateType!="FR" && templateType!="MC" && templateType!="RC" ) {
+    std::cout << "ERROR! templateType may only be 'MC' or 'FR' or 'RC'" << std::endl;
     exit(1111);
   }
 
 
 
-  //std::string regionsSet = "13TeV_onlyHT";
-  std::string regionsSet = "13TeV_inclusive";
-  //std::string regionsSet = "13TeV_inclusive";
-  //std::string regionsSet = "13TeV_ZinvGammaPurity";
-  if( argc>2 ) {
-    std::string regionsSet_tmp(argv[2]); 
-    regionsSet = regionsSet_tmp;
-  }
+
+  std::cout << std::endl;
+  std::cout << "-> Starting to build templates with:" << std::endl;
+  std::cout << "      type   : " << templateType << std::endl;
+  std::cout << "      regions: " << cfg.gammaTemplateRegions() << std::endl;
+  std::cout << std::endl << std::endl;
 
 
 
-  std::string samplesFileName = "PHYS14_v5_skimprune";
-  std::string samplesFile = "../samples/samples_" + samplesFileName + ".dat";
+  std::string regionsSet = cfg.gammaTemplateRegions();
+
+
+  std::string samplesName = (useMC) ? cfg.mcSamples() : cfg.dataSamples();
+  std::string samplesFile = "../samples/samples_" + samplesName + ".dat";
   
-  std::vector<MT2Sample> samples = MT2Sample::loadSamples(samplesFile, 100, 299); // GJet and QCD
+  std::vector<MT2Sample> samples = (useMC) ? MT2Sample::loadSamples(samplesFile, 100, 299) : MT2Sample::loadSamples(samplesFile, "SinglePhoton");
   if( samples.size()==0 ) {
     std::cout << "There must be an error: didn't find any good files in " << samplesFile << "!" << std::endl;
     exit(1209);
@@ -81,8 +112,8 @@ int main( int argc, char* argv[] ) {
   TH1::AddDirectory(kFALSE); // stupid ROOT memory allocation needs this
 
 
-  std::string outputdir = "ZinvGammaPurity_" + samplesFileName + "_" + regionsSet;
-  system(Form("mkdir -p %s", outputdir.c_str()));
+  //std::string outputdir = cfg.getEventYieldDir() + "/gammaControlRegion/purity"; //"ZinvGammaPurity_" + samplesFileName + "_" + regionsSet;
+  //system(Form("mkdir -p %s", outputdir.c_str()));
 
 
   
@@ -90,20 +121,20 @@ int main( int argc, char* argv[] ) {
   MT2Analysis<MT2EstimateZinvGamma>* templatesFake   = new MT2Analysis<MT2EstimateZinvGamma>( "templatesFake", regionsSet );
 
   for( unsigned i=0; i<samples.size(); ++i ) {
-    computeYield( samples[i], regionsSet, templatesPrompt, templatesFake, useMC );
+    computeYield( samples[i], cfg, templatesPrompt, templatesFake );
   }
 
 
-  if( useMC=="DataFR" || useMC=="DataRC" ) {
+  if( templateType=="FR" || templateType=="RC" ) {
     setPoissonError( templatesFake );
     setPoissonError( templatesPrompt );
-    if( useMC=="DataFR" ) templatesPrompt->setName("templatesPromptRaw");
+    if( templateType=="FR" ) templatesPrompt->setName("templatesPromptRaw");
   }
 
 
 
-  std::string templateFileName = "gammaTemplates" + useMC;
-  templateFileName = templateFileName + "_" + samplesFileName + "_" + regionsSet + ".root";
+  std::string templateFileName = "gammaTemplates" + templateType;
+  templateFileName = templateFileName + "_" + samplesName + "_" + cfg.gammaTemplateRegions() + ".root";
 
 
   templatesFake->writeToFile(templateFileName);
@@ -122,7 +153,7 @@ int main( int argc, char* argv[] ) {
 
 
 
-void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2Analysis<MT2EstimateZinvGamma>* prompt, MT2Analysis<MT2EstimateZinvGamma>* fake, const std::string& useMC ) {
+void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT2EstimateZinvGamma>* prompt, MT2Analysis<MT2EstimateZinvGamma>* fake ) {
 
 
   std::cout << std::endl << std::endl;
@@ -167,7 +198,7 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2An
     float met       = myTree.gamma_met_pt;
     float mt2       = myTree.gamma_mt2;
     float minMTBmet = myTree.gamma_minMTBMet;
-    int njets       = myTree.gamma_nJet40;
+    int njets       = myTree.gamma_nJet30;
     int nbjets      = myTree.gamma_nBJet20;    
 
 
@@ -190,12 +221,12 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2An
 
     bool isWorkingPrompt = false;
 
-    if( useMC=="MC" ) {
+    if( cfg.gammaTemplateType()=="MC" ) {
 
       if( !sietaietaOK ) continue;
       isWorkingPrompt = myTree.gamma_mcMatchId[0]==22; // prompt = matched
 
-    } else if( useMC=="DataFR" ) { 
+    } else if( cfg.gammaTemplateType()=="FR" ) { 
 
       isWorkingPrompt = sietaietaOK;
 
@@ -208,7 +239,7 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2An
       }
 
 
-    } else if( useMC=="DataRC" ) { 
+    } else if( cfg.gammaTemplateType()=="RC" ) { 
 
       isWorkingPrompt = sietaietaOK;
 
@@ -218,7 +249,7 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2An
     } else {
 
       // this shouldnt be possible
-      std::cout << "-> NOPE. Don't know anything about useMC='" << useMC << "'." << std::endl;
+      std::cout << "-> NOPE. Don't know anything about cfg.gammaTemplateType()='" << cfg.gammaTemplateType() << "'." << std::endl;
       exit(191);
 
     }
@@ -228,7 +259,7 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet, MT2An
     //if( iso > 20. ) continue;
     ////if( iso > 10. ) continue;
 
-    Double_t weight = myTree.evt_scale1fb*lumi; 
+    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi(); 
 
 
     if( isWorkingPrompt ) {

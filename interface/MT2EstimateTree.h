@@ -24,6 +24,9 @@ class MT2EstimateTree : public MT2Estimate {
   void assignTree_gamma( const MT2Tree& mt2tree, float w );
   void fillTree_gamma( const MT2Tree& mt2tree, float w );
 
+  void assignTree_zll( const MT2Tree& mt2tree, float w );
+  void fillTree_zll( const MT2Tree& mt2tree, float w );
+
   static void addVar( MT2Analysis<MT2EstimateTree>* analysis, const std::string& name );
   //static void addVarFloat( MT2Analysis<MT2EstimateTree>* analysis, const std::string& name );
   //static void addVarInt( MT2Analysis<MT2EstimateTree>* analysis, const std::string& name );
@@ -34,15 +37,18 @@ class MT2EstimateTree : public MT2Estimate {
   int run;
   int lumi;
   int evt;
-  float weight;
+  float weight; // = crossSecWeight * puWeight
+  float puWeight; // the puWeight part of the above
   int id;
 
   float mt2;
   float ht;
   float met;
+
   float deltaPhiMin;
   float diffMetMht;
   int nVert;
+
   int nJets;
   int nBJets;
   int nElectrons;
@@ -52,7 +58,7 @@ class MT2EstimateTree : public MT2Estimate {
 
   int GenSusyMScan1;
   int GenSusyMScan2;
-
+ 
   //std::map< std::string, size_t > extraVars;
   std::map< std::string, float* > extraVars;
  
