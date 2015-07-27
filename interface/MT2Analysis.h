@@ -19,7 +19,7 @@ class MT2Analysis {
 
  public:
 
-  MT2Analysis( const std::string& aname, const std::string& regionsSet="13TeV", int id=-1, const std::string& afullName="" );
+  MT2Analysis( const std::string& aname, const std::string& regionsSet="zurich", int id=-1, const std::string& afullName="" );
   MT2Analysis( const std::string& aname, std::set<MT2HTRegion> htRegions, std::set<MT2SignalRegion> signalRegions, int id=-1, const std::string& afullName="" );
   MT2Analysis( const std::string& aname, std::set<MT2Region> regions, int id=-1, const std::string& afullName="" );
   MT2Analysis( const std::string& aname, std::set<T*> data, int id=-1, const std::string& afullName="" );
@@ -1326,7 +1326,7 @@ MT2Analysis<T> MT2Analysis<T>::operator+( const MT2Analysis<T2>& rhs ) const {
 
   }
 
-  MT2Analysis<T> result(name, newdata);
+  MT2Analysis<T> result(name_, newdata);
 
   return result;
 
