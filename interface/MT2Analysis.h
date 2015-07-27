@@ -963,7 +963,7 @@ MT2Analysis<T>::MT2Analysis( const MT2Analysis& rhs ) {
 
   name_ = rhs.name_;
   fullName_ = rhs.fullName_;
-  id_ = rhs.id;
+  id_ = rhs.id_;
   
   rhs.setDefaultColor();
 
