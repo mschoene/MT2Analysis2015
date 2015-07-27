@@ -24,6 +24,8 @@ run()
 #include "TString.h"
 #include "TH1D.h"
 
+#include "./goodrun.cc"
+
 using namespace std;
 
 
@@ -105,6 +107,14 @@ int postProcessing(string inputString,
 		   string inputPU,
 		   string PUvar)
 {
+  
+  bool applyJSON=true;
+  const char* json_file = "goldenJSON.txt";
+  if (applyJSON) {
+    cout << "Loading json file: " << json_file << endl;
+    set_goodrun_file(json_file);
+  }
+
   TChain* chain = new TChain(treeName.c_str());
   // Add all files in the input folder
   string dcap = inputFolder.find("pnfs")!=std::string::npos ? "dcap://t3se01.psi.ch:22125/" : "";
@@ -200,6 +210,11 @@ int postProcessing(string inputString,
   int isData=0; 
   chain->SetBranchAddress("isData",&isData);
   
+  int run=0;
+  chain->SetBranchAddress("run", &run);
+  int lumi=0;
+  chain->SetBranchAddress("lumi", &lumi);
+
   int nVert=0;
   chain->SetBranchAddress("nVert", &nVert);
   
@@ -216,7 +231,6 @@ int postProcessing(string inputString,
       genWeight_ = fabs(genWeight);
 
   }
-
 
   TH1D* hPU = (TH1D*) hPU_data->Clone("hPU");
   hPU->Reset();
@@ -238,6 +252,7 @@ int postProcessing(string inputString,
   float scale1fb_sumGenWeights;
   float scale1fb;
   float puWeight;
+  bool isGolden=1;
 
   if(isData){
     
@@ -278,6 +293,7 @@ int postProcessing(string inputString,
   TBranch* b9 = clone->Branch("evt_sumGenWeights", &sumGenWeightsHisto, "evt_sumGenWeights/l");
   TBranch* b10 = clone->Branch("evt_id", &id, "evt_id/I");
   TBranch* b11 = clone->Branch("puWeight", &puWeight, "puWeight/F");
+  TBranch* b12 = clone->Branch("isGolden", &isGolden, "isGolden/O");
 
   for(Long64_t i = 0; i < (Long64_t) nEventsTree; i++) {
     
@@ -297,6 +313,8 @@ int postProcessing(string inputString,
       puWeight = hPU_r->GetBinContent(puBin);
 
     }
+
+    if( applyJSON && isData && !goodrun(run, lumi) ) isGolden=0;
     
     b1->Fill();
     b2->Fill();
@@ -309,6 +327,7 @@ int postProcessing(string inputString,
     b9->Fill();
     b10->Fill();
     b11->Fill();
+    b12->Fill();
     
   }
   //-------------------------------------------------------------
