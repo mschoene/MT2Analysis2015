@@ -122,31 +122,28 @@ class MT2Analysis {
   int id_;
   int color_;
   
-  int getThisColor() {
+  void setDefaultColor() {
     
     std::string aname = this->name_;
-    int thisColor;
 
     if( aname == "QCD" )
-      thisColor = 401;
+      this->color_ = 401;
     else if( aname == "WJets" )
-      thisColor = 417;
+      this->color_ = 417;
     else if( aname == "ZJets" )
-      thisColor = 419;
+      this->color_ = 419;
     else if( aname == "Top" )
-      thisColor = 855;
+      this->color_ = 855;
     else if( aname == "Other" )
-      thisColor = 9;
+      this->color_ = 9;
     else if( aname == "qcdEstimate")
-      thisColor = 402;
+      this->color_ = 402;
     else if( aname == "llepEstimate")
-      thisColor = 430;
+      this->color_ = 430;
     else if( aname == "ZinvEstimate")
-      thisColor = 418;
+      this->color_ = 418;
     else
-      thisColor = 1;
-
-    return thisColor;
+      this->color_ = 1;
 
   }
 
