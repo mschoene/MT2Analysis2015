@@ -163,7 +163,7 @@ MT2Analysis<T>::MT2Analysis( const std::string& aname, const std::string& region
   fullName_ = (afullname!="") ? afullname : name_;
   id_ = aid;
 
-  color_ = this->getThisColor();
+  this->setDefaultColor();
 
   if( regionsSet=="8TeV" ) {
 
@@ -900,7 +900,7 @@ MT2Analysis<T>::MT2Analysis( const std::string& aname, std::set<MT2Region> regio
   fullName_ = (afullname!="") ? afullname : name_;
   id_ = aid;
   
-  color_ = this->getThisColor();
+  this->setDefaultColor();
 
   regions_ = regions;
 
@@ -916,7 +916,7 @@ MT2Analysis<T>::MT2Analysis( const std::string& aname, std::set<MT2HTRegion> htR
   fullName_ = (afullname!="") ? afullname : name_;
   id_ = aid;
   
-  color_ = this->getThisColor();
+  this->setDefaultColor();
 
   for( std::set<MT2HTRegion>::iterator iHT=htRegions.begin(); iHT!=htRegions.end(); ++iHT )  {
     for( std::set<MT2SignalRegion>::iterator iSR=signalRegions.begin(); iSR!=signalRegions.end(); ++iSR ) {
@@ -938,7 +938,7 @@ MT2Analysis<T>::MT2Analysis( const std::string& aname, std::set<T*> newdata, int
   fullName_ = (afullname!="") ? afullname : name_;
   id_ = aid;
   
-  color_ = this->getThisColor();
+  this->setDefaultColor();
 
   for( typename std::set<T*>::iterator idata=newdata.begin(); idata!=newdata.end(); ++idata ) {
 
@@ -965,7 +965,7 @@ MT2Analysis<T>::MT2Analysis( const MT2Analysis& rhs ) {
   fullName_ = rhs.fullName_;
   id_ = rhs.id;
   
-  color_ = rhs.getThisColor();
+  rhs.setDefaultColor();
 
   for( typename std::set<T*>::iterator idata=rhs.data.begin(); idata!=rhs.data.end(); ++idata ) {
 
