@@ -108,7 +108,7 @@ class MT2Analysis {
 
     for( std::set<MT2Region>::iterator iR=regions_.begin(); iR!=regions_.end(); ++iR ) {
       MT2Region thisRegion(*iR);
-      T* t = new T(name, thisRegion);
+      T* t = new T(name_, thisRegion);
       data.insert(t);
     }
 
