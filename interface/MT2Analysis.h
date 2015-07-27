@@ -965,7 +965,7 @@ MT2Analysis<T>::MT2Analysis( const MT2Analysis& rhs ) {
   fullName_ = rhs.fullName_;
   id_ = rhs.id_;
   
-  rhs.setDefaultColor();
+  color_ = rhs.getColor();
 
   for( typename std::set<T*>::iterator idata=rhs.data.begin(); idata!=rhs.data.end(); ++idata ) {
 
