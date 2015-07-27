@@ -45,7 +45,8 @@ class MT2Analysis {
 
   void setName( const std::string& newName );
   void setFullName( const std::string& newName ) { fullName = newName; };
-
+  void setColor( const int& newColor ) { color = newColor };
+  
   const MT2Analysis& operator=( const MT2Analysis& rhs);
   //template<class T2>
   //const MT2Analysis<T>& operator=( const MT2Analysis<T2>& rhs);
