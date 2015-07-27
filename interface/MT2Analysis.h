@@ -13,8 +13,6 @@
 #include "../interface/mt2.h"
 
 
-
-
   
 template<class T> 
 class MT2Analysis {
@@ -43,6 +41,7 @@ class MT2Analysis {
 
   std::string getName() const { return name; };
   std::string getFullName() const { return fullName; };
+  int getColor() const { return color; };
 
   void setName( const std::string& newName );
   void setFullName( const std::string& newName ) { fullName = newName; };
@@ -98,6 +97,7 @@ class MT2Analysis {
 
 
   int id;
+  int color;
 
 
   std::set<T*> data;
@@ -137,6 +137,22 @@ MT2Analysis<T>::MT2Analysis( const std::string& aname, const std::string& region
   fullName = (afullname!="") ? afullname : name;
   id = aid;
 
+  if( aname == "QCD" )
+    color = 401;
+  else if( aname == "WJets" )
+    color = 417;
+  else if( aname == "ZJets" )
+    color = 419;
+  else if( aname == "Top" )
+    color = 855;
+  else if( aname == "Other" )
+    color = 9;
+  else if( aname == "qcdEstimate")
+    color = 402;
+  else if( aname == "llepEstimate")
+    color = 430;
+  else if( aname == "ZinvEstimate")
+    color = 418;
 
   if( regionsSet=="8TeV" ) {
 
@@ -873,6 +889,23 @@ MT2Analysis<T>::MT2Analysis( const std::string& aname, std::set<MT2Region> regio
   fullName = (afullname!="") ? afullname : name;
   id = aid;
 
+  if( aname == "QCD" )
+    color = 401;
+  else if( aname == "WJets" )
+    color = 417;
+  else if( aname == "ZJets" )
+    color = 419;
+  else if( aname == "Top" )
+    color = 855;
+  else if( aname == "Other" )
+    color = 9;
+  else if( aname == "qcdEstimate")
+    color = 402;
+  else if( aname == "llepEstimate")
+    color = 430;
+  else if( aname == "ZinvEstimate")
+    color = 418;
+
   regions_ = regions;
 
   this->createAnalysisStructure();
@@ -886,6 +919,23 @@ MT2Analysis<T>::MT2Analysis( const std::string& aname, std::set<MT2HTRegion> htR
   name = aname;
   fullName = (afullname!="") ? afullname : name;
   id = aid;
+  
+  if( aname == "QCD" )
+    color = 401;
+  else if( aname == "WJets" )
+    color = 417;
+  else if( aname == "ZJets" )
+    color = 419;
+  else if( aname == "Top" )
+    color = 855;
+  else if( aname == "Other" )
+    color = 9;
+  else if( aname == "qcdEstimate")
+    color = 402;
+  else if( aname == "llepEstimate")
+    color = 430;
+  else if( aname == "ZinvEstimate")
+    color = 418;
 
   for( std::set<MT2HTRegion>::iterator iHT=htRegions.begin(); iHT!=htRegions.end(); ++iHT )  {
     for( std::set<MT2SignalRegion>::iterator iSR=signalRegions.begin(); iSR!=signalRegions.end(); ++iSR ) {
@@ -906,6 +956,23 @@ MT2Analysis<T>::MT2Analysis( const std::string& aname, std::set<T*> newdata, int
   name = aname;
   fullName = (afullname!="") ? afullname : name;
   id = aid;
+  
+  if( aname == "QCD" )
+    color = 401;
+  else if( aname == "WJets" )
+    color = 417;
+  else if( aname == "ZJets" )
+    color = 419;
+  else if( aname == "Top" )
+    color = 855;
+  else if( aname == "Other" )
+    color = 9;
+  else if( aname == "qcdEstimate")
+    color = 402;
+  else if( aname == "llepEstimate")
+    color = 430;
+  else if( aname == "ZinvEstimate")
+    color = 418;
 
   for( typename std::set<T*>::iterator idata=newdata.begin(); idata!=newdata.end(); ++idata ) {
 
@@ -931,6 +998,23 @@ MT2Analysis<T>::MT2Analysis( const MT2Analysis& rhs ) {
   name = rhs.name;
   fullName = rhs.fullName;
   id = rhs.id;
+  
+  if( name == "QCD" )
+    color = 401;
+  else if( name == "WJets" )
+    color = 417;
+  else if( name == "ZJets" )
+    color = 419;
+  else if( name == "Top" )
+    color = 855;
+  else if( name == "Other" )
+    color = 9;
+  else if( name == "qcdEstimate")
+    color = 402;
+  else if( name == "llepEstimate")
+    color = 430;
+  else if( name == "ZinvEstimate")
+    color = 418;
 
 
   for( typename std::set<T*>::iterator idata=rhs.data.begin(); idata!=rhs.data.end(); ++idata ) {
