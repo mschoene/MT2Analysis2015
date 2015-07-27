@@ -24,6 +24,8 @@ run()
 #include "TString.h"
 #include "TH1D.h"
 
+#include "./goodrun.cc"
+
 using namespace std;
 
 
@@ -34,7 +36,7 @@ int postProcessing(string inputString="input",
 		   float filter=1.0, float kfactor=1.0, float xsec=-1.0, int id=1,
 		   string crabExt="",
 		   string inputPU="",
-		   string PUvar="nTrueInt");
+		   string PUvar="nVert");
 
 
 int run(string cfg="postProcessing_74X_50ns.cfg",
@@ -44,7 +46,7 @@ int run(string cfg="postProcessing_74X_50ns.cfg",
 	string fileExtension = "_post.root",
         string crabExt = "",
 	string inputPU = "",
-	string PUvar = "nTrueInt"){
+	string PUvar = "nVert"){
   
   // for measuring timing
   time_t start = time(0);
@@ -105,6 +107,14 @@ int postProcessing(string inputString,
 		   string inputPU,
 		   string PUvar)
 {
+  
+  bool applyJSON=true;
+  const char* json_file = "goldenJSON.txt";
+  if (applyJSON) {
+    cout << "Loading json file: " << json_file << endl;
+    set_goodrun_file(json_file);
+  }
+
   TChain* chain = new TChain(treeName.c_str());
   // Add all files in the input folder
   string dcap = inputFolder.find("pnfs")!=std::string::npos ? "dcap://t3se01.psi.ch:22125/" : "";
@@ -127,10 +137,10 @@ int postProcessing(string inputString,
   TH1D* hPU_data = new TH1D("hPU_data", "", 100, 0, 100);
   hPU_data->Sumw2();
 
-  chain_pu->Project("hPU_data", "nVert", "HLT_PFHT800 || HLT_ht475prescale");
+  chain_pu->Project("hPU_data", "nVert", "(HLT_PFHT800 || HLT_ht475prescale)");
   
-  ULong64_t nEntries = hPU_data->Integral();
-  hPU_data->Scale(1.0/nEntries);
+  ULong64_t nData = hPU_data->Integral();
+  hPU_data->Scale(1.0/nData);
   
   // here I set the "Count" histograms
   TIter nextfile(chain->GetListOfFiles());
@@ -147,15 +157,15 @@ int postProcessing(string inputString,
     if(isFirst){
       newH = (TH1D*) countH->Clone();
       newH->SetDirectory(0);  
-      isFirst=false;
       
-      if(sumW){
+      if(sumW)
 	newSumW = (TH1D*) sumW->Clone();
-      }
       else
 	newSumW = (TH1D*) countH->Clone();
       newSumW->SetDirectory(0);  
-
+      
+      isFirst=false;
+      
     }
     allHistoEntries += countH->GetBinContent(1);
     if(sumW)
@@ -200,6 +210,11 @@ int postProcessing(string inputString,
   int isData=0; 
   chain->SetBranchAddress("isData",&isData);
   
+  int run=0;
+  chain->SetBranchAddress("run", &run);
+  int lumi=0;
+  chain->SetBranchAddress("lumi", &lumi);
+
   int nVert=0;
   chain->SetBranchAddress("nVert", &nVert);
   
@@ -216,7 +231,6 @@ int postProcessing(string inputString,
       genWeight_ = fabs(genWeight);
 
   }
-
 
   TH1D* hPU = (TH1D*) hPU_data->Clone("hPU");
   hPU->Reset();
@@ -238,6 +252,7 @@ int postProcessing(string inputString,
   float scale1fb_sumGenWeights;
   float scale1fb;
   float puWeight;
+  bool isGolden=1;
 
   if(isData){
     
@@ -250,7 +265,7 @@ int postProcessing(string inputString,
   }
   else{
     
-    sumGenWeightsHisto = (ULong64_t)  newSumW->GetBinContent(1);
+    sumGenWeightsHisto = (ULong64_t) newSumW->GetBinContent(1);
     nEffEventsHisto = ( (double) 1.0*sumGenWeightsHisto/genWeight_  > (ULong64_t) (1.0*sumGenWeightsHisto/genWeight_ + 0.5) ) ? (ULong64_t) (1.0*sumGenWeightsHisto/genWeight_)+1 : (ULong64_t) (1.0*sumGenWeightsHisto/genWeight_);
   
     scale1fb_noGenWeight = xsec*kfactor*1000*filter/(Float_t)nEffEventsHisto;
@@ -278,6 +293,7 @@ int postProcessing(string inputString,
   TBranch* b9 = clone->Branch("evt_sumGenWeights", &sumGenWeightsHisto, "evt_sumGenWeights/l");
   TBranch* b10 = clone->Branch("evt_id", &id, "evt_id/I");
   TBranch* b11 = clone->Branch("puWeight", &puWeight, "puWeight/F");
+  TBranch* b12 = clone->Branch("isGolden", &isGolden, "isGolden/O");
 
   for(Long64_t i = 0; i < (Long64_t) nEventsTree; i++) {
     
@@ -297,6 +313,8 @@ int postProcessing(string inputString,
       puWeight = hPU_r->GetBinContent(puBin);
 
     }
+
+    if( applyJSON && isData && !goodrun(run, lumi) ) isGolden=0;
     
     b1->Fill();
     b2->Fill();
@@ -309,13 +327,15 @@ int postProcessing(string inputString,
     b9->Fill();
     b10->Fill();
     b11->Fill();
+    b12->Fill();
     
   }
   //-------------------------------------------------------------
 
   delete chain; 
 
-
+  hPU->Write();
+  hPU_data->Write();
   hPU_r->Write();
   delete hPU_r;
   delete hPU;

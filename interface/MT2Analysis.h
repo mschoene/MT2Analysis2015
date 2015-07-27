@@ -13,15 +13,13 @@
 #include "../interface/mt2.h"
 
 
-
-
   
 template<class T> 
 class MT2Analysis {
 
  public:
 
-  MT2Analysis( const std::string& aname, const std::string& regionsSet="13TeV", int id=-1, const std::string& afullName="" );
+  MT2Analysis( const std::string& aname, const std::string& regionsSet="zurich", int id=-1, const std::string& afullName="" );
   MT2Analysis( const std::string& aname, std::set<MT2HTRegion> htRegions, std::set<MT2SignalRegion> signalRegions, int id=-1, const std::string& afullName="" );
   MT2Analysis( const std::string& aname, std::set<MT2Region> regions, int id=-1, const std::string& afullName="" );
   MT2Analysis( const std::string& aname, std::set<T*> data, int id=-1, const std::string& afullName="" );
@@ -41,12 +39,16 @@ class MT2Analysis {
   T* get( const MT2Tree& mt2tree ) const;
   T* get( float ht, int njets, int nbjets, float met=-1., float mt=-1., float mt2=-1. ) const;
 
-  std::string getName() const { return name; };
-  std::string getFullName() const { return fullName; };
+  std::string getName() const { return name_; };
+  std::string getFullName() const { return fullName_; };
+  int getColor() const { return color_; };
+  int getId() const { return id_; };
 
   void setName( const std::string& newName );
-  void setFullName( const std::string& newName ) { fullName = newName; };
-
+  void setFullName( const std::string& newName ) { fullName_ = newName; };
+  void setColor( const int& newColor ) { color_ = newColor; };
+  void setId( const int& newId ) { id_ = newId; };
+  
   const MT2Analysis& operator=( const MT2Analysis& rhs);
   //template<class T2>
   //const MT2Analysis<T>& operator=( const MT2Analysis<T2>& rhs);
@@ -96,10 +98,6 @@ class MT2Analysis {
 
   void randomizePoisson( float scale=1. );
 
-
-  int id;
-
-
   std::set<T*> data;
 
 
@@ -110,7 +108,7 @@ class MT2Analysis {
 
     for( std::set<MT2Region>::iterator iR=regions_.begin(); iR!=regions_.end(); ++iR ) {
       MT2Region thisRegion(*iR);
-      T* t = new T(name, thisRegion);
+      T* t = new T(name_, thisRegion);
       data.insert(t);
     }
 
@@ -118,8 +116,36 @@ class MT2Analysis {
 
   std::set<MT2Region> regions_;
 
-  std::string name;
-  std::string fullName;
+  std::string name_;
+  std::string fullName_;
+
+  int id_;
+  int color_;
+  
+  void setDefaultColor() {
+    
+    std::string aname = this->name_;
+
+    if( aname == "QCD" )
+      this->color_ = 401;
+    else if( aname == "WJets" )
+      this->color_ = 417;
+    else if( aname == "ZJets" )
+      this->color_ = 419;
+    else if( aname == "Top" )
+      this->color_ = 855;
+    else if( aname == "Other" )
+      this->color_ = 9;
+    else if( aname == "qcdEstimate")
+      this->color_ = 402;
+    else if( aname == "llepEstimate")
+      this->color_ = 430;
+    else if( aname == "ZinvEstimate")
+      this->color_ = 418;
+    else
+      this->color_ = 1;
+
+  }
 
 };
 
@@ -133,10 +159,11 @@ template<class T>
 MT2Analysis<T>::MT2Analysis( const std::string& aname, const std::string& regionsSet, int aid, const std::string& afullname ) {
 
 
-  name = aname;
-  fullName = (afullname!="") ? afullname : name;
-  id = aid;
+  name_ = aname;
+  fullName_ = (afullname!="") ? afullname : name_;
+  id_ = aid;
 
+  color_ = this->getThisColor();
 
   if( regionsSet=="8TeV" ) {
 
@@ -869,9 +896,11 @@ MT2Analysis<T>::MT2Analysis( const std::string& aname, const std::string& region
 template<class T> 
 MT2Analysis<T>::MT2Analysis( const std::string& aname, std::set<MT2Region> regions, int aid, const std::string& afullname ) {
 
-  name = aname;
-  fullName = (afullname!="") ? afullname : name;
-  id = aid;
+  name_ = aname;
+  fullName_ = (afullname!="") ? afullname : name_;
+  id_ = aid;
+  
+  color_ = this->getThisColor();
 
   regions_ = regions;
 
@@ -883,9 +912,11 @@ MT2Analysis<T>::MT2Analysis( const std::string& aname, std::set<MT2Region> regio
 template<class T> 
 MT2Analysis<T>::MT2Analysis( const std::string& aname, std::set<MT2HTRegion> htRegions, std::set<MT2SignalRegion> signalRegions, int aid, const std::string& afullname ) {
 
-  name = aname;
-  fullName = (afullname!="") ? afullname : name;
-  id = aid;
+  name_ = aname;
+  fullName_ = (afullname!="") ? afullname : name_;
+  id_ = aid;
+  
+  color_ = this->getThisColor();
 
   for( std::set<MT2HTRegion>::iterator iHT=htRegions.begin(); iHT!=htRegions.end(); ++iHT )  {
     for( std::set<MT2SignalRegion>::iterator iSR=signalRegions.begin(); iSR!=signalRegions.end(); ++iSR ) {
@@ -903,9 +934,11 @@ MT2Analysis<T>::MT2Analysis( const std::string& aname, std::set<MT2HTRegion> htR
 template<class T> 
 MT2Analysis<T>::MT2Analysis( const std::string& aname, std::set<T*> newdata, int aid, const std::string& afullname ) {
 
-  name = aname;
-  fullName = (afullname!="") ? afullname : name;
-  id = aid;
+  name_ = aname;
+  fullName_ = (afullname!="") ? afullname : name_;
+  id_ = aid;
+  
+  color_ = this->getThisColor();
 
   for( typename std::set<T*>::iterator idata=newdata.begin(); idata!=newdata.end(); ++idata ) {
 
@@ -928,10 +961,11 @@ MT2Analysis<T>::MT2Analysis( const MT2Analysis& rhs ) {
 
   //regions_ = rhs.getRegions();
 
-  name = rhs.name;
-  fullName = rhs.fullName;
-  id = rhs.id;
-
+  name_ = rhs.name_;
+  fullName_ = rhs.fullName_;
+  id_ = rhs.id;
+  
+  color_ = rhs.getThisColor();
 
   for( typename std::set<T*>::iterator idata=rhs.data.begin(); idata!=rhs.data.end(); ++idata ) {
 
@@ -1036,7 +1070,7 @@ template<class T>
 void MT2Analysis<T>::printRegions() const {
 
   std::cout << std::endl;
-  std::cout << "-> MT2Analysis '" << name << "' has the following regions: " << std::endl;
+  std::cout << "-> MT2Analysis '" << name_ << "' has the following regions: " << std::endl;
 
   for( typename std::set<T*>::iterator it=data.begin(); it!=data.end(); ++it ) 
     std::cout << "  " << ((*it)->region)->getName() << std::endl;
@@ -1185,7 +1219,7 @@ T* MT2Analysis<T>::get( const MT2Region& r ) const {
 template<class T> 
 void MT2Analysis<T>::setName( const std::string& newName ) {
 
-  this->name = newName;
+  this->name_ = newName;
 
   for( std::set<MT2Region>::iterator iR=regions_.begin(); iR!=regions_.end(); ++iR ) {
 
@@ -1289,7 +1323,7 @@ MT2Analysis<T> MT2Analysis<T>::operator+( const MT2Analysis<T2>& rhs ) const {
 
   }
 
-  MT2Analysis<T> result(name, newdata);
+  MT2Analysis<T> result(name_, newdata);
 
   return result;
 
@@ -1321,7 +1355,7 @@ MT2Analysis<T> MT2Analysis<T>::operator-( const MT2Analysis<T2>& rhs ) const {
 
   }
 
-  MT2Analysis<T> result(name, newdata);
+  MT2Analysis<T> result(name_, newdata);
 
   return result;
 
@@ -1520,7 +1554,7 @@ MT2Analysis<T> MT2Analysis<T>::operator/( const MT2Analysis<T2>& rhs ) const {
 
   }
 
-  MT2Analysis<T> result(name, newdata);
+  MT2Analysis<T> result(name_, newdata);
 
   return result;
 
@@ -1564,7 +1598,7 @@ MT2Analysis<T> MT2Analysis<T>::operator*( const MT2Analysis<T2>& rhs ) const {
 
   }
 
-  MT2Analysis<T> result(name, newdata);
+  MT2Analysis<T> result(name_, newdata);
 
   return result;
 
@@ -1593,7 +1627,7 @@ MT2Analysis<T> MT2Analysis<T>::operator*( float k ) const {
 
   }
 
-  MT2Analysis<T> result(name, newdata);
+  MT2Analysis<T> result(name_, newdata);
 
   return result;
 
@@ -1620,7 +1654,7 @@ MT2Analysis<T> MT2Analysis<T>::operator/( float k ) const {
 
   }
 
-  MT2Analysis<T> result(name, newdata);
+  MT2Analysis<T> result(name_, newdata);
 
   return result;
 
@@ -1637,35 +1671,35 @@ void MT2Analysis<T>::writeToFile( const std::string& fileName, const std::string
   TFile* file = TFile::Open(fileName.c_str(), option.c_str() );
   file->cd();
 
-  if( file->GetDirectory(this->name.c_str()) ) {
+  if( file->GetDirectory(this->name_.c_str()) ) {
     file->cd();
     if( overwrite ) {
-      file->rmdir(this->name.c_str());
+      file->rmdir(this->name_.c_str());
     } else {
-      std::cout << "[MT2Analysis::writeToFile] Directory '" << this->name << "' already exists in file '" << fileName << "'. Will not overwrite." << std::endl;
+      std::cout << "[MT2Analysis::writeToFile] Directory '" << this->name_ << "' already exists in file '" << fileName << "'. Will not overwrite." << std::endl;
       return;
     }
   }
 
-  file->mkdir(this->name.c_str());
-  file->cd(this->name.c_str());
+  file->mkdir(this->name_.c_str());
+  file->cd(this->name_.c_str());
 
   std::set<MT2Region> regions = this->getRegions();
   for( std::set<MT2Region>::iterator it=regions.begin(); it!=regions.end(); ++it ) {
     file->cd();
-    file->mkdir(Form("%s/%s", this->name.c_str(), it->getName().c_str()) );
+    file->mkdir(Form("%s/%s", this->name_.c_str(), it->getName().c_str()) );
   }
 
   
   for( typename std::set<T*>::iterator it=data.begin(); it!=data.end(); ++it ) {
     file->cd();
-    file->cd(Form("%s/%s", this->name.c_str(), (*it)->region->getName().c_str()) );
+    file->cd(Form("%s/%s", this->name_.c_str(), (*it)->region->getName().c_str()) );
     (*it)->write();
   }
 
   file->Close();
 
-  std::cout << "-> Wrote '" << this->name << "' to file: " << fileName << std::endl;
+  std::cout << "-> Wrote '" << this->name_ << "' to file: " << fileName << std::endl;
 
 }
 
@@ -1696,7 +1730,7 @@ void MT2Analysis<T>::print( std::vector<MT2Analysis<T>*> analyses, const std::st
     analysis = *(analyses.begin());
   } else {
     for( typename std::vector<MT2Analysis<T>*>::iterator iAn=analyses.begin(); iAn!=analyses.end(); ++iAn ) {
-      if( (*iAn)->name == matchName ) {
+      if( (*iAn)->name_ == matchName ) {
         analysis = new MT2Analysis<T>(*(*iAn));
         break;
       }
@@ -1708,9 +1742,9 @@ void MT2Analysis<T>::print( std::vector<MT2Analysis<T>*> analyses, const std::st
   }
 
   if( analyses.size()>1 && matchName=="" ) {
-    std::cout << "[MT2Analysis::print] WARNING!!! Multiple analyses found, but reading only one ('" << analysis->name << "')" << std::endl;
+    std::cout << "[MT2Analysis::print] WARNING!!! Multiple analyses found, but reading only one ('" << analysis->name_ << "')" << std::endl;
   } else {
-    std::cout << "[MT2Analysis::print] Grabbed MT2Analysis '" << analysis->name << std::endl;
+    std::cout << "[MT2Analysis::print] Grabbed MT2Analysis '" << analysis->name_ << std::endl;
   }
 
   analysis->print( ofs );
@@ -1775,7 +1809,7 @@ void MT2Analysis<T>::print( const std::string& ofs, MT2Region* matchRegion ) con
  
   } // for ht regions
 
-  std::cout << "-> Printed analysis '" << name << "' to: " << ofs << std::endl;
+  std::cout << "-> Printed analysis '" << name_ << "' to: " << ofs << std::endl;
   
 }
 
@@ -1895,7 +1929,7 @@ std::vector<MT2Analysis<T>*> MT2Analysis<T>::readAllFromFile( const std::string&
 
     analyses.push_back( analysis );
 
-    if( verbose ) std::cout << "  -> added: " << analysis->name << std::endl;
+    if( verbose ) std::cout << "  -> added: " << analysis->name_ << std::endl;
 
   } // while analysis names
 
@@ -1925,10 +1959,10 @@ MT2Analysis<T>* MT2Analysis<T>::readFromFile( const std::string& fileName, const
 
   if( analyses.size()>1 && matchName=="" ) {
     std::cout << "[MT2Analysis::readFromFile] WARNING!!! Multiple analyses found in file: " << fileName << std::endl;
-    std::cout << "[MT2Analysis::readFromFile] but reading only one ('" << analysis->name << "')" << std::endl;
+    std::cout << "[MT2Analysis::readFromFile] but reading only one ('" << analysis->name_ << "')" << std::endl;
     std::cout << "[MT2Analysis::readFromFile] (if you want to read all of them you should use readAllFromFile)" << std::endl;
   } else {
-    std::cout << "[MT2Analysis::readFromFile] Grabbed MT2Analysis '" << analysis->name << "' from file " << fileName << std::endl;
+    std::cout << "[MT2Analysis::readFromFile] Grabbed MT2Analysis '" << analysis->name_ << "' from file " << fileName << std::endl;
   }
 
   return analysis;

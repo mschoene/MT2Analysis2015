@@ -50,6 +50,7 @@ void MT2EstimateTree::initTree( ) {
   tree->Branch( "lumi", &lumi, "lumi/I");
   tree->Branch( "evt", &evt, "evt/i");
   tree->Branch( "weight", &weight, "weight/F");
+  tree->Branch( "puWeight", &puWeight, "puWeight/F");
   tree->Branch( "id", &id, "id/I");
 
   tree->Branch( "mt2", &mt2, "mt2/F");
@@ -181,6 +182,7 @@ void MT2EstimateTree::assignTree( const MT2Tree& mt2tree, float w  ) {
     lumi   = mt2tree.lumi;
     evt    = mt2tree.evt;
     weight = w;
+    puWeight = mt2tree.puWeight;
     id     = mt2tree.evt_id;
 
     mt2    = mt2tree.mt2;
@@ -211,6 +213,7 @@ void MT2EstimateTree::assignTree_zll( const MT2Tree& mt2tree, float w ) {
   lumi   = mt2tree.lumi;
   evt    = mt2tree.evt;
   weight = w;
+  puWeight = mt2tree.puWeight;
   id     = mt2tree.evt_id;
 
   nVert  = mt2tree.nVert;
@@ -243,6 +246,7 @@ void MT2EstimateTree::assignTree_gamma( const MT2Tree& mt2tree, float w ) {
   lumi   = mt2tree.lumi;
   evt    = mt2tree.evt;
   weight = w;
+  puWeight = mt2tree.puWeight;
   id     = mt2tree.evt_id;
 
   nVert  = mt2tree.nVert;
@@ -455,6 +459,8 @@ const MT2EstimateTree& MT2EstimateTree::operator+=( const MT2EstimateTree& rhs )
     this->tree->SetName( oldName.c_str() );
 
     this->initTree();
+
+    delete list;
 
   }
 

@@ -181,7 +181,26 @@ MT2Estimate MT2Estimate::operator/( const MT2Estimate& rhs ) const {
     std::cout << "[MT2Estimate::operator/] ERROR! Can't divide MT2Estimate with different MT2Regions!" << std::endl;
     exit(113);
   }
-
+//  //////
+//  MT2Estimate result(*this);
+//  
+//  for( int iBin=1; iBin<result.yield->GetNbinsX()+1; ++iBin ) {
+//  
+//    float thisBin  = result.yield->GetBinContent(iBin);
+//    float otherBin = rhs.yield->Integral();
+//  
+//    float newBin = thisBin/otherBin;
+//  
+//    result.yield         ->SetBinContent( iBin, newBin );
+// 
+//    for( int iBinY=1; iBinY<result.yield3d->GetNbinsY()+1; ++iBinY)
+//      for( int iBinZ=1; iBinZ<result.yield3d->GetNbinsZ()+1; ++iBinZ)
+//        result.yield3d   ->SetBinContent( iBin, iBinY, iBinZ, newBin );
+//
+//  }
+//
+//  return result;
+//  //////
 
   MT2Estimate result(*this);
   result.yield3d->Divide(rhs.yield3d);
@@ -189,7 +208,7 @@ MT2Estimate MT2Estimate::operator/( const MT2Estimate& rhs ) const {
   //MT2Estimate result(name, *(this->region) );
   //result.yield = new TH1D(*(this->yield));
   //result.yield->Divide(rhs.yield);
-
+  
   return result;
 
 }
@@ -326,6 +345,41 @@ const MT2Estimate& MT2Estimate::getMassPoint( const MT2Estimate& rhs, int mParen
   this->setName(massPointName);
 
   return *this;
+
+}
+
+
+MT2Analysis<MT2Estimate>* MT2Estimate::makeIntegralAnalysisFromEstimate( const std::string& aname, const std::string& regionsSet, MT2Analysis<MT2Estimate>* estimate ) {
+
+  std::set<MT2Region> regions = estimate->getRegions();
+
+  std::set<MT2Estimate*> data;
+
+  for( std::set<MT2Region>::iterator iR=regions.begin(); iR!=regions.end(); ++iR ) {
+
+    MT2Estimate*  thisEstimate = estimate->get( *iR );
+
+    double error;
+    double integral = thisEstimate->yield->IntegralAndError(1, -1, error);
+
+    for( int iBin = 1; iBin < thisEstimate->yield->GetNbinsX()+1; ++iBin ){
+      thisEstimate->yield->SetBinContent(iBin, integral);
+      thisEstimate->yield->SetBinError(iBin, error);
+
+      for( int jBin = 1; jBin < thisEstimate->yield3d->GetNbinsY()+1; ++jBin )
+	for( int kBin = 1; kBin < thisEstimate->yield3d->GetNbinsZ()+1; ++kBin ){
+	  thisEstimate->yield3d->SetBinContent(iBin, jBin, kBin, integral);
+	  thisEstimate->yield3d->SetBinError(iBin, jBin, kBin, error);
+	}
+    }
+
+    data.insert( thisEstimate );
+
+  } // for regions                                                                                                                                                                                                               
+
+  MT2Analysis<MT2Estimate>* analysis = new MT2Analysis<MT2Estimate>( aname, data );
+
+  return analysis;
 
 }
 

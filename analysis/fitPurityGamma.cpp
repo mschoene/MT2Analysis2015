@@ -117,7 +117,7 @@ int main( int argc, char* argv[] ) {
 
   for( std::set<MT2Region>::iterator iR=regions.begin(); iR!=regions.end(); ++iR ) {
 
-    if( iR->nBJetsMin()>1 ) continue;
+    if( iR->nBJetsMin()>2 ) continue;
 
     MT2EstimateZinvGamma* thisEstimate = gammaJet_data->get( *iR );
 

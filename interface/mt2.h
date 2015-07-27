@@ -116,6 +116,7 @@ public :
    Float_t         met_rawPt;
    Float_t         met_rawPhi;
    Int_t           nBJet20;
+   Int_t           nBJet25;
    Int_t           nBJet40;
    Int_t           nMuons10;
    Int_t           nElectrons10;
@@ -132,9 +133,12 @@ public :
    Float_t         mt2;
    Float_t         gamma_mt2;
    Float_t         zll_mt2;
+   Int_t           gamma_nJet20;
+   Int_t           gamma_nJet25;
    Int_t           gamma_nJet30;
    Int_t           gamma_nJet40;
    Int_t           gamma_nBJet20;
+   Int_t           gamma_nBJet25;
    Int_t           gamma_nBJet40;
    Float_t         gamma_ht;
    Float_t         gamma_deltaPhiMin;
@@ -516,6 +520,7 @@ public :
    TBranch        *b_met_rawPt;   //!
    TBranch        *b_met_rawPhi;   //!
    TBranch        *b_nBJet20;   //!
+   TBranch        *b_nBJet25;   //!
    TBranch        *b_nBJet40;   //!
    TBranch        *b_nMuons10;   //!
    TBranch        *b_nElectrons10;   //!
@@ -532,9 +537,12 @@ public :
    TBranch        *b_mt2;   //!
    TBranch        *b_gamma_mt2;   //!
    TBranch        *b_zll_mt2;   //!
+   TBranch        *b_gamma_nJet20;   //!
+   TBranch        *b_gamma_nJet25;   //!
    TBranch        *b_gamma_nJet30;   //!
    TBranch        *b_gamma_nJet40;   //!
    TBranch        *b_gamma_nBJet20;   //! 
+   TBranch        *b_gamma_nBJet25;   //! 
    TBranch        *b_gamma_nBJet40;   //!
    TBranch        *b_gamma_ht;   //!
    TBranch        *b_gamma_deltaPhiMin;   //!
@@ -983,6 +991,7 @@ void MT2Tree::Init(TTree *tree)
    fChain->SetBranchAddress("met_rawPt", &met_rawPt, &b_met_rawPt);
    fChain->SetBranchAddress("met_rawPhi", &met_rawPhi, &b_met_rawPhi);
    fChain->SetBranchAddress("nBJet20", &nBJet20, &b_nBJet20);
+   fChain->SetBranchAddress("nBJet25", &nBJet25, &b_nBJet25);
    fChain->SetBranchAddress("nBJet40", &nBJet40, &b_nBJet40);
    fChain->SetBranchAddress("nMuons10", &nMuons10, &b_nMuons10);
    fChain->SetBranchAddress("nElectrons10", &nElectrons10, &b_nElectrons10);
@@ -999,9 +1008,12 @@ void MT2Tree::Init(TTree *tree)
    fChain->SetBranchAddress("mt2", &mt2, &b_mt2);
    fChain->SetBranchAddress("gamma_mt2", &gamma_mt2, &b_gamma_mt2);
    fChain->SetBranchAddress("zll_mt2", &zll_mt2, &b_zll_mt2);
+   fChain->SetBranchAddress("gamma_nJet20", &gamma_nJet20, &b_gamma_nJet20);
+   fChain->SetBranchAddress("gamma_nJet25", &gamma_nJet25, &b_gamma_nJet25);
    fChain->SetBranchAddress("gamma_nJet30", &gamma_nJet30, &b_gamma_nJet30);
    fChain->SetBranchAddress("gamma_nJet40", &gamma_nJet40, &b_gamma_nJet40);
    fChain->SetBranchAddress("gamma_nBJet20", &gamma_nBJet20, &b_gamma_nBJet20);
+   fChain->SetBranchAddress("gamma_nBJet25", &gamma_nBJet25, &b_gamma_nBJet25);
    fChain->SetBranchAddress("gamma_nBJet40", &gamma_nBJet40, &b_gamma_nBJet40);
    fChain->SetBranchAddress("gamma_ht", &gamma_ht, &b_gamma_ht);
    fChain->SetBranchAddress("gamma_deltaPhiMin", &gamma_deltaPhiMin, &b_gamma_deltaPhiMin);

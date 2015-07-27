@@ -134,6 +134,43 @@ MT2Analysis<MT2EstimateSyst>* MT2EstimateSyst::makeAnalysisFromEstimate( const s
 }
 
 
+MT2Analysis<MT2EstimateSyst>* MT2EstimateSyst::makeIntegralAnalysisFromEstimate( const std::string& aname, const std::string& regionsSet, MT2Analysis<MT2EstimateSyst>* estimate ) {
+
+  std::set<MT2Region> regions = estimate->getRegions();
+
+  std::set<MT2EstimateSyst*> data;
+
+  for( std::set<MT2Region>::iterator iR=regions.begin(); iR!=regions.end(); ++iR ) {
+
+    MT2EstimateSyst*  thisEstimate = estimate->get( *iR );
+
+    double error;
+    double integral = thisEstimate->yield->IntegralAndError(1, thisEstimate->yield->GetNbinsX()+1, error);
+    double integralUp = thisEstimate->yield_systUp->Integral(1, thisEstimate->yield->GetNbinsX()+1);
+    double integralDown = thisEstimate->yield_systDown->Integral(1, thisEstimate->yield->GetNbinsX()+1);
+    
+    for( int iBin = 1; iBin < thisEstimate->yield->GetNbinsX()+1; ++iBin ){
+      thisEstimate->yield->SetBinContent(iBin, integral);
+      thisEstimate->yield_systUp->SetBinContent(iBin, integralUp);
+      thisEstimate->yield_systDown->SetBinContent(iBin, integralDown);
+
+      for( int jBin = 1; jBin < thisEstimate->yield3d->GetNbinsY()+1; ++jBin )
+        for( int kBin = 1; kBin < thisEstimate->yield3d->GetNbinsZ()+1; ++kBin ){
+          thisEstimate->yield3d->SetBinContent(iBin, jBin, kBin, integral);
+          thisEstimate->yield3d->SetBinError(iBin, jBin, kBin, error);
+        }
+    }
+
+    data.insert( thisEstimate );
+
+  } // for regions                                                                                                                                                                                                               
+
+  MT2Analysis<MT2EstimateSyst>* analysis = new MT2Analysis<MT2EstimateSyst>( aname, data );
+
+  return analysis;
+
+}
+
 
 TGraphAsymmErrors* MT2EstimateSyst::getGraph() const {
 
