@@ -1,6 +1,6 @@
 // $Id: goodrun.cc,v 1.12 2012/11/12 18:58:08 kelley Exp $
 // CINT is allowed to see this, but nothing else:
-#include "goodrun.h"
+#include "/shome/mmasciov/CMSSW_7_2_3_PostProcessing/src/analysisCode/Utils/goodrun.h"
 
 #ifndef __CINT__
 
@@ -53,6 +53,7 @@ static const char json_py[] =
 //"print ''                                                                                                     \n";
 
 static int load_runs(const char *fname, enum file_type type){
+  
   good_runs_.clear();
   FILE *file = 0;
   switch (type) { 
@@ -186,6 +187,7 @@ static int load_runs(const char *fname, enum file_type type){
 
 bool goodrun (unsigned int run, unsigned int lumi_block)
 {
+
   if (not good_runs_loaded_) {
     int ret = load_runs("goodruns.txt", TEXT);
     assert(ret != 0);
@@ -249,6 +251,7 @@ void set_goodrun_file (const char* filename)
   int ret = load_runs(filename, TEXT);  
   assert(ret != 0);
   good_runs_loaded_ = true;
+
 }
 
 void set_goodrun_file_json (const char* filename)
