@@ -437,7 +437,7 @@ MT2Analysis<MT2EstimateTree>* mergeYields( std::vector<MT2Analysis<MT2EstimateTr
 
   for( unsigned i=0; i<EventYield.size(); ++i ) {
 
-    if( EventYield[i]->id_ >= id_min && EventYield[i]->id_ <= id_max ) {
+    if( EventYield[i]->getId() >= id_min && EventYield[i]->getId() <= id_max ) {
 
        *(return_EventYield) += *(EventYield[i]);
 
