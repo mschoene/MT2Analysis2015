@@ -1,7 +1,7 @@
 #ifndef MT2Estimate_h
 #define MT2Estimate_h
 
-
+#include "MT2Analysis.h"
 #include "MT2Region.h"
 #include "TH3D.h"
 #include "TH1D.h"
@@ -56,6 +56,8 @@ class MT2Estimate {
   std::string regionName() const {
     return region->getName();
   }
+
+  static MT2Analysis<MT2Estimate>* makeIntegralAnalysisFromEstimate( const std::string& aname, const std::string& regionsSet, MT2Analysis<MT2Estimate>* analysis );
 
   const MT2Estimate& operator=( const MT2Estimate& rhs );
 
