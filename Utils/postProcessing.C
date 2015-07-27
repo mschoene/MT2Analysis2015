@@ -36,7 +36,7 @@ int postProcessing(string inputString="input",
 		   float filter=1.0, float kfactor=1.0, float xsec=-1.0, int id=1,
 		   string crabExt="",
 		   string inputPU="",
-		   string PUvar="nTrueInt");
+		   string PUvar="nVert");
 
 
 int run(string cfg="postProcessing_74X_50ns.cfg",
@@ -46,7 +46,7 @@ int run(string cfg="postProcessing_74X_50ns.cfg",
 	string fileExtension = "_post.root",
         string crabExt = "",
 	string inputPU = "",
-	string PUvar = "nTrueInt"){
+	string PUvar = "nVert"){
   
   // for measuring timing
   time_t start = time(0);
@@ -137,10 +137,10 @@ int postProcessing(string inputString,
   TH1D* hPU_data = new TH1D("hPU_data", "", 100, 0, 100);
   hPU_data->Sumw2();
 
-  chain_pu->Project("hPU_data", "nVert", "HLT_PFHT800 || HLT_ht475prescale");
+  chain_pu->Project("hPU_data", "nVert", "(HLT_PFHT800 || HLT_ht475prescale)");
   
-  ULong64_t nEntries = hPU_data->Integral();
-  hPU_data->Scale(1.0/nEntries);
+  ULong64_t nData = hPU_data->Integral();
+  hPU_data->Scale(1.0/nData);
   
   // here I set the "Count" histograms
   TIter nextfile(chain->GetListOfFiles());
@@ -157,15 +157,15 @@ int postProcessing(string inputString,
     if(isFirst){
       newH = (TH1D*) countH->Clone();
       newH->SetDirectory(0);  
-      isFirst=false;
       
-      if(sumW){
+      if(sumW)
 	newSumW = (TH1D*) sumW->Clone();
-      }
       else
 	newSumW = (TH1D*) countH->Clone();
       newSumW->SetDirectory(0);  
-
+      
+      isFirst=false;
+      
     }
     allHistoEntries += countH->GetBinContent(1);
     if(sumW)
@@ -265,7 +265,7 @@ int postProcessing(string inputString,
   }
   else{
     
-    sumGenWeightsHisto = (ULong64_t)  newSumW->GetBinContent(1);
+    sumGenWeightsHisto = (ULong64_t) newSumW->GetBinContent(1);
     nEffEventsHisto = ( (double) 1.0*sumGenWeightsHisto/genWeight_  > (ULong64_t) (1.0*sumGenWeightsHisto/genWeight_ + 0.5) ) ? (ULong64_t) (1.0*sumGenWeightsHisto/genWeight_)+1 : (ULong64_t) (1.0*sumGenWeightsHisto/genWeight_);
   
     scale1fb_noGenWeight = xsec*kfactor*1000*filter/(Float_t)nEffEventsHisto;
@@ -334,7 +334,8 @@ int postProcessing(string inputString,
 
   delete chain; 
 
-
+  hPU->Write();
+  hPU_data->Write();
   hPU_r->Write();
   delete hPU_r;
   delete hPU;
