@@ -5,7 +5,7 @@ treeName="mt2"
 inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/casal/babies/MT2_CMGTools-from-CMSSW_7_4_7/prod747data_Run2015B_golden/"
 #inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/MT2production/74X/Spring15_50ns/afs/cern.ch/work/m/mmasciov/CMSSW_7_4_7_MT2/src/CMGTools/TTHAnalysis/cfg/16July2015/"
 #inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/pandolf/babies/chunks/PHYS14_jet30_v2/"
-productionName="27July2015_noMT2skim"
+productionName="27July2015_noMT2skim_v5"
 fileExt="_post.root"
 isCrab=1
 inputPU="/shome/mmasciov/JetHT_Run2015B.root"
@@ -15,7 +15,7 @@ PUvar="nVert"
 
 # initialization
 jobsLogsFolder="./${productionName}"
-outputFolder="/pnfs/psi.ch/cms/trivcat/store/user/`whoami`/MT2production/74X/Spring15_50ns/PostProcessed/"$productionName/
+outputFolder="/pnfs/psi.ch/cms/trivcat/store/user/`whoami`/MT2production/74X/firstData2015/PostProcessed/"$productionName/
 workingFolder="/scratch/`whoami`/"$productionName
 
 
@@ -68,7 +68,6 @@ echo "Working folder on working-node is: " $workingFolder
 # here I compile the root macro only once
 echo "gROOT->LoadMacro(\"postProcessing.C+\"); gSystem->Exit(0);" |root.exe -b -l ;
 
-
 while read line; 
 do 
     case "$line" in \#*) continue ;; esac; #skip commented lines
@@ -118,7 +117,7 @@ mkdir -p $workingFolder
 gfal-mkdir -p srm://t3se01.psi.ch/$outputFolder
 
 echo "postProcessing(\"$name\",\"$inputFolder\",\"$outputFile\",\"$treeName\",$filter,$kfactor,$xsec,$id,\"$crabExt\", \"$inputPU\", \"$PUvar\");"
-echo "gROOT->LoadMacro(\"postProcessing.C\"); postProcessing(\"$name\",\"$inputFolder\",\"$outputFile\",\"$treeName\",$filter,$kfactor,$xsec,$id,\"$crabExt\",\"$inputPU\",\"$PUvar\"); gSystem->Exit(0);" |root.exe -b -l ;
+echo "gROOT->LoadMacro(\"goodrun.cc+\"); gROOT->LoadMacro(\"postProcessing.C\"); postProcessing(\"$name\",\"$inputFolder\",\"$outputFile\",\"$treeName\",$filter,$kfactor,$xsec,$id,\"$crabExt\",\"$inputPU\",\"$PUvar\"); gSystem->Exit(0);" |root.exe -b -l ;
 
 #mv $outputFile $outputFolder
 gfal-copy file://$outputFile srm://t3se01.psi.ch/$outputFolder
@@ -145,6 +144,7 @@ done < postProcessing_74X_50ns.cfg
 #done < postProcessing.cfg
 
 rm -f postProcessing_C.d postProcessing_C.so;
+rm -f goodrun_cc.d goodrun_cc.so;
 
 fi;
 

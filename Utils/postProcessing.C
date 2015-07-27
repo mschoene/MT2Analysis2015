@@ -23,11 +23,12 @@ run()
 #include "TBranch.h"
 #include "TString.h"
 #include "TH1D.h"
+#include "TROOT.h"
+#include "TSystem.h"
 
-#include "./goodrun.cc"
+#include "/shome/mmasciov/CMSSW_7_2_3_PostProcessing/src/analysisCode/Utils/goodrun.cc"
 
 using namespace std;
-
 
 int postProcessing(string inputString="input",
 		   string inputFolder="./",
@@ -109,7 +110,8 @@ int postProcessing(string inputString,
 {
   
   bool applyJSON=true;
-  const char* json_file = "goldenJSON.txt";
+  const char* json_file = "/shome/mmasciov/CMSSW_7_2_3_PostProcessing/src/analysisCode/Utils/goodruns.txt";
+
   if (applyJSON) {
     cout << "Loading json file: " << json_file << endl;
     set_goodrun_file(json_file);
@@ -183,10 +185,13 @@ int postProcessing(string inputString,
   //
   //t->SetBranchStatus("scale1fb", 0);
 
+
   TFile *out = TFile::Open(outputFile.c_str(), "RECREATE");
   TTree *clone = new TTree("mt2", "post processed baby tree for mt2 analysis");
 
-  chain->SetBranchStatus("puWeight", 0);
+  TBranch* thisPUWeight = (TBranch*) chain->GetListOfBranches()->FindObject("puWeight");
+  if (thisPUWeight) chain->SetBranchStatus("puWeight", 0);
+
   clone = chain->CloneTree(-1, "fast"); 
   clone->SetName("mt2");
   
@@ -205,28 +210,30 @@ int postProcessing(string inputString,
 
   float genWeight_=1.0;
   float genWeight=0.;
-  chain->SetBranchAddress("genWeight", &genWeight);
+  TBranch* thisGenWeight = (TBranch*) chain->GetListOfBranches()->FindObject("genWeight");
+  if (thisGenWeight) chain->SetBranchAddress("genWeight", &genWeight);
   
   int isData=0; 
   chain->SetBranchAddress("isData",&isData);
   
-  int run=0;
+  UInt_t run=0;
   chain->SetBranchAddress("run", &run);
-  int lumi=0;
+  UInt_t lumi=0;
   chain->SetBranchAddress("lumi", &lumi);
 
   int nVert=0;
   chain->SetBranchAddress("nVert", &nVert);
   
   int nTrueInt=0;
-  chain->SetBranchAddress("nTrueInt", &nTrueInt);
-
+  TBranch* thisNTrueInt = (TBranch*) chain->GetListOfBranches()->FindObject("nTrueInt");
+  if (thisNTrueInt) chain->SetBranchAddress("nTrueInt", &nTrueInt);
+  
   if( nEventsTree > 0 ){
 
     chain->GetEntry(0);
 
     if(isData)
-      genWeight_ = 0.;
+      genWeight_ = 1.;
     else
       genWeight_ = fabs(genWeight);
 
@@ -237,7 +244,7 @@ int postProcessing(string inputString,
   
   if(PUvar == "nVert")
     chain->Project("hPU", "nVert");
-  else
+  else if(!isData)
     chain->Project("hPU", "nTrueInt");
 
   hPU->Scale(1.0/nEventsTree);
@@ -252,27 +259,27 @@ int postProcessing(string inputString,
   float scale1fb_sumGenWeights;
   float scale1fb;
   float puWeight;
-  bool isGolden=1;
+  int isGolden;
 
-  if(isData){
+  if( isData ){
     
-    sumGenWeightsHisto = (ULong64_t) 0;
-    nEffEventsHisto = nEventsHisto;
+    sumGenWeightsHisto = (ULong64_t) 0.0;
+    nEffEventsHisto    = (ULong64_t) nEventsHisto;
     
-    scale1fb_noGenWeight = 0.0;
-    scale1fb_sumGenWeights = 0.0;
-    
+    scale1fb_noGenWeight   = (Float_t) 0.0;
+    scale1fb_sumGenWeights = (Float_t) 0.0;
+
   }
   else{
     
     sumGenWeightsHisto = (ULong64_t) newSumW->GetBinContent(1);
-    nEffEventsHisto = ( (double) 1.0*sumGenWeightsHisto/genWeight_  > (ULong64_t) (1.0*sumGenWeightsHisto/genWeight_ + 0.5) ) ? (ULong64_t) (1.0*sumGenWeightsHisto/genWeight_)+1 : (ULong64_t) (1.0*sumGenWeightsHisto/genWeight_);
+    nEffEventsHisto = ( (double) 1.0*sumGenWeightsHisto/genWeight_  > (ULong64_t) (1.0*sumGenWeightsHisto/genWeight_ + 0.5) ) ? (ULong64_t) (1.0*sumGenWeightsHisto/genWeight_ + 1.0) : (ULong64_t) (1.0*sumGenWeightsHisto/genWeight_);
   
     scale1fb_noGenWeight = xsec*kfactor*1000*filter/(Float_t)nEffEventsHisto;
     scale1fb_sumGenWeights = xsec*kfactor*1000*filter/(Float_t)sumGenWeightsHisto;
 
   }
-  
+    
   if (nEventsHisto < nEventsTree) // this should not happen
     cout << "ERROR: histogram count has less events than tree. This indicates something went wrong" << endl
 	 << "#events histo: "  << nEventsHisto << endl
@@ -293,8 +300,8 @@ int postProcessing(string inputString,
   TBranch* b9 = clone->Branch("evt_sumGenWeights", &sumGenWeightsHisto, "evt_sumGenWeights/l");
   TBranch* b10 = clone->Branch("evt_id", &id, "evt_id/I");
   TBranch* b11 = clone->Branch("puWeight", &puWeight, "puWeight/F");
-  TBranch* b12 = clone->Branch("isGolden", &isGolden, "isGolden/O");
-
+  TBranch* b12 = clone->Branch("isGolden", &isGolden, "isGolden/I");
+  
   for(Long64_t i = 0; i < (Long64_t) nEventsTree; i++) {
     
     chain->GetEntry(i);
@@ -315,7 +322,8 @@ int postProcessing(string inputString,
     }
 
     if( applyJSON && isData && !goodrun(run, lumi) ) isGolden=0;
-    
+    else isGolden=1;
+
     b1->Fill();
     b2->Fill();
     b3->Fill();
