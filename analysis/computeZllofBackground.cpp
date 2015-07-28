@@ -1,4 +1,4 @@
-  #include "TFile.h"
+#include "TFile.h"
 #include "TMath.h"
 #include "TF1.h"
 #include "TProfile.h"
@@ -63,8 +63,12 @@ int main(int argc, char* argv[]){
   regionsSet = cfg.regionsSet();
 
 
-  std::string outputdir( Form("ZllData_%s", configFileName.c_str() ) );
-  std::string outputdir_of( Form("ZllData_OF_%s", configFileName.c_str()  ) );
+  std::string outputdir = cfg.getEventYieldDir() + "/zllPurity";
+  std::string outputdir_of = cfg.getEventYieldDir() + "/zllPurity";
+
+
+  // std::string outputdir( Form("ZllData_%s", configFileName.c_str() ) );
+  // std::string outputdir_of( Form("ZllData_OF_%s", configFileName.c_str()  ) );
 
 
   std::cout << "-> Using regions: " << regionsSet << std::endl;
@@ -86,10 +90,11 @@ int main(int argc, char* argv[]){
 
 
 
+  std::string ZllDir = cfg.getEventYieldDir() + "/zllControlRegion";
+  std::string ZllDir_of = cfg.getEventYieldDir() + "/zllControlRegion";
 
-
-  std::string ZllDir = "ZllPurity_" + configFileName;
-  std::string ZllDir_of = "ZllPurity_OF_" + configFileName;
+  //  std::string ZllDir = "ZllPurity_" + configFileName;
+  //  std::string ZllDir_of = "ZllPurity_OF_" + configFileName;
 
 
   MT2Analysis<MT2EstimateTree>* Zll = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s/ZllPurityTrees.root", ZllDir.c_str() ), "DYJets");
@@ -106,6 +111,7 @@ int main(int argc, char* argv[]){
   MT2Analysis<MT2EstimateTree>* zjets = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s/ZllPurityTrees.root", ZllDir.c_str() ), "ZJets");
 
   
+  /*
   //OPPOSITE FLAVOR TREES
   MT2Analysis<MT2EstimateTree>* Zll_of = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s/ZllPurityTrees_of.root", ZllDir_of.c_str() ), "DYJets");
 
@@ -122,9 +128,9 @@ int main(int argc, char* argv[]){
 
   data_of->setFullName("Data");
 
-  
+  */
 
-  MT2Analysis<MT2EstimateTree>* data = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s/ZllPurityTrees_data.root", ZllDir.c_str() ) , "data");
+  MT2Analysis<MT2EstimateTree>* data = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s/Zll_analyses.root", ZllDir.c_str() ) , "data");
 
 
   data->setFullName("Data");
@@ -141,14 +147,15 @@ int main(int argc, char* argv[]){
   //  bgYields.push_back( wjets );
   //  bgYields.push_back( zjets );
   bgYields.push_back( top );
-  
+  /*
   std::vector<MT2Analysis<MT2EstimateTree>* > bgYields_of; 
   bgYields_of.push_back( Zll_of );
   //  bgYields_of.push_back( qcd_of );
   //  bgYields_of.push_back( wjets_of );
   //  bgYields_of.push_back( zjets_of );
   bgYields_of.push_back( top_of );
-  
+  */
+
   drawMll( outputdir, bgYields,data,  0 , cfg.lumi() );
   //drawMll( outputdir_of, bgYields_of, data_of,  1, cfg.lumi() );
 
@@ -321,6 +328,8 @@ void drawMll( const std::string& outputdir, std::vector< MT2Analysis<MT2Estimate
  
     for( unsigned i=0; i<bgYields.size(); ++i ) {  
       TH1D* h1_bg1 = bgYields[i]->get(thisRegion)->yield;
+      h1_bg1->SetFillColor( colors[i] );
+      h1_bg1->SetLineColor( kBlack );
       legend->AddEntry( h1_bg1, bgYields[i]->getFullName().c_str(), "F" );
     }
 
@@ -376,6 +385,8 @@ void drawMll( const std::string& outputdir, std::vector< MT2Analysis<MT2Estimate
     //in HT
     float bins_ht[] =  {0,100,200,300,400,500,600,700,800,1000, 1500,2000};
 
+    float bins_mll[] = {50,52,54,56,58,60,62,64,66,68,70,72,74,76,78,80,82,84,86,88,90,92,94,96,98,100,102,104,106,108,110,112,114,116,118,120,122,124,126,128,130,132,134,136,138,140,142,144,146,148,150};
+
     float bins_met[] = {0,50,100,150,200,250,300,350,400,450, 500, 600,700,800, 1000};
     float bins_Zpt[] = {0,50,100,150, 200,250,300,350,400,450, 500,550,600,650,700, 750,800,850,900,950, 1000};
     //  float bins_ht[] =  {450,500, 600,700, 800, 900,1000,1100, 1200, 1300, 1500,2000};
@@ -395,6 +406,7 @@ void drawMll( const std::string& outputdir, std::vector< MT2Analysis<MT2Estimate
     std::string cut3 ;
     std::string cut4;
 
+    std::string cut_mass = "weight*(Z_pt>180)";
 
     if(of==0){ 
       // cut =  "weight";
@@ -427,6 +439,8 @@ void drawMll( const std::string& outputdir, std::vector< MT2Analysis<MT2Estimate
 drawStacks( fullPathPlots,  bins_nVert,sizeof(bins_nVert)/sizeof(float)-1,  "nVert", bgYields , data, thisRegion  , cut , lumi  );     
 
 drawStacks( fullPathPlots,  bins_Z_lepId,sizeof(bins_Z_lepId)/sizeof(float)-1,  "Z_lepId", bgYields , data, thisRegion  , cut , lumi  );     
+
+drawStacks( fullPathPlots,  bins_mll,sizeof(bins_mll)/sizeof(float)-1,  "Z_mass", bgYields , data, thisRegion  , cut_mass , lumi  );     
 
        /*
     drawStacks( fullPathPlots,  bins_nJets,sizeof(bins_nJets)/sizeof(float)-1,  "nJets", bgYields , data,thisRegion, cut2, lumi );
@@ -508,8 +522,8 @@ void drawStacks(std::string fullPath, float *binss, unsigned int size,  std::str
   gr_data->SetMarkerSize(1.2);
  
  
-  float yMax = 1.5*(bgStack.GetMaximum());
-  float yMax2 = 1.5*(h_data->GetMaximum());
+  float yMax = 1.3*(bgStack.GetMaximum());
+  float yMax2 = 1.3*(h_data->GetMaximum());
   if(yMax2>yMax) yMax = yMax2;
 
   TH2D* h2_axes = new TH2D("axes", "", 10,bins[0] ,bins[size], 10, 0., yMax );
@@ -517,6 +531,8 @@ void drawStacks(std::string fullPath, float *binss, unsigned int size,  std::str
     h2_axes->SetXTitle("H_{T} [GeV]");
   else if(name == "mt2")  
     h2_axes->SetXTitle("M_{T2} [GeV]");
+  else if(name == "Z_mass")  
+    h2_axes->SetXTitle("M_{ll} [GeV]");
   else if(name == "Z_pt")  
     h2_axes->SetXTitle("Boson p_{T} [GeV]");
   else if(name == "met")  
@@ -529,15 +545,30 @@ void drawStacks(std::string fullPath, float *binss, unsigned int size,  std::str
   h2_axes->Draw();
 
 
-  TLegend* legend = new TLegend( 0.7, 0.9-(bgYields.size()+1)*0.06, 0.93, 0.9 );
+  TLegend* legend = new TLegend( 0.73, 0.9-(bgYields.size()+1)*0.06, 0.93, 0.9 );
   legend->SetTextSize(0.038);
   legend->SetTextFont(42);
   legend->SetFillColor(0);
   legend->AddEntry(gr_data, "Data", "p");
   for( unsigned i=0; i<bgYields.size(); ++i ) {  
     TH1D* h1_bg1 = bgYields[i]->get(thisRegion)->yield;
+    h1_bg1->SetFillColor( colors[i] );
+    h1_bg1->SetLineColor( kBlack );
     legend->AddEntry( h1_bg1, bgYields[i]->getFullName().c_str(), "F" );
   }
+
+    std::vector<std::string> niceNames = thisRegion.getNiceNames();
+    for( unsigned i=0; i<niceNames.size(); ++i ) {
+      float yMaxText = 0.9-(float)i*0.05;
+      float yMinText = yMaxText - 0.05;
+      TPaveText* regionText = new TPaveText( 0.18, yMinText, 0.55, yMaxText, "brNDC" );
+      regionText->SetTextSize(0.035);
+      regionText->SetTextFont(42);
+      regionText->SetFillColor(0);
+      regionText->SetTextAlign(11);
+      regionText->AddText( niceNames[i].c_str() );
+      regionText->Draw("same");
+    }
 
  
   TPaveText* labelTop = MT2DrawTools::getLabelTop(lumi);

@@ -29,8 +29,8 @@ int round(float d) {
   return (int)(floor(d + 0.5));
 }
 
-bool do_of = true;
-bool do_bg = true;
+bool do_of = false;
+bool do_bg = false;
 
 
 MT2Analysis<MT2EstimateTree>* mergeYields( std::vector< MT2Analysis<MT2EstimateTree> *> EventYield, const std::string& regionsSet, const std::string& name, int id_min, int id_max=-1, const std::string& legendName="" );
@@ -95,7 +95,7 @@ int main(int argc, char* argv[]) {
   std::cout << "-> Loading samples from file: " << samplesFileName << std::endl;
 
 
-  std::vector<MT2Sample> fSamples = MT2Sample::loadSamples(samplesFileName, "DYJetsToLL", 700, 799  ); // not interested in signal here
+  std::vector<MT2Sample> fSamples = MT2Sample::loadSamples(samplesFileName, "DYJetsToLL", 699, 800); // not interested in signal here
 
   if( fSamples.size()==0 ) {
     std::cout << "There must be an error: samples is empty!" << std::endl;
@@ -122,7 +122,7 @@ int main(int argc, char* argv[]) {
     }
   }
 
-    MT2Analysis<MT2EstimateTree>* EventYield_data = mergeYields( dataTree, cfg.regionsSet(), "data", 0, 2000, "" );
+  MT2Analysis<MT2EstimateTree>* EventYield_data = mergeYields( dataTree, cfg.regionsSet(), "data", 0, 2000, "" );
 
 
 
@@ -130,7 +130,6 @@ int main(int argc, char* argv[]) {
   for( unsigned i=0; i<fSamples.size(); ++i ) 
     EventYield.push_back( computeYield( fSamples[i], cfg, cfg.lumi() ) );
    
-
   MT2Analysis<MT2EstimateTree>* EventYield_zll = mergeYields( EventYield, cfg.regionsSet(), "DYJets", 700, 799, "DYJets" );
 
   /*
@@ -165,79 +164,86 @@ int main(int argc, char* argv[]) {
 
 
   if(do_bg==true){
-  //MC
-  std::vector<MT2Sample> fSamples = MT2Sample::loadSamples(samplesFileName, 1, 999); // not interested in signal here
-  if( fSamples.size()==0 ) {
-    std::cout << "There must be an error: samples is empty!" << std::endl;
-    exit(1209);
-  }
- std::vector< MT2Analysis<MT2EstimateTree>* > EventYield;
-  for( unsigned i=0; i<fSamples.size(); ++i ) 
-    EventYield.push_back( computeYield( fSamples[i], cfg, cfg.lumi(), 1 ) );
-    
-  std::vector<MT2Analysis<MT2EstimateTree>* > bgYields; 
-  MT2Analysis<MT2EstimateTree>* EventYield_top   = mergeYields( EventYield, cfg.regionsSet(), "Top", 300, 499 ); // ttbar, single top, ttW, ttZ...
-  MT2Analysis<MT2EstimateTree>* EventYield_qcd   = mergeYields( EventYield, cfg.regionsSet(), "QCD", 100, 199 );
-  MT2Analysis<MT2EstimateTree>* EventYield_wjets = mergeYields( EventYield, cfg.regionsSet(), "WJets", 500, 599, "W+jets" );
-  MT2Analysis<MT2EstimateTree>* EventYield_zjets = mergeYields( EventYield, cfg.regionsSet(), "ZJets", 600, 699, "Z+jets" );
-
-  bgYields.push_back( EventYield_qcd );
-  bgYields.push_back( EventYield_wjets );
-  bgYields.push_back( EventYield_zjets );
-  bgYields.push_back( EventYield_top );
- 
-  std::string outFile = outputdir + "/ZllPurityTrees.root";
-  EventYield_zll->writeToFile( outFile );
-  EventYield_top->addToFile( outFile );
-  EventYield_qcd->addToFile( outFile );
-  EventYield_wjets->addToFile( outFile );
-  EventYield_zjets->addToFile( outFile );
-
-
-
-  if(do_of==true){
-    std::vector<MT2Sample> samples_data_of = MT2Sample::loadSamples(samplesFile_data, "MuonEG");
-    std::vector< MT2Analysis<MT2EstimateTree>* > dataTree_of;
-    for( unsigned i=0; i<samples_data.size(); ++i ) {
-      dataTree_of.push_back( computeYield( samples_data_of[i], cfg, cfg.lumi(),0 ));
+    //MC
+    std::vector<MT2Sample> fSamples_bg = MT2Sample::loadSamples(samplesFileName, 1, 999); // not interested in signal here
+    if( fSamples_bg.size()==0 ) {
+      std::cout << "There must be an error: samples is empty!" << std::endl;
+      exit(1209);
     }
-    MT2Analysis<MT2EstimateTree>* EventYield_data_of = mergeYields( dataTree_of, cfg.regionsSet(), "data_of", 0, 2000, "" );
-
-  std::vector< MT2Analysis<MT2EstimateTree>* > EventYield_of;
-  for( unsigned i=0; i<fSamples.size(); ++i ) 
-    EventYield_of.push_back( computeYield( fSamples[i], cfg, cfg.lumi(), 0 ) );
-    
-  MT2Analysis<MT2EstimateTree>* EventYield_zll_of = mergeYields( EventYield_of, cfg.regionsSet(), "DYJets", 700, 799, "DYJets" );
-
-  std::vector<MT2Analysis<MT2EstimateTree>* > bgYields_of; 
-
-  MT2Analysis<MT2EstimateTree>* EventYield_top_of   = mergeYields( EventYield_of, cfg.regionsSet(), "Top", 300, 499 ); // ttbar, single top, ttW, ttZ...
-  MT2Analysis<MT2EstimateTree>* EventYield_qcd_of   = mergeYields( EventYield_of, cfg.regionsSet(), "QCD", 100, 199 );
-  MT2Analysis<MT2EstimateTree>* EventYield_wjets_of = mergeYields( EventYield_of, cfg.regionsSet(), "WJets", 500, 599, "W+jets" );
-  MT2Analysis<MT2EstimateTree>* EventYield_zjets_of = mergeYields( EventYield_of, cfg.regionsSet(), "ZJets", 600, 699, "Z+jets" );
- 
-  bgYields_of.push_back( EventYield_qcd_of );
-  bgYields_of.push_back( EventYield_wjets_of );
-  bgYields_of.push_back( EventYield_zjets_of );
-  bgYields_of.push_back( EventYield_top_of );
-
-  std::string outFile_of = outputdir + "/ZllPurityTrees_of.root";
-  EventYield_zll_of->writeToFile( outFile_of );
-  EventYield_top_of->addToFile( outFile_of );
-  EventYield_qcd_of->addToFile( outFile_of );
-  EventYield_wjets_of->addToFile( outFile_of );
-  EventYield_zjets_of->addToFile( outFile_of );
-
-  std::string outFile_data_of = outputdir + "/ZllPurityTrees_data_of.root";
-  EventYield_data_of->writeToFile(outFile_data_of);
   
+    std::vector< MT2Analysis<MT2EstimateTree>* > EventYield_bg;
+    for( unsigned i=0; i<fSamples_bg.size(); ++i ) 
+      EventYield_bg.push_back( computeYield( fSamples_bg[i], cfg, cfg.lumi(), 1 ) );
+ 
+    std::vector<MT2Analysis<MT2EstimateTree>* > bgYields; 
+
+    MT2Analysis<MT2EstimateTree>* EventYield_top   = mergeYields( EventYield_bg, cfg.regionsSet(), "Top", 300, 499 ); // ttbar, single top, ttW, ttZ...
+    MT2Analysis<MT2EstimateTree>* EventYield_qcd   = mergeYields( EventYield_bg, cfg.regionsSet(), "QCD", 100, 199 );
+    MT2Analysis<MT2EstimateTree>* EventYield_wjets = mergeYields( EventYield_bg, cfg.regionsSet(), "WJets", 500, 599, "W+jets" );
+    MT2Analysis<MT2EstimateTree>* EventYield_zjets = mergeYields( EventYield_bg, cfg.regionsSet(), "ZJets", 600, 699, "Z+jets" );
+
+    bgYields.push_back( EventYield_qcd );
+    bgYields.push_back( EventYield_wjets );
+    bgYields.push_back( EventYield_zjets );
+    bgYields.push_back( EventYield_top );
+ 
+    std::string outFile = outputdir + "/ZllPurityTrees.root";
+    EventYield_zll->writeToFile( outFile );
+    EventYield_top->addToFile( outFile );
+    EventYield_qcd->addToFile( outFile );
+    EventYield_wjets->addToFile( outFile );
+    EventYield_zjets->addToFile( outFile );
 
 
 
+    if(do_of==true){
+      std::vector<MT2Sample> samples_data_of = MT2Sample::loadSamples(samplesFile_data, "MuonEG");
+      std::vector< MT2Analysis<MT2EstimateTree>* > dataTree_of;
+      for( unsigned i=0; i<samples_data_of.size(); ++i ) {
+	dataTree_of.push_back( computeYield( samples_data_of[i], cfg, cfg.lumi(),0 ));
+      }
 
-  }//etz langets aber mit of
+      MT2Analysis<MT2EstimateTree>* EventYield_data_of = mergeYields( dataTree_of, cfg.regionsSet(), "data_of", 0, 2000, "" );
 
-  }//gnueg bg abgschetzt
+
+      std::vector<MT2Sample> fSamples_of = MT2Sample::loadSamples(samplesFileName, 1, 999); // not interested in signal here
+      if( fSamples_of.size()==0 ) {
+	std::cout << "There must be an error: samples is empty!" << std::endl;
+	exit(1209);
+      }
+      std::vector< MT2Analysis<MT2EstimateTree>* > EventYield_of;
+      for( unsigned i=0; i<fSamples_of.size(); ++i ) 
+	EventYield_of.push_back( computeYield( fSamples_of[i], cfg, cfg.lumi(), 0 ) );
+    
+      MT2Analysis<MT2EstimateTree>* EventYield_zll_of = mergeYields( EventYield_of, cfg.regionsSet(), "DYJets", 700, 799, "DYJets" );
+
+      std::vector<MT2Analysis<MT2EstimateTree>* > bgYields_of; 
+
+      MT2Analysis<MT2EstimateTree>* EventYield_top_of   = mergeYields( EventYield_of, cfg.regionsSet(), "Top", 300, 499 );//ttbar,singletop,ttW...
+      MT2Analysis<MT2EstimateTree>* EventYield_qcd_of   = mergeYields( EventYield_of, cfg.regionsSet(), "QCD", 100, 199 );
+      MT2Analysis<MT2EstimateTree>* EventYield_wjets_of = mergeYields( EventYield_of, cfg.regionsSet(), "WJets", 500, 599, "W+jets" );
+      MT2Analysis<MT2EstimateTree>* EventYield_zjets_of = mergeYields( EventYield_of, cfg.regionsSet(), "ZJets", 600, 699, "Z+jets" );
+ 
+      bgYields_of.push_back( EventYield_qcd_of );
+      bgYields_of.push_back( EventYield_wjets_of );
+      bgYields_of.push_back( EventYield_zjets_of );
+      bgYields_of.push_back( EventYield_top_of );
+
+      std::string outFile_of = outputdir + "/ZllPurityTrees_of.root";
+      EventYield_zll_of->writeToFile( outFile_of );
+      EventYield_top_of->addToFile( outFile_of );
+      EventYield_qcd_of->addToFile( outFile_of );
+      EventYield_wjets_of->addToFile( outFile_of );
+      EventYield_zjets_of->addToFile( outFile_of );
+
+      std::string outFile_data_of = outputdir + "/ZllPurityTrees_data_of.root";
+      EventYield_data_of->writeToFile(outFile_data_of);
+ 
+
+    } //End do opposite flavor
+
+  } //End do background trees
+
   return 0;
 
 }
@@ -332,11 +338,11 @@ MT2Analysis<MT2EstimateTree>* computeYield( const MT2Sample& sample, const MT2Co
     if(( myTree.lep_pdgId[0]*myTree.lep_pdgId[1])>0 )   continue;
     
     if(  doSameFlavor==1 && !(myTree.HLT_DoubleMu || myTree.HLT_DoubleEl) ) continue;
-    if(  doSameFlavor==0 && !(myTree.HLT_DoubleMu || myTree.HLT_DoubleEl ) ) continue;
+    if(  myTree.isData && doSameFlavor==0 && !(myTree.HLT_MuX_Ele12 || myTree.HLT_Mu8_EleX) ) continue;
 
     //Implemented in computeZllGammaRatio for now to allow flexibility
-    //  if(myTree.lep_pt[0]<25) continue;
-    //  if(myTree.lep_pt[1]<20) continue;
+    if(myTree.lep_pt[0]<25) continue;
+    if(myTree.lep_pt[1]<20) continue;
 
     //Need the lorentz vectors of the leptons first
     TLorentzVector *LVec = new TLorentzVector[5];
@@ -405,7 +411,7 @@ MT2Analysis<MT2EstimateTree>* mergeYields( std::vector<MT2Analysis<MT2EstimateTr
 
   for( unsigned i=0; i<EventYield.size(); ++i ) {
 
-    if( EventYield[i]->id >= id_min && EventYield[i]->id <= id_max ) {
+    if( EventYield[i]->getId() >= id_min && EventYield[i]->getId() <= id_max ) {
 
        *(return_EventYield) += *(EventYield[i]);
 

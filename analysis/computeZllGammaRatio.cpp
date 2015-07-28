@@ -324,18 +324,18 @@ void drawRatios(std::string fullPath, float *binss, unsigned int size,  std::str
   h_mt2->SetBinContent(size, h_mt2->GetBinContent(size) + h_mt2->GetBinContent(size+1));//adding overflow
   g_mt2->SetBinContent(size, g_mt2->GetBinContent(size) + g_mt2->GetBinContent(size+1));
 
-  //we'll have to ignore the purity for a sec
-  Double_t x_tmp, p, p_errUp, p_errDown;	       
-  //  this_zinv_purity->GetPoint( binnie-1, x_tmp, p);
+  // we'll have to ignore the purity for a sec
+  // Double_t x_tmp, p, p_errUp, p_errDown;	       
+  // this_zinv_purity->GetPoint( binnie-1, x_tmp, p);
  
 
   int nBinss =  h_mt2->GetNbinsX();
   for(int binnie = 1; binnie <= nBinss; binnie++){
 
-    if(binnie==1) p=0.88;
-    else p=0.92;
+    Double_t x_tmp, p, p_errUp, p_errDown;	       
+    this_zinv_purity->GetPoint( binnie-1, x_tmp, p);
 
- std::cout << "Purity = " << p << std::endl;
+    std::cout << "Purity = " << p << std::endl;
 
     double value = h_mt2->GetBinContent(binnie);
     h_mt2->SetBinError(binnie,sqrt(value));
@@ -414,6 +414,23 @@ void drawRatios(std::string fullPath, float *binss, unsigned int size,  std::str
     h2_axes->SetYTitle("Zll / #gamma Ratio");
     h2_axes->Draw();
 
+   std::vector<std::string> niceNames2 = thisRegion.getNiceNames();
+
+    for( unsigned i=0; i< niceNames2.size(); ++i ) {
+      float yMaxText = 0.9-(float)i*0.05;
+      float yMinText = yMaxText - 0.05;
+      TPaveText* regionText = new TPaveText( 0.18, yMinText, 0.55, yMaxText, "brNDC" );
+      regionText->SetTextSize(0.035);
+      regionText->SetTextFont(42);
+      regionText->SetFillColor(0);
+      regionText->SetTextAlign(11);
+      //   if(i==0)
+      //	regionText->AddText( "H_{T} > 180 GeV" );
+      //  else
+	regionText->AddText( niceNames2[i].c_str() );
+      regionText->Draw("same");
+    }
+
     h_mt2_mc->Draw("hist same");
  
     //    h_mt2->DrawClone("p same");
@@ -431,22 +448,7 @@ void drawRatios(std::string fullPath, float *binss, unsigned int size,  std::str
     legend->Draw("same");
 
 
-    std::vector<std::string> niceNames2 = thisRegion.getNiceNames();
-
-    for( unsigned i=0; i< niceNames2.size(); ++i ) {
-      float yMaxText = 0.9-(float)i*0.05;
-      float yMinText = yMaxText - 0.05;
-      TPaveText* regionText = new TPaveText( 0.18, yMinText, 0.55, yMaxText, "brNDC" );
-      regionText->SetTextSize(0.035);
-      regionText->SetTextFont(42);
-      regionText->SetFillColor(0);
-      regionText->SetTextAlign(11);
-      //   if(i==0)
-      //	regionText->AddText( "H_{T} > 180 GeV" );
-      //  else
-	regionText->AddText( niceNames2[i].c_str() );
-      regionText->Draw("same");
-    }
+ 
 
  
     gPad->RedrawAxis();
@@ -533,7 +535,7 @@ void drawCorrelation(std::string fullPath, float *binss, unsigned int size,  flo
   gStyle->SetPadBottomMargin(0.15);
   gStyle->SetPadTopMargin(0.12);
 
-gStyle->SetPalette(51,0);
+  gStyle->SetPalette(51,0);
  
   TH1F::AddDirectory(kTRUE);
 
@@ -561,10 +563,10 @@ gStyle->SetPalette(51,0);
    
 
   //  zllT ->Draw(  Form("%s:%s>> histo", zll_sel.c_str(), zll_sel.c_str()), cut.c_str()  );
-     zllT ->Project( "histo" , Form("%s:%s", zll_sel2.c_str(), zll_sel.c_str())  );
-   //   zllT ->Project( "histo" , Form("%s:%s", zll_sel.c_str(), zll_sel2.c_str()) , cut.c_str() );
+  zllT ->Project( "histo" , Form("%s:%s", zll_sel2.c_str(), zll_sel.c_str())  );
+  //   zllT ->Project( "histo" , Form("%s:%s", zll_sel.c_str(), zll_sel2.c_str()) , cut.c_str() );
  
-   //histo = (TH2D*)gDirectory->Get("histo");
+  //histo = (TH2D*)gDirectory->Get("histo");
 
   double corr =  histo->GetCorrelationFactor();
   std::cout << corr << std::endl;
