@@ -64,6 +64,7 @@ else
 fi
 
 python $PWD/convertGoodRunsList_JSON.py $GoldenJSON >& goodruns.txt
+gfal-copy file://$GoldenJSON srm://t3se01.psi.ch/$outputFolder  
 
 echo "Location of log files is: " $jobsLogsFolder
 echo "Location of final files on SE is: " $outputFolder
