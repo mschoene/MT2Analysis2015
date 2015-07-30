@@ -48,6 +48,10 @@ int main( int argc, char* argv[] ) {
   }
 
 
+  if( shapeNorm )
+    std::cout << "-> Using shape normalization." << std::endl;
+  else
+    std::cout << "-> Using lumi normalization." << std::endl;
 
 
   std::string mcFile = cfg.getEventYieldDir() + "/analyses.root";
@@ -72,15 +76,25 @@ int main( int argc, char* argv[] ) {
   mc.push_back(top);
 
 
-  std::string selection = "weight*(ht>900. && nJets>1 && met>30.)";
+  std::string selection = "weight*(ht>900. && nJets>1 && met>30.)/puWeight";
 
   //drawYields( cfg, data, mc, "nVert_noW" , "nVert" , selection, 50, 0.5, 50.5, "Number of Vertices", "" );
 
 
-  selection = "weight*(ht>900. && nJets>1 && met>30.)";
+  selection = "weight*(ht>450. && met>200. && nJets>1 && mt2>10. && id!=107)";
+
+  drawYields( cfg, data, mc, "lowHT_nVert" , "nVert" , selection, 25, 0.5, 50.5, "Number of Vertices", "" );
+  drawYields( cfg, data, mc, "lowHT_mt2"   , "mt2"   , selection, 18, 10., 910., "M_{T2}", "GeV" );
+  drawYields( cfg, data, mc, "lowHT_met"   , "met"   , selection, 20, 200., 1200., "Missing E_{T}", "GeV" );
+  drawYields( cfg, data, mc, "lowHT_ht"    , "ht"    , selection, 25, 450., 2950., "H_{T}", "GeV" );
+  drawYields( cfg, data, mc, "lowHT_nJets" , "nJets" , selection, 12, 1.5, 13.5, "Number of Jets (p_{T} > 30 GeV)", "" );
+  drawYields( cfg, data, mc, "lowHT_nBJets", "nBJets", selection, 7, -0.5, 6.5, "Number of b-Jets (p_{T} > 20 GeV)", "" );
+
+
+  selection = "weight*(ht>900. && nJets>1 && met>30. && mt2>10.)";
 
   drawYields( cfg, data, mc, "nVert" , "nVert" , selection, 50, 0.5, 50.5, "Number of Vertices", "" );
-  drawYields( cfg, data, mc, "mt2"   , "mt2"   , selection, 60, 0., 300., "M_{T2}", "GeV" );
+  drawYields( cfg, data, mc, "mt2"   , "mt2"   , selection, 60, 10., 310., "M_{T2}", "GeV" );
   drawYields( cfg, data, mc, "met"   , "met"   , selection, 80, 30., 430., "Missing E_{T}", "GeV" );
   drawYields( cfg, data, mc, "ht"    , "ht"    , selection, 50, 900., 3400., "H_{T}", "GeV" );
   drawYields( cfg, data, mc, "nJets" , "nJets" , selection, 12, 1.5, 13.5, "Number of Jets (p_{T} > 30 GeV)", "" );
