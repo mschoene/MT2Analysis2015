@@ -198,7 +198,7 @@ int main( int argc, char* argv[] ) {
     std::cout << std::endl << std::endl;
     std::cout << "-> Loading data from file: " << samplesFile_data << std::endl;
 
-    std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, "JetHT"); //, 1, 99 );
+    std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, "JetHTMHT"); //, 1, 99 );
     if( samples_data.size()==0 ) {
       std::cout << "There must be an error: samples_data is empty!" << std::endl;
       exit(1209);
@@ -309,9 +309,9 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg ) {
     Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi()*myTree.puWeight;
     //weight *= myTree.weight_lepsf;
 
-    //if( isData ) {
-    //  if( !(myTree.HLT_HT800) ) continue;
-    //}
+    if( myTree.isData ) {
+      if( !(  (myTree.HLT_PFHT800 && ht>=900.) || (myTree.HLT_PFHT350_PFMET100 && ht<900.)  ) ) continue;
+    }
 
    
     T* thisEstimate = analysis->get( ht, njets, nbjets, met, minMTBmet, mt2 );
