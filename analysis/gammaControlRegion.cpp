@@ -15,6 +15,8 @@
 #include "TH1F.h"
 
 
+
+
 bool alsoSignals = false;
 
 
@@ -101,6 +103,7 @@ int main( int argc, char* argv[] ) {
     MT2Analysis<MT2EstimateTree>* tree = new MT2Analysis<MT2EstimateTree>( "gammaCRtree_loose", "13TeV_inclusive" );
     MT2EstimateTree::addVar( tree, "prompt" );
     MT2EstimateTree::addVar( tree, "iso" );
+    MT2EstimateTree::addVar( tree, "isoRC" );
     MT2EstimateTree::addVar( tree, "sietaieta" );
     MT2EstimateTree::addVar( tree, "ptGamma" );
     MT2EstimateTree::addVar( tree, "etaGamma" );
@@ -110,6 +113,7 @@ int main( int argc, char* argv[] ) {
     MT2Analysis<MT2EstimateTree>* tree_pass = new MT2Analysis<MT2EstimateTree>( "gammaCRtree", "13TeV_inclusive" );
     MT2EstimateTree::addVar( tree_pass, "prompt" );
     MT2EstimateTree::addVar( tree_pass, "iso" );
+    MT2EstimateTree::addVar( tree_pass, "isoRC" );
     MT2EstimateTree::addVar( tree_pass, "sietaieta" );
     MT2EstimateTree::addVar( tree_pass, "ptGamma" );
     MT2EstimateTree::addVar( tree_pass, "etaGamma" );
@@ -339,7 +343,10 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
 
     myTree.GetEntry(iEntry);
 
+
+
     if( !myTree.passSelection("gamma") ) continue;
+
     if( myTree.isData ) {
       if( !myTree.passGammaAdditionalSelection(1) ) continue;
     } else {
@@ -382,9 +389,13 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
       int mcMatchId = myTree.gamma_mcMatchId[0];
       bool isMatched = (mcMatchId==22 || mcMatchId==7);
 
+      //bool isPrompt = isMatched && !isQCD;
+      //bool isNIP    = isMatched && isQCD;
+      //bool isFake   = !isMatched;
       bool isPrompt = isMatched && !isQCD;
-      bool isNIP    = isMatched && isQCD;
-      bool isFake   = !isMatched;
+      bool isNIP    = isMatched && isQCD && myTree.gamma_drMinParton[0]>0.4;
+      bool isFake   = !isMatched && isQCD;
+
 
       if( isPrompt ) {
 
@@ -488,8 +499,10 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
     }  // if is data
 
 
+
     thisTree->yield->Fill(mt2, weight );
     thisTree->assignVar( "iso", iso );
+    thisTree->assignVar( "isoRC", myTree.gamma_chHadIsoRC[0] );
     thisTree->assignVar( "sietaieta", myTree.gamma_sigmaIetaIeta[0] );
     thisTree->assignVar( "ptGamma", myTree.gamma_pt[0] );
     thisTree->assignVar( "etaGamma", myTree.gamma_eta[0] );
@@ -500,6 +513,7 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
     if( passIso ) {
       thisTree_pass->yield->Fill(mt2, weight );
       thisTree_pass->assignVar( "iso", iso );
+      thisTree_pass->assignVar( "isoRC", myTree.gamma_chHadIsoRC[0] );
       thisTree_pass->assignVar( "sietaieta", myTree.gamma_sigmaIetaIeta[0] );
       thisTree_pass->assignVar( "ptGamma", myTree.gamma_pt[0] );
       thisTree_pass->assignVar( "etaGamma", myTree.gamma_eta[0] );
