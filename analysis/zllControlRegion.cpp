@@ -29,8 +29,8 @@ int round(float d) {
   return (int)(floor(d + 0.5));
 }
 
-bool do_of = false;
-bool do_bg = false;
+bool do_of = true;
+bool do_bg = true;
 
 
 MT2Analysis<MT2EstimateTree>* mergeYields( std::vector< MT2Analysis<MT2EstimateTree> *> EventYield, const std::string& regionsSet, const std::string& name, int id_min, int id_max=-1, const std::string& legendName="" );
@@ -107,7 +107,8 @@ int main(int argc, char* argv[]) {
   std::string samplesFile_data = "../samples/samples_" + cfg.dataSamples() + ".dat";
   std::cout << std::endl << std::endl;
   std::cout << "-> Loading data from file: " << samplesFile_data << std::endl;
-  std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, "Double");
+  /* 
+ std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, "Double");
 
   std::vector< MT2Analysis<MT2EstimateTree>* > dataTree;
 
@@ -131,27 +132,17 @@ int main(int argc, char* argv[]) {
     EventYield.push_back( computeYield( fSamples[i], cfg, cfg.lumi() ) );
    
   MT2Analysis<MT2EstimateTree>* EventYield_zll = mergeYields( EventYield, cfg.regionsSet(), "DYJets", 700, 799, "DYJets" );
-
-  /*
-  MT2Analysis<MT2EstimateTree>* Zinv = MT2Analysis<MT2EstimateTree>::readFromFile(cfg.getEventYieldDir() + "/analyses.root", "ZJets");
-  if( Zinv==0 ) {
-    std::cout << "-> Please run regionEventYields on MC first. I need to get the Z->vv MC yields from there." << std::endl;
-    std::cout << "-> Thank you for your cooperation." << std::endl;
-    exit(197);
-  }
   */
 
+  /*
   MT2Analysis<MT2Estimate>* alpha = new MT2Analysis<MT2Estimate>( "alpha", regionsSet );
   MT2Analysis<MT2Estimate>* yield_zll = new MT2Analysis<MT2Estimate>( "Zll", regionsSet );
   *yield_zll = (* (MT2Analysis<MT2Estimate>*) EventYield_zll);
 
-  /*  MT2Analysis<MT2Estimate>* yield_zinv = new MT2Analysis<MT2Estimate>( "ZJets", regionsSet );
+    MT2Analysis<MT2Estimate>* yield_zinv = new MT2Analysis<MT2Estimate>( "ZJets", regionsSet );
   *yield_zinv = (* (MT2Analysis<MT2Estimate>*) Zinv);
   */
-
-  EventYield_zll->writeToFile(outputdir+"/Zll_analyses.root");
-  EventYield_data->addToFile(outputdir+"/Zll_analyses.root");
-  /*
+ /*
   yield_zll->writeToFile(outputdir+"/mc.root");
   yield_zinv->addToFile(outputdir+"/mc.root");
 
@@ -162,9 +153,14 @@ int main(int argc, char* argv[]) {
   yield_zll->addToFile(outputdir+"/data.root");
   */
 
+  /*
+ EventYield_zll->writeToFile(outputdir+"/Zll_analyses.root");
+  EventYield_data->addToFile(outputdir+"/Zll_analyses.root");
+  */
 
   if(do_bg==true){
     //MC
+    /*
     std::vector<MT2Sample> fSamples_bg = MT2Sample::loadSamples(samplesFileName, 1, 999); // not interested in signal here
     if( fSamples_bg.size()==0 ) {
       std::cout << "There must be an error: samples is empty!" << std::endl;
@@ -193,7 +189,7 @@ int main(int argc, char* argv[]) {
     EventYield_qcd->addToFile( outFile );
     EventYield_wjets->addToFile( outFile );
     EventYield_zjets->addToFile( outFile );
-
+    */
 
 
     if(do_of==true){
@@ -203,9 +199,10 @@ int main(int argc, char* argv[]) {
 	dataTree_of.push_back( computeYield( samples_data_of[i], cfg, cfg.lumi(),0 ));
       }
 
+     
       MT2Analysis<MT2EstimateTree>* EventYield_data_of = mergeYields( dataTree_of, cfg.regionsSet(), "data_of", 0, 2000, "" );
 
-
+ /*
       std::vector<MT2Sample> fSamples_of = MT2Sample::loadSamples(samplesFileName, 1, 999); // not interested in signal here
       if( fSamples_of.size()==0 ) {
 	std::cout << "There must be an error: samples is empty!" << std::endl;
@@ -235,6 +232,7 @@ int main(int argc, char* argv[]) {
       EventYield_qcd_of->addToFile( outFile_of );
       EventYield_wjets_of->addToFile( outFile_of );
       EventYield_zjets_of->addToFile( outFile_of );
+      */
 
       std::string outFile_data_of = outputdir + "/ZllPurityTrees_data_of.root";
       EventYield_data_of->writeToFile(outFile_data_of);
@@ -338,7 +336,7 @@ MT2Analysis<MT2EstimateTree>* computeYield( const MT2Sample& sample, const MT2Co
     if(( myTree.lep_pdgId[0]*myTree.lep_pdgId[1])>0 )   continue;
     
     if(  doSameFlavor==1 && !(myTree.HLT_DoubleMu || myTree.HLT_DoubleEl) ) continue;
-    if(  myTree.isData && doSameFlavor==0 && !(myTree.HLT_MuX_Ele12 || myTree.HLT_Mu8_EleX) ) continue;
+    // if(  myTree.isData && doSameFlavor==0 && !(myTree.HLT_MuX_Ele12 || myTree.HLT_Mu8_EleX) ) continue;
 
     //Implemented in computeZllGammaRatio for now to allow flexibility
     if(myTree.lep_pt[0]<25) continue;

@@ -187,14 +187,14 @@ int main(int argc, char* argv[]){
     
     //draw ratio also fills the ratio and yield estimates
     drawRatios( outputdir, bins_mt2, size_mt2 , "mt2",  zllG_mt2,   gamma_mc, gamma_data, purity,  zll_mc, zll_data,  zllY_mt2, thisRegion, cut, cut_gamma, lumi  );
-    /*
+    
     drawRatios( outputdir, bins_ht, size_ht , "ht",   zllG_ht,   gamma_mc, gamma_data, purity,  zll_mc, zll_data,  zllY_ht, thisRegion, cut, cut_gamma, lumi );
     
     drawRatios( outputdir, bins_nJets, size_nJets , "nJets",   zllG_nJets,   gamma_mc, gamma_data, purity,  zll_mc, zll_data,  zllY_nJets, thisRegion, cut, cut_gamma, lumi );
 
     drawRatios( outputdir, bins_nBJets, size_nBJets , "nBJets",  zllG_nBJets,   gamma_mc, gamma_data, purity,  zll_mc, zll_data,  zllY_nBJets, thisRegion, cut, cut_gamma , lumi);
    
-    */
+    
 
 
 
@@ -393,14 +393,13 @@ void drawRatios(std::string fullPath, float *binss, unsigned int size,  std::str
     gr_ratio->SetLineWidth(2);
     gr_ratio->SetMarkerColor(kBlack);
 
- 
+
 
     //   h_mt2_mc->SetMarkerStyle(20); h_mt2_mc->SetMarkerSize(1.6);
     //   h_mt2_mc->SetMarkerColor(46); h_mt2_mc->SetLineColor(46);
     h_mt2_mc->SetLineColor(kBlue+1); h_mt2_mc->SetLineWidth(2);
 
     TH2D* h2_axes = new TH2D("axes", "", 10, xMin, xMax, 10, 0., 0.3 );
-    //    TH2D* h2_axes = new TH2D("axes", "", 10, 0, 1500, 10, 0., 0.5 );
     if(zll_sel == "mt2"){
       h2_axes->SetXTitle("M_{T2} [GeV]");
     }else    if(zll_sel == "ht"){
@@ -474,7 +473,7 @@ void drawRatios(std::string fullPath, float *binss, unsigned int size,  std::str
     gr_ratioD->SetMarkerColor(kBlack);
 
 
-    TH2D* h2_axes_rat = new TH2D("axes_rat", "", 10, xMin, xMax, 5 , 0.,2  );
+    TH2D* h2_axes_rat = new TH2D("axes_rat", "", 10, xMin, xMax, 5 , 0.,3  );
     h2_axes_rat->SetYTitle("Data / MC");
  
     h2_axes_rat->GetXaxis()->SetTitleSize(0.2);

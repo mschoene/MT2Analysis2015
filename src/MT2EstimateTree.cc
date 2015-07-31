@@ -458,7 +458,7 @@ const MT2EstimateTree& MT2EstimateTree::operator+=( const MT2EstimateTree& rhs )
     this->tree = TTree::MergeTrees( list );
     this->tree->SetName( oldName.c_str() );
 
-    this->initTree();
+    //    this->initTree();
 
     delete list;
 
