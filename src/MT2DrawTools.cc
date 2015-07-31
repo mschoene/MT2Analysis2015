@@ -202,3 +202,26 @@ TGraphAsymmErrors* MT2DrawTools::getPoissonGraph( TH1D* histo, bool drawZeros, c
   return graph;
 
 }
+
+
+TGraphAsymmErrors* MT2DrawTools::getRatioGraph( TH1D* histo_data, TH1D* histo_mc ){
+  
+  TGraphAsymmErrors* graph = MT2DrawTools::getPoissonGraph(histo_data);
+ 
+  for( int i=0; i < graph->GetN(); ++i){
+    
+    Double_t x_tmp, y_tmp, errUp, errDown;       
+    graph->GetPoint( i, x_tmp, y_tmp );
+    errUp   = graph->GetErrorYhigh(i);
+    errDown = graph->GetErrorYlow(i);
+
+    int iBin = histo_mc->FindBin(x_tmp);
+    float mc = histo_mc->GetBinContent(iBin);
+    gr_ratio->SetPoint(i, x_tmp, y_tmp/mc);
+    gr_ratio->SetPointEYhigh(i, errUp/mc);
+    gr_ratio->SetPointEYlow(i, errDown/mc);
+  }
+
+  return graph;
+
+}

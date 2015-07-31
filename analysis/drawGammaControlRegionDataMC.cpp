@@ -176,6 +176,7 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, MT2Analysis<
     if( shapeNorm ) 
       std::cout << "SF: " << scaleFactor << std::endl;
 
+    TH1D* histo_mc;
     THStack bgStack("bgStack", "");
     for( unsigned i=0; i<histos_mc.size(); ++i ) { 
       int index = histos_mc.size() - i - 1;
@@ -186,14 +187,27 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, MT2Analysis<
       } else {
         histos_mc[index]->Scale( 1.27 );
       }
+
+      if(i==0) histo_mc = (TH1D*) histos_mc[index]->Clone("histo_mc");
+      else histo_mc->Add(histos_mc[index]);
+
       bgStack.Add(histos_mc[index]);
     }
 
 
     TCanvas* c1 = new TCanvas( "c1", "", 600, 600 );
-    TCanvas* c1_log = new TCanvas( "c1_log", "", 600, 600 );
-    c1_log->SetLogy();
 
+    TPad *pad1 = new TPad("pad1","pad1",0,0.3-0.1,1,1);
+    pad1->SetBottomMargin(0.15);
+    pad1->Draw();
+
+    TCanvas* c1_log = new TCanvas( "c1_log", "", 600, 600 );
+    c1_log->cd();
+
+    TPad *pad1_log = new TPad("pad1_log","pad1_log",0,0.3-0.1,1,1);
+    pad1_log->SetBottomMargin(0.15);
+    pad1_log->SetLogy();
+    pad1_log->Draw();
    
     float yMaxScale = 1.1;
     float yMax1 = h1_data->GetMaximum()*yMaxScale;
@@ -230,7 +244,7 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, MT2Analysis<
     h2_axes->SetXTitle(xAxisTitle.c_str());
     h2_axes->SetYTitle(yAxisTitle.c_str());
 
-    c1->cd();
+    pad1->cd();
     h2_axes->Draw();
 
 
@@ -239,7 +253,7 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, MT2Analysis<
     h2_axes_log->SetXTitle(xAxisTitle.c_str());
     h2_axes_log->SetYTitle(yAxisTitle.c_str());
 
-    c1_log->cd();
+    pad1_log->cd();
     h2_axes_log->Draw();
    
 
@@ -257,10 +271,10 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, MT2Analysis<
       regionText->SetTextAlign(11);
       regionText->AddText( niceNames[i].c_str() );
 
-      c1->cd();
+      pad1->cd();
       regionText->Draw("same");
   
-      c1_log->cd();
+      pad1_log->cd();
       regionText->Draw("same");
   
     }
@@ -271,9 +285,9 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, MT2Analysis<
       normText->SetFillColor(0);
       normText->SetTextSize(0.035);
       normText->AddText( "#splitline{Shape}{Norm.}" );
-      c1->cd();
+      pad1->cd();
       normText->Draw("same");
-      c1_log->cd();
+      pad1_log->cd();
       normText->Draw("same");
     }
 
@@ -291,20 +305,64 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, MT2Analysis<
 
     TPaveText* labelTop = MT2DrawTools::getLabelTop(cfg.lumi());
 
-    c1->cd();
+    pad1->cd();
     legend->Draw("same");
     bgStack.Draw("histo same");
     gr_data->Draw("p same");
     labelTop->Draw("same");
+    gPad->RedrawAxis();
+
+    pad1_log->cd();
+    legend->Draw("same");
+    bgStack.Draw("histo same");
+    gr_data->Draw("p same");
+    labelTop->Draw("same");
+    gPad->RedrawAxis();
+
+    TLine* line = new TLine(xMin, 1.0, xMax, 1.0);
+    line->SetLineColor(1);
+
+    std::string thisName = Form("%s_ratio", h1_data->GetName());
+    TH1D* h_ratio = (TH1D*) h1_data->Clone(thisName.c_str());
+    h_ratio->Divide(histo_mc);
+    h_ratio->SetStats(0);
+    h_ratio->SetMarkerStyle(20);
+    h_ratio->SetLineColor(1);
+    //      h_ratio->SetMarkerSize(0.02);                                                                                                                                                                               
+    h_ratio->GetXaxis()->SetLabelSize(0.00);
+    h_ratio->GetXaxis()->SetTickLength(0.09);
+    h_ratio->GetYaxis()->SetNdivisions(5,5,0);
+    h_ratio->GetYaxis()->SetRangeUser(0.0,2.0);
+    h_ratio->GetYaxis()->SetTitleSize(0.17);
+    h_ratio->GetYaxis()->SetTitleOffset(0.4);
+    h_ratio->GetYaxis()->SetLabelSize(0.17);
+    h_ratio->GetYaxis()->SetTitle("Data / MC");
+
+    h_ratio->SetLineWidth(2);
+    
+    c1->cd();
+    TPad *pad2 = new TPad("pad2","pad2",0,0,1,0.21);
+    pad2->SetTopMargin(0.05);
+    pad2->SetBottomMargin(0.1);
+    pad2->Draw();
+    pad2->cd();
+
+    h_ratio->Draw("PE");
+    line->Draw("same");
+
     gPad->RedrawAxis();
 
     c1_log->cd();
-    legend->Draw("same");
-    bgStack.Draw("histo same");
-    gr_data->Draw("p same");
-    labelTop->Draw("same");
-    gPad->RedrawAxis();
+    TPad *pad2_log = new TPad("pad2_log","pad2_log",0,0,1,0.21);
+    pad2_log->SetTopMargin(0.05);
+    pad2_log->SetBottomMargin(0.1);
+    pad2_log->Draw();
+    pad2_log->cd();
 
+    h_ratio->Draw("PE");
+    line->Draw("same");
+    
+    gPad->RedrawAxis();
 
     c1->SaveAs( Form("%s/%s_%s.eps", fullPathPlots.c_str(), saveName.c_str(), thisRegion.getName().c_str()) );
     c1->SaveAs( Form("%s/%s_%s.png", fullPathPlots.c_str(), saveName.c_str(), thisRegion.getName().c_str()) );

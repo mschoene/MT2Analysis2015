@@ -154,17 +154,17 @@ int main(int argc, char* argv[]){
 
     float bins_nJets[] = {2,4,7,12};
     float bins_nBJets[] = {0,1,2,3,6}; 
-    float bins_mt2[] = {200,300,400, 1500 };
+    float bins_mt2[] = {200,300,400, 1000 };
     //  float bins_mt2[] = {200,300,400,500, 600, 800, 1000, 1500 };
     float bins_ht[] =  {450,575,1000,1500,2000};
   
 
-   std::string cut =  "weight*(ht>180 && abs(Z_mass-91.19)<25 && lep_pt0>25 && lep_pt1>20 &&( HLT_DoubleMu||HLT_DoubleEl) )";
+   std::string cut =  "weight*(mt2>200 && abs(Z_mass-91.19)<15 && lep_pt0>25 && lep_pt1>20 &&( HLT_DoubleMu||HLT_DoubleEl) )";
     //std::string cut =  "weight*(ht>450 && abs(Z_mass-91.19)<25 )";
     //    std::string cut =  "weight*(abs(Z_mass-91.19)<20)";
     //    std::string cut =  "weight*(abs(Z_mass-91.19)<10 &&nBJets<2)";
     std::string cut_corr =  "weight*(abs(Z_mass-91.19)<10 )";
-    std::string cut_gamma =  "weight*(ht>180 && prompt==2)*1.27";
+    std::string cut_gamma =  "weight*( prompt==2)*1.27";
 
     
     int size_mt2 = sizeof(bins_mt2)/sizeof(float)-1;
@@ -316,7 +316,7 @@ void drawRatios(std::string fullPath, float *binss, unsigned int size,  std::str
   
   zll_data_tree ->Project( "h_mt2" , zll_sel.c_str(), cut.c_str() );
   //will have to add the purity here at some point soon (for now just 0.95)
-  gamma_data_tree->Project( "g_mt2", gamma_sel.c_str(),  "weight*0.92*(ht>180)" );
+  gamma_data_tree->Project( "g_mt2", gamma_sel.c_str(),  "weight*0.92 " );
 
   std::cout <<  h_mt2->GetMean() << std::endl;
   std::cout <<  g_mt2->GetMean() << std::endl;
@@ -324,18 +324,18 @@ void drawRatios(std::string fullPath, float *binss, unsigned int size,  std::str
   h_mt2->SetBinContent(size, h_mt2->GetBinContent(size) + h_mt2->GetBinContent(size+1));//adding overflow
   g_mt2->SetBinContent(size, g_mt2->GetBinContent(size) + g_mt2->GetBinContent(size+1));
 
-  //we'll have to ignore the purity for a sec
-  Double_t x_tmp, p, p_errUp, p_errDown;	       
-  //  this_zinv_purity->GetPoint( binnie-1, x_tmp, p);
+  // we'll have to ignore the purity for a sec
+  // Double_t x_tmp, p, p_errUp, p_errDown;	       
+  // this_zinv_purity->GetPoint( binnie-1, x_tmp, p);
  
 
   int nBinss =  h_mt2->GetNbinsX();
   for(int binnie = 1; binnie <= nBinss; binnie++){
 
-    if(binnie==1) p=0.88;
-    else p=0.92;
+    Double_t x_tmp, p, p_errUp, p_errDown;	       
+    this_zinv_purity->GetPoint( binnie-1, x_tmp, p);
 
- std::cout << "Purity = " << p << std::endl;
+    std::cout << "Purity = " << p << std::endl;
 
     double value = h_mt2->GetBinContent(binnie);
     h_mt2->SetBinError(binnie,sqrt(value));
@@ -414,6 +414,23 @@ void drawRatios(std::string fullPath, float *binss, unsigned int size,  std::str
     h2_axes->SetYTitle("Zll / #gamma Ratio");
     h2_axes->Draw();
 
+   std::vector<std::string> niceNames2 = thisRegion.getNiceNames();
+
+    for( unsigned i=0; i< niceNames2.size(); ++i ) {
+      float yMaxText = 0.9-(float)i*0.05;
+      float yMinText = yMaxText - 0.05;
+      TPaveText* regionText = new TPaveText( 0.18, yMinText, 0.55, yMaxText, "brNDC" );
+      regionText->SetTextSize(0.035);
+      regionText->SetTextFont(42);
+      regionText->SetFillColor(0);
+      regionText->SetTextAlign(11);
+      //   if(i==0)
+      //	regionText->AddText( "H_{T} > 180 GeV" );
+      //  else
+	regionText->AddText( niceNames2[i].c_str() );
+      regionText->Draw("same");
+    }
+
     h_mt2_mc->Draw("hist same");
  
     //    h_mt2->DrawClone("p same");
@@ -431,22 +448,7 @@ void drawRatios(std::string fullPath, float *binss, unsigned int size,  std::str
     legend->Draw("same");
 
 
-    std::vector<std::string> niceNames2 = thisRegion.getNiceNames();
-
-    for( unsigned i=0; i< niceNames2.size(); ++i ) {
-      float yMaxText = 0.9-(float)i*0.05;
-      float yMinText = yMaxText - 0.05;
-      TPaveText* regionText = new TPaveText( 0.18, yMinText, 0.55, yMaxText, "brNDC" );
-      regionText->SetTextSize(0.035);
-      regionText->SetTextFont(42);
-      regionText->SetFillColor(0);
-      regionText->SetTextAlign(11);
-      if(i==0)
-	regionText->AddText( "H_{T} > 180 GeV" );
-      else
-	regionText->AddText( niceNames2[i].c_str() );
-      regionText->Draw("same");
-    }
+ 
 
  
     gPad->RedrawAxis();
@@ -533,7 +535,7 @@ void drawCorrelation(std::string fullPath, float *binss, unsigned int size,  flo
   gStyle->SetPadBottomMargin(0.15);
   gStyle->SetPadTopMargin(0.12);
 
-gStyle->SetPalette(51,0);
+  gStyle->SetPalette(51,0);
  
   TH1F::AddDirectory(kTRUE);
 
@@ -561,10 +563,10 @@ gStyle->SetPalette(51,0);
    
 
   //  zllT ->Draw(  Form("%s:%s>> histo", zll_sel.c_str(), zll_sel.c_str()), cut.c_str()  );
-     zllT ->Project( "histo" , Form("%s:%s", zll_sel2.c_str(), zll_sel.c_str())  );
-   //   zllT ->Project( "histo" , Form("%s:%s", zll_sel.c_str(), zll_sel2.c_str()) , cut.c_str() );
+  zllT ->Project( "histo" , Form("%s:%s", zll_sel2.c_str(), zll_sel.c_str())  );
+  //   zllT ->Project( "histo" , Form("%s:%s", zll_sel.c_str(), zll_sel2.c_str()) , cut.c_str() );
  
-   //histo = (TH2D*)gDirectory->Get("histo");
+  //histo = (TH2D*)gDirectory->Get("histo");
 
   double corr =  histo->GetCorrelationFactor();
   std::cout << corr << std::endl;

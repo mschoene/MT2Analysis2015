@@ -48,6 +48,10 @@ int main( int argc, char* argv[] ) {
   }
 
 
+  if( shapeNorm )
+    std::cout << "-> Using shape normalization." << std::endl;
+  else
+    std::cout << "-> Using lumi normalization." << std::endl;
 
 
   std::string mcFile = cfg.getEventYieldDir() + "/analyses.root";
@@ -72,19 +76,35 @@ int main( int argc, char* argv[] ) {
   mc.push_back(top);
 
 
-  std::string selection = "weight*(ht>900. && nJets>1 && met>30.)";
+  std::string selection = "weight*(ht>900. && nJets>1 && met>30.)/puWeight";
+  //std::string selection = "weight*(ht>900. && nJets>1 && met>30.)/puweight";
 
   //drawYields( cfg, data, mc, "nVert_noW" , "nVert" , selection, 50, 0.5, 50.5, "Number of Vertices", "" );
 
 
-  selection = "weight*(ht>900. && nJets>1 && met>30.)";
+  selection = "weight*(ht>450. && ht<900. && met>200. && nJets>1 && mt2>10. && id!=107 && deltaPhiMin>0.3 && diffMetMht<0.5*met)";
+
+  drawYields( cfg, data, mc, "lowHT_nVert" , "nVert" , selection, 25, 0.5, 50.5, "Number of Vertices", "" );
+  drawYields( cfg, data, mc, "lowHT_mt2"   , "mt2"   , selection, 18, 10., 910., "M_{T2}", "GeV" );
+  drawYields( cfg, data, mc, "lowHT_met"   , "met"   , selection, 20, 200., 1200., "Missing E_{T}", "GeV" );
+  drawYields( cfg, data, mc, "lowHT_ht"    , "ht"    , selection, 25, 450., 2950., "H_{T}", "GeV" );
+  drawYields( cfg, data, mc, "lowHT_nJets" , "nJets" , selection, 12, 1.5, 13.5, "Number of Jets (p_{T} > 30 GeV)", "" );
+  drawYields( cfg, data, mc, "lowHT_deltaPhiMin", "deltaPhiMin", selection, 32, 0.0, 3.2, "min #Delta#phi(jets, ME_{T})", "" );
+  drawYields( cfg, data, mc, "lowHT_diffMetMht_overMet", "diffMetMht/met", selection, 30, 0.0, 3.0, "|ME_{T}-MH_{T}|/ME_{T}", "" );
+  drawYields( cfg, data, mc, "lowHT_diffMetMht", "diffMetMht", selection, 24, 0., 1200., "|ME_{T}-MH_{T}|", "GeV" );
+
+
+  selection = "weight*(ht>900. && nJets>1 && met>30. && mt2>10. && deltaPhiMin>0.3 && diffMetMht<0.5*met)";
 
   drawYields( cfg, data, mc, "nVert" , "nVert" , selection, 50, 0.5, 50.5, "Number of Vertices", "" );
-  drawYields( cfg, data, mc, "mt2"   , "mt2"   , selection, 60, 0., 300., "M_{T2}", "GeV" );
+  drawYields( cfg, data, mc, "mt2"   , "mt2"   , selection, 60, 10., 310., "M_{T2}", "GeV" );
   drawYields( cfg, data, mc, "met"   , "met"   , selection, 80, 30., 430., "Missing E_{T}", "GeV" );
   drawYields( cfg, data, mc, "ht"    , "ht"    , selection, 50, 900., 3400., "H_{T}", "GeV" );
   drawYields( cfg, data, mc, "nJets" , "nJets" , selection, 12, 1.5, 13.5, "Number of Jets (p_{T} > 30 GeV)", "" );
   drawYields( cfg, data, mc, "nBJets", "nBJets", selection, 7, -0.5, 6.5, "Number of b-Jets (p_{T} > 20 GeV)", "" );
+  drawYields( cfg, data, mc, "deltaPhiMin", "deltaPhiMin", selection, 32, 0.0, 3.2, "min #Delta#phi(jets, ME_{T})", "" );
+  drawYields( cfg, data, mc, "diffMetMht_overMet", "diffMetMht/met", selection, 30, 0., 3.0, "|ME_{T}-MH_{T}|/ME_{T}", "" );
+  drawYields( cfg, data, mc, "diffMetMht", "diffMetMht", selection, 100, 0., 500., "|ME_{T}-MH_{T}|", "GeV" );
 
   drawYields( cfg, data, mc, "mt2_tail"   , "mt2"   , selection, 100, 0., 5000., "M_{T2}", "GeV" );
   drawYields( cfg, data, mc, "met_tail"   , "met"   , selection, 100,  0., 5000., "Missing E_{T}", "GeV" );
@@ -147,7 +167,8 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, std::vector<
       TH1D* h1_mc = new TH1D( thisName.c_str(), "", nBins, xMin, xMax );
       h1_mc->Sumw2();
       if( selection!="" )
-        tree_mc->Project( thisName.c_str(), varName.c_str(), Form("%s", selection.c_str()) );
+	tree_mc->Project( thisName.c_str(), varName.c_str(), Form("%s/puWeight", selection.c_str()) );
+      //tree_mc->Project( thisName.c_str(), varName.c_str(), Form("%s", selection.c_str()) );
       else
         tree_mc->Project( thisName.c_str(), varName.c_str(), "" );
       histos_mc.push_back(h1_mc);
@@ -165,10 +186,12 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, std::vector<
       }
     }
 
+    std::cout << "Integrals: " << h1_data->Integral() << "\t" << mc_sum->Integral() << std::endl;
     float scaleFactor = h1_data->Integral()/mc_sum->Integral();
     if( shapeNorm )
       std::cout << "SF: " << scaleFactor << std::endl;
 
+    TH1D* histo_mc;
     THStack bgStack("bgStack", "");
     for( unsigned i=0; i<histos_mc.size(); ++i ) { 
       int index = bgYields.size() - i - 1;
@@ -176,13 +199,27 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, std::vector<
       histos_mc[index]->SetLineColor( kBlack );
       if( shapeNorm )
         histos_mc[index]->Scale( scaleFactor );
+
+      if(i==0) histo_mc = (TH1D*) histos_mc[index]->Clone("histo_mc");
+      else histo_mc->Add(histos_mc[index]);
       bgStack.Add(histos_mc[index]);
     }
 
 
     TCanvas* c1 = new TCanvas( "c1", "", 600, 600 );
+    c1->cd();
+
+    TPad *pad1 = new TPad("pad1","pad1",0,0.3-0.1,1,1);
+    pad1->SetBottomMargin(0.15);
+    pad1->Draw();
+    
     TCanvas* c1_log = new TCanvas( "c1_log", "", 600, 600 );
-    c1_log->SetLogy();
+    c1_log->cd();
+    
+    TPad *pad1_log = new TPad("pad1_log","pad1_log",0,0.3-0.1,1,1);
+    pad1_log->SetBottomMargin(0.15);
+    pad1_log->SetLogy();
+    pad1_log->Draw();
 
    
     float yMaxScale = 1.1;
@@ -203,16 +240,24 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, std::vector<
       xAxisTitle = (std::string)(Form("%s", axisName.c_str()) );
 
     std::string yAxisTitle;
-    if( units!="" ) 
-      yAxisTitle = (std::string)(Form("Events / (%.0f %s)", binWidth, units.c_str()));
-    else
-      yAxisTitle = (std::string)(Form("Events / (%.0f)", binWidth));
+    if(binWidth>0.99){
+      if( units!="" ) 
+	yAxisTitle = (std::string)(Form("Events / (%.0f %s)", binWidth, units.c_str()));
+      else
+	yAxisTitle = (std::string)(Form("Events / (%.0f)", binWidth));
+    }
+    else{
+      if( units!="" ) 
+	yAxisTitle = (std::string)(Form("Events / (%.2f %s)", binWidth, units.c_str()));
+      else
+	yAxisTitle = (std::string)(Form("Events / (%.2f)", binWidth));
+    }
 
     TH2D* h2_axes = new TH2D("axes", "", 10, xMin, xMax, 10, 0., yMax );
     h2_axes->SetXTitle(xAxisTitle.c_str());
     h2_axes->SetYTitle(yAxisTitle.c_str());
 
-    c1->cd();
+    pad1->cd();
     h2_axes->Draw();
 
 
@@ -221,7 +266,7 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, std::vector<
     h2_axes_log->SetXTitle(xAxisTitle.c_str());
     h2_axes_log->SetYTitle(yAxisTitle.c_str());
 
-    c1_log->cd();
+    pad1_log->cd();
     h2_axes_log->Draw();
    
 
@@ -253,9 +298,9 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, std::vector<
       normText->SetFillColor(0);
       normText->SetTextSize(0.035);
       normText->AddText( "#splitline{Shape}{Norm.}" );
-      c1->cd();
+      pad1->cd();
       normText->Draw("same");
-      c1_log->cd();
+      pad1_log->cd();
       normText->Draw("same");
     }
 
@@ -272,18 +317,63 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, std::vector<
 
     TPaveText* labelTop = MT2DrawTools::getLabelTop(cfg.lumi());
 
-    c1->cd();
+    pad1->cd();
     legend->Draw("same");
     bgStack.Draw("histo same");
     gr_data->Draw("p same");
     labelTop->Draw("same");
     gPad->RedrawAxis();
 
-    c1_log->cd();
+    pad1_log->cd();
     legend->Draw("same");
     bgStack.Draw("histo same");
     gr_data->Draw("p same");
     labelTop->Draw("same");
+    gPad->RedrawAxis();
+
+    TLine* line = new TLine(xMin, 1.0, xMax, 1.0);
+    line->SetLineColor(1);
+
+    std::string thisName = Form("%s_ratio", h1_data->GetName());
+    TH1D* h_ratio = (TH1D*) h1_data->Clone(thisName.c_str());
+    h_ratio->Divide(histo_mc);
+    h_ratio->SetStats(0);
+    h_ratio->SetMarkerStyle(20);
+    h_ratio->SetLineColor(1);
+    //      h_ratio->SetMarkerSize(0.02);                                                                                                                                                                             
+    h_ratio->GetXaxis()->SetLabelSize(0.00);
+    h_ratio->GetXaxis()->SetTickLength(0.09);
+    h_ratio->GetYaxis()->SetNdivisions(5,5,0);
+    h_ratio->GetYaxis()->SetRangeUser(0.0,2.0);
+    h_ratio->GetYaxis()->SetTitleSize(0.17);
+    h_ratio->GetYaxis()->SetTitleOffset(0.4);
+    h_ratio->GetYaxis()->SetLabelSize(0.17);
+    h_ratio->GetYaxis()->SetTitle("Data / MC");
+
+    h_ratio->SetLineWidth(2);
+ 
+    c1->cd();
+    TPad *pad2 = new TPad("pad2","pad2",0,0,1,0.21);
+    pad2->SetTopMargin(0.05);
+    pad2->SetBottomMargin(0.1);
+    pad2->Draw();
+    pad2->cd();
+
+    h_ratio->Draw("PE");
+    line->Draw("same");
+
+    gPad->RedrawAxis();
+
+    c1_log->cd();
+    TPad *pad2_log = new TPad("pad2_log","pad2_log",0,0,1,0.21);
+    pad2_log->SetTopMargin(0.05);
+    pad2_log->SetBottomMargin(0.1);
+    pad2_log->Draw();
+    pad2_log->cd();
+    
+    h_ratio->Draw("PE");
+    line->Draw("same");
+
     gPad->RedrawAxis();
 
 
@@ -309,7 +399,3 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, std::vector<
   }// for MT2 regions
 
 }
-
-
-
-
