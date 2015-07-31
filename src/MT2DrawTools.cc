@@ -228,24 +228,30 @@ TGraphAsymmErrors* MT2DrawTools::getRatioGraph( TH1D* histo_data, TH1D* histo_mc
 }
 
 
-TCanvas* MT2DrawTools::getCanvasWithRatioPad( bool logY ){
-
-  TCanvas* c1 = new TCanvas( "c1", "", 600, 600 );
+TPad* MT2DrawTools::getCanvasMainPad( bool logY ){
   
-  c1->cd();
-  TPad *pad1 = new TPad("pad1","pad1",0,0.3-0.1,1,1);
+  std::string padApp = "";
+  if( logY )
+    padApp = "_log";
+  TPad* pad1 = new TPad(Form("pad1%s", padApp.c_str()), Form("pad1%s", padApp.c_str()), 0, 0.3-0.1, 1, 1);
   pad1->SetBottomMargin(0.15);
   if( logY )
     pad1->SetLogy();
-  pad1->Draw();
-  
-  c1->cd();
-  TPad *pad2 = new TPad("pad2","pad2",0,0,1,0.21);
+
+  return pad1;
+
+}
+
+TPad* MT2DrawTools::getCanvasRatioPad( bool logY ){
+
+  std::string padApp = "";
+  if( logY )
+    padApp = "_log";
+  TPad* pad2 = new TPad(Form("pad2%s", padApp.c_str()), Form("pad2%s", padApp.c_str()), 0, 0, 1, 0.21);
   pad2->SetTopMargin(0.05);
   pad2->SetBottomMargin(0.1);
-  pad2->Draw();
 
-  return c1;
+  return pad2;
 
 }
 

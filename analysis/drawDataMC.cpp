@@ -205,32 +205,18 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, std::vector<
     }
 
 
-    TCanvas* c1 = new TCanvas( "c1", "", 600, 600 );
+    TCanvas* c1 = new TCanvas("c1", "", 600, 600);
     c1->cd();
-
-    TPad *pad1 = new TPad("pad1","pad1",0,0.3-0.1,1,1);
-    pad1->SetBottomMargin(0.15);
-    pad1->Draw();
     
-    TCanvas* c1_log = new TCanvas( "c1_log", "", 600, 600 );
-    c1_log->cd();
-    
-    TPad *pad1_log = new TPad("pad1_log","pad1_log",0,0.3-0.1,1,1);
-    pad1_log->SetBottomMargin(0.15);
-    pad1_log->SetLogy();
-    pad1_log->Draw();
+    TCanvas* c1_log = new TCanvas("c1_log", "", 600, 600);
 
-   
     float yMaxScale = 1.1;
     float yMax1 = h1_data->GetMaximum()*yMaxScale;
     float yMax2 = yMaxScale*(h1_data->GetMaximum() + sqrt(h1_data->GetMaximum()));
     float yMax3 = yMaxScale*(bgStack.GetMaximum());
     float yMax = (yMax1>yMax2) ? yMax1 : yMax2;
     if( yMax3 > yMax ) yMax = yMax3;
-    //float yMax = TMath::Max( h1_data->GetMaximum()*1.5, (h1_data->GetMaximum() + h1_data->GetBinError(h1_data->GetMaximumBin()))*1.2);
-    //float yMax = h1_data->GetMaximum()*1.5;
     if( h1_data->GetNbinsX()<2 ) yMax *=3.;
-
 
     std::string xAxisTitle;
     if( units!="" ) 
@@ -256,15 +242,21 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, std::vector<
     h2_axes->SetXTitle(xAxisTitle.c_str());
     h2_axes->SetYTitle(yAxisTitle.c_str());
 
+    c1->cd();
+    TPad* pad1 = MT2DrawTools::getCanvasMainPad();
+    pad1->Draw();
     pad1->cd();
     h2_axes->Draw();
 
-
+    
    
-    TH2D* h2_axes_log = new TH2D("axes_log", "", 10, xMin, xMax, 10, 0.1, yMax*1.6 );
+    TH2D* h2_axes_log = new TH2D("axes_log", "", 10, xMin, xMax, 10, 0.1, yMax*2.0 );
     h2_axes_log->SetXTitle(xAxisTitle.c_str());
     h2_axes_log->SetYTitle(yAxisTitle.c_str());
 
+    c1_log->cd();
+    TPad* pad1_log = MT2DrawTools::getCanvasMainPad( true );
+    pad1_log->Draw();
     pad1_log->cd();
     h2_axes_log->Draw();
    
@@ -324,6 +316,7 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, std::vector<
     ratioText->SetTextAlign(11);
     ratioText->AddText( Form("Data/MC = %.2f", scaleFactor) );
     
+    c1->cd();
     pad1->cd();
     legend->Draw("same");
     bgStack.Draw("histo same");
@@ -334,7 +327,7 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, std::vector<
 
     gPad->RedrawAxis();
 
-    
+    c1_log->cd();
     pad1_log->cd();
     legend->Draw("same");
     bgStack.Draw("histo same");
@@ -354,16 +347,7 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, std::vector<
     float yMinR=0.0;
     float yMaxR=2.0;
 
-    TH2D* h2_axes_ratio = new TH2D("axes_ratio", "", 10, xMin, xMax, 10, yMinR, yMaxR );
-    h2_axes_ratio->SetStats(0);	
-    h2_axes_ratio->GetXaxis()->SetLabelSize(0.00);
-    h2_axes_ratio->GetXaxis()->SetTickLength(0.09);
-    h2_axes_ratio->GetYaxis()->SetNdivisions(5,5,0);
-    h2_axes_ratio->GetYaxis()->SetRangeUser(0.0,2.0);
-    h2_axes_ratio->GetYaxis()->SetTitleSize(0.17);
-    h2_axes_ratio->GetYaxis()->SetTitleOffset(0.4);
-    h2_axes_ratio->GetYaxis()->SetLabelSize(0.17);
-    h2_axes_ratio->GetYaxis()->SetTitle("Data / MC");
+    TH2D* h2_axes_ratio = MT2DrawTools::getRatioAxes( xMin, xMax, yMinR, yMaxR );
 
     TGraphAsymmErrors* g_ratio = MT2DrawTools::getRatioGraph(h1_data, histo_mc);
     g_ratio->SetMarkerStyle(20);
@@ -371,9 +355,7 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, std::vector<
     g_ratio->SetLineWidth(2);
 
     c1->cd();
-    TPad *pad2 = new TPad("pad2","pad2",0,0,1,0.21);
-    pad2->SetTopMargin(0.05);
-    pad2->SetBottomMargin(0.1);
+    TPad* pad2 = MT2DrawTools::getCanvasRatioPad();
     pad2->Draw();
     pad2->cd();
     
@@ -387,9 +369,7 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, std::vector<
 
 
     c1_log->cd();
-    TPad *pad2_log = new TPad("pad2_log","pad2_log",0,0,1,0.21);
-    pad2_log->SetTopMargin(0.05);
-    pad2_log->SetBottomMargin(0.1);
+    TPad* pad2_log = MT2DrawTools::getCanvasRatioPad( true );
     pad2_log->Draw();
     pad2_log->cd();
     

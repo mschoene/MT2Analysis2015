@@ -172,7 +172,8 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, MT2Analysis<
       }
     }
 
-    float scaleFactor = h1_data->Integral()/mc_sum->Integral();
+    std::cout << "Integrals: " << h1_data->Integral(0, nBins+1) << "\t" << mc_sum->Integral(0, nBins+1) << std::endl;
+    float scaleFactor = h1_data->Integral(0, nBins+1)/mc_sum->Integral(0, nBins+1);
     if( shapeNorm ) 
       std::cout << "SF: " << scaleFactor << std::endl;
 
@@ -184,9 +185,7 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, MT2Analysis<
       histos_mc[index]->SetLineColor( kBlack );
       if( shapeNorm ) {
         histos_mc[index]->Scale( scaleFactor );
-      } else {
-        histos_mc[index]->Scale( 1.27 );
-      }
+      } 
 
       if(i==0) histo_mc = (TH1D*) histos_mc[index]->Clone("histo_mc");
       else histo_mc->Add(histos_mc[index]);
@@ -196,18 +195,14 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, MT2Analysis<
 
 
     TCanvas* c1 = new TCanvas( "c1", "", 600, 600 );
-
-    TPad *pad1 = new TPad("pad1","pad1",0,0.3-0.1,1,1);
-    pad1->SetBottomMargin(0.15);
-    pad1->Draw();
-
+    c1->cd();
+    TPad *pad1 = MT2DrawTools::getCanvasMainPad();
+    TPad *pad2 = MT2DrawTools::getCanvasRatioPad();
+    
     TCanvas* c1_log = new TCanvas( "c1_log", "", 600, 600 );
     c1_log->cd();
-
-    TPad *pad1_log = new TPad("pad1_log","pad1_log",0,0.3-0.1,1,1);
-    pad1_log->SetBottomMargin(0.15);
-    pad1_log->SetLogy();
-    pad1_log->Draw();
+    TPad *pad1_log = MT2DrawTools::getCanvasMainPad( true );
+    TPad *pad2_log = MT2DrawTools::getCanvasRatioPad( true );
    
     float yMaxScale = 1.1;
     float yMax1 = h1_data->GetMaximum()*yMaxScale;
@@ -215,8 +210,6 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, MT2Analysis<
     float yMax3 = yMaxScale*(bgStack.GetMaximum());
     float yMax = (yMax1>yMax2) ? yMax1 : yMax2;
     if( yMax3 > yMax ) yMax = yMax3;
-    //float yMax = TMath::Max( h1_data->GetMaximum()*1.5, (h1_data->GetMaximum() + h1_data->GetBinError(h1_data->GetMaximumBin()))*1.2);
-    //float yMax = h1_data->GetMaximum()*1.5;
     if( h1_data->GetNbinsX()<2 ) yMax *=3.;
 
 
@@ -244,15 +237,19 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, MT2Analysis<
     h2_axes->SetXTitle(xAxisTitle.c_str());
     h2_axes->SetYTitle(yAxisTitle.c_str());
 
+    c1->cd();
+    pad1->Draw();
     pad1->cd();
     h2_axes->Draw();
 
 
    
-    TH2D* h2_axes_log = new TH2D("axes_log", "", 10, xMin, xMax, 10, 0.1, yMax*1.6 );
+    TH2D* h2_axes_log = new TH2D("axes_log", "", 10, xMin, xMax, 10, 0.1, yMax*2.0 );
     h2_axes_log->SetXTitle(xAxisTitle.c_str());
     h2_axes_log->SetYTitle(yAxisTitle.c_str());
 
+    c1_log->cd();
+    pad1_log->Draw();
     pad1_log->cd();
     h2_axes_log->Draw();
    
@@ -304,12 +301,23 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, MT2Analysis<
 
 
     TPaveText* labelTop = MT2DrawTools::getLabelTop(cfg.lumi());
+    
+    TPaveText* ratioText = new TPaveText( 0.133, -0.05, 0.4, 0.1 , "brNDC" );
+    ratioText->SetTextSize(0.035);
+    ratioText->SetTextFont(40);
+    ratioText->SetTextColor(2);
+    ratioText->SetFillColor(0);
+    ratioText->SetTextAlign(11);
+    ratioText->AddText( Form("Data/MC = %.2f", scaleFactor) );
 
     pad1->cd();
     legend->Draw("same");
     bgStack.Draw("histo same");
     gr_data->Draw("p same");
     labelTop->Draw("same");
+    if( !shapeNorm )
+      ratioText->Draw("same");
+    
     gPad->RedrawAxis();
 
     pad1_log->cd();
@@ -317,50 +325,48 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, MT2Analysis<
     bgStack.Draw("histo same");
     gr_data->Draw("p same");
     labelTop->Draw("same");
+    if( !shapeNorm )
+      ratioText->Draw("same");
+    
     gPad->RedrawAxis();
 
     TLine* line = new TLine(xMin, 1.0, xMax, 1.0);
     line->SetLineColor(1);
+    
+    TLine* lineSF = new TLine(xMin, scaleFactor, xMax, scaleFactor);
+    lineSF->SetLineColor(2);
 
-    std::string thisName = Form("%s_ratio", h1_data->GetName());
-    TH1D* h_ratio = (TH1D*) h1_data->Clone(thisName.c_str());
-    h_ratio->Divide(histo_mc);
-    h_ratio->SetStats(0);
-    h_ratio->SetMarkerStyle(20);
-    h_ratio->SetLineColor(1);
-    //      h_ratio->SetMarkerSize(0.02);                                                                                                                                                                               
-    h_ratio->GetXaxis()->SetLabelSize(0.00);
-    h_ratio->GetXaxis()->SetTickLength(0.09);
-    h_ratio->GetYaxis()->SetNdivisions(5,5,0);
-    h_ratio->GetYaxis()->SetRangeUser(0.0,2.0);
-    h_ratio->GetYaxis()->SetTitleSize(0.17);
-    h_ratio->GetYaxis()->SetTitleOffset(0.4);
-    h_ratio->GetYaxis()->SetLabelSize(0.17);
-    h_ratio->GetYaxis()->SetTitle("Data / MC");
+    float yMinR=0.0;
+    float yMaxR=2.0;
 
-    h_ratio->SetLineWidth(2);
+    TH2D* h2_axes_ratio = MT2DrawTools::getRatioAxes( xMin, xMax, yMinR, yMaxR );
+
+    TGraphAsymmErrors* g_ratio = MT2DrawTools::getRatioGraph(h1_data, histo_mc);
+    g_ratio->SetMarkerStyle(20);
+    g_ratio->SetLineColor(1);
+    g_ratio->SetLineWidth(2);
     
     c1->cd();
-    TPad *pad2 = new TPad("pad2","pad2",0,0,1,0.21);
-    pad2->SetTopMargin(0.05);
-    pad2->SetBottomMargin(0.1);
     pad2->Draw();
     pad2->cd();
 
-    h_ratio->Draw("PE");
+    h2_axes_ratio->Draw("");
+    g_ratio->Draw("PE,same");
     line->Draw("same");
+    if( !shapeNorm )
+      lineSF->Draw("same");
 
     gPad->RedrawAxis();
 
     c1_log->cd();
-    TPad *pad2_log = new TPad("pad2_log","pad2_log",0,0,1,0.21);
-    pad2_log->SetTopMargin(0.05);
-    pad2_log->SetBottomMargin(0.1);
     pad2_log->Draw();
     pad2_log->cd();
 
-    h_ratio->Draw("PE");
+    h2_axes_ratio->Draw("");
+    g_ratio->Draw("PE,same");
     line->Draw("same");
+    if( !shapeNorm )
+      lineSF->Draw("same");
     
     gPad->RedrawAxis();
 
