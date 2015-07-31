@@ -39,6 +39,8 @@ public :
    Float_t         HLT_PFHT350_PFMET100;
    Float_t         HLT_ht475prescale;
    Float_t         HLT_SingleMu;
+   Float_t         HLT_MuX_Ele12;
+   Float_t         HLT_Mu8_EleX;
    Float_t         HLT_SingleEl;
    Float_t         HLT_PFHT800;
    Float_t         HLT_ht350prescale;
@@ -446,6 +448,10 @@ public :
    TBranch        *b_HLT_ht475prescale;   //!
    TBranch        *b_HLT_SingleMu;   //!
    TBranch        *b_HLT_SingleEl;   //!
+
+   TBranch        *b_HLT_MuX_Ele12;   //!
+   TBranch        *b_HLT_Mu8_EleX;   //!
+
    TBranch        *b_HLT_PFHT800;   //!
    TBranch        *b_HLT_ht350prescale;   //!
    TBranch        *b_HLT_Photon155;   //!
@@ -917,6 +923,11 @@ void MT2Tree::Init(TTree *tree)
    fChain->SetBranchAddress("HLT_ht475prescale", &HLT_ht475prescale, &b_HLT_ht475prescale);
    fChain->SetBranchAddress("HLT_SingleMu", &HLT_SingleMu, &b_HLT_SingleMu);
    fChain->SetBranchAddress("HLT_SingleEl", &HLT_SingleEl, &b_HLT_SingleEl);
+
+   fChain->SetBranchAddress("HLT_Mu8_EleX", &HLT_Mu8_EleX, &b_HLT_Mu8_EleX);
+   fChain->SetBranchAddress("HLT_MuX_Ele12", &HLT_MuX_Ele12, &b_HLT_MuX_Ele12);
+
+
    fChain->SetBranchAddress("HLT_PFHT800", &HLT_PFHT800, &b_HLT_PFHT800);
    fChain->SetBranchAddress("HLT_ht350prescale", &HLT_ht350prescale, &b_HLT_ht350prescale);
    fChain->SetBranchAddress("HLT_Photon155", &HLT_Photon155, &b_HLT_Photon155);
@@ -1349,21 +1360,21 @@ Bool_t MT2Tree::passIsoTrackVeto(){
 Bool_t MT2Tree::passBaseline(TString sel)
 {
   if (sel=="gamma")
-    return nVert > 0 && 
+    return nVert > 0;// && 
       // gamma_nJet30 >= 2 && 
-      gamma_deltaPhiMin > 0.3 && 
-      gamma_diffMetMht < 0.5*gamma_met_pt;
+//      gamma_deltaPhiMin > 0.3 && 
+//      gamma_diffMetMht < 0.5*gamma_met_pt;
   else if (sel=="zll")
     return nVert > 0 &&
       // nJet30 >= 2 && 
-      zll_deltaPhiMin > 0.3 && 
-      zll_diffMetMht < 0.5*zll_met_pt && 
+//      zll_deltaPhiMin > 0.3 && 
+//      zll_diffMetMht < 0.5*zll_met_pt && 
       nlep > 1 ;
   else
-    return nVert > 0 && 
+    return nVert > 0;// && 
       //(nJet30 >= 2 || sel=="monojet") &&
-      deltaPhiMin > 0.3 && 
-      diffMetMht < 0.5*met_pt;
+//      deltaPhiMin > 0.3 && 
+//      diffMetMht < 0.5*met_pt;
   
   return kFALSE;
 }
