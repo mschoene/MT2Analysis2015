@@ -26,7 +26,7 @@ run()
 #include "TROOT.h"
 #include "TSystem.h"
 
-#include "/shome/mmasciov/CMSSW_7_2_3_PostProcessing/src/analysisCode/Utils/goodrun.cc"
+#include "goodrun.cc"
 
 using namespace std;
 
@@ -37,7 +37,8 @@ int postProcessing(string inputString="input",
 		   float filter=1.0, float kfactor=1.0, float xsec=-1.0, int id=1,
 		   string crabExt="",
 		   string inputPU="",
-		   string PUvar="nVert");
+		   string PUvar="nVert",
+		   bool applyJSON=true);
 
 
 int run(string cfg="postProcessing_74X_50ns.cfg",
@@ -47,7 +48,8 @@ int run(string cfg="postProcessing_74X_50ns.cfg",
 	string fileExtension = "_post.root",
         string crabExt = "",
 	string inputPU = "",
-	string PUvar = "nVert"){
+	string PUvar = "nVert",
+	bool applyJSON=true){
   
   // for measuring timing
   time_t start = time(0);
@@ -106,13 +108,16 @@ int postProcessing(string inputString,
 		   float filter, float kfactor, float xsec, int id,
 		   string crabExt,
 		   string inputPU,
-		   string PUvar)
+		   string PUvar,
+		   bool applyJSON)
 {
   
-  bool applyJSON=true;
-  const char* json_file = "/shome/mmasciov/CMSSW_7_2_3_PostProcessing/src/analysisCode/Utils/goodruns.txt";
+  //bool applyJSON=true;
+  const char* json_file = "goodruns.txt";
 
   if (applyJSON) {
+    //cout << gSystem->pwd() << endl;
+    //gSystem->Load("goodrun_cc");
     cout << "Loading json file: " << json_file << endl;
     set_goodrun_file(json_file);
   }

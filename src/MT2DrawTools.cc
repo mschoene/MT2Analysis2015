@@ -217,9 +217,10 @@ TGraphAsymmErrors* MT2DrawTools::getRatioGraph( TH1D* histo_data, TH1D* histo_mc
 
     int iBin = histo_mc->FindBin(x_tmp);
     float mc = histo_mc->GetBinContent(iBin);
-    gr_ratio->SetPoint(i, x_tmp, y_tmp/mc);
-    gr_ratio->SetPointEYhigh(i, errUp/mc);
-    gr_ratio->SetPointEYlow(i, errDown/mc);
+    graph->SetPoint(i, x_tmp, y_tmp/mc);
+    graph->SetPointEYhigh(i, errUp/mc);
+    graph->SetPointEYlow(i, errDown/mc);
+  
   }
 
   return graph;
