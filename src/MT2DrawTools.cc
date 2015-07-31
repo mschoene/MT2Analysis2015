@@ -158,9 +158,9 @@ TPaveText* MT2DrawTools::getLabelTopSimulation( const std::string& text ) {
 TGraphAsymmErrors* MT2DrawTools::getPoissonGraph( TH1D* histo, bool drawZeros, const std::string& xerrType, float nSigma ) {
 
 
-  int nBins = histo->GetNbinsX();
+  unsigned int nBins = histo->GetNbinsX();
   int emptyBins=0;
-  for( unsigned i=1; i<nBins; ++i ) {
+  for( unsigned i=1; i < nBins; ++i ) {
     if( histo->GetBinContent(i)==0 ) emptyBins += 1;
   }
   if( (float)emptyBins/(float)nBins > 0.4 ) drawZeros=false;
@@ -224,5 +224,50 @@ TGraphAsymmErrors* MT2DrawTools::getRatioGraph( TH1D* histo_data, TH1D* histo_mc
   }
 
   return graph;
+
+}
+
+
+TPad* MT2DrawTools::getCanvasMainPad( bool logY ){
+  
+  std::string padApp = "";
+  if( logY )
+    padApp = "_log";
+  TPad* pad1 = new TPad(Form("pad1%s", padApp.c_str()), Form("pad1%s", padApp.c_str()), 0, 0.3-0.1, 1, 1);
+  pad1->SetBottomMargin(0.15);
+  if( logY )
+    pad1->SetLogy();
+
+  return pad1;
+
+}
+
+TPad* MT2DrawTools::getCanvasRatioPad( bool logY ){
+
+  std::string padApp = "";
+  if( logY )
+    padApp = "_log";
+  TPad* pad2 = new TPad(Form("pad2%s", padApp.c_str()), Form("pad2%s", padApp.c_str()), 0, 0, 1, 0.21);
+  pad2->SetTopMargin(0.05);
+  pad2->SetBottomMargin(0.1);
+
+  return pad2;
+
+}
+
+
+TH2D* MT2DrawTools::getRatioAxes( float xMin, float xMax, float yMin, float yMax ){
+
+  TH2D* h2_axes_ratio = new TH2D("axes_ratio", "", 10, xMin, xMax, 10, yMin, yMax );
+  h2_axes_ratio->SetStats(0);
+  h2_axes_ratio->GetXaxis()->SetLabelSize(0.00);
+  h2_axes_ratio->GetXaxis()->SetTickLength(0.09);
+  h2_axes_ratio->GetYaxis()->SetNdivisions(5,5,0);
+  h2_axes_ratio->GetYaxis()->SetTitleSize(0.17);
+  h2_axes_ratio->GetYaxis()->SetTitleOffset(0.4);
+  h2_axes_ratio->GetYaxis()->SetLabelSize(0.17);
+  h2_axes_ratio->GetYaxis()->SetTitle("Data / MC");
+
+  return h2_axes_ratio;
 
 }
