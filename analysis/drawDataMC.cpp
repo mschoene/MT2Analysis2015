@@ -185,8 +185,8 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, std::vector<
       }
     }
 
-    std::cout << "Integrals: " << h1_data->Integral() << "\t" << mc_sum->Integral() << std::endl;
-    float scaleFactor = h1_data->Integral()/mc_sum->Integral();
+    std::cout << "Integrals: " << h1_data->Integral(0, nBins+1) << "\t" << mc_sum->Integral(0, nBins+1) << std::endl;
+    float scaleFactor = h1_data->Integral(0, nBins+1)/mc_sum->Integral(0, nBins+1);
     if( shapeNorm )
       std::cout << "SF: " << scaleFactor << std::endl;
 
@@ -315,53 +315,76 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, std::vector<
 
 
     TPaveText* labelTop = MT2DrawTools::getLabelTop(cfg.lumi());
-
+    
+    TPaveText* ratioText = new TPaveText( 0.133, -0.05, 0.4, 0.1 , "brNDC" );
+    ratioText->SetTextSize(0.035);
+    ratioText->SetTextFont(40);
+    ratioText->SetTextColor(2);
+    ratioText->SetFillColor(0);
+    ratioText->SetTextAlign(11);
+    ratioText->AddText( Form("Data/MC = %.2f", scaleFactor) );
+    
     pad1->cd();
     legend->Draw("same");
     bgStack.Draw("histo same");
     gr_data->Draw("p same");
     labelTop->Draw("same");
+    if( !shapeNorm )
+      ratioText->Draw("same");
+
     gPad->RedrawAxis();
 
+    
     pad1_log->cd();
     legend->Draw("same");
     bgStack.Draw("histo same");
     gr_data->Draw("p same");
     labelTop->Draw("same");
+    if( !shapeNorm )
+      ratioText->Draw("same");
+
     gPad->RedrawAxis();
 
     TLine* line = new TLine(xMin, 1.0, xMax, 1.0);
     line->SetLineColor(1);
+    
+    TLine* lineSF = new TLine(xMin, scaleFactor, xMax, scaleFactor);
+    lineSF->SetLineColor(2);
 
-    std::string thisName = Form("%s_ratio", h1_data->GetName());
-    TH1D* h_ratio = (TH1D*) h1_data->Clone(thisName.c_str());
-    h_ratio->Divide(histo_mc);
-    h_ratio->SetStats(0);
-    h_ratio->SetMarkerStyle(20);
-    h_ratio->SetLineColor(1);
-    //      h_ratio->SetMarkerSize(0.02);                                                                                                                                                                             
-    h_ratio->GetXaxis()->SetLabelSize(0.00);
-    h_ratio->GetXaxis()->SetTickLength(0.09);
-    h_ratio->GetYaxis()->SetNdivisions(5,5,0);
-    h_ratio->GetYaxis()->SetRangeUser(0.0,2.0);
-    h_ratio->GetYaxis()->SetTitleSize(0.17);
-    h_ratio->GetYaxis()->SetTitleOffset(0.4);
-    h_ratio->GetYaxis()->SetLabelSize(0.17);
-    h_ratio->GetYaxis()->SetTitle("Data / MC");
+    float yMinR=0.0;
+    float yMaxR=2.0;
 
-    h_ratio->SetLineWidth(2);
- 
+    TH2D* h2_axes_ratio = new TH2D("axes_ratio", "", 10, xMin, xMax, 10, yMinR, yMaxR );
+    h2_axes_ratio->SetStats(0);	
+    h2_axes_ratio->GetXaxis()->SetLabelSize(0.00);
+    h2_axes_ratio->GetXaxis()->SetTickLength(0.09);
+    h2_axes_ratio->GetYaxis()->SetNdivisions(5,5,0);
+    h2_axes_ratio->GetYaxis()->SetRangeUser(0.0,2.0);
+    h2_axes_ratio->GetYaxis()->SetTitleSize(0.17);
+    h2_axes_ratio->GetYaxis()->SetTitleOffset(0.4);
+    h2_axes_ratio->GetYaxis()->SetLabelSize(0.17);
+    h2_axes_ratio->GetYaxis()->SetTitle("Data / MC");
+
+    TGraphAsymmErrors* g_ratio = MT2DrawTools::getRatioGraph(h1_data, histo_mc);
+    g_ratio->SetMarkerStyle(20);
+    g_ratio->SetLineColor(1);
+    g_ratio->SetLineWidth(2);
+
     c1->cd();
     TPad *pad2 = new TPad("pad2","pad2",0,0,1,0.21);
     pad2->SetTopMargin(0.05);
     pad2->SetBottomMargin(0.1);
     pad2->Draw();
     pad2->cd();
-
-    h_ratio->Draw("PE");
+    
+    h2_axes_ratio->Draw("");
+    g_ratio->Draw("PE,same");
     line->Draw("same");
-
+    if( !shapeNorm )
+      lineSF->Draw("same");
+    
     gPad->RedrawAxis();
+
 
     c1_log->cd();
     TPad *pad2_log = new TPad("pad2_log","pad2_log",0,0,1,0.21);
@@ -370,8 +393,11 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, std::vector<
     pad2_log->Draw();
     pad2_log->cd();
     
-    h_ratio->Draw("PE");
+    h2_axes_ratio->Draw("");
+    g_ratio->Draw("PE,same");
     line->Draw("same");
+    if( !shapeNorm )
+      lineSF->Draw("same");
 
     gPad->RedrawAxis();
 
@@ -389,7 +415,9 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, std::vector<
 
     delete c1_log;
     delete h2_axes_log;
-
+    
+    delete h2_axes_ratio;
+    
     delete h1_data;
   
     for( unsigned i=0; i<histos_mc.size(); ++i )

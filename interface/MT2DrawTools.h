@@ -3,7 +3,9 @@
 
 #include "TStyle.h"
 #include "TPaveText.h"
+#include "TCanvas.h"
 #include "TH1D.h"
+#include "TH2D.h"
 #include "TGraphAsymmErrors.h"
 #include "TColor.h"
 
@@ -27,6 +29,9 @@ class MT2DrawTools {
 
   static TGraphAsymmErrors* getPoissonGraph( TH1D* h1, bool drawZeros=true, const std::string& xerrType="0", float nSigma=1. );
   static TGraphAsymmErrors* getRatioGraph( TH1D* h1, TH1D* h2 );
+  
+  static TCanvas* getCanvasWithRatioPad( bool logY=0 );
+  static TH2D* getRatioAxes( float xMin, float xMax, float yMin=0., float yMax=2. );
 
  private:
 
