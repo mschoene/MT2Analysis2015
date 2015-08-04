@@ -220,8 +220,12 @@ TGraphAsymmErrors* MT2DrawTools::getRatioGraph( TH1D* histo_data, TH1D* histo_mc
     graph->SetPoint(i, x_tmp, y_tmp/mc);
     graph->SetPointEYhigh(i, errUp/mc);
     graph->SetPointEYlow(i, errDown/mc);
-  
+
   }
+
+  graph->SetLineColor(1);
+  graph->SetMarkerColor(1);
+  graph->SetMarkerStyle(20);
 
   return graph;
 
@@ -270,4 +274,41 @@ TH2D* MT2DrawTools::getRatioAxes( float xMin, float xMax, float yMin, float yMax
 
   return h2_axes_ratio;
 
+}
+
+
+double MT2DrawTools::getSFError(double integral_data, double error_data, double integral_mc, double error_mc){
+
+  double error_datamc = integral_data/integral_mc*(sqrt( (error_data/integral_mc)*(error_data/integral_mc) + (integral_data*error_mc/(integral_data*integral_data))*(integral_data*error_mc/(integral_data*integral_data)) ));
+  
+  return error_datamc;
+
+}
+
+TLine* MT2DrawTools::getSFLine(double integral_data, double integral_mc, float xMin, float xMax){
+
+  double scaleFactor = integral_data/integral_mc;
+  TLine* lineSF = new TLine(xMin, scaleFactor, xMax, scaleFactor);
+  lineSF->SetLineColor(kRed);
+
+  return lineSF;
+
+}
+
+TGraphErrors* MT2DrawTools::getSFBand(double integral_data, double error_data, double integral_mc, double error_mc, float xMin, float xMax){
+  
+  double error_datamc = MT2DrawTools::getSFError(integral_data, error_data, integral_mc, error_mc);
+
+  double x[2]={(double)xMin, (double)xMax};
+  double xerr[2]={0., 0.};
+  double yerr[2]={error_datamc, error_datamc};
+  double y[2]={integral_data/integral_mc, integral_data/integral_mc};
+
+  TGraphErrors* SFband = new TGraphErrors(2, x, y, xerr, yerr);
+  SFband->SetLineColor(0);
+  SFband->SetFillColor(kRed);
+  SFband->SetFillStyle(3244);
+  
+  return SFband;
+  
 }
