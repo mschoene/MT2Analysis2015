@@ -6,6 +6,7 @@
 #include "TH1D.h"
 #include "TFile.h"
 #include "THStack.h"
+#include "TGraphErrors.h"
 
 #include "../interface/MT2Config.h"
 #include "../interface/MT2Analysis.h"
@@ -80,26 +81,32 @@ int main( int argc, char* argv[] ) {
 
   //drawYields( cfg, data, mc, "nVert_noW" , "nVert" , selection, 50, 0.5, 50.5, "Number of Vertices", "" );
 
+  //selection = "weight*(ht>450. && ht<900. && met>200. && nJets>1 && mt2>10. && id!=107)";
   selection = "weight*(ht>450. && ht<900. && met>200. && nJets>1 && mt2>10. && id!=107 && deltaPhiMin>0.3 && diffMetMht<0.5*met)";
+  //selection = "weight*(ht>450. && ht<900. && met>200. && nJets>1 && mt2>10. && id!=107 && nJetHF30==0)";
 
   drawYields( cfg, data, mc, "lowHT_nVert" , "nVert" , selection, 25, 0.5, 50.5, "Number of Vertices", "" );
   drawYields( cfg, data, mc, "lowHT_mt2"   , "mt2"   , selection, 18, 10., 910., "M_{T2}", "GeV" );
   drawYields( cfg, data, mc, "lowHT_met"   , "met"   , selection, 20, 200., 1200., "Missing E_{T}", "GeV" );
   drawYields( cfg, data, mc, "lowHT_ht"    , "ht"    , selection, 25, 450., 2950., "H_{T}", "GeV" );
   drawYields( cfg, data, mc, "lowHT_nJets" , "nJets" , selection, 12, 1.5, 13.5, "Number of Jets (p_{T} > 30 GeV)", "" );
+  drawYields( cfg, data, mc, "lowHT_nJetHF30" , "nJetHF30" , selection, 12, 1.5, 13.5, "Number of Jets (p_{T} > 30 GeV & |#eta|>3.0)", "" );
   drawYields( cfg, data, mc, "lowHT_nBJets", "nBJets", selection, 7, -0.5, 6.5, "Number of b-Jets (p_{T} > 20 GeV)", "" );
   drawYields( cfg, data, mc, "lowHT_deltaPhiMin", "deltaPhiMin", selection, 32, 0.0, 3.2, "min #Delta#phi(jets, ME_{T})", "" );
   drawYields( cfg, data, mc, "lowHT_diffMetMht_overMet", "diffMetMht/met", selection, 30, 0.0, 3.0, "|ME_{T}-MH_{T}|/ME_{T}", "" );
   drawYields( cfg, data, mc, "lowHT_diffMetMht", "diffMetMht", selection, 24, 0., 1200., "|ME_{T}-MH_{T}|", "GeV" );
 
 
+  //selection = "weight*(ht>900. && nJets>1 && met>30. && mt2>10.)";
   selection = "weight*(ht>900. && nJets>1 && met>30. && mt2>10. && deltaPhiMin>0.3 && diffMetMht<0.5*met)";
+  //selection = "weight*(ht>900. && nJets>1 && met>30. && mt2>10. && nJetHF30==0)";
 
   drawYields( cfg, data, mc, "nVert" , "nVert" , selection, 50, 0.5, 50.5, "Number of Vertices", "" );
   drawYields( cfg, data, mc, "mt2"   , "mt2"   , selection, 60, 10., 310., "M_{T2}", "GeV" );
   drawYields( cfg, data, mc, "met"   , "met"   , selection, 80, 30., 430., "Missing E_{T}", "GeV" );
   drawYields( cfg, data, mc, "ht"    , "ht"    , selection, 50, 900., 3400., "H_{T}", "GeV" );
   drawYields( cfg, data, mc, "nJets" , "nJets" , selection, 12, 1.5, 13.5, "Number of Jets (p_{T} > 30 GeV)", "" );
+  drawYields( cfg, data, mc, "nJetHF30" , "nJetHF30" , selection, 12, 1.5, 13.5, "Number of Jets (p_{T} > 30 GeV & |#eta|>3.0)", "" );
   drawYields( cfg, data, mc, "nBJets", "nBJets", selection, 7, -0.5, 6.5, "Number of b-Jets (p_{T} > 20 GeV)", "" );
   drawYields( cfg, data, mc, "deltaPhiMin", "deltaPhiMin", selection, 32, 0.0, 3.2, "min #Delta#phi(jets, ME_{T})", "" );
   drawYields( cfg, data, mc, "diffMetMht_overMet", "diffMetMht/met", selection, 30, 0., 3.0, "|ME_{T}-MH_{T}|/ME_{T}", "" );
@@ -166,8 +173,8 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, std::vector<
       TH1D* h1_mc = new TH1D( thisName.c_str(), "", nBins, xMin, xMax );
       h1_mc->Sumw2();
       if( selection!="" )
-	tree_mc->Project( thisName.c_str(), varName.c_str(), Form("%s/puWeight", selection.c_str()) );
-      //tree_mc->Project( thisName.c_str(), varName.c_str(), Form("%s", selection.c_str()) );
+	//tree_mc->Project( thisName.c_str(), varName.c_str(), Form("%s/puWeight", selection.c_str()) );
+	tree_mc->Project( thisName.c_str(), varName.c_str(), Form("%s", selection.c_str()) );
       else
         tree_mc->Project( thisName.c_str(), varName.c_str(), "" );
       histos_mc.push_back(h1_mc);
@@ -187,8 +194,16 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, std::vector<
 
     std::cout << "Integrals: " << h1_data->Integral(0, nBins+1) << "\t" << mc_sum->Integral(0, nBins+1) << std::endl;
     float scaleFactor = h1_data->Integral(0, nBins+1)/mc_sum->Integral(0, nBins+1);
-    if( shapeNorm )
-      std::cout << "SF: " << scaleFactor << std::endl;
+    //    if( shapeNorm )
+    std::cout << "SF: " << scaleFactor << std::endl;
+
+    double error_data;
+    double integral_data = h1_data->IntegralAndError(0, nBins+1, error_data);
+
+    double error_mc;
+    double integral_mc = mc_sum->IntegralAndError(0, nBins+1, error_mc);
+
+    double error_datamc = MT2DrawTools::getSFError(integral_data, error_data, integral_mc, error_mc);
 
     TH1D* histo_mc;
     THStack bgStack("bgStack", "");
@@ -308,13 +323,13 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, std::vector<
 
     TPaveText* labelTop = MT2DrawTools::getLabelTop(cfg.lumi());
     
-    TPaveText* ratioText = new TPaveText( 0.133, -0.05, 0.4, 0.1 , "brNDC" );
+    TPaveText* ratioText = new TPaveText( 0.133, -0.051, 0.4, 0.1 , "brNDC" );
     ratioText->SetTextSize(0.035);
     ratioText->SetTextFont(40);
     ratioText->SetTextColor(2);
     ratioText->SetFillColor(0);
     ratioText->SetTextAlign(11);
-    ratioText->AddText( Form("Data/MC = %.2f", scaleFactor) );
+    ratioText->AddText( Form("Data/MC = %.2f +/- %.2f", scaleFactor, error_datamc) );
     
     c1->cd();
     pad1->cd();
@@ -338,33 +353,34 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, std::vector<
 
     gPad->RedrawAxis();
 
-    TLine* line = new TLine(xMin, 1.0, xMax, 1.0);
-    line->SetLineColor(1);
-    
-    TLine* lineSF = new TLine(xMin, scaleFactor, xMax, scaleFactor);
-    lineSF->SetLineColor(2);
-
     float yMinR=0.0;
     float yMaxR=2.0;
 
     TH2D* h2_axes_ratio = MT2DrawTools::getRatioAxes( xMin, xMax, yMinR, yMaxR );
 
     TGraphAsymmErrors* g_ratio = MT2DrawTools::getRatioGraph(h1_data, histo_mc);
-    g_ratio->SetMarkerStyle(20);
-    g_ratio->SetLineColor(1);
-    g_ratio->SetLineWidth(2);
+
+    TLine* line = new TLine(xMin, 1.0, xMax, 1.0);
+    line->SetLineColor(1);
+    
+    TLine* lineSF = MT2DrawTools::getSFLine(integral_data, integral_mc, xMin, xMax);
+    
+    TGraphErrors* SFband = MT2DrawTools::getSFBand(integral_data, error_data, integral_mc, error_mc, xMin, xMax);
+
+
 
     c1->cd();
     TPad* pad2 = MT2DrawTools::getCanvasRatioPad();
     pad2->Draw();
     pad2->cd();
-    
+
     h2_axes_ratio->Draw("");
-    g_ratio->Draw("PE,same");
     line->Draw("same");
-    if( !shapeNorm )
+    if( !shapeNorm ){
+      SFband->Draw("3,same");
       lineSF->Draw("same");
-    
+    }
+    g_ratio->Draw("PE,same");    
     gPad->RedrawAxis();
 
 
@@ -372,13 +388,14 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, std::vector<
     TPad* pad2_log = MT2DrawTools::getCanvasRatioPad( true );
     pad2_log->Draw();
     pad2_log->cd();
-    
-    h2_axes_ratio->Draw("");
-    g_ratio->Draw("PE,same");
-    line->Draw("same");
-    if( !shapeNorm )
-      lineSF->Draw("same");
 
+    h2_axes_ratio->Draw("");
+    line->Draw("same");
+    if( !shapeNorm ){
+      SFband->Draw("3,same");
+      lineSF->Draw("same");
+    }
+    g_ratio->Draw("PE,same");
     gPad->RedrawAxis();
 
 

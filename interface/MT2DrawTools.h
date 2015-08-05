@@ -8,9 +8,9 @@
 #include "TH1D.h"
 #include "TH2D.h"
 #include "TGraphAsymmErrors.h"
+#include "TGraphErrors.h"
+#include "TLine.h"
 #include "TColor.h"
-
-
 
 
 
@@ -27,13 +27,16 @@ class MT2DrawTools {
 
   static std::string getLumiText( float lumi );
 
-
   static TGraphAsymmErrors* getPoissonGraph( TH1D* h1, bool drawZeros=true, const std::string& xerrType="0", float nSigma=1. );
   static TGraphAsymmErrors* getRatioGraph( TH1D* h1, TH1D* h2 );
   
   static TPad* getCanvasMainPad( bool logY=false );
   static TPad* getCanvasRatioPad( bool logY=false );
   static TH2D* getRatioAxes( float xMin, float xMax, float yMin=0., float yMax=2. );
+  
+  static double getSFError(double integral_data, double error_data, double integral_mc, double error_mc);
+  static TLine* getSFLine(double integral_data, double integral_mc, float xMin, float xMax);
+  static TGraphErrors* getSFBand(double integral_data, double error_data, double integral_mc, double error_mc, float xMin, float xMax);
 
  private:
 
