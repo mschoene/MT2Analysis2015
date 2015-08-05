@@ -15,12 +15,7 @@
 #include "TH1F.h"
 
 
-
-
 bool alsoSignals = false;
-
-
-
 
 
 int round(float d) {
@@ -358,6 +353,12 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
 
     if( myTree.gamma_idCutBased[0]==0 ) continue;
 
+    //if( myTree.isData ) {
+    //
+    //  if( !(myTree.Flag_HBHENoiseFilter && myTree.Flag_CSCTightHaloFilter && myTree.Flag_goodVertices && myTree.Flag_eeBadScFilter) ) continue;
+    //  
+    //}
+
 
     TLorentzVector gamma;
     gamma.SetPtEtaPhiM( myTree.gamma_pt[0], myTree.gamma_eta[0], myTree.gamma_phi[0], myTree.gamma_mass[0] );
@@ -395,6 +396,8 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
       bool isPrompt = isMatched && !isQCD;
       bool isNIP    = isMatched && isQCD && myTree.gamma_drMinParton[0]>0.4;
       bool isFake   = !isMatched && isQCD;
+      //bool isNIP    = isMatched && isQCD;
+      //bool isFake   = !isMatched;
 
 
       if( isPrompt ) {
