@@ -1,5 +1,5 @@
 lumi 0.0400
 regionsSet 13TeV_inclusive
 mcSamples 74X_noSkim
-dataSamples Run2015B_50ns_golden
+dataSamples Run2015B_50nsGolden
 additionalStuff noSignals
