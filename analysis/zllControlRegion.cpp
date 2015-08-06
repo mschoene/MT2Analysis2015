@@ -31,8 +31,8 @@ int round(float d) {
 
 
 
-bool do_of = false;
-bool do_bg = false;
+bool do_of = true;
+bool do_bg = true;
 
 
 
@@ -129,6 +129,7 @@ int main(int argc, char* argv[]) {
 	exit(1209);
       }
       
+      
       std::vector< MT2Analysis<MT2EstimateTree>* > EventYield_bg;
       for( unsigned i=0; i<fSamples_bg.size(); ++i ) 
 	EventYield_bg.push_back( computeYield( fSamples_bg[i], cfg, cfg.lumi(), 1 ) );
@@ -155,7 +156,8 @@ int main(int argc, char* argv[]) {
       EventYield_qcd->addToFile( outFile );
       EventYield_wjets->addToFile( outFile );
       EventYield_zjets->addToFile( outFile );
-      
+     
+
       if(do_of==true){
 	
 	std::vector<MT2Sample> fSamples_of = MT2Sample::loadSamples(samplesFileName, 100, 999); // not interested in signal here
@@ -225,7 +227,7 @@ int main(int argc, char* argv[]) {
       }
     }
     
-    MT2Analysis<MT2EstimateTree>* EventYield_data = mergeYields( dataTree, cfg.regionsSet(), "data", 1, 99, "" );
+    MT2Analysis<MT2EstimateTree>* EventYield_data = mergeYields( dataTree, cfg.regionsSet(), "data",-9999999999, 999999999, "" );
     EventYield_data->addToFile(outputdir+"/data.root");
     
     if(do_of==true){
@@ -236,12 +238,12 @@ int main(int argc, char* argv[]) {
 	dataTree_of.push_back( computeYield( samples_data_of[i], cfg, cfg.lumi(),0 ));
       }
       
-      MT2Analysis<MT2EstimateTree>* EventYield_data_of = mergeYields( dataTree_of, cfg.regionsSet(), "data_of", 1, 99, "" );
+      MT2Analysis<MT2EstimateTree>* EventYield_data_of = mergeYields( dataTree_of, cfg.regionsSet(), "data_of", -9999999999, 999999999, "" );
       
-      std::string outFile_data_of = outputdir + "/ZllPurityTrees_data_of.root";
+      std::string outFile_data_of = outputdir + "/data_of.root";
       EventYield_data_of->writeToFile(outFile_data_of);
       
-    }
+    }// if do opposite flavor
     
   } // if DATA
   
@@ -306,9 +308,6 @@ MT2Analysis<MT2EstimateTree>* computeYield( const MT2Sample& sample, const MT2Co
   MT2EstimateTree::addVar( analysis, "lep_eta1");
   MT2EstimateTree::addVar( analysis, "raw_mt2");
   
-  MT2EstimateTree::addVar( analysis, "HLT_DoubleMu");
-  MT2EstimateTree::addVar( analysis, "HLT_DoubleEl");
-  
 
 
   int nentries = tree->GetEntries();
@@ -318,41 +317,40 @@ MT2Analysis<MT2EstimateTree>* computeYield( const MT2Sample& sample, const MT2Co
     if( iEntry % 50000 == 0 ) std::cout << "   Entry: " << iEntry << " / " << nentries << std::endl;
     myTree.GetEntry(iEntry);
 
-    //if( !(myTree.passSelection("zll")) ) continue; 
-
     if(!( myTree.nlep==2 )) continue; 
-    //baseline
 
+    //baseline single cuts for flexibility, change back
+    //if( !(myTree.passSelection("zll")) ) continue; 
     if(myTree.nVert < 0) continue;
     if(myTree.nJet30 < 2  ) continue;
     if(myTree.zll_deltaPhiMin < 0.3) continue;
     if(myTree.zll_diffMetMht > 0.5*myTree.zll_met_pt) continue;
-
-
-    if( myTree.mt2 >200 ) continue; //change back when more data
-
+    
+    if( myTree.mt2 >200 ) continue;
+    //SAME OR OPPOSITE FLAVOR selections
     if(doSameFlavor==1 && !(myTree.lep_pdgId[0] == -myTree.lep_pdgId[1]) ) continue;
     if(doSameFlavor==0 &&  (myTree.lep_pdgId[0] == -myTree.lep_pdgId[1]) ) continue;
- 
     if(( myTree.lep_pdgId[0]*myTree.lep_pdgId[1])>0 )   continue;
     
+    //TRIGGERS
     if(  doSameFlavor==1 && !(myTree.HLT_DoubleMu || myTree.HLT_DoubleEl) ) continue;
     if(  myTree.isData && doSameFlavor==0 && !(myTree.HLT_MuX_Ele12 || myTree.HLT_Mu8_EleX) ) continue;
+    //FILTERS
+    if( myTree.isData &&( myTree.Flag_HBHENoiseFilter==0 || myTree.Flag_CSCTightHaloFilter==0 || myTree.Flag_goodVertices==0 ||  myTree.Flag_eeBadScFilter==0 ) ) continue;
 
-    //Implemented in computeZllGammaRatio for now to allow flexibility
     if(myTree.lep_pt[0]<25) continue;
     if(myTree.lep_pt[1]<20) continue;
 
     //Need the lorentz vectors of the leptons first
-    TLorentzVector *LVec = new TLorentzVector[5];
+    TLorentzVector *LVec = new TLorentzVector[3];
     for(int i=0; i< 2; i++){
       LVec[i].SetPtEtaPhiM(myTree.lep_pt[i], myTree.lep_eta[i],myTree.lep_phi[i], myTree.lep_mass[i]);
     }
 
-    double Z_invM_true = 91.19;
     TLorentzVector z = LVec[0] + LVec[1]; //leptons invariant mass
     double M_ll = z.M(); //Z mass
-
+  
+    //  double Z_invM_true = 91.19;
     //  if( abs(M_ll - Z_invM_true)>20.) continue;
 
     float ht   = myTree.ht;
@@ -380,12 +378,7 @@ MT2Analysis<MT2EstimateTree>* computeYield( const MT2Sample& sample, const MT2Co
     thisEstimate->assignVar("lep_eta1", myTree.lep_eta[1] );
     thisEstimate->assignVar("raw_mt2", myTree.mt2 );
 
-    thisEstimate->assignVar("HLT_DoubleMu", myTree.HLT_DoubleMu );
-    thisEstimate->assignVar("HLT_DoubleEl", myTree.HLT_DoubleEl );
-
-    //JUGJUGJUG
     thisEstimate->fillTree_zll(myTree, weight );
-
     thisEstimate->yield->Fill(myTree.zll_mt2, weight );
   
   } // for entries

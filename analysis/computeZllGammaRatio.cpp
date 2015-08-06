@@ -84,9 +84,9 @@ int main(int argc, char* argv[]){
     exit(193);
   }
  
-  MT2Analysis<MT2EstimateTree>* zll_mc = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s/Zll_analyses.root", ZllDir.c_str()) , "DYJets");
+  MT2Analysis<MT2EstimateTree>* zll_mc = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s/mc.root", ZllDir.c_str()) , "zllCR");
 
- MT2Analysis<MT2EstimateTree>* zll_data = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s/Zll_analyses.root", ZllDir.c_str()) , "data");
+ MT2Analysis<MT2EstimateTree>* zll_data = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s/data.root", ZllDir.c_str()) , "data");
   if( zll_data==0 ) {
     std::cout << "-> Please run computeZinvFromZll first. I need to get the Z->ll MC yields from there." << std::endl;
     std::cout << "-> Thank you for your cooperation." << std::endl;
@@ -159,7 +159,8 @@ int main(int argc, char* argv[]){
     float bins_ht[] =  {450,575,1000,1500,2000};
   
 
-   std::string cut =  "weight*(mt2>200 && abs(Z_mass-91.19)<15 && lep_pt0>25 && lep_pt1>20 &&( HLT_DoubleMu||HLT_DoubleEl) )";
+   std::string cut =  "weight*(mt2>200 && abs(Z_mass-91.19)<15 && lep_pt0>25 && lep_pt1>20 )";
+   //  std::string cut =  "weight*(mt2>200 && abs(Z_mass-91.19)<15 && lep_pt0>25 && lep_pt1>20 &&( HLT_DoubleMu||HLT_DoubleEl) )";
     //std::string cut =  "weight*(ht>450 && abs(Z_mass-91.19)<25 )";
     //    std::string cut =  "weight*(abs(Z_mass-91.19)<20)";
     //    std::string cut =  "weight*(abs(Z_mass-91.19)<10 &&nBJets<2)";
@@ -187,13 +188,13 @@ int main(int argc, char* argv[]){
     
     //draw ratio also fills the ratio and yield estimates
     drawRatios( outputdir, bins_mt2, size_mt2 , "mt2",  zllG_mt2,   gamma_mc, gamma_data, purity,  zll_mc, zll_data,  zllY_mt2, thisRegion, cut, cut_gamma, lumi  );
-    
+    /*
     drawRatios( outputdir, bins_ht, size_ht , "ht",   zllG_ht,   gamma_mc, gamma_data, purity,  zll_mc, zll_data,  zllY_ht, thisRegion, cut, cut_gamma, lumi );
     
     drawRatios( outputdir, bins_nJets, size_nJets , "nJets",   zllG_nJets,   gamma_mc, gamma_data, purity,  zll_mc, zll_data,  zllY_nJets, thisRegion, cut, cut_gamma, lumi );
 
     drawRatios( outputdir, bins_nBJets, size_nBJets , "nBJets",  zllG_nBJets,   gamma_mc, gamma_data, purity,  zll_mc, zll_data,  zllY_nBJets, thisRegion, cut, cut_gamma , lumi);
-   
+    */
     
 
 
@@ -399,7 +400,8 @@ void drawRatios(std::string fullPath, float *binss, unsigned int size,  std::str
     //   h_mt2_mc->SetMarkerColor(46); h_mt2_mc->SetLineColor(46);
     h_mt2_mc->SetLineColor(kBlue+1); h_mt2_mc->SetLineWidth(2);
 
-    TH2D* h2_axes = new TH2D("axes", "", 10, xMin, xMax, 10, 0., 0.3 );
+    TH2D* h2_axes = new TH2D("axes", "", 10, xMin, xMax, 10, 0., 1.2 );
+    //  TH2D* h2_axes = new TH2D("axes", "", 10, xMin, xMax, 10, 0., 0.3 );
     if(zll_sel == "mt2"){
       h2_axes->SetXTitle("M_{T2} [GeV]");
     }else    if(zll_sel == "ht"){
@@ -415,8 +417,8 @@ void drawRatios(std::string fullPath, float *binss, unsigned int size,  std::str
 
    std::vector<std::string> niceNames2 = thisRegion.getNiceNames();
 
-    for( unsigned i=0; i< niceNames2.size(); ++i ) {
-      float yMaxText = 0.9-(float)i*0.05;
+    for( unsigned i=0+1; i< niceNames2.size(); ++i ) {
+      float yMaxText = 0.9-(float)i*0.05 +0.05;
       float yMinText = yMaxText - 0.05;
       TPaveText* regionText = new TPaveText( 0.18, yMinText, 0.55, yMaxText, "brNDC" );
       regionText->SetTextSize(0.035);
@@ -454,7 +456,7 @@ void drawRatios(std::string fullPath, float *binss, unsigned int size,  std::str
 
     canny->cd();
     TPad *pad2 = new TPad("pad2","pad2",0,0,1,0.21);
-    pad2->SetTopMargin(0.05);
+    pad2->SetTopMargin(0.10);
     pad2->SetBottomMargin(0.1);
     pad2->Draw();
     pad2->cd();
@@ -495,6 +497,7 @@ void drawRatios(std::string fullPath, float *binss, unsigned int size,  std::str
     line->SetLineColor(kBlack);
     line->Draw("same");
 
+    gPad->RedrawAxis();
 
     canny->cd();
     canny->SaveAs( Form("%s/%s_ratios_%s.eps", fullPath.c_str(), zll_sel.c_str(),  thisRegion.getName().c_str() ) );
