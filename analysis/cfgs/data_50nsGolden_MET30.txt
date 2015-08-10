@@ -1,0 +1,5 @@
+lumi 0.0400
+regionsSet 13TeV_inclusive
+mcSamples 74X_MET30_noSkim
+dataSamples Run2015B_50nsGolden_MET30
+additionalStuff noSignals
