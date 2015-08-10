@@ -14,9 +14,9 @@ dcap://t3se01.psi.ch:22125/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/MT2produc
 dcap://t3se01.psi.ch:22125/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/MT2production/74X/Spring15/PostProcessed/08Aug2015_psiBatch/skimAndPrune/TTJets_LO_50ns_post_skim_prune.root
 #
 ###dcap://t3se01.psi.ch:22125/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/MT2production/74X/Spring15/PostProcessed/08Aug2015_lxBatch_vReco/skimAndPrune/WJetsToLNu_50ns_post_skim_prune.root
-dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/mmasciov/MT2production/74X/Spring15/PostProcessed/08Aug2015_psiBatch/skimAndPrune/WJetsToLNu_HT100to200_post_skim_prune.root
+dcap://t3se01.psi.ch:22125/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/MT2production/74X/Spring15/PostProcessed/08Aug2015_psiBatch/skimAndPrune/WJetsToLNu_HT100to200_post_skim_prune.root
 dcap://t3se01.psi.ch:22125/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/MT2production/74X/Spring15/PostProcessed/08Aug2015_psiBatch/skimAndPrune/WJetsToLNu_HT200to400_post_skim_prune.root
-dcap://t3se01.psi.ch:22125/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/MT2production/74X/Spring15/PostProcessed/08Aug2015_psiBatch/skimAndPrune/WJetsToLNu_HT400to600_post_skim_prune.root
+dcap://t3se01.psi.ch:22125/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/MT2production/74X/Spring15/PostProcessed/08Aug2015_psiBatch/WJetsToLNu_HT400to600_post.root
 dcap://t3se01.psi.ch:22125/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/MT2production/74X/Spring15/PostProcessed/08Aug2015_psiBatch/skimAndPrune/WJetsToLNu_HT600toInf_post_skim_prune.root
 #
 dcap://t3se01.psi.ch:22125/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/MT2production/74X/Spring15/PostProcessed/08Aug2015_lxBatch_vReco/skimAndPrune/ZJetsToNuNu_HT100to200_post_skim_prune.root
