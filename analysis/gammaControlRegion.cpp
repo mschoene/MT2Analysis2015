@@ -114,8 +114,9 @@ int main( int argc, char* argv[] ) {
     MT2EstimateTree::addVar( tree_pass, "etaGamma" );
     MT2EstimateTree::addVar( tree_pass, "jet1_pt" );
     MT2EstimateTree::addVar( tree_pass, "jet2_pt" );
-
     
+    MT2EstimateTree::addVar( tree, "nJetHF30" );
+    MT2EstimateTree::addVar( tree_pass, "nJetHF30" );
     
     MT2Analysis<MT2EstimateZinvGamma>* prompt = new MT2Analysis<MT2EstimateZinvGamma>( "prompt", cfg.regionsSet() );
     MT2Analysis<MT2EstimateZinvGamma>* prompt_pass = new MT2Analysis<MT2EstimateZinvGamma>( "prompt_pass", cfg.regionsSet() );
@@ -274,7 +275,10 @@ int main( int argc, char* argv[] ) {
       MT2EstimateTree::addVar( tree_pass, "etaGamma" );
       MT2EstimateTree::addVar( tree_pass, "jet1_pt" );
       MT2EstimateTree::addVar( tree_pass, "jet2_pt" );
-    
+
+      MT2EstimateTree::addVar( tree, "nJetHF30" );
+      MT2EstimateTree::addVar( tree_pass, "nJetHF30" );
+      
       for( unsigned i=0; i<samples_data.size(); ++i ) {
         computeYield( samples_data[i], cfg, tree, tree_pass, dataCR_loose, dataCR );
       }
@@ -353,11 +357,11 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
 
     if( myTree.gamma_idCutBased[0]==0 ) continue;
 
-    //if( myTree.isData ) {
-    //
-    //  if( !(myTree.Flag_HBHENoiseFilter && myTree.Flag_CSCTightHaloFilter && myTree.Flag_goodVertices && myTree.Flag_eeBadScFilter) ) continue;
-    //  
-    //}
+    if( myTree.isData ) {
+    
+      if( !(myTree.Flag_HBHENoiseFilter && myTree.Flag_CSCTightHaloFilter && myTree.Flag_goodVertices && myTree.Flag_eeBadScFilter) ) continue;
+      
+    }
 
 
     TLorentzVector gamma;
@@ -502,6 +506,14 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
     }  // if is data
 
 
+    
+    int nJetHF30_ = 0;
+    for(int j=0; j<myTree.njet; ++j){
+
+      if( myTree.jet_pt[j] < 30. || fabs(myTree.jet_eta[j]) < 3.0 ) continue;
+      else ++nJetHF30_;
+
+    }
 
     thisTree->yield->Fill(mt2, weight );
     thisTree->assignVar( "iso", iso );
@@ -511,6 +523,7 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
     thisTree->assignVar( "etaGamma", myTree.gamma_eta[0] );
     thisTree->assignVar( "jet1_pt", myTree.gamma_jet1_pt );
     thisTree->assignVar( "jet2_pt", myTree.gamma_jet2_pt );
+    thisTree->assignVar( "nJetHF30",  nJetHF30_ );
     thisTree->fillTree_gamma(myTree, weight );
 
     if( passIso ) {
@@ -522,8 +535,10 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
       thisTree_pass->assignVar( "etaGamma", myTree.gamma_eta[0] );
       thisTree_pass->assignVar( "jet1_pt", myTree.gamma_jet1_pt );
       thisTree_pass->assignVar( "jet2_pt", myTree.gamma_jet2_pt );
+      thisTree->assignVar( "nJetHF30",  nJetHF30_ );
       thisTree_pass->fillTree_gamma(myTree, weight );
     }
+
 
     
   } // for entries
