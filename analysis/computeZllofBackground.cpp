@@ -113,7 +113,7 @@ int main(int argc, char* argv[]){
   MT2Analysis<MT2EstimateTree>* zjets = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s/ZllPurityTrees.root", ZllDir.c_str() ), "ZJets");
 
   
-  /*
+ 
  //OPPOSITE FLAVOR TREES
   MT2Analysis<MT2EstimateTree>* Zll_of = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s/ZllPurityTrees_of.root", ZllDir_of.c_str() ), "DYJets");
 
@@ -128,7 +128,7 @@ int main(int argc, char* argv[]){
   wjets_of->setFullName("W+jets");
   zjets_of->setFullName("Z#nu#nu+jets");
   data_of->setFullName("Data");
-  */
+ 
 
   MT2Analysis<MT2EstimateTree>* data = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s/data.root", ZllDir.c_str() ) , "data");
  
@@ -151,7 +151,7 @@ int main(int argc, char* argv[]){
 
   drawMll( outputdir, bgYields, data,  0 , cfg.lumi() );
  
-  /* 
+  
   std::vector<MT2Analysis<MT2EstimateTree>* > bgYields_of; 
   bgYields_of.push_back( Zll_of );
   bgYields_of.push_back( qcd_of );
@@ -160,8 +160,8 @@ int main(int argc, char* argv[]){
   bgYields_of.push_back( top_of );
   
 
-  // drawMll( outputdir_of, bgYields_of, data_of,  1, cfg.lumi() );
-  */
+  drawMll( outputdir_of, bgYields_of, data_of,  1, cfg.lumi() );
+  
 
 
 
@@ -174,7 +174,7 @@ int main(int argc, char* argv[]){
  
 
 
-  std::string    selection = "weight*(abs(Z_mass-91.19)<20 && Z_pt>180)";
+  std::string    selection = "weight*(abs(Z_mass-91.19)<20 && Z_pt>0)";
   /*
   std::string selection_mass = "weight*(Z_mass>50 && Z_pt>180)";
   std::string      selection_mass_el = "weight*(Z_mass>50 && Z_pt>180 && Z_lepId==11)";
@@ -406,7 +406,7 @@ void drawMll( const std::string& outputdir, std::vector< MT2Analysis<MT2Estimate
     float bins_nJets[] = {2,3,4,5,6,7,8,9,10,11, 12};
     float bins_nBJets[] = {0,1,2,3,4,5,6};
     //in MT2
-    float bins_mt2[] = {0,50, 100,150,200,250, 300,350, 400,450,500,550, 600};
+    float bins_mt2[] = {0,25,50,75, 100,125, 150,175,200,225,250,275, 300,325,350,375, 400,425,450,475,500,525,550,575, 600};
     //   float bins_mt2[] = {0,50, 100,150,200,250, 300, 400,500,600,700,800,900,1000,1100,1200,1300,1400, 1500};
     //in HT
     float bins_ht[] =  {0,100,200,300,400,500,600,700,800,900,1000,1100,1200,1300,1400, 1500,1600,1700,1800,1900, 2000};
@@ -444,11 +444,11 @@ void drawMll( const std::string& outputdir, std::vector< MT2Analysis<MT2Estimate
 
     if(of==0){ 
       // cut =  "weight";
-      cut = "weight*(abs(Z_mass-91.19)<20 && Z_pt>180)";
+      cut = "weight*(abs(Z_mass-91.19)<20 && Z_pt>0)";
  
-      cut_mass = "weight*(Z_mass>50 && Z_pt>180)";
-      cut_mass_el = "weight*(Z_mass>50 && Z_pt>180 && Z_lepId==11)";
-      cut_mass_mu = "weight*(Z_mass>50 && Z_pt>180 && Z_lepId==13)";
+      cut_mass = "weight*(Z_mass>50 && Z_pt>0)";
+      cut_mass_el = "weight*(Z_mass>50 && Z_pt>0 && Z_lepId==11)";
+      cut_mass_mu = "weight*(Z_mass>50 && Z_pt>0 && Z_lepId==13)";
 
       // cut3 = "weight*(abs(Z_mass-91.19)<20&&nBJets<2)";
       //  cut4 ="weight*(abs(Z_mass-91.19)<10&&nBJets<2)";
@@ -586,11 +586,15 @@ void drawStacks(std::string fullPath, float *binss, unsigned int size,  std::str
  
 
  
-  float yMax = 1.3*(bgStack.GetMaximum());
-  float yMax2 = 1.3*(h_data->GetMaximum());
+  float yMax = 10*(bgStack.GetMaximum());
+  float yMax2 = 10*(h_data->GetMaximum());
+  
+  //  float yMax = 1.3*(bgStack.GetMaximum());
+  //float yMax2 = 1.3*(h_data->GetMaximum());
   if(yMax2>yMax) yMax = yMax2;
 
-  TH2D* h2_axes = new TH2D("axes", "", 10,bins[0] ,bins[size], 10, 0., yMax );
+  TH2D* h2_axes = new TH2D("axes", "", 10,bins[0] ,bins[size], 10, 0.1, yMax );
+  //  TH2D* h2_axes = new TH2D("axes", "", 10,bins[0] ,bins[size], 10, 0., yMax );
   if(name  == "ht")  
     h2_axes->SetXTitle("H_{T} [GeV]");
   else if(name == "mt2")  
@@ -614,15 +618,16 @@ void drawStacks(std::string fullPath, float *binss, unsigned int size,  std::str
   else
     h2_axes->SetXTitle(name.c_str());
   h2_axes->SetYTitle("Events");
-  if(name=="mt2") h2_axes->SetYTitle("Events / (50 GeV)");
+  if(name=="mt2") h2_axes->SetYTitle("Events / (25 GeV)");
 
 
   if(name == "Z_mass" && cut == "weight")  
     h2_axes->SetXTitle("M_{e^{#pm}#mu^{#mp}} [GeV]");
 
-  if(cut == "weight*(Z_pt>180 && Z_lepId==11)") h2_axes->SetXTitle("M_{e^{+}e^{-}} [GeV]");
-  else if(cut == "weight*(Z_pt>180 && Z_lepId==13)") h2_axes->SetXTitle("M_{#mu^{+}#mu^{-}} [GeV]"); 
+  if(cut == "weight*(Z_pt>0 && Z_lepId==11)") h2_axes->SetXTitle("M_{e^{+}e^{-}} [GeV]");
+  else if(cut == "weight*(Z_pt>0 && Z_lepId==13)") h2_axes->SetXTitle("M_{#mu^{+}#mu^{-}} [GeV]"); 
   
+  gPad->SetLogy();
 
   h2_axes->Draw();
 
@@ -747,8 +752,8 @@ void drawStacks(std::string fullPath, float *binss, unsigned int size,  std::str
   canny->cd();
 
   std::string extension= "";
-  if(cut == "weight*(Z_mass>50 && Z_pt>180 && Z_lepId==11)") extension = "el";
-  else if(cut == "weight*(Z_mass>50 && Z_pt>180 && Z_lepId==13)") extension ="mu";
+  if(cut == "weight*(Z_mass>50 && Z_pt>0 && Z_lepId==11)") extension = "el";
+  else if(cut == "weight*(Z_mass>50 && Z_pt>0 && Z_lepId==13)") extension ="mu";
   
 
   /*

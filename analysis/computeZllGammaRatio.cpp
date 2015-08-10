@@ -159,13 +159,16 @@ int main(int argc, char* argv[]){
     float bins_ht[] =  {450,575,1000,1500,2000};
   
 
-   std::string cut =  "weight*(mt2>200 && abs(Z_mass-91.19)<15 && lep_pt0>25 && lep_pt1>20 )";
+   std::string cut =  "weight*(mt2>200 && abs(Z_mass-91.19)<15 && lep_pt0>25 && lep_pt1>20 &&ht>450 )";
+
+   //   std::string cut =  "weight*(mt2>200 && abs(Z_mass-91.19)<15 && lep_pt0>25 && lep_pt1>20 )";
    //  std::string cut =  "weight*(mt2>200 && abs(Z_mass-91.19)<15 && lep_pt0>25 && lep_pt1>20 &&( HLT_DoubleMu||HLT_DoubleEl) )";
     //std::string cut =  "weight*(ht>450 && abs(Z_mass-91.19)<25 )";
     //    std::string cut =  "weight*(abs(Z_mass-91.19)<20)";
     //    std::string cut =  "weight*(abs(Z_mass-91.19)<10 &&nBJets<2)";
     std::string cut_corr =  "weight*(abs(Z_mass-91.19)<10 )";
-    std::string cut_gamma =  "weight*( prompt==2)*1.27";
+    std::string cut_gamma =  "weight*( prompt==2 &&ptGamma>180)*1.27";
+    //    std::string cut_gamma =  "weight*( prompt==2)*1.27";
 
     
     int size_mt2 = sizeof(bins_mt2)/sizeof(float)-1;
@@ -302,7 +305,7 @@ void drawRatios(std::string fullPath, float *binss, unsigned int size,  std::str
   }
 
 
-  TCanvas* canny = new TCanvas( "canny", "", 600, 700 );
+  TCanvas* canny = new TCanvas( "canny", "", 600, 600 );
   canny->cd();
 
   TPad *pad1 = new TPad("pad1","pad1",0,0.3-0.1,1,1);
@@ -317,7 +320,7 @@ void drawRatios(std::string fullPath, float *binss, unsigned int size,  std::str
   
   zll_data_tree ->Project( "h_mt2" , zll_sel.c_str(), cut.c_str() );
   //will have to add the purity here at some point soon (for now just 0.95)
-  gamma_data_tree->Project( "g_mt2", gamma_sel.c_str(),  "weight*0.92 " );
+  gamma_data_tree->Project( "g_mt2", gamma_sel.c_str(),  "weight*0.92*(ptGamma>180 && ht>450) " );
 
   std::cout <<  h_mt2->GetMean() << std::endl;
   std::cout <<  g_mt2->GetMean() << std::endl;
@@ -400,8 +403,8 @@ void drawRatios(std::string fullPath, float *binss, unsigned int size,  std::str
     //   h_mt2_mc->SetMarkerColor(46); h_mt2_mc->SetLineColor(46);
     h_mt2_mc->SetLineColor(kBlue+1); h_mt2_mc->SetLineWidth(2);
 
-    TH2D* h2_axes = new TH2D("axes", "", 10, xMin, xMax, 10, 0., 1.2 );
-    //  TH2D* h2_axes = new TH2D("axes", "", 10, xMin, xMax, 10, 0., 0.3 );
+    //  TH2D* h2_axes = new TH2D("axes", "", 10, xMin, xMax, 10, 0., 1.2 );
+     TH2D* h2_axes = new TH2D("axes", "", 10, xMin, xMax, 10, 0., 0.3 );
     if(zll_sel == "mt2"){
       h2_axes->SetXTitle("M_{T2} [GeV]");
     }else    if(zll_sel == "ht"){
