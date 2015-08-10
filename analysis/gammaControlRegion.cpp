@@ -398,10 +398,10 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
       //bool isNIP    = isMatched && isQCD;
       //bool isFake   = !isMatched;
       bool isPrompt = isMatched && !isQCD;
-      bool isNIP    = isMatched && isQCD && myTree.gamma_drMinParton[0]>0.4;
-      bool isFake   = !isMatched && isQCD;
-      //bool isNIP    = isMatched && isQCD;
-      //bool isFake   = !isMatched;
+      //bool isNIP    = isMatched && isQCD && myTree.gamma_drMinParton[0]>0.4;
+      //bool isFake   = !isMatched && isQCD;
+      bool isNIP    = isMatched && isQCD;
+      bool isFake   = !isMatched;
 
 
       if( isPrompt ) {
