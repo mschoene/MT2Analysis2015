@@ -285,6 +285,9 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg ) {
   
   
   T::addVar( analysis, "nJetHF30" );
+  T::addVar( analysis, "jet1_pt" );
+  T::addVar( analysis, "jet2_pt" );
+  T::addVar( analysis, "mht" );
 
   int nentries = tree->GetEntries();
 
@@ -340,6 +343,9 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg ) {
     }
 
     thisEstimate->assignVar( "nJetHF30",  nJetHF30_ );
+    thisEstimate->assignVar( "jet1_pt",  myTree.jet1_pt );
+    thisEstimate->assignVar( "jet2_pt",  myTree.jet2_pt );
+    thisEstimate->assignVar( "mht",  myTree.mht_pt );
 
     if( cfg.additionalStuff()=="qgVars" ) {
 
