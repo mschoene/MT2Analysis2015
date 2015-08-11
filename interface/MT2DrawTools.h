@@ -37,6 +37,8 @@ class MT2DrawTools {
   static double getSFError(double integral_data, double error_data, double integral_mc, double error_mc);
   static TLine* getSFLine(double integral_data, double integral_mc, float xMin, float xMax);
   static TGraphErrors* getSFBand(double integral_data, double error_data, double integral_mc, double error_mc, float xMin, float xMax);
+  
+  static void addOverflowSingleHisto( TH1D* yield );
 
  private:
 
