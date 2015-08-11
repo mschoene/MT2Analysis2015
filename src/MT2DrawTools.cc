@@ -350,7 +350,9 @@ TH1D* MT2DrawTools::getMCBandHisto( TH1D* histo_mc, double SystErr ){
   for( int b=1; b <= histoBand->GetNbinsX(); ++b ){
 
     float thisStatErr = histoBand->GetBinError(b);
-    float thisErr = sqrt(thisStatErr*thisStatErr+SystErr*SystErr);
+    float thisStats = histoBand->GetBinContent(b);
+    float thisSystErr = thisStats*SystErr;
+    float thisErr = sqrt(thisStatErr*thisStatErr+thisSystErr*thisSystErr);
     histoBand->SetBinError(b, thisErr);
 
   }
