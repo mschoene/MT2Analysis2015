@@ -105,19 +105,9 @@ void MT2Estimate::addOverflowSingleHisto( TH3D* yield3d ) {
 }
 
 void MT2Estimate::addOverflowSingleHisto( TH1D* yield ) {
-  
-  yield->SetBinContent(yield->GetNbinsX(),
-			 yield->GetBinContent(yield->GetNbinsX()  )+
-			 yield->GetBinContent(yield->GetNbinsX()+1)  );
-  yield->SetBinError(  yield->GetNbinsX(),
-			 sqrt(yield->GetBinError(yield->GetNbinsX() )*
-			      yield->GetBinError(yield->GetNbinsX() )+
-			      yield->GetBinError(yield->GetNbinsX()+1)*
-			      yield->GetBinError(yield->GetNbinsX()+1)  ));
-  
-  yield->SetBinContent(yield->GetNbinsX()+1, 0.);
-  yield->SetBinError  (yield->GetNbinsX()+1, 0.);
-      
+
+  MT2DrawTools::addOverflowSingleHisto( yield );
+        
 }
 
 
