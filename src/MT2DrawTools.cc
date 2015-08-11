@@ -312,3 +312,19 @@ TGraphErrors* MT2DrawTools::getSFBand(double integral_data, double error_data, d
   return SFband;
   
 }
+
+void MT2DrawTools::addOverflowSingleHisto( TH1D* yield ) {
+
+  yield->SetBinContent(yield->GetNbinsX(),
+		       yield->GetBinContent(yield->GetNbinsX()  )+
+		       yield->GetBinContent(yield->GetNbinsX()+1)  );
+  yield->SetBinError(  yield->GetNbinsX(),
+		       sqrt(yield->GetBinError(yield->GetNbinsX() )*
+			    yield->GetBinError(yield->GetNbinsX() )+
+			    yield->GetBinError(yield->GetNbinsX()+1)*
+			    yield->GetBinError(yield->GetNbinsX()+1)  ));
+
+  yield->SetBinContent(yield->GetNbinsX()+1, 0.);
+  yield->SetBinError  (yield->GetNbinsX()+1, 0.);
+
+}
