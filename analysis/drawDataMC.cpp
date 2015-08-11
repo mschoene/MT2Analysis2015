@@ -4,6 +4,7 @@
 #include "TLegend.h"
 #include "TH2D.h"
 #include "TH1D.h"
+#include "TF1.h"
 #include "TFile.h"
 #include "THStack.h"
 #include "TGraphErrors.h"
@@ -205,19 +206,6 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, std::vector<
       }
     }
 
-    std::cout << "Integrals: " << h1_data->Integral(0, nBins+1) << "\t" << mc_sum->Integral(0, nBins+1) << std::endl;
-    float scaleFactor = h1_data->Integral(0, nBins+1)/mc_sum->Integral(0, nBins+1);
-    //    if( shapeNorm )
-    std::cout << "SF: " << scaleFactor << std::endl;
-
-    double error_data;
-    double integral_data = h1_data->IntegralAndError(0, nBins+1, error_data);
-
-    double error_mc;
-    double integral_mc = mc_sum->IntegralAndError(0, nBins+1, error_mc);
-
-    double error_datamc = MT2DrawTools::getSFError(integral_data, error_data, integral_mc, error_mc );
-
     TH1D* histo_mc;
     THStack bgStack("bgStack", "");
     for( unsigned i=0; i<histos_mc.size(); ++i ) { 
@@ -231,6 +219,20 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, std::vector<
       else histo_mc->Add(histos_mc[index]);
       bgStack.Add(histos_mc[index]);
     }
+
+    std::cout << "Integrals: " << h1_data->Integral(0, nBins+1) << "\t" << mc_sum->Integral(0, nBins+1) << std::endl;
+    float scaleFactor = h1_data->Integral(0, nBins+1)/mc_sum->Integral(0, nBins+1);
+    //    if( shapeNorm )
+    std::cout << "SF: " << scaleFactor << std::endl;
+
+    double error_data;
+    double integral_data = h1_data->IntegralAndError(0, nBins+1, error_data);
+
+    double error_mc;
+    double integral_mc = mc_sum->IntegralAndError(0, nBins+1, error_mc);
+
+    double error_datamc = MT2DrawTools::getSFError(integral_data, error_data, integral_mc, error_mc );
+
     
     TH1D* mcBand = MT2DrawTools::getMCBandHisto( histo_mc, lumiErr );
 
@@ -404,7 +406,12 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, std::vector<
     
     TLine* lineSF = MT2DrawTools::getSFLine(integral_data, integral_mc, xMin, xMax);
     TGraphErrors* SFband = MT2DrawTools::getSFBand(integral_data, error_data, integral_mc, error_mc, xMin, xMax);
-
+    
+//    TF1* f=new TF1("f", "[0]", xMin, xMax);
+//    f->SetParameter(0, integral_data/error_data);
+//    f->SetParLimits(0, 0, 2);
+//    g_ratio->Fit(f, "0");
+    
     c1->cd();
     TPad* pad2 = MT2DrawTools::getCanvasRatioPad();
     pad2->Draw();
