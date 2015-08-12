@@ -285,6 +285,20 @@ double MT2DrawTools::getSFError(double integral_data, double error_data, double 
 
 }
 
+TPaveText* MT2DrawTools::getRatioText( double integral_data, double integral_mc, double error_datamc ){
+ 
+  TPaveText* ratioText = new TPaveText( 0.133, -0.051, 0.4, 0.1 , "brNDC" );
+  ratioText->SetTextSize(0.035);
+  ratioText->SetTextFont(40);
+  ratioText->SetTextColor(2);
+  ratioText->SetFillColor(0);
+  ratioText->SetTextAlign(11);
+  ratioText->AddText( Form("Data/MC = %.2f +/- %.2f", integral_data/integral_mc, error_datamc) );
+
+  return ratioText;
+
+}
+  
 TLine* MT2DrawTools::getSFLine(double integral_data, double integral_mc, float xMin, float xMax){
 
   double scaleFactor = integral_data/integral_mc;
@@ -312,6 +326,45 @@ TGraphErrors* MT2DrawTools::getSFBand(double integral_data, double error_data, d
   return SFband;
   
 }
+
+TGraphErrors* MT2DrawTools::getSystBand(float xMin, float xMax, double SystErr){
+  
+  double x[2]={(double)xMin, (double)xMax};
+  double xerr[2]={0., 0.};
+  double yerr[2]={SystErr, SystErr};
+  double y[2]={1.0, 1.0};
+
+  TGraphErrors* SystBand = new TGraphErrors(2, x, y, xerr, yerr);
+  SystBand->SetLineColor(0);
+  SystBand->SetFillColor(kGray+2);
+  SystBand->SetFillStyle(3244);
+  
+  return SystBand;
+  
+}
+
+
+TH1D* MT2DrawTools::getMCBandHisto( TH1D* histo_mc, double SystErr ){
+
+  TH1D* histoBand = (TH1D*) histo_mc->Clone("histo_band");
+  for( int b=1; b <= histoBand->GetNbinsX(); ++b ){
+
+    float thisStatErr = histoBand->GetBinError(b);
+    float thisStats = histoBand->GetBinContent(b);
+    float thisSystErr = thisStats*SystErr;
+    float thisErr = sqrt(thisStatErr*thisStatErr+thisSystErr*thisSystErr);
+    histoBand->SetBinError(b, thisErr);
+
+  }
+
+  histoBand->SetLineColor(0);
+  histoBand->SetFillColor(kGray+2);
+  histoBand->SetFillStyle(3244);
+
+  return histoBand;
+
+}
+
 
 void MT2DrawTools::addOverflowSingleHisto( TH1D* yield ) {
 

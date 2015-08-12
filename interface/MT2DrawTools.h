@@ -34,10 +34,15 @@ class MT2DrawTools {
   static TPad* getCanvasRatioPad( bool logY=false );
   static TH2D* getRatioAxes( float xMin, float xMax, float yMin=0., float yMax=2. );
   
+  static TPaveText*  getRatioText( double integral_data, double integral_mc, double error_datamc );
+  
   static double getSFError(double integral_data, double error_data, double integral_mc, double error_mc);
   static TLine* getSFLine(double integral_data, double integral_mc, float xMin, float xMax);
   static TGraphErrors* getSFBand(double integral_data, double error_data, double integral_mc, double error_mc, float xMin, float xMax);
-  
+
+  static TGraphErrors* getSystBand(float xMin, float xMax, double SystErr=0.0);
+  static TH1D* getMCBandHisto( TH1D* histo_mc, double SystErr=0.0 );
+
   static void addOverflowSingleHisto( TH1D* yield );
 
  private:
