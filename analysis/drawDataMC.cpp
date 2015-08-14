@@ -206,6 +206,11 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, std::vector<
       }
     }
 
+    std::cout << "Integrals: " << h1_data->Integral(0, nBins+1) << "\t" << mc_sum->Integral(0, nBins+1) << std::endl;
+    float scaleFactor = h1_data->Integral(0, nBins+1)/mc_sum->Integral(0, nBins+1);
+    //    if( shapeNorm )
+    std::cout << "SF: " << scaleFactor << std::endl;
+
     TH1D* histo_mc;
     THStack bgStack("bgStack", "");
     for( unsigned i=0; i<histos_mc.size(); ++i ) { 
@@ -219,22 +224,26 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, std::vector<
       else histo_mc->Add(histos_mc[index]);
       bgStack.Add(histos_mc[index]);
     }
-
-    std::cout << "Integrals: " << h1_data->Integral(0, nBins+1) << "\t" << mc_sum->Integral(0, nBins+1) << std::endl;
-    float scaleFactor = h1_data->Integral(0, nBins+1)/mc_sum->Integral(0, nBins+1);
-    //    if( shapeNorm )
-    std::cout << "SF: " << scaleFactor << std::endl;
-
-    double error_data;
-    double integral_data = h1_data->IntegralAndError(0, nBins+1, error_data);
-
-    double error_mc;
-    double integral_mc = mc_sum->IntegralAndError(0, nBins+1, error_mc);
-
-    double error_datamc = MT2DrawTools::getSFError(integral_data, error_data, integral_mc, error_mc );
-
     
+    TGraphAsymmErrors* g_ratio = MT2DrawTools::getRatioGraph(h1_data, histo_mc);
+    
+    TLine* lineCentral = new TLine(xMin, 1.0, xMax, 1.0);
+    lineCentral->SetLineColor(1);
+    TGraphErrors* systBand = MT2DrawTools::getSystBand(xMin, xMax, lumiErr);
+    
+    TF1* fSF = MT2DrawTools::getSFFit(g_ratio, xMin, xMax);
+    TGraphErrors* SFFitBand = MT2DrawTools::getSFFitBand(fSF, xMin, xMax);
+    
+//    double error_data;
+//    double integral_data = h1_data->IntegralAndError(0, nBins+1, error_data);
+//
+//    double error_mc;
+//    double integral_mc = mc_sum->IntegralAndError(0, nBins+1, error_mc);
+//
+//    double error_datamc = MT2DrawTools::getSFError(integral_data, error_data, integral_mc, error_mc );
+
     TH1D* mcBand = MT2DrawTools::getMCBandHisto( histo_mc, lumiErr );
+
 
     TCanvas* c1 = new TCanvas("c1", "", 600, 600);
     c1->cd();
@@ -280,8 +289,6 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, std::vector<
     pad1->cd();
     h2_axes->Draw();
 
-    
-   
     TH2D* h2_axes_log = new TH2D("axes_log", "", 10, xMin, xMax, 10, 0.1, yMax*2.0 );
     h2_axes_log->SetXTitle(xAxisTitle.c_str());
     h2_axes_log->SetYTitle(yAxisTitle.c_str());
@@ -295,7 +302,6 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, std::vector<
 
 
     std::vector<std::string> niceNames = thisRegion.getNiceNames();
-
  //   for( unsigned i=0; i<niceNames.size(); ++i ) {
  //
  //     float yMax = 0.9-(float)i*0.05;
@@ -320,7 +326,7 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, std::vector<
       float yMax = 0.9-(float)i*0.05;
       float yMin = yMax - 0.05;
       TPaveText* regionText = new TPaveText( 0.18, yMin, 0.55, yMax, "brNDC" );
-      regionText->SetTextSize(0.035);
+      regionText->SetTextSize(0.030);
       regionText->SetTextFont(42);
       regionText->SetFillColor(0);
       regionText->SetTextAlign(11);
@@ -333,10 +339,10 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, std::vector<
       else
 	regionText->AddText( niceNames[i].c_str() );
     
-      c1->cd();
+      pad1->cd();
       regionText->Draw("same");
       
-      c1_log->cd();
+      pad1_log->cd();
       regionText->Draw("same");
       
     }
@@ -361,13 +367,22 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, std::vector<
     for( unsigned i=0; i<histos_mc.size(); ++i ) {  
       legend->AddEntry( histos_mc[i], bgYields[i]->getFullName().c_str(), "F" );
     }
-    legend->AddEntry( mcBand, "MC Uncertainty", "F" );
-
-
+    legend->AddEntry( mcBand, "MC Uncert.", "F" );
 
     TPaveText* labelTop = MT2DrawTools::getLabelTop(cfg.lumi());
     
-    TPaveText* ratioText = MT2DrawTools::getRatioText( integral_data, integral_mc, error_datamc );
+    
+    TPaveText* fitText = MT2DrawTools::getFitText( fSF );
+    
+    //    TPaveText* ratioText = MT2DrawTools::getRatioText( integral_data, integral_mc, error_datamc );
+    //    TLine* lineSF = MT2DrawTools::getSFLine(integral_data, integral_mc, xMin, xMax);
+    //    TGraphErrors* SFband = MT2DrawTools::getSFBand(integral_data, error_data, integral_mc, error_mc, xMin, xMax);
+    
+    float yMinR=0.0;
+    float yMaxR=2.0;
+    
+    TH2D* h2_axes_ratio = MT2DrawTools::getRatioAxes( xMin, xMax, yMinR, yMaxR );
+    
 
     c1->cd();
     pad1->cd();
@@ -377,7 +392,8 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, std::vector<
     gr_data->Draw("p same");
     labelTop->Draw("same");
     if( !shapeNorm )
-      ratioText->Draw("same");
+      fitText->Draw("same");
+    //    ratioText->Draw("same");
 
     gPad->RedrawAxis();
 
@@ -389,28 +405,10 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, std::vector<
     gr_data->Draw("p same");
     labelTop->Draw("same");
     if( !shapeNorm )
-      ratioText->Draw("same");
+      fitText->Draw("same");
+    //    ratioText->Draw("same");
 
     gPad->RedrawAxis();
-
-    float yMinR=0.0;
-    float yMaxR=2.0;
-
-    TH2D* h2_axes_ratio = MT2DrawTools::getRatioAxes( xMin, xMax, yMinR, yMaxR );
-
-    TGraphAsymmErrors* g_ratio = MT2DrawTools::getRatioGraph(h1_data, histo_mc);
-
-    TLine* lineCentral = new TLine(xMin, 1.0, xMax, 1.0);
-    lineCentral->SetLineColor(1);
-    TGraphErrors* systBand = MT2DrawTools::getSystBand(xMin, xMax, lumiErr);
-    
-    TLine* lineSF = MT2DrawTools::getSFLine(integral_data, integral_mc, xMin, xMax);
-    TGraphErrors* SFband = MT2DrawTools::getSFBand(integral_data, error_data, integral_mc, error_mc, xMin, xMax);
-    
-//    TF1* f=new TF1("f", "[0]", xMin, xMax);
-//    f->SetParameter(0, integral_data/error_data);
-//    f->SetParLimits(0, 0, 2);
-//    g_ratio->Fit(f, "0");
     
     c1->cd();
     TPad* pad2 = MT2DrawTools::getCanvasRatioPad();
@@ -424,8 +422,11 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, std::vector<
       systBand->Draw("3,same");
       lineCentral->Draw("same");
 
-      SFband->Draw("3,same");
-      lineSF->Draw("same");
+      SFFitBand->Draw("3,same");
+      fSF->Draw("same");
+
+//      SFband->Draw("3,same");
+//      lineSF->Draw("same");
 
     }
     g_ratio->Draw("PE,same");    
@@ -444,8 +445,11 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, std::vector<
       systBand->Draw("3,same");
       lineCentral->Draw("same");
 
-      SFband->Draw("3,same");
-      lineSF->Draw("same");
+      SFFitBand->Draw("3,same");
+      fSF->Draw("same");
+      
+//      SFband->Draw("3,same");
+//      lineSF->Draw("same");
 
     }
     g_ratio->Draw("PE,same");
