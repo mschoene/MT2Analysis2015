@@ -5,6 +5,7 @@
 #include "TPaveText.h"
 #include "TCanvas.h"
 #include "TPad.h"
+#include "TF1.h"
 #include "TH1D.h"
 #include "TH2D.h"
 #include "TGraphAsymmErrors.h"
@@ -35,10 +36,15 @@ class MT2DrawTools {
   static TH2D* getRatioAxes( float xMin, float xMax, float yMin=0., float yMax=2. );
   
   static TPaveText*  getRatioText( double integral_data, double integral_mc, double error_datamc );
+  static TPaveText*  getFitText( TF1* f );
   
   static double getSFError(double integral_data, double error_data, double integral_mc, double error_mc);
   static TLine* getSFLine(double integral_data, double integral_mc, float xMin, float xMax);
   static TGraphErrors* getSFBand(double integral_data, double error_data, double integral_mc, double error_mc, float xMin, float xMax);
+
+  static TF1* getSFFit(TGraphAsymmErrors* g_ratio, float xMin, float xMax);
+  static void getSFFitParameters(TF1* f, double &sf, double &sfErr, double &chi2, int &ndof);
+  static TGraphErrors* getSFFitBand(TF1* f, float xMin, float xMax);
 
   static TGraphErrors* getSystBand(float xMin, float xMax, double SystErr=0.0);
   static TH1D* getMCBandHisto( TH1D* histo_mc, double SystErr=0.0 );

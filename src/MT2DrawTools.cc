@@ -165,7 +165,6 @@ TGraphAsymmErrors* MT2DrawTools::getPoissonGraph( TH1D* histo, bool drawZeros, c
   }
   if( (float)emptyBins/(float)nBins > 0.4 ) drawZeros=false;
 
-
   TGraphAsymmErrors* graph = new TGraphAsymmErrors(0);
 
   for( int iBin=1; iBin<(histo->GetXaxis()->GetNbins()+1); ++iBin ) {
@@ -206,20 +205,23 @@ TGraphAsymmErrors* MT2DrawTools::getPoissonGraph( TH1D* histo, bool drawZeros, c
 
 TGraphAsymmErrors* MT2DrawTools::getRatioGraph( TH1D* histo_data, TH1D* histo_mc ){
   
-  TGraphAsymmErrors* graph = MT2DrawTools::getPoissonGraph(histo_data);
- 
-  for( int i=0; i < graph->GetN(); ++i){
+  TGraphAsymmErrors* graph_ = MT2DrawTools::getPoissonGraph(histo_data, false);
+  TGraphAsymmErrors* graph  = new TGraphAsymmErrors();
+  
+  for( int i=0; i < graph_->GetN(); ++i){
     
     Double_t x_tmp, y_tmp, errUp, errDown;       
-    graph->GetPoint( i, x_tmp, y_tmp );
-    errUp   = graph->GetErrorYhigh(i);
-    errDown = graph->GetErrorYlow(i);
+    graph_->GetPoint( i, x_tmp, y_tmp );
 
+    errUp   = graph_->GetErrorYhigh(i);
+    errDown = graph_->GetErrorYlow(i);
+    
     int iBin = histo_mc->FindBin(x_tmp);
     float mc = histo_mc->GetBinContent(iBin);
     graph->SetPoint(i, x_tmp, y_tmp/mc);
     graph->SetPointEYhigh(i, errUp/mc);
     graph->SetPointEYlow(i, errDown/mc);
+    
 
   }
 
@@ -289,7 +291,7 @@ TPaveText* MT2DrawTools::getRatioText( double integral_data, double integral_mc,
  
   TPaveText* ratioText = new TPaveText( 0.133, -0.051, 0.4, 0.1 , "brNDC" );
   ratioText->SetTextSize(0.035);
-  ratioText->SetTextFont(40);
+  ratioText->SetTextFont(62);
   ratioText->SetTextColor(2);
   ratioText->SetFillColor(0);
   ratioText->SetTextAlign(11);
@@ -326,6 +328,68 @@ TGraphErrors* MT2DrawTools::getSFBand(double integral_data, double error_data, d
   return SFband;
   
 }
+
+
+TF1* MT2DrawTools::getSFFit(TGraphAsymmErrors* g_ratio, float xMin, float xMax){
+
+  TF1* f=new TF1("f", "[0]", xMin, xMax);
+  f->SetLineColor(kRed);
+  f->SetParameter(0, 1.0);
+  g_ratio->Fit(f, "0");
+  
+  return f;
+
+}
+
+void MT2DrawTools::getSFFitParameters(TF1* f, double &sf, double &sfErr, double &chi2, int &ndof){
+
+  chi2  = f->GetChisquare();
+  ndof     = f->GetNDF();
+  sf    = f->GetParameter(0);
+  sfErr = f->GetParError(0);
+
+}
+
+TGraphErrors* MT2DrawTools::getSFFitBand(TF1* f, float xMin, float xMax){
+  
+  double chi2, sf, sfErr;
+  int ndof;
+  MT2DrawTools::getSFFitParameters(f, sf, sfErr, chi2, ndof);
+
+  double x[2]    ={(double)xMin, (double)xMax};
+  double y[2]    ={sf, sf};
+
+  double xerr[2] ={0., 0.};
+  double yerr[2] ={sfErr, sfErr};
+
+  TGraphErrors* SFband = new TGraphErrors(2, x, y, xerr, yerr);
+  SFband->SetLineColor(0);
+  SFband->SetFillColor(kRed);
+  SFband->SetFillStyle(3244);
+  
+  return SFband;
+  
+}
+
+TPaveText* MT2DrawTools::getFitText( TF1* f ){
+ 
+  double chi2, sf, sfErr;
+  int ndof;
+  MT2DrawTools::getSFFitParameters(f, sf, sfErr, chi2, ndof);
+
+  TPaveText* ratioText = new TPaveText( 0.135, -0.051, 0.4, 0.1 , "brNDC" );
+  ratioText->SetTextSize(0.025);
+  ratioText->SetTextFont(62);
+  ratioText->SetTextColor(2);
+  ratioText->SetFillColor(0);
+  ratioText->SetTextAlign(11);
+  
+  ratioText->AddText( Form("Data/MC = %.2f #pm %.2f (#chi^{2}/ndof = %.2f / %d)", sf, sfErr, chi2, ndof) );
+
+  return ratioText;
+
+}
+
 
 TGraphErrors* MT2DrawTools::getSystBand(float xMin, float xMax, double SystErr){
   
