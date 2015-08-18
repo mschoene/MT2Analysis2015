@@ -25,6 +25,7 @@
 #define mt2_cxx
 #include "interface/mt2.h"
 
+bool HFveto = false;
 
 void drawRatios(std::string fullPath, float *binss, unsigned int size,  std::string zll_sel, MT2Analysis<MT2Estimate>*  zll_ratio,  MT2Analysis<MT2EstimateTree>*  gamma_mc, MT2Analysis<MT2EstimateTree>*  gamma_data, MT2Analysis<MT2EstimateSyst>*  purity, MT2Analysis<MT2EstimateTree>*  zll_mc,MT2Analysis<MT2EstimateTree>*  zll_data, MT2Analysis<MT2Estimate>*  zll_yield, const MT2Region thisRegion, std::string cut, std::string cut_gamma, float lumi);
 
@@ -154,12 +155,18 @@ int main(int argc, char* argv[]){
 
     float bins_nJets[] = {2,4,7,12};
     float bins_nBJets[] = {0,1,2,3,6}; 
-    float bins_mt2[] = {200,300,400, 1000 };
+    float bins_mt2[] = {200,300,400,600 };
+  
+    //    float bins_mt2[] = {200,300,400, 600 };
     //  float bins_mt2[] = {200,300,400,500, 600, 800, 1000, 1500 };
     float bins_ht[] =  {450,575,1000,1500,2000};
   
 
-   std::string cut =  "weight*(mt2>200 && abs(Z_mass-91.19)<15 && lep_pt0>25 && lep_pt1>20 &&ht>450 )";
+   std::string cut =  "weight*(mt2>200 && abs(Z_mass-91.19)<15 &&  Z_pt>200 )";
+    std::string cut_gamma =  "weight*( prompt==2 &&ptGamma>180 )*1.27";
+    //  std::string cut =  "weight*(mt2>200 && abs(Z_mass-91.19)<15 &&  Z_pt>200 && nJetHF30==0 )";
+    //    std::string cut_gamma =  "weight*( prompt==2 &&ptGamma>180 && nJetHF30==0  )*1.27";
+ 
 
    //   std::string cut =  "weight*(mt2>200 && abs(Z_mass-91.19)<15 && lep_pt0>25 && lep_pt1>20 )";
    //  std::string cut =  "weight*(mt2>200 && abs(Z_mass-91.19)<15 && lep_pt0>25 && lep_pt1>20 &&( HLT_DoubleMu||HLT_DoubleEl) )";
@@ -167,8 +174,7 @@ int main(int argc, char* argv[]){
     //    std::string cut =  "weight*(abs(Z_mass-91.19)<20)";
     //    std::string cut =  "weight*(abs(Z_mass-91.19)<10 &&nBJets<2)";
     std::string cut_corr =  "weight*(abs(Z_mass-91.19)<10 )";
-    std::string cut_gamma =  "weight*( prompt==2 &&ptGamma>180)*1.27";
-    //    std::string cut_gamma =  "weight*( prompt==2)*1.27";
+   //    std::string cut_gamma =  "weight*( prompt==2)*1.27";
 
     
     int size_mt2 = sizeof(bins_mt2)/sizeof(float)-1;
@@ -320,7 +326,8 @@ void drawRatios(std::string fullPath, float *binss, unsigned int size,  std::str
   
   zll_data_tree ->Project( "h_mt2" , zll_sel.c_str(), cut.c_str() );
   //will have to add the purity here at some point soon (for now just 0.95)
-  gamma_data_tree->Project( "g_mt2", gamma_sel.c_str(),  "weight*0.92*(ptGamma>180 && ht>450) " );
+  gamma_data_tree->Project( "g_mt2", gamma_sel.c_str(),  "weight*0.92*(ptGamma>180 ) " );
+  // gamma_data_tree->Project( "g_mt2", gamma_sel.c_str(),  "weight*0.92*(ptGamma>180 && nJetHF30==0) " );
 
   std::cout <<  h_mt2->GetMean() << std::endl;
   std::cout <<  g_mt2->GetMean() << std::endl;
@@ -387,8 +394,11 @@ void drawRatios(std::string fullPath, float *binss, unsigned int size,  std::str
     for( unsigned int k=0; k< size; ++k){
      if(h_mt2->GetBinContent(k+1)<0.01){
       gr_ratio->SetPoint(k, 9000 , 900);
-      }else{  gr_ratio->SetPoint(k, meanX[k], h_mt2->GetBinContent(k+1));
-      gr_ratio->SetPointError(k, meanX_err[k],  h_mt2->GetBinError(k+1) );
+     }else{  
+      gr_ratio->SetPoint(k, h_mt2->GetBinCenter(k+1), h_mt2->GetBinContent(k+1)); 
+       //gr_ratio->SetPoint(k, meanX[k], h_mt2->GetBinContent(k+1));
+
+      gr_ratio->SetPointError(k, h_mt2->GetBinWidth(k+1)/2. ,  h_mt2->GetBinError(k+1) );
     }
     }
     gr_ratio->SetMarkerSize(1.4);
@@ -404,7 +414,7 @@ void drawRatios(std::string fullPath, float *binss, unsigned int size,  std::str
     h_mt2_mc->SetLineColor(kBlue+1); h_mt2_mc->SetLineWidth(2);
 
     //  TH2D* h2_axes = new TH2D("axes", "", 10, xMin, xMax, 10, 0., 1.2 );
-     TH2D* h2_axes = new TH2D("axes", "", 10, xMin, xMax, 10, 0., 0.3 );
+     TH2D* h2_axes = new TH2D("axes", "", 10, xMin, xMax, 10, 0., 0.2 );
     if(zll_sel == "mt2"){
       h2_axes->SetXTitle("M_{T2} [GeV]");
     }else    if(zll_sel == "ht"){
@@ -415,7 +425,7 @@ void drawRatios(std::string fullPath, float *binss, unsigned int size,  std::str
       h2_axes->SetXTitle("b Jet Multiplicity" );
     }
 
-    h2_axes->SetYTitle("Zll / #gamma Ratio");
+    h2_axes->SetYTitle("Z(ll) / #gamma Ratio");
     h2_axes->Draw();
 
    std::vector<std::string> niceNames2 = thisRegion.getNiceNames();
@@ -468,8 +478,9 @@ void drawRatios(std::string fullPath, float *binss, unsigned int size,  std::str
 
     TGraphErrors *gr_ratioD = new TGraphErrors(0);
     for( unsigned int k=0; k< size; ++k){  
-      gr_ratioD->SetPoint(k, meanX[k], h_mt2->GetBinContent(k+1));
-      gr_ratioD->SetPointError(k, 0, h_mt2->GetBinError(k+1));
+       gr_ratioD->SetPoint(k, h_mt2->GetBinCenter(k+1), h_mt2->GetBinContent(k+1));
+      // gr_ratioD->SetPoint(k, meanX[k], h_mt2->GetBinContent(k+1));
+       gr_ratioD->SetPointError(k, h_mt2->GetBinWidth(k+1)/2., h_mt2->GetBinError(k+1));
     } 
     gr_ratioD->SetMarkerSize(1.4);
     gr_ratioD->SetMarkerStyle(20);
@@ -478,7 +489,7 @@ void drawRatios(std::string fullPath, float *binss, unsigned int size,  std::str
     gr_ratioD->SetMarkerColor(kBlack);
 
 
-    TH2D* h2_axes_rat = new TH2D("axes_rat", "", 10, xMin, xMax, 5 , 0.,3  );
+    TH2D* h2_axes_rat = new TH2D("axes_rat", "", 10, xMin, xMax, 5 , 0., 2.0 );
     h2_axes_rat->SetYTitle("Data / MC");
  
     h2_axes_rat->GetXaxis()->SetTitleSize(0.2);
@@ -503,10 +514,16 @@ void drawRatios(std::string fullPath, float *binss, unsigned int size,  std::str
     gPad->RedrawAxis();
 
     canny->cd();
+    
     canny->SaveAs( Form("%s/%s_ratios_%s.eps", fullPath.c_str(), zll_sel.c_str(),  thisRegion.getName().c_str() ) );
     canny->SaveAs( Form("%s/%s_ratios_%s.png", fullPath.c_str(), zll_sel.c_str(),thisRegion.getName().c_str() ) );
     canny->SaveAs( Form("%s/%s_ratios_%s.pdf", fullPath.c_str(), zll_sel.c_str(),thisRegion.getName().c_str() ) );
-
+    
+    /*
+    canny->SaveAs( Form("%s/%s_ratios_wHFveto_%s.eps", fullPath.c_str(), zll_sel.c_str(),  thisRegion.getName().c_str() ) );
+    canny->SaveAs( Form("%s/%s_ratios_wHFveto_%s.png", fullPath.c_str(), zll_sel.c_str(),thisRegion.getName().c_str() ) );
+    canny->SaveAs( Form("%s/%s_ratios_wHFveto_%s.pdf", fullPath.c_str(), zll_sel.c_str(),thisRegion.getName().c_str() ) );
+    */
 
     //Filling the YIELDS
     int yieldBins_mt2 = h_mt2->GetNbinsX();
