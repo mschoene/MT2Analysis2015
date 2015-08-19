@@ -91,10 +91,10 @@ TStyle* MT2DrawTools::setStyle() {
 
 
 
-TPaveText* MT2DrawTools::getLabelTop( float lumi ) {
+TPaveText* MT2DrawTools::getLabelTop( float lumi, TString units ) {
 
   char text[300];
-  sprintf( text, "CMS Preliminary, %.1f fb^{-1} at #sqrt{s} = 13 TeV", lumi );
+  sprintf( text, "CMS Preliminary, %.1f %s^{-1} at #sqrt{s} = 13 TeV", lumi, units.Data() );
   std::string text_str(text);
   return getLabelTop(text_str);
 
