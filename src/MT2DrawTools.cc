@@ -90,11 +90,26 @@ TStyle* MT2DrawTools::setStyle() {
 }
 
 
+std::string MT2DrawTools::getLumiText( float lumi ) {
 
-TPaveText* MT2DrawTools::getLabelTop( float lumi, TString units ) {
+  std::string returnText;
+  if( lumi>=0.1 )
+    returnText = (std::string)Form(" %.1f fb^{-1}", lumi);
+  else if( lumi>0.01 )
+    returnText = (std::string)Form(" %.0f pb^{-1}", 1000.*lumi);
+  else 
+    returnText = (std::string)Form(" %.1f pb^{-1}", 1000.*lumi);
+
+  return returnText;
+
+}
+
+
+
+TPaveText* MT2DrawTools::getLabelTop( float lumi ) {
 
   char text[300];
-  sprintf( text, "CMS Preliminary, %.1f %s^{-1} at #sqrt{s} = 13 TeV", lumi, units.Data() );
+  sprintf( text, "CMS Preliminary, %s at #sqrt{s} = 13 TeV", getLumiText(lumi).c_str() );
   std::string text_str(text);
   return getLabelTop(text_str);
 
@@ -142,6 +157,14 @@ TPaveText* MT2DrawTools::getLabelTopSimulation( const std::string& text ) {
 
 TGraphAsymmErrors* MT2DrawTools::getPoissonGraph( TH1D* histo, bool drawZeros, const std::string& xerrType, float nSigma ) {
 
+
+  unsigned int nBins = histo->GetNbinsX();
+  int emptyBins=0;
+  for( unsigned i=1; i < nBins; ++i ) {
+    if( histo->GetBinContent(i)==0 ) emptyBins += 1;
+  }
+  if( (float)emptyBins/(float)nBins > 0.4 ) drawZeros=false;
+
   TGraphAsymmErrors* graph = new TGraphAsymmErrors(0);
 
   for( int iBin=1; iBin<(histo->GetXaxis()->GetNbins()+1); ++iBin ) {
@@ -176,5 +199,249 @@ TGraphAsymmErrors* MT2DrawTools::getPoissonGraph( TH1D* histo, bool drawZeros, c
   }
 
   return graph;
+
+}
+
+
+TGraphAsymmErrors* MT2DrawTools::getRatioGraph( TH1D* histo_data, TH1D* histo_mc ){
+  
+  TGraphAsymmErrors* graph_ = MT2DrawTools::getPoissonGraph(histo_data, false);
+  TGraphAsymmErrors* graph  = new TGraphAsymmErrors();
+  
+  for( int i=0; i < graph_->GetN(); ++i){
+    
+    Double_t x_tmp, y_tmp, errUp, errDown;       
+    graph_->GetPoint( i, x_tmp, y_tmp );
+
+    errUp   = graph_->GetErrorYhigh(i);
+    errDown = graph_->GetErrorYlow(i);
+    
+    int iBin = histo_mc->FindBin(x_tmp);
+    float mc = histo_mc->GetBinContent(iBin);
+    graph->SetPoint(i, x_tmp, y_tmp/mc);
+    graph->SetPointEYhigh(i, errUp/mc);
+    graph->SetPointEYlow(i, errDown/mc);
+    
+
+  }
+
+  graph->SetLineColor(1);
+  graph->SetMarkerColor(1);
+  graph->SetMarkerStyle(20);
+
+  return graph;
+
+}
+
+
+TPad* MT2DrawTools::getCanvasMainPad( bool logY ){
+  
+  std::string padApp = "";
+  if( logY )
+    padApp = "_log";
+  TPad* pad1 = new TPad(Form("pad1%s", padApp.c_str()), Form("pad1%s", padApp.c_str()), 0, 0.3-0.1, 1, 1);
+  pad1->SetBottomMargin(0.15);
+  if( logY )
+    pad1->SetLogy();
+
+  return pad1;
+
+}
+
+TPad* MT2DrawTools::getCanvasRatioPad( bool logY ){
+
+  std::string padApp = "";
+  if( logY )
+    padApp = "_log";
+  TPad* pad2 = new TPad(Form("pad2%s", padApp.c_str()), Form("pad2%s", padApp.c_str()), 0, 0, 1, 0.21);
+  pad2->SetTopMargin(0.05);
+  pad2->SetBottomMargin(0.1);
+
+  return pad2;
+
+}
+
+
+TH2D* MT2DrawTools::getRatioAxes( float xMin, float xMax, float yMin, float yMax ){
+
+  TH2D* h2_axes_ratio = new TH2D("axes_ratio", "", 10, xMin, xMax, 10, yMin, yMax );
+  h2_axes_ratio->SetStats(0);
+  h2_axes_ratio->GetXaxis()->SetLabelSize(0.00);
+  h2_axes_ratio->GetXaxis()->SetTickLength(0.09);
+  h2_axes_ratio->GetYaxis()->SetNdivisions(5,5,0);
+  h2_axes_ratio->GetYaxis()->SetTitleSize(0.17);
+  h2_axes_ratio->GetYaxis()->SetTitleOffset(0.4);
+  h2_axes_ratio->GetYaxis()->SetLabelSize(0.17);
+  h2_axes_ratio->GetYaxis()->SetTitle("Data / MC");
+
+  return h2_axes_ratio;
+
+}
+
+
+double MT2DrawTools::getSFError(double integral_data, double error_data, double integral_mc, double error_mc){
+
+  double error_datamc = integral_data/integral_mc*(sqrt( (error_data/integral_mc)*(error_data/integral_mc) + (integral_data*error_mc/(integral_data*integral_data))*(integral_data*error_mc/(integral_data*integral_data)) ));
+  
+  return error_datamc;
+
+}
+
+TPaveText* MT2DrawTools::getRatioText( double integral_data, double integral_mc, double error_datamc ){
+ 
+  TPaveText* ratioText = new TPaveText( 0.133, -0.051, 0.4, 0.1 , "brNDC" );
+  ratioText->SetTextSize(0.035);
+  ratioText->SetTextFont(62);
+  ratioText->SetTextColor(2);
+  ratioText->SetFillColor(0);
+  ratioText->SetTextAlign(11);
+  ratioText->AddText( Form("Data/MC = %.2f +/- %.2f", integral_data/integral_mc, error_datamc) );
+
+  return ratioText;
+
+}
+  
+TLine* MT2DrawTools::getSFLine(double integral_data, double integral_mc, float xMin, float xMax){
+
+  double scaleFactor = integral_data/integral_mc;
+  TLine* lineSF = new TLine(xMin, scaleFactor, xMax, scaleFactor);
+  lineSF->SetLineColor(kRed);
+
+  return lineSF;
+
+}
+
+TGraphErrors* MT2DrawTools::getSFBand(double integral_data, double error_data, double integral_mc, double error_mc, float xMin, float xMax){
+  
+  double error_datamc = MT2DrawTools::getSFError(integral_data, error_data, integral_mc, error_mc);
+
+  double x[2]={(double)xMin, (double)xMax};
+  double xerr[2]={0., 0.};
+  double yerr[2]={error_datamc, error_datamc};
+  double y[2]={integral_data/integral_mc, integral_data/integral_mc};
+
+  TGraphErrors* SFband = new TGraphErrors(2, x, y, xerr, yerr);
+  SFband->SetLineColor(0);
+  SFband->SetFillColor(kRed);
+  SFband->SetFillStyle(3244);
+  
+  return SFband;
+  
+}
+
+
+TF1* MT2DrawTools::getSFFit(TGraphAsymmErrors* g_ratio, float xMin, float xMax){
+
+  TF1* f=new TF1("f", "[0]", xMin, xMax);
+  f->SetLineColor(kRed);
+  f->SetParameter(0, 1.0);
+  g_ratio->Fit(f, "0");
+  
+  return f;
+
+}
+
+void MT2DrawTools::getSFFitParameters(TF1* f, double &sf, double &sfErr, double &chi2, int &ndof){
+
+  chi2  = f->GetChisquare();
+  ndof     = f->GetNDF();
+  sf    = f->GetParameter(0);
+  sfErr = f->GetParError(0);
+
+}
+
+TGraphErrors* MT2DrawTools::getSFFitBand(TF1* f, float xMin, float xMax){
+  
+  double chi2, sf, sfErr;
+  int ndof;
+  MT2DrawTools::getSFFitParameters(f, sf, sfErr, chi2, ndof);
+
+  double x[2]    ={(double)xMin, (double)xMax};
+  double y[2]    ={sf, sf};
+
+  double xerr[2] ={0., 0.};
+  double yerr[2] ={sfErr, sfErr};
+
+  TGraphErrors* SFband = new TGraphErrors(2, x, y, xerr, yerr);
+  SFband->SetLineColor(0);
+  SFband->SetFillColor(kRed);
+  SFband->SetFillStyle(3244);
+  
+  return SFband;
+  
+}
+
+TPaveText* MT2DrawTools::getFitText( TF1* f ){
+ 
+  double chi2, sf, sfErr;
+  int ndof;
+  MT2DrawTools::getSFFitParameters(f, sf, sfErr, chi2, ndof);
+
+  TPaveText* ratioText = new TPaveText( 0.135, -0.051, 0.4, 0.1 , "brNDC" );
+  ratioText->SetTextSize(0.025);
+  ratioText->SetTextFont(62);
+  ratioText->SetTextColor(2);
+  ratioText->SetFillColor(0);
+  ratioText->SetTextAlign(11);
+  
+  ratioText->AddText( Form("Data/MC = %.2f #pm %.2f (#chi^{2}/ndof = %.2f / %d)", sf, sfErr, chi2, ndof) );
+
+  return ratioText;
+
+}
+
+
+TGraphErrors* MT2DrawTools::getSystBand(float xMin, float xMax, double SystErr){
+  
+  double x[2]={(double)xMin, (double)xMax};
+  double xerr[2]={0., 0.};
+  double yerr[2]={SystErr, SystErr};
+  double y[2]={1.0, 1.0};
+
+  TGraphErrors* SystBand = new TGraphErrors(2, x, y, xerr, yerr);
+  SystBand->SetLineColor(0);
+  SystBand->SetFillColor(kGray+2);
+  SystBand->SetFillStyle(3244);
+  
+  return SystBand;
+  
+}
+
+
+TH1D* MT2DrawTools::getMCBandHisto( TH1D* histo_mc, double SystErr ){
+
+  TH1D* histoBand = (TH1D*) histo_mc->Clone("histo_band");
+  for( int b=1; b <= histoBand->GetNbinsX(); ++b ){
+
+    float thisStatErr = histoBand->GetBinError(b);
+    float thisStats = histoBand->GetBinContent(b);
+    float thisSystErr = thisStats*SystErr;
+    float thisErr = sqrt(thisStatErr*thisStatErr+thisSystErr*thisSystErr);
+    histoBand->SetBinError(b, thisErr);
+
+  }
+
+  histoBand->SetLineColor(0);
+  histoBand->SetFillColor(kGray+2);
+  histoBand->SetFillStyle(3244);
+
+  return histoBand;
+
+}
+
+
+void MT2DrawTools::addOverflowSingleHisto( TH1D* yield ) {
+
+  yield->SetBinContent(yield->GetNbinsX(),
+		       yield->GetBinContent(yield->GetNbinsX()  )+
+		       yield->GetBinContent(yield->GetNbinsX()+1)  );
+  yield->SetBinError(  yield->GetNbinsX(),
+		       sqrt(yield->GetBinError(yield->GetNbinsX() )*
+			    yield->GetBinError(yield->GetNbinsX() )+
+			    yield->GetBinError(yield->GetNbinsX()+1)*
+			    yield->GetBinError(yield->GetNbinsX()+1)  ));
+
+  yield->SetBinContent(yield->GetNbinsX()+1, 0.);
+  yield->SetBinError  (yield->GetNbinsX()+1, 0.);
 
 }

@@ -1,17 +1,23 @@
 #!/bin/bash
 
 # --- configuration (consider to move this into a separate file) ---
-treeName="tree"
-inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/MT2production/080415/"
-productionName="080415"
+treeName="mt2"
+inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/casal/babies/MT2_CMGTools-from-CMSSW_7_4_7/prod747data_Run2015B_golden_hbhe/"
+#inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/MT2production/74X/Spring15_25ns/03Aug2015_25ns/"
+#inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/pandolf/babies/chunks/PHYS14_jet30_v2/"
+productionName="05Aug2015_data_noMT2skim"
 fileExt="_post.root"
+isCrab=1
+inputPU="/shome/mmasciov/JetHT_Run2015B.root"
+PUvar="nVert"
+GoldenJSON="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-251883_13TeV_PromptReco_Collisions15_JSON_v2.txt"
+applyJSON=0
 # --------------------------
 
 
-
 # initialization
-jobsLogsFolder="./$productionName"
-outputFolder="/pnfs/psi.ch/cms/trivcat/store/user/`whoami`/MT2production/PostProcessed/"$productionName/
+jobsLogsFolder="./${productionName}"
+outputFolder="/pnfs/psi.ch/cms/trivcat/store/user/`whoami`/MT2production/74X/firstData2015/PostProcessed/"$productionName"/"
 workingFolder="/scratch/`whoami`/"$productionName
 
 
@@ -57,13 +63,17 @@ else
     mkdir  $jobsLogsFolder
 fi
 
+python $PWD/convertGoodRunsList_JSON.py $GoldenJSON >& goodruns.txt
+gfal-mkdir -p srm://t3se01.psi.ch/$outputFolder 
+gfal-copy file://$GoldenJSON srm://t3se01.psi.ch/$outputFolder/ 
+
 echo "Location of log files is: " $jobsLogsFolder
 echo "Location of final files on SE is: " $outputFolder
 echo "Working folder on working-node is: " $workingFolder
 
 # here I compile the root macro only once
+echo "gROOT->LoadMacro(\"goodrun.cc+\"); gSystem->Exit(0);" |root.exe -b -l ;
 echo "gROOT->LoadMacro(\"postProcessing.C+\"); gSystem->Exit(0);" |root.exe -b -l ;
-
 
 while read line; 
 do 
@@ -77,6 +87,11 @@ do
     
     outputFile=${workingFolder}/${name}$fileExt;
 
+    if [ ${isCrab} = 1 ]; then
+	crabExt=$(ls $inputFolder/$name/)
+    else
+	crabExt=""
+    fi;
 
     cat <<EOF > batchScript_${name}.sh
 #!/bin/bash
@@ -108,8 +123,8 @@ eval \`scramv1 runtime -sh\`
 mkdir -p $workingFolder
 gfal-mkdir -p srm://t3se01.psi.ch/$outputFolder
 
-echo "postProcessing(\"$name\",\"$inputFolder\",\"$outputFile\",\"$treeName\",$filter,$kfactor,$xsec,$id);"
-echo "gROOT->LoadMacro(\"postProcessing.C\"); postProcessing(\"$name\",\"$inputFolder\",\"$outputFile\",\"$treeName\",$filter,$kfactor,$xsec,$id); gSystem->Exit(0);" |root.exe -b -l ;
+echo "postProcessing(\"$name\",\"$inputFolder\",\"$outputFile\",\"$treeName\",$filter,$kfactor,$xsec,$id,\"$crabExt\", \"$inputPU\", \"$PUvar\", $applyJSON);"
+echo "gSystem->Load(\"goodrun_cc\"); gROOT->LoadMacro(\"postProcessing.C\"); postProcessing(\"$name\",\"$inputFolder\",\"$outputFile\",\"$treeName\",$filter,$kfactor,$xsec,$id,\"$crabExt\",\"$inputPU\",\"$PUvar\",$applyJSON); gSystem->Exit(0);" |root.exe -b -l ;
 
 #mv $outputFile $outputFolder
 gfal-copy file://$outputFile srm://t3se01.psi.ch/$outputFolder
@@ -131,7 +146,9 @@ EOF
 qsub batchScript_${name}.sh;
 rm batchScript_${name}.sh;
 
-done < postProcessing.cfg
+done < postProcessing_74X_50ns.cfg
+#done < postProcessing_74X.cfg
+#done < postProcessing.cfg
 
 rm -f postProcessing_C.d postProcessing_C.so;
 

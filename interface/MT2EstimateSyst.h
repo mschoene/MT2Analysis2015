@@ -25,6 +25,7 @@ class MT2EstimateSyst : public MT2Estimate {
 
   static MT2Analysis<MT2EstimateSyst>* makeEfficiencyAnalysis( const std::string& aname, const std::string& regionsSet, MT2Analysis<MT2Estimate>* pass, MT2Analysis<MT2Estimate>* all );
   static MT2Analysis<MT2EstimateSyst>* makeAnalysisFromEstimate( const std::string& aname, const std::string& regionsSet, MT2Analysis<MT2Estimate>* analysis );
+  static MT2Analysis<MT2EstimateSyst>* makeIntegralAnalysisFromEstimate( const std::string& aname, const std::string& regionsSet, MT2Analysis<MT2EstimateSyst>* analysis );
 
   TGraphAsymmErrors* getGraph() const;
  
