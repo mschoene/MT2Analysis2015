@@ -7,16 +7,19 @@
 #include "../interface/mt2.h"
 
 #include "TEventList.h"
+#include "TVector2.h"
 
-float lumi = 4.; //fb-1
+// this analysis:
+// fills all necesary histograms for QCD estimation
 
-bool doDiffMetMht = true;
+float lumi = 0.042; //fb-1
 
+// to do: make these as optional arguments
+bool doDiffMetMht = true;  // apply the |MET-MHT|/MET cut?
+bool doHFjetVeto  = true;  // apply HF jet veto
 
 MT2Analysis<MT2EstimateQCD>* fillCR( const MT2Sample& sample, const std::string& regionsSet);
 MT2Analysis<MT2EstimateQCD>* merge ( std::vector<MT2Analysis<MT2EstimateQCD> *> anas, const std::string& regionsSet, const std::string& name, int id_min, int id_max );
-
-
 
 int main( int argc, char* argv[] ) {
 
@@ -27,19 +30,20 @@ int main( int argc, char* argv[] ) {
     exit(11);
   }
 
-  std::string samplesFileName = "PHYS14_qcdCR";
+  std::string samplesFileName = "74X_jecV4_MET30_QCD";
   if( argc>1 ) {
     std::string samplesFileName_tmp(argv[1]); 
     samplesFileName = samplesFileName_tmp;
   }
 
 
-  std::string regionsSet = "zurich";
+  std::string regionsSet = "zurich_HTtriggers";
+  //std::string regionsSet = "zurich_HTtriggers2";
 
   TH1::AddDirectory(kFALSE); // stupid ROOT memory allocation needs this
 
 
-  std::string outputdir( Form("QCDcontrolRegion_%s_%s_%.0ffb", samplesFileName.c_str(), regionsSet.c_str(), lumi) );
+  std::string outputdir( Form("QCDcontrolRegion_%s_%s_%.3ffb%s%s", samplesFileName.c_str(), regionsSet.c_str(), lumi, (doDiffMetMht ? "" : "_noDiffMetMht"), (!doHFjetVeto ? "" : "_HFjetVeto") ) );
   system(Form("mkdir -p %s", outputdir.c_str()));
 
   std::string samplesFile = "../samples/samples_" + samplesFileName + ".dat";
@@ -58,14 +62,15 @@ int main( int argc, char* argv[] ) {
   MT2Analysis<MT2EstimateQCD>* qcdCR  = merge( controlRegions, regionsSet, "qcdCR", 100, 199 );
   qcdCR->finalize();
 
-  controlRegions[0]->writeToFile( outputdir + "/mc.root" );
+  controlRegions[0]->finalize();
+  controlRegions[0]->writeToFile( outputdir + "/qcdCR.root" );
   for( unsigned i=1; i<samples.size(); ++i ) {
     controlRegions[i]->finalize();
-  controlRegions[i]->addToFile( outputdir + "/mc.root" );
+  controlRegions[i]->addToFile( outputdir + "/qcdCR.root" );
   }
-  qcdCR->addToFile( outputdir + "/mc.root" );
+  qcdCR->addToFile( outputdir + "/qcdCR.root" );
   
-  //qcdCR->writeToFile( outputdir + "/mc.root" );
+  //qcdCR->writeToFile( outputdir + "/qcdCR.root" );
 
   MT2Analysis<MT2EstimateQCD>* topCR    = merge( controlRegions, regionsSet, "topCR"  , 300, 499 );
   MT2Analysis<MT2EstimateQCD>* wjetsCR  = merge( controlRegions, regionsSet, "wjetsCR", 500, 599 );
@@ -74,10 +79,13 @@ int main( int argc, char* argv[] ) {
   wjetsCR->finalize();
   zjetsCR->finalize();
 
-  topCR  ->addToFile( outputdir + "/mc.root" );
-  wjetsCR->addToFile( outputdir + "/mc.root" );
-  zjetsCR->addToFile( outputdir + "/mc.root" );
+  MT2Analysis<MT2EstimateQCD>* dataCR  = merge( controlRegions, regionsSet, "dataCR", 1, 99 );
+  dataCR->finalize();
 
+  topCR  ->addToFile( outputdir + "/qcdCR.root" );
+  wjetsCR->addToFile( outputdir + "/qcdCR.root" );
+  zjetsCR->addToFile( outputdir + "/qcdCR.root" );
+  dataCR ->addToFile( outputdir + "/qcdCR.root" );
 }
 
 
@@ -88,7 +96,7 @@ MT2Analysis<MT2EstimateQCD>* merge( std::vector<MT2Analysis<MT2EstimateQCD> *> a
   MT2Analysis<MT2EstimateQCD>* ana = new MT2Analysis<MT2EstimateQCD>(name, regionsSet);
 
   for( unsigned i=0; i<anas.size(); ++i ) {
-    if( anas[i]->id >= id_min && anas[i]->id <= id_max )
+    if( anas[i]->getId() >= id_min && anas[i]->getId() <= id_max )
       *(ana) += *(anas[i]);
   } 
 
@@ -107,7 +115,7 @@ MT2Analysis<MT2EstimateQCD>* fillCR( const MT2Sample& sample, const std::string&
   TTree* tree = (TTree*)file->Get("mt2");
   
   // In absence of skimmed ntuples let's filter to gain some speed
-  TString filter = "mt2>30&&ht>450";
+  TString filter = "mt2>30&&ht>1000"; // ht>1000 for 50ns only! dangerous temporary hardcoded cut to be revisited
   tree->Draw(">>selList", filter);
   TEventList *myEvtList = (TEventList*)gDirectory->Get("selList");
   tree->SetEventList(myEvtList);
@@ -130,28 +138,32 @@ MT2Analysis<MT2EstimateQCD>* fillCR( const MT2Sample& sample, const std::string&
     if( jEntry % 50000 == 0 ) std::cout << "    Entry: " << jEntry << " / " << nentries << std::endl;
     myTree.GetEntry(iEntry);
 
-    //if (myTree.mt2<30 && myTree.ht<450) std::cout << "*** Check it, filtering didn't work!" << std::endl;
 
-    if ( !(myTree.passLeptonVeto() && myTree.passIsoTrackVeto()) )                            continue;
-    if ( !(myTree.nVert>0 && myTree.nJet40>=2 && myTree.jet1_pt>40.  && myTree.jet2_pt>40.) ) continue;
-    if ( doDiffMetMht && !(myTree.diffMetMht < 0.5*myTree.met_pt) )                           continue;
+    if ( !(myTree.met_pt>30 && myTree.nVert>0 && myTree.nJet30>=2)   ) continue;
+    if ( !(myTree.passLeptonVeto() && myTree.passIsoTrackVeto())     ) continue;
+    if ( doDiffMetMht && !(myTree.diffMetMht < 0.5*myTree.met_pt)    ) continue;
+    if ( myTree.isData==1 && !(myTree.Flag_CSCTightHaloFilter==1 && 
+			       myTree.Flag_HBHENoiseFilter   ==1 &&
+			       myTree.Flag_eeBadScFilter     ==1   ) )  continue;
 
-    // protection against crazy pfMuons (doesn't catch all but many of them)
-    if (myTree.jet_mcPt[0]==0 || myTree.jet_mcPt[1]==0) continue;
-    bool foundCrazyMuon = false;
-    for (int j=2; j<myTree.nJet40; j++){
-      if ( myTree.jet_pt[j]<100 ) continue; // only check fake jets with pt > 100
-      if ( myTree.jet_mcPt[j]==0) foundCrazyMuon = true;
+
+    if (doHFjetVeto) {
+      int nJetHF30 = 0;
+      for(int j=0; j<myTree.njet; ++j){
+	if( myTree.jet_pt[j] < 30. || fabs(myTree.jet_eta[j]) < 3.0 ) continue;
+	else ++nJetHF30;
+      }
+      if ( !(nJetHF30==0))  continue;
     }
-    if (foundCrazyMuon) continue;
-    
+
     float ht   = myTree.ht;
     float mt2  = myTree.mt2;
     float dphi = myTree.deltaPhiMin;
-    int njets  = myTree.nJet40;
-    int nbjets = myTree.nBJet40;
+    int njets  = myTree.nJet30;
+    int nbjets = myTree.nBJet20;
+    int isData = myTree.isData;
 
-    Double_t weight = myTree.evt_scale1fb*lumi;
+    Double_t weight = isData ? 1.0 : myTree.evt_scale1fb*lumi;
 
     MT2EstimateQCD* thisEstimate = analysis->get( ht, njets, nbjets );
     if( thisEstimate==0 ) continue;

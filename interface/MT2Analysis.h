@@ -97,6 +97,7 @@ class MT2Analysis {
   void finalize();
 
   void randomizePoisson( float scale=1. );
+  void sqrtErrors      ( float scale=1. );
 
   std::set<T*> data;
 
@@ -400,6 +401,36 @@ MT2Analysis<T>::MT2Analysis( const std::string& aname, const std::string& region
     regions_.insert(MT2Region( 575.,  1000.));
     regions_.insert(MT2Region(1000.,  1500.));
     regions_.insert(MT2Region(1500.,    -1.));
+
+
+  } else if( regionsSet=="zurich_HTtriggers" ){
+
+    regions_.insert(MT2Region( 450.,   575.)); // no cut on jets
+    regions_.insert(MT2Region( 575.,  1000.));
+    regions_.insert(MT2Region(1000.,    -1.));
+
+
+  } else if( regionsSet=="zurich_HTtriggers2" ){
+
+    regions_.insert(MT2Region( 450.,   575.)); // no cut on jets
+    regions_.insert(MT2Region( 575.,   900.));
+    regions_.insert(MT2Region( 900.,    -1.));
+
+
+  } else if( regionsSet=="zurich_bMerged" ){
+
+    std::set<MT2HTRegion> htRegions;
+    htRegions.insert(MT2HTRegion( 450.,   575.));
+    htRegions.insert(MT2HTRegion( 575.,  1000.));
+    htRegions.insert(MT2HTRegion(1000.,  1500.));
+    htRegions.insert(MT2HTRegion(1500.,    -1 ));
+    
+    std::set<MT2SignalRegion> signalRegions;
+    signalRegions.insert(MT2SignalRegion(2,  3, 0,  -1));
+    signalRegions.insert(MT2SignalRegion(4, 6, 0,  -1));
+    signalRegions.insert(MT2SignalRegion(7, -1, 0,  -1));
+
+    regions_ = multiplyHTandSignal( htRegions, signalRegions );
 
 
   } else if( regionsSet=="zurich_onlyJets" ){
@@ -1986,6 +2017,14 @@ void MT2Analysis<T>::randomizePoisson( float scale ) {
 
   for( typename std::set<T*>::iterator it=data.begin(); it!=data.end(); ++it ) 
     (*it)->randomizePoisson( scale );
+
+}
+
+template<class T> 
+void MT2Analysis<T>::sqrtErrors( float scale ) {
+
+  for( typename std::set<T*>::iterator it=data.begin(); it!=data.end(); ++it ) 
+    (*it)->sqrtErrors( scale );
 
 }
 
