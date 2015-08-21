@@ -78,8 +78,8 @@ compareYield: compareYield.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2Estimate
 fakeQCDestimate: fakeQCDestimate.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateSyst.o
 	$(CC) -Wall $(INCLUDES) -o fakeQCDestimate fakeQCDestimate.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateSyst.o $(ROOTFLAG) $(EXTRALIBS)
 
-makeZinvGammaTemplates: makeZinvGammaTemplates.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateZinvGamma.o MT2Config.o
-	$(CC) -Wall $(INCLUDES) -o makeZinvGammaTemplates makeZinvGammaTemplates.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateZinvGamma.o MT2Config.o $(ROOTFLAG) $(EXTRALIBS)
+makeZinvGammaTemplates: makeZinvGammaTemplates.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateZinvGamma.o MT2Config.o MT2DrawTools.o
+	$(CC) -Wall $(INCLUDES) -o makeZinvGammaTemplates makeZinvGammaTemplates.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateZinvGamma.o MT2Config.o MT2DrawTools.o $(ROOTFLAG) $(EXTRALIBS)
 
 makePromptTemplateData: makePromptTemplateData.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateZinvGamma.o MT2DrawTools.o
 	$(CC) -Wall $(INCLUDES) -o makePromptTemplateData makePromptTemplateData.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateZinvGamma.o MT2DrawTools.o $(ROOTFLAG) $(EXTRALIBS)
