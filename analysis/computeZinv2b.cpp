@@ -23,6 +23,7 @@
 #include "TFile.h"
 #include "TTree.h"
 #include "TGraphErrors.h"
+#include "TMath.h"
 
 
 
@@ -31,8 +32,8 @@ void drawMt2VsB( MT2Config cfg, TTree* tree, const std::string& suffix, const st
 float getP( MT2Config cfg, TTree* tree, const std::string& name, TTree* tree_data=0, const std::string& name_data="Data" );
 TH1D* getHisto( MT2Config cfg, TTree* tree, const std::string& name, TH1D* histo_compare=0, const std::string& name_compare="" );
 void getPfromFunc( TF1* line, float& p, float& p_err );
-MT2Analysis<MT2Estimate>* compute2bFrom01b( MT2Config cfg, MT2Analysis<MT2EstimateTree>* mc, float p, float p_err );  //TH1D* histo_p, TH1D* histo_p_data=0 );
-void fillFromTree( TTree* tree, TH1D* yield_2b_extrapMC, TH1D* yield_2b_extrapData, float p, float p_err ); //TH1D* histo_p, TH1D* histo_p_data=0 );
+MT2Analysis<MT2Estimate>* compute2bFrom01b( MT2Config cfg, MT2Analysis<MT2EstimateTree>* mc, float p, float p_err );
+void fillFromTree( TTree* tree, TH1D* yield_2b_extrapMC, float p, float p_err ); 
 float getCorrection( int njets, float p );
 
 
@@ -65,6 +66,7 @@ int main( int argc, char* argv[] ) {
   MT2DrawTools::setStyle();
 
 
+  TH1::AddDirectory(kTRUE); // stupid ROOT memory allocation needs this
 
   
   std::string mainDir  = cfg.getEventYieldDir();
@@ -93,11 +95,11 @@ int main( int argc, char* argv[] ) {
 
     histo_data = getHisto( cfg, tree_data, "Data", histo_mc, "MC" );
 
-    drawMt2VsB( cfg, tree_gjet, "gjet", "Prompt Photons", "mt2", "M_{T2} [GeV]", 100, 0., 1450., "prompt==2" );
-    //drawMt2VsB( cfg, tree_gjet, "gjet", "Prompt Photons", "nJets", "Number of Jets (p_{T}>30 GeV)", 8, 1.5, 9.5, "prompt==2" );
+    //drawMt2VsB( cfg, tree_gjet, "gjet", "Prompt Photons", "mt2", "M_{T2} [GeV]", 100, 0., 1450., "prompt==2" );
+    ////drawMt2VsB( cfg, tree_gjet, "gjet", "Prompt Photons", "nJets", "Number of Jets (p_{T}>30 GeV)", 8, 1.5, 9.5, "prompt==2" );
 
-    //drawMt2VsB( cfg, tree_gjet  , "2b_nip"   , "Fragm. Photons", "prompt==1" );
-    //drawMt2VsB( cfg, tree_gjet  , "2b_fake"  , "Fake   Photons", "prompt==0" );
+    ////drawMt2VsB( cfg, tree_gjet  , "2b_nip"   , "Fragm. Photons", "prompt==1" );
+    ////drawMt2VsB( cfg, tree_gjet  , "2b_fake"  , "Fake   Photons", "prompt==0" );
 
     TFile* file = TFile::Open("prova.root", "RECREATE");
     file->cd();
@@ -128,14 +130,14 @@ int main( int argc, char* argv[] ) {
 
 TH1D* getHisto( MT2Config cfg, TTree* tree, const std::string& name, TH1D* histo_compare, const std::string& name_compare ) {
 
-
   float njetMin = 2;
   float njetMax = 12;
-  TH1D* histo = new TH1D(Form("histo_%s", name.c_str()), "", 9, njetMin-0.5, njetMax+0.5 );
-  
+  int nbins_histo = njetMax-njetMin + 1;
+  TH1D* histo = new TH1D(Form("histo_%s", name.c_str()), "", nbins_histo, njetMin-0.5, njetMax+0.5 );
+
 
   float yMin = 0.;
-  float yMax = 1.;
+  float yMax = 0.5;
   //float yMax = 0.09;
 
   
@@ -212,7 +214,6 @@ TH1D* getHisto( MT2Config cfg, TTree* tree, const std::string& name, TH1D* histo
 
   TH2D* h2_axes = new TH2D("axes", "", 10, njetMin-0.5, njetMax+0.5, 10, yMin, yMax );
   h2_axes->SetXTitle("Number of Jets");
-  //h2_axes->SetYTitle("p [%]");
   h2_axes->SetYTitle("Events(b=1) / Events(b=0)");
   h2_axes->Draw();
 
@@ -239,8 +240,15 @@ TH1D* getHisto( MT2Config cfg, TTree* tree, const std::string& name, TH1D* histo
     legend->AddEntry( histo, Form("%s (p=%.2f#pm%.2f%%)", name.c_str(), 100.*p, 100.*p_err), "P");
     legend->Draw("same");
 
-  }
+  } else {
 
+    TPaveText* pLabel = new TPaveText( 0.2, 0.7, 0.55, 0.8, "brNDC" );
+    pLabel->SetFillColor(0);
+    pLabel->SetTextSize(0.038);
+    pLabel->AddText( Form("p = %.2f #pm %.2f %%", p*100. , p_err*100.) );
+    pLabel->Draw("same");
+
+  }
 
   histo->Draw("P same");
   if( histo_compare!=0 ) {
@@ -257,9 +265,11 @@ TH1D* getHisto( MT2Config cfg, TTree* tree, const std::string& name, TH1D* histo
 
   gPad->RedrawAxis();
 
-  c1->SaveAs(Form("%s/gammaControlRegion/plots2b/p_%s.eps", cfg.getEventYieldDir().c_str(), name.c_str()));
-  c1->SaveAs(Form("%s/gammaControlRegion/plots2b/p_%s.pdf", cfg.getEventYieldDir().c_str(), name.c_str()));
-  c1->SaveAs(Form("%s/gammaControlRegion/plots2b/p_%s.png", cfg.getEventYieldDir().c_str(), name.c_str()));
+  //c1->SaveAs(Form("%s/gammaControlRegion/plots2b/p_%s.eps", cfg.getEventYieldDir().c_str(), name.c_str()));
+  //c1->SaveAs(Form("%s/gammaControlRegion/plots2b/p_%s.pdf", cfg.getEventYieldDir().c_str(), name.c_str()));
+  //c1->SaveAs(Form("%s/gammaControlRegion/plots2b/p_%s.png", cfg.getEventYieldDir().c_str(), name.c_str()));
+
+  c1->SaveAs("p.eps");
 
   delete c1;
   delete h2_axes;
@@ -415,111 +425,181 @@ MT2Analysis<MT2Estimate>* compute2bFrom01b( MT2Config cfg, MT2Analysis<MT2Estima
   MT2Analysis<MT2Estimate>* extrap = new MT2Analysis<MT2Estimate>( mc->getName() + "_extrap", regions );
 
 
-  for( std::set<MT2Region>::iterator iR = regions.begin(); iR!=regions.end(); ++iR ) {
 
-    if( iR->nBJetsMin()!=0 ) continue; //reweight Nb=0 to get Nb=2
-
-    MT2EstimateTree* thisEst_0b = mc->get( *iR );
-    TTree* tree_0b = thisEst_0b->tree;
-
-    MT2Region region_1b( iR->htMin(), iR->htMax(), iR->nJetsMin(), iR->nJetsMax(), 1, 1 );
-    MT2EstimateTree* thisEst_1b = mc->get( region_1b );
-    if( thisEst_1b==0 ) continue;
-
-    MT2Region region_2b( iR->htMin(), iR->htMax(), iR->nJetsMin(), iR->nJetsMax(), 2, 2 );
-    MT2EstimateTree* thisEst_2b = mc->get( region_2b );
-    if( thisEst_2b==0 ) continue;
+  if( cfg.regionsSet()=="13TeV_inclusive" ) { // simple closure test
 
     TH1::AddDirectory(kTRUE); // stupid ROOT memory allocation needs this
 
-    TH1D* yield_2b = thisEst_2b->yield;
+    MT2EstimateTree* thisEst = mc->get( *(regions.begin()) );
 
-    TH1D* yield_2b_extrapMC = new TH1D( *yield_2b ); // same binning
-    yield_2b_extrapMC->Reset();
-    std::string newNameMC = "extrap2bMC_" + iR->getName();
-    yield_2b_extrapMC->SetName(newNameMC.c_str());
+    TTree* tree = thisEst->tree;
 
-    TH1D* yield_2b_extrapData = new TH1D( *yield_2b ); // same binning
-    yield_2b_extrapData->Reset();
-    std::string newNameData = "extrap2bData_" + iR->getName();
-    yield_2b_extrapData->SetName(newNameData.c_str());
+    TH1D* h1_mcTruth = new TH1D( "mcTruth", "", 50, 200., 1700. );
+    TH1D* h1_closure = new TH1D( "closure", "", 50, 200., 1700. );
 
+    h1_mcTruth->Sumw2();
+    h1_closure->Sumw2();
 
-    fillFromTree( tree_0b, yield_2b_extrapMC, yield_2b_extrapData, p, p_err );  //histo_p, histo_p_data );
+    tree->Project( "mcTruth", "mt2", "weight*( mt2>200. && ht > 450. && nBJets==2 )" );
 
+    fillFromTree( tree, h1_closure, p, p_err );
 
-    TCanvas* c1 = new TCanvas("c1", "", 600, 600);
+    TCanvas* c1 = new TCanvas( "c1", "", 600, 600 );
+    c1->SetLogy();
     c1->cd();
 
-    float xMin = yield_2b->GetXaxis()->GetXmin();
-    float xMax = yield_2b->GetXaxis()->GetXmax();
-    float yMax = 1.15*yield_2b->GetMaximum();
-
-    TH2D* h2_axes = new TH2D("axes", "", 10, xMin, xMax, 10, 0., yMax );
+    TH2D* h2_axes = new TH2D( "axes", "", 10, 200., 1200., 10, 0.0001, 0.5 );
     h2_axes->SetXTitle( "M_{T2} [GeV]");
     h2_axes->SetYTitle( "Events" );
     h2_axes->Draw();
 
-    yield_2b->SetLineColor(kGray+3);
-    yield_2b->SetLineWidth(2.);
+    h1_mcTruth->SetMarkerStyle(20);
+    h1_mcTruth->SetMarkerSize(1.1);
+    h1_mcTruth->SetMarkerColor(kBlack);
+    h1_mcTruth->SetLineColor(kBlack);
 
-    yield_2b_extrapMC->SetLineColor(46);
-    yield_2b_extrapMC->SetFillColor(46);
-    yield_2b_extrapMC->SetFillStyle(3004);
-    yield_2b_extrapMC->SetLineWidth(2);
+    h1_closure->SetMarkerStyle(24);
+    h1_closure->SetMarkerSize(1.1);
+    h1_closure->SetMarkerColor(kBlack);
+    h1_closure->SetLineColor(kBlack);
 
-    yield_2b_extrapMC->SetMarkerColor(46);
-    yield_2b_extrapMC->SetMarkerSize(2.);
-    yield_2b_extrapMC->SetMarkerStyle(24);
+    h1_mcTruth->Draw("P same");
+    h1_closure->Draw("P same");
 
-    yield_2b_extrapData->SetMarkerColor(kBlack);
-    yield_2b_extrapData->SetMarkerSize(1.6);
-    yield_2b_extrapData->SetMarkerStyle(20);
-
-    TPaveText* regionName = new TPaveText(0.5, 0.78, 0.9, 0.88, "brNDC");
-    regionName->SetFillColor(0);
-    regionName->SetTextAlign(11);
-    regionName->SetTextSize(0.035);
-    regionName->AddText( region_2b.getNiceNames()[0].c_str() );
-    regionName->AddText( region_2b.getNiceNames()[1].c_str() );
-    regionName->Draw("same");
-
-    yield_2b->Draw("L same");
-    //if( histo_p_data!=0 )
-    //  yield_2b_extrapData->Draw("P same");
-    yield_2b_extrapMC->Draw("P same");
-
-
-
-    TLegend* legend = new TLegend( 0.5, 0.63, 0.9, 0.78);
+    TLegend* legend = new TLegend( 0.53, 0.73, 0.9, 0.9 );
     legend->SetFillColor(0);
     legend->SetTextSize(0.035);
-    legend->AddEntry( yield_2b, "MC Truth", "L" );
-    //if( histo_p_data!=0 ) {
-    //  legend->AddEntry( yield_2b_extrapMC, "Extrap. (MC)", "P");
-    //  legend->AddEntry( yield_2b_extrapData, "Extrap. (Data)", "P");
-    //} else {
-      legend->AddEntry( yield_2b_extrapMC, "Extrap. from 0b", "PL");
-      //legend->AddEntry( yield_2b_extrapMC, "Extrap. from 0b", "FLP");
-    //}
+    legend->AddEntry( h1_mcTruth, "MC Truth b=2", "P" );
+    legend->AddEntry( h1_closure, "Extrap. from b=0", "P" );
     legend->Draw("same");
 
-    TPaveText* labelTop = MT2DrawTools::getLabelTop("CMS Simulation, #sqrt{s} = 13 TeV");
+    TPaveText* labelTop = MT2DrawTools::getLabelTop();
     labelTop->Draw("same");
 
     gPad->RedrawAxis();
 
-    c1->SaveAs(Form("%s/closure_%s.eps", cfg.getEventYieldDir().c_str(), region_2b.getName().c_str()) );
-    c1->SaveAs(Form("%s/closure_%s.pdf", cfg.getEventYieldDir().c_str(), region_2b.getName().c_str()) );
-    c1->SaveAs(Form("%s/closure_%s.png", cfg.getEventYieldDir().c_str(), region_2b.getName().c_str()) );
+    c1->SaveAs("closure.eps");
 
-    delete c1;
-    delete h2_axes;
+    TFile* fileprova = TFile::Open("prova.root", "recreate");
+    fileprova->cd();
+    h1_mcTruth->Write();
+    h1_closure->Write();
+    fileprova->Close();
 
-  } // for regions
 
 
-  extrap->finalize();
+  } else { // more complex regions sets
+     
+
+
+    for( std::set<MT2Region>::iterator iR = regions.begin(); iR!=regions.end(); ++iR ) {
+
+      if( iR->nBJetsMin()!=0 ) continue; //reweight Nb=0 to get Nb=2
+      if( iR->nBJetsMax()!=0 ) continue; //reweight Nb=0 to get Nb=2
+
+      MT2EstimateTree* thisEst_0b = mc->get( *iR );
+      TTree* tree_0b = thisEst_0b->tree;
+
+      MT2Region region_1b( iR->htMin(), iR->htMax(), iR->nJetsMin(), iR->nJetsMax(), 1, 1 );
+      MT2EstimateTree* thisEst_1b = mc->get( region_1b );
+      if( thisEst_1b==0 ) continue;
+
+      MT2Region region_2b( iR->htMin(), iR->htMax(), iR->nJetsMin(), iR->nJetsMax(), 2, 2 );
+      MT2EstimateTree* thisEst_2b = mc->get( region_2b );
+      if( thisEst_2b==0 ) continue;
+
+      TH1::AddDirectory(kTRUE); // stupid ROOT memory allocation needs this
+
+      TH1D* yield_2b = thisEst_2b->yield;
+
+      TH1D* yield_2b_extrapMC = new TH1D( *yield_2b ); // same binning
+      yield_2b_extrapMC->Reset();
+      std::string newNameMC = "extrap2bMC_" + iR->getName();
+      yield_2b_extrapMC->SetName(newNameMC.c_str());
+
+      TH1D* yield_2b_extrapData = new TH1D( *yield_2b ); // same binning
+      yield_2b_extrapData->Reset();
+      std::string newNameData = "extrap2bData_" + iR->getName();
+      yield_2b_extrapData->SetName(newNameData.c_str());
+
+
+      fillFromTree( tree_0b, yield_2b_extrapMC, p, p_err );  //histo_p, histo_p_data );
+
+
+      TCanvas* c1 = new TCanvas("c1", "", 600, 600);
+      c1->cd();
+
+      float xMin = yield_2b->GetXaxis()->GetXmin();
+      float xMax = yield_2b->GetXaxis()->GetXmax();
+      float yMax = 1.15*yield_2b->GetMaximum();
+
+      TH2D* h2_axes = new TH2D("axes", "", 10, xMin, xMax, 10, 0., yMax );
+      h2_axes->SetXTitle( "M_{T2} [GeV]");
+      h2_axes->SetYTitle( "Events" );
+      h2_axes->Draw();
+
+      yield_2b->SetLineColor(kGray+3);
+      yield_2b->SetLineWidth(2.);
+
+      yield_2b_extrapMC->SetLineColor(46);
+      yield_2b_extrapMC->SetFillColor(46);
+      yield_2b_extrapMC->SetFillStyle(3004);
+      yield_2b_extrapMC->SetLineWidth(2);
+
+      yield_2b_extrapMC->SetMarkerColor(46);
+      yield_2b_extrapMC->SetMarkerSize(2.);
+      yield_2b_extrapMC->SetMarkerStyle(24);
+
+      yield_2b_extrapData->SetMarkerColor(kBlack);
+      yield_2b_extrapData->SetMarkerSize(1.6);
+      yield_2b_extrapData->SetMarkerStyle(20);
+
+      TPaveText* regionName = new TPaveText(0.5, 0.78, 0.9, 0.88, "brNDC");
+      regionName->SetFillColor(0);
+      regionName->SetTextAlign(11);
+      regionName->SetTextSize(0.035);
+      regionName->AddText( region_2b.getNiceNames()[0].c_str() );
+      regionName->AddText( region_2b.getNiceNames()[1].c_str() );
+      regionName->Draw("same");
+
+      yield_2b->Draw("L same");
+      //if( histo_p_data!=0 )
+      //  yield_2b_extrapData->Draw("P same");
+      yield_2b_extrapMC->Draw("P same");
+
+
+
+      TLegend* legend = new TLegend( 0.5, 0.63, 0.9, 0.78);
+      legend->SetFillColor(0);
+      legend->SetTextSize(0.035);
+      legend->AddEntry( yield_2b, "MC Truth", "L" );
+      //if( histo_p_data!=0 ) {
+      //  legend->AddEntry( yield_2b_extrapMC, "Extrap. (MC)", "P");
+      //  legend->AddEntry( yield_2b_extrapData, "Extrap. (Data)", "P");
+      //} else {
+        legend->AddEntry( yield_2b_extrapMC, "Extrap. from 0b", "PL");
+        //legend->AddEntry( yield_2b_extrapMC, "Extrap. from 0b", "FLP");
+      //}
+      legend->Draw("same");
+
+      TPaveText* labelTop = MT2DrawTools::getLabelTop("CMS Simulation, #sqrt{s} = 13 TeV");
+      labelTop->Draw("same");
+
+      gPad->RedrawAxis();
+
+      c1->SaveAs(Form("%s/closure_%s.eps", cfg.getEventYieldDir().c_str(), region_2b.getName().c_str()) );
+      c1->SaveAs(Form("%s/closure_%s.pdf", cfg.getEventYieldDir().c_str(), region_2b.getName().c_str()) );
+      c1->SaveAs(Form("%s/closure_%s.png", cfg.getEventYieldDir().c_str(), region_2b.getName().c_str()) );
+
+      delete c1;
+      delete h2_axes;
+
+    } // for regions
+
+    extrap->finalize();
+
+  } // if regions
+
   
   return extrap;
 
@@ -529,14 +609,14 @@ MT2Analysis<MT2Estimate>* compute2bFrom01b( MT2Config cfg, MT2Analysis<MT2Estima
 
 
 
-void fillFromTree( TTree* tree, TH1D* yield_2b_extrapMC, TH1D* yield_2b_extrapData, float p, float p_err ) {  //TH1D* histo_p, TH1D* histo_p_data ) {
+void fillFromTree( TTree* tree, TH1D* yield_2b_extrapMC, float p, float p_err ) {  //TH1D* histo_p, TH1D* histo_p_data ) {
 
 
   TH1D* yield_2b_extrapMCUp   = new TH1D(*yield_2b_extrapMC);
   TH1D* yield_2b_extrapMCDown = new TH1D(*yield_2b_extrapMC);
 
   yield_2b_extrapMCUp->SetName(Form("%sUp"  , yield_2b_extrapMC->GetName()));
-  yield_2b_extrapMCUp->SetName(Form("%sDown", yield_2b_extrapMC->GetName()));
+  yield_2b_extrapMCDown->SetName(Form("%sDown", yield_2b_extrapMC->GetName()));
 
   float weight;
   tree->SetBranchAddress( "weight", &weight );
@@ -546,6 +626,8 @@ void fillFromTree( TTree* tree, TH1D* yield_2b_extrapMC, TH1D* yield_2b_extrapDa
   tree->SetBranchAddress( "nBJets", &nbjets );
   float mt2;
   tree->SetBranchAddress( "mt2", &mt2 );
+  float ht;
+  tree->SetBranchAddress( "ht", &ht );
 
   int nentries = tree->GetEntries();
 
@@ -553,43 +635,35 @@ void fillFromTree( TTree* tree, TH1D* yield_2b_extrapMC, TH1D* yield_2b_extrapDa
 
     tree->GetEntry(iEntry);
 
+    if( njets<2 ) continue;
+    if( nbjets!=0 ) continue;
+    if( mt2<200. ) continue;
+    if( ht<450. ) continue;
+
     float corr_mc       = getCorrection( njets, p );
     float corr_mcUp     = getCorrection( njets, p+p_err );
     float corr_mcDown   = getCorrection( njets, p-p_err );
-    float corr_data     = getCorrection( njets, p );
-
-    //int thisBin = histo_p->FindBin(njets);
-    //float p_mc = histo_p->GetBinContent( thisBin );
-    //float p_mc_err = histo_p->GetBinError( thisBin );
-    //float p_data = (histo_p_data!=0) ? histo_p_data->GetBinContent( thisBin ) : 0 ;
-
-    //float corr_mc       = getCorrection( njets, p_mc );
-    //float corr_mcUp     = getCorrection( njets, p_mc+p_mc_err );
-    //float corr_mcDown   = getCorrection( njets, p_mc-p_mc_err );
-    //float corr_data     = getCorrection( njets, p_data );
 
     yield_2b_extrapMC    ->Fill( mt2, weight*corr_mc );
     yield_2b_extrapMCUp  ->Fill( mt2, weight*corr_mcUp );
     yield_2b_extrapMCDown->Fill( mt2, weight*corr_mcDown );
 
-    yield_2b_extrapData  ->Fill( mt2, weight*corr_data );
-
   }
 
 
-  for( int ibin=0; ibin<yield_2b_extrapMC->GetNbinsX(); ++ibin ) {
+  //for( int ibin=0; ibin<yield_2b_extrapMC->GetNbinsX(); ++ibin ) {
 
-    float x     = yield_2b_extrapMC    ->GetBinContent(ibin+1);
-    float xUp   = yield_2b_extrapMCUp  ->GetBinContent(ibin+1);
-    float xDown = yield_2b_extrapMCDown->GetBinContent(ibin+1);
+  //  float x     = yield_2b_extrapMC    ->GetBinContent(ibin+1);
+  //  float xUp   = yield_2b_extrapMCUp  ->GetBinContent(ibin+1);
+  //  float xDown = yield_2b_extrapMCDown->GetBinContent(ibin+1);
  
-    float xSyst = (xUp-x > x-xDown) ? xUp-x : x-xDown;
-    float xStat = yield_2b_extrapMC->GetBinError(ibin+1);
-    float xErr = sqrt( xStat*xStat + xSyst*xSyst );
+  //  float xSyst = (xUp-x > x-xDown) ? xUp-x : x-xDown;
+  //  float xStat = yield_2b_extrapMC->GetBinError(ibin+1);
+  //  float xErr = sqrt( xStat*xStat + xSyst*xSyst );
 
-    yield_2b_extrapMC->SetBinError(ibin+1, xErr);
+  //  yield_2b_extrapMC->SetBinError(ibin+1, xErr);
 
-  }
+  //}
     
 
 }
@@ -597,7 +671,8 @@ void fillFromTree( TTree* tree, TH1D* yield_2b_extrapMC, TH1D* yield_2b_extrapDa
 
 float getCorrection( int njets, float p ) {
 
-  float corr = (float)njets*(njets-1.)*p*p/((1.-p)*(1.-p)); 
+  float corr = TMath::Binomial(njets,2) * p*p / ( (1.-p)*(1.-p) ); //TMath::Power( 1.-p, njets-2 ); 
+  //float corr = (float)njets*(njets-1.)*p*p/((1.-p)*(1.-p)); 
   //float corr = 0.5*(float)njets*(njets-1.)*p*p/((1.-p)*(1.-p)); 
 
   return corr;
