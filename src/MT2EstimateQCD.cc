@@ -23,8 +23,8 @@ MT2EstimateQCD::MT2EstimateQCD( const std::string& aname, const MT2Region& aregi
   expPlusC = new TF1(this->getHistoName("expPlusC").c_str(), "expo(0)+[2]"                               , bins[0], bins[nBins]);
   expOrC   = new TF1(this->getHistoName("expOrC"  ).c_str(), "(x>=200)*exp([0]+200.*[1])+(x<200)*expo(0)", bins[0], bins[nBins]);
 
-  fitXmin  = 50.;
-  fitXmax  = 80.;
+  fitXmin  = 60.;
+  fitXmax  = 100.;
   dphi_low = 0.3;
 
 }
@@ -141,6 +141,26 @@ void MT2EstimateQCD::randomizePoisson( float scale ){
     int poisson_data = rand.Poisson(scale * hDphi->GetBinContent(ibin));
     hDphi->SetBinContent(ibin, poisson_data);
     hDphi->SetBinError( ibin, TMath::Sqrt(poisson_data) ); // here i want an approximation of the Poisson error
+    
+  } 
+  
+}
+
+void MT2EstimateQCD::sqrtErrors( float scale ){
+
+  for( int ibin=1; ibin<lDphi->GetXaxis()->GetNbins()+1; ++ibin ) {
+    
+    float data = scale * lDphi->GetBinContent(ibin);
+    lDphi->SetBinContent(ibin, data);
+    lDphi->SetBinError( ibin, TMath::Sqrt(data) );
+    
+  } 
+
+  for( int ibin=1; ibin<hDphi->GetXaxis()->GetNbins()+1; ++ibin ) {
+    
+    float data = scale * hDphi->GetBinContent(ibin);
+    hDphi->SetBinContent(ibin, data);
+    hDphi->SetBinError( ibin, TMath::Sqrt(data) );
     
   } 
   
