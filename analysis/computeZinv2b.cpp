@@ -138,13 +138,14 @@ int main( int argc, char* argv[] ) {
 
     TFile* file = TFile::Open("prova.root", "RECREATE");
     file->cd();
+    histo_mc->SetName("p");
     histo_mc->Write();
     file->Close();
 
   } else {
 
     TFile* file = TFile::Open("prova.root");
-    histo_mc = (TH1D*)file->Get("histo_mc");
+    histo_mc = (TH1D*)file->Get("p");
  
   }
 
@@ -670,6 +671,7 @@ MT2Analysis<MT2Estimate>* compute2bFrom01b_2( MT2Config cfg, MT2Analysis<MT2Esti
   MT2Analysis<MT2Estimate>* extrap = new MT2Analysis<MT2Estimate>( mc->getName() + "_extrap", regions );
 
   std::string outdir = cfg.getEventYieldDir() + "/fits2b";
+  system(Form("mkdir -p %s", outdir.c_str()));
 
 
   if( cfg.regionsSet()=="13TeV_inclusive" ) { // simple closure test
@@ -688,8 +690,8 @@ MT2Analysis<MT2Estimate>* compute2bFrom01b_2( MT2Config cfg, MT2Analysis<MT2Esti
     h1_mcFakes->Sumw2();
     h1_closure->Sumw2();
 
-    //tree->Project( "mcFakes", "mt2", "weight*( mt2>200. && ht > 450. && nBJets==2 && nTrueB==0. && nTrueC==0. )" );
     tree->Project( "mcTruth", "mt2", "weight*( mt2>200. && ht > 450. && nBJets==2 )" );
+    tree->Project( "mcFakes", "mt2", "weight*( mt2>200. && ht > 450. && nBJets==2 && nTrueB==0. && nTrueC==0. )" );
 
     fillFromTree_2( tree, h1_closure, func );
 
@@ -720,12 +722,11 @@ MT2Analysis<MT2Estimate>* compute2bFrom01b_2( MT2Config cfg, MT2Analysis<MT2Esti
     h1_mcFakes->Draw("histo same");
     h1_closure->Draw("P same");
 
-    TLegend* legend = new TLegend( 0.53, 0.75, 0.9, 0.9 );
+    TLegend* legend = new TLegend( 0.53, 0.73, 0.9, 0.9 );
     legend->SetFillColor(0);
     legend->SetTextSize(0.035);
-    legend->AddEntry( h1_mcTruth, "MC b=2", "P" );
-    //legend->AddEntry( h1_mcTruth, "MC b=2 (all)", "P" );
-    //legend->AddEntry( h1_mcFakes, "MC b=2 (fakes)", "L" );
+    legend->AddEntry( h1_mcTruth, "MC b=2 (all)", "P" );
+    legend->AddEntry( h1_mcFakes, "MC b=2 (fakes)", "L" );
     legend->AddEntry( h1_closure, "Extrap. from b=1", "P" );
     legend->Draw("same");
 
@@ -738,7 +739,109 @@ MT2Analysis<MT2Estimate>* compute2bFrom01b_2( MT2Config cfg, MT2Analysis<MT2Esti
     c1->SaveAs(Form("%s/closure.pdf", outdir.c_str()));
 
 
-  } // if inclusive
+  } else { // more complex region set
+
+
+    for( std::set<MT2Region>::iterator iR = regions.begin(); iR!=regions.end(); ++iR ) {
+
+      if( iR->nBJetsMin()!=1 ) continue; //reweight Nb=1 to get Nb=2
+      if( iR->nBJetsMax()!=1 ) continue; //reweight Nb=1 to get Nb=2
+
+      MT2EstimateTree* thisEst_1b = mc->get( *iR );
+      TTree* tree_1b = thisEst_1b->tree;
+
+      MT2Region region_2b( iR->htMin(), iR->htMax(), iR->nJetsMin(), iR->nJetsMax(), 2, 2 );
+      MT2EstimateTree* thisEst_2b = mc->get( region_2b );
+      if( thisEst_2b==0 ) continue;
+
+      TH1::AddDirectory(kTRUE); // stupid ROOT memory allocation needs this
+
+      TH1D* yield_2b = thisEst_2b->yield;
+
+      TH1D* yield_2b_extrapMC = new TH1D( *yield_2b ); // same binning
+      yield_2b_extrapMC->Reset();
+      std::string newNameMC = "extrap2bMC_" + iR->getName();
+      yield_2b_extrapMC->SetName(newNameMC.c_str());
+
+      //TH1D* yield_2b_extrapData = new TH1D( *yield_2b ); // same binning
+      //yield_2b_extrapData->Reset();
+      //std::string newNameData = "extrap2bData_" + iR->getName();
+      //yield_2b_extrapData->SetName(newNameData.c_str());
+
+
+      fillFromTree_2( tree_1b, yield_2b_extrapMC, func );
+
+
+      TCanvas* c1 = new TCanvas("c1", "", 600, 600);
+      c1->cd();
+
+      float xMin = yield_2b->GetXaxis()->GetXmin();
+      float xMax = yield_2b->GetXaxis()->GetXmax();
+      float yMax_mc = yield_2b->GetMaximum();
+      float yMax_extrap = yield_2b_extrapMC->GetMaximum();
+      float yMax = (yMax_mc>yMax_extrap) ? yMax_mc: yMax_extrap;
+      yMax *= 1.2;
+
+      TH2D* h2_axes = new TH2D("axes", "", 10, xMin, xMax, 10, 0., yMax );
+      h2_axes->SetXTitle( "M_{T2} [GeV]");
+      h2_axes->SetYTitle( "Events" );
+      h2_axes->Draw();
+
+      yield_2b->SetLineColor(kGray+3);
+      yield_2b->SetLineWidth(2.);
+
+      yield_2b_extrapMC->SetLineColor(46);
+      yield_2b_extrapMC->SetFillColor(46);
+      yield_2b_extrapMC->SetFillStyle(3004);
+      yield_2b_extrapMC->SetLineWidth(2);
+
+      yield_2b_extrapMC->SetMarkerColor(46);
+      yield_2b_extrapMC->SetMarkerSize(2.);
+      yield_2b_extrapMC->SetMarkerStyle(24);
+
+      //yield_2b_extrapData->SetMarkerColor(kBlack);
+      //yield_2b_extrapData->SetMarkerSize(1.6);
+      //yield_2b_extrapData->SetMarkerStyle(20);
+
+      TPaveText* regionName = new TPaveText(0.5, 0.78, 0.9, 0.88, "brNDC");
+      regionName->SetFillColor(0);
+      regionName->SetTextAlign(11);
+      regionName->SetTextSize(0.035);
+      regionName->AddText( region_2b.getNiceNames()[0].c_str() );
+      regionName->AddText( region_2b.getNiceNames()[1].c_str() );
+      regionName->Draw("same");
+
+      yield_2b->Draw("L same");
+      //if( histo_p_data!=0 )
+      //  yield_2b_extrapData->Draw("P same");
+      yield_2b_extrapMC->Draw("P same");
+
+
+
+      TLegend* legend = new TLegend( 0.5, 0.63, 0.9, 0.78);
+      legend->SetFillColor(0);
+      legend->SetTextSize(0.035);
+      legend->AddEntry( yield_2b, "MC Truth", "L" );
+      legend->AddEntry( yield_2b_extrapMC, "Extrap. from 1b", "PL");
+      legend->Draw("same");
+
+      TPaveText* labelTop = MT2DrawTools::getLabelTop("CMS Simulation, #sqrt{s} = 13 TeV");
+      labelTop->Draw("same");
+
+      gPad->RedrawAxis();
+
+      c1->SaveAs(Form("%s/fits2b/closure_%s.eps", cfg.getEventYieldDir().c_str(), region_2b.getName().c_str()) );
+      c1->SaveAs(Form("%s/fits2b/closure_%s.pdf", cfg.getEventYieldDir().c_str(), region_2b.getName().c_str()) );
+      c1->SaveAs(Form("%s/fits2b/closure_%s.png", cfg.getEventYieldDir().c_str(), region_2b.getName().c_str()) );
+
+      delete c1;
+      delete h2_axes;
+
+    } // for regions
+
+    extrap->finalize();
+
+  } // if regions
 
 
   return extrap;
