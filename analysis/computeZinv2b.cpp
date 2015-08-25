@@ -58,6 +58,7 @@ void fillFromTree( TTree* tree, TH1D* yield_2b_extrapMC, float p, float p_err );
 void fillFromTree_2( TTree* tree, TH1D* yield_2b_extrapMC, TF1* func );
 float getCorrection( int njets, float p );
 float getCorrection_1b( int njets, float p );
+void compareHistos( MT2Config cfg, const std::string& saveName, TH1D* histo1, TH1D* histo2 );
 
 
 
@@ -100,7 +101,10 @@ int main( int argc, char* argv[] ) {
 
   std::cout << "-> Running on : " << mcFile << std::endl;
 
-  TH1D* histo_mc, *histo_mc_gjet, *histo_data;
+  TH1D* histo_mc;
+  TH1D* histo_mc_zll;
+  TH1D* histo_data;
+  TH1D* histo_mc_gjet;
 
   if( cfg.regionsSet()=="13TeV_inclusive") {
 
@@ -126,15 +130,13 @@ int main( int argc, char* argv[] ) {
     TFile* file_zllData = TFile::Open( Form("%s/data.root"  , zllDir.c_str()) );
     TTree* tree_zllData = (TTree*)file_zllData->Get("data/HT450toInf_j2toInf_b0toInf/tree_data_HT450toInf_j2toInf_b0toInf");
 
-    getPHisto2( cfg, tree_zll, "zllMC", "Z #rightarrow ll MC" );
+    histo_mc_zll = getPHisto2( cfg, tree_zll, "zllMC", "Z #rightarrow ll MC" );
+
     histo_data = getPHisto2( cfg, tree_zllData, "zllData", "Z #rightarrow ll Data" );
-    //histo_data = getPHisto( cfg, tree_data, "Data", histo_mc, "MC" );
 
-    //drawMt2VsB( cfg, tree_gjet, "gjet", "Prompt Photons", "mt2", "M_{T2} [GeV]", 100, 0., 1450., "prompt==2" );
-    ////drawMt2VsB( cfg, tree_gjet, "gjet", "Prompt Photons", "nJets", "Number of Jets (p_{T}>30 GeV)", 8, 1.5, 9.5, "prompt==2" );
-
-    ////drawMt2VsB( cfg, tree_gjet  , "2b_nip"   , "Fragm. Photons", "prompt==1" );
-    ////drawMt2VsB( cfg, tree_gjet  , "2b_fake"  , "Fake   Photons", "prompt==0" );
+    histo_mc->SetTitle("Z #rightarrow #nu#nu MC");
+    histo_mc_zll->SetTitle("Z #rightarrow ll MC" );
+    compareHistos( cfg, "compare_mc", histo_mc, histo_mc_zll );
 
     TFile* file = TFile::Open("prova.root", "RECREATE");
     file->cd();
@@ -1146,6 +1148,60 @@ void fillFromTree( TTree* tree, TH1D* yield_2b_extrapMC, float p, float p_err ) 
     
 
 }
+
+
+
+void compareHistos( MT2Config cfg, const std::string& saveName, TH1D* histo1, TH1D* histo2 ) {
+
+
+  std::string outdir = cfg.getEventYieldDir() + "/fits2b";
+
+  float xMin = histo1->GetXaxis()->GetXmin();
+  float xMax = histo1->GetXaxis()->GetXmax();
+
+  TCanvas* c1 = new TCanvas("c1", "", 600, 600 );
+  c1->cd();
+
+  TH2D* h2_axes = new TH2D("axes", "", 10, xMin, xMax, 10, 0., 0.2 );
+  h2_axes->SetXTitle("Number of Jets");
+  h2_axes->SetYTitle("p");
+  h2_axes->Draw();
+
+  histo1->SetMarkerStyle(20);
+  histo1->SetMarkerSize(1.6);
+
+  histo2->SetMarkerStyle(24);
+  histo2->SetMarkerSize(1.6);
+
+  TLegend* legend = new TLegend( 0.5, 0.75, 0.9, 0.9 );
+  legend->SetFillColor(0);
+  legend->SetTextSize(0.035);
+  legend->AddEntry( histo1, histo1->GetTitle(), "P" );
+  legend->AddEntry( histo2, histo2->GetTitle(), "P" );
+  legend->Draw("same");
+
+  TPaveText* labelTop = MT2DrawTools::getLabelTop();
+  labelTop->Draw("same");
+
+  histo1->Draw("p same");
+  histo2->Draw("p same");
+
+  gPad->RedrawAxis();
+
+  c1->SaveAs( Form("%s/%s.eps", outdir.c_str(), saveName.c_str()) );
+  c1->SaveAs( Form("%s/%s.pdf", outdir.c_str(), saveName.c_str()) );
+
+  delete c1;
+  delete h2_axes;
+
+
+
+
+
+
+}
+
+
 
 
 float getCorrection( int njets, float p ) {
