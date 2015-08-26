@@ -116,13 +116,13 @@ int main( int argc, char* argv[] ) {
     drawMt2VsB( cfg, tree_Zinv, "zinv", "Z #rightarrow #nu#nu", "mt2", "M_{T2} [GeV]", 100, 0., 1450. );
     //drawMt2VsB( cfg, tree_Zinv, "zinv", "Z #rightarrow #nu#nu", "nJets", "Number of Jets (p_{T}>30 GeV)", 8, 1.5, 9.5 );
 
-    TFile* file_gjet = TFile::Open( Form("%s/mc.root"  , gammaDir.c_str()) );
-    TFile* file_data = TFile::Open( Form("%s/data.root", gammaDir.c_str()) );
+    //TFile* file_gjet = TFile::Open( Form("%s/mc.root"  , gammaDir.c_str()) );
+    //TFile* file_data = TFile::Open( Form("%s/data.root", gammaDir.c_str()) );
 
-    TTree* tree_gjet = (TTree*)file_gjet->Get("gammaCRtree/HT450toInf_j2toInf_b0toInf/tree_gammaCRtree_HT450toInf_j2toInf_b0toInf");
-    TTree* tree_data = (TTree*)file_data->Get("gammaCRtree/HT450toInf_j2toInf_b0toInf/tree_gammaCRtree_HT450toInf_j2toInf_b0toInf");
+    //TTree* tree_gjet = (TTree*)file_gjet->Get("gammaCRtree/HT450toInf_j2toInf_b0toInf/tree_gammaCRtree_HT450toInf_j2toInf_b0toInf");
+    //TTree* tree_data = (TTree*)file_data->Get("gammaCRtree/HT450toInf_j2toInf_b0toInf/tree_gammaCRtree_HT450toInf_j2toInf_b0toInf");
 
-    histo_mc_gjet = getPHisto2( cfg, tree_gjet, "gjetMC", "#gamma + Jets MC" );
+    //histo_mc_gjet = getPHisto2( cfg, tree_gjet, "gjetMC", "#gamma + Jets MC" );
 
 
     TFile* file_zll = TFile::Open( Form("%s/mc.root"  , zllDir.c_str()) );
@@ -1169,6 +1169,7 @@ void compareHistos( MT2Config cfg, const std::string& saveName, TH1D* histo1, TH
 
   histo1->SetMarkerStyle(20);
   histo1->SetMarkerSize(1.6);
+  histo1->GetFunction( "line" )->SetLineStyle(1);
 
   histo2->SetMarkerStyle(24);
   histo2->SetMarkerSize(1.6);
