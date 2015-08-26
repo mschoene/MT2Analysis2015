@@ -278,6 +278,15 @@ int main( int argc, char* argv[] ) {
 
       MT2EstimateTree::addVar( tree, "nJetHF30" );
       MT2EstimateTree::addVar( tree_pass, "nJetHF30" );
+
+      if( cfg.additionalStuff()=="hfContent" ) {
+        MT2EstimateTree::addVar( tree, "nTrueB" );
+        MT2EstimateTree::addVar( tree, "nTrueC" );
+
+        MT2EstimateTree::addVar( tree_pass, "nTrueB" );
+        MT2EstimateTree::addVar( tree_pass, "nTrueC" );
+      }
+
       
       for( unsigned i=0; i<samples_data.size(); ++i ) {
         computeYield( samples_data[i], cfg, tree, tree_pass, dataCR_loose, dataCR );
@@ -330,8 +339,9 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
   
   MT2Tree myTree;
   myTree.loadGenStuff = false;
+  if( cfg.additionalStuff()=="qgVars" || cfg.additionalStuff()=="hfContent" ) 
+     myTree.loadGenStuff = true;
   myTree.Init(tree);
-
 
   int nentries = tree->GetEntries();
 
@@ -387,6 +397,7 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
     MT2EstimateTree* thisTree = anaTree->get( ht, njets, nbjets, met, minMTBmet, mt2 );
     MT2EstimateTree* thisTree_pass = anaTree_pass->get( ht, njets, nbjets, met, minMTBmet, mt2 );
     if( thisTree==0 ) continue;
+
 
 
     if( !myTree.isData ) {
@@ -524,9 +535,36 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
     thisTree->assignVar( "jet1_pt", myTree.gamma_jet1_pt );
     thisTree->assignVar( "jet2_pt", myTree.gamma_jet2_pt );
     thisTree->assignVar( "nJetHF30",  nJetHF30_ );
+
+
+    int nTrueB=0;
+    int nTrueC=0;
+
+    if( cfg.additionalStuff()=="hfContent" ) {
+
+      for( int ipart=0; ipart<myTree.ngenPart; ++ipart ) {
+
+        if( myTree.genPart_pt[ipart] < 20. ) continue;
+        if( abs(myTree.genPart_eta[ipart])>2.5 ) continue;
+        if( myTree.genPart_status[ipart] != 23 ) continue;
+
+        if( abs(myTree.genPart_pdgId[ipart])==5 )
+          nTrueB++;
+        if( abs(myTree.genPart_pdgId[ipart])==4 )
+          nTrueC++;
+
+      }
+
+      thisTree->assignVar( "nTrueB", nTrueB );
+      thisTree->assignVar( "nTrueC", nTrueC );
+
+    }
+
+
     thisTree->fillTree_gamma(myTree, weight );
 
     if( passIso ) {
+
       thisTree_pass->yield->Fill(mt2, weight );
       thisTree_pass->assignVar( "iso", iso );
       //thisTree_pass->assignVar( "isoRC", myTree.gamma_chHadIsoRC[0] );
@@ -536,7 +574,14 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
       thisTree_pass->assignVar( "jet1_pt", myTree.gamma_jet1_pt );
       thisTree_pass->assignVar( "jet2_pt", myTree.gamma_jet2_pt );
       thisTree->assignVar( "nJetHF30",  nJetHF30_ );
+
+      if( cfg.additionalStuff()=="hfContent" ) {
+        thisTree_pass->assignVar( "nTrueB", nTrueB );
+        thisTree_pass->assignVar( "nTrueC", nTrueC );
+      }
+
       thisTree_pass->fillTree_gamma(myTree, weight );
+
     }
 
 
