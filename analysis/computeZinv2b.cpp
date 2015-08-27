@@ -49,7 +49,7 @@ Double_t bern( Double_t *x, Double_t *par) {
 void drawMt2VsB( MT2Config cfg, TTree* tree, const std::string& suffix, const std::string& legendTitle, const std::string& varName, const std::string& axisName, int nBins, float xMin, float xMax, const std::string& additionalSel="");
 float getP( MT2Config cfg, TTree* tree, const std::string& name, TTree* tree_data=0, const std::string& name_data="Data" );
 TH1D* getPHisto( MT2Config cfg, TTree* tree, const std::string& name, TH1D* histo_compare=0, const std::string& name_compare="" );
-TH1D* getPHisto2( MT2Config cfg, TTree* tree, const std::string& name, const std::string& niceName );
+TH1D* getPHisto2( MT2Config cfg, TTree* tree, const std::string& name, const std::string& niceName, const std::string& selection = "ht>450. && mt2 > 200." );
 void getPfromFunc( TF1* line, float& p, float& p_err );
 void getPfromFunc21( TF1* line, float& p, float& p_err );
 MT2Analysis<MT2Estimate>* compute2bFrom01b( MT2Config cfg, MT2Analysis<MT2EstimateTree>* mc, float p, float p_err );
@@ -58,7 +58,7 @@ void fillFromTree( TTree* tree, TH1D* yield_2b_extrapMC, float p, float p_err );
 void fillFromTree_2( TTree* tree, TH1D* yield_2b_extrapMC, TF1* func );
 float getCorrection( int njets, float p );
 float getCorrection_1b( int njets, float p );
-void compareHistos( MT2Config cfg, const std::string& saveName, TH1D* histo1, TH1D* histo2 );
+void compareHistos( MT2Config cfg, const std::string& saveName, TH1D* histo1, TH1D* histo2, TH1D* histo3=0, TH1D* histo4=0 );
 
 
 
@@ -131,12 +131,11 @@ int main( int argc, char* argv[] ) {
     TTree* tree_zllData = (TTree*)file_zllData->Get("data/HT450toInf_j2toInf_b0toInf/tree_data_HT450toInf_j2toInf_b0toInf");
 
     histo_mc_zll = getPHisto2( cfg, tree_zll, "zllMC", "Z #rightarrow ll MC" );
+    TH1D* histo_mc_zll_loose = getPHisto2( cfg, tree_zll, "zllMC", "Z #rightarrow ll MC (loose)", "ht>450." );
 
-    histo_data = getPHisto2( cfg, tree_zllData, "zllData", "Z #rightarrow ll Data" );
+    histo_data = getPHisto2( cfg, tree_zllData, "zllData", "Z #rightarrow ll Data (loose)", "ht>450." );
 
-    histo_mc->SetTitle("Z #rightarrow #nu#nu MC");
-    histo_mc_zll->SetTitle("Z #rightarrow ll MC" );
-    compareHistos( cfg, "compare_mc", histo_mc, histo_mc_zll );
+    compareHistos( cfg, "compare_mc", histo_mc, histo_mc_zll, histo_mc_zll_loose );
 
     TFile* file = TFile::Open("prova.root", "RECREATE");
     file->cd();
@@ -166,7 +165,7 @@ int main( int argc, char* argv[] ) {
 
 
 
-TH1D* getPHisto2( MT2Config cfg, TTree* tree, const std::string& name, const std::string& niceName ) {
+TH1D* getPHisto2( MT2Config cfg, TTree* tree, const std::string& name, const std::string& niceName, const std::string& selection ) {
 
   float njetMin = 2;
   float njetMax = 12;
@@ -199,7 +198,7 @@ TH1D* getPHisto2( MT2Config cfg, TTree* tree, const std::string& name, const std
     h1_nbjets->SetYTitle("Events");
     h1_nbjets->SetXTitle("Number of b-Jets");
 
-    tree->Project( name_bjets.c_str(), "nBJets", Form("weight*(nJets==%d && mt2>200. && ht>450. )", njet) );
+    tree->Project( name_bjets.c_str(), "nBJets", Form("weight*(nJets==%d && %s )", njet, selection.c_str() ) );
 
     TF1* bern_12 = new TF1(Form("bern_%d", njet), bern, 0.5, 2.5, 3 );
     bern_12->SetParameter( 0, h1_nbjets->Integral() );
@@ -318,6 +317,8 @@ TH1D* getPHisto2( MT2Config cfg, TTree* tree, const std::string& name, const std
 
   delete c1;
   delete h2_axes;
+
+  h1_p_vs_nj_12->SetTitle( niceName.c_str() );
 
   return h1_p_vs_nj_12;
 
@@ -1079,7 +1080,7 @@ void fillFromTree_2( TTree* tree, TH1D* yield_2b_extrapMC, TF1* func ) {
     if( mt2<200. ) continue;
     if( ht<450. ) continue;
 
-    float corr_mc = getCorrection_1b( njets, func->Eval(njets) );
+    float corr_mc = getCorrection_1b( njets, TMath::Max( func->Eval(njets), 0. ) );
 
     yield_2b_extrapMC->Fill( mt2, weight*corr_mc );
 
@@ -1151,7 +1152,7 @@ void fillFromTree( TTree* tree, TH1D* yield_2b_extrapMC, float p, float p_err ) 
 
 
 
-void compareHistos( MT2Config cfg, const std::string& saveName, TH1D* histo1, TH1D* histo2 ) {
+void compareHistos( MT2Config cfg, const std::string& saveName, TH1D* histo1, TH1D* histo2, TH1D* histo3, TH1D* histo4 ) {
 
 
   std::string outdir = cfg.getEventYieldDir() + "/fits2b";
@@ -1162,7 +1163,11 @@ void compareHistos( MT2Config cfg, const std::string& saveName, TH1D* histo1, TH
   TCanvas* c1 = new TCanvas("c1", "", 600, 600 );
   c1->cd();
 
-  TH2D* h2_axes = new TH2D("axes", "", 10, xMin, xMax, 10, 0., 0.2 );
+
+  float yMax = 0.2;
+  if( histo4!=0 ) yMax = 0.25;
+
+  TH2D* h2_axes = new TH2D("axes", "", 10, xMin, xMax, 10, 0., yMax );
   h2_axes->SetXTitle("Number of Jets");
   h2_axes->SetYTitle("p");
   h2_axes->Draw();
@@ -1174,18 +1179,56 @@ void compareHistos( MT2Config cfg, const std::string& saveName, TH1D* histo1, TH
   histo2->SetMarkerStyle(24);
   histo2->SetMarkerSize(1.6);
 
-  TLegend* legend = new TLegend( 0.5, 0.75, 0.9, 0.9 );
+  if( histo3!=0 ) {
+
+    histo1->GetFunction("line")->SetLineColor(kBlack);
+
+    histo2->SetMarkerStyle(20);
+    histo2->SetLineColor(46);
+    histo2->SetMarkerColor(46);
+    histo2->GetFunction("line")->SetLineColor(46);
+
+    histo3->SetMarkerStyle( 21 );
+    histo3->SetMarkerSize( 1.6 );
+    histo3->SetMarkerColor( 38 );
+    histo3->SetLineColor( 38 );
+    histo3->GetFunction( "line" )->SetLineColor(38);
+  }
+
+  if( histo4!=0 ) {
+
+    histo1->SetMarkerStyle(24);
+
+    histo4->SetMarkerStyle(20);
+    histo4->SetLineColor(kBlack);
+    histo4->SetMarkerColor(kBlack);
+    histo4->GetFunction("line")->SetLineColor(kBlack);
+
+  }
+
+  float yMin_legend = 0.75;
+  if( histo3!=0 ) yMin_legend = 0.7;
+  if( histo4!=0 ) yMin_legend = 0.65;
+  TLegend* legend = new TLegend( 0.5, yMin_legend, 0.9, 0.9 );
   legend->SetFillColor(0);
   legend->SetTextSize(0.035);
   legend->AddEntry( histo1, histo1->GetTitle(), "P" );
   legend->AddEntry( histo2, histo2->GetTitle(), "P" );
+  if( histo3!=0 )
+    legend->AddEntry( histo3, histo3->GetTitle(), "P" );
+  if( histo4!=0 )
+    legend->AddEntry( histo4, histo4->GetTitle(), "P" );
   legend->Draw("same");
 
   TPaveText* labelTop = MT2DrawTools::getLabelTop();
   labelTop->Draw("same");
 
+  if( histo3!=0 )
+    histo3->Draw("p same");
   histo1->Draw("p same");
   histo2->Draw("p same");
+  if( histo4!=0 )
+    histo4->Draw("p same");
 
   gPad->RedrawAxis();
 
