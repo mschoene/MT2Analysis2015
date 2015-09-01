@@ -349,9 +349,9 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
 
     TLorentzVector z = LVec[0] + LVec[1]; //leptons invariant mass
 
-    float ht   = myTree.ht;
-    float met  = myTree.met_pt;
-    float mt2  = myTree.mt2;
+    float ht   = myTree.zll_ht;
+    float met  = myTree.zll_met_pt;
+    float mt2  = myTree.zll_mt2;
     float minMTBmet = myTree.minMTBMet;
     int njets  = myTree.nJet30;
     int nbjets = myTree.nBJet20;

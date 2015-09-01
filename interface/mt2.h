@@ -69,6 +69,7 @@ public :
    Float_t         genWeight;
    Float_t         rho;
    Int_t           nVert;
+   Int_t           nJet20;
    Int_t           nJet25;
    Int_t           nBJetLoose25;
    Int_t           nBJetMedium25;
@@ -227,6 +228,18 @@ public :
    Float_t         fatJet_tau1[9];   //[nfatJet]
    Float_t         fatJet_tau2[9];   //[nfatJet]
    Float_t         fatJet_tau3[9];   //[nfatJet]
+   Int_t           nGenPart;
+   Int_t           GenPart_motherId[11];   //[nGenPart]
+   Int_t           GenPart_grandmotherId[11];   //[nGenPart]
+   Int_t           GenPart_sourceId[11];   //[nGenPart]
+   Float_t         GenPart_charge[11];   //[nGenPart]
+   Int_t           GenPart_status[11];   //[nGenPart]
+   Int_t           GenPart_pdgId[11];   //[nGenPart]
+   Float_t         GenPart_pt[11];   //[nGenPart]
+   Float_t         GenPart_eta[11];   //[nGenPart]
+   Float_t         GenPart_phi[11];   //[nGenPart]
+   Float_t         GenPart_mass[11];   //[nGenPart]
+   Int_t           GenPart_motherIndex[11];   //[nGenPart]
    Int_t           ngenPart;
    Float_t         genPart_pt[200];   //[ngenPart]
    Float_t         genPart_eta[200];   //[ngenPart]
@@ -479,6 +492,7 @@ public :
    TBranch        *b_genWeight;   //!
    TBranch        *b_rho;   //!
    TBranch        *b_nVert;   //!
+   TBranch        *b_nJet20;   //!
    TBranch        *b_nJet25;   //!
    TBranch        *b_nBJetLoose25;   //!
    TBranch        *b_nBJetMedium25;   //!
@@ -635,6 +649,18 @@ public :
    TBranch        *b_fatJet_tau1;   //!
    TBranch        *b_fatJet_tau2;   //!
    TBranch        *b_fatJet_tau3;   //!
+   TBranch        *b_nGenPart;   //!
+   TBranch        *b_GenPart_motherId;   //!
+   TBranch        *b_GenPart_grandmotherId;   //!
+   TBranch        *b_GenPart_sourceId;   //!
+   TBranch        *b_GenPart_charge;   //!
+   TBranch        *b_GenPart_status;   //!
+   TBranch        *b_GenPart_pdgId;   //!
+   TBranch        *b_GenPart_pt;   //!
+   TBranch        *b_GenPart_eta;   //!
+   TBranch        *b_GenPart_phi;   //!
+   TBranch        *b_GenPart_mass;   //!
+   TBranch        *b_GenPart_motherIndex;   //!
    TBranch        *b_ngenPart;   //!
    TBranch        *b_genPart_pt;   //!
    TBranch        *b_genPart_eta;   //!
@@ -955,6 +981,7 @@ void MT2Tree::Init(TTree *tree)
    fChain->SetBranchAddress("genWeight", &genWeight, &b_genWeight);
    fChain->SetBranchAddress("rho", &rho, &b_rho);
    fChain->SetBranchAddress("nVert", &nVert, &b_nVert);
+   fChain->SetBranchAddress("nJet20", &nJet20, &b_nJet20);
    fChain->SetBranchAddress("nJet25", &nJet25, &b_nJet25);
    fChain->SetBranchAddress("nBJetLoose25", &nBJetLoose25, &b_nBJetLoose25);
    fChain->SetBranchAddress("nBJetMedium25", &nBJetMedium25, &b_nBJetMedium25);
@@ -1112,6 +1139,18 @@ void MT2Tree::Init(TTree *tree)
    fChain->SetBranchAddress("fatJet_tau2", fatJet_tau2, &b_fatJet_tau2);
    fChain->SetBranchAddress("fatJet_tau3", fatJet_tau3, &b_fatJet_tau3);
    if( loadGenStuff ) {
+     fChain->SetBranchAddress("nGenPart", &nGenPart, &b_nGenPart);
+     fChain->SetBranchAddress("GenPart_motherId", GenPart_motherId, &b_GenPart_motherId);
+     fChain->SetBranchAddress("GenPart_grandmotherId", GenPart_grandmotherId, &b_GenPart_grandmotherId);
+     fChain->SetBranchAddress("GenPart_sourceId", GenPart_sourceId, &b_GenPart_sourceId);
+     fChain->SetBranchAddress("GenPart_charge", GenPart_charge, &b_GenPart_charge);
+     fChain->SetBranchAddress("GenPart_status", GenPart_status, &b_GenPart_status);
+     fChain->SetBranchAddress("GenPart_pdgId", GenPart_pdgId, &b_GenPart_pdgId);
+     fChain->SetBranchAddress("GenPart_pt", GenPart_pt, &b_GenPart_pt);
+     fChain->SetBranchAddress("GenPart_eta", GenPart_eta, &b_GenPart_eta);
+     fChain->SetBranchAddress("GenPart_phi", GenPart_phi, &b_GenPart_phi);
+     fChain->SetBranchAddress("GenPart_mass", GenPart_mass, &b_GenPart_mass);
+     fChain->SetBranchAddress("GenPart_motherIndex", GenPart_motherIndex, &b_GenPart_motherIndex);
      fChain->SetBranchAddress("ngenPart", &ngenPart, &b_ngenPart);
      fChain->SetBranchAddress("genPart_pt", genPart_pt, &b_genPart_pt);
      fChain->SetBranchAddress("genPart_eta", genPart_eta, &b_genPart_eta);
@@ -1360,25 +1399,24 @@ Bool_t MT2Tree::passIsoTrackVeto(){
 Bool_t MT2Tree::passBaseline(TString sel)
 {
   if (sel=="gamma")
-    return nVert > 0;// && 
+    return nVert > 0 && 
       // gamma_nJet30 >= 2 && 
-//      gamma_deltaPhiMin > 0.3 && 
-//      gamma_diffMetMht < 0.5*gamma_met_pt;
+      gamma_deltaPhiMin > 0.3 && 
+      gamma_diffMetMht < 0.5*gamma_met_pt;
   else if (sel=="zll")
     return nVert > 0 &&
       // nJet30 >= 2 && 
-//      zll_deltaPhiMin > 0.3 && 
-//      zll_diffMetMht < 0.5*zll_met_pt && 
+      zll_deltaPhiMin > 0.3 && 
+      zll_diffMetMht < 0.5*zll_met_pt && 
       nlep > 1 ;
   else
     return nVert > 0;// && 
-      //(nJet30 >= 2 || sel=="monojet") &&
-//      deltaPhiMin > 0.3 && 
-//      diffMetMht < 0.5*met_pt;
+  //(nJet30 >= 2 || sel=="monojet") &&
+  //      deltaPhiMin > 0.3 && 
+  //      diffMetMht < 0.5*met_pt;
   
   return kFALSE;
 }
-
 
 
 

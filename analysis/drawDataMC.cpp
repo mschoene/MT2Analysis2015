@@ -103,8 +103,9 @@ int main( int argc, char* argv[] ) {
 
 
   //selection = "weight*(ht>900. && nJets>1 && met>30. && mt2>10.)";
-  //selection = "weight*(ht>1000. && nJets>1 && met>200. && mt2>10. && deltaPhiMin>0.3 && diffMetMht<0.5*met && nJetHF30==0)";
+  //selection = "weight*(ht>1000. && nJets>1 && met>30. && mt2>10. && deltaPhiMin>0.3 && diffMetMht<0.5*met && nJetHF30==0)";
   selection = "weight*(ht>=1000. && nJets>1 && met>30. && mt2>10. && deltaPhiMin>0.3 && diffMetMht<0.5*met)";
+  //selection = "weight*(ht>=1000. && nJets>1 && met>30. && mt2>10. && deltaPhiMin>0.3)";
   
   htMin=1000;
   htMax=-1;
@@ -112,6 +113,7 @@ int main( int argc, char* argv[] ) {
   drawYields( cfg, data, mc, "nVert" , "nVert" , selection, 50, 0.5, 50.5, "Number of Vertices", "", htMin, htMax );
   drawYields( cfg, data, mc, "mt2"   , "mt2"   , selection, 60, 10., 310., "M_{T2}", "GeV", htMin, htMax );
   drawYields( cfg, data, mc, "met"   , "met"   , selection, 80, 30., 430., "Missing E_{T}", "GeV", htMin, htMax );
+  drawYields( cfg, data, mc, "mht"   , "mht"   , selection, 80, 30., 430., "Missing H_{T}", "GeV", htMin, htMax );
   drawYields( cfg, data, mc, "ht"    , "ht"    , selection, 50, 1000., 3500., "H_{T}", "GeV", htMin, htMax );
   drawYields( cfg, data, mc, "nJets" , "nJets" , selection, 12, 1.5, 13.5, "Number of Jets (p_{T} > 30 GeV)", "", htMin, htMax );
   drawYields( cfg, data, mc, "nJetHF30" , "nJetHF30" , selection, 7, -0.5, 6.5, "N(jets, p_{T} > 30 GeV & |#eta|>3.0)", "", htMin, htMax );
@@ -124,6 +126,8 @@ int main( int argc, char* argv[] ) {
   drawYields( cfg, data, mc, "met_tail"   , "met"   , selection, 100,  0., 5000., "Missing E_{T}", "GeV", htMin, htMax );
   drawYields( cfg, data, mc, "ht_tail"    , "ht"    , selection, 120, 1000., 13000., "H_{T}", "GeV", htMin, htMax );
 
+//////  selection = "weight*(ht>=1000. && nJets>1 && met>30. && mt2>10. && diffMetMht<0.5*met)";
+//////  drawYields( cfg, data, mc, "deltaPhiMin", "deltaPhiMin", selection, 32, 0.0, 3.2, "min #Delta#phi(jets, ME_{T})", "", htMin, htMax );
   
   return 0;
 
