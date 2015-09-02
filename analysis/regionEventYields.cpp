@@ -257,7 +257,7 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg ) {
   
 
   MT2Tree myTree;
-  if( cfg.additionalStuff()=="qgVars" ) {
+  if( cfg.additionalStuff()=="qgVars" || cfg.additionalStuff()=="hfContent" ) {
      myTree.loadGenStuff = true;
   } else {
     myTree.loadGenStuff = false;
@@ -283,6 +283,11 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg ) {
     T::addVar( analysis, "qglAve" );
   }
   
+  if( cfg.additionalStuff()=="hfContent" ) {
+    T::addVar( analysis, "nTrueB" );
+    T::addVar( analysis, "nTrueBJ" );
+    T::addVar( analysis, "nTrueC" );
+  }
   
   T::addVar( analysis, "nJetHF30" );
   T::addVar( analysis, "jet1_pt" );
@@ -423,14 +428,48 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg ) {
       thisEstimate->assignVar( "qglProd", qglProd );
       thisEstimate->assignVar( "qglAve", qglAve );
 
-      thisEstimate->assignTree( myTree, weight );
-      thisEstimate->tree->Fill();
 
-    } else {
+    } 
 
-      thisEstimate->fillTree( myTree, weight );
+    if( cfg.additionalStuff()=="hfContent" ) {
+
+      float nTrueB=0.;
+      float nTrueC=0.;
+
+      for( unsigned ipart=0; ipart<myTree.ngenPart; ++ipart ) {
+
+        if( myTree.genPart_pt[ipart] < 20. ) continue;
+        if( abs(myTree.genPart_eta[ipart])>2.5 ) continue;
+        if( myTree.genPart_status[ipart] != 23 ) continue;
+
+        if( abs(myTree.genPart_pdgId[ipart])==5 )
+          nTrueB+=1.;
+        if( abs(myTree.genPart_pdgId[ipart])==4 )
+          nTrueC+=1.;
+
+      }
+
+
+      float nTrueBJ=0.;
+
+      for( unsigned ijet=0; ijet<myTree.njet; ++ijet ) {
+
+        if( myTree.jet_pt[ijet] <20. ) continue;
+        if( abs(myTree.jet_eta[ijet])>2.5 ) continue;
+
+        if( abs(myTree.jet_mcFlavour[ijet])==5 )
+          nTrueBJ+=1.;
+
+      }
+
+      thisEstimate->assignVar( "nTrueB", nTrueB );
+      thisEstimate->assignVar( "nTrueC", nTrueC );
+      thisEstimate->assignVar( "nTrueBJ", nTrueBJ );
 
     }
+
+    thisEstimate->assignTree( myTree, weight );
+    thisEstimate->tree->Fill();
 
     thisEstimate->yield->Fill( mt2, weight );
     thisEstimate->yield3d->Fill( mt2, GenSusyMScan1, GenSusyMScan2, weight );

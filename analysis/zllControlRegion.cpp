@@ -355,16 +355,16 @@ MT2Analysis<MT2EstimateTree>* computeYield( const MT2Sample& sample, const MT2Co
 
     //  if( abs(M_ll - Z_invM_true)>20.) continue;
 
-    float ht   = myTree.ht;
-    float met  = myTree.met_pt;
-    float mt2  = myTree.mt2;
+    float ht   = myTree.zll_ht;
+    float met  = myTree.zll_met_pt;
+    float mt2  = myTree.zll_mt2;
     float minMTBmet = myTree.minMTBMet;
     int njets  = myTree.nJet30;
     int nbjets = myTree.nBJet20;
 
     Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi(); 
 
-    MT2EstimateTree* thisEstimate = analysis->get( myTree.zll_ht, njets, nbjets, myTree.zll_met_pt, minMTBmet, myTree.zll_mt2 );
+    MT2EstimateTree* thisEstimate = analysis->get( ht, njets, nbjets, met, minMTBmet, mt2 );
     if( thisEstimate==0 ) continue; 
 
     //initialize
@@ -386,7 +386,7 @@ MT2Analysis<MT2EstimateTree>* computeYield( const MT2Sample& sample, const MT2Co
     //JUGJUGJUG
     thisEstimate->fillTree_zll(myTree, weight );
 
-    thisEstimate->yield->Fill(myTree.zll_mt2, weight );
+    thisEstimate->yield->Fill(mt2, weight );
   
   } // for entries
 
