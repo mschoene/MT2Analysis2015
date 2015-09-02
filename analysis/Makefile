@@ -10,12 +10,10 @@ ROOTSYS ?= ERROR_RootSysIsNotDefined
 
 ROOTFLAG = `${ROOTSYS}/bin/root-config --cflags --libs`
 
-EXTRALIBS := -L$(ROOTSYS)/lib -L$(ROOFIT_LIBDIR)/ -L$(CMSSW_BASE)/lib/slc6_amd64_gcc481/ -L/swshare/cms/slc6_amd64_gcc481/cms/cmssw/CMSSW_7_0_6_patch3/lib/slc6_amd64_gcc481/ -L/swshare/cms/slc6_amd64_gcc481/cms/cmssw-patch/CMSSW_7_0_6_patch3/lib/slc6_amd64_gcc481 -lHtml -lMathCore -lGenVector -lMinuit -lEG  -lPhysics -L/swshare/cms/slc6_amd64_gcc481/external/zlib/1.2.3/lib -lz -lTreePlayer -lRooFitCore -lRooFit
+EXTRALIBS := -L$(ROOTSYS)/lib -L$(ROOFIT_LIBDIR)/ -L$(CMSSW_BASE)/lib/slc6_amd64_gcc491/ -L/cvmfs/cms.cern.ch/slc6_amd64_gcc491/cms/cmssw/CMSSW_7_4_7/lib/slc6_amd64_gcc491/ -lHtml -lMathCore -lGenVector -lMinuit -lEG  -lPhysics -L/cvmfs/cms.cern.ch/slc6_amd64_gcc491/external/zlib/1.2.8-cms/lib -lz -lTreePlayer -lRooFitCore -lRooFit
 
 
-
-
-all: computeLostLepton_CR assembleQCDestimate createDatacards regionEventYields gammaControlRegion makeZinvGammaTemplates computeZinvFromGamma fitPurityGamma zllControlRegion zllPurityTrees computeZllGammaRatio computeZllofBackground
+all: computeLostLepton_CR assembleQCDdata createDatacards regionEventYields gammaControlRegion makeZinvGammaTemplates computeZinvFromGamma fitPurityGamma zllControlRegion zllPurityTrees computeZllGammaRatio computeZllofBackground
 
 zllPurityTrees: zllPurityTrees.cpp MT2Region.o MT2Sample.o MT2EstimateSyst.o MT2Estimate.o MT2DrawTools.o MT2Config.o MT2EstimateTree.o
 	$(CC) -Wall $(INCLUDES) -o zllPurityTrees zllPurityTrees.cpp MT2Region.o MT2Sample.o MT2EstimateSyst.o MT2Estimate.o MT2DrawTools.o MT2Config.o MT2EstimateTree.o $(ROOTFLAG) $(EXTRALIBS) -fpermissive
@@ -44,8 +42,8 @@ computeQCD_CR: computeQCD_CR.cpp MT2Region.o MT2Sample.o MT2EstimateQCD.o MT2Est
 assembleQCDdata: assembleQCDdata.cpp MT2Region.o MT2Sample.o MT2EstimateQCD.o MT2Estimate.o MT2DrawTools.o
 	$(CC) -Wall $(INCLUDES) -o assembleQCDdata assembleQCDdata.cpp MT2Region.o MT2Sample.o MT2EstimateQCD.o MT2Estimate.o MT2DrawTools.o $(ROOTFLAG) $(EXTRALIBS)
 
-computeZinvFromGamma: computeZinvFromGamma.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateTree.o MT2EstimateSyst.o MT2Config.o
-	$(CC) -Wall $(INCLUDES) -o computeZinvFromGamma computeZinvFromGamma.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateTree.o MT2EstimateSyst.o MT2Config.o $(ROOTFLAG) $(EXTRALIBS)
+computeZinvFromGamma: computeZinvFromGamma.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateTree.o MT2EstimateSyst.o MT2Config.o MT2DrawTools.o
+	$(CC) -Wall $(INCLUDES) -o computeZinvFromGamma computeZinvFromGamma.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateTree.o MT2EstimateSyst.o MT2Config.o MT2DrawTools.o $(ROOTFLAG) $(EXTRALIBS)
 
 computeZinv2b: computeZinv2b.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateTree.o MT2EstimateSyst.o MT2Config.o MT2DrawTools.o
 	$(CC) -Wall $(INCLUDES) -o computeZinv2b computeZinv2b.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateTree.o MT2EstimateSyst.o MT2Config.o MT2DrawTools.o $(ROOTFLAG) $(EXTRALIBS)

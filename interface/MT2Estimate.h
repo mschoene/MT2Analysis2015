@@ -96,8 +96,8 @@ class MT2Estimate {
   virtual void getShit( TFile* file, const std::string& path );
   
   virtual void print( const std::string& ofs );
-  virtual void print( ofstream& ofs_file );
-  virtual void print( ofstream& ofs_file, Int_t mt2_bin );
+  virtual void print( std::ofstream& ofs_file );
+  virtual void print( std::ofstream& ofs_file, Int_t mt2_bin );
   
   virtual void randomizePoisson( float scale=1. );
   

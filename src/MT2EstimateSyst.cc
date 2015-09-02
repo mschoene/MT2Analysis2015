@@ -264,7 +264,7 @@ void MT2EstimateSyst::print(const std::string& ofs){
   Double_t integral_down = yield_systDown->Integral(binXmin, binXmax);
   
 
-  ofstream ofs_file;
+  std::ofstream ofs_file;
   ofs_file.open( ofs, std::ofstream::app );
   if(integral >= 10)
     ofs_file << std::fixed << std::setprecision(1);
