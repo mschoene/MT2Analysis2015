@@ -124,7 +124,7 @@ std::string MT2Config::getEventYieldDir() const {
 void MT2Config::saveAs( const std::string& filename ) const {
 
 
-  ofstream ofs(filename.c_str());
+  std::ofstream ofs(filename.c_str());
 
   ofs << "#name " << name_ << std::endl;
 

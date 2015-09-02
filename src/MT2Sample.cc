@@ -35,7 +35,7 @@ std::vector<MT2Sample> MT2Sample::loadSamples(const std::string& filename, const
   std::vector<MT2Sample> fSamples;
 
   char buffer[200];
-  ifstream IN(filename.c_str());
+  std::ifstream IN(filename.c_str());
 
 
   std::cout << "------------------------------------" << std::endl;

@@ -89,8 +89,8 @@ class MT2Analysis {
   static void printFromFile( const std::string& fileName, const std::string& ofs, const std::string& matchName="" );
   static void print( const std::vector<MT2Analysis*> analyses, const std::string& ofs, const std::string& matchName="" );
   void print( const std::string& ofs, MT2Region* matchRegion=0 ) const;
-  void print( ofstream& ofs_file, MT2Region* matchRegion=0 ) const;
-  void print( ofstream& ofs_file, MT2HTRegion* thisHTRegion=0 ) const;
+  void print( std::ofstream& ofs_file, MT2Region* matchRegion=0 ) const;
+  void print( std::ofstream& ofs_file, MT2HTRegion* thisHTRegion=0 ) const;
 
   void printRegions() const;
 
@@ -1786,7 +1786,7 @@ void MT2Analysis<T>::print( std::vector<MT2Analysis<T>*> analyses, const std::st
 template<class T>
 void MT2Analysis<T>::print( const std::string& ofs, MT2Region* matchRegion ) const {
 
-  ifstream isExist(ofs);
+  std::ifstream isExist(ofs);
   if(isExist) {
     
     system( Form("rm %s", ofs.c_str()) );
@@ -1795,7 +1795,7 @@ void MT2Analysis<T>::print( const std::string& ofs, MT2Region* matchRegion ) con
 
   }
 
-  ofstream ofs_file;
+  std::ofstream ofs_file;
   if (ofs_file)
     ofs_file.open( ofs, std::ofstream::app );
   
@@ -1846,7 +1846,7 @@ void MT2Analysis<T>::print( const std::string& ofs, MT2Region* matchRegion ) con
 
 
 template<class T>
-void MT2Analysis<T>::print( ofstream& ofs_file, MT2Region* thisRegion ) const {
+void MT2Analysis<T>::print( std::ofstream& ofs_file, MT2Region* thisRegion ) const {
 
   int nBins;
   double* bins;
@@ -1866,7 +1866,7 @@ void MT2Analysis<T>::print( ofstream& ofs_file, MT2Region* thisRegion ) const {
 
 
 template<class T>
-void MT2Analysis<T>::print( ofstream& ofs_file, MT2HTRegion* thisHTRegion ) const {
+void MT2Analysis<T>::print( std::ofstream& ofs_file, MT2HTRegion* thisHTRegion ) const {
 
   std::set<MT2SignalRegion> sigRegions = this->getSignalRegions();
   for( std::set<MT2SignalRegion>::iterator iSig=sigRegions.begin(); iSig!=sigRegions.end(); ++iSig ) {

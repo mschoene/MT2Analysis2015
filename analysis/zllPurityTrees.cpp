@@ -19,13 +19,9 @@
 #include "interface/MT2EstimateTree.h"
 #include "interface/MT2EstimateSyst.h"
 #include "interface/MT2Config.h"
-
-
-#include "../interface/MT2DrawTools.h"
-
+#include "interface/MT2DrawTools.h"
 
 #include <iostream>
-
 
 #define mt2_cxx
 #include "interface/mt2.h"
@@ -33,7 +29,6 @@
 
 //float lumi = 0.1;
 //float lumi = 1.;
-
 
 //This file creates the Zll trees used to estimate the backgrounds in the 
 //Zll control region.
@@ -212,28 +207,6 @@ int main(int argc, char* argv[]){
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 void drawYields( const std::string& outputdir, MT2Analysis<MT2EstimateTree>* data, std::vector< MT2Analysis<MT2EstimateTree> *> bgYields, float lumi ) {
 
 
@@ -376,26 +349,6 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2EstimateTree>* dat
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 MT2Analysis<MT2EstimateTree>* computeYield( const MT2Sample& sample, const MT2Config& cfg, float lumi, bool doSameFlavor ) {
 
   std::string regionsSet = cfg.regionsSet();
@@ -534,37 +487,13 @@ MT2Analysis<MT2EstimateTree>* computeYield( const MT2Sample& sample, const MT2Co
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 MT2Analysis<MT2EstimateTree>* mergeYields( std::vector<MT2Analysis<MT2EstimateTree> *> EventYield, const std::string& regionsSet, const std::string& name, int id_min, int id_max, const std::string& legendName ) {
 
   if( id_max<0 ) id_max=id_min;
   MT2Analysis<MT2EstimateTree>* return_EventYield = new MT2Analysis<MT2EstimateTree>(name, regionsSet, id_min, legendName);
 
   for( unsigned i=0; i<EventYield.size(); ++i ) {
-    if( EventYield[i]->id >= id_min && EventYield[i]->id <= id_max ) {
+    if( EventYield[i]->getId() >= id_min && EventYield[i]->getId() <= id_max ) {
        *(return_EventYield) += *(EventYield[i]);
      }
 
