@@ -316,10 +316,11 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg ) {
     //weight *= myTree.weight_lepsf;
 
     if( myTree.isData ) {
-      if( !(  (myTree.HLT_PFHT800 && ht>=900.) || (myTree.HLT_PFHT350_PFMET100 && ht<900.)  ) ) continue;
-      if( !( myTree.Flag_HBHENoiseFilter && myTree.Flag_CSCTightHaloFilter && myTree.Flag_goodVertices && myTree.Flag_eeBadScFilter ) ) continue;
+      if( !(  (myTree.HLT_PFHT800 && ht>=1000.) || (myTree.HLT_PFHT350_PFMET100 && ht<1000.)  ) ) continue;
+      //if( !( myTree.Flag_HBHENoiseFilter && myTree.Flag_CSCTightHaloFilter && myTree.Flag_goodVertices && myTree.Flag_eeBadScFilter ) ) continue;
+      //if( !(myTree.Flag_CSCTightHaloFilter && myTree.Flag_eeBadScFilter ) ) continue;
 
-      if( (myTree.evt_id == 1 && ht < 900) || (myTree.evt_id == 2 && ht > 900) ) continue;
+      if( (myTree.evt_id == 1 && ht < 1000.) || (myTree.evt_id == 2 && ht >= 1000.) ) continue;
       
     }
 
