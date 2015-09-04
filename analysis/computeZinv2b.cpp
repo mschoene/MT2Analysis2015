@@ -130,8 +130,8 @@ int main( int argc, char* argv[] ) {
     TFile* file_zllData = TFile::Open( Form("%s/data.root"  , zllDir.c_str()) );
     TTree* tree_zllData = (TTree*)file_zllData->Get("data/HT450toInf_j2toInf_b0toInf/tree_data_HT450toInf_j2toInf_b0toInf");
 
-    histo_mc_zll = getPHisto2( cfg, tree_zll, "zllMC", "Z #rightarrow ll MC" );
-    TH1D* histo_mc_zll_loose = getPHisto2( cfg, tree_zll, "zllMC", "Z #rightarrow ll MC (loose)", "ht>450." );
+    histo_mc_zll = getPHisto2( cfg, tree_zll, "zllMC", "Z #rightarrow ll MC", "mt2>200. && ht>450. && Z_mass > 70. && Z_mass<110." );
+    TH1D* histo_mc_zll_loose = getPHisto2( cfg, tree_zll, "zllMC", "Z #rightarrow ll MC (loose)", "ht>450. && Z_mass > 70. && Z_mass<110." );
 
     histo_data = getPHisto2( cfg, tree_zllData, "zllData", "Z #rightarrow ll Data (loose)", "ht>450." );
 
