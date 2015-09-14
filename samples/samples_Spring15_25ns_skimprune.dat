@@ -1,6 +1,6 @@
 #### QCD HT (MadGraph)
 #dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/mmasciov/MT2production/74X/Spring15/PostProcessed/11Sep2015_Spring15MC25ns/skimAndPrune/QCD_HT200to300_post_skim_prune.root
-##dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/mmasciov/MT2production/74X/Spring15/PostProcessed/11Sep2015_Spring15MC25ns/skimAndPrune/QCD_HT300to500_post_skim_prune.root
+#dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/mmasciov/MT2production/74X/Spring15/PostProcessed/11Sep2015_Spring15MC25ns/skimAndPrune/QCD_HT300to500_post_skim_prune.root
 #dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/mmasciov/MT2production/74X/Spring15/PostProcessed/11Sep2015_Spring15MC25ns/skimAndPrune/QCD_HT500to700_post_skim_prune.root
 #dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/mmasciov/MT2production/74X/Spring15/PostProcessed/11Sep2015_Spring15MC25ns/skimAndPrune/QCD_HT700to1000_post_skim_prune.root
 #dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/mmasciov/MT2production/74X/Spring15/PostProcessed/11Sep2015_Spring15MC25ns/skimAndPrune/QCD_HT1000to1500_post_skim_prune.root
@@ -42,7 +42,7 @@ dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/mmasciov/MT2produ
 ### Top
 dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/mmasciov/MT2production/74X/Spring15/PostProcessed/11Sep2015_Spring15MC25ns/skimAndPrune/TTJets_LO_post_skim_prune.root
 dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/mmasciov/MT2production/74X/Spring15/PostProcessed/11Sep2015_Spring15MC25ns/skimAndPrune/TToLeptons_sch_post_skim_prune.root
-#dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/mmasciov/MT2production/74X/Spring15/PostProcessed/11Sep2015_Spring15MC25ns/skimAndPrune/TToLeptons_tch_post_skim_prune.root
+dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/mmasciov/MT2production/74X/Spring15/PostProcessed/11Sep2015_Spring15MC25ns/skimAndPrune/TToLeptons_tch_post_skim_prune.root
 dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/mmasciov/MT2production/74X/Spring15/PostProcessed/11Sep2015_Spring15MC25ns/skimAndPrune/TBar_tWch_post_skim_prune.root
 dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/mmasciov/MT2production/74X/Spring15/PostProcessed/11Sep2015_Spring15MC25ns/skimAndPrune/T_tWch_post_skim_prune.root
 #
