@@ -155,7 +155,7 @@ int main(int argc, char* argv[]){
 
     float bins_nJets[] = {2,4,7,12};
     float bins_nBJets[] = {0,1,2,3,6}; 
-    float bins_mt2[] = {200,300,400,600 };
+    float bins_mt2[] = {200,300,600 };
   
     //    float bins_mt2[] = {200,300,400, 600 };
     //  float bins_mt2[] = {200,300,400,500, 600, 800, 1000, 1500 };
@@ -434,8 +434,8 @@ void drawRatios(std::string fullPath, float *binss, unsigned int size,  std::str
       float yMaxText = 0.9-(float)i*0.05 +0.05;
       float yMinText = yMaxText - 0.05;
       TPaveText* regionText = new TPaveText( 0.18, yMinText, 0.55, yMaxText, "brNDC" );
-      regionText->SetTextSize(0.035);
-      regionText->SetTextFont(42);
+      regionText->SetTextSize(0.04);
+      //   regionText->SetTextFont(42);
       regionText->SetFillColor(0);
       regionText->SetTextAlign(11);
       //   if(i==0)
@@ -454,8 +454,8 @@ void drawRatios(std::string fullPath, float *binss, unsigned int size,  std::str
     gPad->RedrawAxis();
 
     TLegend* legend = new TLegend( 0.7, 0.92-(2)*0.06, 0.9, 0.92 );
-    legend->SetTextSize(0.038);
-    legend->SetTextFont(42);
+    legend->SetTextSize(0.04);
+    // legend->SetTextFont(42);
     legend->SetFillColor(0);
     legend->AddEntry( h_mt2 ,"Data", "P" );
     legend->AddEntry( h_mt2_mc ,"Simulation", "L" );
@@ -480,7 +480,8 @@ void drawRatios(std::string fullPath, float *binss, unsigned int size,  std::str
     for( unsigned int k=0; k< size; ++k){  
        gr_ratioD->SetPoint(k, h_mt2->GetBinCenter(k+1), h_mt2->GetBinContent(k+1));
       // gr_ratioD->SetPoint(k, meanX[k], h_mt2->GetBinContent(k+1));
-       gr_ratioD->SetPointError(k, h_mt2->GetBinWidth(k+1)/2., h_mt2->GetBinError(k+1));
+          gr_ratioD->SetPointError(k, 0, h_mt2->GetBinError(k+1));
+	  //   gr_ratioD->SetPointError(k, h_mt2->GetBinWidth(k+1)/2., h_mt2->GetBinError(k+1));
     } 
     gr_ratioD->SetMarkerSize(1.4);
     gr_ratioD->SetMarkerStyle(20);
@@ -622,8 +623,8 @@ void drawCorrelation(std::string fullPath, float *binss, unsigned int size,  flo
   //  labelTop->Draw("same");
 
   TPaveText* regionText = new TPaveText( 0.45, 0.91-0.03, 0.78, 0.91, "brNDC" );
-  regionText->SetTextSize(0.038);
-  regionText->SetTextFont(42);
+  regionText->SetTextSize(0.04);
+  // regionText->SetTextFont(42);
   regionText->SetFillColor(0);
   regionText->SetTextAlign(11);
   regionText->AddText( Form("Linear Correlation = %.2f",corr));

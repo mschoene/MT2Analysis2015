@@ -14,12 +14,12 @@
 #include "TRandom3.h"
 #include "TGraphErrors.h"
 
+#include "interface/MT2Config.h"
 #include "interface/MT2Sample.h"
 #include "interface/MT2Region.h"
 #include "interface/MT2Analysis.h"
 #include "interface/MT2Estimate.h"
 #include "interface/MT2EstimateTree.h"
-#include "interface/MT2Config.h"
 
 
 #include "../interface/MT2DrawTools.h"
@@ -32,7 +32,7 @@
 #define mt2_cxx
 #include "interface/mt2.h"
 
-
+double lumiErr = 0.12;
 bool shapeNorm = false;
 bool HFveto = false;
 
@@ -126,7 +126,7 @@ int main(int argc, char* argv[]){
 
   
  
- //OPPOSITE FLAVOR TREES
+  //OPPOSITE FLAVOR TREES
   MT2Analysis<MT2EstimateTree>* Zll_of = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s/ZllPurityTrees_of.root", ZllDir_of.c_str() ), "DYJets");
 
   MT2Analysis<MT2EstimateTree>* qcd_of = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s/ZllPurityTrees_of.root", ZllDir_of.c_str()  ), "QCD");
@@ -140,7 +140,8 @@ int main(int argc, char* argv[]){
   wjets_of->setFullName("W+jets");
   zjets_of->setFullName("Z#nu#nu+jets");
   data_of->setFullName("Data");
- 
+
+
 
   MT2Analysis<MT2EstimateTree>* data = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s/data.root", ZllDir.c_str() ) , "data");
  
@@ -161,7 +162,7 @@ int main(int argc, char* argv[]){
   bgYields.push_back( top );
 
 
-  drawMll( outputdir, bgYields, data,  0 , cfg.lumi() );
+  // drawMll( outputdir, bgYields, data,  0 , cfg.lumi() );
  
   
   std::vector<MT2Analysis<MT2EstimateTree>* > bgYields_of; 
@@ -171,8 +172,8 @@ int main(int argc, char* argv[]){
   bgYields_of.push_back( zjets_of );
   bgYields_of.push_back( top_of );
   
-
-  drawMll( outputdir_of, bgYields_of, data_of,  1, cfg.lumi() );
+ 
+  // drawMll( outputdir_of, bgYields_of, data_of,  1, cfg.lumi() );
   
 
 
@@ -186,7 +187,8 @@ int main(int argc, char* argv[]){
  
 
 
-  std::string    selection = "weight*(abs(Z_mass-91.19)<20 && Z_pt>0 && nJetHF30==0)";
+  std::string    selection = "weight*(abs(Z_mass-91.19)<20 && Z_pt>0)";
+  // std::string    selection = "weight*(abs(Z_mass-91.19)<20 && Z_pt>0 && nJetHF30==0)";
   /*
   std::string selection_mass = "weight*(Z_mass>50 && Z_pt>180)";
   std::string      selection_mass_el = "weight*(Z_mass>50 && Z_pt>180 && Z_lepId==11)";
@@ -203,7 +205,23 @@ int main(int argc, char* argv[]){
 
   std::string selection = "weight*(Z_pt>180 && abs(Z_mass-91.19)<20)";
   */
-  // drawYields( cfg, data, bgYields, "mt2" , "mt2" , selection, 18, 0, 600, "M_{T2}", "GeV" );
+  drawYields( cfg, data, bgYields, "mt2" , "mt2" , selection, 24, 0, 600, "M_{T2}", "GeV" );
+  drawYields( cfg, data, bgYields, "ht" , "ht" , selection, 24, 0, 600, "H_{T}", "GeV" );
+  drawYields( cfg, data, bgYields, "met" , "met" , selection, 24, 0, 600, "ME_{T}", "GeV" );
+
+  drawYields( cfg, data, bgYields, "nJets"     , "nJets"    , selection, 10, 1.5, 11.5, "Number of Jets (p_{T} > 30 GeV)", "" );
+  drawYields( cfg, data,  bgYields, "nBJets"    , "nBJets"   , selection, 6, -0.5, 5.5, "Number of b-Jets (p_{T} > 20 GeV)", "" );
+
+
+
+
+  drawYields( cfg, data, bgYields, "Z_lepId" , "Z_lepId" , selection, 5, 10,15 , "Lepton Id", "" );
+
+
+  //drawYields( cfg, data, bgYields, "mt2" , "mt2" , selection, 24, 0, 600, "M_{T2}", "GeV" );
+
+  std::string    selection2 = "weight*(Z_pt>0)";
+  drawYields( cfg, data, bgYields, "Z_mass" , "Z_mass" , selection2, 40, 50, 150, "M_{ll}", "GeV" );
 
 
 
@@ -260,155 +278,6 @@ void drawMll( const std::string& outputdir, std::vector< MT2Analysis<MT2Estimate
   for( std::set<MT2Region>::iterator iMT2 = MT2Regions.begin(); iMT2!=MT2Regions.end(); ++iMT2 ) {
   
     MT2Region thisRegion( (*iMT2) );
-
-    /*
-    THStack bgStack("bgStack", "");
-    THStack bgStack_scaled("bgStack_scaled", "");
-
-    TH1D* histo_bg = new TH1D("histo_bg", "", 100, 0, 1000);
-
-    histo_bg->Sumw2();
-
-    for( unsigned i=0; i<bgYields.size(); ++i ) { // reverse ordered stack is prettier
-      int index = bgYields.size() - i - 1;
-      //  TH1D* h1_bg = new TH1D("h1_bg","", 20, 0,250);
-      //     h1_bg->Sumw2();
-      TH1D* h1_bg2 = new TH1D(Form("h1_bg2_%d_%d",of,index ),"", 100 , 0,1000);
-      //     if(of==1){ h1_bg->Rebin(4);
-      //     }     else{ h1_bg->Rebin(4); }
-      TTree *bgTree = bgYields[index]->get(*iMT2)->tree;
-      //   bgTree->Project("h1_bg","Z_mass","weight");
-      h1_bg2->Sumw2();
-      bgTree->Project(Form("h1_bg2_%d_%d", of,  index ),"Z_mass","weight*(Z_pt>180 &&lep_pt0>25 && lep_pt1>20 )");
-      //     bgTree->Project("h1_bg2","Z_mass","weight*(Z_mass>80.)");
-      //     h1_bg->SetFillColor( colors[index] );
-      //     h1_bg->SetLineColor( kBlack );
-      histo_bg->Add(h1_bg2);
-      //  bgStack.Add(h1_bg);
-    }
-
-    TH1D* h_data = new TH1D("h_data","",  200, 50,150);
-    if(of==1){ h_data->Rebin(8);  }     else{ h_data->Rebin(4); } 
-    TH1D* histo_data = new TH1D("histo_data","", 100, 0, 1000);  
-
-    TTree *data_Tree = data->get(*iMT2)->tree;
-
-    data_Tree->Project("h_data","Z_mass","weight*(Z_pt>180 && lep_pt0>25 && lep_pt1>20 )");
-    data_Tree->Project("histo_data","Z_mass","(Z_mass>80. &&(Z_pt>180 && lep_pt0>25 && lep_pt1>20))");
-  
-    float bg_int =     histo_bg->Integral();
-    float data_int =     h_data->Integral();
-    // float scale = data_int/bg_int;
-    // float scale =1;
-
-    for( unsigned i=0; i<bgYields.size(); ++i ) { // reverse ordered stack is prettier
-      int index = bgYields.size() - i - 1;
-      TH1D* h1_bg = new TH1D(Form("h1_bg_%d_%d",of, index ),"", 200, 50,150);
-      h1_bg->Sumw2();
-      if(of==1){ h1_bg->Rebin(8);
-      }     else{ h1_bg->Rebin(4); }
-      TTree *bgTree = bgYields[index]->get(*iMT2)->tree;
-      bgTree->Project(Form("h1_bg_%d_%d", of, index ),"Z_mass", "weight*(Z_pt>180&&lep_pt0>25 && lep_pt1>20)" );
-      //     bgTree->Project(Form("h1_bg_%d_%d", of, index ),"Z_mass",Form("weight*%f", scale) );
-      h1_bg->SetFillColor( colors[index] );
-      h1_bg->SetLineColor( kBlack );
-      bgStack.Add(h1_bg);
-    }
-
-    h_data->SetMarkerStyle(20);
-    h_data->SetMarkerColor(kBlack);
-
-    TGraphAsymmErrors* gr_data = MT2DrawTools::getPoissonGraph(h_data);
-    gr_data->SetMarkerStyle(20);
-    gr_data->SetMarkerSize(1.2);
-
-    int binMin = histo_data->GetXaxis()->FindBin(80);
-    int binMax = histo_data->GetXaxis()->FindBin(10000);
-    int binMin_bg = histo_bg->GetXaxis()->FindBin(80);
-    int binMax_bg = histo_bg->GetXaxis()->FindBin(10000);
-    double int_err=0; 
-    double int_err_bg =0;
-    // double int_data =  histo_data->Integral(binMin, binMax);
-    // double int_bg   =  histo_bg->Integral(binMin, binMax) ;
-
-    double int_data =  histo_data->IntegralAndError(binMin, binMax, int_err, "");
-    double int_bg =    histo_bg->IntegralAndError(binMin_bg, binMax_bg, int_err_bg, "") ;
-
-    std::cout << "Data = " <<  int_data <<  " +- " << int_err << "  in %: " << int_err/int_data*100 << std::endl;
-    std::cout << "MC = " << int_bg  << " +- " << int_err_bg << "  in %: " << int_err_bg/int_bg*100 << std::endl;
-    std::cout << "R = " <<  int_data/int_bg << " +- " << sqrt( (int_err*int_err/(int_bg*int_bg)) ) << " (DATA) " << " +- " << sqrt( (int_data*int_data*int_err_bg*int_err_bg/(int_bg*int_bg*int_bg*int_bg)) ) << " (MC) " << std::endl;
-
-    std::cout << "Zll events " << h_data->GetEntries() << std::endl;
-    std::cout << "Zll mean " << h_data->GetMean() << std::endl;
-
-    TCanvas* c1 = new TCanvas( "c1", "", 600, 600 );
-    c1->cd();
-    float yMax = 1.3*(bgStack.GetMaximum());
-     float yMax_data = 1.3*(h_data->GetMaximum());
-     if(yMax_data > yMax) yMax = yMax_data;
-    //if(yMax < 0.3)    //   yMax = 20;    //  if(of==1) yMax=25;
-
-    TH2D* h2_axes = new TH2D("axes", "", 10, 50,150, 10, 0., yMax );
-    h2_axes->SetXTitle("M_{ll} [GeV]");
-    if(of==1)    h2_axes->SetXTitle("M_{e^{#pm}#mu^{#mp}} [GeV]");
-    h2_axes->SetYTitle("Entries");
-    h2_axes->Draw();
-   
-    std::vector<std::string> niceNames = thisRegion.getNiceNames();
-
-    for( unsigned i=0; i<niceNames.size(); ++i ) {
-      float yMaxText = 0.9-(float)i*0.05;
-      float yMinText = yMaxText - 0.05;
-      TPaveText* regionText = new TPaveText( 0.18, yMinText, 0.55, yMaxText, "brNDC" );
-      regionText->SetTextSize(0.035);
-      regionText->SetTextFont(42);
-      regionText->SetFillColor(0);
-      regionText->SetTextAlign(11);
-      //    if(i==0)
-      //	regionText->AddText( "H_{T} > 180 GeV" );
-      //     else
-	regionText->AddText( niceNames[i].c_str() );
-      regionText->Draw("same");
-    }
-    
-
-    TLegend* legend = new TLegend( 0.7, 0.9-(bgYields.size()+1)*0.06, 0.93, 0.9 );
-    legend->SetTextSize(0.038);
-    legend->SetTextFont(42);
-    legend->SetFillColor(0);
-    legend->AddEntry( gr_data, "Data", "P" );
- 
-    for( unsigned i=0; i<bgYields.size(); ++i ) {  
-      TH1D* h1_bg1 = bgYields[i]->get(thisRegion)->yield;
-      h1_bg1->SetFillColor( colors[i] );
-      h1_bg1->SetLineColor( kBlack );
-      legend->AddEntry( h1_bg1, bgYields[i]->getFullName().c_str(), "F" );
-    }
-
-    gPad->Update();
-
-    legend->Draw("same");
-    bgStack.Draw("histo same");
-    //   h_data->Draw("p same");
-    gr_data->Draw("p same");
-
-    TPaveText* labelTop = MT2DrawTools::getLabelTop(lumi);
-    labelTop->Draw("same");
-    gPad->RedrawAxis();
-
-
-
-    if( of == true){
-      c1->SaveAs( Form("%s/mll_of_%s.eps", fullPathPlots.c_str(), thisRegion.getName().c_str()));
-      c1->SaveAs( Form("%s/mll_of_%s.png", fullPathPlots.c_str(), thisRegion.getName().c_str()));
-      c1->SaveAs( Form("%s/mll_of_%s.pdf", fullPathPlots.c_str(), thisRegion.getName().c_str()));
-    }else {
-      c1->SaveAs( Form("%s/mll_%s.eps", fullPathPlots.c_str(), thisRegion.getName().c_str()) );
-      c1->SaveAs( Form("%s/mll_%s.png", fullPathPlots.c_str(), thisRegion.getName().c_str()) );
-      c1->SaveAs( Form("%s/mll_%s.pdf", fullPathPlots.c_str(), thisRegion.getName().c_str()) );
-    }
-    */
-
 
 
 
@@ -501,7 +370,7 @@ void drawMll( const std::string& outputdir, std::vector< MT2Analysis<MT2Estimate
     
     drawStacks( fullPathPlots, bins_nJetsHF,sizeof(bins_nJetsHF)/sizeof(float)-1,  "nJetHF30", bgYields, data , thisRegion, cut_HF , lumi );
 
-   drawStacks( fullPathPlots, bins_nJets,sizeof(bins_nJets)/sizeof(float)-1,  "nJets", bgYields, data , thisRegion, cut , lumi );
+    drawStacks( fullPathPlots, bins_nJets,sizeof(bins_nJets)/sizeof(float)-1,  "nJets", bgYields, data , thisRegion, cut , lumi );
     drawStacks( fullPathPlots, bins_nBJets,sizeof(bins_nBJets)/sizeof(float)-1,  "nBJets", bgYields , data, thisRegion , cut , lumi);
     
     drawStacks( fullPathPlots, bins_mt2,sizeof(bins_mt2)/sizeof(float)-1,  "mt2", bgYields , data, thisRegion  , cut , lumi  );
@@ -932,6 +801,7 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, std::vector<
   }
 
   std::string fullPathPlots = cfg.getEventYieldDir() + "/plotsDataMC";
+  if( shapeNorm ) fullPathPlots += "_shape";
   system( Form("mkdir -p %s", fullPathPlots.c_str()) );
 
   TH1::AddDirectory(kTRUE); // stupid ROOT memory allocation needs this
@@ -962,6 +832,10 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, std::vector<
 	tree_mc->Project( thisName.c_str(), varName.c_str(), Form("%s", selection.c_str()) );
       else
         tree_mc->Project( thisName.c_str(), varName.c_str(), "" );
+
+       	h1_mc->Scale( 16.1/20.38 );
+
+
       histos_mc.push_back(h1_mc);
     }
 
@@ -981,14 +855,13 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, std::vector<
     float scaleFactor = h1_data->Integral(0, nBins+1)/mc_sum->Integral(0, nBins+1);   
     if( shapeNorm ) 
       std::cout << "SF: " << scaleFactor << std::endl;
-
+    /*
     double error_data;
     double integral_data = h1_data->IntegralAndError(0, nBins+1, error_data);
-
     double error_mc;
     double integral_mc = mc_sum->IntegralAndError(0, nBins+1, error_mc);
-
     double error_datamc = MT2DrawTools::getSFError(integral_data, error_data, integral_mc, error_mc);
+    */
 
     TH1D* histo_mc;
     THStack bgStack("bgStack", "");
@@ -998,8 +871,13 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, std::vector<
       histos_mc[index]->SetLineColor( kBlack );
       if( shapeNorm ) {
         histos_mc[index]->Scale( scaleFactor );
-      } 
+      }
 
+      //  if( shapeNorm ) {
+      //   histos_mc[index]->Scale( scaleFactor );
+      // } else {
+      // 	histos_mc[index]->Scale( 16.1/20.38 );
+      //}
       if(i==0) histo_mc = (TH1D*) histos_mc[index]->Clone("histo_mc");
       else histo_mc->Add(histos_mc[index]);
       bgStack.Add(histos_mc[index]);
@@ -1008,9 +886,14 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, std::vector<
 
     TCanvas* c1 = new TCanvas("c1", "", 600, 600);
     c1->cd();
-    
+    TPad *pad1 = MT2DrawTools::getCanvasMainPad();
+    TPad *pad2 = MT2DrawTools::getCanvasRatioPad();
+        
     TCanvas* c1_log = new TCanvas("c1_log", "", 600, 600);
-
+    c1_log->cd();
+    TPad *pad1_log = MT2DrawTools::getCanvasMainPad( true );
+    TPad *pad2_log = MT2DrawTools::getCanvasRatioPad( true );
+ 
     float yMaxScale = 1.1;
     float yMax1 = h1_data->GetMaximum()*yMaxScale;
     float yMax2 = yMaxScale*(h1_data->GetMaximum() + sqrt(h1_data->GetMaximum()));
@@ -1025,30 +908,28 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, std::vector<
     else
       xAxisTitle = (std::string)(Form("%s", axisName.c_str()) );
 
-    std::string yAxisTitle;
-    if(binWidth>0.99){
-      if( units!="" ) 
-	yAxisTitle = (std::string)(Form("Events / (%.0f %s)", binWidth, units.c_str()));
-      else
-	yAxisTitle = (std::string)(Form("Events / (%.0f)", binWidth));
-    }
-    else{
-      if( units!="" ) 
-	yAxisTitle = (std::string)(Form("Events / (%.2f %s)", binWidth, units.c_str()));
-      else
-	yAxisTitle = (std::string)(Form("Events / (%.2f)", binWidth));
-    }
+    std::string binWidthText;
+    if( binWidth>=1. )         binWidthText = (std::string)Form("%.0f", binWidth);
+    else if( binWidth>=0.1 )   binWidthText = (std::string)Form("%.1f", binWidth);
+    else if( binWidth>=0.01 )  binWidthText = (std::string)Form("%.2f", binWidth);
+    else if( binWidth>=0.001 ) binWidthText = (std::string)Form("%.3f", binWidth);
+    else                       binWidthText = (std::string)Form("%.4f", binWidth);
+
+   std::string yAxisTitle;
+    if( units!="" ) 
+      yAxisTitle = (std::string)(Form("Events / (%s %s)", binWidthText.c_str(), units.c_str()));
+    else
+      yAxisTitle = (std::string)(Form("Events / (%s)", binWidthText.c_str()));
+
 
     TH2D* h2_axes = new TH2D("axes", "", 10, xMin, xMax, 10, 0., yMax );
     h2_axes->SetXTitle(xAxisTitle.c_str());
     h2_axes->SetYTitle(yAxisTitle.c_str());
 
     c1->cd();
-    TPad* pad1 = MT2DrawTools::getCanvasMainPad();
     pad1->Draw();
     pad1->cd();
     h2_axes->Draw();
-
     
    
     TH2D* h2_axes_log = new TH2D("axes_log", "", 10, xMin, xMax, 10, 0.1, yMax*2.0 );
@@ -1056,12 +937,10 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, std::vector<
     h2_axes_log->SetYTitle(yAxisTitle.c_str());
 
     c1_log->cd();
-    TPad* pad1_log = MT2DrawTools::getCanvasMainPad( true );
     pad1_log->Draw();
     pad1_log->cd();
     h2_axes_log->Draw();
    
-
 
     std::vector<std::string> niceNames = thisRegion.getNiceNames();
 
@@ -1070,16 +949,32 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, std::vector<
       float yMin = yMax - 0.05;
       TPaveText* regionText = new TPaveText( 0.18, yMin, 0.55, yMax, "brNDC" );
       regionText->SetTextSize(0.04);
-      //   regionText->SetTextFont(42);
+      regionText->SetTextFont(42);
       regionText->SetFillColor(0);
       regionText->SetTextAlign(11);
       regionText->AddText( niceNames[i].c_str() );
+
+      pad1->cd();
+      regionText->Draw("same");
+  
+      pad1_log->cd();
+      regionText->Draw("same");
     }
     
+    if( shapeNorm ) {
+      TPaveText* normText = new TPaveText( 0.45, 0.8, 0.68, 0.9, "brNDC" );
+      normText->SetFillColor(0);
+      normText->SetTextSize(0.035);
+      normText->AddText( "#splitline{Shape}{Norm.}" );
+      pad1->cd();
+      //normText->Draw("same");
+      pad1_log->cd();
+      // normText->Draw("same");
+    }
 
     TLegend* legend = new TLegend( 0.7, 0.9-(bgYields.size()+1)*0.06, 0.93, 0.9 );
     legend->SetTextSize(0.04);
-    //  legend->SetTextFont(42);
+    legend->SetTextFont(42);
     legend->SetFillColor(0);
     legend->AddEntry( gr_data, "Data", "P" );
     for( unsigned i=0; i<histos_mc.size(); ++i ) {  
@@ -1091,20 +986,47 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, std::vector<
     
     TPaveText* ratioText = new TPaveText( 0.133, -0.051, 0.4, 0.1 , "brNDC" );
     ratioText->SetTextSize(0.04);
-    //  ratioText->SetTextFont(40);
+    ratioText->SetTextFont(40);
     ratioText->SetTextColor(2);
     ratioText->SetFillColor(0);
     ratioText->SetTextAlign(11);
-    ratioText->AddText( Form("Data/MC = %.2f +/- %.2f", scaleFactor, error_datamc) );
+    ratioText->AddText( Form("Data/MC = %.2f", scaleFactor) );
+    //  ratioText->AddText( Form("Data/MC = %.2f +/- %.2f", scaleFactor, error_datamc) );
+     
+
+    TLine* line = new TLine(xMin, 1.0, xMax, 1.0);
+    line->SetLineColor(1);
     
+    TLine* lineSF = new TLine(xMin, scaleFactor, xMax, scaleFactor);
+    lineSF->SetLineColor(2);
+
+    float yMinR=0.0;
+    float yMaxR=2.0;
+
+  
+    TH2D* h2_axes_ratio = MT2DrawTools::getRatioAxes( xMin, xMax, yMinR, yMaxR );
+    TGraphAsymmErrors* g_ratio = MT2DrawTools::getRatioGraph(h1_data, histo_mc);
+ 
+    TLine* lineCentral = new TLine(xMin, 1.0, xMax, 1.0);
+    lineCentral->SetLineColor(1);
+    TGraphErrors* systBand = MT2DrawTools::getSystBand(xMin, xMax, lumiErr);
+   
+    //    TH1D* mcBand = MT2DrawTools::getMCBandHisto( histo_mc, lumiErr );
+    TF1* fSF = MT2DrawTools::getSFFit(g_ratio, xMin, xMax);
+    TGraphErrors* SFFitBand = MT2DrawTools::getSFFitBand(fSF, xMin, xMax);
+    TPaveText* fitText = MT2DrawTools::getFitText( fSF );
+
+
     c1->cd();
     pad1->cd();
     legend->Draw("same");
     bgStack.Draw("histo same");
     gr_data->Draw("p same");
     labelTop->Draw("same");
-    ratioText->Draw("same");
-
+    if( !shapeNorm )
+      fitText->Draw("same");
+    // ratioText->Draw("same");
+  
     gPad->RedrawAxis();
 
     c1_log->cd();
@@ -1113,48 +1035,67 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, std::vector<
     bgStack.Draw("histo same");
     gr_data->Draw("p same");
     labelTop->Draw("same");
-    ratioText->Draw("same");
+    if( !shapeNorm )
+     fitText->Draw("same");
+    //  ratioText->Draw("same");
 
     gPad->RedrawAxis();
 
-    float yMinR=0.0;
-    float yMaxR=2.0;
-
-    TH2D* h2_axes_ratio = MT2DrawTools::getRatioAxes( xMin, xMax, yMinR, yMaxR );
-
-    TGraphAsymmErrors* g_ratio = MT2DrawTools::getRatioGraph(h1_data, histo_mc);
-
+   /*
     TLine* line = new TLine(xMin, 1.0, xMax, 1.0);
     line->SetLineColor(1);
     
     TLine* lineSF = MT2DrawTools::getSFLine(integral_data, integral_mc, xMin, xMax);
-    
+   
     TGraphErrors* SFband = MT2DrawTools::getSFBand(integral_data, error_data, integral_mc, error_mc, xMin, xMax);
-
+    */
 
 
     c1->cd();
-    TPad* pad2 = MT2DrawTools::getCanvasRatioPad();
+    //   TPad* pad2 = MT2DrawTools::getCanvasRatioPad();
     pad2->Draw();
     pad2->cd();
 
     h2_axes_ratio->Draw("");
-    line->Draw("same");
+ 
+    /*  line->Draw("same");
     SFband->Draw("3,same");
     lineSF->Draw("same");
+    */
+    lineCentral->Draw("same");
+    if( !shapeNorm ){
+
+      systBand->Draw("3,same");
+      lineCentral->Draw("same");
+
+      SFFitBand->Draw("3,same");
+      fSF->Draw("same");
+    }
+
     g_ratio->Draw("PE,same");    
     gPad->RedrawAxis();
 
 
     c1_log->cd();
-    TPad* pad2_log = MT2DrawTools::getCanvasRatioPad( true );
+    // TPad* pad2_log = MT2DrawTools::getCanvasRatioPad( true );
     pad2_log->Draw();
     pad2_log->cd();
 
-    h2_axes_ratio->Draw("");
+    h2_axes_ratio->Draw(""); 
+    
+    lineCentral->Draw("same");
+    if( !shapeNorm ){
+
+      systBand->Draw("3,same");
+      lineCentral->Draw("same");
+
+      SFFitBand->Draw("3,same");
+      fSF->Draw("same");
+    }
+    /*
     line->Draw("same");
     SFband->Draw("3,same");
-    lineSF->Draw("same");
+    lineSF->Draw("same"); */
     g_ratio->Draw("PE,same");
     gPad->RedrawAxis();
 

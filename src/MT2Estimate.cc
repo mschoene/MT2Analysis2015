@@ -391,7 +391,7 @@ void MT2Estimate::print(const std::string& ofs){
   Double_t error;
   Double_t integral = yield->IntegralAndError(binXmin, binXmax, error);
 
-  ofstream ofs_file;
+  std::ofstream ofs_file;
   ofs_file.open( ofs, std::ofstream::app );
   if(integral >= 10)
     ofs_file << std::fixed << std::setprecision(1) << " & " << integral << " $\\pm$ " << error;
@@ -400,7 +400,7 @@ void MT2Estimate::print(const std::string& ofs){
 
 }
 
-void MT2Estimate::print(ofstream& ofs_file){
+void MT2Estimate::print(std::ofstream& ofs_file){
 
   Int_t binXmin=1;
   Int_t binXmax=-1;
@@ -415,7 +415,7 @@ void MT2Estimate::print(ofstream& ofs_file){
 
 }
 
-void MT2Estimate::print( ofstream& ofs_file, Int_t mt2_bin ){
+void MT2Estimate::print( std::ofstream& ofs_file, Int_t mt2_bin ){
 
   Double_t error;
   Double_t integral = yield->IntegralAndError(mt2_bin, mt2_bin, error);

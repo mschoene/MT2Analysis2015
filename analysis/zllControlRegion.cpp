@@ -337,6 +337,7 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
 
     //FILTERS
     if( myTree.isData &&( myTree.Flag_HBHENoiseFilter==0 || myTree.Flag_CSCTightHaloFilter==0 || myTree.Flag_goodVertices==0 ||  myTree.Flag_eeBadScFilter==0 ) ) continue;
+    if(myTree.isData && myTree.isGolden == 0) continue;
 
     if(myTree.lep_pt[0]<25) continue;
     if(myTree.lep_pt[1]<20) continue;

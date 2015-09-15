@@ -233,10 +233,10 @@ int main( int argc, char* argv[] ) {
        
        
        std::string datacardName( Form("%s/datacard_%s.txt", path_templ.c_str(), binName.c_str()) );
-       ofstream datacard( datacardName.c_str() );
+       std::ofstream datacard( datacardName.c_str() );
        
        std::string tableName( Form("%s/table_%s.txt", path_templ.c_str(), binName.c_str()) );
-       ofstream table( tableName.c_str() );
+       std::ofstream table( tableName.c_str() );
        table << std::setprecision(3);
        
        
