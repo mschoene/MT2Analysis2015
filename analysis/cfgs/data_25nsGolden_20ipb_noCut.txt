@@ -1,0 +1,6 @@
+lumi 0.0161
+#lumi 0.02038
+regionsSet 13TeV_noCut
+mcSamples 74X_noSkim
+dataSamples Run2015C_25nsGolden
+additionalStuff noSignals
