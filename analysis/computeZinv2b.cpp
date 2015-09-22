@@ -38,24 +38,21 @@ Double_t bern( Double_t *x, Double_t *par) {
 }
 
 
-//Double_t func( Double_t *x, Double_t *par ) {
-//
-//  return 0.5*par[0]/(1.-par[0])*(x[0]-1.);
-//
-//}
-
 
 
 void drawMt2VsB( MT2Config cfg, TTree* tree, const std::string& suffix, const std::string& legendTitle, const std::string& varName, const std::string& axisName, int nBins, float xMin, float xMax, const std::string& additionalSel="");
 float getP( MT2Config cfg, TTree* tree, const std::string& name, TTree* tree_data=0, const std::string& name_data="Data" );
 TH1D* getPHisto( MT2Config cfg, TTree* tree, const std::string& name, TH1D* histo_compare=0, const std::string& name_compare="" );
 TH1D* getPHisto2( MT2Config cfg, TTree* tree, const std::string& name, const std::string& niceName, const std::string& selection = "ht>450. && mt2 > 200." );
+TH1D* getRatioHisto( MT2Config cfg, TTree* tree, const std::string& name, const std::string& niceName, const std::string& selection = "ht>450. && mt2 > 200." );
 void getPfromFunc( TF1* line, float& p, float& p_err );
 void getPfromFunc21( TF1* line, float& p, float& p_err );
 MT2Analysis<MT2Estimate>* compute2bFrom01b( MT2Config cfg, MT2Analysis<MT2EstimateTree>* mc, float p, float p_err );
 MT2Analysis<MT2Estimate>* compute2bFrom01b_2( MT2Config cfg, MT2Analysis<MT2EstimateTree>* mc, TF1* func );
+MT2Analysis<MT2Estimate>* compute2bFromRatio( MT2Config cfg, MT2Analysis<MT2EstimateTree>* mc, TF1* func );
 void fillFromTree( TTree* tree, TH1D* yield_2b_extrapMC, float p, float p_err ); 
 void fillFromTree_2( TTree* tree, TH1D* yield_2b_extrapMC, TF1* func );
+void fillFromTreeRatio( TTree* tree, TH1D* yield_2b_extrapMC, TF1* func );
 float getCorrection( int njets, float p );
 float getCorrection_1b( int njets, float p );
 void compareHistos( MT2Config cfg, const std::string& saveName, TH1D* histo1, TH1D* histo2, TH1D* histo3=0, TH1D* histo4=0 );
@@ -111,7 +108,8 @@ int main( int argc, char* argv[] ) {
     TFile* file_Zinv = TFile::Open( mcFile.c_str() );
     TTree* tree_Zinv = (TTree*)file_Zinv->Get("ZJets/HT450toInf_j2toInf_b0toInf/tree_ZJets_HT450toInf_j2toInf_b0toInf");
 
-    histo_mc = getPHisto2( cfg, tree_Zinv, "zinv", "Z #rightarrow #nu#nu MC" );
+    histo_mc = getRatioHisto( cfg, tree_Zinv, "zinv", "Z #rightarrow #nu#nu MC" );
+    //histo_mc = getPHisto2( cfg, tree_Zinv, "zinv", "Z #rightarrow #nu#nu MC" );
 
     drawMt2VsB( cfg, tree_Zinv, "zinv", "Z #rightarrow #nu#nu", "mt2", "M_{T2} [GeV]", 100, 0., 1450. );
     //drawMt2VsB( cfg, tree_Zinv, "zinv", "Z #rightarrow #nu#nu", "nJets", "Number of Jets (p_{T}>30 GeV)", 8, 1.5, 9.5 );
@@ -130,10 +128,10 @@ int main( int argc, char* argv[] ) {
     TFile* file_zllData = TFile::Open( Form("%s/data.root"  , zllDir.c_str()) );
     TTree* tree_zllData = (TTree*)file_zllData->Get("data/HT450toInf_j2toInf_b0toInf/tree_data_HT450toInf_j2toInf_b0toInf");
 
-    histo_mc_zll = getPHisto2( cfg, tree_zll, "zllMC", "Z #rightarrow ll MC", "mt2>200. && ht>450. && Z_mass > 70. && Z_mass<110." );
-    TH1D* histo_mc_zll_loose = getPHisto2( cfg, tree_zll, "zllMC", "Z #rightarrow ll MC (loose)", "ht>450. && Z_mass > 70. && Z_mass<110." );
+    histo_mc_zll = getRatioHisto( cfg, tree_zll, "zllMC", "Z #rightarrow ll MC", "mt2>200. && ht>450. && Z_mass > 70. && Z_mass<110." );
+    TH1D* histo_mc_zll_loose = getRatioHisto( cfg, tree_zll, "zllMC_loose", "Z #rightarrow ll MC (loose)", "ht>450. && Z_mass > 70. && Z_mass<110." );
 
-    histo_data = getPHisto2( cfg, tree_zllData, "zllData", "Z #rightarrow ll Data (loose)", "ht>450." );
+    histo_data = getRatioHisto( cfg, tree_zllData, "zllData", "Z #rightarrow ll Data (loose)", "ht>450." );
 
     compareHistos( cfg, "compare_mc", histo_mc, histo_mc_zll, histo_mc_zll_loose );
 
@@ -155,7 +153,7 @@ int main( int argc, char* argv[] ) {
 
   MT2Analysis<MT2EstimateTree>* zinv = MT2Analysis<MT2EstimateTree>::readFromFile(mcFile, "ZJets");
   zinv->setFullName("Z + Jets");
-  compute2bFrom01b_2( cfg, zinv, histo_mc->GetFunction("line") );
+  compute2bFromRatio( cfg, zinv, histo_mc->GetFunction("line") );
 
 
   return 0;
@@ -164,6 +162,101 @@ int main( int argc, char* argv[] ) {
 
 
 
+
+TH1D* getRatioHisto( MT2Config cfg, TTree* tree, const std::string& name, const std::string& niceName, const std::string& selection ) {
+
+  float njetMin = 2;
+  float njetMax = 12;
+  int nbins_histo = njetMax-njetMin + 1;
+
+  TH1D* h1_r_vs_nj = new TH1D(Form("r_vs_nj_%s", name.c_str()), "", nbins_histo, njetMin-0.5, njetMax+0.5 );
+  
+
+  std::string outdir = cfg.getEventYieldDir() + "/fits2b/" + name;
+  system( Form("mkdir -p %s", outdir.c_str()) );
+
+  //float yMin = 0.;
+  //float yMax = 0.5;
+  ////float yMax = 0.09;
+
+  
+
+  for( int njet=(int)njetMin; njet<=(int)njetMax; ++njet ) {
+
+    std::string name_bjets(Form("nbjets_%d", njet));
+
+
+    int nbjet_min = 0;
+    int nbjet_max = 6;
+    int nbjetbins = nbjet_max-nbjet_min;
+
+    TH1D* h1_nbjets = new TH1D( name_bjets.c_str(), "", nbjetbins, nbjet_min-0.5, nbjet_max-0.5 );
+    h1_nbjets->Sumw2();
+    h1_nbjets->SetYTitle("Events");
+    h1_nbjets->SetXTitle("Number of b-Jets");
+
+    tree->Project( name_bjets.c_str(), "nBJets", Form("weight*(nJets==%d && %s )", njet, selection.c_str() ) );
+
+    float n1 = h1_nbjets->GetBinContent( h1_nbjets->FindBin( 1 ) );
+    float n1_err = h1_nbjets->GetBinError( h1_nbjets->FindBin( 1 ) );
+    float n2 = h1_nbjets->GetBinContent( h1_nbjets->FindBin( 2 ) );
+    float n2_err = h1_nbjets->GetBinError( h1_nbjets->FindBin( 2 ) );
+
+    if( n1>0.0001 ) {
+
+      float ratio = n2/n1;
+      float ratio_err = sqrt( n2_err*n2_err/(n1*n1) + n1_err*n1_err*n2*n2/(n1*n1*n1*n1) );
+
+      int bin = h1_r_vs_nj->FindBin( njet );
+      h1_r_vs_nj->SetBinContent( bin, ratio );
+      h1_r_vs_nj->SetBinError( bin, ratio_err );
+
+    }
+
+    delete h1_nbjets;
+
+  }
+
+
+
+  TF1* line = new TF1("line", "[0] + [1]*x", njetMin-0.5, njetMax+0.5 );
+  line->SetLineColor(46);
+  h1_r_vs_nj->Fit( line, "RQ+" );
+
+
+
+  TCanvas* c1 = new TCanvas("c1_", "", 600, 600 );
+  c1->cd();
+
+  TH2D* h2_axes = new TH2D("axes", "", 10, njetMin-0.5, njetMax+0.5, 10, 0., 0.5 );
+  h2_axes->SetXTitle("Number of Jets");
+  h2_axes->SetYTitle("2b/1b Ratio");
+  h2_axes->Draw();
+
+  h1_r_vs_nj->SetMarkerStyle(20);
+  h1_r_vs_nj->SetMarkerSize(1.6);
+
+
+  TPaveText* labelTop = MT2DrawTools::getLabelTop();
+  labelTop->Draw("same");
+
+  h1_r_vs_nj->Draw("p same");
+
+  gPad->RedrawAxis();
+
+  c1->SaveAs( Form("%s/ratio.eps", outdir.c_str()) );
+  c1->SaveAs( Form("%s/ratio.pdf", outdir.c_str()) );
+
+  delete c1;
+  delete h2_axes;
+
+  h1_r_vs_nj->SetTitle( niceName.c_str() );
+
+  return h1_r_vs_nj;
+
+}
+
+  
 
 TH1D* getPHisto2( MT2Config cfg, TTree* tree, const std::string& name, const std::string& niceName, const std::string& selection ) {
 
@@ -283,7 +376,7 @@ TH1D* getPHisto2( MT2Config cfg, TTree* tree, const std::string& name, const std
 
 
 
-  TCanvas* c1 = new TCanvas("c1", "", 600, 600 );
+  TCanvas* c1 = new TCanvas("c1_", "", 600, 600 );
   c1->cd();
 
   TH2D* h2_axes = new TH2D("axes", "", 10, njetMin-0.5, njetMax+0.5, 10, 0., 0.16 );
@@ -434,7 +527,7 @@ TH1D* getPHisto( MT2Config cfg, TTree* tree, const std::string& name, TH1D* hist
   getPfromFunc21( line21, p21, p21_err );
 
 
-  TCanvas* c1 = new TCanvas("c1", "", 600, 600 );
+  TCanvas* c1 = new TCanvas("c1_", "", 600, 600 );
   c1->cd();
 
   TH2D* h2_axes = new TH2D("axes", "", 10, njetMin-0.5, njetMax+0.5, 10, yMin, yMax );
@@ -553,7 +646,7 @@ void drawMt2VsB( MT2Config cfg, TTree* tree, const std::string& suffix, const st
   system(Form("mkdir -p %s", outputdir.c_str()) );
 
 
-  TCanvas* c1 = new TCanvas("c1", "", 600, 600);
+  TCanvas* c1 = new TCanvas("c1_", "", 600, 600);
 
   TCanvas* c1_log = new TCanvas("c1_log", "", 600, 600);
   c1_log->SetLogy();
@@ -665,6 +758,195 @@ void drawMt2VsB( MT2Config cfg, TTree* tree, const std::string& suffix, const st
 
 
 
+MT2Analysis<MT2Estimate>* compute2bFromRatio( MT2Config cfg, MT2Analysis<MT2EstimateTree>* mc, TF1* func ) {
+
+
+
+  std::set<MT2Region> regions = mc->getRegions();
+
+  MT2Analysis<MT2Estimate>* extrap = new MT2Analysis<MT2Estimate>( mc->getName() + "_extrap", regions );
+
+  std::string outdir = cfg.getEventYieldDir() + "/fits2b";
+  system(Form("mkdir -p %s", outdir.c_str()));
+
+
+  if( cfg.regionsSet()=="13TeV_inclusive" ) { // simple closure test
+
+    TH1::AddDirectory(kTRUE); // stupid ROOT memory allocation needs this
+
+    MT2EstimateTree* thisEst = mc->get( *(regions.begin()) );
+
+    TTree* tree = thisEst->tree;
+
+    TH1D* h1_mcTruth = new TH1D( "mcTruth", "", 50, 200., 1700. );
+    TH1D* h1_mcFakes = new TH1D( "mcFakes", "", 50, 200., 1700. );
+    TH1D* h1_closure = new TH1D( "closure", "", 50, 200., 1700. );
+
+    h1_mcTruth->Sumw2();
+    h1_mcFakes->Sumw2();
+    h1_closure->Sumw2();
+
+    tree->Project( "mcTruth", "mt2", "weight*( mt2>200. && ht > 450. && nBJets==2 )" );
+    tree->Project( "mcFakes", "mt2", "weight*( mt2>200. && ht > 450. && nBJets==2 && nTrueB==0. && nTrueC==0. )" );
+
+    fillFromTreeRatio( tree, h1_closure, func );
+
+    TCanvas* c1 = new TCanvas( "c1_", "", 600, 600 );
+    c1->SetLogy();
+    c1->cd();
+
+    TH2D* h2_axes = new TH2D( "axes", "", 10, 200., 1200., 10, 0.0001, 0.5 );
+    h2_axes->SetXTitle( "M_{T2} [GeV]");
+    h2_axes->SetYTitle( "Events" );
+    h2_axes->Draw();
+
+    h1_mcTruth->SetMarkerStyle(20);
+    h1_mcTruth->SetMarkerSize(1.1);
+    h1_mcTruth->SetMarkerColor(kBlack);
+    h1_mcTruth->SetLineColor(kBlack);
+
+    h1_mcFakes->SetLineStyle(2);
+    h1_mcFakes->SetLineColor(46);
+    //h1_mcFakes->SetLineWidth(2);
+
+    h1_closure->SetMarkerStyle(24);
+    h1_closure->SetMarkerSize(1.1);
+    h1_closure->SetMarkerColor(kBlack);
+    h1_closure->SetLineColor(kBlack);
+
+    h1_mcTruth->Draw("P same");
+    h1_mcFakes->Draw("histo same");
+    h1_closure->Draw("P same");
+
+    TLegend* legend = new TLegend( 0.53, 0.73, 0.9, 0.9 );
+    legend->SetFillColor(0);
+    legend->SetTextSize(0.035);
+    legend->AddEntry( h1_mcTruth, "MC b=2 (all)", "P" );
+    legend->AddEntry( h1_mcFakes, "MC b=2 (fakes)", "L" );
+    legend->AddEntry( h1_closure, "Extrap. from b=1", "P" );
+    legend->Draw("same");
+
+    TPaveText* labelTop = MT2DrawTools::getLabelTop();
+    labelTop->Draw("same");
+
+    gPad->RedrawAxis();
+
+    c1->SaveAs(Form("%s/closure.eps", outdir.c_str()));
+    c1->SaveAs(Form("%s/closure.pdf", outdir.c_str()));
+
+
+  } else { // more complex region set
+
+
+    for( std::set<MT2Region>::iterator iR = regions.begin(); iR!=regions.end(); ++iR ) {
+
+      if( iR->nBJetsMin()!=1 ) continue; //reweight Nb=1 to get Nb=2
+      if( iR->nBJetsMax()!=1 ) continue; //reweight Nb=1 to get Nb=2
+
+      MT2EstimateTree* thisEst_1b = mc->get( *iR );
+      TTree* tree_1b = thisEst_1b->tree;
+
+      MT2Region region_2b( iR->htMin(), iR->htMax(), iR->nJetsMin(), iR->nJetsMax(), 2, 2 );
+      MT2EstimateTree* thisEst_2b = mc->get( region_2b );
+      if( thisEst_2b==0 ) continue;
+
+      TH1::AddDirectory(kTRUE); // stupid ROOT memory allocation needs this
+
+      TH1D* yield_2b = thisEst_2b->yield;
+
+      TH1D* yield_2b_extrapMC = new TH1D( *yield_2b ); // same binning
+      yield_2b_extrapMC->Reset();
+      std::string newNameMC = "extrap2bMC_" + iR->getName();
+      yield_2b_extrapMC->SetName(newNameMC.c_str());
+
+      //TH1D* yield_2b_extrapData = new TH1D( *yield_2b ); // same binning
+      //yield_2b_extrapData->Reset();
+      //std::string newNameData = "extrap2bData_" + iR->getName();
+      //yield_2b_extrapData->SetName(newNameData.c_str());
+
+
+      fillFromTreeRatio( tree_1b, yield_2b_extrapMC, func );
+
+
+      TCanvas* c1 = new TCanvas("c1", "", 600, 600);
+      c1->cd();
+
+      float xMin = yield_2b->GetXaxis()->GetXmin();
+      float xMax = yield_2b->GetXaxis()->GetXmax();
+      float yMax_mc = yield_2b->GetMaximum();
+      float yMax_extrap = yield_2b_extrapMC->GetMaximum();
+      float yMax = (yMax_mc>yMax_extrap) ? yMax_mc: yMax_extrap;
+      yMax *= 1.2;
+
+      TH2D* h2_axes = new TH2D("axes", "", 10, xMin, xMax, 10, 0., yMax );
+      h2_axes->SetXTitle( "M_{T2} [GeV]");
+      h2_axes->SetYTitle( "Events" );
+      h2_axes->Draw();
+
+      yield_2b->SetLineColor(kGray+3);
+      yield_2b->SetLineWidth(2.);
+
+      yield_2b_extrapMC->SetLineColor(46);
+      yield_2b_extrapMC->SetFillColor(46);
+      yield_2b_extrapMC->SetFillStyle(3004);
+      yield_2b_extrapMC->SetLineWidth(2);
+
+      yield_2b_extrapMC->SetMarkerColor(46);
+      yield_2b_extrapMC->SetMarkerSize(2.);
+      yield_2b_extrapMC->SetMarkerStyle(24);
+
+      //yield_2b_extrapData->SetMarkerColor(kBlack);
+      //yield_2b_extrapData->SetMarkerSize(1.6);
+      //yield_2b_extrapData->SetMarkerStyle(20);
+
+      TPaveText* regionName = new TPaveText(0.5, 0.78, 0.9, 0.88, "brNDC");
+      regionName->SetFillColor(0);
+      regionName->SetTextAlign(11);
+      regionName->SetTextSize(0.035);
+      regionName->AddText( region_2b.getNiceNames()[0].c_str() );
+      regionName->AddText( region_2b.getNiceNames()[1].c_str() );
+      regionName->Draw("same");
+
+      yield_2b->Draw("L same");
+      //if( histo_p_data!=0 )
+      //  yield_2b_extrapData->Draw("P same");
+      yield_2b_extrapMC->Draw("P same");
+
+
+
+      TLegend* legend = new TLegend( 0.5, 0.63, 0.9, 0.78);
+      legend->SetFillColor(0);
+      legend->SetTextSize(0.035);
+      legend->AddEntry( yield_2b, "MC Truth", "L" );
+      legend->AddEntry( yield_2b_extrapMC, "Extrap. from 1b", "PL");
+      legend->Draw("same");
+
+      TPaveText* labelTop = MT2DrawTools::getLabelTop("CMS Simulation, #sqrt{s} = 13 TeV");
+      labelTop->Draw("same");
+
+      gPad->RedrawAxis();
+
+      c1->SaveAs(Form("%s/fits2b/closure_%s.eps", cfg.getEventYieldDir().c_str(), region_2b.getName().c_str()) );
+      c1->SaveAs(Form("%s/fits2b/closure_%s.pdf", cfg.getEventYieldDir().c_str(), region_2b.getName().c_str()) );
+      c1->SaveAs(Form("%s/fits2b/closure_%s.png", cfg.getEventYieldDir().c_str(), region_2b.getName().c_str()) );
+
+      delete c1;
+      delete h2_axes;
+
+    } // for regions
+
+    extrap->finalize();
+
+  } // if regions
+
+
+  return extrap;
+
+}
+
+
+
+
 MT2Analysis<MT2Estimate>* compute2bFrom01b_2( MT2Config cfg, MT2Analysis<MT2EstimateTree>* mc, TF1* func ) {
 
 
@@ -698,7 +980,7 @@ MT2Analysis<MT2Estimate>* compute2bFrom01b_2( MT2Config cfg, MT2Analysis<MT2Esti
 
     fillFromTree_2( tree, h1_closure, func );
 
-    TCanvas* c1 = new TCanvas( "c1", "", 600, 600 );
+    TCanvas* c1 = new TCanvas( "c1_", "", 600, 600 );
     c1->SetLogy();
     c1->cd();
 
@@ -1056,6 +1338,41 @@ MT2Analysis<MT2Estimate>* compute2bFrom01b( MT2Config cfg, MT2Analysis<MT2Estima
 }
 
 
+void fillFromTreeRatio( TTree* tree, TH1D* yield_2b_extrapMC, TF1* func ) {
+
+  float weight;
+  tree->SetBranchAddress( "weight", &weight );
+  int njets;
+  tree->SetBranchAddress( "nJets", &njets );
+  int nbjets;
+  tree->SetBranchAddress( "nBJets", &nbjets );
+  float mt2;
+  tree->SetBranchAddress( "mt2", &mt2 );
+  float ht;
+  tree->SetBranchAddress( "ht", &ht );
+
+  int nentries = tree->GetEntries();
+
+  for( int iEntry=0; iEntry<nentries; ++iEntry ) {
+
+    tree->GetEntry(iEntry);
+
+    if( njets<2 ) continue;
+    if( nbjets!=1 ) continue;  // now correcting 1b
+    if( mt2<200. ) continue;
+    if( ht<450. ) continue;
+
+    float corr_mc = TMath::Max( func->Eval(njets), 0. );
+
+    yield_2b_extrapMC->Fill( mt2, weight*corr_mc );
+
+  }
+
+}
+
+
+
+
 void fillFromTree_2( TTree* tree, TH1D* yield_2b_extrapMC, TF1* func ) {
 
   float weight;
@@ -1164,12 +1481,11 @@ void compareHistos( MT2Config cfg, const std::string& saveName, TH1D* histo1, TH
   c1->cd();
 
 
-  float yMax = 0.2;
-  if( histo4!=0 ) yMax = 0.25;
+  float yMax = 0.7;
 
   TH2D* h2_axes = new TH2D("axes", "", 10, xMin, xMax, 10, 0., yMax );
   h2_axes->SetXTitle("Number of Jets");
-  h2_axes->SetYTitle("p");
+  h2_axes->SetYTitle("2b/1b Ratio");
   h2_axes->Draw();
 
   histo1->SetMarkerStyle(20);
@@ -1209,7 +1525,7 @@ void compareHistos( MT2Config cfg, const std::string& saveName, TH1D* histo1, TH
   float yMin_legend = 0.75;
   if( histo3!=0 ) yMin_legend = 0.7;
   if( histo4!=0 ) yMin_legend = 0.65;
-  TLegend* legend = new TLegend( 0.5, yMin_legend, 0.9, 0.9 );
+  TLegend* legend = new TLegend( 0.2, yMin_legend, 0.6, 0.9 );
   legend->SetFillColor(0);
   legend->SetTextSize(0.035);
   legend->AddEntry( histo1, histo1->GetTitle(), "P" );
