@@ -52,27 +52,51 @@ int main( int argc, char* argv[] ) {
   std::string dir(argv[1]);
 
   MT2Analysis<MT2Estimate>* analysis = MT2Analysis<MT2Estimate>::readFromFile( dir + "/analyses.root", "ZJets" ); // any one is good, just need to know the regions
+  
+  std::vector < MT2Analysis<MT2Estimate>* > analysesSignal;
+  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( dir + "/analyses.root", "SMS_T1tttt_mGluino1500_mLSP100") );
+  analysesSignal[0]->setName("T1tttt 1500,100");
+
+  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( dir + "/analyses.root", "SMS_T1tttt_mGluino1200_mLSP800") );
+  analysesSignal[1]->setName("T1tttt 1200,800");
+
+  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( dir + "/analyses.root", "SMS_T1bbbb_mGluino1500_mLSP100") );
+  analysesSignal[2]->setName("T1bbbb 1500,100");
+
+  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( dir + "/analyses.root", "SMS_T1bbbb_mGluino1000_mLSP900") );
+  analysesSignal[3]->setName("T1bbbb 1000,900");
+
+  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( dir + "/analyses.root", "SMS_T1qqqq_mGluino1400_mLSP100") );
+  analysesSignal[4]->setName("T1qqqq 1400,100");
+
+  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( dir + "/analyses.root", "SMS_T1qqqq_mGluino1000_mLSP800") );
+  analysesSignal[5]->setName("T1qqqq 1000,800");
 
   std::set<MT2Region> regions = analysis->getRegions();
 
   std::string ofs_name(Form("latexBGTable_%s.tex", dir.c_str()));
-  ofstream ofs;
-  ofs.open( ofs_name, std::ofstream::app );
+  std::cout << ofs_name << std::endl;
+  std::ofstream ofs;
+  ofs.open( ofs_name , std::ofstream::app );
 
   for( std::set<MT2Region>::iterator iR = regions.begin(); iR != regions.end(); ++iR ){
     std::cout << iR->getName() << std::endl;
     std::vector< std::string > names = iR->getNiceNamesLatex();
 
+    MT2Region* thisRegion = new MT2Region( *(iR) );
+
     ofs << "\\begin{table}[htbp]" << std::endl; 
-    ofs << "\\caption{Background estimate yields for " << names[0].c_str() << ", " << names[1].c_str() << ".}" << std::endl;
+    ofs << "\\caption{Background estimate and signal yields in bins of \\mttwo for " << names[0].c_str() << ", " << names[1].c_str() << ". The yields are normalized to \\lumival.}" << std::endl;
+    ofs << "\\scriptsize" << std::endl;
     ofs << "\\centering" << std::endl;
+    ofs << "\\makebox[\\textwidth][c]{" << std::endl;
     ofs << "\\begin{tabular}{r";
     int nBins;
     double *bins;
     iR->getBins(nBins, bins);
     for( int b=0; b<nBins; ++b ){
       ofs << "|c";
-      //std::cout<< b <<"out of"<< nBins <<": " << bins[b] << std::endl;
+      //      std::cout<< b <<"out of"<< nBins <<": " << bins[b] << std::endl;
     }
     ofs << "}" << std::endl;
     
@@ -121,7 +145,15 @@ int main( int argc, char* argv[] ) {
     ofs << qcdLine << std::endl;
 
     ofs << "\\hline" << std::endl;
-    ofs << "\\end{tabular}" << std::endl;
+    
+    for(unsigned a =0;  a < analysesSignal.size(); ++a) {
+      ofs << analysesSignal[a]->getName().c_str();
+      analysesSignal[a]->print(ofs, thisRegion );
+    }
+    
+    ofs << "\\hline" << std::endl;
+
+    ofs << "\\end{tabular}}" << std::endl;
     ofs << "\\end{table}" << std::endl;
   
   } // for selected regions
@@ -136,7 +168,7 @@ int main( int argc, char* argv[] ) {
 
 BGTable getTable( const std::string& tableFileName ) {
 
-  ifstream ifs( tableFileName.c_str() );
+  std::ifstream ifs( tableFileName.c_str() );
 
   BGTable table;
 

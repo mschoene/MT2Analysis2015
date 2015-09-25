@@ -132,9 +132,11 @@ int main( int argc, char* argv[] ) {
   }
 
 
-
+  int lumi = (int) cfg.lumi();
+  
   std::string templateFileName = "gammaTemplates" + templateType;
-  templateFileName = templateFileName + "_" + samplesName + "_" + cfg.gammaTemplateRegions() + ".root";
+  std::string lumi_s = Form("%d", lumi);
+  templateFileName = templateFileName + "_" + samplesName + "_" + cfg.gammaTemplateRegions() + "_" + lumi_s + ".root";
 
 
   templatesFake->writeToFile(templateFileName);
@@ -201,7 +203,15 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
     int njets       = myTree.gamma_nJet30;
     int nbjets      = myTree.gamma_nBJet20;    
 
+    int nJetHF30_ = 0;
+    for(int j=0; j<myTree.njet; ++j){
+      
+      if( myTree.jet_pt[j] < 30. || fabs(myTree.jet_eta[j]) < 3.0 ) continue;
+      else ++nJetHF30_;
 
+    }
+//    //HF Veto
+//    if( nJetHF30_ >0 ) continue;
 
     float iso = myTree.gamma_chHadIso[0];
 

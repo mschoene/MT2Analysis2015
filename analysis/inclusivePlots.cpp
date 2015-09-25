@@ -1,34 +1,22 @@
 #include <iostream>
-#include <sstream>
-#include <fstream>
-#include <iomanip>
-#include <string>
-#include <cmath>
 
-#include "TMath.h"
-#include "TH1D.h"
-#include "TH2D.h"
-#include "TH3D.h"
-
-#include "THStack.h"
 #include "TCanvas.h"
 #include "TLegend.h"
-#include "TPaveText.h"
-#include "TGraphAsymmErrors.h"
-#include "TLorentzVector.h"
+#include "TH2D.h"
+#include "TH1D.h"
+#include "TF1.h"
+#include "TFile.h"
+#include "THStack.h"
+#include "TGraphErrors.h"
 
-#include "interface/MT2Sample.h"
-#include "interface/MT2Region.h"
-#include "interface/MT2Analysis.h"
-#include "interface/MT2EstimateTree.h"
-#include "interface/MT2DrawTools.h"
+#include "../interface/MT2Config.h"
+#include "../interface/MT2Analysis.h"
+#include "../interface/MT2Region.h"
+#include "../interface/MT2Estimate.h"
+#include "../interface/MT2EstimateTree.h"
+#include "../interface/MT2DrawTools.h"
 
-#include "TRandom3.h"
-
-#define mt2_cxx
-#include "interface/mt2.h"
-
-double lumi=5.; //fb-1
+double lumi=3.0; //fb-1
 bool doNminusOne=false;
 
 void drawHisto( const std::string& outputdir, MT2Analysis<MT2EstimateTree>* data, std::vector<MT2Analysis<MT2EstimateTree>* > bgYields, std::vector<MT2Analysis<MT2EstimateTree>* > sigYields, std::string var, int nBins, float xmin, float xmax, std::string label, std::string selection, bool logY );
@@ -89,9 +77,23 @@ int main( int argc, char* argv[] ) {
   bgYields.push_back(zjets);
   bgYields.push_back(top);
 
-  //  std::vector<MT2Analysis<MT2EstimateTree>*> sigYields = MT2Analysis<MT2EstimateTree>::readAllFromFile( mc_fileName, "SMS" );
-  std::vector<MT2Analysis<MT2EstimateTree>*> sigYields = MT2Analysis<MT2EstimateTree>::readAllFromFile( mc_fileName, "DarkMatter" );
+  //std::vector<MT2Analysis<MT2EstimateTree>*> sigYields = MT2Analysis<MT2EstimateTree>::readAllFromFile( mc_fileName, "SMS" );
+  //std::vector<MT2Analysis<MT2EstimateTree>*> sigYields = MT2Analysis<MT2EstimateTree>::readAllFromFile( mc_fileName, "DarkMatter" );
 
+  std::vector<MT2Analysis<MT2EstimateTree>*> sigYields;
+  MT2Analysis<MT2EstimateTree>* ZprimeToZhToZinvhbb_narrow_M4500   = MT2Analysis<MT2EstimateTree>::readFromFile( mc_fileName, "ZprimeToZhToZinvhbb_narrow_M4500");
+  MT2Analysis<MT2EstimateTree>* ZprimeToZhToZinvhbb_narrow_M2000   = MT2Analysis<MT2EstimateTree>::readFromFile( mc_fileName, "ZprimeToZhToZinvhbb_narrow_M2000");
+  MT2Analysis<MT2EstimateTree>* ZprimeToWW_narrow_M3000    = MT2Analysis<MT2EstimateTree>::readFromFile( mc_fileName, "ZprimeToWW_narrow_M3000");
+  MT2Analysis<MT2EstimateTree>* WprimeToTauNu_M2000   = MT2Analysis<MT2EstimateTree>::readFromFile( mc_fileName, "WprimeToTauNu_M2000");
+  MT2Analysis<MT2EstimateTree>* WprimeToWhToWlephbb_narrow_M2000   = MT2Analysis<MT2EstimateTree>::readFromFile( mc_fileName, "WprimeToWhToWlephbb_narrow_M2000");
+  MT2Analysis<MT2EstimateTree>* WprimeToMuNu_M2000   = MT2Analysis<MT2EstimateTree>::readFromFile( mc_fileName, "WprimeToMuNu_M2000");
+  sigYields.push_back(ZprimeToZhToZinvhbb_narrow_M4500);
+  sigYields.push_back(ZprimeToZhToZinvhbb_narrow_M2000);
+  sigYields.push_back(ZprimeToWW_narrow_M3000);
+  sigYields.push_back(WprimeToTauNu_M2000);
+  sigYields.push_back(WprimeToWhToWlephbb_narrow_M2000);
+  sigYields.push_back(WprimeToMuNu_M2000);
+  
   drawHisto( outputdir, data, bgYields, sigYields, "mt2", 60, 0., 1500., "M_{T2} [GeV]", "", kTRUE );
   drawHisto( outputdir, data, bgYields, sigYields, "ht", 100, 0., 2500., "H_{T} [GeV]", "", kTRUE );
   drawHisto( outputdir, data, bgYields, sigYields, "nJets", 12, 0, 12, "N(jet)", "", kFALSE );
@@ -115,30 +117,34 @@ void drawHisto( const std::string& outputdir, MT2Analysis<MT2EstimateTree>* data
   //colors.push_back(); // other
   
   std::vector<int> colorsSig; //PHYS14 mc
-//  colorsSig.push_back(1); // t1tttt
-//  colorsSig.push_back(2); // t1bbbb
-//  colorsSig.push_back(6); // t1qqqq
-//  colorsSig.push_back(5); // t2tt
-//  colorsSig.push_back(7); // t2bb
-//  colorsSig.push_back(9); // t2qq
-  //////DM
-  colorsSig.push_back(1); // 1000
-  colorsSig.push_back(1);
-  colorsSig.push_back(2); // 100
+//  colorsSig.push_back(6); // T1bbbb
+//  colorsSig.push_back(6);
+//  colorsSig.push_back(1); // T1qqqq
+//  colorsSig.push_back(1);
+//  colorsSig.push_back(2); // T1tttt
+//  colorsSig.push_back(2); 
+  colorsSig.push_back(6); // Z'
   colorsSig.push_back(2);
-  colorsSig.push_back(6); // 10
-  colorsSig.push_back(6); 
-  colorsSig.push_back(9); // 1
+  colorsSig.push_back(1); 
+  colorsSig.push_back(6); // W'
+  colorsSig.push_back(2);
+  colorsSig.push_back(1); 
   
+//  std::vector<int> styleSig;
+//  styleSig.push_back(2);
+//  styleSig.push_back(1);
+//  styleSig.push_back(2);
+//  styleSig.push_back(1);
+//  styleSig.push_back(2);
+//  styleSig.push_back(1);
+
   std::vector<int> styleSig;
   styleSig.push_back(1);
-  styleSig.push_back(2);
+  styleSig.push_back(1);
   styleSig.push_back(1);
   styleSig.push_back(2);
-  styleSig.push_back(1);
   styleSig.push_back(2);
-  styleSig.push_back(1);
-
+  styleSig.push_back(2);
  
   std::string fullPath = outputdir;
   system( Form("mkdir -p %s", fullPath.c_str()) );
@@ -151,8 +157,10 @@ void drawHisto( const std::string& outputdir, MT2Analysis<MT2EstimateTree>* data
    
     TH1F::AddDirectory(kTRUE);
     
-    TH1D* h_data = new TH1D("h_data", "", nBins, xmin, xmax);
-   
+    TH1D* h_data;
+    if ( var != "mt2" || MT2Regions.size() <=1 ){
+      h_data = new TH1D("h_data", "", nBins, xmin, xmax);
+    }
     // All selections:
     std::string MinusOneCut=selection;
     int nCuts = 8;
@@ -186,8 +194,13 @@ void drawHisto( const std::string& outputdir, MT2Analysis<MT2EstimateTree>* data
       
     }
     
-    data->get( thisRegion )->tree->Project( h_data->GetName(), var.c_str(), selection.c_str() );
-  
+    if( var != "mt2"  || MT2Regions.size() <=1 )
+      data->get( thisRegion )->tree->Project( h_data->GetName(), var.c_str(), selection.c_str() );
+    else {
+      std::cout << "Plotting mt2 yield... ";
+      h_data = (TH1D*) data->get( thisRegion )->yield->Clone( "h_data" );
+      std::cout << "Plotted." << std::endl;
+    }
     TGraphAsymmErrors* gr_data = MT2DrawTools::getPoissonGraph(h_data);
     gr_data->SetMarkerStyle(20);
     gr_data->SetMarkerSize(1.6);
@@ -200,8 +213,13 @@ void drawHisto( const std::string& outputdir, MT2Analysis<MT2EstimateTree>* data
       //int index=i;
       int index = bgYields.size() - i - 1; // reverse ordered stack is prettier with QCD
       
-      h_bg[index] = new TH1D(Form("h_%s_%s", var.c_str(), bgYields[i]->getName().c_str()), "", nBins, xmin, xmax);
-      bgYields[index]->get(thisRegion)->tree->Project( h_bg[index]->GetName(), var.c_str(), selection.c_str() );
+      if( var != "mt2"  || MT2Regions.size() <=1 ){
+	h_bg[index] = new TH1D(Form("h_%s_%s", var.c_str(), bgYields[index]->getName().c_str()), "", nBins, xmin, xmax);
+	bgYields[index]->get(thisRegion)->tree->Project( h_bg[index]->GetName(), var.c_str(), selection.c_str() );
+      }
+      else{
+	h_bg[index] = (TH1D*) bgYields[index]->get( thisRegion )->yield->Clone( Form("h_%s_%s", var.c_str(), bgYields[index]->getName().c_str()) );
+      }
       h_bg[index]->SetFillColor( colors[index] );
       h_bg[index]->SetLineColor( kBlack );
       bgStack.Add(h_bg[index]);
@@ -211,34 +229,44 @@ void drawHisto( const std::string& outputdir, MT2Analysis<MT2EstimateTree>* data
     TH1D* h_sig[sigYields.size()];    
     for( unsigned i=0; i<sigYields.size(); ++i ) { 
       
-      h_sig[i] = new TH1D(Form("h_%s_%s", var.c_str(), sigYields[i]->getName().c_str()), "", nBins, xmin, xmax);
-      sigYields[i]->get(thisRegion)->tree->Project( h_sig[i]->GetName(), var.c_str(), selection.c_str() );
+      if( var != "mt2" || MT2Regions.size() <=1 ){
+	h_sig[i] = new TH1D(Form("h_%s_%s", var.c_str(), sigYields[i]->getName().c_str()), "", nBins, xmin, xmax);
+	sigYields[i]->get(thisRegion)->tree->Project( h_sig[i]->GetName(), var.c_str(), selection.c_str() );
+      }
+      else{
+	h_sig[i] = (TH1D*) sigYields[i]->get( thisRegion )->yield->Clone( Form("h_%s_%s", var.c_str(), sigYields[i]->getName().c_str()) );
+      }
       h_sig[i]->SetLineColor( colorsSig[i] );
-      //DM
       h_sig[i]->SetLineStyle( styleSig[i] );
-      //
       h_sig[i]->SetLineWidth( 2 );
       //h_sig[i]->Scale(50.);
 
     }
     
     std::vector< std::string > sigNames;
-//    sigNames.push_back("T1tttt 1500, 100 x50");
+//    sigNames.push_back("T1bbbb 1000, 900 x50");
 //    sigNames.push_back("T1bbbb 1500, 100 x50");
+//    sigNames.push_back("T1qqqq 1000, 800 x50");
 //    sigNames.push_back("T1qqqq 1400, 100 x50");
-//    sigNames.push_back("T2tt 850, 100 x50");
-//    sigNames.push_back("T2bb 900, 100 x50");
-//    sigNames.push_back("T2qq 1200, 100 x50");
-    for (int i=0; i<sigYields.size(); ++i){
-      TString thisName=sigYields[i]->getName().c_str();
-      thisName.ReplaceAll( "M1", "M=1" );
-      thisName.ReplaceAll( "tsg", "" );
-      thisName.ReplaceAll( "V", "(V)" );
-      thisName.ReplaceAll( "A(V)", "(AV)" );	    
-      thisName.ReplaceAll( "_", " " );
+//    sigNames.push_back("T1tttt 1200, 800 x50");
+//    sigNames.push_back("T1tttt 1500, 100 x50");
+    sigNames.push_back("Z' to Z(#nu#nu)h(bb), M=4500");
+    sigNames.push_back("Z' to Z(#nu#nu)h(bb), M=2000");
+    sigNames.push_back("Z' to WW, M=3000");
+    sigNames.push_back("W' to #tau#nu, M=2000");
+    sigNames.push_back("W' to W(l#nu)h(bb), M=2000");
+    sigNames.push_back("W' to #mu#nu, M=2000");
 
-      sigNames.push_back((std::string)thisName);
-    }
+//    for (int i=0; i<sigYields.size(); ++i){
+//      TString thisName=sigYields[i]->getName().c_str();
+//      thisName.ReplaceAll( "M1", "M=1" );
+//      thisName.ReplaceAll( "tsg", "" );
+//      thisName.ReplaceAll( "V", "(V)" );
+//      thisName.ReplaceAll( "A(V)", "(AV)" );	    
+//      thisName.ReplaceAll( "_", " " );
+//
+//      sigNames.push_back((std::string)thisName);
+//    }
 
     TCanvas* c1 = new TCanvas( "c1", "", 600, 600 );
     c1->cd();
@@ -312,7 +340,7 @@ void drawHisto( const std::string& outputdir, MT2Analysis<MT2EstimateTree>* data
     //gr_data->Draw("p same"); //Not drawing data yet
 
     for( unsigned i=0; i<sigYields.size(); ++i ) {
-      h_sig[i]->Draw("same");
+      h_sig[i]->Draw("hist,same");
     }
  
     //TPaveText* labelTop = MT2DrawTools::getLabelTop(lumi);
