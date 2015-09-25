@@ -95,7 +95,7 @@ int main( int argc, char* argv[] ) {
     std::vector<MT2Sample> samples_qcd = MT2Sample::loadSamples(samplesFile, "QCD");
 
 
-    MT2Analysis<MT2EstimateTree>* tree = new MT2Analysis<MT2EstimateTree>( "gammaCRtree_loose", "13TeV_inclusive" );
+    MT2Analysis<MT2EstimateTree>* tree = new MT2Analysis<MT2EstimateTree>( "gammaCRtree_loose", cfg.regionsSet() );
     MT2EstimateTree::addVar( tree, "prompt" );
     MT2EstimateTree::addVar( tree, "iso" );
     //MT2EstimateTree::addVar( tree, "isoRC" );
@@ -105,7 +105,7 @@ int main( int argc, char* argv[] ) {
     MT2EstimateTree::addVar( tree, "jet1_pt" );
     MT2EstimateTree::addVar( tree, "jet2_pt" );
     
-    MT2Analysis<MT2EstimateTree>* tree_pass = new MT2Analysis<MT2EstimateTree>( "gammaCRtree", "13TeV_inclusive" );
+    MT2Analysis<MT2EstimateTree>* tree_pass = new MT2Analysis<MT2EstimateTree>( "gammaCRtree", cfg.regionsSet() );
     MT2EstimateTree::addVar( tree_pass, "prompt" );
     MT2EstimateTree::addVar( tree_pass, "iso" );
     //MT2EstimateTree::addVar( tree_pass, "isoRC" );
@@ -218,20 +218,20 @@ int main( int argc, char* argv[] ) {
     for( unsigned i=0; i<signals.size(); ++i )
       signals[i]->writeToFile( mcFile);
 
+    //comment here again
+    if( cfg.dummyAnalysis() ) {
 
-    //if( cfg.dummyAnalysis() ) {
+    // emulate data:
+      roundLikeData(gammaCR);
+      roundLikeData(gammaCR_loose);
+      gammaCR->writeToFile( outputdir + "/data.root" );
+      gammaCR_loose->writeToFile( outputdir + "/data.root" );
+      gammaCR_nipUp->writeToFile( outputdir + "/data.root" );
+      gammaCR_nipDown->writeToFile( outputdir + "/data.root" );
+      tree->writeToFile( outputdir + "/data.root" );
+      tree_pass->writeToFile( outputdir + "/data.root" );
 
-    //  // emulate data:
-    //  roundLikeData(gammaCR);
-    //  roundLikeData(gammaCR_loose);
-    //  gammaCR->writeToFile( outputdir + "/data.root" );
-    //  gammaCR_loose->writeToFile( outputdir + "/data.root" );
-    //  gammaCR_nipUp->writeToFile( outputdir + "/data.root" );
-    //  gammaCR_nipDown->writeToFile( outputdir + "/data.root" );
-    //  tree->writeToFile( outputdir + "/data.root" );
-    //  tree_pass->writeToFile( outputdir + "/data.root" );
-
-    //} // if dummy
+    } // if dummy
 
     purityTight->writeToFile( outputdir + "/purityMC.root", "RECREATE" );
     purityLoose->writeToFile( outputdir + "/purityMC.root" );
@@ -263,7 +263,7 @@ int main( int argc, char* argv[] ) {
       MT2Analysis<MT2EstimateZinvGamma>* dataCR_loose = new MT2Analysis<MT2EstimateZinvGamma>( "gammaCR_loose",  cfg.regionsSet() );
       MT2Analysis<MT2EstimateZinvGamma>* dataCR       = new MT2Analysis<MT2EstimateZinvGamma>( "gammaCR",  cfg.regionsSet() );
 
-      MT2Analysis<MT2EstimateTree>* tree = new MT2Analysis<MT2EstimateTree>( "gammaCRtree_loose", "13TeV_inclusive" );
+      MT2Analysis<MT2EstimateTree>* tree = new MT2Analysis<MT2EstimateTree>( "gammaCRtree_loose", cfg.regionsSet() );
       MT2EstimateTree::addVar( tree, "iso" );
       MT2EstimateTree::addVar( tree, "sietaieta" );
       MT2EstimateTree::addVar( tree, "ptGamma" );
@@ -271,7 +271,7 @@ int main( int argc, char* argv[] ) {
       MT2EstimateTree::addVar( tree, "jet1_pt" );
       MT2EstimateTree::addVar( tree, "jet2_pt" );
       
-      MT2Analysis<MT2EstimateTree>* tree_pass = new MT2Analysis<MT2EstimateTree>( "gammaCRtree", "13TeV_inclusive" );
+      MT2Analysis<MT2EstimateTree>* tree_pass = new MT2Analysis<MT2EstimateTree>( "gammaCRtree", cfg.regionsSet() );
       MT2EstimateTree::addVar( tree_pass, "iso" );
       MT2EstimateTree::addVar( tree_pass, "sietaieta" );
       MT2EstimateTree::addVar( tree_pass, "ptGamma" );
@@ -358,7 +358,7 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
 
     myTree.GetEntry(iEntry);
 
-
+    /*
 
     if( !myTree.passSelection("gamma") ) continue;
 
@@ -367,6 +367,7 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
     } else {
       if( !myTree.passGammaAdditionalSelection(sample.id) ) continue;
     }
+    */
 
 
     //if( myTree.gamma_ht>1000. && sample.id==204 ) continue; // remove high-weight spikes (remove GJet_400to600 leaking into HT>1000)

@@ -327,12 +327,14 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
     //baseline single cuts for flexibility, change back
     //if( !(myTree.passSelection("zll")) ) continue; 
     if(myTree.nVert < 0) continue;
-    if(myTree.nJet30 < 2  ) continue;
-    if(myTree.zll_deltaPhiMin < 0.3) continue;
+  
+  if(myTree.nJet30 < 1  ) continue;
+  /*
+   if(myTree.nJet30 < 2  ) continue;
+   if(myTree.zll_deltaPhiMin < 0.3) continue;
     if(myTree.zll_diffMetMht > 0.5*myTree.zll_met_pt) continue;
-    
     if( myTree.mt2 >200 ) continue;  
-
+  */
     if(( myTree.lep_pdgId[0]*myTree.lep_pdgId[1])>0 )   continue;
 
     //FILTERS

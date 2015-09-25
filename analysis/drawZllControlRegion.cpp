@@ -134,7 +134,7 @@ int main(int argc, char* argv[]){
   MT2Analysis<MT2EstimateTree>* wjets_of = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s/ZllPurityTrees_of.root", ZllDir_of.c_str() ), "WJets");
   MT2Analysis<MT2EstimateTree>* zjets_of = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s/ZllPurityTrees_of.root", ZllDir_of.c_str() ), "ZJets");
   
-  MT2Analysis<MT2EstimateTree>* data_of = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s/data_of.root", ZllDir_of.c_str() ) , "data_of");
+  MT2Analysis<MT2EstimateTree>* data_of = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s/data_of.root", ZllDir_of.c_str() ) , "zllCR_of");
 
   Zll_of->setFullName("Z+jets");
   wjets_of->setFullName("W+jets");
@@ -143,7 +143,7 @@ int main(int argc, char* argv[]){
 
 
 
-  MT2Analysis<MT2EstimateTree>* data = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s/data.root", ZllDir.c_str() ) , "data");
+  MT2Analysis<MT2EstimateTree>* data = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s/data.root", ZllDir.c_str() ) , "zllCR");
  
 
   data->setFullName("Data");
@@ -209,8 +209,10 @@ int main(int argc, char* argv[]){
   drawYields( cfg, data, bgYields, "ht" , "ht" , selection, 24, 0, 600, "H_{T}", "GeV" );
   drawYields( cfg, data, bgYields, "met" , "met" , selection, 24, 0, 600, "ME_{T}", "GeV" );
 
-  drawYields( cfg, data, bgYields, "nJets"     , "nJets"    , selection, 10, 1.5, 11.5, "Number of Jets (p_{T} > 30 GeV)", "" );
-  drawYields( cfg, data,  bgYields, "nBJets"    , "nBJets"   , selection, 6, -0.5, 5.5, "Number of b-Jets (p_{T} > 20 GeV)", "" );
+  drawYields( cfg, data, bgYields, "nJets", "nJets", selection, 10, 1.5, 11.5, "Number of Jets (p_{T} > 30 GeV)", "" );
+  drawYields( cfg, data,  bgYields, "nBJets", "nBJets", selection, 6, -0.5, 5.5, "Number of b-Jets (p_{T} > 20 GeV)", "" );
+
+  drawYields( cfg, data, bgYields, "Z_pt" , "Z_pt" , selection, 36 , 0, 900, "Z p_{T}", "GeV" );
 
 
 
@@ -222,6 +224,8 @@ int main(int argc, char* argv[]){
 
   std::string    selection2 = "weight*(Z_pt>0)";
   drawYields( cfg, data, bgYields, "Z_mass" , "Z_mass" , selection2, 40, 50, 150, "M_{ll}", "GeV" );
+
+  drawYields( cfg, data_of, bgYields_of, "Z_mass_of" , "Z_mass" , selection2, 50, 0, 250, "M_{ll}", "GeV" );
 
 
 
@@ -833,7 +837,7 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, std::vector<
       else
         tree_mc->Project( thisName.c_str(), varName.c_str(), "" );
 
-       	h1_mc->Scale( 16.1/20.38 );
+      // h1_mc->Scale( 16.1/20.38 );
 
 
       histos_mc.push_back(h1_mc);
