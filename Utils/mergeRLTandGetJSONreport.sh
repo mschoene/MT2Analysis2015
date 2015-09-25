@@ -8,9 +8,11 @@ fi
 
 path=$1
 
+prod_label=`basename $path`
+mkdir $prod_label
 
 for i in `ls -1 $path`; do
-    mkdir $i
-    hadd $i/RLTInfo.root `ls $path/$i/*/0000/RLTInfo_* | awk 'BEGIN{ORS=" "}{print "dcap://t3se01.psi.ch:22125/"$1}'`
-    heppy_report.py $i -a "" -o lumiSummary_$i.txt # this works if you have 'cmsenv' in a CMSSW release with CMG
+    mkdir $prod_label/$i
+    hadd $prod_label/$i/RLTInfo.root `ls $path/$i/*/0000/RLTInfo_* | awk 'BEGIN{ORS=" "}{print "dcap://t3se01.psi.ch:22125/"$1}'`
+    heppy_report.py $prod_label/$i -a "" -o lumiSummary_$i.txt # this works if you have 'cmsenv' in a CMSSW release with CMG
 done
