@@ -72,12 +72,14 @@ int main( int argc, char* argv[] ) {
 
   bool onlyData = false;
   bool onlyMC   = false;
+  bool onlySignal = false;
   if( argc > 2 ) {
     std::string dataMC(argv[2]);
     if( dataMC=="data" ) onlyData = true;
     else if( dataMC=="MC" ) onlyMC = true;
+    else if( dataMC=="signal" ) onlySignal = true;
     else {
-      std::cout << "-> You passed a second argument that isn't 'data' nor 'MC', so I don't know what to do about it." << std::endl;
+      std::cout << "-> You passed a second argument that isn't 'data', nor 'MC', nor 'signal', so I don't know what to do about it." << std::endl;
     }
   }
 
@@ -91,7 +93,7 @@ int main( int argc, char* argv[] ) {
   std::vector<MT2Analysis<MT2EstimateTree>* > yields;
   //MT2Analysis<MT2EstimateTree>* dataYield;  
 
-  if( cfg.useMC() && !onlyData ) { // use MC BG estimates
+  if( cfg.useMC() && !onlyData && !onlySignal ) { // use MC BG estimates
 
     std::string samplesFileName = "../samples/samples_" + cfg.mcSamples() + ".dat";
     std::cout << std::endl << std::endl;
@@ -191,7 +193,7 @@ int main( int argc, char* argv[] ) {
   } // if sig samples
   
 
-  if( !(cfg.dummyAnalysis()) && cfg.dataSamples()!="" && !onlyMC ) {
+  if( !(cfg.dummyAnalysis()) && cfg.dataSamples()!="" && !onlyMC  && !onlySignal ) {
 
     std::string samplesFile_data = "../samples/samples_" + cfg.dataSamples() + ".dat";
 
@@ -301,6 +303,8 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg ) {
     if( iEntry % 50000 == 0 ) std::cout << "    Entry: " << iEntry << " / " << nentries << std::endl;
 
     myTree.GetEntry(iEntry);
+    
+    if( myTree.isData && !myTree.isGolden ) continue;
 
     if( regionsSet!="13TeV_noCut" )
       if( !myTree.passSelection(cfg.additionalStuff()) ) continue;
@@ -317,12 +321,13 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg ) {
     float GenSusyMScan1 = myTree.GenSusyMScan1;
     float GenSusyMScan2 = myTree.GenSusyMScan2;
     
-    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi()*myTree.puWeight;
+    //    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi()*myTree.puWeight;
+    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi();
     //weight *= myTree.weight_lepsf;
 
     if( myTree.isData ) {
       if( !(  (myTree.HLT_PFHT800 && ht>=1000.) || (myTree.HLT_PFHT350_PFMET100 && ht<1000.)  ) ) continue;
-      //if( !( myTree.Flag_HBHENoiseFilter && myTree.Flag_CSCTightHaloFilter && myTree.Flag_goodVertices && myTree.Flag_eeBadScFilter ) ) continue;
+      if( !( myTree.Flag_HBHENoiseFilter && myTree.Flag_CSCTightHaloFilter &&  myTree.Flag_eeBadScFilter ) ) continue;
       //if( !(myTree.Flag_CSCTightHaloFilter && myTree.Flag_eeBadScFilter ) ) continue;
 
       if( (myTree.evt_id == 1 && ht < 1000.) || (myTree.evt_id == 2 && ht >= 1000.) ) continue;

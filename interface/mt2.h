@@ -81,6 +81,7 @@ public :
    Int_t           nBJetLoose40;
    Int_t           nBJetMedium40;
    Int_t           nBJetTight40;
+   Int_t           nJet30FailId;
    Int_t           nLepGood20;
    Int_t           nLepGood15;
    Int_t           nLepGood10;
@@ -144,6 +145,7 @@ public :
    Int_t           gamma_nBJet20;
    Int_t           gamma_nBJet25;
    Int_t           gamma_nBJet40;
+   Int_t           gamma_nJet30FailId;
    Float_t         gamma_ht;
    Float_t         gamma_deltaPhiMin;
    Float_t         gamma_diffMetMht;
@@ -505,6 +507,7 @@ public :
    TBranch        *b_nBJetLoose40;   //!
    TBranch        *b_nBJetMedium40;   //!
    TBranch        *b_nBJetTight40;   //!
+   TBranch        *b_nJet30FailId;   //!
    TBranch        *b_nLepGood20;   //!
    TBranch        *b_nLepGood15;   //!
    TBranch        *b_nLepGood10;   //!
@@ -566,6 +569,7 @@ public :
    TBranch        *b_gamma_nBJet20;   //! 
    TBranch        *b_gamma_nBJet25;   //! 
    TBranch        *b_gamma_nBJet40;   //!
+   TBranch        *b_gamma_nJet30FailId;   //!
    TBranch        *b_gamma_ht;   //!
    TBranch        *b_gamma_deltaPhiMin;   //!
    TBranch        *b_gamma_diffMetMht;   //!
@@ -995,6 +999,7 @@ void MT2Tree::Init(TTree *tree)
    fChain->SetBranchAddress("nBJetLoose40", &nBJetLoose40, &b_nBJetLoose40);
    fChain->SetBranchAddress("nBJetMedium40", &nBJetMedium40, &b_nBJetMedium40);
    fChain->SetBranchAddress("nBJetTight40", &nBJetTight40, &b_nBJetTight40);
+   fChain->SetBranchAddress("nJet30FailId", &nJet30FailId, &b_nJet30FailId);
    fChain->SetBranchAddress("nLepGood20", &nLepGood20, &b_nLepGood20);
    fChain->SetBranchAddress("nLepGood15", &nLepGood15, &b_nLepGood15);
    fChain->SetBranchAddress("nLepGood10", &nLepGood10, &b_nLepGood10);
@@ -1056,6 +1061,7 @@ void MT2Tree::Init(TTree *tree)
    fChain->SetBranchAddress("gamma_nBJet20", &gamma_nBJet20, &b_gamma_nBJet20);
    fChain->SetBranchAddress("gamma_nBJet25", &gamma_nBJet25, &b_gamma_nBJet25);
    fChain->SetBranchAddress("gamma_nBJet40", &gamma_nBJet40, &b_gamma_nBJet40);
+   fChain->SetBranchAddress("gamma_nJet30FailId", &gamma_nJet30FailId, &b_gamma_nJet30FailId);
    fChain->SetBranchAddress("gamma_ht", &gamma_ht, &b_gamma_ht);
    fChain->SetBranchAddress("gamma_deltaPhiMin", &gamma_deltaPhiMin, &b_gamma_deltaPhiMin);
    fChain->SetBranchAddress("gamma_diffMetMht", &gamma_diffMetMht, &b_gamma_diffMetMht);
@@ -1403,20 +1409,23 @@ Bool_t MT2Tree::passBaseline(TString sel)
 {
   if (sel=="gamma")
     return nVert > 0 && 
-      // gamma_nJet30 >= 2 && 
+      // gamma_nJet30 >= 2 &&
+      gamma_nJet30FailId == 0 &&
       gamma_deltaPhiMin > 0.3 && 
       gamma_diffMetMht < 0.5*gamma_met_pt;
   else if (sel=="zll")
     return nVert > 0 &&
-      // nJet30 >= 2 && 
+      // nJet30 >= 2 &&
+      nJet30FailId == 0 &&
       zll_deltaPhiMin > 0.3 && 
       zll_diffMetMht < 0.5*zll_met_pt && 
       nlep > 1 ;
   else
-    return nVert > 0;// && 
-  //(nJet30 >= 2 || sel=="monojet") &&
-  //      deltaPhiMin > 0.3 && 
-  //      diffMetMht < 0.5*met_pt;
+    return nVert > 0 && 
+      //(nJet30 >= 2 || sel=="monojet") &&
+      nJet30FailId == 0 &&
+      deltaPhiMin > 0.3 && 
+      diffMetMht < 0.5*met_pt;
   
   return kFALSE;
 }
