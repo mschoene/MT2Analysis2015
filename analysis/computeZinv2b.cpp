@@ -32,7 +32,7 @@
 
 void drawMt2VsB( MT2Config cfg, TTree* tree, const std::string& suffix, const std::string& legendTitle, const std::string& varName, const std::string& axisName, int nBins, float xMin, float xMax, const std::string& additionalSel="");
 float getP( MT2Config cfg, TTree* tree, const std::string& name, TTree* tree_data=0, const std::string& name_data="Data" );
-TH1D* getRatioHisto( MT2Config cfg, TTree* tree, const std::string& name, const std::string& niceName, const std::string& selection = "ht>450. && mt2 > 200." );
+TH1D* getRatioHisto( MT2Config cfg, TTree* tree, const std::string& name, const std::string& niceName, const std::string& varName="nJets", int nBins=11, float xMin=1.5, float xMax=12.5, const std::string& axisName="Number of Jets", const std::string& selection = "ht>450. && mt2 > 200." );
 MT2Analysis<MT2Estimate>* compute2bFromRatio( MT2Config cfg, MT2Analysis<MT2EstimateTree>* mc, TF1* func );
 void fillFromTreeRatio( TTree* tree, TH1D* yield_2b_extrapMC, TF1* func );
 void compareHistos( MT2Config cfg, const std::string& saveName, TH1D* histo1, TH1D* histo2, TH1D* histo3=0, TH1D* histo4=0 );
@@ -78,60 +78,82 @@ int main( int argc, char* argv[] ) {
 
   std::cout << "-> Running on : " << mcFile << std::endl;
 
-  TH1D* histo_mc;
-  TH1D* histo_mc_zll;
-  TH1D* histo_data;
-  TH1D* histo_mc_gjet;
+  TH1D* histo_mc_zinv = 0;
+  TH1D* histo_mc_zll = 0;
+  TH1D* histo_data_zll = 0;
+  TH1D* histo_mc_gjet = 0;
 
-  if( cfg.regionsSet()=="13TeV_inclusive") {
-
-    TFile* file_Zinv = TFile::Open( mcFile.c_str() );
-    TTree* tree_Zinv = (TTree*)file_Zinv->Get("ZJets/HT450toInf_j2toInf_b0toInf/tree_ZJets_HT450toInf_j2toInf_b0toInf");
-
-    histo_mc = getRatioHisto( cfg, tree_Zinv, "zinv", "Z #rightarrow #nu#nu MC" );
-    //histo_mc = getPHisto2( cfg, tree_Zinv, "zinv", "Z #rightarrow #nu#nu MC" );
-
-    drawMt2VsB( cfg, tree_Zinv, "zinv", "Z #rightarrow #nu#nu", "mt2", "M_{T2} [GeV]", 100, 0., 1450. );
-    //drawMt2VsB( cfg, tree_Zinv, "zinv", "Z #rightarrow #nu#nu", "nJets", "Number of Jets (p_{T}>30 GeV)", 8, 1.5, 9.5 );
-
-    //TFile* file_gjet = TFile::Open( Form("%s/mc.root"  , gammaDir.c_str()) );
-    //TFile* file_data = TFile::Open( Form("%s/data.root", gammaDir.c_str()) );
-
-    //TTree* tree_gjet = (TTree*)file_gjet->Get("gammaCRtree/HT450toInf_j2toInf_b0toInf/tree_gammaCRtree_HT450toInf_j2toInf_b0toInf");
-    //TTree* tree_data = (TTree*)file_data->Get("gammaCRtree/HT450toInf_j2toInf_b0toInf/tree_gammaCRtree_HT450toInf_j2toInf_b0toInf");
-
-    //histo_mc_gjet = getPHisto2( cfg, tree_gjet, "gjetMC", "#gamma + Jets MC" );
+  std::string outdir_ratio = mainDir + "/2bRatio/";
+  system( Form("mkdir -p %s", outdir_ratio.c_str()) );
 
 
-    TFile* file_zll = TFile::Open( Form("%s/mc.root"  , zllDir.c_str()) );
-    TTree* tree_zll = (TTree*)file_zll->Get("zllCR/HT450toInf_j2toInf_b0toInf/tree_zllCR_HT450toInf_j2toInf_b0toInf");
-    TFile* file_zllData = TFile::Open( Form("%s/data.root"  , zllDir.c_str()) );
-    TTree* tree_zllData = (TTree*)file_zllData->Get("data/HT450toInf_j2toInf_b0toInf/tree_data_HT450toInf_j2toInf_b0toInf");
+  TFile* file_mc_zinv = TFile::Open( mcFile.c_str() );
+  TTree* tree_mc_zinv = (TTree*)file_mc_zinv->Get("ZJets/HT450toInf_j2toInf_b0toInf/tree_ZJets_HT450toInf_j2toInf_b0toInf");
 
-    histo_mc_zll = getRatioHisto( cfg, tree_zll, "zllMC", "Z #rightarrow ll MC", "mt2>200. && ht>450. && Z_mass > 70. && Z_mass<110." );
-    TH1D* histo_mc_zll_loose = getRatioHisto( cfg, tree_zll, "zllMC_loose", "Z #rightarrow ll MC (loose)", "ht>450. && Z_mass > 70. && Z_mass<110." );
+  if( tree_mc_zinv ) {
+    histo_mc_zinv = getRatioHisto( cfg, tree_mc_zinv, "zinv", "Z #rightarrow #nu#nu MC" );
+    getRatioHisto( cfg, tree_mc_zinv, "zinv", "Z #rightarrow #nu#nu MC", "mt2", 25, 200., 750., "M_{T2} [GeV]" );
+    getRatioHisto( cfg, tree_mc_zinv, "zinv", "Z #rightarrow #nu#nu MC", "ht" , 30, 450., 1950., "H_{T} [GeV]" );
+    getRatioHisto( cfg, tree_mc_zinv, "zinv", "Z #rightarrow #nu#nu MC", "met", 30, 0., 600., "ME_{T} [GeV]" );
 
-    histo_data = getRatioHisto( cfg, tree_zllData, "zllData", "Z #rightarrow ll Data (loose)", "ht>450." );
-
-    compareHistos( cfg, "compare_mc", histo_mc, histo_mc_zll, histo_mc_zll_loose );
-
-    TFile* file = TFile::Open("prova.root", "RECREATE");
-    file->cd();
-    histo_mc->SetName("p");
-    histo_mc->Write();
-    file->Close();
-
-  } else {
-
-    TFile* file = TFile::Open("prova.root");
-    histo_mc = (TH1D*)file->Get("p");
- 
+    drawMt2VsB( cfg, tree_mc_zinv, "zinv", "Z #rightarrow #nu#nu", "mt2", "M_{T2} [GeV]", 100, 0., 1450. );
   }
+
+
+  TFile* file_mc_gjet  = TFile::Open( Form("%s/mc.root"  , gammaDir.c_str()) );
+  TTree* tree_mc_gjet = (file_mc_gjet) ? (TTree*)file_mc_gjet->Get("gammaCRtree/HT450toInf_j2toInf_b0toInf/tree_gammaCRtree_HT450toInf_j2toInf_b0toInf") : 0;
+  if( tree_mc_gjet ) {
+    histo_mc_gjet = getRatioHisto( cfg, tree_mc_gjet, "gjetMC", "#gamma + Jets MC", "nJets", 11, 1.5, 12.5, "Number of Jets", "prompt>1.5" );
+    getRatioHisto( cfg, tree_mc_gjet, "gjetMC", "#gamma + Jets MC", "mt2", 25, 200., 750., "M_{T2} [GeV]" );
+  }
+
+  TFile* file_data_gjet = TFile::Open( Form("%s/data.root", gammaDir.c_str()) );
+  TH1D* histo_data_gjet = 0;
+  if( file_data_gjet && cfg.dataSamples()!="datatest" && cfg.lumi()>0.15 ) {
+    TTree* tree_data_gjet = (TTree*)file_data_gjet->Get("gammaCRtree/HT450toInf_j2toInf_b0toInf/tree_gammaCRtree_HT450toInf_j2toInf_b0toInf");
+    histo_data_gjet = getRatioHisto( cfg, tree_data_gjet, "gjetData", "#gamma + Jets Data" );
+  }
+
+
+  TFile* file_zll = TFile::Open( Form("%s/mc.root"  , zllDir.c_str()) );
+  TFile* file_zllData = TFile::Open( Form("%s/data.root"  , zllDir.c_str()) );
+  if( file_zll==0 && file_zllData==0 ) {
+    std::cout << "-> You need to run at least the Zll control region! Please do so with zllControlRegion before running this program" << std::endl;
+    exit(19871);
+  }
+  TTree* tree_zll = (TTree*)file_zll->Get("zllCR/HT450toInf_j2toInf_b0toInf/tree_zllCR_HT450toInf_j2toInf_b0toInf");
+  TTree* tree_zllData = (TTree*)file_zllData->Get("data/HT450toInf_j2toInf_b0toInf/tree_data_HT450toInf_j2toInf_b0toInf");
+
+  histo_mc_zll = getRatioHisto( cfg, tree_zll, "zllMC", "Z #rightarrow ll MC", "nJets", 11, 1.5, 12.5, "Number of Jets", "mt2>200. && ht>450. && Z_mass > 70. && Z_mass<110." );
+  TH1D* histo_mc_zll_loose = getRatioHisto( cfg, tree_zll, "zllMC_loose", "Z #rightarrow ll MC (loose)", "nJets", 11, 1.5, 12.5, "Number of Jets", "ht>450. && Z_mass > 70. && Z_mass<110." );
+
+  histo_data_zll = getRatioHisto( cfg, tree_zllData, "zllData", "Z #rightarrow ll Data (loose)", "nJets", 11, 1.5, 12.5, "Number of Jets", "ht>450." );
+
+  if( histo_mc_zinv ) {
+    compareHistos( cfg, "compare_mc", histo_mc_zinv, histo_mc_zll, histo_mc_zll_loose );
+    compareHistos( cfg, "compare_mc_plusgjet", histo_mc_zinv, histo_mc_gjet, histo_data_gjet );
+  }
+
+  TFile* file_mc = TFile::Open(Form("%s/mc.root", outdir_ratio.c_str()), "RECREATE");
+  file_mc->cd();
+  if(histo_mc_zinv ) histo_mc_zinv->Write();
+  if(histo_mc_zll )  histo_mc_zll->Write();
+  if(histo_mc_gjet ) histo_mc_gjet->Write();
+  file_mc->Close();
+  std::cout << "-> Wrote MC ratios to file: " << file_mc->GetName() << std::endl;
+
+  TFile* file_data = TFile::Open(Form("%s/data.root", outdir_ratio.c_str()), "RECREATE");
+  file_data->cd();
+  if( histo_data_zll )  histo_data_zll->Write();
+  if( histo_data_gjet ) histo_data_gjet->Write();
+  file_data->Close();
+  std::cout << "-> Wrote data ratios to file: " << file_data->GetName() << std::endl;
+
 
 
   MT2Analysis<MT2EstimateTree>* zinv = MT2Analysis<MT2EstimateTree>::readFromFile(mcFile, "ZJets");
   zinv->setFullName("Z + Jets");
-  compute2bFromRatio( cfg, zinv, histo_mc->GetFunction("line") );
+  compute2bFromRatio( cfg, zinv, histo_mc_zll->GetFunction("line") );
 
 
   return 0;
@@ -141,16 +163,16 @@ int main( int argc, char* argv[] ) {
 
 
 
-TH1D* getRatioHisto( MT2Config cfg, TTree* tree, const std::string& name, const std::string& niceName, const std::string& selection ) {
+TH1D* getRatioHisto( MT2Config cfg, TTree* tree, const std::string& name, const std::string& niceName, const std::string& varName, int nBins, float xMin, float xMax, const std::string& axisName, const std::string& selection ) {
 
-  float njetMin = 2;
-  float njetMax = 12;
-  int nbins_histo = njetMax-njetMin + 1;
+  //float njetMin = 2;
+  //float njetMax = 12;
+  //int nbins_histo = njetMax-njetMin + 1;
 
-  TH1D* h1_r_vs_nj = new TH1D(Form("r_vs_nj_%s", name.c_str()), "", nbins_histo, njetMin-0.5, njetMax+0.5 );
+  TH1D* h1_ratio = new TH1D(Form("r_vs_%s_%s", varName.c_str(), name.c_str()), "", nBins, xMin, xMax );
   
 
-  std::string outdir = cfg.getEventYieldDir() + "/fits2b/" + name;
+  std::string outdir = cfg.getEventYieldDir() + "/2bRatio/plots/" + name;
   system( Form("mkdir -p %s", outdir.c_str()) );
 
   //float yMin = 0.;
@@ -159,35 +181,40 @@ TH1D* getRatioHisto( MT2Config cfg, TTree* tree, const std::string& name, const 
 
   
 
-  for( int njet=(int)njetMin; njet<=(int)njetMax; ++njet ) {
+  //for( int njet=(int)njetMin; njet<=(int)njetMax; ++njet ) {
+  for( int ibin=1; ibin<nBins+1; ibin++ ) {
 
-    std::string name_bjets(Form("nbjets_%d", njet));
+    std::string name_bjets(Form("nbjets_%d", ibin));
 
 
-    int nbjet_min = 0;
-    int nbjet_max = 6;
-    int nbjetbins = nbjet_max-nbjet_min;
-
-    TH1D* h1_nbjets = new TH1D( name_bjets.c_str(), "", nbjetbins, nbjet_min-0.5, nbjet_max-0.5 );
+    TH1D* h1_nbjets = new TH1D( name_bjets.c_str(), "", 4, 0., 4.);
     h1_nbjets->Sumw2();
     h1_nbjets->SetYTitle("Events");
     h1_nbjets->SetXTitle("Number of b-Jets");
 
-    tree->Project( name_bjets.c_str(), "nBJets", Form("weight*(nJets==%d && %s )", njet, selection.c_str() ) );
+    float binMin = h1_ratio->GetBinLowEdge( ibin );
+    float binMax = h1_ratio->GetBinLowEdge( ibin+1 );
+    tree->Project( name_bjets.c_str(), "nBJets", Form("weight*(%s>=%f && %s<%f && %s )", varName.c_str(), binMin, varName.c_str(), binMax, selection.c_str() ) );
 
     float n1 = h1_nbjets->GetBinContent( h1_nbjets->FindBin( 1 ) );
     float n1_err = h1_nbjets->GetBinError( h1_nbjets->FindBin( 1 ) );
     float n2 = h1_nbjets->GetBinContent( h1_nbjets->FindBin( 2 ) );
     float n2_err = h1_nbjets->GetBinError( h1_nbjets->FindBin( 2 ) );
 
+    if( cfg.dataSamples()=="datatest" ) {
+      // add stat error:
+      n1_err = sqrt( n1_err*n1_err + n1 );
+      n2_err = sqrt( n2_err*n2_err + n2 );
+    }
+
+
     if( n1>0.0001 ) {
 
       float ratio = n2/n1;
       float ratio_err = sqrt( n2_err*n2_err/(n1*n1) + n1_err*n1_err*n2*n2/(n1*n1*n1*n1) );
 
-      int bin = h1_r_vs_nj->FindBin( njet );
-      h1_r_vs_nj->SetBinContent( bin, ratio );
-      h1_r_vs_nj->SetBinError( bin, ratio_err );
+      h1_ratio->SetBinContent( ibin, ratio );
+      h1_ratio->SetBinError( ibin, ratio_err );
 
     }
 
@@ -197,40 +224,40 @@ TH1D* getRatioHisto( MT2Config cfg, TTree* tree, const std::string& name, const 
 
 
 
-  TF1* line = new TF1("line", "[0] + [1]*x", njetMin-0.5, njetMax+0.5 );
+  TF1* line = new TF1("line", "[0] + [1]*x", xMin, xMax );
   line->SetLineColor(46);
-  h1_r_vs_nj->Fit( line, "RQ+" );
+  h1_ratio->Fit( line, "RQ+" );
 
 
 
   TCanvas* c1 = new TCanvas("c1_", "", 600, 600 );
   c1->cd();
 
-  TH2D* h2_axes = new TH2D("axes", "", 10, njetMin-0.5, njetMax+0.5, 10, 0., 0.5 );
-  h2_axes->SetXTitle("Number of Jets");
+  TH2D* h2_axes = new TH2D("axes", "", 10, xMin, xMax, 10, 0., 0.5 );
+  h2_axes->SetXTitle(axisName.c_str());
   h2_axes->SetYTitle("2b/1b Ratio");
   h2_axes->Draw();
 
-  h1_r_vs_nj->SetMarkerStyle(20);
-  h1_r_vs_nj->SetMarkerSize(1.6);
+  h1_ratio->SetMarkerStyle(20);
+  h1_ratio->SetMarkerSize(1.6);
 
 
-  TPaveText* labelTop = MT2DrawTools::getLabelTop();
+  TPaveText* labelTop = MT2DrawTools::getLabelTop(cfg.lumi());
   labelTop->Draw("same");
 
-  h1_r_vs_nj->Draw("p same");
+  h1_ratio->Draw("p same");
 
   gPad->RedrawAxis();
 
-  c1->SaveAs( Form("%s/ratio.eps", outdir.c_str()) );
-  c1->SaveAs( Form("%s/ratio.pdf", outdir.c_str()) );
+  c1->SaveAs( Form("%s/ratio_vs_%s.eps", outdir.c_str(), varName.c_str()) );
+  c1->SaveAs( Form("%s/ratio_vs_%s.pdf", outdir.c_str(), varName.c_str()) );
 
   delete c1;
   delete h2_axes;
 
-  h1_r_vs_nj->SetTitle( niceName.c_str() );
+  h1_ratio->SetTitle( niceName.c_str() );
 
-  return h1_r_vs_nj;
+  return h1_ratio;
 
 }
 
@@ -241,7 +268,7 @@ TH1D* getRatioHisto( MT2Config cfg, TTree* tree, const std::string& name, const 
 void drawMt2VsB( MT2Config cfg, TTree* tree, const std::string& suffix, const std::string& legendTitle, const std::string& varName, const std::string& axisName, int nBins, float xMin, float xMax, const std::string& additionalSel) {
 
 
-  std::string outputdir = cfg.getEventYieldDir() + "/gammaControlRegion/plots2b";
+  std::string outputdir = cfg.getEventYieldDir() + "/2bRatio/plots";
   system(Form("mkdir -p %s", outputdir.c_str()) );
 
 
@@ -357,15 +384,16 @@ void drawMt2VsB( MT2Config cfg, TTree* tree, const std::string& suffix, const st
 
 
 
-MT2Analysis<MT2Estimate>* compute2bFromRatio( MT2Config cfg, MT2Analysis<MT2EstimateTree>* mc, TF1* func ) {
 
+
+MT2Analysis<MT2Estimate>* compute2bFromRatio( MT2Config cfg, MT2Analysis<MT2EstimateTree>* mc, TF1* func ) {
 
 
   std::set<MT2Region> regions = mc->getRegions();
 
   MT2Analysis<MT2Estimate>* extrap = new MT2Analysis<MT2Estimate>( mc->getName() + "_extrap", regions );
 
-  std::string outdir = cfg.getEventYieldDir() + "/fits2b";
+  std::string outdir = cfg.getEventYieldDir() + "/2bRatio/";
   system(Form("mkdir -p %s", outdir.c_str()));
 
 
@@ -386,7 +414,7 @@ MT2Analysis<MT2Estimate>* compute2bFromRatio( MT2Config cfg, MT2Analysis<MT2Esti
     h1_closure->Sumw2();
 
     tree->Project( "mcTruth", "mt2", "weight*( mt2>200. && ht > 450. && nBJets==2 )" );
-    tree->Project( "mcFakes", "mt2", "weight*( mt2>200. && ht > 450. && nBJets==2 && nTrueB==0. && nTrueC==0. )" );
+    //tree->Project( "mcFakes", "mt2", "weight*( mt2>200. && ht > 450. && nBJets==2 && nTrueB==0. && nTrueC==0. )" );
 
     fillFromTreeRatio( tree, h1_closure, func );
 
@@ -394,7 +422,7 @@ MT2Analysis<MT2Estimate>* compute2bFromRatio( MT2Config cfg, MT2Analysis<MT2Esti
     c1->SetLogy();
     c1->cd();
 
-    TH2D* h2_axes = new TH2D( "axes", "", 10, 200., 1200., 10, 0.0001, 0.5 );
+    TH2D* h2_axes = new TH2D( "axes", "", 10, 200., 1200., 10, 0.0001, 10.*h1_closure->GetMaximum() );
     h2_axes->SetXTitle( "M_{T2} [GeV]");
     h2_axes->SetYTitle( "Events" );
     h2_axes->Draw();
@@ -420,8 +448,8 @@ MT2Analysis<MT2Estimate>* compute2bFromRatio( MT2Config cfg, MT2Analysis<MT2Esti
     TLegend* legend = new TLegend( 0.53, 0.73, 0.9, 0.9 );
     legend->SetFillColor(0);
     legend->SetTextSize(0.035);
-    legend->AddEntry( h1_mcTruth, "MC b=2 (all)", "P" );
-    legend->AddEntry( h1_mcFakes, "MC b=2 (fakes)", "L" );
+    legend->AddEntry( h1_mcTruth, "MC b=2", "P" );
+    //legend->AddEntry( h1_mcFakes, "MC b=2 (fakes)", "L" );
     legend->AddEntry( h1_closure, "Extrap. from b=1", "P" );
     legend->Draw("same");
 
@@ -589,7 +617,7 @@ void fillFromTreeRatio( TTree* tree, TH1D* yield_2b_extrapMC, TF1* func ) {
 void compareHistos( MT2Config cfg, const std::string& saveName, TH1D* histo1, TH1D* histo2, TH1D* histo3, TH1D* histo4 ) {
 
 
-  std::string outdir = cfg.getEventYieldDir() + "/fits2b";
+  std::string outdir = cfg.getEventYieldDir() + "/2bRatio";
 
   float xMin = histo1->GetXaxis()->GetXmin();
   float xMax = histo1->GetXaxis()->GetXmax();
@@ -611,6 +639,8 @@ void compareHistos( MT2Config cfg, const std::string& saveName, TH1D* histo1, TH
 
   histo2->SetMarkerStyle(24);
   histo2->SetMarkerSize(1.6);
+  histo2->GetFunction( "line" )->SetLineStyle(2);
+  histo2->GetFunction( "line" )->SetLineColor(kBlack);
 
   if( histo3!=0 ) {
 
@@ -619,6 +649,7 @@ void compareHistos( MT2Config cfg, const std::string& saveName, TH1D* histo1, TH
     histo2->SetMarkerStyle(20);
     histo2->SetLineColor(46);
     histo2->SetMarkerColor(46);
+    histo2->GetFunction("line")->SetLineStyle(1);
     histo2->GetFunction("line")->SetLineColor(46);
 
     histo3->SetMarkerStyle( 21 );
@@ -653,15 +684,15 @@ void compareHistos( MT2Config cfg, const std::string& saveName, TH1D* histo1, TH
     legend->AddEntry( histo4, histo4->GetTitle(), "P" );
   legend->Draw("same");
 
-  TPaveText* labelTop = MT2DrawTools::getLabelTop();
+  TPaveText* labelTop = MT2DrawTools::getLabelTop(cfg.lumi());
   labelTop->Draw("same");
 
+  histo1->Draw("p e1 same");
+  histo2->Draw("p e1 same");
   if( histo3!=0 )
-    histo3->Draw("p same");
-  histo1->Draw("p same");
-  histo2->Draw("p same");
+    histo3->Draw("p e1 same");
   if( histo4!=0 )
-    histo4->Draw("p same");
+    histo4->Draw("p e1 same");
 
   gPad->RedrawAxis();
 
