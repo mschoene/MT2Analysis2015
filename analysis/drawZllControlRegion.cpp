@@ -142,7 +142,7 @@ int main(int argc, char* argv[]){
   std::string      selection_mass_mu = "weight*(Z_mass>50 && Z_pt>180 && Z_lepId==13)";
   std::string selection = "weight*(Z_pt>180 && abs(Z_mass-91.19)<20)";
   */
-
+  
   drawYields( cfg, data, bgYields, "mt2" , "mt2" , selection, 24, 0, 600, "M_{T2}", "GeV" );
   drawYields( cfg, data, bgYields, "raw_mt2" , "raw_mt2" , selection, 24, 0, 600, "Raw M_{T2}", "GeV" );
   drawYields( cfg, data, bgYields, "ht" , "ht" , selection, 24, 0, 600, "H_{T}", "GeV" );
@@ -156,6 +156,10 @@ int main(int argc, char* argv[]){
   drawYields( cfg, data, bgYields, "Z_mass" , "Z_mass" , selection2, 40, 50, 150, "M_{ll}", "GeV" );
 
   drawYields( cfg, data_of, bgYields_of, "Z_mass_of" , "Z_mass" , selection2, 46, 20, 250, "M_{ll}", "GeV" );
+  
+  std::string    selection_ele = "weight*(ht>100 && Z_lepId==11 && (lep_eta0>1.4 || lep_eta1>1.4))";
+
+ drawYields( cfg, data, bgYields, "Z_mass_el" , "Z_mass" , selection_ele, 40, 50, 150, "M_{ll}", "GeV" );
 
 
 

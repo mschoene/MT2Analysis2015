@@ -291,7 +291,6 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg ) {
     T::addVar( analysis, "nTrueC" );
   }
   
-  T::addVar( analysis, "nJetHF30" );
   T::addVar( analysis, "jet1_pt" );
   T::addVar( analysis, "jet2_pt" );
   T::addVar( analysis, "mht" );
@@ -345,15 +344,7 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg ) {
 //    else if( ht > 1500. && mt2 < 400. ) continue;
 //    //////
     
-    int nJetHF30_ = 0;
-    for(int j=0; j<myTree.njet; ++j){
-      
-      if( myTree.jet_pt[j] < 30. || fabs(myTree.jet_eta[j]) < 3.0 ) continue;
-      else ++nJetHF30_;
 
-    }
-
-    thisEstimate->assignVar( "nJetHF30",  nJetHF30_ );
     thisEstimate->assignVar( "jet1_pt",  myTree.jet1_pt );
     thisEstimate->assignVar( "jet2_pt",  myTree.jet2_pt );
     thisEstimate->assignVar( "mht",  myTree.mht_pt );

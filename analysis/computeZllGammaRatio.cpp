@@ -111,7 +111,6 @@ int main(int argc, char* argv[]){
   MT2Analysis<MT2EstimateTree>* qcd = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s/ZllPurityTrees.root", ZllDir.c_str()  ), "QCD");
   MT2Analysis<MT2EstimateTree>* top = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s/ZllPurityTrees.root", ZllDir.c_str() ), "Top");
   MT2Analysis<MT2EstimateTree>* wjets = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s/ZllPurityTrees.root", ZllDir.c_str() ), "WJets");
-  MT2Analysis<MT2EstimateTree>* zjets = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s/ZllPurityTrees.root", ZllDir.c_str() ), "ZJets");
 
   wjets->setFullName("W+jets");
   zjets->setFullName("Z#nu#nu+jets");
@@ -119,7 +118,6 @@ int main(int argc, char* argv[]){
   std::vector<MT2Analysis<MT2EstimateTree>* > bgYields; 
   bgYields.push_back( qcd );
   bgYields.push_back( wjets );
-  bgYields.push_back( zjets );
   bgYields.push_back( top );
   
 
@@ -182,15 +180,15 @@ int main(int argc, char* argv[]){
 
     float bins_nJets[] = {2,4,7,12};
     float bins_nBJets[] = {0,1,2,3,6}; 
-    float bins_mt2[] = {200,300,600 };
+    float bins_mt2[] = {200,300,400,500,600 };
   
     //    float bins_mt2[] = {200,300,400, 600 };
     //  float bins_mt2[] = {200,300,400,500, 600, 800, 1000, 1500 };
     float bins_ht[] =  {450,575,1000,1500,2000};
   
 
-   std::string cut =  "weight*(mt2>200 && abs(Z_mass-91.19)<15 &&  Z_pt>200 )";
-    std::string cut_gamma =  "weight*( prompt==2 &&ptGamma>180 )*1.27";
+    std::string cut =  "weight*(abs(Z_mass-91.19)<20 &&  Z_pt>180 )";
+    std::string cut_gamma =  "weight*( prompt==2 && ptGamma>180 )*1.27";
     //  std::string cut =  "weight*(mt2>200 && abs(Z_mass-91.19)<15 &&  Z_pt>200 && nJetHF30==0 )";
     //    std::string cut_gamma =  "weight*( prompt==2 &&ptGamma>180 && nJetHF30==0  )*1.27";
  
@@ -224,6 +222,8 @@ int main(int argc, char* argv[]){
     
     //draw ratio also fills the ratio and yield estimates
     drawRatios( outputdir, bins_mt2, size_mt2 , "mt2",  zllG_mt2,   gamma_mc, gamma_data, purity,  zll_mc, zll_data,  zllY_mt2, thisRegion, cut, cut_gamma, lumi  );
+   
+  
     /*
     drawRatios( outputdir, bins_ht, size_ht , "ht",   zllG_ht,   gamma_mc, gamma_data, purity,  zll_mc, zll_data,  zllY_ht, thisRegion, cut, cut_gamma, lumi );
     
@@ -235,6 +235,8 @@ int main(int argc, char* argv[]){
 
 
      TH1D data_bgSub =  drawBGsubtraction(  cfg, zll_data, zll_mc,  bgYields , "mt2", "mt2", cut, 20, 200, 800, "M_{T2}", "GeV", scaleFactor );
+
+     TH1D data_bgSub_nBJets =  drawBGsubtraction(  cfg, zll_data, zll_mc,  bgYields , "nBJets", "nBJets", cut, 8, 0, 8, "nBJets", "", scaleFactor );
 
 
 

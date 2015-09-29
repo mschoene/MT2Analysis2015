@@ -55,6 +55,7 @@ class MT2EstimateTree : public MT2Estimate {
   int nMuons;
   int nPFLep;
   int nPFHad;
+  int nJetHF;
 
   int GenSusyMScan1;
   int GenSusyMScan2;

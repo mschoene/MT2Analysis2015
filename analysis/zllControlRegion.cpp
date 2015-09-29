@@ -82,7 +82,9 @@ int main(int argc, char* argv[]) {
   system(Form("mkdir -p %s", outputdir.c_str()));
 
   std::string regionsSet;// = "13TeV_inclusive";
-  regionsSet=cfg.regionsSet();
+  regionsSet=cfg.zllRegions();
+  // std::string regionsSet = cfg.zllRegions();
+
   std::cout << "-> Using regions: " << regionsSet << std::endl;
 
 
@@ -93,7 +95,7 @@ int main(int argc, char* argv[]) {
     std::cout << "-> Loading samples from file: " << samplesFileName << std::endl;
 
 
-    std::vector<MT2Sample> fSamples = MT2Sample::loadSamples(samplesFileName, "DYJetsToLL", 699, 800); // not interested in signal here
+    std::vector<MT2Sample> fSamples = MT2Sample::loadSamples(samplesFileName, 700, 799); // DY signal only
     if( fSamples.size()==0 ) {
       std::cout << "There must be an error: samples is empty!" << std::endl;
       exit(1209);
@@ -110,6 +112,7 @@ int main(int argc, char* argv[]) {
  
     mcTree->writeToFile(outputdir+"/mc.root");
     mcTree_of->writeToFile(outputdir+"/mc_of.root");
+
     
     if( cfg.dummyAnalysis() ) {
       roundLikeData(mcTree); 
@@ -191,12 +194,11 @@ int main(int argc, char* argv[]) {
       std::cout << "-> Exiting." << std::endl;
       std::cout << std::endl;
     } else {
-      for( unsigned i=0; i<samples_data.size(); ++i ) {
+      for( unsigned i=0; i<samples_data.size(); ++i ) 
 	computeYieldSnO( samples_data[i], cfg, dataTree, dataTree_filler);
-      }
-      for( unsigned i=0; i<samples_data_of.size(); ++i ) {
+
+      for( unsigned i=0; i<samples_data_of.size(); ++i )
 	computeYieldSnO( samples_data_of[i], cfg, dataTree_filler, dataTree_of);
-      }
     }
 
     dataTree->addToFile(outputdir+"/data.root");
@@ -235,7 +237,7 @@ void roundLikeData( MT2Analysis<MT2EstimateTree>* data ) {
 
 
 
-
+ 
 void addVariables(MT2Analysis<MT2EstimateTree>* anaTree){
 
   MT2EstimateTree::addVar( anaTree, "Z_pt" );
