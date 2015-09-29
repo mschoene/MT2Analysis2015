@@ -30,6 +30,7 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
                    MT2Analysis<MT2EstimateZinvGamma>* nip=0, MT2Analysis<MT2EstimateZinvGamma>* nip_pass=0, 
                    MT2Analysis<MT2EstimateZinvGamma>* fake=0, MT2Analysis<MT2EstimateZinvGamma>* fake_pass=0 );
 void roundLikeData( MT2Analysis<MT2EstimateZinvGamma>* data );
+void fillOneTree( MT2EstimateTree* thisTree, const MT2Tree& myTree, float weight, float ht, int njets, int nbjets, float met, float minMTBmet, float mt2, float iso, int nTrueB, int nTrueC );
 
 
 
@@ -115,9 +116,6 @@ int main( int argc, char* argv[] ) {
     MT2EstimateTree::addVar( tree_pass, "jet1_pt" );
     MT2EstimateTree::addVar( tree_pass, "jet2_pt" );
     
-    MT2EstimateTree::addVar( tree, "nJetHF30" );
-    MT2EstimateTree::addVar( tree_pass, "nJetHF30" );
-
     MT2EstimateTree::addVar( tree, "gamma_chHadIsoRC" );
     MT2EstimateTree::addVar( tree_pass, "gamma_chHadIsoRC" );
     
@@ -279,9 +277,6 @@ int main( int argc, char* argv[] ) {
       MT2EstimateTree::addVar( tree_pass, "jet1_pt" );
       MT2EstimateTree::addVar( tree_pass, "jet2_pt" );
 
-      MT2EstimateTree::addVar( tree, "nJetHF30" );
-      MT2EstimateTree::addVar( tree_pass, "nJetHF30" );
-
       MT2EstimateTree::addVar( tree, "gamma_chHadIsoRC" );
       MT2EstimateTree::addVar( tree_pass, "gamma_chHadIsoRC" );
 
@@ -338,6 +333,18 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
   
   std::cout << "-> Loaded tree: it has " << tree->GetEntries() << " entries." << std::endl;
 
+
+  TF1* f1_ratio_2b1b = 0;
+
+  if( cfg.gamma2bMethod()=="2b1bRatio" ) {
+    TFile* ratioFile = TFile::Open( Form( "%s/2bRatio/mc.root", cfg.getEventYieldDir().c_str() ) );
+    if( ratioFile==0 ) {
+      std::cout << "-> Didn't find 2b/1b ratio file. Please produce it first with computeZinv2b" << std::endl;
+      exit(1919191);
+    }
+    TH1D* h1_ratio = (TH1D*)ratioFile->Get("r_vs_nJets_zinv");
+    f1_ratio_2b1b = h1_ratio->GetFunction("line");
+  }
 
 
   bool isQCD  = sample.id>=100 && sample.id<200;
@@ -396,16 +403,6 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
     int njets       = myTree.gamma_nJet30;
     int nbjets      = myTree.gamma_nBJet20;    
     float mt2       = (njets>1) ? myTree.gamma_mt2 : myTree.gamma_jet1_pt;
-
-    int nJetHF30_ = 0;
-    for(int j=0; j<myTree.njet; ++j){
-      
-      if( myTree.jet_pt[j] < 30. || fabs(myTree.jet_eta[j]) < 3.0 ) continue;
-      else ++nJetHF30_;
-      
-    }
-//    //HF Veto
-//    if( nJetHF30_ >0 ) continue; 
 
     Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi()*myTree.puWeight; 
 
@@ -534,22 +531,18 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
     }  // if is data
 
 
-    thisTree->yield->Fill(mt2, weight );
-    thisTree->assignVar( "iso", iso );
-    //thisTree->assignVar( "isoRC", myTree.gamma_chHadIsoRC[0] );
-    thisTree->assignVar( "sietaieta", myTree.gamma_sigmaIetaIeta[0] );
-    thisTree->assignVar( "ptGamma", myTree.gamma_pt[0] );
-    thisTree->assignVar( "etaGamma", myTree.gamma_eta[0] );
-    thisTree->assignVar( "jet1_pt", myTree.gamma_jet1_pt );
-    thisTree->assignVar( "jet2_pt", myTree.gamma_jet2_pt );
-    thisTree->assignVar( "nJetHF30",  nJetHF30_ );
-    thisTree->assignVar( "gamma_chHadIsoRC",  myTree.gamma_chHadIsoRC[0] );
+
+    if( cfg.gamma2bMethod()=="2b1bRatio" && nbjets>=2 )
+      continue; // will take 2b from reweighted 1b so skip
 
 
-    int nTrueB=0;
-    int nTrueC=0;
+    int nTrueB=-1;
+    int nTrueC=-1;
 
     if( cfg.additionalStuff()=="hfContent" ) {
+
+      nTrueB = 0;
+      nTrueC = 0;
 
       for( int ipart=0; ipart<myTree.ngenPart; ++ipart ) {
 
@@ -563,38 +556,29 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
           nTrueC++;
 
       }
-
-      thisTree->assignVar( "nTrueB", nTrueB );
-      thisTree->assignVar( "nTrueC", nTrueC );
-
     }
 
 
-    thisTree->fillTree_gamma(myTree, weight );
+    fillOneTree( thisTree, myTree, weight, ht, njets, nbjets, met, minMTBmet, mt2, iso, nTrueB, nTrueC );
 
-    if( passIso ) {
+    if( passIso ) 
+      fillOneTree( thisTree_pass, myTree, weight, ht, njets, nbjets, met, minMTBmet, mt2, iso, nTrueB, nTrueC );
 
-      thisTree_pass->yield->Fill(mt2, weight );
-      thisTree_pass->assignVar( "iso", iso );
-      //thisTree_pass->assignVar( "isoRC", myTree.gamma_chHadIsoRC[0] );
-      thisTree_pass->assignVar( "sietaieta", myTree.gamma_sigmaIetaIeta[0] );
-      thisTree_pass->assignVar( "ptGamma", myTree.gamma_pt[0] );
-      thisTree_pass->assignVar( "etaGamma", myTree.gamma_eta[0] );
-      thisTree_pass->assignVar( "jet1_pt", myTree.gamma_jet1_pt );
-      thisTree_pass->assignVar( "jet2_pt", myTree.gamma_jet2_pt );
-      thisTree_pass->assignVar( "nJetHF30",  nJetHF30_ );
-      thisTree_pass->assignVar( "gamma_chHadIsoRC",  myTree.gamma_chHadIsoRC[0] );
 
-      thisTree_pass->assignVar( "nJetHF30",  nJetHF30_ );
 
-      if( cfg.additionalStuff()=="hfContent" ) {
-        thisTree_pass->assignVar( "nTrueB", nTrueB );
-        thisTree_pass->assignVar( "nTrueC", nTrueC );
-      }
+    if( cfg.gamma2bMethod()=="2b1bRatio" && nbjets==1 ) { // fill again to reweight 1b events to get 2b
 
-      thisTree_pass->fillTree_gamma(myTree, weight );
+      float corr = TMath::Max( f1_ratio_2b1b->Eval(njets), 0. );
 
-    }
+      MT2EstimateTree* thisTree_2b = anaTree->get( ht, njets, 2, met, minMTBmet, mt2 );
+      MT2EstimateTree* thisTree_2b_pass = anaTree_pass->get( ht, 2, nbjets, met, minMTBmet, mt2 );
+      if( thisTree_2b==0 ) continue;
+
+      fillOneTree( thisTree_2b, myTree, corr*weight, ht, njets, 2, met, minMTBmet, mt2, iso, nTrueB, nTrueC );
+      if( passIso ) 
+        fillOneTree( thisTree_2b_pass, myTree, corr*weight, ht, njets, 2, met, minMTBmet, mt2, iso, nTrueB, nTrueC );
+      
+    } // if ratio method
 
 
     
@@ -641,5 +625,30 @@ void roundLikeData( MT2Analysis<MT2EstimateZinvGamma>* data ) {
     } // for bins
 
   } // for regions
+
+}
+
+
+
+void fillOneTree( MT2EstimateTree* thisTree, const MT2Tree& myTree, float weight, float ht, int njets, int nbjets, float met, float minMTBmet, float mt2, float iso, int nTrueB, int nTrueC ) {
+
+  thisTree->yield->Fill(mt2, weight );
+  thisTree->assignVar( "iso", iso );
+  thisTree->assignVar( "sietaieta", myTree.gamma_sigmaIetaIeta[0] );
+  thisTree->assignVar( "ptGamma", myTree.gamma_pt[0] );
+  thisTree->assignVar( "etaGamma", myTree.gamma_eta[0] );
+  thisTree->assignVar( "jet1_pt", myTree.gamma_jet1_pt );
+  thisTree->assignVar( "jet2_pt", myTree.gamma_jet2_pt );
+  thisTree->assignVar( "gamma_chHadIsoRC",  myTree.gamma_chHadIsoRC[0] );
+
+
+  if( nTrueB>=0 ) {
+
+    thisTree->assignVar( "nTrueB", nTrueB );
+    thisTree->assignVar( "nTrueC", nTrueC );
+
+  }
+
+  thisTree->fillTree_gamma(myTree, weight );
 
 }
