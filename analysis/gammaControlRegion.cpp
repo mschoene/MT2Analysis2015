@@ -97,7 +97,7 @@ int main( int argc, char* argv[] ) {
     std::vector<MT2Sample> samples_qcd = MT2Sample::loadSamples(samplesFile, "QCD");
 
 
-    MT2Analysis<MT2EstimateTree>* tree = new MT2Analysis<MT2EstimateTree>( "gammaCRtree_loose", cfg.regionsSet() );
+    MT2Analysis<MT2EstimateTree>* tree = new MT2Analysis<MT2EstimateTree>( "gammaCRtree_loose", cfg.crRegionsSet() );
     MT2EstimateTree::addVar( tree, "prompt" );
     MT2EstimateTree::addVar( tree, "iso" );
     //MT2EstimateTree::addVar( tree, "isoRC" );
@@ -107,7 +107,7 @@ int main( int argc, char* argv[] ) {
     MT2EstimateTree::addVar( tree, "jet1_pt" );
     MT2EstimateTree::addVar( tree, "jet2_pt" );
     
-    MT2Analysis<MT2EstimateTree>* tree_pass = new MT2Analysis<MT2EstimateTree>( "gammaCRtree", cfg.regionsSet() );
+    MT2Analysis<MT2EstimateTree>* tree_pass = new MT2Analysis<MT2EstimateTree>( "gammaCRtree", cfg.crRegionsSet() );
     MT2EstimateTree::addVar( tree_pass, "prompt" );
     MT2EstimateTree::addVar( tree_pass, "iso" );
     //MT2EstimateTree::addVar( tree_pass, "isoRC" );
@@ -268,7 +268,7 @@ int main( int argc, char* argv[] ) {
       MT2Analysis<MT2EstimateZinvGamma>* dataCR_loose = new MT2Analysis<MT2EstimateZinvGamma>( "gammaCR_loose",  cfg.regionsSet() );
       MT2Analysis<MT2EstimateZinvGamma>* dataCR       = new MT2Analysis<MT2EstimateZinvGamma>( "gammaCR",  cfg.regionsSet() );
 
-      MT2Analysis<MT2EstimateTree>* tree = new MT2Analysis<MT2EstimateTree>( "gammaCRtree_loose", cfg.regionsSet() );
+      MT2Analysis<MT2EstimateTree>* tree = new MT2Analysis<MT2EstimateTree>( "gammaCRtree_loose", cfg.crRegionsSet() );
       MT2EstimateTree::addVar( tree, "iso" );
       MT2EstimateTree::addVar( tree, "sietaieta" );
       MT2EstimateTree::addVar( tree, "ptGamma" );
@@ -276,7 +276,7 @@ int main( int argc, char* argv[] ) {
       MT2EstimateTree::addVar( tree, "jet1_pt" );
       MT2EstimateTree::addVar( tree, "jet2_pt" );
       
-      MT2Analysis<MT2EstimateTree>* tree_pass = new MT2Analysis<MT2EstimateTree>( "gammaCRtree", cfg.regionsSet() );
+      MT2Analysis<MT2EstimateTree>* tree_pass = new MT2Analysis<MT2EstimateTree>( "gammaCRtree", cfg.crRegionsSet() );
       MT2EstimateTree::addVar( tree_pass, "iso" );
       MT2EstimateTree::addVar( tree_pass, "sietaieta" );
       MT2EstimateTree::addVar( tree_pass, "ptGamma" );

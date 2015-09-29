@@ -82,7 +82,8 @@ int main(int argc, char* argv[]) {
   system(Form("mkdir -p %s", outputdir.c_str()));
 
   std::string regionsSet;// = "13TeV_inclusive";
-  regionsSet=cfg.zllRegions();
+  regionsSet=cfg.crRegionsSet();
+  //  regionsSet=cfg.zllRegions();
   // std::string regionsSet = cfg.zllRegions();
 
   std::cout << "-> Using regions: " << regionsSet << std::endl;
@@ -101,10 +102,10 @@ int main(int argc, char* argv[]) {
       exit(1209);
     }
 
-    MT2Analysis<MT2EstimateTree>* mcTree = new MT2Analysis<MT2EstimateTree>( "zllCR", cfg.regionsSet() );
+    MT2Analysis<MT2EstimateTree>* mcTree = new MT2Analysis<MT2EstimateTree>( "zllCR", cfg.crRegionsSet() );
     addVariables(mcTree); //Adds some additional variables Zpt,Zmass, raw MT2...
 
-    MT2Analysis<MT2EstimateTree>* mcTree_of = new MT2Analysis<MT2EstimateTree>( "zllCR_of", cfg.regionsSet() );
+    MT2Analysis<MT2EstimateTree>* mcTree_of = new MT2Analysis<MT2EstimateTree>( "zllCR_of", cfg.crRegionsSet() );
     addVariables(mcTree_of);
   
     for( unsigned i=0; i<fSamples.size(); ++i ) 
@@ -123,22 +124,22 @@ int main(int argc, char* argv[]) {
     
     if(do_bg==true){
       //MC
-      MT2Analysis<MT2EstimateTree>* mc_top = new MT2Analysis<MT2EstimateTree>( "Top", cfg.regionsSet(),300, "Top" );
-      MT2Analysis<MT2EstimateTree>* mc_top_of = new MT2Analysis<MT2EstimateTree>( "Top", cfg.regionsSet(),300, "Top" );
+      MT2Analysis<MT2EstimateTree>* mc_top = new MT2Analysis<MT2EstimateTree>( "Top", cfg.crRegionsSet(),300, "Top" );
+      MT2Analysis<MT2EstimateTree>* mc_top_of = new MT2Analysis<MT2EstimateTree>( "Top", cfg.crRegionsSet(),300, "Top" );
       addVariables(mc_top);      addVariables(mc_top_of);
       std::vector<MT2Sample> fSamples_top = MT2Sample::loadSamples(samplesFileName, 300, 499);   
       for( unsigned i=0; i<fSamples_top.size(); ++i )
 	computeYieldSnO( fSamples_top[i], cfg, mc_top, mc_top_of);
    
-      MT2Analysis<MT2EstimateTree>* mc_qcd = new MT2Analysis<MT2EstimateTree>( "QCD", cfg.regionsSet(),100, "QCD" );
-      MT2Analysis<MT2EstimateTree>* mc_qcd_of = new MT2Analysis<MT2EstimateTree>( "QCD", cfg.regionsSet(),100, "QCD");
+      MT2Analysis<MT2EstimateTree>* mc_qcd = new MT2Analysis<MT2EstimateTree>( "QCD", cfg.crRegionsSet(),100, "QCD" );
+      MT2Analysis<MT2EstimateTree>* mc_qcd_of = new MT2Analysis<MT2EstimateTree>( "QCD", cfg.crRegionsSet(),100, "QCD");
       addVariables(mc_qcd);      addVariables(mc_qcd_of);
       std::vector<MT2Sample> fSamples_qcd = MT2Sample::loadSamples(samplesFileName, 100, 199);   
       for( unsigned i=0; i<fSamples_qcd.size(); ++i )
 	computeYieldSnO( fSamples_qcd[i], cfg, mc_qcd, mc_qcd_of);
 
-      MT2Analysis<MT2EstimateTree>* mc_wjets = new MT2Analysis<MT2EstimateTree>( "WJets", cfg.regionsSet(),500, "W+jets"  );
-      MT2Analysis<MT2EstimateTree>* mc_wjets_of = new MT2Analysis<MT2EstimateTree>( "WJets", cfg.regionsSet(),500, "W+jets");
+      MT2Analysis<MT2EstimateTree>* mc_wjets = new MT2Analysis<MT2EstimateTree>( "WJets", cfg.crRegionsSet(),500, "W+jets"  );
+      MT2Analysis<MT2EstimateTree>* mc_wjets_of = new MT2Analysis<MT2EstimateTree>( "WJets", cfg.crRegionsSet(),500, "W+jets");
       addVariables(mc_wjets);      addVariables(mc_wjets_of);
       std::vector<MT2Sample> fSamples_wjets = MT2Sample::loadSamples(samplesFileName, 500, 599);   
       for( unsigned i=0; i<fSamples_wjets.size(); ++i )
@@ -179,11 +180,11 @@ int main(int argc, char* argv[]) {
     std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, "Double");  
     std::vector<MT2Sample> samples_data_of = MT2Sample::loadSamples(samplesFile_data, "MuonEG");
   
-    MT2Analysis<MT2EstimateTree>* dataTree = new MT2Analysis<MT2EstimateTree>( "data", cfg.regionsSet() );
-    MT2Analysis<MT2EstimateTree>* dataTree_of = new MT2Analysis<MT2EstimateTree>( "data_of", cfg.regionsSet() );
+    MT2Analysis<MT2EstimateTree>* dataTree = new MT2Analysis<MT2EstimateTree>( "data", cfg.crRegionsSet() );
+    MT2Analysis<MT2EstimateTree>* dataTree_of = new MT2Analysis<MT2EstimateTree>( "data_of", cfg.crRegionsSet() );
   
     //Filler Tree so that I don't have to rewrite the function
-    MT2Analysis<MT2EstimateTree>* dataTree_filler = new MT2Analysis<MT2EstimateTree>( "data_filler", cfg.regionsSet() );
+    MT2Analysis<MT2EstimateTree>* dataTree_filler = new MT2Analysis<MT2EstimateTree>( "data_filler", cfg.crRegionsSet() );
 
     addVariables(dataTree);      addVariables(dataTree_of);  addVariables(dataTree_filler);
 
@@ -267,7 +268,7 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
 		      MT2Analysis<MT2EstimateTree>* anaTree,
 		      MT2Analysis<MT2EstimateTree>* anaTree_of) {
 
-  std::string regionsSet = cfg.regionsSet();
+  std::string regionsSet = cfg.crRegionsSet();
   std::cout << std::endl << std::endl;
   std::cout << "-> Starting computation for sample: " << sample.name << std::endl;
 

@@ -25,6 +25,7 @@ MT2Config::MT2Config( const std::string& name ) {
   dataSamples_ = "";
   additionalStuff_ = "";
   smZG_ = "";
+  crRegionsSet_ = "13TeV_inclusive";
 
   gammaTemplateRegions_ = "13TeV_inclusive"; // default
   gammaTemplateType_    = "RC"; // default
@@ -70,6 +71,8 @@ MT2Config::MT2Config( const std::string& name ) {
       gammaIsoCut_ = atof(StringValue);
     else if( this_name=="smZG" )
       smZG_ = std::string(StringValue);
+    else if( this_name=="crRegionsSet" )
+      crRegionsSet_ = std::string(StringValue);
     else if( this_name=="gamma2bMethod" )
       gamma2bMethod_ = std::string(StringValue);
     else if( this_name=="zllRegions" )
