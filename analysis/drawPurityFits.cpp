@@ -150,7 +150,7 @@ void doAllPurityPlots( const MT2Config& cfg, const std::string& mc_or_data, cons
 
 
     TH2D* axes = new TH2D( "axes", "", 10, thisPurityMC->yield->GetXaxis()->GetXmin(), thisPurityMC->yield->GetXaxis()->GetXmax(), 10, yMin, 1.0001 );
-    axes->SetXTitle( "M_{T2} [GeV]");
+    axes->SetXTitle( "M_{T2} (Photon Removed) [GeV]");
     axes->SetYTitle( "Photon Purity" );
     axes->Draw("");
 

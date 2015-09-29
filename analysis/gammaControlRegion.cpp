@@ -69,7 +69,7 @@ int main( int argc, char* argv[] ) {
     if( dataMC=="data" ) onlyData = true;
     else if( dataMC=="MC" ) onlyMC = true;
     else {
-      std::cout << "-> You passed a second argument that isn't 'data' nor 'MC', so I don't know what to do about it." << std::endl;
+      std::cout << "-> You passed a second argument that isn't 'data' or 'MC', so I don't know what to do about it." << std::endl;
     }
   }
 
@@ -218,19 +218,19 @@ int main( int argc, char* argv[] ) {
       signals[i]->writeToFile( mcFile);
 
 
-    //if( cfg.dummyAnalysis() ) {
+    if( cfg.dummyAnalysis() ) {
 
-    //  // emulate data:
-    //  roundLikeData(gammaCR);
-    //  roundLikeData(gammaCR_loose);
-    //  gammaCR->writeToFile( outputdir + "/data.root" );
-    //  gammaCR_loose->writeToFile( outputdir + "/data.root" );
-    //  gammaCR_nipUp->writeToFile( outputdir + "/data.root" );
-    //  gammaCR_nipDown->writeToFile( outputdir + "/data.root" );
-    //  tree->writeToFile( outputdir + "/data.root" );
-    //  tree_pass->writeToFile( outputdir + "/data.root" );
+      // emulate data:
+      roundLikeData(gammaCR);
+      roundLikeData(gammaCR_loose);
+      gammaCR->writeToFile( outputdir + "/data.root" );
+      gammaCR_loose->writeToFile( outputdir + "/data.root" );
+      gammaCR_nipUp->writeToFile( outputdir + "/data.root" );
+      gammaCR_nipDown->writeToFile( outputdir + "/data.root" );
+      tree->writeToFile( outputdir + "/data.root" );
+      tree_pass->writeToFile( outputdir + "/data.root" );
 
-    //} // if dummy
+    } // if dummy
 
     purityTight->writeToFile( outputdir + "/purityMC.root", "RECREATE" );
     purityLoose->writeToFile( outputdir + "/purityMC.root" );
@@ -240,7 +240,7 @@ int main( int argc, char* argv[] ) {
 
 
 
-  if( !onlyMC ) {
+  if( !onlyMC && !cfg.dummyAnalysis() ) {
 
     std::string samplesFile_data = "../samples/samples_" + cfg.dataSamples() + ".dat";
  
@@ -366,7 +366,9 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
 
     myTree.GetEntry(iEntry);
 
-
+    
+    if( myTree.isData )
+      if ( myTree.isGolden == 0 ) continue;
 
     if( !myTree.passSelection("gamma") ) continue;
 
@@ -376,14 +378,13 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
       if( !myTree.passGammaAdditionalSelection(sample.id) ) continue;
     }
 
-
     //if( myTree.gamma_ht>1000. && sample.id==204 ) continue; // remove high-weight spikes (remove GJet_400to600 leaking into HT>1000)
 
     if( myTree.gamma_idCutBased[0]==0 ) continue;
 
     if( myTree.isData ) {
     
-      if( !(myTree.Flag_HBHENoiseFilter && myTree.Flag_CSCTightHaloFilter && myTree.Flag_goodVertices && myTree.Flag_eeBadScFilter) ) continue;
+      if( !(myTree.Flag_HBHENoiseFilter && myTree.Flag_CSCTightHaloFilter && myTree.Flag_eeBadScFilter) ) continue;
       //if( !(myTree.Flag_CSCTightHaloFilter &&  myTree.Flag_eeBadScFilter) ) continue;
       
     }
@@ -397,18 +398,18 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
     float iso = myTree.gamma_chHadIso[0];
     if( iso>10. ) continue; // preselection anyways in there
 
-
-    float ht        = myTree.gamma_ht;
-    float met       = myTree.gamma_met_pt;
     float minMTBmet = myTree.gamma_minMTBMet;
+    float met       = myTree.gamma_met_pt;
     int njets       = myTree.gamma_nJet30;
     int nbjets      = myTree.gamma_nBJet20;    
     float mt2       = (njets>1) ? myTree.gamma_mt2 : myTree.gamma_jet1_pt;
+    float ht        = myTree.gamma_ht;
 
     if( cfg.gamma2bMethod()=="2b1bRatio" && nbjets==2 )
       continue; // will take 2b from reweighted 1b so skip
 
-    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi()*myTree.puWeight; 
+//    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi()*myTree.puWeight; 
+    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi(); 
 
 
 
@@ -430,7 +431,7 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
       //bool isPrompt = isMatched && !isQCD;
       //bool isNIP    = isMatched && isQCD;
       //bool isFake   = !isMatched;
-      bool isPrompt = isMatched && !isQCD;
+      bool isPrompt = isMatched && !isQCD && myTree.gamma_drMinParton[0]>0.4;
       bool isNIP    = isMatched && isQCD && myTree.gamma_drMinParton[0]<0.4;
       bool isFake   = !isMatched && isQCD;
       //bool isNIP    = isMatched && isQCD;
@@ -541,7 +542,8 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
       
     } // if ratio method
 
-
+    //    std::cout << "ht " << ht << std::endl;
+    
     
   } // for entries
 

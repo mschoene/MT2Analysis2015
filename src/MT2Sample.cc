@@ -45,7 +45,7 @@ std::vector<MT2Sample> MT2Sample::loadSamples(const std::string& filename, const
   TString fPath;
 
 
-  while( IN.getline(buffer, 200, '\n') ) {
+  while( IN.getline(buffer, 500, '\n') ) {
 
     if (buffer[0] == '#') {
       continue; // Skip lines commented with '#'                                                                                                                                                                                 
