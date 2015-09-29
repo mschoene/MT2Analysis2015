@@ -67,7 +67,7 @@ int main( int argc, char* argv[] ) {
     if( dataMC=="data" ) onlyData = true;
     else if( dataMC=="MC" ) onlyMC = true;
     else {
-      std::cout << "-> You passed a second argument that isn't 'data' nor 'MC', so I don't know what to do about it." << std::endl;
+      std::cout << "-> You passed a second argument that isn't 'data' or 'MC', so I don't know what to do about it." << std::endl;
     }
   }
 
@@ -114,6 +114,12 @@ int main( int argc, char* argv[] ) {
     MT2EstimateTree::addVar( tree_pass, "etaGamma" );
     MT2EstimateTree::addVar( tree_pass, "jet1_pt" );
     MT2EstimateTree::addVar( tree_pass, "jet2_pt" );
+
+    if(cfg.smZG() == "smZG"){
+      MT2EstimateTree::addVar( tree, "raw_mt2" );
+      MT2EstimateTree::addVar( tree_pass, "raw_mt2" );
+    }
+      
     
     MT2EstimateTree::addVar( tree, "nJetHF30" );
     MT2EstimateTree::addVar( tree_pass, "nJetHF30" );
@@ -221,7 +227,7 @@ int main( int argc, char* argv[] ) {
     //comment here again
     if( cfg.dummyAnalysis() ) {
 
-    // emulate data:
+      // emulate data:
       roundLikeData(gammaCR);
       roundLikeData(gammaCR_loose);
       gammaCR->writeToFile( outputdir + "/data.root" );
@@ -241,7 +247,7 @@ int main( int argc, char* argv[] ) {
 
 
 
-  if( !onlyMC ) {
+  if( !onlyMC && !cfg.dummyAnalysis() ) {
 
     std::string samplesFile_data = "../samples/samples_" + cfg.dataSamples() + ".dat";
  
@@ -293,7 +299,13 @@ int main( int argc, char* argv[] ) {
         MT2EstimateTree::addVar( tree_pass, "nTrueC" );
       }
 
+
+      if(cfg.smZG() == "smZG"){
+	MT2EstimateTree::addVar( tree, "raw_mt2" );
+	MT2EstimateTree::addVar( tree_pass, "raw_mt2" );
+      }
       
+
       for( unsigned i=0; i<samples_data.size(); ++i ) {
         computeYield( samples_data[i], cfg, tree, tree_pass, dataCR_loose, dataCR );
       }
@@ -358,17 +370,20 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
 
     myTree.GetEntry(iEntry);
 
-    /*
+    if(cfg.smZG() != "smZG"){
+    
+      if( myTree.isData )
+	if ( myTree.isGolden == 0 ) continue;
 
-    if( !myTree.passSelection("gamma") ) continue;
+      if( !myTree.passSelection("gamma") ) continue;
 
-    if( myTree.isData ) {
-      if( !myTree.passGammaAdditionalSelection(1) ) continue;
-    } else {
-      if( !myTree.passGammaAdditionalSelection(sample.id) ) continue;
+      if( myTree.isData ) {
+	if( !myTree.passGammaAdditionalSelection(1) ) continue;
+      } else {
+	if( !myTree.passGammaAdditionalSelection(sample.id) ) continue;
+      }
+
     }
-    */
-
 
     //if( myTree.gamma_ht>1000. && sample.id==204 ) continue; // remove high-weight spikes (remove GJet_400to600 leaking into HT>1000)
 
@@ -376,7 +391,7 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
 
     if( myTree.isData ) {
     
-      if( !(myTree.Flag_HBHENoiseFilter && myTree.Flag_CSCTightHaloFilter && myTree.Flag_goodVertices && myTree.Flag_eeBadScFilter) ) continue;
+      if( !(myTree.Flag_HBHENoiseFilter && myTree.Flag_CSCTightHaloFilter && myTree.Flag_eeBadScFilter) ) continue;
       //if( !(myTree.Flag_CSCTightHaloFilter &&  myTree.Flag_eeBadScFilter) ) continue;
       
     }
@@ -390,13 +405,12 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
     float iso = myTree.gamma_chHadIso[0];
     if( iso>10. ) continue; // preselection anyways in there
 
-
-    float ht        = myTree.gamma_ht;
-    float met       = myTree.gamma_met_pt;
     float minMTBmet = myTree.gamma_minMTBMet;
+    float met       = myTree.gamma_met_pt;
     int njets       = myTree.gamma_nJet30;
     int nbjets      = myTree.gamma_nBJet20;    
     float mt2       = (njets>1) ? myTree.gamma_mt2 : myTree.gamma_jet1_pt;
+    float ht        = myTree.gamma_ht;
 
     int nJetHF30_ = 0;
     for(int j=0; j<myTree.njet; ++j){
@@ -408,7 +422,8 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
 //    //HF Veto
 //    if( nJetHF30_ >0 ) continue; 
 
-    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi()*myTree.puWeight; 
+//    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi()*myTree.puWeight; 
+    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi(); 
 
     bool passIso = iso<isoCut;
 
@@ -426,7 +441,7 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
       //bool isPrompt = isMatched && !isQCD;
       //bool isNIP    = isMatched && isQCD;
       //bool isFake   = !isMatched;
-      bool isPrompt = isMatched && !isQCD;
+      bool isPrompt = isMatched && !isQCD && myTree.gamma_drMinParton[0]>0.4;
       bool isNIP    = isMatched && isQCD && myTree.gamma_drMinParton[0]<0.4;
       bool isFake   = !isMatched && isQCD;
       //bool isNIP    = isMatched && isQCD;
@@ -546,6 +561,7 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
     thisTree->assignVar( "nJetHF30",  nJetHF30_ );
     thisTree->assignVar( "gamma_chHadIsoRC",  myTree.gamma_chHadIsoRC[0] );
 
+  
 
     int nTrueB=0;
     int nTrueC=0;
@@ -593,11 +609,15 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
         thisTree_pass->assignVar( "nTrueC", nTrueC );
       }
 
+      if(cfg.smZG() == "smZG")
+	thisTree->assignVar( "raw_mt2", myTree.mt2 );
+      
       thisTree_pass->fillTree_gamma(myTree, weight );
 
     }
 
-
+    //    std::cout << "ht " << ht << std::endl;
+    
     
   } // for entries
 

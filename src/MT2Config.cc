@@ -24,6 +24,7 @@ MT2Config::MT2Config( const std::string& name ) {
   sigSamples_ = "";
   dataSamples_ = "";
   additionalStuff_ = "";
+  smZG_ = "";
 
   gammaTemplateRegions_ = "13TeV_inclusive"; // default
   gammaTemplateType_    = "RC"; // default
@@ -65,6 +66,8 @@ MT2Config::MT2Config( const std::string& name ) {
       gammaTemplateType_ = std::string(StringValue);
     else if( this_name=="gammaIsoCut" )
       gammaIsoCut_ = atof(StringValue);
+    else if( this_name=="smZG" )
+      smZG_ = std::string(StringValue);
 
   } // while getline
 

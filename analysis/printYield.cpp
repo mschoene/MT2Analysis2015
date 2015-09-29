@@ -50,47 +50,47 @@ int main( int argc, char* argv[] ) {
 
   //std::vector < MT2Analysis<MT2Estimate>* > analysesSignal = MT2Analysis<MT2Estimate>::readAllFromFile(firstInputFile.c_str(), "SMS");
   std::vector < MT2Analysis<MT2Estimate>* > analysesSignal;
-  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile(firstInputFile.c_str(), "SMS_T1tttt_2J_mGl1500_mLSP100") );
+  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile(firstInputFile.c_str(), "SMS_T1tttt_mGluino1500_mLSP100") );
   analysesSignal[0]->setName("T1tttt 1500,100");
   
-  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile(firstInputFile.c_str(), "SMS_T1tttt_2J_mGl1200_mLSP800") );
+  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile(firstInputFile.c_str(), "SMS_T1tttt_mGluino1200_mLSP800") );
   analysesSignal[1]->setName("T1tttt 1200,800");
 
-  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile(firstInputFile.c_str(), "SMS_T1bbbb_2J_mGl1500_mLSP100") );
+  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile(firstInputFile.c_str(), "SMS_T1bbbb_mGluino1500_mLSP100") );
   analysesSignal[2]->setName("T1bbbb 1500,100");
   
-  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile(firstInputFile.c_str(), "SMS_T1bbbb_2J_mGl1000_mLSP900") );
+  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile(firstInputFile.c_str(), "SMS_T1bbbb_mGluino1000_mLSP900") );
   analysesSignal[3]->setName("T1bbbb 1000,900");
 
-  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile(firstInputFile.c_str(), "SMS_T1qqqq_2J_mGl1400_mLSP100") );
+  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile(firstInputFile.c_str(), "SMS_T1qqqq_mGluino1400_mLSP100") );
   analysesSignal[4]->setName("T1qqqq 1400,100");
 
-  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile(firstInputFile.c_str(), "SMS_T1qqqq_2J_mGl1000_mLSP800") );
+  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile(firstInputFile.c_str(), "SMS_T1qqqq_mGluino1000_mLSP800") );
   analysesSignal[5]->setName("T1qqqq 1000,800");
 
-  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile(firstInputFile.c_str(), "SMS_T2tt_2J_mStop850_mLSP100") );
-  analysesSignal[6]->setName("T2tt 850,100");
-
-  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile(firstInputFile.c_str(), "SMS_T2tt_2J_mStop650_mLSP325") );
-  analysesSignal[7]->setName("T2tt 650,325");
-
-  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile(firstInputFile.c_str(), "SMS_T2tt_2J_mStop500_mLSP325") );
-  analysesSignal[8]->setName("T2tt 500,325");
-
-  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile(firstInputFile.c_str(), "SMS_T2tt_2J_mStop425_mLSP325") );
-  analysesSignal[9]->setName("T2tt 425,325");
-
-  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile(firstInputFile.c_str(), "SMS_T2bb_2J_mStop900_mLSP100") );
-  analysesSignal[10]->setName("T2bb 900,100");
-
-  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile(firstInputFile.c_str(), "SMS_T2bb_2J_mStop600_mLSP580") );
-  analysesSignal[11]->setName("T2bb 600,580");
-
-  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile(firstInputFile.c_str(), "SMS_T2qq_2J_mStop1200_mLSP100") );
-  analysesSignal[12]->setName("T2qq 1200,100");
-
-  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile(firstInputFile.c_str(), "SMS_T2qq_2J_mStop600_mLSP550") );
-  analysesSignal[13]->setName("T2qq 600,550");
+//  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile(firstInputFile.c_str(), "SMS_T2tt_2J_mStop850_mLSP100") );
+//  analysesSignal[6]->setName("T2tt 850,100");
+//
+//  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile(firstInputFile.c_str(), "SMS_T2tt_2J_mStop650_mLSP325") );
+//  analysesSignal[7]->setName("T2tt 650,325");
+//
+//  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile(firstInputFile.c_str(), "SMS_T2tt_2J_mStop500_mLSP325") );
+//  analysesSignal[8]->setName("T2tt 500,325");
+//
+//  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile(firstInputFile.c_str(), "SMS_T2tt_2J_mStop425_mLSP325") );
+//  analysesSignal[9]->setName("T2tt 425,325");
+//
+//  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile(firstInputFile.c_str(), "SMS_T2bb_2J_mStop900_mLSP100") );
+//  analysesSignal[10]->setName("T2bb 900,100");
+//
+//  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile(firstInputFile.c_str(), "SMS_T2bb_2J_mStop600_mLSP580") );
+//  analysesSignal[11]->setName("T2bb 600,580");
+//
+//  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile(firstInputFile.c_str(), "SMS_T2qq_2J_mStop1200_mLSP100") );
+//  analysesSignal[12]->setName("T2qq 1200,100");
+//
+//  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile(firstInputFile.c_str(), "SMS_T2qq_2J_mStop600_mLSP550") );
+//  analysesSignal[13]->setName("T2qq 600,550");
   
   std::set<MT2HTRegion> htRegions = analyses_bg[0]->getHTRegions();
   std::set<MT2SignalRegion> sigRegions = analyses_bg[0]->getSignalRegions();
@@ -105,19 +105,28 @@ int main( int argc, char* argv[] ) {
     
     std::cout << "Printing table for region: " << iHT->getName() << std::endl;
 
-    std::string ofs = dir + "/yieldtable_full_" + iHT->getName() + ".log";
+    std::string ofs = dir + "/yieldtable_full_" + iHT->getName() + ".tex";
     
-    ofstream ofs_file;
-    if ( ifstream(ofs) )
+    std::ofstream ofs_file;
+    if ( std::ifstream(ofs) )
       system(Form("rm -f %s", ofs.c_str()));
     
     ofs_file.open( ofs, std::ofstream::app );
     
+    ofs_file << "\\begin{table}[htbp]" << std::endl;
+    ofs_file << "\\caption{Background estimate yields for " << iHT->getNiceName().c_str() << ".}" << std::endl;
+    ofs_file << "\\centering" << std::endl;
+    ofs_file << "\\begin{tabular}{r";
+    for( unsigned int b=0; b<sigRegions.size(); ++b ){
+      ofs_file << "|c";
+    }
+    ofs_file << "}" << std::endl;
+    
     ofs_file << "\\hline" << std::endl;
-    ofs_file << "\\multicolumn{" << sigRegions.size()+1 << "}{c}{" <<iHT->getNiceName().c_str() << "}\\\\" << std::endl;
+    ofs_file << "\\multicolumn{" << sigRegions.size()+1 << "}{c}{" << iHT->getNiceName().c_str() << "}\\\\" << std::endl;
     ofs_file <<"\\hline \\hline" << std::endl;
 
-    ofs_file << "Sample";    
+    ofs_file << "Process";    
     for( std::set<MT2SignalRegion>::iterator iSig=sigRegions.begin(); iSig!=sigRegions.end(); ++iSig )
       ofs_file << " & " << iSig->getNiceName().c_str();
     ofs_file << "\\\\" << std::endl;    
@@ -151,7 +160,9 @@ int main( int argc, char* argv[] ) {
       analysesSignal[a]->print(ofs_file, thisHTRegion );
     }
     
-    ofs_file <<"\\hline" << std::endl;
+    ofs_file << "\\hline" << std::endl;
+    ofs_file << "\\end{tabular}" << std::endl;
+    ofs_file << "\\end{table}" << std::endl;
     ofs_file << std::endl;
   
   } //loop over HT regions
@@ -161,24 +172,34 @@ int main( int argc, char* argv[] ) {
 
     std::cout << "Printing table for region: " << iMT2->getName() << std::endl;
     
-    std::string ofs_tr = dir + "/yieldtable_full_" + iMT2->getName() + ".log";
-    ofstream ofs_file_tr;
-    if ( ifstream(ofs_tr) )
+    std::string ofs_tr = dir + "/yieldtable_full_" + iMT2->getName() + ".tex";
+    std::ofstream ofs_file_tr;
+    if ( std::ifstream(ofs_tr) )
       system(Form("rm -f %s", ofs_tr.c_str()));
     
     ofs_file_tr.open( ofs_tr, std::ofstream::app );
+    
+    std::vector< std::string > names = iMT2->getNiceNamesLatex();
     
     MT2Region* thisRegion = new MT2Region( *(iMT2) );
     int nBins;
     double* bins;
     thisRegion->getBins(nBins, bins);
 
-    std::vector< std::string > names = thisRegion->getNiceNames();
+    ofs_file_tr << "\\begin{table}[htbp]" << std::endl;
+    ofs_file_tr << "\\caption{Background estimate yields for " << names[0].c_str() << ", " << names[1].c_str() << ".}" << std::endl;
+    ofs_file_tr << "\\centering" << std::endl;
+    ofs_file_tr << "\\begin{tabular}{r";
+    for( int b=0; b<nBins; ++b ){
+      ofs_file_tr << "|c";
+    }
+    ofs_file_tr << "}" << std::endl;
+
     ofs_file_tr << "\\hline" << std::endl;
     ofs_file_tr << "\\multicolumn{" << nBins+1 << "}{c}{" << names[0].c_str() << ", " << names[1].c_str() << "}\\\\" << std::endl;
     ofs_file_tr <<"\\hline \\hline" << std::endl;
     
-    ofs_file_tr << "Sample";
+    ofs_file_tr << "Process";
 
     std::vector< std::string > binNames = thisRegion->getBinNames();
     for( unsigned b=0; b < binNames.size(); ++b )
@@ -212,6 +233,8 @@ int main( int argc, char* argv[] ) {
       analysesSignal[a]->print(ofs_file_tr, thisRegion );
     }
     ofs_file_tr <<"\\hline" << std::endl;
+    ofs_file_tr << "\\end{tabular}" << std::endl;
+    ofs_file_tr << "\\end{table}" << std::endl;
     ofs_file_tr << std::endl;
     
   } //loop over TR's

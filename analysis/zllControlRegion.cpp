@@ -76,13 +76,12 @@ int main(int argc, char* argv[]) {
     }
   }
 
-
   TH1::AddDirectory(kFALSE); //stupid ROOT memory allocation needs this
 
   std::string outputdir = cfg.getEventYieldDir() + "/zllControlRegion";
   system(Form("mkdir -p %s", outputdir.c_str()));
 
-   std::string regionsSet;// = "13TeV_inclusive";
+  std::string regionsSet;// = "13TeV_inclusive";
   regionsSet=cfg.regionsSet();
   std::cout << "-> Using regions: " << regionsSet << std::endl;
 
@@ -103,30 +102,20 @@ int main(int argc, char* argv[]) {
     MT2Analysis<MT2EstimateTree>* mcTree = new MT2Analysis<MT2EstimateTree>( "zllCR", cfg.regionsSet() );
     addVariables(mcTree); //Adds some additional variables Zpt,Zmass, raw MT2...
 
-
     MT2Analysis<MT2EstimateTree>* mcTree_of = new MT2Analysis<MT2EstimateTree>( "zllCR_of", cfg.regionsSet() );
     addVariables(mcTree_of);
-
   
-
-    // std::vector< MT2Analysis<MT2EstimateTree>* > EventYield;
     for( unsigned i=0; i<fSamples.size(); ++i ) 
       computeYieldSnO( fSamples[i], cfg, mcTree, mcTree_of);
-    //      EventYield.push_back( computeYield( fSamples[i], cfg, cfg.lumi() ) );
-    
-    // MT2Analysis<MT2EstimateTree>* zllCR = mergeYields( EventYield, cfg.regionsSet(), "DYJets", 700, 799, "DYJets" );
-    // zllCR->setName("zllCR");
-    // zllCR->writeToFile(outputdir+"/mc.root");
+ 
     mcTree->writeToFile(outputdir+"/mc.root");
     mcTree_of->writeToFile(outputdir+"/mc_of.root");
     
     if( cfg.dummyAnalysis() ) {
-    
       roundLikeData(mcTree); 
       mcTree->addToFile(outputdir+"/data.root");
       roundLikeData(mcTree_of); 
-      mcTree_of->addToFile(outputdir+"/data_of.root");
-     
+      mcTree_of->addToFile(outputdir+"/data_of.root");    
     }
     
     if(do_bg==true){
@@ -151,52 +140,29 @@ int main(int argc, char* argv[]) {
       std::vector<MT2Sample> fSamples_wjets = MT2Sample::loadSamples(samplesFileName, 500, 599);   
       for( unsigned i=0; i<fSamples_wjets.size(); ++i )
 	computeYieldSnO( fSamples_wjets[i], cfg, mc_wjets, mc_wjets_of);
-
-      MT2Analysis<MT2EstimateTree>* mc_zjets = new MT2Analysis<MT2EstimateTree>( "ZJets", cfg.regionsSet(),600, "Z+jets" );
-      MT2Analysis<MT2EstimateTree>* mc_zjets_of = new MT2Analysis<MT2EstimateTree>( "ZJets", cfg.regionsSet(),600, "Z+jets");
-      addVariables(mc_zjets);      addVariables(mc_zjets_of);
-      std::vector<MT2Sample> fSamples_zjets = MT2Sample::loadSamples(samplesFileName, 600, 699);   
-      for( unsigned i=0; i<fSamples_zjets.size(); ++i )
-	computeYieldSnO( fSamples_zjets[i], cfg, mc_zjets, mc_zjets_of); 
-
  
-  
-      std::vector<MT2Analysis<MT2EstimateTree>* > bgYields; 
       MT2Analysis<MT2EstimateTree>* mc_zll   = mcTree;
       mc_zll->setName("DYJets");
       mc_zll->setFullName("DY+jets");
-      
-      bgYields.push_back( mc_qcd );
-      bgYields.push_back( mc_wjets );
-      bgYields.push_back( mc_zjets );
-      bgYields.push_back( mc_top );
       
       std::string outFile = outputdir + "/ZllPurityTrees.root";
       mc_zll->writeToFile( outFile );
       mc_top->addToFile( outFile );
       mc_qcd->addToFile( outFile );
       mc_wjets->addToFile( outFile );
-      mc_zjets->addToFile( outFile );
 
 
       //For the OPPOSITE FLAVOR EVENTS:
-      std::vector<MT2Analysis<MT2EstimateTree>* > bgYields_of;   
       MT2Analysis<MT2EstimateTree>* mc_zll_of   = mcTree_of;
       mc_zll_of->setName("DYJets");
       mc_zll_of->setFullName("DY+jets");
-      
-      bgYields_of.push_back( mc_qcd_of );
-      bgYields_of.push_back( mc_wjets_of );
-      bgYields_of.push_back( mc_zjets_of );
-      bgYields_of.push_back( mc_top_of );
-      
+ 
       std::string outFile_of = outputdir + "/ZllPurityTrees_of.root";
       mc_zll_of->writeToFile( outFile_of );
       mc_top_of->addToFile( outFile_of );
       mc_qcd_of->addToFile( outFile_of );
       mc_wjets_of->addToFile( outFile_of );
-      mc_zjets_of->addToFile( outFile_of );
-     
+    
     } //End do background trees
     
   } //if only MC
@@ -216,7 +182,7 @@ int main(int argc, char* argv[]) {
     //Filler Tree so that I don't have to rewrite the function
     MT2Analysis<MT2EstimateTree>* dataTree_filler = new MT2Analysis<MT2EstimateTree>( "data_filler", cfg.regionsSet() );
 
-    addVariables(dataTree);      addVariables(dataTree_of); addVariables(dataTree_filler);
+    addVariables(dataTree);      addVariables(dataTree_of);  addVariables(dataTree_filler);
 
 
     if( samples_data.size()==0 ) {
@@ -241,10 +207,6 @@ int main(int argc, char* argv[]) {
   return 0;
   
 }
-
-
-
-
 
 
 
@@ -286,7 +248,7 @@ void addVariables(MT2Analysis<MT2EstimateTree>* anaTree){
   MT2EstimateTree::addVar( anaTree, "lep_pt1");
   MT2EstimateTree::addVar( anaTree, "lep_eta0");
   MT2EstimateTree::addVar( anaTree, "lep_eta1");
-  MT2EstimateTree::addVar( anaTree, "raw_mt2");
+  MT2EstimateTree::addVar( anaTree, "raw_mt2"); // = mt2 with the two leptons
 
   MT2EstimateTree::addVar( anaTree, "nJetHF30" );
   
@@ -324,17 +286,14 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
 
     if(!( myTree.nlep==2 )) continue; 
 
-    //baseline single cuts for flexibility, change back
-    //if( !(myTree.passSelection("zll")) ) continue; 
+    //Minimal selection for the standard model Z/Gamma ratio
     if(myTree.nVert < 0) continue;
-  
-  if(myTree.nJet30 < 1  ) continue;
-  /*
-   if(myTree.nJet30 < 2  ) continue;
-   if(myTree.zll_deltaPhiMin < 0.3) continue;
-    if(myTree.zll_diffMetMht > 0.5*myTree.zll_met_pt) continue;
-    if( myTree.mt2 >200 ) continue;  
-  */
+    if(myTree.nJet30 < 1  ) continue;
+
+    if(cfg.smZG() != "smZG"){
+      if( !(myTree.passSelection("zll")) ) continue;
+    }
+
     if(( myTree.lep_pdgId[0]*myTree.lep_pdgId[1])>0 )   continue;
 
     //FILTERS

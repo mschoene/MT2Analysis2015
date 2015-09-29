@@ -57,8 +57,8 @@ createDatacards: createDatacards.cpp MT2Region.o MT2Sample.o MT2EstimateSyst.o M
 mt2Optimization: mt2Optimization.cpp MT2Region.o MT2Sample.o MT2EstimateSyst.o MT2Estimate.o MT2EstimateTree.o MT2DrawTools.o
 	$(CC) -Wall $(INCLUDES) -o mt2Optimization mt2Optimization.cpp MT2Region.o MT2Sample.o MT2EstimateSyst.o MT2Estimate.o MT2EstimateTree.o MT2DrawTools.o $(ROOTFLAG) $(EXTRALIBS) -fpermissive
 
-inclusivePlots: inclusivePlots.cpp MT2Region.o MT2Sample.o MT2EstimateTree.o MT2Estimate.o MT2DrawTools.o
-	$(CC) -Wall $(INCLUDES) -o inclusivePlots inclusivePlots.cpp MT2Region.o MT2Sample.o MT2EstimateTree.o MT2Estimate.o MT2DrawTools.o $(ROOTFLAG) $(EXTRALIBS) -fpermissive
+inclusivePlots: inclusivePlots.cpp MT2Region.o MT2Estimate.o MT2DrawTools.o MT2EstimateTree.o MT2Config.o
+	$(CC) -Wall $(INCLUDES) -o inclusivePlots inclusivePlots.cpp MT2Region.o MT2Estimate.o MT2DrawTools.o MT2EstimateTree.o MT2Config.o  $(ROOTFLAG) $(EXTRALIBS)
 
 prova: prova.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateSyst.o
 	$(CC) -Wall $(INCLUDES) -o prova prova.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateSyst.o $(ROOTFLAG) $(EXTRALIBS)
@@ -67,8 +67,8 @@ provaRead: provaRead.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateSyst.o
 	$(CC) -Wall $(INCLUDES) -o provaRead provaRead.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateSyst.o $(ROOTFLAG) $(EXTRALIBS)
 
 
-printYield: printYield.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateSyst.o
-	$(CC) -Wall $(INCLUDES) -o printYield printYield.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateSyst.o $(ROOTFLAG) $(EXTRALIBS)
+printYield: printYield.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateSyst.o MT2DrawTools.o
+	$(CC) -Wall $(INCLUDES) -o printYield printYield.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateSyst.o MT2DrawTools.o $(ROOTFLAG) $(EXTRALIBS)
 
 printYield_CR: printYield_CR.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateSyst.o
 	$(CC) -Wall $(INCLUDES) -o printYield_CR printYield_CR.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateSyst.o $(ROOTFLAG) $(EXTRALIBS)
@@ -175,8 +175,8 @@ printLowYields: printLowYields.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2Esti
 printPurity: printPurity.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateZinvGamma.o MT2EstimateSyst.o MT2EstimateTree.o
 	$(CC) -Wall $(INCLUDES) -o printPurity printPurity.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateZinvGamma.o MT2EstimateSyst.o MT2EstimateTree.o $(ROOTFLAG) $(EXTRALIBS)
 
-printLatexBGTable: printLatexBGTable.cpp MT2Region.o MT2Estimate.o 
-	$(CC) -Wall $(INCLUDES) -o printLatexBGTable printLatexBGTable.cpp MT2Region.o MT2Estimate.o $(ROOTFLAG) $(EXTRALIBS)
+printLatexBGTable: printLatexBGTable.cpp MT2Region.o MT2Estimate.o MT2DrawTools.o
+	$(CC) -Wall $(INCLUDES) -o printLatexBGTable printLatexBGTable.cpp MT2Region.o MT2Estimate.o MT2DrawTools.o $(ROOTFLAG) $(EXTRALIBS)
 
 
 computeTemplateSyst: computeTemplateSyst.cpp MT2Region.o MT2Estimate.o MT2DrawTools.o
