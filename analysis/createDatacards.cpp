@@ -434,6 +434,10 @@ int main( int argc, char* argv[] ) {
 	     }
              
 	     float R = this_zinv_ratio->GetBinContent(iBin);
+//if( iR->nBJetsMin()<1 ) {
+//  R /= 2.;
+//  Ngamma *= 2;
+//}
 	     if( use_purity ) {
 	       ////datacard << "zinv_CRstat_" << binName << " gmN " << std::setprecision(5) << Ngamma << " - " << R*p*0.90 << " - -" << std::setprecision(3) << std::endl;
 	       if( !use_extrapolation )
@@ -593,8 +597,8 @@ int main( int argc, char* argv[] ) {
   
   
   // now create datacards for all signals
-  std::vector<MT2Analysis<MT2Estimate>*> signals = MT2Analysis<MT2Estimate>::readAllFromFile( mc_fileName, "Zprime" );
-  //std::vector<MT2Analysis<MT2Estimate>*> signals = MT2Analysis<MT2Estimate>::readAllFromFile( mc_fileName, "SMS" );
+  //std::vector<MT2Analysis<MT2Estimate>*> signals = MT2Analysis<MT2Estimate>::readAllFromFile( mc_fileName, "Zprime" );
+  std::vector<MT2Analysis<MT2Estimate>*> signals = MT2Analysis<MT2Estimate>::readAllFromFile( mc_fileName, "SMS" );
   //std::vector<MT2Analysis<MT2Estimate>*> signals = MT2Analysis<MT2Estimate>::readAllFromFile( mc_fileName, "DarkMatter" );
   
   for( unsigned  isig=0; isig<signals.size(); ++isig ) { 
