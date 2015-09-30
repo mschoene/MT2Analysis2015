@@ -27,6 +27,9 @@ computeZllofBackground: computeZllofBackground.cpp MT2Region.o MT2Sample.o MT2Es
 zllControlRegion: zllControlRegion.cpp MT2Region.o MT2Sample.o MT2EstimateSyst.o MT2Estimate.o MT2DrawTools.o MT2Config.o MT2EstimateTree.o
 	$(CC) -Wall $(INCLUDES) -o zllControlRegion zllControlRegion.cpp MT2Region.o MT2Sample.o MT2EstimateSyst.o MT2Estimate.o MT2DrawTools.o MT2Config.o MT2EstimateTree.o $(ROOTFLAG) $(EXTRALIBS) -fpermissive
 
+singleLeptonControlRegion: singleLeptonControlRegion.cpp MT2Region.o MT2Sample.o MT2EstimateSyst.o MT2Estimate.o MT2Config.o MT2EstimateTree.o MT2DrawTools.o
+	$(CC) -Wall $(INCLUDES) -o singleLeptonControlRegion singleLeptonControlRegion.cpp MT2Region.o MT2Sample.o MT2EstimateSyst.o MT2Estimate.o MT2Config.o MT2EstimateTree.o MT2DrawTools.o $(ROOTFLAG) $(EXTRALIBS) -fpermissive
+
 computeLostLepton_CR: computeLostLepton_CR.cpp MT2Region.o MT2Sample.o MT2EstimateSyst.o MT2Estimate.o MT2DrawTools.o MT2Config.o
 	$(CC) -Wall $(INCLUDES) -o computeLostLepton_CR computeLostLepton_CR.cpp MT2Region.o MT2Sample.o MT2EstimateSyst.o MT2Estimate.o MT2DrawTools.o MT2Config.o $(ROOTFLAG) $(EXTRALIBS) -fpermissive
 
@@ -109,9 +112,6 @@ drawPurityFits: drawPurityFits.cpp MT2Region.o MT2Estimate.o MT2EstimateZinvGamm
 
 drawQG: drawQG.cpp MT2Region.o MT2Estimate.o MT2EstimateTree.o MT2DrawTools.o 
 	$(CC) -Wall $(INCLUDES) -o drawQG drawQG.cpp MT2Region.o MT2Estimate.o MT2EstimateTree.o MT2DrawTools.o  $(ROOTFLAG) $(EXTRALIBS)
-
-drawGammaContHLTTurnOn: drawGammaHLTTurnOn.cpp MT2Region.o MT2Estimate.o MT2DrawTools.o MT2EstimateTree.o MT2Config.o MT2Sample.o
-	$(CC) -Wall $(INCLUDES) -o drawGammaHLTTurnOn drawGammaHLTTurnOn.cpp MT2Region.o MT2Estimate.o MT2DrawTools.o MT2EstimateTree.o MT2Config.o MT2Sample.o $(ROOTFLAG) $(EXTRALIBS)
 
 drawGammaControlRegion: drawGammaControlRegion.cpp MT2Region.o MT2Estimate.o MT2EstimateSyst.o MT2DrawTools.o 
 	$(CC) -Wall $(INCLUDES) -o drawGammaControlRegion drawGammaControlRegion.cpp MT2Region.o MT2Estimate.o MT2EstimateSyst.o MT2DrawTools.o $(ROOTFLAG) $(EXTRALIBS)

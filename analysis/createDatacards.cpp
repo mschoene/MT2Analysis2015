@@ -438,6 +438,10 @@ int main( int argc, char* argv[] ) {
 	     }
              
 	     float R = this_zinv_ratio->GetBinContent(iBin);
+//if( iR->nBJetsMin()<1 ) {
+//  R /= 2.;
+//  Ngamma *= 2;
+//}
 	     if( use_purity ) {
 	       ////datacard << "zinv_CRstat_" << binName << " gmN " << std::setprecision(5) << Ngamma << " - " << R*p*0.90 << " - -" << std::setprecision(3) << std::endl;
 	       if( !use_extrapolation )
