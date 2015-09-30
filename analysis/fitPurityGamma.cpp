@@ -75,6 +75,8 @@ int main( int argc, char* argv[] ) {
   MT2Config cfg(configFileName);
 
 
+  bool useMC = true;
+
   if( argc>2 ) {
 
     std::string mc_or_data_templates = std::string(argv[2]); 
@@ -82,6 +84,8 @@ int main( int argc, char* argv[] ) {
     std::cout << std::endl;
     std::cout << "-> Will disobey the cfg and use mc_or_data_templates = " << mc_or_data_templates << std::endl;
     cfg.set_gammaTemplateType(mc_or_data_templates);
+    if( mc_or_data_templates=="MC" ) useMC = true;
+    else useMC=false;
     std::cout << std::endl;
 
   } 
@@ -97,8 +101,13 @@ int main( int argc, char* argv[] ) {
   std::string gammaCRdir = cfg.getEventYieldDir() + "/gammaControlRegion"; //(Form("GammaControlRegion_%s_%s_%.0ffb", samples.c_str(), regionsSet.c_str(), lumi ));
   MT2Analysis<MT2EstimateZinvGamma>* gammaJet_data = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( gammaCRdir + "/data.root", "gammaCR_loose" );
 
-  MT2Analysis<MT2EstimateZinvGamma>* templates_prompt = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( "gammaTemplates" + cfg.gammaTemplateType() + "_" + cfg.mcSamples() + "_" + cfg.gammaTemplateRegions() + ".root", "templatesPrompt" );
-  MT2Analysis<MT2EstimateZinvGamma>* templates_fake   = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( "gammaTemplates" + cfg.gammaTemplateType() + "_" + cfg.mcSamples() + "_" + cfg.gammaTemplateRegions() + ".root", "templatesFake" );
+  std::string templateFileName = gammaCRdir + "/gammaTemplates" + cfg.gammaTemplateType();
+  if( useMC ) templateFileName = templateFileName + "_MC";
+  else        templateFileName = templateFileName + "_data";
+  templateFileName = templateFileName + ".root";
+
+  MT2Analysis<MT2EstimateZinvGamma>* templates_prompt = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( templateFileName, "templatesPrompt" );
+  MT2Analysis<MT2EstimateZinvGamma>* templates_fake   = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( templateFileName, "templatesFake" );
 
   MT2EstimateZinvGamma* templatePrompt, *templateFake;
   if( cfg.gammaTemplateRegions()=="13TeV_inclusive" ) { // just get them once

@@ -132,11 +132,10 @@ int main( int argc, char* argv[] ) {
   }
 
 
-  int lumi = (int) cfg.lumi();
-  
-  std::string templateFileName = "gammaTemplates" + templateType;
-  std::string lumi_s = Form("%d", lumi);
-  templateFileName = templateFileName + "_" + samplesName + "_" + cfg.gammaTemplateRegions() + "_" + lumi_s + ".root";
+  std::string templateFileName = cfg.getEventYieldDir() + "/gammaControlRegion/gammaTemplates" + templateType;
+  if( useMC ) templateFileName = templateFileName + "_MC";
+  else        templateFileName = templateFileName + "_data";
+  templateFileName = templateFileName + ".root";
 
 
   templatesFake->writeToFile(templateFileName);
