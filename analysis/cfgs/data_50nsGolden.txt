@@ -1,4 +1,4 @@
-lumi 0.0420
+lumi 0.042
 regionsSet 13TeV_inclusive
 mcSamples 74X_noSkim
 dataSamples Run2015B_50nsGolden

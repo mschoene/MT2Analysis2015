@@ -17,6 +17,7 @@ run()
 #include <cstdlib>
 #include "TFile.h"
 #include "TFileMerger.h"
+#include "TFileCollection.h"
 #include "TTree.h"
 #include "TChain.h"
 #include "TChainElement.h"
@@ -130,16 +131,22 @@ int postProcessing(string inputString,
     fullInputString = dcap + inputFolder + "/" + inputString + "/"+ crabExt +"/0000/mt2*.root";
   else
     fullInputString = dcap + inputFolder + "/" + inputString + "/mt2*.root";
-  //string fullInputString = dcap + inputFolder + "/" + inputString + "/mt2_14.root";
-  int chainReturn = chain->Add( fullInputString.c_str() );
+
+  TFileCollection *filelist = new TFileCollection("listOfFiles");
+  filelist->Add(fullInputString.c_str());
+  int chainReturn = chain->AddFileInfoList((TCollection*) filelist->GetList());
+
+  //  int chainReturn = chain->Add( fullInputString.c_str() );
   if (chainReturn < 1) {
     cout << "ERROR: input folder/fileName is not well defined. Exit!" << endl;
     cout << "fullInputString: " << fullInputString << endl;
     return 1;
   }
+  
+  string inputPU_ = inputPU.find("pnfs")!=std::string::npos ? "dcap://t3se01.psi.ch:22125/" + inputPU : "" + inputPU;
 
   TChain* chain_pu = new TChain(treeName.c_str());
-  chain_pu->Add(inputPU.c_str());
+  chain_pu->Add(inputPU_.c_str());
   
   TH1D* hPU_data = new TH1D("hPU_data", "", 100, 0, 100);
   hPU_data->Sumw2();

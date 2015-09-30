@@ -26,10 +26,6 @@
 #define mt2_cxx
 #include "interface/mt2.h"
 
-
-//float lumi = 0.1;
-//float lumi = 1.;
-
 //This file creates the Zll trees used to estimate the backgrounds in the 
 //Zll control region.
 //Then run zllPurity to get the nice plots and figures.

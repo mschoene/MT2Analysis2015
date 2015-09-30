@@ -19,10 +19,15 @@ class MT2Config {
   std::string sigSamples()      const { return sigSamples_; };
   std::string dataSamples()     const { return dataSamples_; };
   std::string additionalStuff() const { return additionalStuff_; };
+  std::string analysisType()    const { return analysisType_; };
+  std::string crRegionsSet()    const { return crRegionsSet_; };
 
   std::string gammaTemplateType() const { return gammaTemplateType_; };
   std::string gammaTemplateRegions() const { return gammaTemplateRegions_; };
   float gammaIsoCut() const { return gammaIsoCut_; };
+  std::string gamma2bMethod() const { return gamma2bMethod_; };
+
+  std::string zllRegions() const { return zllRegions_; };
 
   void set_gammaTemplateType( const std::string& newType ) { gammaTemplateType_ = newType; };
 
@@ -44,10 +49,15 @@ class MT2Config {
   std::string sigSamples_;
   std::string dataSamples_;
   std::string additionalStuff_;
+  std::string analysisType_;
+  std::string crRegionsSet_;
 
   std::string gammaTemplateType_;
   std::string gammaTemplateRegions_;
   float gammaIsoCut_;
+  std::string gamma2bMethod_;
+
+  std::string zllRegions_;
 
 };
 
