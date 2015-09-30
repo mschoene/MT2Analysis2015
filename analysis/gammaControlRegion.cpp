@@ -378,20 +378,22 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
 
     myTree.GetEntry(iEntry);
 
-    if(cfg.smZG() != "smZG"){
-    
-      if( myTree.isData )
-	if ( myTree.isGolden == 0 ) continue;
+    if( myTree.isData )
+      if ( myTree.isGolden == 0 ) continue;
 
-      if( !myTree.passSelection("gamma") ) continue;
-
-      if( myTree.isData ) {
-	if( !myTree.passGammaAdditionalSelection(1) ) continue;
-      } else {
-	if( !myTree.passGammaAdditionalSelection(sample.id) ) continue;
-      }
-
+ 
+    if( myTree.isData ) {
+      if( !myTree.passGammaAdditionalSelection(1) ) continue;
+    } else {
+      if( !myTree.passGammaAdditionalSelection(sample.id) ) continue;
     }
+    
+    if(cfg.smZG() != "smZG"){
+      if( myTree.mt2>200. ) continue; // orthogonal to signal region
+      if( myTree.gamma_pt[0]<180. ) continue;
+      if( !myTree.passSelection("gamma") ) continue;
+    }
+
 
     //if( myTree.gamma_ht>1000. && sample.id==204 ) continue; // remove high-weight spikes (remove GJet_400to600 leaking into HT>1000)
 
