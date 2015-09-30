@@ -233,7 +233,7 @@ MT2Analysis<MT2EstimateSyst>* combineDataAndMC( MT2Analysis<MT2EstimateSyst>* da
     MT2Estimate* mcEst = mc->get(*iR);
 
     MT2EstimateSyst* thisNewEstimate;
-    if( (!use_extrapolation && iR->nBJetsMin()>1) || iR->nBJetsMin()>2 ) {
+    if( (!use_extrapolation && iR->nBJetsMin()>1) || iR->nBJetsMin()>2 || iR->nJetsMin()==1 ) {
       thisNewEstimate =  new MT2EstimateSyst(*mcEst);
       for( int ibin=1; ibin<thisNewEstimate->yield->GetNbinsX()+1; ++ibin ) {
         thisNewEstimate->yield_systUp->SetBinContent( ibin, 2.*thisNewEstimate->yield->GetBinContent(ibin) );
