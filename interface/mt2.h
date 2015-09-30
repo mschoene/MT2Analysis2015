@@ -1389,7 +1389,7 @@ void MT2Tree::Show(Long64_t entry)
 
 Bool_t MT2Tree::passSelection(TString sel) const 
 {
-  if(sel=="zll"){
+  if(sel=="zll" || sel=="singleLepton"){
     return passBaseline(sel);
   }else{
   return passBaseline(sel) && passLeptonVeto() && passIsoTrackVeto();
