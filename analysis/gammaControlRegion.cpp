@@ -388,7 +388,7 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
       if( !myTree.passGammaAdditionalSelection(sample.id) ) continue;
     }
     
-    if(cfg.analysisType() != "ZG"){
+    if(cfg.analysisType() == "mt2"){
       if( myTree.mt2>200. ) continue; // orthogonal to signal region
       if( myTree.gamma_pt[0]<180. ) continue;
       if( !myTree.passSelection("gamma") ) continue;
