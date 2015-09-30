@@ -1455,9 +1455,9 @@ Bool_t MT2Tree::passGammaAdditionalSelection(int sampleId) const
 {
 
   if( ngamma==0 ) return kFALSE;
-  if( gamma_pt[0]<180. ) return kFALSE;
+  //if( gamma_pt[0]<180. ) return kFALSE;
   //if( gamma_mt2<200. ) return kFALSE;     
-  if( mt2>200. ) return kFALSE; // orthogonal to signal region
+  //  if( mt2>200. ) return kFALSE; // orthogonal to signal region
 
   bool isQCD  = sampleId>=100 && sampleId<200;
   bool isGJet = sampleId>=200 && sampleId<300;
@@ -1470,6 +1470,8 @@ Bool_t MT2Tree::passGammaAdditionalSelection(int sampleId) const
   return kTRUE;
 
 }
+
+
 
 
 Int_t MT2Tree::get_nJetHF( float etaCut ) const {

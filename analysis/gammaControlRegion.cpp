@@ -97,7 +97,7 @@ int main( int argc, char* argv[] ) {
     std::vector<MT2Sample> samples_qcd = MT2Sample::loadSamples(samplesFile, "QCD");
 
 
-    MT2Analysis<MT2EstimateTree>* tree = new MT2Analysis<MT2EstimateTree>( "gammaCRtree_loose", "13TeV_inclusive" );
+    MT2Analysis<MT2EstimateTree>* tree = new MT2Analysis<MT2EstimateTree>( "gammaCRtree_loose", cfg.crRegionsSet() );
     MT2EstimateTree::addVar( tree, "prompt" );
     MT2EstimateTree::addVar( tree, "iso" );
     //MT2EstimateTree::addVar( tree, "isoRC" );
@@ -107,7 +107,7 @@ int main( int argc, char* argv[] ) {
     MT2EstimateTree::addVar( tree, "jet1_pt" );
     MT2EstimateTree::addVar( tree, "jet2_pt" );
     
-    MT2Analysis<MT2EstimateTree>* tree_pass = new MT2Analysis<MT2EstimateTree>( "gammaCRtree", "13TeV_inclusive" );
+    MT2Analysis<MT2EstimateTree>* tree_pass = new MT2Analysis<MT2EstimateTree>( "gammaCRtree", cfg.crRegionsSet() );
     MT2EstimateTree::addVar( tree_pass, "prompt" );
     MT2EstimateTree::addVar( tree_pass, "iso" );
     //MT2EstimateTree::addVar( tree_pass, "isoRC" );
@@ -116,6 +116,12 @@ int main( int argc, char* argv[] ) {
     MT2EstimateTree::addVar( tree_pass, "etaGamma" );
     MT2EstimateTree::addVar( tree_pass, "jet1_pt" );
     MT2EstimateTree::addVar( tree_pass, "jet2_pt" );
+
+    if(cfg.analysisType() == "ZG"){
+      MT2EstimateTree::addVar( tree, "raw_mt2" );
+      MT2EstimateTree::addVar( tree_pass, "raw_mt2" );
+    }
+      
     
     MT2EstimateTree::addVar( tree, "gamma_chHadIsoRC" );
     MT2EstimateTree::addVar( tree_pass, "gamma_chHadIsoRC" );
@@ -217,7 +223,7 @@ int main( int argc, char* argv[] ) {
     for( unsigned i=0; i<signals.size(); ++i )
       signals[i]->writeToFile( mcFile);
 
-
+    //comment here again
     if( cfg.dummyAnalysis() ) {
 
       // emulate data:
@@ -262,7 +268,7 @@ int main( int argc, char* argv[] ) {
       MT2Analysis<MT2EstimateZinvGamma>* dataCR_loose = new MT2Analysis<MT2EstimateZinvGamma>( "gammaCR_loose",  cfg.regionsSet() );
       MT2Analysis<MT2EstimateZinvGamma>* dataCR       = new MT2Analysis<MT2EstimateZinvGamma>( "gammaCR",  cfg.regionsSet() );
 
-      MT2Analysis<MT2EstimateTree>* tree = new MT2Analysis<MT2EstimateTree>( "gammaCRtree_loose", "13TeV_inclusive" );
+      MT2Analysis<MT2EstimateTree>* tree = new MT2Analysis<MT2EstimateTree>( "gammaCRtree_loose", cfg.crRegionsSet() );
       MT2EstimateTree::addVar( tree, "iso" );
       MT2EstimateTree::addVar( tree, "sietaieta" );
       MT2EstimateTree::addVar( tree, "ptGamma" );
@@ -270,7 +276,7 @@ int main( int argc, char* argv[] ) {
       MT2EstimateTree::addVar( tree, "jet1_pt" );
       MT2EstimateTree::addVar( tree, "jet2_pt" );
       
-      MT2Analysis<MT2EstimateTree>* tree_pass = new MT2Analysis<MT2EstimateTree>( "gammaCRtree", "13TeV_inclusive" );
+      MT2Analysis<MT2EstimateTree>* tree_pass = new MT2Analysis<MT2EstimateTree>( "gammaCRtree", cfg.crRegionsSet() );
       MT2EstimateTree::addVar( tree_pass, "iso" );
       MT2EstimateTree::addVar( tree_pass, "sietaieta" );
       MT2EstimateTree::addVar( tree_pass, "ptGamma" );
@@ -289,7 +295,13 @@ int main( int argc, char* argv[] ) {
         MT2EstimateTree::addVar( tree_pass, "nTrueC" );
       }
 
+ 
+      if(cfg.analysisType() == "ZG"){
+	MT2EstimateTree::addVar( tree, "raw_mt2" );
+	MT2EstimateTree::addVar( tree_pass, "raw_mt2" );
+      }
       
+
       for( unsigned i=0; i<samples_data.size(); ++i ) {
         computeYield( samples_data[i], cfg, tree, tree_pass, dataCR_loose, dataCR );
       }
@@ -366,17 +378,22 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
 
     myTree.GetEntry(iEntry);
 
-    
     if( myTree.isData )
       if ( myTree.isGolden == 0 ) continue;
 
-    if( !myTree.passSelection("gamma") ) continue;
-
+ 
     if( myTree.isData ) {
       if( !myTree.passGammaAdditionalSelection(1) ) continue;
     } else {
       if( !myTree.passGammaAdditionalSelection(sample.id) ) continue;
     }
+    
+    if(cfg.analysisType() == "mt2"){
+      if( myTree.mt2>200. ) continue; // orthogonal to signal region
+      if( myTree.gamma_pt[0]<180. ) continue;
+      if( !myTree.passSelection("gamma") ) continue;
+    }
+
 
     //if( myTree.gamma_ht>1000. && sample.id==204 ) continue; // remove high-weight spikes (remove GJet_400to600 leaking into HT>1000)
 
@@ -490,6 +507,7 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
     }
 
 
+  
 
 
     int nTrueB=-1;
@@ -514,6 +532,11 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
       }
     }
 
+    if(cfg.analysisType() == "ZG")
+      thisTree->assignVar( "raw_mt2", myTree.mt2 );
+      
+    //    thisTree_pass->fillTree_gamma(myTree, weight );
+
 
     fillOneTree( thisTree, myTree, weight, ht, njets, nbjets, met, minMTBmet, mt2, iso, nTrueB, nTrueC );
 
@@ -531,6 +554,7 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
         fillYields( theEstimate_pass, corr*weight, ht, njets, 2, met, minMTBmet, mt2, iso );
       }
 
+ 
 
       MT2EstimateTree* thisTree_2b = anaTree->get( ht, njets, 2, met, minMTBmet, mt2 );
       MT2EstimateTree* thisTree_2b_pass = anaTree_pass->get( ht, 2, nbjets, met, minMTBmet, mt2 );
