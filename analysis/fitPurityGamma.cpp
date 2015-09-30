@@ -42,6 +42,7 @@ struct Purity {
 
 
 
+
 void fitSinglePurity( const MT2Config& cfg, Purity& loose, Purity& tight, RooRealVar* x, RooDataSet* data, TH1D* h1_templPrompt, TH1D* h1_templFake );
 void fitPurity( const MT2Config& cfg, MT2EstimateSyst* purityLoose, MT2EstimateSyst* purityTight, RooRealVar* x, std::vector<RooDataSet*> data, TH1D* templPrompt, TH1D* templFake );
 void checkBoundaries( Purity& p );
@@ -113,6 +114,8 @@ int main( int argc, char* argv[] ) {
   if( cfg.gammaTemplateRegions()=="13TeV_inclusive" ) { // just get them once
     templatePrompt = templates_prompt->get( MT2Region("HT450toInf_j2toInf_b0toInf") );
     templateFake   = templates_fake  ->get( MT2Region("HT450toInf_j2toInf_b0toInf") );
+//    templatePrompt = templates_prompt->get( MT2Region("HT450toInf_j1toInf_b0toInf") );
+//    templateFake   = templates_fake  ->get( MT2Region("HT450toInf_j1toInf_b0toInf") );
   }
 
   std::string outputdir = gammaCRdir + "/PurityFits" + cfg.gammaTemplateType();

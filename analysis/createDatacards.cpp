@@ -182,21 +182,25 @@ int main( int argc, char* argv[] ) {
   
   for( std::set<MT2Region>::iterator iR=regions.begin(); iR!=regions.end(); ++iR ) {
 
-
      TH1D* this_data = data->get(*iR)->yield;
 
      TH1D* this_qcd  = qcd ->get(*iR)->yield;
-
+     
      TH1D* this_zinv = zinv->get(*iR)->yield;
      TH1D* this_zinvCR     = (use_gamma) ? zinvCR->get(*iR)->yield : 0;
      TH1D* this_zinv_ratio     = (use_gamma) ? zinv_ratio->get(*iR)->yield : 0;
 
      TH1D* this_llep = llep->get(*iR)->yield;
+
      TH1D* this_llepCR;
-     if(iR->nJetsMin()>=7 && iR->nBJetsMin()>=1)
+     if(iR->nJetsMin()>=7 && iR->nBJetsMin()>=1){
+       
        this_llepCR = llepCR->get(MT2Region(iR->htMin(), iR->htMax(), iR->nJetsMin(), iR->nJetsMax(), 1, 2))->yield;
+
+     }
      else
        this_llepCR = llepCR->get(*iR)->yield;
+
      
      TGraphAsymmErrors* this_zinv_purity;
      if ( use_purity ) this_zinv_purity = (use_gamma) ? purity->get(*iR)->getGraph() : 0;
@@ -309,7 +313,7 @@ int main( int argc, char* argv[] ) {
        // Z INVISIBLE SYSTEMATICS:
        if( yield_zinv>0. || use_gamma ) {
 	 
-         if( (!use_extrapolation && iR->nBJetsMin()<2) || iR->nBJetsMin()<3 ) { // 0 and 1 btag if not using extrapolation, < 3 otherwise
+         if( (!use_extrapolation && iR->nBJetsMin()<2) || iR->nBJetsMin()<3 || iR->nJetsMin()==1 ) { // 0 and 1 btag if not using extrapolation, < 3 otherwise
 	   
            // correlated:
            datacard << "zinv_ZGratio lnN   - " << 1.+err_zinv_corr << " - -" << std::endl;
@@ -322,7 +326,7 @@ int main( int argc, char* argv[] ) {
          float thisError_zinv_uncorr_rel = this_zinv->GetBinError(iBin)/yield_zinv;
          if( !use_gamma ) {
 	   
-           std::string iname = ((!use_extrapolation && iR->nBJetsMin()<2) || iR->nBJetsMin()<3) ? "CRstat" : "MC";
+           std::string iname = ((!use_extrapolation && iR->nBJetsMin()<2) || iR->nBJetsMin()<3 || iR->nJetsMin()==1 ) ? "CRstat" : "MC";
            datacard << "zinv_" << iname << "_" << binName << " lnN - " << 1. + thisError_zinv_uncorr_rel << " - -" << std::endl;
            zinv_systUp += thisError_zinv_uncorr_rel*thisError_zinv_uncorr_rel;
            zinv_systDn += thisError_zinv_uncorr_rel*thisError_zinv_uncorr_rel;
@@ -399,7 +403,7 @@ int main( int argc, char* argv[] ) {
 	     
 	 } else {
 	   
-           if( (!use_extrapolation && iR->nBJetsMin()>=2) || iR->nBJetsMin()>=3 ) {
+           if( (!use_extrapolation && iR->nBJetsMin()>=2) || iR->nBJetsMin()>=3 || iR->nJetsMin()==1 ) {
 	     
 	     datacard << "zinv_MC_" << binName << " lnN - " << 1.+err_zinv_uncorr_2b << " - -" << std::endl;
              zinv_systUp += err_zinv_uncorr_2b*err_zinv_uncorr_2b;
