@@ -229,7 +229,7 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, std::vector<
       if( shapeNorm )
         histos_mc[index]->Scale( scaleFactor );
       else
-	histos_mc[index]->Scale( 16.1/20.38 );
+	histos_mc[index]->Scale( 118.9/106.5 );
 
       if(i==0) histo_mc = (TH1D*) histos_mc[index]->Clone("histo_mc");
       else histo_mc->Add(histos_mc[index]);
