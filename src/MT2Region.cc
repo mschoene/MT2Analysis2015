@@ -596,12 +596,12 @@ void MT2Region::getBins( int &nBins, double*& bins) const {
 
   if( regionName == "HT450toInf_j2toInf_b0toInf" ) {  // this is the inclusive region
 
-    const int nBins_tmp                        = 7;
-    bins = new double[nBins_tmp+1]{200., 300., 400., 500., 600., 800., 1000., 1500. };
+//    const int nBins_tmp                        = 7;
+//    bins = new double[nBins_tmp+1]{200., 300., 400., 500., 600., 800., 1000. };
 //    const int nBins_tmp                        = 5;
 //    bins = new double[nBins_tmp+1]{200., 300., 400., 600., 1000., 1500.};
-//    const int nBins_tmp                        = 4;
-//    bins = new double[nBins_tmp+1]{200., 300., 400., 600., 1000.};
+    const int nBins_tmp                        = 4;
+    bins = new double[nBins_tmp+1]{200., 300., 400., 600., 1000.};
 //    const int nBins_tmp                        = 3;
 //    bins = new double[nBins_tmp+1]{200., 300., 400., 600.};
     nBins = nBins_tmp;
@@ -1231,8 +1231,10 @@ void MT2Region::getBins( int &nBins, double*& bins) const {
    
   } else if( regionName == "HT450toInf_j1_b0toInf" ){ // monojet region
 
-    const int nBins_tmp                        = 3;
-    bins = new double[nBins_tmp+1]{450., 575., 1000., 1500.};
+//    const int nBins_tmp                        = 3;
+//    bins = new double[nBins_tmp+1]{450., 575., 1000., 1500.};
+    const int nBins_tmp                        = 7;
+    bins = new double[nBins_tmp+1]{200., 250., 300., 400., 450., 575., 1000., 1500.};
     nBins = nBins_tmp;
 
   } 

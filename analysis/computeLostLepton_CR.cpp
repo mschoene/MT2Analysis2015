@@ -85,9 +85,13 @@ int main( int argc, char* argv[] ) {
   std::string regionsSet;
   if( cfg.regionsSet()=="zurich" )
     regionsSet="zurich_llep";
+  else if( cfg.regionsSet()=="zurich_monojet" )
+    regionsSet="zurich_monojet_llep";
   else
     regionsSet=cfg.regionsSet();
 
+  std::cout << "using region set " << regionsSet << std::endl;
+  
   MT2Analysis<MT2EstimateSyst>* lostLeptonEstimate = new MT2Analysis<MT2EstimateSyst> ( "llep", regionsSet );  
   for( unsigned i=0; i < fSamples.size(); ++i )
     (*lostLeptonEstimate) += ( computeYield( fSamples[i], cfg ) );
@@ -115,6 +119,8 @@ MT2Analysis<MT2EstimateSyst> computeYield( const MT2Sample& sample, const MT2Con
   std::string regionsSet;
   if( cfg.regionsSet()=="zurich" )
     regionsSet="zurich_llep";
+  else if( cfg.regionsSet()=="zurich_monojet" )
+    regionsSet="zurich_monojet_llep";
   else
     regionsSet=cfg.regionsSet();
   
@@ -137,12 +143,12 @@ MT2Analysis<MT2EstimateSyst> computeYield( const MT2Sample& sample, const MT2Con
     if( myTree.nLepLowMT==1 ) ; // New lost lepton CR
     else continue;
 
-    float ht   = myTree.ht;
-    float met  = myTree.met_pt;
-    float mt2  = myTree.mt2;
-    float minMTBmet = myTree.minMTBMet;
     int njets  = myTree.nJet30;
     int nbjets = myTree.nBJet20; 
+    float ht   = myTree.ht;
+    float met  = myTree.met_pt;
+    float mt2  = (njets>1) ? myTree.mt2 : ht;
+    float minMTBmet = myTree.minMTBMet;
     
 //    //////QCD
 //    if( ht > 575. && ht < 1000. && mt2 < 300. ) continue;
