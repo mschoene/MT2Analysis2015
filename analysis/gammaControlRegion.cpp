@@ -117,7 +117,7 @@ int main( int argc, char* argv[] ) {
     MT2EstimateTree::addVar( tree_pass, "jet1_pt" );
     MT2EstimateTree::addVar( tree_pass, "jet2_pt" );
 
-    if(cfg.smZG() == "smZG"){
+    if(cfg.analysisType() == "ZG"){
       MT2EstimateTree::addVar( tree, "raw_mt2" );
       MT2EstimateTree::addVar( tree_pass, "raw_mt2" );
     }
@@ -295,8 +295,8 @@ int main( int argc, char* argv[] ) {
         MT2EstimateTree::addVar( tree_pass, "nTrueC" );
       }
 
-
-      if(cfg.smZG() == "smZG"){
+ 
+      if(cfg.analysisType() == "ZG"){
 	MT2EstimateTree::addVar( tree, "raw_mt2" );
 	MT2EstimateTree::addVar( tree_pass, "raw_mt2" );
       }
@@ -388,7 +388,7 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
       if( !myTree.passGammaAdditionalSelection(sample.id) ) continue;
     }
     
-    if(cfg.smZG() != "smZG"){
+    if(cfg.analysisType() != "ZG"){
       if( myTree.mt2>200. ) continue; // orthogonal to signal region
       if( myTree.gamma_pt[0]<180. ) continue;
       if( !myTree.passSelection("gamma") ) continue;
@@ -532,7 +532,7 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
       }
     }
 
-    if(cfg.smZG() == "smZG")
+    if(cfg.analysisType() == "ZG")
       thisTree->assignVar( "raw_mt2", myTree.mt2 );
       
     //    thisTree_pass->fillTree_gamma(myTree, weight );

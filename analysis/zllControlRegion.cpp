@@ -290,10 +290,10 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
     if(!( myTree.nlep==2 )) continue; 
 
     //Minimal selection for the standard model Z/Gamma ratio
-    if(myTree.nVert < 0) continue;
-    if(myTree.nJet30 < 1  ) continue;
+    if(myTree.nVert < 1) continue;
+    if(myTree.nJet30 < 1) continue;
 
-    if(cfg.smZG() != "smZG"){
+    if(cfg.analysisType() != "ZG"){
       if( !(myTree.passSelection("zll")) ) continue;
     }
 
