@@ -2,12 +2,12 @@
 #define MT2Estimate_h
 
 #include "MT2Analysis.h"
-#include "MT2Region.h"
-#include "MT2DrawTools.h"
 #include "TH3D.h"
 #include "TH1D.h"
 #include "TFile.h"
 
+
+class MT2Region;
 
 
 // this is the basic Estimate class: 
@@ -81,12 +81,12 @@ class MT2Estimate {
   friend MT2Estimate operator/( float k, const MT2Estimate& rhs );
 
   virtual void finalize() {
-    return this->addOverflow();
+    //return this->addOverflow();
   }
 
-  virtual void addOverflow();
-  void addOverflowSingleHisto( TH3D* yield3d );
-  void addOverflowSingleHisto( TH1D* yield );
+  //virtual void addOverflow();
+  //void addOverflowSingleHisto( TH3D* yield3d );
+  //void addOverflowSingleHisto( TH1D* yield );
 
   virtual void write() const {
     yield3d->Write();
