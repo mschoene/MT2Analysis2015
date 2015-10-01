@@ -321,7 +321,7 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
     int njets  = myTree.nJet30;
     int nbjets = myTree.nBJet20;
 
-    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi(); 
+    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb;//*cfg.lumi(); 
 
     bool isSF = false;
     bool isOF = false;

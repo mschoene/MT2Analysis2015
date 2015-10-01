@@ -11,7 +11,7 @@
 
 MT2DrawTools::MT2DrawTools( const MT2Config& cfg ) {
 
-  lumi_ = cfg.lumi();
+  lumi_               = cfg.lumi();
   lumiErr_ = 0.12;
   shapeNorm_ = false;
   outdir_ = cfg.getEventYieldDir();
@@ -30,6 +30,14 @@ void MT2DrawTools::set_outDir( const std::string& outdir ) {
   std::cout << "[MT2DrawTools] Setting outdir to: " << outdir << std::endl;
   system( Form("mkdir -p %s", outdir.c_str()) );
   outdir_ = outdir;
+
+}
+
+
+void MT2DrawTools::set_lumi( float lumi) { 
+
+  std::cout << "[MT2DrawTools] Setting lumi to: " << lumi<< std::endl;
+  lumi_ = lumi; 
 
 }
 
@@ -522,7 +530,7 @@ void MT2DrawTools::addOverflowSingleHisto( TH3D* yield3d ) {
 
 
 
-void MT2DrawTools::drawRegionYields_fromTree( MT2Analysis<MT2EstimateTree>* data, std::vector<MT2Analysis<MT2EstimateTree>* >  bgYields, const std::string& saveName, const std::string& varName, const std::string& selection, int nBins, float xMin, float xMax, std::string axisName, const std::string& units ) {
+void MT2DrawTools::drawRegionYields_fromTree( MT2Analysis<MT2EstimateTree>* data, std::vector<MT2Analysis<MT2EstimateTree>* >  bgYields, const std::string& saveName, const std::string& varName, const std::string& selection, int nBins, float xMin, float xMax, std::string axisName, const std::string& units, const std::string& cutsLabel ) {
 
 
   float binWidth = (xMax-xMin)/nBins;
@@ -727,14 +735,11 @@ void MT2DrawTools::drawRegionYields_fromTree( MT2Analysis<MT2EstimateTree>* data
       regionText->SetFillColor(0);
       regionText->SetTextAlign(11);
       
-      //if(i==0) {
-      //  if( htMax > 0. )
-      //    regionText->AddText( Form("%.0f < H_{T} < %.0f GeV", htMin, htMax) );
-      //  else
-      //    regionText->AddText( Form("H_{T} > %.0f GeV", htMin) );
-      //} else {
+      if(cutsLabel!="" && i==0) {
+        regionText->AddText( cutsLabel.c_str() );
+      } else {
         regionText->AddText( niceNames[i].c_str() );
-      //}
+      }
     
       pad1->cd();
       regionText->Draw("same");

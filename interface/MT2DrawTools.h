@@ -42,6 +42,7 @@ class MT2DrawTools {
   MT2DrawTools( const MT2Config& cfg );
 
   void set_outDir( const std::string& outdir );
+  void set_lumi( float lumi );
   void set_lumiErr( float lumiErr );
   void set_shapeNorm( bool shapeNorm );
 
@@ -79,7 +80,7 @@ class MT2DrawTools {
   static void addOverflowSingleHisto( TH3D* yield3d );
 
 
-  void drawRegionYields_fromTree( MT2Analysis<MT2EstimateTree>* data, std::vector<MT2Analysis<MT2EstimateTree>* >  bgYields, const std::string& saveName, const std::string& varName, const std::string& selection, int nBins, float xMin, float xMax, std::string axisName="", const std::string& units="" );
+  void drawRegionYields_fromTree( MT2Analysis<MT2EstimateTree>* data, std::vector<MT2Analysis<MT2EstimateTree>* >  bgYields, const std::string& saveName, const std::string& varName, const std::string& selection, int nBins, float xMin, float xMax, std::string axisName="", const std::string& units="", const std::string& cutsLabel="" );
 
  private:
 
