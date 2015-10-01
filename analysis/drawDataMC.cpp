@@ -61,12 +61,19 @@ int main( int argc, char* argv[] ) {
 
   MT2Analysis<MT2EstimateTree>* zjets = MT2Analysis<MT2EstimateTree>::readFromFile(mcFile, "ZJets");
   zjets->setFullName("Z+Jets");
+  zjets->setColor(kZJets);
+
   MT2Analysis<MT2EstimateTree>* wjets = MT2Analysis<MT2EstimateTree>::readFromFile(mcFile, "WJets");
   wjets->setFullName("W+Jets");
+  wjets->setColor(kWJets);
+
   MT2Analysis<MT2EstimateTree>* top   = MT2Analysis<MT2EstimateTree>::readFromFile(mcFile, "Top");
   top->setFullName("Top");
+  top->setColor(kTop);
+
   MT2Analysis<MT2EstimateTree>* qcd   = MT2Analysis<MT2EstimateTree>::readFromFile(mcFile, "QCD");
   qcd->setFullName("QCD");
+  qcd->setColor(kQCD);
 
   MT2Analysis<MT2EstimateTree>* data = MT2Analysis<MT2EstimateTree>::readFromFile(dataFile, "data");
   data->setFullName("Data");
@@ -78,10 +85,21 @@ int main( int argc, char* argv[] ) {
   mc.push_back(top);
 
 
+
+  MT2DrawTools dt(cfg);
+  dt.set_shapeNorm( shapeNorm );
+
+  std::string plotsDir = cfg.getEventYieldDir() + "/plotsDataMC";
+  if( shapeNorm ) plotsDir += "_shape";
+  dt.set_outDir(plotsDir);
+
+
+
+
   float htMin=1000, htMax=-1;
 
   std::string selection = "weight*(ht>1000. && nJets>1 && met>30. && mt2>10. && deltaPhiMin>0.3 && diffMetMht<0.5*met)/puWeight";
-  drawYields( cfg, data, mc, "nVert_noPU" , "nVert" , selection, 50, 0.5, 50.5, "Number of Vertices", "" );
+  dt.drawRegionYields_fromTree( data, mc, "nVert_noPU" , "nVert" , selection, 50, 0.5, 50.5, "Number of Vertices", "" );
 
   htMin=450; 
   htMax=1000;
@@ -89,22 +107,24 @@ int main( int argc, char* argv[] ) {
   //selection = "weight*(ht>450. && ht<1000. && met>200. && nJets>1 && mt2>10. && deltaPhiMin>0.3 && diffMetMht<0.5*met && nJetHF30==0)";
   selection = "weight*(ht>450. && ht<1000. && met>200. && nJets>1 && mt2>10. && deltaPhiMin>0.3 && diffMetMht<0.5*met)";
 
-  drawYields( cfg, data, mc, "lowHT_nVert" , "nVert" , selection, 25, 0.5, 50.5, "Number of Vertices", "", htMin, htMax );
-  drawYields( cfg, data, mc, "lowHT_mt2"   , "mt2"   , selection, 18, 10., 910., "M_{T2}", "GeV", htMin, htMax );
-  drawYields( cfg, data, mc, "lowHT_met"   , "met"   , selection, 20, 200., 1200., "Missing E_{T}", "GeV", htMin, htMax );
-  drawYields( cfg, data, mc, "lowHT_ht"    , "ht"    , selection, 11, 450., 1000., "H_{T}", "GeV", htMin, htMax );
-  drawYields( cfg, data, mc, "lowHT_nJets" , "nJets" , selection, 12, 1.5, 13.5, "Number of Jets (p_{T} > 30 GeV)", "", htMin, htMax );
-  drawYields( cfg, data, mc, "lowHT_nJetHF" , "nJetHF" , selection, 7, -0.5, 6.5, "N(jets, p_{T} > 30 GeV & |#eta|>3.0)", "", htMin, htMax );
-  drawYields( cfg, data, mc, "lowHT_nBJets", "nBJets", selection, 7, -0.5, 6.5, "Number of b-Jets (p_{T} > 20 GeV)", "", htMin, htMax );
+  
+
+  dt.drawRegionYields_fromTree( data, mc, "lowHT_nVert" , "nVert" , selection, 25, 0.5, 50.5, "Number of Vertices", "" );
+  dt.drawRegionYields_fromTree( data, mc, "lowHT_mt2"   , "mt2"   , selection, 18, 10., 910., "M_{T2}", "GeV" );
+  dt.drawRegionYields_fromTree( data, mc, "lowHT_met"   , "met"   , selection, 20, 200., 1200., "Missing E_{T}", "GeV" );
+  dt.drawRegionYields_fromTree( data, mc, "lowHT_ht"    , "ht"    , selection, 11, 450., 1000., "H_{T}", "GeV" );
+  dt.drawRegionYields_fromTree( data, mc, "lowHT_nJets" , "nJets" , selection, 12, 1.5, 13.5, "Number of Jets (p_{T} > 30 GeV)", "" );
+  dt.drawRegionYields_fromTree( data, mc, "lowHT_nJetHF", "nJetHF", selection, 7, -0.5, 6.5, "N(jets, p_{T} > 30 GeV & |#eta|>3.0)", "");
+  dt.drawRegionYields_fromTree( data, mc, "lowHT_nBJets", "nBJets", selection, 7, -0.5, 6.5, "Number of b-Jets (p_{T} > 20 GeV)", "");
 
   selection = "weight*(ht>450. && ht<1000. && met>200. && nJets>1 && mt2>10. &&  diffMetMht<0.5*met)";
 
-  drawYields( cfg, data, mc, "lowHT_deltaPhiMin", "deltaPhiMin", selection, 32, 0.0, 3.2, "min #Delta#phi(jets, ME_{T})", "", htMin, htMax );
+  dt.drawRegionYields_fromTree( data, mc, "lowHT_deltaPhiMin", "deltaPhiMin", selection, 32, 0.0, 3.2, "min #Delta#phi(jets, ME_{T})", "" );
 
   selection = "weight*(ht>450. && ht<1000. && met>200. && nJets>1 && mt2>10. && deltaPhiMin>0.3)";
 
-  drawYields( cfg, data, mc, "lowHT_diffMetMht_overMet", "diffMetMht/met", selection, 30, 0.0, 3.0, "|ME_{T}-MH_{T}|/ME_{T}", "", htMin, htMax );
-  drawYields( cfg, data, mc, "lowHT_diffMetMht", "diffMetMht", selection, 24, 0., 1200., "|ME_{T}-MH_{T}|", "GeV", htMin, htMax );
+  dt.drawRegionYields_fromTree( data, mc, "lowHT_diffMetMht_overMet", "diffMetMht/met", selection, 30, 0.0, 3.0, "|ME_{T}-MH_{T}|/ME_{T}", "" );
+  dt.drawRegionYields_fromTree( data, mc, "lowHT_diffMetMht", "diffMetMht", selection, 24, 0., 1200., "|ME_{T}-MH_{T}|", "GeV" );
 
   htMin=1000;
   htMax=-1;
@@ -113,26 +133,26 @@ int main( int argc, char* argv[] ) {
   selection = "weight*(ht>=1000. && nJets>1 && met>30. && mt2>10. && deltaPhiMin>0.3 && diffMetMht<0.5*met)";
   
   //drawYields( cfg, data, mc, "nVert" , "nVert" , selection, 50, 0.5, 50.5, "Number of Vertices", "", htMin, htMax );
-  drawYields( cfg, data, mc, "mt2"   , "mt2"   , selection, 60, 10., 310., "M_{T2}", "GeV", htMin, htMax );
-  drawYields( cfg, data, mc, "met"   , "met"   , selection, 80, 30., 430., "Missing E_{T}", "GeV", htMin, htMax );
-  drawYields( cfg, data, mc, "mht"   , "mht"   , selection, 80, 30., 430., "Missing H_{T}", "GeV", htMin, htMax );
-  drawYields( cfg, data, mc, "ht"    , "ht"    , selection, 50, 1000., 3500., "H_{T}", "GeV", htMin, htMax );
-  drawYields( cfg, data, mc, "nJets" , "nJets" , selection, 12, 1.5, 13.5, "Number of Jets (p_{T} > 30 GeV)", "", htMin, htMax );
-  drawYields( cfg, data, mc, "nJetHF" , "nJetHF" , selection, 7, -0.5, 6.5, "N(jets, p_{T} > 30 GeV & |#eta|>3.0)", "", htMin, htMax );
-  drawYields( cfg, data, mc, "nBJets", "nBJets", selection, 7, -0.5, 6.5, "Number of b-Jets (p_{T} > 20 GeV)", "", htMin, htMax );
+  dt.drawRegionYields_fromTree( data, mc, "mt2"   , "mt2"   , selection, 60, 10., 310., "M_{T2}", "GeV" );
+  dt.drawRegionYields_fromTree( data, mc, "met"   , "met"   , selection, 80, 30., 430., "Missing E_{T}", "GeV" );
+  dt.drawRegionYields_fromTree( data, mc, "mht"   , "mht"   , selection, 80, 30., 430., "Missing H_{T}", "GeV" );
+  dt.drawRegionYields_fromTree( data, mc, "ht"    , "ht"    , selection, 50, 1000., 3500., "H_{T}", "GeV" );
+  dt.drawRegionYields_fromTree( data, mc, "nJets" , "nJets" , selection, 12, 1.5, 13.5, "Number of Jets (p_{T} > 30 GeV)", "" );
+  dt.drawRegionYields_fromTree( data, mc, "nJetHF" , "nJetHF" , selection, 7, -0.5, 6.5, "N(jets, p_{T} > 30 GeV & |#eta|>3.0)", "" );
+  dt.drawRegionYields_fromTree( data, mc, "nBJets", "nBJets", selection, 7, -0.5, 6.5, "Number of b-Jets (p_{T} > 20 GeV)", "" );
 
-  drawYields( cfg, data, mc, "mt2_tail"   , "mt2"   , selection, 100, 0., 5000., "M_{T2}", "GeV", htMin, htMax );
-  drawYields( cfg, data, mc, "met_tail"   , "met"   , selection, 100,  0., 5000., "Missing E_{T}", "GeV", htMin, htMax );
-  drawYields( cfg, data, mc, "ht_tail"    , "ht"    , selection, 120, 1000., 13000., "H_{T}", "GeV", htMin, htMax );
+  dt.drawRegionYields_fromTree( data, mc, "mt2_tail"   , "mt2"   , selection, 100, 0., 5000., "M_{T2}", "GeV" );
+  dt.drawRegionYields_fromTree( data, mc, "met_tail"   , "met"   , selection, 100,  0., 5000., "Missing E_{T}", "GeV" );
+  dt.drawRegionYields_fromTree( data, mc, "ht_tail"    , "ht"    , selection, 120, 1000., 13000., "H_{T}", "GeV" );
 
   selection = "weight*(ht>=1000. && nJets>1 && met>30. && mt2>10. && diffMetMht<0.5*met)";
 
-  drawYields( cfg, data, mc, "deltaPhiMin", "deltaPhiMin", selection, 32, 0.0, 3.2, "min #Delta#phi(jets, ME_{T})", "", htMin, htMax );
+  dt.drawRegionYields_fromTree( data, mc, "deltaPhiMin", "deltaPhiMin", selection, 32, 0.0, 3.2, "min #Delta#phi(jets, ME_{T})", "" );
 
   selection = "weight*(ht>=1000. && nJets>1 && met>30. && mt2>10. && deltaPhiMin>0.3)";
 
-  drawYields( cfg, data, mc, "diffMetMht_overMet", "diffMetMht/met", selection, 30, 0., 3.0, "|ME_{T}-MH_{T}|/ME_{T}", "", htMin, htMax );
-  drawYields( cfg, data, mc, "diffMetMht", "diffMetMht", selection, 100, 0., 500., "|ME_{T}-MH_{T}|", "GeV", htMin, htMax );
+  dt.drawRegionYields_fromTree( data, mc, "diffMetMht_overMet", "diffMetMht/met", selection, 30, 0., 3.0, "|ME_{T}-MH_{T}|/ME_{T}", "" );
+  dt.drawRegionYields_fromTree( data, mc, "diffMetMht", "diffMetMht", selection, 100, 0., 500., "|ME_{T}-MH_{T}|", "GeV" );
   
   return 0;
 
