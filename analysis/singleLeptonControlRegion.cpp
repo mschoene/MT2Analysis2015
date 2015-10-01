@@ -21,9 +21,7 @@ int round(float d) {
 }
 
 
-void computeYield( const MT2Sample& sample, const MT2Config& cfg, 
-                   MT2Analysis<MT2EstimateTree>* anaTree,
-                   MT2Analysis<MT2Estimate>* analysis );
+void computeYield( const MT2Sample& sample, const MT2Config& cfg,  MT2Analysis<MT2EstimateTree>* anaTree );
 
 
 
@@ -82,32 +80,42 @@ int main( int argc, char* argv[] ) {
     std::vector<MT2Sample> samples_qcd  = MT2Sample::loadSamples(samplesFile, 100, 199);
 
 
-    MT2Analysis<MT2EstimateTree>* tree = new MT2Analysis<MT2EstimateTree>( "slCRtree", cfg.crRegionsSet() );
-    MT2EstimateTree::addVar( tree, "leptPdgId" );
-    MT2EstimateTree::addVar( tree, "leptPt" );
-    MT2EstimateTree::addVar( tree, "leptEta" );
-    MT2EstimateTree::addVar( tree, "leptIso" );
-    MT2EstimateTree::addVar( tree, "leptMt" );
+    MT2Analysis<MT2EstimateTree>* wjet = new MT2Analysis<MT2EstimateTree>( "wjet", cfg.crRegionsSet() );
+    MT2EstimateTree::addVar( wjet, "leptPdgId" );
+    MT2EstimateTree::addVar( wjet, "leptPt" );
+    MT2EstimateTree::addVar( wjet, "leptEta" );
+    MT2EstimateTree::addVar( wjet, "leptIso" );
+    MT2EstimateTree::addVar( wjet, "leptMt" );
+    
+    MT2Analysis<MT2EstimateTree>* top = new MT2Analysis<MT2EstimateTree>( "top", cfg.crRegionsSet() );
+    MT2EstimateTree::addVar( top, "leptPdgId" );
+    MT2EstimateTree::addVar( top, "leptPt" );
+    MT2EstimateTree::addVar( top, "leptEta" );
+    MT2EstimateTree::addVar( top, "leptIso" );
+    MT2EstimateTree::addVar( top, "leptMt" );
+    
+    MT2Analysis<MT2EstimateTree>* qcd = new MT2Analysis<MT2EstimateTree>( "qcd", cfg.crRegionsSet() );
+    MT2EstimateTree::addVar( qcd, "leptPdgId" );
+    MT2EstimateTree::addVar( qcd, "leptPt" );
+    MT2EstimateTree::addVar( qcd, "leptEta" );
+    MT2EstimateTree::addVar( qcd, "leptIso" );
+    MT2EstimateTree::addVar( qcd, "leptMt" );
     
     
-    MT2Analysis<MT2Estimate>* wjet = new MT2Analysis<MT2Estimate>( "wjet", cfg.regionsSet() );
-    MT2Analysis<MT2Estimate>* top  = new MT2Analysis<MT2Estimate>( "top" , cfg.regionsSet() );
-    MT2Analysis<MT2Estimate>* qcd  = new MT2Analysis<MT2Estimate>( "qcd" , cfg.regionsSet() );
     
     
     for( unsigned i=0; i<samples_wjet.size(); ++i ) 
-      computeYield( samples_wjet[i], cfg, tree, wjet );
+      computeYield( samples_wjet[i], cfg, wjet );
     for( unsigned i=0; i<samples_top.size(); ++i ) 
-      computeYield( samples_top[i], cfg, tree, top );
+      computeYield( samples_top[i], cfg, top );
     for( unsigned i=0; i<samples_qcd.size(); ++i ) 
-      computeYield( samples_qcd[i], cfg, tree, qcd );
+      computeYield( samples_qcd[i], cfg, qcd );
     
 
    
     std::string mcFile = outputdir + "/mc.root";
 
-    tree->writeToFile( mcFile, "RECREATE" );
-    wjet->writeToFile( mcFile );
+    wjet->writeToFile( mcFile, "RECREATE" );
     top ->writeToFile( mcFile );
     qcd ->writeToFile( mcFile );
 
@@ -125,10 +133,7 @@ int main( int argc, char* argv[] ) {
 
 
 
-void computeYield( const MT2Sample& sample, const MT2Config& cfg,
-                   MT2Analysis<MT2EstimateTree>* anaTree,
-                   MT2Analysis<MT2Estimate>* analysis ) {
-
+void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT2EstimateTree>* anaTree ) {
 
 
   std::cout << std::endl << std::endl;
@@ -195,11 +200,14 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
     thisTree->assignVar("leptMt", mt );
 
 
+    thisTree->yield->Fill( mt2, weight );
     thisTree->fillTree( myTree, weight );
 
     
   } // for entries
 
+
+  anaTree->finalize();
 
 
   delete tree;
