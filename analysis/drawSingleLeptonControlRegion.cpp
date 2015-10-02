@@ -82,14 +82,16 @@ int main( int argc, char* argv[] ) {
   mc.push_back(top);
   mc.push_back(qcd);
 
+  dt.set_data(data);
+  dt.set_mc(&mc);
 
-  dt.drawRegionYields_fromTree( data, mc, "mt2"   , "mt2"   , selection, 60, 0., 600., "M_{T2}", "GeV" );
-  dt.drawRegionYields_fromTree( data, mc, "met"   , "met"   , selection, 50, 0., 500., "Missing E_{T}", "GeV" );
-  dt.drawRegionYields_fromTree( data, mc, "mht"   , "mht"   , selection, 50, 0., 500., "Missing H_{T}", "GeV" );
-  dt.drawRegionYields_fromTree( data, mc, "ht"    , "ht"    , selection, 50, 0., 1000., "H_{T}", "GeV" );
-  dt.drawRegionYields_fromTree( data, mc, "nJets" , "nJets" , selection, 12, 1.5, 13.5, "Number of Jets (p_{T} > 30 GeV)", "" );
-  dt.drawRegionYields_fromTree( data, mc, "nBJets", "nBJets", selection, 7, -0.5, 6.5, "Number of b-Jets (p_{T} > 20 GeV)", "" );
-  dt.drawRegionYields_fromTree( data, mc, "mt"    , "mt"    , selection, 50, 0., 300., "M_{T}", "GeV" );
+  dt.drawRegionYields_fromTree( "mt2"   , "mt2"   , selection, 60, 0., 600., "M_{T2}", "GeV" );
+  dt.drawRegionYields_fromTree( "met"   , "met"   , selection, 50, 0., 500., "Missing E_{T}", "GeV" );
+  dt.drawRegionYields_fromTree( "mht"   , "mht"   , selection, 50, 0., 500., "Missing H_{T}", "GeV" );
+  dt.drawRegionYields_fromTree( "ht"    , "ht"    , selection, 50, 0., 1000., "H_{T}", "GeV" );
+  dt.drawRegionYields_fromTree( "nJets" , "nJets" , selection, 12, 1.5, 13.5, "Number of Jets (p_{T} > 30 GeV)", "" );
+  dt.drawRegionYields_fromTree( "nBJets", "nBJets", selection, 7, -0.5, 6.5, "Number of b-Jets (p_{T} > 20 GeV)", "" );
+  dt.drawRegionYields_fromTree( "mt"    , "mt"    , selection, 50, 0., 300., "M_{T}", "GeV" );
 
   return 0;
 
