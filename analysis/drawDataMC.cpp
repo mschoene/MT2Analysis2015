@@ -18,6 +18,7 @@
 
 
 
+std::string getCutLabel( float theMin, float theMax, const std::string& name, const std::string& units="" );
 
 
 
@@ -97,7 +98,7 @@ int main( int argc, char* argv[] ) {
   dt.set_lumi( cfg.lumi_JetHT() );
 
   float htMin=1000, htMax=-1;
-  std::string cutsLabel(Form("%.0f < H_{T} < %.0f GeV", htMin, htMax) );
+  std::string cutsLabel = getCutLabel(htMin, htMax, "H_T", "GeV");
 
   std::string selection = "weight*(ht>1000. && nJets>1 && met>30. && mt2>10. && deltaPhiMin>0.3 && diffMetMht<0.5*met)/puWeight";
   dt.drawRegionYields_fromTree( data, mc, "nVert_noPU" , "nVert" , selection, 50, 0.5, 50.5, "Number of Vertices", "", cutsLabel );
@@ -171,3 +172,12 @@ int main( int argc, char* argv[] ) {
 
 
 
+std::string getCutLabel( float theMin, float theMax, const std::string& name, const std::string& units ) {
+
+  std::string cutLabel;
+  if( theMax>theMin ) cutLabel = std::string(Form("%.0f < %s < %.0f %s", theMin, name.c_str(), theMax, units.c_str()) );
+  else                cutLabel = std::string(Form("%s > %.0f %s", name.c_str(), theMin, units.c_str()) );
+
+  return cutLabel;
+
+}
