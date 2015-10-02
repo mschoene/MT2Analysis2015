@@ -212,6 +212,12 @@ void MT2EstimateSyst::setName( const std::string& newName ) {
 
 
 
+void MT2EstimateSyst::finalize( ) {
+
+  MT2Estimate::finalize();
+
+}
+
 
 
 void MT2EstimateSyst::getShit( TFile* file, const std::string& path ) {
