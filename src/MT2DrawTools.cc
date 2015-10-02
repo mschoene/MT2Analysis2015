@@ -719,6 +719,8 @@ void MT2DrawTools::drawRegionYields_fromTree( const std::string& saveName, const
       pad1_log = MT2DrawTools::getCanvasMainPad( true );
       pad1_log->Draw();
       pad1_log->cd();
+    } else {
+      c1_log->SetLogy();
     }
 
     h2_axes_log->Draw();
@@ -793,8 +795,8 @@ void MT2DrawTools::drawRegionYields_fromTree( const std::string& saveName, const
     }
 
 
-    int addOne = (data_) ? 1 : 0;
-    TLegend* legend = new TLegend( 0.67, 0.9-(mc_->size()+addOne)*0.06, 0.93, 0.9 );
+    int addLines = (data_) ? 2 : 0;
+    TLegend* legend = new TLegend( 0.67, 0.9-(mc_->size()+addLines)*0.06, 0.93, 0.9 );
     legend->SetTextSize(0.038);
     legend->SetTextFont(42);
     legend->SetFillColor(0);
@@ -802,9 +804,10 @@ void MT2DrawTools::drawRegionYields_fromTree( const std::string& saveName, const
     for( unsigned i=0; i<histos_mc.size(); ++i ) {  
       legend->AddEntry( histos_mc[i], mc_->at(i)->getFullName().c_str(), "F" );
     }
-    legend->AddEntry( mcBand, "MC Uncert.", "F" );
+    if( data_ ) 
+      legend->AddEntry( mcBand, "MC Uncert.", "F" );
 
-    TPaveText* labelTop = MT2DrawTools::getLabelTop(lumi_);
+    TPaveText* labelTop = (data_) ? MT2DrawTools::getLabelTop(lumi_) : MT2DrawTools::getLabelTopSimulation(lumi_);
     
     
     TPaveText* fitText = (fSF) ? MT2DrawTools::getFitText( fSF ) : 0;
@@ -824,8 +827,10 @@ void MT2DrawTools::drawRegionYields_fromTree( const std::string& saveName, const
       pad1->cd();
     legend->Draw("same");
     bgStack.Draw("histo same");
-    mcBand->Draw("E2 same");
-    if( data_ ) gr_data->Draw("p same");
+    if( data_ ) {
+      mcBand->Draw("E2 same");
+      gr_data->Draw("p same");
+    }
     labelTop->Draw("same");
     if( !shapeNorm_ && fitText )
       fitText->Draw("same");
@@ -838,8 +843,10 @@ void MT2DrawTools::drawRegionYields_fromTree( const std::string& saveName, const
       pad1_log->cd();
     legend->Draw("same");
     bgStack.Draw("histo same");
-    mcBand->Draw("E2 same");
-    if( data_ ) gr_data->Draw("p same");
+    if( data_ ) {
+      mcBand->Draw("E2 same");
+      gr_data->Draw("p same");
+    }
     labelTop->Draw("same");
     if( !shapeNorm_ && fitText )
       fitText->Draw("same");
