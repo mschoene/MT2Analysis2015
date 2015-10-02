@@ -19,6 +19,12 @@ MT2Config::MT2Config( const std::string& name ) {
   std::cout << std::endl;
 
   lumi_ = 0.;
+  lumi_JetHT_ = 0.;
+  lumi_HTMHT_ = 0.;
+  lumi_SinglePhoton_ = 0.;
+  lumi_DoubleEG_ = 0.;
+  lumi_DoubleMu_ = 0.;
+
   regionsSet_ = "";
   mcSamples_ = "";
   sigSamples_ = "";
@@ -53,6 +59,16 @@ MT2Config::MT2Config( const std::string& name ) {
 
     if( this_name=="lumi" )
       lumi_ = atof(StringValue);
+    else if( this_name=="lumi_JetHT" )
+      lumi_JetHT_ = atof(StringValue);
+    else if( this_name=="lumi_HTMHT" )
+      lumi_HTMHT_ = atof(StringValue);
+    else if( this_name=="lumi_SinglePhoton" )
+      lumi_SinglePhoton_ = atof(StringValue);
+    else if( this_name=="lumi_DoubleEG" )
+      lumi_DoubleEG_ = atof(StringValue);
+    else if( this_name=="lumi_DoubleMu" )
+      lumi_DoubleMu_ = atof(StringValue);
     else if( this_name=="regionsSet" )
       regionsSet_ = std::string(StringValue);
     else if( this_name=="mcSamples" )
@@ -99,6 +115,50 @@ MT2Config::MT2Config( const std::string& name ) {
 }
 
 
+float MT2Config::lumi_JetHT() const { 
+
+  return this->defaultLumi(lumi_JetHT_);
+
+}
+
+
+float MT2Config::lumi_HTMHT() const { 
+
+  return this->defaultLumi(lumi_HTMHT_);
+
+}
+
+
+float MT2Config::lumi_SinglePhoton() const { 
+
+  return this->defaultLumi(lumi_SinglePhoton_);
+
+}
+
+
+float MT2Config::lumi_DoubleEG() const { 
+
+  return this->defaultLumi(lumi_DoubleEG_);
+
+}
+
+
+float MT2Config::lumi_DoubleMu() const { 
+
+  return this->defaultLumi(lumi_DoubleMu_);
+
+}
+
+
+float MT2Config::defaultLumi( float lumi ) const {
+
+  float returnLumi = (lumi>0.) ? lumi : lumi_; // if not over-written, return (common) lumi_
+  return returnLumi;
+
+}
+
+
+
 bool MT2Config::useMC() const {
 
   return mcSamples_!="";
@@ -141,6 +201,12 @@ void MT2Config::saveAs( const std::string& filename ) const {
   ofs << "#name " << name_ << std::endl;
 
   ofs << "lumi "  << lumi_  << std::endl;
+  ofs << "lumi_JetHT "        <<   lumi_JetHT_          << std::endl;
+  ofs << "lumi_HTMHT "        <<   lumi_HTMHT_          << std::endl;
+  ofs << "lumi_SinglePhoton " <<   lumi_SinglePhoton_   << std::endl;
+  ofs << "lumi_DoubleEG "     <<   lumi_DoubleEG_       << std::endl;
+  ofs << "lumi_DoubleMu "     <<   lumi_DoubleMu_       << std::endl;
+
   ofs << "regionsSet " << regionsSet_ << std::endl;
   if( mcSamples_!="" )       ofs << "mcSamples " << mcSamples_ << std::endl;
   if( sigSamples_!="" )      ofs << "sigSamples " << sigSamples_ << std::endl;

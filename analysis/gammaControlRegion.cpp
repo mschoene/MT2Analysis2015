@@ -13,6 +13,7 @@
 
 #include "TLorentzVector.h"
 #include "TH1F.h"
+#include "TF1.h"
 
 
 bool alsoSignals = false;
@@ -426,7 +427,7 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
       continue; // will take 2b from reweighted 1b so skip
 
 //    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi()*myTree.puWeight; 
-    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi(); 
+    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb;//*cfg.lumi(); 
 
 
 

@@ -30,7 +30,6 @@
 
 
 
-class MT2Config;
 class MT2EstimateTree;
 
 
@@ -38,12 +37,17 @@ class MT2DrawTools {
 
  public:
 
-  //MT2DrawTools( const std::string& outputdir="", float lumi );
-  MT2DrawTools( const MT2Config& cfg );
+  MT2DrawTools( const std::string& outputdir="plots_tmp", float lumi=0. );
+  //MT2DrawTools( const MT2Config& cfg );
 
   void set_outDir( const std::string& outdir );
+  void set_data( MT2Analysis<MT2EstimateTree>* data );
+  void set_mc( std::vector< MT2Analysis<MT2EstimateTree>* >* mc );
+  void set_lumi( float lumi );
   void set_lumiErr( float lumiErr );
   void set_shapeNorm( bool shapeNorm );
+
+  bool twoPads() const;
 
   static TStyle* setStyle();
 
@@ -79,7 +83,8 @@ class MT2DrawTools {
   static void addOverflowSingleHisto( TH3D* yield3d );
 
 
-  void drawRegionYields_fromTree( MT2Analysis<MT2EstimateTree>* data, std::vector<MT2Analysis<MT2EstimateTree>* >  bgYields, const std::string& saveName, const std::string& varName, const std::string& selection, int nBins, float xMin, float xMax, std::string axisName="", const std::string& units="" );
+  void drawRegionYields_fromTree( const std::string& saveName, const std::string& varName, const std::string& selection, int nBins, float xMin, float xMax, std::string axisName="", const std::string& units="", const std::string& cutsLabel="" );
+  //void drawRegionYields_fromTree( MT2Analysis<MT2EstimateTree>* data, std::vector<MT2Analysis<MT2EstimateTree>* >  bgYields, const std::string& saveName, const std::string& varName, const std::string& selection, int nBins, float xMin, float xMax, std::string axisName="", const std::string& units="", const std::string& cutsLabel="" );
 
  private:
 
@@ -87,6 +92,9 @@ class MT2DrawTools {
   float lumi_;
   float lumiErr_;
   bool shapeNorm_;
+
+  MT2Analysis<MT2EstimateTree>* data_;
+  std::vector< MT2Analysis<MT2EstimateTree>* >* mc_;
   
 
 };
