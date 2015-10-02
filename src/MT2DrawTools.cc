@@ -692,7 +692,7 @@ void MT2DrawTools::drawRegionYields_fromTree( MT2Analysis<MT2EstimateTree>* data
     pad1->cd();
     h2_axes->Draw();
 
-    float yMin_log = (h1_data->GetMinimum()>2.) ? 1. : 0.1;
+    float yMin_log = (data && h1_data->GetMinimum()>2.) ? 1. : 0.1;
 
     TH2D* h2_axes_log = new TH2D("axes_log", "", 10, xMin, xMax, 10, yMin_log, yMax*2.0 );
     h2_axes_log->SetXTitle(xAxisTitle.c_str());
