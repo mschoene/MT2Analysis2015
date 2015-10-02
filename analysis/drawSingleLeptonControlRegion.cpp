@@ -48,14 +48,14 @@ int main( int argc, char* argv[] ) {
   }
 
 
-  MT2DrawTools dt(cfg);
-  dt.set_shapeNorm( shapeNorm );
-
   std::string slDir = cfg.getEventYieldDir() + "/singleLeptonControlRegion/";
   std::string mcFile = slDir + "/mc.root";
   std::string plotsDir = slDir + "/plots";
   if( shapeNorm ) plotsDir += "_shape";
-  dt.set_outDir(plotsDir);
+
+
+  MT2DrawTools dt(plotsDir, cfg.lumi());
+  dt.set_shapeNorm( shapeNorm );
 
 
   MT2Analysis<MT2EstimateTree>* wjet = MT2Analysis<MT2EstimateTree>::readFromFile(mcFile, "wjet");
