@@ -212,22 +212,6 @@ void MT2EstimateSyst::setName( const std::string& newName ) {
 
 
 
-void MT2EstimateSyst::finalize() {
-
-  this->addOverflow();
-
-}
-
-
-void MT2EstimateSyst::addOverflow() {
-
-  MT2Estimate::addOverflow();
-
-  MT2Estimate::addOverflowSingleHisto( yield_systUp );
-  MT2Estimate::addOverflowSingleHisto( yield_systDown );
-
-}
-
 
 
 void MT2EstimateSyst::getShit( TFile* file, const std::string& path ) {
