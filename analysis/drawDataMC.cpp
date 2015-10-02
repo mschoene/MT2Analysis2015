@@ -100,7 +100,7 @@ int main( int argc, char* argv[] ) {
   dt.set_lumi( cfg.lumi_JetHT() );
 
   float htMin=1000, htMax=-1;
-  std::string cutsLabel = getCutLabel(htMin, htMax, "H_T", "GeV");
+  std::string cutsLabel = getCutLabel(htMin, htMax, "H_{T}", "GeV");
 
   std::string selection = "weight*(ht>1000. && nJets>1 && met>30. && mt2>10. && deltaPhiMin>0.3 && diffMetMht<0.5*met)/puWeight";
   dt.drawRegionYields_fromTree( "nVert_noPU" , "nVert" , selection, 50, 0.5, 50.5, "Number of Vertices", "", cutsLabel );
