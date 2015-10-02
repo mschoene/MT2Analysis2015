@@ -82,14 +82,12 @@ int main( int argc, char* argv[] ) {
   mc.push_back(zjets);
   mc.push_back(top);
 
-
-
-  MT2DrawTools dt(cfg);
-  dt.set_shapeNorm( shapeNorm );
-
   std::string plotsDir = cfg.getEventYieldDir() + "/plotsDataMC";
   if( shapeNorm ) plotsDir += "_shape";
-  dt.set_outDir(plotsDir);
+
+
+  MT2DrawTools dt(plotsDir, cfg.lumi() );
+  dt.set_shapeNorm( shapeNorm );
 
 
   // +++++++++++++++++++++++++

@@ -4,17 +4,16 @@
 #include "TLegend.h"
 #include "THStack.h"
 
-#include "../interface/MT2Config.h"
 #include "../interface/MT2EstimateTree.h"
 
 
 
-MT2DrawTools::MT2DrawTools( const MT2Config& cfg ) {
+MT2DrawTools::MT2DrawTools( const std::string& outDir, float lumi ) {
 
-  lumi_               = cfg.lumi();
+  lumi_    = lumi;
   lumiErr_ = 0.12;
   shapeNorm_ = false;
-  outdir_ = cfg.getEventYieldDir();
+  outdir_ = outDir;
 
   std::cout << "[MT2DrawTools] Initiating: " << std::endl;
   std::cout << "     lumi: " << lumi_ << std::endl;

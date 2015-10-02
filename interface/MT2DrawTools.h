@@ -30,7 +30,6 @@
 
 
 
-class MT2Config;
 class MT2EstimateTree;
 
 
@@ -38,8 +37,8 @@ class MT2DrawTools {
 
  public:
 
-  //MT2DrawTools( const std::string& outputdir="", float lumi );
-  MT2DrawTools( const MT2Config& cfg );
+  MT2DrawTools( const std::string& outputdir="plots_tmp", float lumi=0. );
+  //MT2DrawTools( const MT2Config& cfg );
 
   void set_outDir( const std::string& outdir );
   void set_lumi( float lumi );
