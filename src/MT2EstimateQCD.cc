@@ -1,4 +1,5 @@
 #include "../interface/MT2EstimateQCD.h"
+#include "../interface/MT2EstimateTree.h"
 
 #include <iostream>
 #include <iomanip>
@@ -28,6 +29,65 @@ MT2EstimateQCD::MT2EstimateQCD( const std::string& aname, const MT2Region& aregi
   dphi_low = 0.3;
 
 }
+
+
+
+
+MT2EstimateQCD::MT2EstimateQCD( const MT2EstimateTree& treeEst ) : MT2Estimate( treeEst ) {
+
+
+  TH1::AddDirectory(kTRUE);
+
+  int nBins;
+  double* bins;
+  region->getBins_qcdCR(nBins, bins);
+
+  std::string lDphiName = this->getHistoName("lDphi");
+  std::string hDphiName = this->getHistoName("hDphi");
+
+  lDphi = new TH1D( lDphiName.c_str(), "", nBins, bins); lDphi->Sumw2();
+  hDphi = new TH1D( hDphiName.c_str(), "", nBins, bins); hDphi->Sumw2();
+
+  treeEst.tree->Project( lDphiName.c_str(), "mt2", "weight*(deltaPhiMin<0.3)" );
+  treeEst.tree->Project( hDphiName.c_str(), "mt2", "weight*(deltaPhiMin>0.3)" );
+
+  ratio = new TH1D( this->getHistoName("ratio").c_str(), "", nBins, bins); ratio->Sumw2();
+
+  exp      = new TF1(this->getHistoName("exp"     ).c_str(), "expo(0)"                                   , bins[0], bins[nBins]);
+  expPlusC = new TF1(this->getHistoName("expPlusC").c_str(), "expo(0)+[2]"                               , bins[0], bins[nBins]);
+  expOrC   = new TF1(this->getHistoName("expOrC"  ).c_str(), "(x>=200)*exp([0]+200.*[1])+(x<200)*expo(0)", bins[0], bins[nBins]);
+
+  fitXmin  = 60.;
+  fitXmax  = 100.;
+  dphi_low = 0.3;
+
+}
+
+
+
+MT2Analysis<MT2EstimateQCD>* MT2EstimateQCD::makeAnalysisFromEstimateTree( const std::string& aname, const std::string& regionsSet, MT2Analysis<MT2EstimateTree>* estimate ) {
+
+  std::set<MT2Region> regions = estimate->getRegions();
+
+  std::set<MT2EstimateQCD*> data;
+
+  for( std::set<MT2Region>::iterator iR=regions.begin(); iR!=regions.end(); ++iR ) {
+
+    MT2EstimateTree*  thisEstimate = estimate->get( *iR );
+    MT2EstimateQCD* thisEstimateQCD = new MT2EstimateQCD( *thisEstimate );
+    data.insert( thisEstimateQCD );
+
+  } // for regions
+
+
+  MT2Analysis<MT2EstimateQCD>* analysis = new MT2Analysis<MT2EstimateQCD>( aname, data );
+
+  return analysis;
+
+}
+
+
+
 
 MT2EstimateQCD::MT2EstimateQCD( const MT2EstimateQCD& rhs ) : MT2Estimate(rhs) {
 
@@ -83,8 +143,8 @@ void MT2EstimateQCD::fillDphi(float dphi, float weight, float mt2) {
 
 void MT2EstimateQCD::doFit() {
 
-  ratio->Fit(exp     , "Q0", "", fitXmin, fitXmax             ); // fit to exponential only
-  ratio->Fit(expPlusC, "Q0", "", fitXmin, expPlusC->GetXmax() ); // fit to exponential + constant
+  ratio->Fit(exp     , "Q+", "", fitXmin, fitXmax             ); // fit to exponential only
+  ratio->Fit(expPlusC, "Q+", "", fitXmin, expPlusC->GetXmax() ); // fit to exponential + constant
   expOrC->SetParameter(0, exp->GetParameter(0));
   expOrC->SetParameter(1, exp->GetParameter(1));
 
@@ -93,9 +153,6 @@ void MT2EstimateQCD::doFit() {
 void MT2EstimateQCD::finalize() {
 
   MT2Estimate::finalize();
-
-  MT2Estimate::addOverflowSingleHisto( lDphi );
-  MT2Estimate::addOverflowSingleHisto( hDphi );
 
   getRatio();
   doFit   ();
