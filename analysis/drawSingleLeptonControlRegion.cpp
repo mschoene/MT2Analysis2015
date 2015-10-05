@@ -94,10 +94,10 @@ int main( int argc, char* argv[] ) {
   dt.drawRegionYields_fromTree( "leptMt", "leptMt", selection, 50, 0., 300., "Lepton+ME_{T} M_{T}", "GeV" );
 
   selection = "weight*(nBJets==1)";
-  dt.drawRegionYields_fromTree( "leptMt_nB1", "leptMt", selection, 50, 0., 300., "M_{T}", "GeV" );
-  dt.drawRegionYields_fromTree( "topMt", "topMt"  , selection, 50, 0., 300., "Lepton+ME_{T}+b-Jet M_{T}", "GeV" );
-  dt.drawRegionYields_fromTree( "massLeptB", "massLeptB"  , selection, 50, 0., 300., "Lepton+b-Jet Mass", "GeV" );
-  dt.drawRegionYields_fromTree( "deltaR_leptB", "deltaR_leptB"  , selection, 50, 0., 6., "#Delta R( Lepton, b-Jet )" );
+  dt.drawRegionYields_fromTree( "leptMt_nB1", "leptMt", selection, 50, 0., 300., "M_{T}", "GeV", "", "#geq2j, b=1" );
+  dt.drawRegionYields_fromTree( "topMt", "topMt"  , selection, 50, 0., 300., "Lepton+ME_{T}+b-Jet M_{T}", "GeV", "", "#geq2j, b=1" );
+  dt.drawRegionYields_fromTree( "massLeptB", "massLeptB"  , selection, 50, 0., 300., "Lepton+b-Jet Mass", "GeV", "", "#geq2j, b=1" );
+  dt.drawRegionYields_fromTree( "deltaR_leptB", "deltaR_leptB"  , selection, 50, 0., 6., "#Delta R( Lepton, b-Jet )", "", "", "#geq2j, b=1" );
 
   return 0;
 
