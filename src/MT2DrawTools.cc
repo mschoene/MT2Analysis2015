@@ -546,8 +546,8 @@ void MT2DrawTools::addOverflowSingleHisto( TH3D* yield3d ) {
 
 
 
-void MT2DrawTools::drawRegionYields_fromTree( const std::string& saveName, const std::string& varName, const std::string& selection, int nBins, float xMin, float xMax, std::string axisName, const std::string& units, const std::string& cutsLabel ) {
-//void MT2DrawTools::drawRegionYields_fromTree( MT2Analysis<MT2EstimateTree>* data, std::vector<MT2Analysis<MT2EstimateTree>* >  bgYields, const std::string& saveName, const std::string& varName, const std::string& selection, int nBins, float xMin, float xMax, std::string axisName, const std::string& units, const std::string& cutsLabel ) {
+void MT2DrawTools::drawRegionYields_fromTree( const std::string& saveName, const std::string& varName, const std::string& selection, int nBins, float xMin, float xMax, std::string axisName, const std::string& units, const std::string& kinCuts, const std::string& topoCuts ) {
+//void MT2DrawTools::drawRegionYields_fromTree( MT2Analysis<MT2EstimateTree>* data, std::vector<MT2Analysis<MT2EstimateTree>* >  bgYields, const std::string& saveName, const std::string& varName, const std::string& selection, int nBins, float xMin, float xMax, std::string axisName, const std::string& units, const std::string& kinCuts ) {
 
 
   system( Form("mkdir -p %s", outdir_.c_str()) );
@@ -746,6 +746,7 @@ void MT2DrawTools::drawRegionYields_fromTree( const std::string& saveName, const
  //     //regionText->Draw("same");
  // 
  //   }
+
     
     for( unsigned i=0; i<niceNames.size(); ++i ) { 
       
@@ -756,11 +757,24 @@ void MT2DrawTools::drawRegionYields_fromTree( const std::string& saveName, const
       regionText->SetTextFont(42);
       regionText->SetFillColor(0);
       regionText->SetTextAlign(11);
-      
-      if(cutsLabel!="" && i==0) {
-        regionText->AddText( cutsLabel.c_str() );
-      } else {
-        regionText->AddText( niceNames[i].c_str() );
+
+    
+      if( i==0 ) {
+
+        if(kinCuts!="") {
+          regionText->AddText( kinCuts.c_str() );
+        } else {
+          regionText->AddText( niceNames[i].c_str() );
+        }
+
+      } else if( i==1 ) {
+    
+        if(topoCuts!="") {
+          regionText->AddText( topoCuts.c_str() );
+        } else {
+          regionText->AddText( niceNames[i].c_str() );
+        }
+
       }
     
       if( this->twoPads() )
@@ -909,13 +923,15 @@ void MT2DrawTools::drawRegionYields_fromTree( const std::string& saveName, const
     } // if twoPads
 
 
-    c1->SaveAs( Form("%s/%s_%s.eps", outdir_.c_str(), saveName.c_str(), thisRegion.getName().c_str()) );
-    c1->SaveAs( Form("%s/%s_%s.png", outdir_.c_str(), saveName.c_str(), thisRegion.getName().c_str()) );
-    c1->SaveAs( Form("%s/%s_%s.pdf", outdir_.c_str(), saveName.c_str(), thisRegion.getName().c_str()) );
+    std::string regionSaveName = (MT2Regions.size()==1) ? "_" + thisRegion.getName() : "";
 
-    c1_log->SaveAs( Form("%s/%s_%s_log.eps", outdir_.c_str(), saveName.c_str(), thisRegion.getName().c_str()) );
-    c1_log->SaveAs( Form("%s/%s_%s_log.png", outdir_.c_str(), saveName.c_str(), thisRegion.getName().c_str()) );
-    c1_log->SaveAs( Form("%s/%s_%s_log.pdf", outdir_.c_str(), saveName.c_str(), thisRegion.getName().c_str()) );
+    c1->SaveAs( Form("%s/%s%s.eps", outdir_.c_str(), saveName.c_str(), regionSaveName.c_str()) );
+    //c1->SaveAs( Form("%s/%s%s.png", outdir_.c_str(), saveName.c_str(), regionSaveName.c_str()) );
+    c1->SaveAs( Form("%s/%s%s.pdf", outdir_.c_str(), saveName.c_str(), regionSaveName.c_str()) );
+
+    c1_log->SaveAs( Form("%s/%s%s_log.eps", outdir_.c_str(), saveName.c_str(), regionSaveName.c_str()) );
+    //c1_log->SaveAs( Form("%s/%s%s_log.png", outdir_.c_str(), saveName.c_str(), regionSaveName.c_str()) );
+    c1_log->SaveAs( Form("%s/%s%s_log.pdf", outdir_.c_str(), saveName.c_str(), regionSaveName.c_str()) );
 
     delete c1;
     delete h2_axes;
