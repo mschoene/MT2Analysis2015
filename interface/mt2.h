@@ -1422,6 +1422,10 @@ Bool_t MT2Tree::passBaseline(TString sel) const
       zll_deltaPhiMin > 0.3 && 
       zll_diffMetMht < 0.5*zll_met_pt && 
       nlep > 1 ;
+  else if (sel=="qcd")
+    return nVert > 0 && 
+      nJet30FailId == 0 &&
+      diffMetMht < 0.5*met_pt;
   else
     return nVert > 0 && 
       //////(nJet30 >= 2 || sel=="monojet") &&
