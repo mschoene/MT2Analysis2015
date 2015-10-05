@@ -589,9 +589,9 @@ void MT2DrawTools::drawRegionYields_fromTree( const std::string& saveName, const
       h1_mc->Sumw2();
       if( selection!="" )
 	//tree_mc->Project( thisName.c_str(), varName.c_str(), Form("%s/puWeight", selection.c_str()) );
-	tree_mc->Project( thisName.c_str(), varName.c_str(), Form("%f*%s", lumi_, selection.c_str()) );
+        tree_mc->Project( thisName.c_str(), varName.c_str(), Form("%f*(%s)", lumi_, selection.c_str()) );
       else
-        tree_mc->Project( thisName.c_str(), varName.c_str(), Form("%f*weight", lumi_) );
+        tree_mc->Project( thisName.c_str(), varName.c_str(), Form("%f", lumi_) );
 
       MT2DrawTools::addOverflowSingleHisto(h1_mc);
 
