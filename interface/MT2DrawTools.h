@@ -13,6 +13,7 @@
 #include "TGraphErrors.h"
 #include "TLine.h"
 #include "TColor.h"
+#include "TMatrixD.h"
 
 #include "../interface/MT2Analysis.h"
 
@@ -81,6 +82,9 @@ class MT2DrawTools {
 
   static void addOverflowSingleHisto( TH1D* yield );
   static void addOverflowSingleHisto( TH3D* yield3d );
+
+  static TH1D* getBand(TF1* f, const std::string& name ); // the TH1D then needs to be draw with the option "C E3"
+  static TH1D* getBand(TF1 *f, TMatrixD const& m, std::string name, bool getRelativeBand=false, int npx=100); 
 
 
   void drawRegionYields_fromTree( const std::string& saveName, const std::string& varName, const std::string& selection, int nBins, float xMin, float xMax, std::string axisName="", const std::string& units="", const std::string& kinCuts="", const std::string& topoCuts="" );

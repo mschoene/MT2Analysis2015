@@ -3,6 +3,7 @@
 #include "RooHistError.h"
 #include "TLegend.h"
 #include "THStack.h"
+#include "TMinuit.h"
 
 #include "../interface/MT2EstimateTree.h"
 
@@ -543,6 +544,111 @@ void MT2DrawTools::addOverflowSingleHisto( TH3D* yield3d ) {
     }
   
 }
+
+
+
+
+TH1D* MT2DrawTools::getBand( TF1* f, const std::string& name ) {
+
+ const int ndim_resp_q = f->GetNpar();
+ TMatrixD emat_resp_q(ndim_resp_q, ndim_resp_q);
+ gMinuit->mnemat(&emat_resp_q[0][0], ndim_resp_q);
+
+ return getBand(f, emat_resp_q, name);
+
+}
+
+
+
+// Create uncertainty band (histogram) for a given function and error matrix
+// in the range of the function.
+TH1D* MT2DrawTools::getBand(TF1 *f, TMatrixD const& m, std::string name, bool getRelativeBand, int npx) {
+
+ Bool_t islog = true;
+ //double xmin = f->GetXmin()*0.9;
+ //double xmax = f->GetXmax()*1.1; //fixes problem in drawing with c option
+ double xmin = f->GetXmin();
+ double xmax = f->GetXmax()*1.1; //fixes problem in drawing with c option
+ int npar = f->GetNpar();
+ //TString formula = f->GetExpFormula();
+
+ // Create binning (linear or log)
+ Double_t xvec[npx];
+ xvec[0] = xmin;
+ double dx = (islog ? pow(xmax/xmin, 1./npx) : (xmax-xmin)/npx);
+ for (int i = 0; i != npx; ++i) {
+   xvec[i+1] = (islog ? xvec[i]*dx : xvec[i]+dx);
+ }
+
+
+ //
+ // Compute partial derivatives numerically
+ // can be used with any fit function
+ //
+ Double_t sigmaf[npx];
+ TH1D* h1_band = new TH1D(name.c_str(), "", npx, xvec);
+
+ for( int ipx=0; ipx<npx; ++ipx ) {
+
+   sigmaf[ipx] = 0.;
+   Double_t partDeriv[npar];
+
+   //compute partial derivatives of f wrt its parameters:
+   for( int ipar=0; ipar<npar; ++ipar ) {
+
+     Float_t pi = f->GetParameter(ipar);
+     Float_t dpi = sqrt(m[ipar][ipar])*0.01; //small compared to the par sigma
+     f->SetParameter(ipar, pi+dpi);
+     Float_t fplus = f->Eval(xvec[ipx]); 
+     f->SetParameter(ipar, pi-dpi);
+     Float_t fminus = f->Eval(xvec[ipx]); 
+     f->SetParameter(ipar, pi); //put it back as it was
+
+     partDeriv[ipar] = (fplus-fminus)/(2.*dpi);
+
+   } //for params
+
+   //compute sigma(f) at x:
+   for( int ipar=0; ipar<npar; ++ipar ) {
+     for( int jpar=0; jpar<npar; ++jpar ) {
+       sigmaf[ipx] += partDeriv[ipar]*partDeriv[jpar]*m[ipar][jpar];
+     }
+   }
+   sigmaf[ipx] = sqrt(sigmaf[ipx]); //absolute band
+
+   h1_band->SetBinContent( ipx, f->Eval(xvec[ipx]) );
+   if( getRelativeBand )
+     h1_band->SetBinError( ipx, sigmaf[ipx]/f->Eval(xvec[ipx]) );
+   else
+     h1_band->SetBinError( ipx, sigmaf[ipx] );
+
+ } //for points
+
+ h1_band->SetMarkerStyle(20);
+ h1_band->SetMarkerSize(0);
+ h1_band->SetFillColor(18);
+ h1_band->SetFillStyle(3001);
+
+
+ //TGraph* h1_statError = new TGraph(npx, xvec, sigmaf);
+//TH2D* h2_axesStat = new TH2D("axesStat", "", 10, 20., 1400., 10, 0., 10.);
+//h2_axesStat->GetXaxis()->SetNoExponent();
+//h2_axesStat->GetXaxis()->SetMoreLogLabels();
+//TCanvas* cStat = new TCanvas("cStat", "cStat", 600, 600);
+//cStat->cd();
+//cStat->SetLogx();
+//h2_axesStat->Draw();
+//h1_band->Draw("psame");
+//std::string canvasName = "stat/" + name + ".eps";
+//cStat->SaveAs(canvasName.c_str());
+
+//delete h2_axesStat;
+//delete cStat;
+
+ return h1_band;
+
+} //getband
+
 
 
 
