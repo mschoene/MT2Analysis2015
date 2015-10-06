@@ -1256,8 +1256,9 @@ void MT2Region::getBins( int &nBins, double*& bins) const {
 }
 
 void MT2Region::getBins_qcdCR( int &nBins, double*& bins) const {
-    const int nBins_tmp = 17;
-    bins = new double[nBins_tmp+1]{30,35,40,45,50,55,60,65,70,75,80,88,100,125,180,250,450,800};
+    const int nBins_tmp = 15;
+    bins = new double[nBins_tmp+1]{40,45,50,55,60,65,70,75,80,88,100,125,180,250,450,800};
+    //bins = new double[nBins_tmp+1]{30,35,40,45,50,55,60,65,70,75,80,88,100,125,180,250,450,800};
     //bins = new double[nBins_tmp+1]{30,35,40,45,50,55,60,65,70,75,80,85,90,95,100,105,110,115,120,125,130,135,140,145,150,155,160,165,170,175,180,185,190,195,200};
     nBins = nBins_tmp;
 }
