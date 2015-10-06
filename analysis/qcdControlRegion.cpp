@@ -169,7 +169,7 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
 
 
     float minMTBmet = myTree.minMTBMet;
-    float met       = myTree.met_pt;
+    //float met       = myTree.met_pt;
     int njets       = myTree.nJet30;
     int nbjets      = myTree.nBJet20;    
     float mt2       = (njets>1) ? myTree.mt2 : myTree.jet1_pt;
@@ -184,7 +184,7 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
 
     Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb;//*cfg.lumi(); 
 
-    MT2EstimateTree* thisTree = anaTree->get( ht, njets, nbjets, met, minMTBmet, mt2 );
+    MT2EstimateTree* thisTree = anaTree->get( ht, njets, nbjets, minMTBmet, mt2 );
     if( thisTree==0 ) continue;
 
 
