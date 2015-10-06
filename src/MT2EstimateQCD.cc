@@ -148,8 +148,8 @@ void MT2EstimateQCD::fillDphi(float dphi, float weight, float mt2) {
 
 void MT2EstimateQCD::doFit() {
 
-  ratio->Fit(exp     , "Q+", "", fitXmin, fitXmax             ); // fit to exponential only
-  ratio->Fit(expPlusC, "Q+", "", fitXmin, expPlusC->GetXmax() ); // fit to exponential + constant
+  ratio->Fit(exp     , "Q0", "", fitXmin, fitXmax             ); // fit to exponential only
+  ratio->Fit(expPlusC, "Q0", "", fitXmin, expPlusC->GetXmax() ); // fit to exponential + constant
   expOrC->SetParameter(0, exp->GetParameter(0));
   expOrC->SetParameter(1, exp->GetParameter(1));
 
