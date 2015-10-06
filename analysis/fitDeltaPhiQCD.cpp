@@ -84,11 +84,14 @@ int main( int argc, char* argv[] ) {
 
   std::set<MT2Region> regions = qcdTree_mc->getRegions();
 
-  MT2Analysis<MT2EstimateQCD>* theFits = MT2EstimateQCD::makeAnalysisFromEstimateTree( "qcdFits", cfg.regionsSet(), qcdTree_mc );
-
+  MT2Analysis<MT2EstimateQCD>* theFits     = MT2EstimateQCD::makeAnalysisFromEstimateTree( "mc"     , cfg.regionsSet(), qcdTree_mc );
   theFits->finalize();
 
-  theFits->writeToFile( outputdir + "/qcdFits.root", "recreate" );
+  MT2Analysis<MT2EstimateQCD>* theFits_qcd = MT2EstimateQCD::makeAnalysisFromEstimateTree( "qcdOnly", cfg.regionsSet(), qcdTree_mc, "id>=100 && id<200" );
+  theFits_qcd->finalize();
+
+  theFits_qcd->writeToFile( outputdir + "/mcFits.root", "recreate" );
+  theFits->writeToFile( outputdir + "/mcFits.root" );
 
   return 0;
 
