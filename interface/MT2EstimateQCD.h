@@ -74,7 +74,7 @@ class MT2EstimateQCD : public MT2Estimate {
 
   virtual void print(const std::string& ofs);
 
-  virtual void randomizePoisson( float scale=1. );
+  virtual void randomizePoisson( float scale=1., int seed=13 );
   virtual void sqrtErrors( float scale=1. );
 
  private:
