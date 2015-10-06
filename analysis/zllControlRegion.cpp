@@ -332,7 +332,7 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
     
     if(isSF){ //////////SAME FLAVOR//////////////////////////////////////////
       if(  !(myTree.HLT_DoubleMu || myTree.HLT_DoubleEl) ) continue;
-      MT2EstimateTree* thisTree = anaTree->get( myTree.zll_ht, njets, nbjets, myTree.zll_met_pt, minMTBmet, myTree.zll_mt2 );
+      MT2EstimateTree* thisTree = anaTree->get( myTree.zll_ht, njets, nbjets, minMTBmet, myTree.zll_mt2 );
       if (thisTree==0) continue;
 
       int nJetHF30_ = 0;
@@ -360,7 +360,7 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
 
     }else if(isOF){ //////////Opposite FLAVOR//////////////////////////////////////////
       if(  myTree.isData && !(myTree.HLT_MuX_Ele12 || myTree.HLT_Mu8_EleX) ) continue;
-      MT2EstimateTree* thisTree_of = anaTree_of->get( myTree.zll_ht, njets, nbjets, myTree.zll_met_pt, minMTBmet, myTree.zll_mt2 );
+      MT2EstimateTree* thisTree_of = anaTree_of->get( myTree.zll_ht, njets, nbjets, minMTBmet, myTree.zll_mt2 );
       if(thisTree_of==0) continue;
 
       int nJetHF30_ = 0;
