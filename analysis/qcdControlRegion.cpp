@@ -56,7 +56,7 @@ int main( int argc, char* argv[] ) {
   if( argc > 2 ) {
     std::string dataMC(argv[2]);
     if( dataMC=="data" ) onlyData = true;
-    else if( dataMC=="MC" ) onlyMC = true;
+    else if( dataMC=="MC" || dataMC=="mc" ) onlyMC = true;
     else {
       std::cout << "-> You passed a second argument that isn't 'data' or 'MC', so I don't know what to do about it." << std::endl;
     }
