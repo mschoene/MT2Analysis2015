@@ -99,7 +99,7 @@ class MT2Estimate {
   virtual void print( std::ofstream& ofs_file );
   virtual void print( std::ofstream& ofs_file, Int_t mt2_bin );
   
-  virtual void randomizePoisson( float scale=1. );
+  virtual void randomizePoisson( float scale=1., int seed=13 );
   
  private:
   
