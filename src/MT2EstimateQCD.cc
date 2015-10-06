@@ -33,7 +33,7 @@ MT2EstimateQCD::MT2EstimateQCD( const std::string& aname, const MT2Region& aregi
 
 
 
-MT2EstimateQCD::MT2EstimateQCD( const MT2EstimateTree& treeEst ) : MT2Estimate( treeEst ) {
+MT2EstimateQCD::MT2EstimateQCD( const MT2EstimateTree& treeEst, const std::string& selection ) : MT2Estimate( treeEst ) {
 
 
   TH1::AddDirectory(kTRUE);
@@ -48,8 +48,13 @@ MT2EstimateQCD::MT2EstimateQCD( const MT2EstimateTree& treeEst ) : MT2Estimate( 
   lDphi = new TH1D( lDphiName.c_str(), "", nBins, bins); lDphi->Sumw2();
   hDphi = new TH1D( hDphiName.c_str(), "", nBins, bins); hDphi->Sumw2();
 
-  treeEst.tree->Project( lDphiName.c_str(), "mt2", "weight*(deltaPhiMin<0.3)" );
-  treeEst.tree->Project( hDphiName.c_str(), "mt2", "weight*(deltaPhiMin>0.3)" );
+  if( selection!="" ) {
+    treeEst.tree->Project( lDphiName.c_str(), "mt2", Form("weight*(deltaPhiMin<0.3 && %s)", selection.c_str()) );
+    treeEst.tree->Project( hDphiName.c_str(), "mt2", Form("weight*(deltaPhiMin>0.3 && %s)", selection.c_str()) );
+  } else {
+    treeEst.tree->Project( lDphiName.c_str(), "mt2",      "weight*(deltaPhiMin<0.3)" );
+    treeEst.tree->Project( hDphiName.c_str(), "mt2",      "weight*(deltaPhiMin>0.3)" );
+  }
 
   ratio = new TH1D( this->getHistoName("ratio").c_str(), "", nBins, bins); ratio->Sumw2();
 
@@ -65,7 +70,7 @@ MT2EstimateQCD::MT2EstimateQCD( const MT2EstimateTree& treeEst ) : MT2Estimate( 
 
 
 
-MT2Analysis<MT2EstimateQCD>* MT2EstimateQCD::makeAnalysisFromEstimateTree( const std::string& aname, const std::string& regionsSet, MT2Analysis<MT2EstimateTree>* estimate ) {
+MT2Analysis<MT2EstimateQCD>* MT2EstimateQCD::makeAnalysisFromEstimateTree( const std::string& aname, const std::string& regionsSet, MT2Analysis<MT2EstimateTree>* estimate, const std::string& selection ) {
 
   std::set<MT2Region> regions = estimate->getRegions();
 
@@ -74,7 +79,7 @@ MT2Analysis<MT2EstimateQCD>* MT2EstimateQCD::makeAnalysisFromEstimateTree( const
   for( std::set<MT2Region>::iterator iR=regions.begin(); iR!=regions.end(); ++iR ) {
 
     MT2EstimateTree*  thisEstimate = estimate->get( *iR );
-    MT2EstimateQCD* thisEstimateQCD = new MT2EstimateQCD( *thisEstimate );
+    MT2EstimateQCD* thisEstimateQCD = new MT2EstimateQCD( *thisEstimate, selection );
     data.insert( thisEstimateQCD );
 
   } // for regions
