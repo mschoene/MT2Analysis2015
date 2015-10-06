@@ -131,6 +131,9 @@ drawZllControlRegion: drawZllControlRegion.cpp MT2Region.o MT2Estimate.o MT2Esti
 fitDeltaPhiQCD: fitDeltaPhiQCD.cpp  MT2Region.o MT2Estimate.o MT2EstimateQCD.o  MT2EstimateTree.o MT2Config.o MT2DrawTools.o
 	$(CC) -Wall $(INCLUDES) -o fitDeltaPhiQCD fitDeltaPhiQCD.cpp MT2Region.o MT2Estimate.o MT2EstimateQCD.o MT2EstimateTree.o MT2Config.o MT2DrawTools.o $(ROOTFLAG) $(EXTRALIBS)
 
+checkQCDclosure: checkQCDclosure.cpp  MT2Region.o MT2Estimate.o MT2EstimateQCD.o  MT2EstimateTree.o MT2Config.o MT2DrawTools.o
+	$(CC) -Wall $(INCLUDES) -o checkQCDclosure checkQCDclosure.cpp MT2Region.o MT2Estimate.o MT2EstimateQCD.o MT2EstimateTree.o MT2Config.o MT2DrawTools.o $(ROOTFLAG) $(EXTRALIBS)
+
 fitPurityGamma: fitPurityGamma.cpp  MT2Region.o MT2Estimate.o MT2EstimateZinvGamma.o  MT2EstimateSyst.o MT2Config.o MT2DrawTools.o
 	$(CC) -Wall $(INCLUDES) -o fitPurityGamma fitPurityGamma.cpp MT2Region.o MT2Estimate.o MT2EstimateZinvGamma.o MT2EstimateSyst.o MT2Config.o MT2DrawTools.o $(ROOTFLAG) $(EXTRALIBS)
 
