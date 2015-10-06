@@ -428,9 +428,9 @@ void MT2Estimate::print( std::ofstream& ofs_file, Int_t mt2_bin ){
   
 }
 
-void MT2Estimate::randomizePoisson( float scale ){
+void MT2Estimate::randomizePoisson( float scale, int seed ){
 
-  TRandom3 rand(13);
+  TRandom3 rand(seed);
   
   for( int ibin=1; ibin<yield->GetXaxis()->GetNbins()+1; ++ibin ) {
     
