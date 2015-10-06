@@ -1409,6 +1409,7 @@ Bool_t MT2Tree::passIsoTrackVeto() const {
 
 Bool_t MT2Tree::passBaseline(TString sel) const 
 {
+
   if (sel=="gamma")
     return nVert > 0 && 
       // gamma_nJet30 >= 2 &&
@@ -1438,21 +1439,6 @@ Bool_t MT2Tree::passBaseline(TString sel) const
 
 
 
-//Bool_t MT2Tree::passBaseline(TString sel)
-//{
-//  if (sel=="")
-//    return nVert > 0 && nJet40 >= 2 &&
-//      deltaPhiMin > 0.3 && 
-//      diffMetMht < 0.5*met_pt && 
-//      jet1_pt > 40. && jet2_pt > 40. ;
-//  else if (sel=="gamma")
-//    return nVert > 0 && gamma_nJet40 >= 2 && 
-//      gamma_deltaPhiMin > 0.3 && 
-//      gamma_diffMetMht < 0.5*gamma_met_pt && 
-//      gamma_jet1_pt > 40. && gamma_jet2_pt > 40. ;
-//  else
-//    return kFALSE;
-//}
 
 
 Bool_t MT2Tree::passGammaAdditionalSelection(int sampleId) const
