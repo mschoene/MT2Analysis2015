@@ -76,21 +76,15 @@ int main( int argc, char* argv[] ) {
 
     MT2EstimateQCD* thisQCD = qcd->get( *iR );
     MT2EstimateQCD* thisAll = all->get( *iR );
+
+    thisQCD->doFit();
    
     TH1D* thisRatio = thisAll->ratio;    
     TH1D* thisRatioQCD = thisQCD->ratio;    
-    TF1* thisFit = thisAll->exp;
-    //TF1* thisFit = thisQCD->exp; // this should be true closure but doesn't work!
+    //TF1* thisFit = thisAll->exp;
+    TF1* thisFit = thisQCD->exp; // this should be true closure but doesn't work!
 
-    Double_t expPar = thisFit->GetParameter(0);
-    Double_t expParErr = thisFit->GetParError(0);
-
-    TF1* thisFit_errUp = new TF1(*thisFit);
-    thisFit_errUp->SetParameter(0, expPar + expParErr);
-    TF1* thisFit_errDown = new TF1(*thisFit);
-    thisFit_errDown->SetParameter(0, expPar - expParErr);
-
-    Double_t xMin = 150.;
+    Double_t xMin = thisRatio->GetBinLowEdge(thisRatio->FindBin(150.));
     Double_t xMax = thisRatio->GetXaxis()->GetXmax();
 
     int binMin = thisRatio->FindBin(xMin);
@@ -99,12 +93,7 @@ int main( int argc, char* argv[] ) {
     Double_t intErr_ratio;
     Double_t int_ratio = thisRatio->IntegralAndError( binMin, binMax, intErr_ratio );
     Double_t int_f1    = thisFit->Integral( xMin, xMax );
-    Double_t int_f1_up = thisFit_errUp->Integral( xMin, xMax );
-    Double_t int_f1_down = thisFit_errDown->Integral( xMin, xMax );
-    Double_t int_f1_errUp = int_f1_up-int_f1;
-    Double_t int_f1_errDown = int_f1-int_f1_down;
-    Double_t intErr_f1 = TMath::Max( int_f1_errUp, int_f1_errDown );
- 
+    Double_t intErr_f1 = 0.; //thisFit->IntegralError( xMin, xMax );
 
 
     float zTest = (int_ratio-int_f1) / ( sqrt( intErr_ratio*intErr_ratio + intErr_f1*intErr_f1 ) );
@@ -127,11 +116,11 @@ int main( int argc, char* argv[] ) {
     float yMinAll = thisRatio->GetMinimum()/2.;
     float yMin = thisRatioQCD->GetMinimum()/2.;
     if( yMin < 0.03 ) yMin = 0.03;
-    if( yMin > yMinAll ) yMin = yMinAll;
+    if( yMin > yMinAll && yMinAll>0.001 ) yMin = yMinAll;
 
-    TH2D* h2_axes = new TH2D("axes", "", 10, 30., xMax, 10, yMin, yMax );
+    TH2D* h2_axes = new TH2D("axes", "", 10, 40., xMax, 10, yMin, yMax );
     h2_axes->SetXTitle( "M_{T2} [GeV]" );
-    h2_axes->SetYTitle( "Events");
+    h2_axes->SetYTitle( "Ratio");
     h2_axes->GetXaxis()->SetNoExponent();
     h2_axes->GetXaxis()->SetMoreLogLabels();
     h2_axes->GetYaxis()->SetNoExponent();
@@ -140,7 +129,7 @@ int main( int argc, char* argv[] ) {
 
     std::vector<std::string> regionNiceNames = iR->getNiceNames();
 
-    TPaveText* regionName = new TPaveText( 0.52, 0.81, 0.9, 0.9, "brNDC" );
+    TPaveText* regionName = new TPaveText( 0.4, 0.81, 0.9, 0.9, "brNDC" );
     regionName->SetTextAlign( 11 );
     regionName->SetTextSize( 0.035 );
     regionName->SetFillColor( 0 );
@@ -148,7 +137,7 @@ int main( int argc, char* argv[] ) {
     regionName->AddText( regionNiceNames[1].c_str() );
     regionName->Draw("same");
 
-    TLegend* legend = new TLegend( 0.52, 0.65, 0.9, 0.82 );
+    TLegend* legend = new TLegend( 0.4, 0.65, 0.8, 0.82 );
     legend->SetFillColor(0);
     legend->SetTextSize(0.035);
     legend->AddEntry( thisRatio, "MC (all)", "P" );
@@ -164,20 +153,13 @@ int main( int argc, char* argv[] ) {
     lineRight->SetLineStyle(2);
     lineRight->Draw("same");
 
+    TH1D* fit_band = MT2DrawTools::getBand(thisFit, Form("band_%s", thisFit->GetName()) );
+    fit_band->Draw("C E3 same");
+
     thisFit->SetLineColor(46); 
     thisFit->SetLineWidth(2); 
     thisFit->Draw("L same");
  
-    thisFit_errUp->SetLineWidth(1); 
-    thisFit_errUp->SetLineStyle(2); 
-    thisFit_errUp->SetLineColor(46); 
-    thisFit_errUp->Draw("L same");
- 
-    thisFit_errDown->SetLineWidth(1); 
-    thisFit_errDown->SetLineStyle(2); 
-    thisFit_errDown->SetLineColor(46); 
-    thisFit_errDown->Draw("L same");
-
     thisRatio->SetMarkerStyle(20);
     thisRatio->SetMarkerSize(1.3);
     thisRatio->Draw("P same");
