@@ -79,28 +79,40 @@ MT2HTRegion::MT2HTRegion( float ahtMin, float ahtMax ) {
 
 
 
-float MT2HTRegion::metMin() const {
-
-  float metMin = (htMin<999.) ? 200. : 30.;
-  return metMin;
-
-}
-
-
-bool MT2HTRegion::isInclusiveHT() const {
-
-  if( htMin<999. && ( htMax < 0 || htMax >= 1000. )) return true;
-  else return false;
-  
-}
+//float MT2HTRegion::metMin( float ht ) const {
+//
+//  float metMin = (ht<1000.) ? 200. : 30.;
+//  return metMin;
+//
+//}
 
 
-bool MT2HTRegion::metMinInclusiveHT( float ht ) const {
-  
-  float metMin = (ht<1000.) ? 200. : 30.;
-  return metMin;
 
-}
+
+
+
+//float MT2HTRegion::metMin() const {
+// 
+//  float metMin = (htMin<999.) ? 200. : 30.;
+//  return metMin;
+// 
+//}
+
+
+//bool MT2HTRegion::isInclusiveHT() const {
+//
+//  if( htMin<999. && ( htMax < 0 || htMax >= 1000. )) return true;
+//  else return false;
+//  
+//}
+//
+//
+//float MT2HTRegion::metMinInclusiveHT( float ht ) const {
+//  
+//  float metMin = (ht<1000.) ? 200. : 30.;
+//  return metMin;
+//
+//}
 
 std::string MT2HTRegion::getName() const {
 

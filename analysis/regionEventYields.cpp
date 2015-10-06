@@ -112,7 +112,7 @@ int main( int argc, char* argv[] ) {
       int this_id = fSamples[i].id;
       if( this_id>=200 && this_id<300 ) continue; // skip GJets
       if( this_id>=700 && this_id<800 ) continue; // skip DY
-      //if( !(this_id>=600 && this_id<700) ) continue; // only Zinv
+      if( !(this_id>=600 && this_id<700) ) continue; // only Zinv
       EventYield.push_back( computeYield<MT2EstimateTree>( fSamples[i], cfg ));
     }
 
@@ -310,7 +310,7 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg ) {
 
     
     float ht   = myTree.ht;
-    float met  = myTree.met_pt;
+    //float met  = myTree.met_pt;
     float minMTBmet = myTree.minMTBMet;
     int njets  = myTree.nJet30;
     int nbjets = myTree.nBJet20;    
@@ -334,7 +334,8 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg ) {
     }
 
    
-    T* thisEstimate = analysis->get( ht, njets, nbjets, met, minMTBmet, mt2 );
+    T* thisEstimate = analysis->get( ht, njets, nbjets, minMTBmet, mt2 );
+    //T* thisEstimate = analysis->get( ht, njets, nbjets, met, minMTBmet, mt2 );
     if( thisEstimate==0 ) continue;
 
 
