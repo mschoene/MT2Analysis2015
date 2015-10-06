@@ -184,17 +184,18 @@ void MT2EstimateQCD::print(const std::string& ofs){
 
 }
 
-void MT2EstimateQCD::randomizePoisson( float scale ){
+void MT2EstimateQCD::randomizePoisson( float scale, int seed ){
 
-  MT2Estimate::randomizePoisson( scale );
+  MT2Estimate::randomizePoisson( scale, seed );
 
-  TRandom3 rand(13);
+  TRandom3 rand(seed);
   
   for( int ibin=1; ibin<lDphi->GetXaxis()->GetNbins()+1; ++ibin ) {
     
     int poisson_data = rand.Poisson(scale * lDphi->GetBinContent(ibin));
     lDphi->SetBinContent(ibin, poisson_data);
-    lDphi->SetBinError( ibin, TMath::Sqrt(poisson_data) ); // here i want an approximation of the Poisson error
+    lDphi->SetBinError( ibin, 0. );
+    //lDphi->SetBinError( ibin, TMath::Sqrt(poisson_data) ); // here i want an approximation of the Poisson error
     
   } 
 
@@ -202,7 +203,8 @@ void MT2EstimateQCD::randomizePoisson( float scale ){
     
     int poisson_data = rand.Poisson(scale * hDphi->GetBinContent(ibin));
     hDphi->SetBinContent(ibin, poisson_data);
-    hDphi->SetBinError( ibin, TMath::Sqrt(poisson_data) ); // here i want an approximation of the Poisson error
+    hDphi->SetBinError( ibin, 0. );
+    //hDphi->SetBinError( ibin, TMath::Sqrt(poisson_data) ); // here i want an approximation of the Poisson error
     
   } 
   
