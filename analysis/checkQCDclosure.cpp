@@ -7,6 +7,7 @@
 #include "TH1D.h"
 #include "TFile.h"
 #include "TRandom3.h"
+#include "TFitter.h"
 
 #include "../interface/MT2Config.h"
 #include "../interface/MT2Analysis.h"
@@ -215,8 +216,13 @@ int main( int argc, char* argv[] ) {
         lineRight->SetLineStyle(2);
         lineRight->Draw("same");
 
-        TH1D* fit_band = MT2DrawTools::getBand(thisFitQCD, Form("band_%s", thisFitQCD->GetName()) );
-        fit_band->Draw("C E3 same");
+        TH1D* h_band = new TH1D(Form("band_%s", thisFitQCD->GetName()) , "", 500, 40., xMax);
+        h_band->SetMarkerSize(0);
+        h_band->SetFillColor(18); 
+        h_band->SetFillStyle(3001);
+        (TVirtualFitter::GetFitter())->GetConfidenceIntervals(h_band, 0.68);
+
+        h_band->Draw("C E3 same");
 
         thisFitQCD->SetLineColor(46); 
         thisFitQCD->SetLineWidth(2); 
@@ -245,7 +251,7 @@ int main( int argc, char* argv[] ) {
 
         delete c1;
         delete h2_axes;
-        delete fit_band;
+        delete h_band;
 
       } // draw only if lumi <=0 
 
@@ -254,16 +260,10 @@ int main( int argc, char* argv[] ) {
 
     } // for iter
 
+
+
     if( lumiToCheck>0. ) {
 
-//    TCanvas* c3 = new TCanvas("c3", "", 600, 600 );
-//    c3->cd();
-//    h1_thisPull->SetXTitle("(MC - fit) / (#sigma_{MC} #oplus #sigma_{fit})");
-//    h1_thisPull->Draw();
-//    TPaveText* labelTop = MT2DrawTools::getLabelTopSimulation( lumiToCheck );
-//    labelTop->Draw("same");
-//    c3->SaveAs( Form("%s/pull_%s.eps", toymcdir.c_str(), iR->getName().c_str()) );
-//    c3->SaveAs( Form("%s/pull_%s.pdf", toymcdir.c_str(), iR->getName().c_str()) );
 
       float par0_reso = drawSinglePlot( toymcdir, *iR, lumiToCheck, h1_fitPar0, fitPar0_MC, fitPar0Err_MC );
       float par1_reso = drawSinglePlot( toymcdir, *iR, lumiToCheck, h1_fitPar1, fitPar1_MC, fitPar1Err_MC );
@@ -285,7 +285,7 @@ int main( int argc, char* argv[] ) {
       }
 
 
-    } // for iter
+    } // if lumiToCheck>0
 
 
   } // for regions
