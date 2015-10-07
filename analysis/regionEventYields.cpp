@@ -76,7 +76,7 @@ int main( int argc, char* argv[] ) {
   if( argc > 2 ) {
     std::string dataMC(argv[2]);
     if( dataMC=="data" ) onlyData = true;
-    else if( dataMC=="MC" ) onlyMC = true;
+    else if( dataMC=="MC" || dataMC=="mc" ) onlyMC = true;
     else if( dataMC=="signal" ) onlySignal = true;
     else {
       std::cout << "-> You passed a second argument that isn't 'data', nor 'MC', nor 'signal', so I don't know what to do about it." << std::endl;
@@ -310,7 +310,7 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg ) {
 
     
     float ht   = myTree.ht;
-    float met  = myTree.met_pt;
+    //float met  = myTree.met_pt;
     float minMTBmet = myTree.minMTBMet;
     int njets  = myTree.nJet30;
     int nbjets = myTree.nBJet20;    
@@ -334,7 +334,8 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg ) {
     }
 
    
-    T* thisEstimate = analysis->get( ht, njets, nbjets, met, minMTBmet, mt2 );
+    T* thisEstimate = analysis->get( ht, njets, nbjets, minMTBmet, mt2 );
+    //T* thisEstimate = analysis->get( ht, njets, nbjets, met, minMTBmet, mt2 );
     if( thisEstimate==0 ) continue;
 
 

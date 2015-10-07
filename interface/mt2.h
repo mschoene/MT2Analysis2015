@@ -1409,24 +1409,33 @@ Bool_t MT2Tree::passIsoTrackVeto() const {
 
 Bool_t MT2Tree::passBaseline(TString sel) const 
 {
+
   if (sel=="gamma")
     return nVert > 0 && 
       // gamma_nJet30 >= 2 &&
       gamma_nJet30FailId == 0 &&
       gamma_deltaPhiMin > 0.3 && 
+      ( (gamma_ht<1000. && gamma_met_pt>200.) || (gamma_ht>=1000. && gamma_met_pt>30.) ) && 
       gamma_diffMetMht < 0.5*gamma_met_pt;
   else if (sel=="zll")
     return nVert > 0 &&
       // nJet30 >= 2 &&
       nJet30FailId == 0 &&
       zll_deltaPhiMin > 0.3 && 
+      ( (zll_ht<1000. && zll_met_pt>200.) || (zll_ht>=1000. && zll_met_pt>30.) ) && 
       zll_diffMetMht < 0.5*zll_met_pt && 
       nlep > 1 ;
+  else if (sel=="qcd")
+    return nVert > 0 && 
+      nJet30FailId == 0 &&
+      met_pt>30. && 
+      diffMetMht < 0.5*met_pt;
   else
     return nVert > 0 && 
       //////(nJet30 >= 2 || sel=="monojet") &&
       nJet30FailId == 0 &&
       deltaPhiMin > 0.3 && 
+      ( (ht<1000. && met_pt>200.) || (ht>=1000. && met_pt>30.) ) && 
       diffMetMht < 0.5*met_pt;
   
   return kFALSE;
@@ -1434,21 +1443,6 @@ Bool_t MT2Tree::passBaseline(TString sel) const
 
 
 
-//Bool_t MT2Tree::passBaseline(TString sel)
-//{
-//  if (sel=="")
-//    return nVert > 0 && nJet40 >= 2 &&
-//      deltaPhiMin > 0.3 && 
-//      diffMetMht < 0.5*met_pt && 
-//      jet1_pt > 40. && jet2_pt > 40. ;
-//  else if (sel=="gamma")
-//    return nVert > 0 && gamma_nJet40 >= 2 && 
-//      gamma_deltaPhiMin > 0.3 && 
-//      gamma_diffMetMht < 0.5*gamma_met_pt && 
-//      gamma_jet1_pt > 40. && gamma_jet2_pt > 40. ;
-//  else
-//    return kFALSE;
-//}
 
 
 Bool_t MT2Tree::passGammaAdditionalSelection(int sampleId) const

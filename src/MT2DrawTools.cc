@@ -3,6 +3,7 @@
 #include "RooHistError.h"
 #include "TLegend.h"
 #include "THStack.h"
+#include "TMinuit.h"
 
 #include "../interface/MT2EstimateTree.h"
 
@@ -546,8 +547,113 @@ void MT2DrawTools::addOverflowSingleHisto( TH3D* yield3d ) {
 
 
 
-void MT2DrawTools::drawRegionYields_fromTree( const std::string& saveName, const std::string& varName, const std::string& selection, int nBins, float xMin, float xMax, std::string axisName, const std::string& units, const std::string& cutsLabel ) {
-//void MT2DrawTools::drawRegionYields_fromTree( MT2Analysis<MT2EstimateTree>* data, std::vector<MT2Analysis<MT2EstimateTree>* >  bgYields, const std::string& saveName, const std::string& varName, const std::string& selection, int nBins, float xMin, float xMax, std::string axisName, const std::string& units, const std::string& cutsLabel ) {
+
+TH1D* MT2DrawTools::getBand( TF1* f, const std::string& name ) {
+
+ const int ndim_resp_q = f->GetNpar();
+ TMatrixD emat_resp_q(ndim_resp_q, ndim_resp_q);
+ gMinuit->mnemat(&emat_resp_q[0][0], ndim_resp_q);
+
+ return getBand(f, emat_resp_q, name);
+
+}
+
+
+
+// Create uncertainty band (histogram) for a given function and error matrix
+// in the range of the function.
+TH1D* MT2DrawTools::getBand(TF1 *f, TMatrixD const& m, std::string name, bool getRelativeBand, int npx) {
+
+ Bool_t islog = true;
+ //double xmin = f->GetXmin()*0.9;
+ //double xmax = f->GetXmax()*1.1; //fixes problem in drawing with c option
+ double xmin = f->GetXmin();
+ double xmax = f->GetXmax()*1.1; //fixes problem in drawing with c option
+ int npar = f->GetNpar();
+ //TString formula = f->GetExpFormula();
+
+ // Create binning (linear or log)
+ Double_t xvec[npx];
+ xvec[0] = xmin;
+ double dx = (islog ? pow(xmax/xmin, 1./npx) : (xmax-xmin)/npx);
+ for (int i = 0; i != npx; ++i) {
+   xvec[i+1] = (islog ? xvec[i]*dx : xvec[i]+dx);
+ }
+
+
+ //
+ // Compute partial derivatives numerically
+ // can be used with any fit function
+ //
+ Double_t sigmaf[npx];
+ TH1D* h1_band = new TH1D(name.c_str(), "", npx, xvec);
+
+ for( int ipx=0; ipx<npx; ++ipx ) {
+
+   sigmaf[ipx] = 0.;
+   Double_t partDeriv[npar];
+
+   //compute partial derivatives of f wrt its parameters:
+   for( int ipar=0; ipar<npar; ++ipar ) {
+
+     Float_t pi = f->GetParameter(ipar);
+     Float_t dpi = sqrt(m[ipar][ipar])*0.01; //small compared to the par sigma
+     f->SetParameter(ipar, pi+dpi);
+     Float_t fplus = f->Eval(xvec[ipx]); 
+     f->SetParameter(ipar, pi-dpi);
+     Float_t fminus = f->Eval(xvec[ipx]); 
+     f->SetParameter(ipar, pi); //put it back as it was
+
+     partDeriv[ipar] = (fplus-fminus)/(2.*dpi);
+
+   } //for params
+
+   //compute sigma(f) at x:
+   for( int ipar=0; ipar<npar; ++ipar ) {
+     for( int jpar=0; jpar<npar; ++jpar ) {
+       sigmaf[ipx] += partDeriv[ipar]*partDeriv[jpar]*m[ipar][jpar];
+     }
+   }
+   sigmaf[ipx] = sqrt(sigmaf[ipx]); //absolute band
+
+   h1_band->SetBinContent( ipx, f->Eval(xvec[ipx]) );
+   if( getRelativeBand )
+     h1_band->SetBinError( ipx, sigmaf[ipx]/f->Eval(xvec[ipx]) );
+   else
+     h1_band->SetBinError( ipx, sigmaf[ipx] );
+
+ } //for points
+
+ h1_band->SetMarkerStyle(20);
+ h1_band->SetMarkerSize(0);
+ h1_band->SetFillColor(18);
+ h1_band->SetFillStyle(3001);
+
+
+ //TGraph* h1_statError = new TGraph(npx, xvec, sigmaf);
+//TH2D* h2_axesStat = new TH2D("axesStat", "", 10, 20., 1400., 10, 0., 10.);
+//h2_axesStat->GetXaxis()->SetNoExponent();
+//h2_axesStat->GetXaxis()->SetMoreLogLabels();
+//TCanvas* cStat = new TCanvas("cStat", "cStat", 600, 600);
+//cStat->cd();
+//cStat->SetLogx();
+//h2_axesStat->Draw();
+//h1_band->Draw("psame");
+//std::string canvasName = "stat/" + name + ".eps";
+//cStat->SaveAs(canvasName.c_str());
+
+//delete h2_axesStat;
+//delete cStat;
+
+ return h1_band;
+
+} //getband
+
+
+
+
+void MT2DrawTools::drawRegionYields_fromTree( const std::string& saveName, const std::string& varName, const std::string& selection, int nBins, float xMin, float xMax, std::string axisName, const std::string& units, const std::string& kinCuts, const std::string& topoCuts ) {
+//void MT2DrawTools::drawRegionYields_fromTree( MT2Analysis<MT2EstimateTree>* data, std::vector<MT2Analysis<MT2EstimateTree>* >  bgYields, const std::string& saveName, const std::string& varName, const std::string& selection, int nBins, float xMin, float xMax, std::string axisName, const std::string& units, const std::string& kinCuts ) {
 
 
   system( Form("mkdir -p %s", outdir_.c_str()) );
@@ -589,9 +695,9 @@ void MT2DrawTools::drawRegionYields_fromTree( const std::string& saveName, const
       h1_mc->Sumw2();
       if( selection!="" )
 	//tree_mc->Project( thisName.c_str(), varName.c_str(), Form("%s/puWeight", selection.c_str()) );
-	tree_mc->Project( thisName.c_str(), varName.c_str(), Form("%f*%s", lumi_, selection.c_str()) );
+        tree_mc->Project( thisName.c_str(), varName.c_str(), Form("%f*(%s)", lumi_, selection.c_str()) );
       else
-        tree_mc->Project( thisName.c_str(), varName.c_str(), Form("%f*weight", lumi_) );
+        tree_mc->Project( thisName.c_str(), varName.c_str(), Form("%f", lumi_) );
 
       MT2DrawTools::addOverflowSingleHisto(h1_mc);
 
@@ -746,6 +852,7 @@ void MT2DrawTools::drawRegionYields_fromTree( const std::string& saveName, const
  //     //regionText->Draw("same");
  // 
  //   }
+
     
     for( unsigned i=0; i<niceNames.size(); ++i ) { 
       
@@ -756,11 +863,24 @@ void MT2DrawTools::drawRegionYields_fromTree( const std::string& saveName, const
       regionText->SetTextFont(42);
       regionText->SetFillColor(0);
       regionText->SetTextAlign(11);
-      
-      if(cutsLabel!="" && i==0) {
-        regionText->AddText( cutsLabel.c_str() );
-      } else {
-        regionText->AddText( niceNames[i].c_str() );
+
+    
+      if( i==0 ) {
+
+        if(kinCuts!="") {
+          regionText->AddText( kinCuts.c_str() );
+        } else {
+          regionText->AddText( niceNames[i].c_str() );
+        }
+
+      } else if( i==1 ) {
+    
+        if(topoCuts!="") {
+          regionText->AddText( topoCuts.c_str() );
+        } else {
+          regionText->AddText( niceNames[i].c_str() );
+        }
+
       }
     
       if( this->twoPads() )
@@ -909,13 +1029,15 @@ void MT2DrawTools::drawRegionYields_fromTree( const std::string& saveName, const
     } // if twoPads
 
 
-    c1->SaveAs( Form("%s/%s_%s.eps", outdir_.c_str(), saveName.c_str(), thisRegion.getName().c_str()) );
-    c1->SaveAs( Form("%s/%s_%s.png", outdir_.c_str(), saveName.c_str(), thisRegion.getName().c_str()) );
-    c1->SaveAs( Form("%s/%s_%s.pdf", outdir_.c_str(), saveName.c_str(), thisRegion.getName().c_str()) );
+    std::string regionSaveName = (MT2Regions.size()==1) ? "_" + thisRegion.getName() : "";
 
-    c1_log->SaveAs( Form("%s/%s_%s_log.eps", outdir_.c_str(), saveName.c_str(), thisRegion.getName().c_str()) );
-    c1_log->SaveAs( Form("%s/%s_%s_log.png", outdir_.c_str(), saveName.c_str(), thisRegion.getName().c_str()) );
-    c1_log->SaveAs( Form("%s/%s_%s_log.pdf", outdir_.c_str(), saveName.c_str(), thisRegion.getName().c_str()) );
+    c1->SaveAs( Form("%s/%s%s.eps", outdir_.c_str(), saveName.c_str(), regionSaveName.c_str()) );
+    //c1->SaveAs( Form("%s/%s%s.png", outdir_.c_str(), saveName.c_str(), regionSaveName.c_str()) );
+    c1->SaveAs( Form("%s/%s%s.pdf", outdir_.c_str(), saveName.c_str(), regionSaveName.c_str()) );
+
+    c1_log->SaveAs( Form("%s/%s%s_log.eps", outdir_.c_str(), saveName.c_str(), regionSaveName.c_str()) );
+    //c1_log->SaveAs( Form("%s/%s%s_log.png", outdir_.c_str(), saveName.c_str(), regionSaveName.c_str()) );
+    c1_log->SaveAs( Form("%s/%s%s_log.pdf", outdir_.c_str(), saveName.c_str(), regionSaveName.c_str()) );
 
     delete c1;
     delete h2_axes;
