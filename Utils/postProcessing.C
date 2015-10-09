@@ -42,7 +42,7 @@ int postProcessing(string inputString="input",
 		   bool applyJSON=true);
 
 
-int run(string cfg="postProcessing_74X_50ns.cfg",
+int run(string cfg="postProcessing.cfg",
 	string treeName="tree", 
 	string inputFolder = "/pnfs/psi.ch/cms/trivcat/store/user/casal/babies/PHYS14_Production_QCDpt_noSietaieta/", 
 	string outputFolder = "./test/",  
@@ -132,8 +132,14 @@ int postProcessing(string inputString,
   else
     fullInputString = dcap + inputFolder + "/" + inputString + "/mt2*.root";
 
+  std::cout << fullInputString << std::endl;
+
   TFileCollection *filelist = new TFileCollection("listOfFiles");
+  
+  std::cout << "Adding file list... " << std::endl;
   filelist->Add(fullInputString.c_str());
+  
+  std::cout << "Adding files to chain... " << std::endl;  
   int chainReturn = chain->AddFileInfoList((TCollection*) filelist->GetList());
 
   //  int chainReturn = chain->Add( fullInputString.c_str() );

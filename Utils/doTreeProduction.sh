@@ -2,23 +2,22 @@
 
 # --- configuration (consider to move this into a separate file) ---
 treeName="mt2"
-#inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/mschoene/babies/chunks/productionTest/"
-#inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/casal/babies/MT2_CMGTools-from-CMSSW_7_4_7/prod747data_Run2015B_golden_residual_all/"
-#inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/casal/babies/MT2_CMGTools-from-CMSSW_7_4_7/prod747data_Run2015B_golden_residual/"
-#inputFolder="/pnfs/psi.ch/cms/trivcat/store/user//casal/babies/MT2_CMGTools-from-CMSSW_7_4_7/prod747mc_Spring15_missingSamples/"
-inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/MT2production/74X/Spring15/11Aug2015/"
-#inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/casal/babies/MT2_CMGTools-from-CMSSW_7_4_7/prod747data_Run2015B_golden_jecV4_fullMET/jecV4_fullMET/"
-#inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/casal/babies/MT2_CMGTools-from-CMSSW_7_4_7/prod747data_Run2015B_golden_jecV4_MET3p0/jecV4_MET3p0/"
-#inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/casal/babies/MT2_CMGTools-from-CMSSW_7_4_7/prod747data_Run2015B_golden_met3p0_v2/met3p0/"
-#inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/pandolf/babies/chunks/PHYS14_jet30_v2/"
-#productionName="08Aug2015_lxBatch_vReco"
-productionName="02Sep2015_standardSkim_root6"
+#inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/casal/babies/MT2_CMGTools-from-CMSSW_7_4_12/data_Run2015D_round2/"
+#inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/babies/MT2_CMGTools-from-CMSSW_7_4_7/prod747mc_Spring15/"
+#inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/babies/MT2_CMGTools-from-CMSSW_7_4_12/MC_forZGratio_05Oct2015/"
+#inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/MT2production/74X/Spring15/22Sep2015_singleTop/"
+inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/babies/MT2_CMGTools-from-CMSSW_7_4_12/data_Run2015D_04Oct2015_MECCA0/"
+productionName="09Oct2015_dataRunD_goldenJSON"
+#productionName="05Oct2015_forMonojetBins"
 fileExt="_post.root"
-isCrab=0
-inputPU="/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/MT2production/74X/firstData2015/PostProcessed/16Aug2015_fullMet_noSkim/JetHT_Run2015B_PromptReco_post.root"
+isCrab=1
+inputPU="/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/MT2production/74X/firstData2015/PostProcessed/04Sep2015_GoldenJSON_v2/JetHT_Run2015C_post.root"
 PUvar="nVert"
-GoldenJSON="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-251883_13TeV_PromptReco_Collisions15_JSON_v2.txt"
-applyJSON=0
+#GoldenJSON="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-255031_13TeV_PromptReco_Collisions15_25ns_JSON_v2.txt"
+#GoldenJSON="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-257599_13TeV_PromptReco_Collisions15_25ns_JSON.txt"
+GoldenJSON="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-258159_13TeV_PromptReco_Collisions15_25ns_JSON.txt"
+#GoldenJSON="/afs/cern.ch/user/g/gzevi/public/Cert_246908-256869_13TeV_PromptReco_Collisions15_25ns_JSON_Photon.txt"
+applyJSON=1
 # --------------------------
 
 
@@ -152,7 +151,7 @@ rm \$skimmingPruningCfg
 
 EOF
 
-qsub batchScript_${name}.sh;
+qsub -q long.q batchScript_${name}.sh;
 rm batchScript_${name}.sh;
 
 done < postProcessing.cfg
