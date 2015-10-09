@@ -8,6 +8,7 @@
 #include "TFile.h"
 #include "TRandom3.h"
 #include "TFitter.h"
+#include "TMath.h"
 
 #include "../interface/MT2Config.h"
 #include "../interface/MT2Analysis.h"
@@ -17,8 +18,18 @@
 
 
 
+Double_t powerlaw(Double_t *x,Double_t *par)
+{
+  //Double_t fitval = TMath::Exp( par[0] + par[1]*TMath::Log( x[0] ) );
+  Double_t fitval = par[0]*TMath::Power( x[0], par[1] );
+  return fitval;
+}
+
+
+
 //void randomizePoisson( MT2EstimateQCD* thisEstimate, float lumi, TRandom3 rand );
 float drawSinglePlot( const std::string& dir, const MT2Region& region, float lumi, TH1D* histo, float mcValue, float mcErr=0. );
+float chiSquareProb( TF1* fit, TH1D* histo, float xMin, float xMax );
 
 
 int main( int argc, char* argv[] ) {
@@ -76,10 +87,15 @@ int main( int argc, char* argv[] ) {
 
   std::string fileName_problem(Form("%s/qcdProblematic.txt", toymcdir.c_str()) );
   std::string fileName_ok     (Form("%s/qcdOK.txt", toymcdir.c_str()) );
+  std::string fileName_fitProblem(Form("%s/fitProblem.txt", toymcdir.c_str()) );
   std::ofstream ofs_problem(fileName_problem);
   std::ofstream ofs_ok     (fileName_ok);
+  std::ofstream ofs_fitProblem(fileName_fitProblem);
 
   TH1D* h1_pull = new TH1D("pull", "", 100, -10., 10.);
+
+  TH1D* h1_chiSquare_fit  = new TH1D("chiSquare_fit" , "", 25, 0., 1.0001 );
+  TH1D* h1_chiSquare_tail = new TH1D("chiSquare_tail", "", 25, 0., 1.0001 );
 
 
 
@@ -129,18 +145,28 @@ int main( int argc, char* argv[] ) {
      
       TH1D* thisRatioAll = thisAll->ratio;    
       TH1D* thisRatioQCD = thisQCD->ratio;    
-      //Th2_axesF1* thisFit = thisAll->exp;
-      TF1* thisFitQCD = thisQCD->exp; 
 
-      Double_t xMin = thisRatioAll->GetBinLowEdge(thisRatioAll->FindBin(150.));
+      Double_t xMin = thisRatioAll->GetXaxis()->GetXmin();
       Double_t xMax = thisRatioAll->GetXaxis()->GetXmax();
 
-      int binMin = thisRatioAll->FindBin(xMin);
+      Double_t xMin_fit = 70;
+      
+
+      TF1* thisFit = new TF1( "fit", powerlaw, xMin_fit, 600., 2 );
+      thisRatioQCD->Fit( thisFit, "QR0" );
+      TF1* thisFitQCD = new TF1( "fit_draw", powerlaw, xMin, xMax, 2 );
+      thisFitQCD->SetParameter( 0, thisFit->GetParameter(0) );
+      thisFitQCD->SetParameter( 1, thisFit->GetParameter(1) );
+      //TF1* thisFitQCD = thisQCD->exp; 
+
+
+      Double_t xMin_int = thisRatioAll->GetBinLowEdge(thisRatioAll->FindBin(150.));
+      int binMin = thisRatioAll->FindBin(xMin_int);
       int binMax = thisRatioAll->FindBin(xMax);
 
       Double_t intErr_ratio;
       Double_t int_ratio = thisRatioQCD->IntegralAndError( binMin, binMax, intErr_ratio );
-      Double_t int_f1    = thisFitQCD->Integral( xMin, xMax );
+      Double_t int_f1    = thisFitQCD->Integral( xMin_int, xMax );
       Double_t intErr_f1 = 0.; //thisFit->IntegralError( xMin, xMax );
 
 
@@ -156,6 +182,16 @@ int main( int argc, char* argv[] ) {
         h1_fitInt->Fill( int_f1 );
 
       } else {
+
+        // compute chisquare:
+        std::cout << "fit range: ";
+        float chisquare_fit  = chiSquareProb( thisFitQCD, thisRatioQCD, xMin_fit, 100. );
+        std::cout << "tail: ";
+        float chisquare_tail = chiSquareProb( thisFitQCD, thisRatioQCD, 100., xMax );
+        h1_chiSquare_fit ->Fill( chisquare_fit  );
+        h1_chiSquare_tail->Fill( chisquare_tail );
+
+        if( chisquare_tail<0.05 ) ofs_fitProblem << iR->getName() << std::endl;
 
         h1_pull->Fill( zTest );
         fitPar0_MC    = thisFitQCD->GetParameter(0);
@@ -181,7 +217,7 @@ int main( int argc, char* argv[] ) {
         if( yMin < 0.03 ) yMin = 0.03;
         if( yMin > yMinAll && yMinAll>0.001 ) yMin = yMinAll;
 
-        TH2D* h2_axes = new TH2D("axes", "", 10, 40., xMax, 10, yMin, yMax );
+        TH2D* h2_axes = new TH2D("axes", "", 10, xMin, xMax, 10, yMin, yMax );
         h2_axes->SetXTitle( "M_{T2} [GeV]" );
         h2_axes->SetYTitle( "Ratio");
         h2_axes->GetXaxis()->SetNoExponent();
@@ -208,7 +244,7 @@ int main( int argc, char* argv[] ) {
         legend->AddEntry( thisFitQCD, "Exp. Fit", "L" );
         legend->Draw("same");
 
-        TLine* lineLeft = new TLine( 60., yMin, 60., yMax );
+        TLine* lineLeft = new TLine( xMin_fit, yMin, xMin_fit, yMax );
         lineLeft->SetLineStyle(2);
         lineLeft->Draw("same");
 
@@ -216,7 +252,7 @@ int main( int argc, char* argv[] ) {
         lineRight->SetLineStyle(2);
         lineRight->Draw("same");
 
-        TH1D* h_band = new TH1D(Form("band_%s", thisFitQCD->GetName()) , "", 500, 40., xMax);
+        TH1D* h_band = new TH1D(Form("band_%s", thisFitQCD->GetName()) , "", 500, xMin, xMax);
         h_band->SetMarkerSize(0);
         h_band->SetFillColor(18); 
         h_band->SetFillStyle(3001);
@@ -296,6 +332,52 @@ int main( int argc, char* argv[] ) {
     ofs_ok     .close();
     std::cout << "-> Wrote OK regions to: " << fileName_ok << std::endl;
     std::cout << "-> Wrote problematic regions to: " << fileName_problem << std::endl;
+  } else {
+
+    ofs_fitProblem.close();
+    std::cout << "-> Wrote fit problems to: " << fileName_fitProblem << std::endl;
+
+    TCanvas* c1 = new TCanvas( "c1", "", 600, 600 );
+    c1->cd();
+
+    h1_chiSquare_fit->SetFillColor(46);
+    h1_chiSquare_fit->SetFillStyle(3004);
+    h1_chiSquare_fit->SetLineColor(46);
+    h1_chiSquare_fit->SetLineWidth(2);
+    h1_chiSquare_fit->SetXTitle("#chi^{2} Probability");
+    h1_chiSquare_fit->SetYTitle("Number of Regions" );
+
+    h1_chiSquare_tail->SetFillColor(38);
+    h1_chiSquare_tail->SetFillStyle(3004);
+    h1_chiSquare_tail->SetLineColor(38);
+    h1_chiSquare_tail->SetLineWidth(2);
+    h1_chiSquare_tail->SetXTitle("#chi^{2} Probability");
+    h1_chiSquare_tail->SetYTitle("Number of Regions" );
+
+    h1_chiSquare_tail->Draw();
+    h1_chiSquare_fit->Draw("same");
+
+    TLegend* legend = new TLegend( 0.35, 0.7, 0.9, 0.9 );
+    legend->SetTextSize(0.035);
+    legend->SetFillColor(0);
+    legend->AddEntry( h1_chiSquare_fit , Form("Fit Range (average=%.2f)", h1_chiSquare_fit->GetMean()), "F" );
+    legend->AddEntry( h1_chiSquare_tail, Form("Tail (average=%.2f)", h1_chiSquare_tail->GetMean()), "F" );
+    legend->Draw("same");
+
+    TPaveText* labelTop = MT2DrawTools::getLabelTopSimulation();
+    labelTop->Draw("same");
+
+    gPad->RedrawAxis();
+
+    c1->SaveAs( Form("%s/chiSquareProb.eps", qcdCRdir.c_str()) );
+    c1->SaveAs( Form("%s/chiSquareProb.pdf", qcdCRdir.c_str()) );
+
+    TFile* outfile = TFile::Open("prova.root", "recreate");
+    outfile->cd();
+    h1_pull->Write();
+    h1_chiSquare_fit->Write();
+    h1_chiSquare_tail->Write();
+    outfile->Close();
   }
 
   return 0;
@@ -390,3 +472,42 @@ float drawSinglePlot( const std::string& dir, const MT2Region& region, float lum
   return rms/fabs(mean);
 
 }
+
+
+
+float chiSquareProb( TF1* fit, TH1D* histo, float xMin, float xMax ) {
+
+  int binMin = histo->FindBin( xMin );
+  int binMax = histo->FindBin( xMax );
+
+  int nPoints = 0;
+  int nPars = fit->GetNpar();
+  float chiSquare = 0.;
+
+  for( int iBin=binMin; iBin<=binMax; ++iBin ) {
+
+    float x = histo->GetBinCenter(iBin); 
+    float fValue = fit->Eval( x );
+    float hValue = histo->GetBinContent(iBin);
+    float hError = histo->GetBinError(iBin);
+
+    if( hValue<=0. ) continue;
+
+    float thisChi = (fValue-hValue)/hError;
+    chiSquare += thisChi*thisChi;
+
+    nPoints += 1;
+
+  } // for points
+
+  int NDF = nPoints - nPars;
+
+  std::cout << "chi2/NDF: " << chiSquare << "/" << NDF << std::endl;
+
+  float chiSquareProb = TMath::Prob( chiSquare, NDF );
+  //float chiSquareNorm = (NDF>0) ? chiSquare/((float)NDF) : 0.;
+
+  return chiSquareProb;
+
+}
+
