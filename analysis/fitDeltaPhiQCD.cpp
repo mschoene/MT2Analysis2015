@@ -10,7 +10,6 @@
 #include "TGraphAsymmErrors.h"
 
 
-#include "../interface/MT2DrawTools.h"
 #include "../interface/MT2Config.h"
 #include "../interface/MT2Analysis.h"
 #include "../interface/MT2Region.h"
@@ -68,10 +67,10 @@ int main( int argc, char* argv[] ) {
 
 
 
-  MT2DrawTools::setStyle();
+  //MT2DrawTools::setStyle();
 
 
-  TH1::AddDirectory(kTRUE);
+  //TH1::AddDirectory(kTRUE);
 
 
   std::string qcdCRdir = cfg.getEventYieldDir() + "/qcdControlRegion"; 
@@ -84,10 +83,12 @@ int main( int argc, char* argv[] ) {
 
   std::set<MT2Region> regions = qcdTree_mc->getRegions();
 
-  MT2Analysis<MT2EstimateQCD>* theFits     = MT2EstimateQCD::makeAnalysisFromEstimateTree( "mc"     , cfg.regionsSet(), qcdTree_mc );
+  //MT2Analysis<MT2EstimateQCD>* theFits     = MT2EstimateQCD::makeAnalysisFromEstimateTree( "mc"     , qcdTree_mc, "" );
+  MT2Analysis<MT2EstimateQCD>* theFits     = MT2EstimateQCD::makeAnalysisFromInclusiveTree( "mc"     , cfg.qcdRegionsSet(), qcdTree_mc, "" );
   theFits->finalize();
 
-  MT2Analysis<MT2EstimateQCD>* theFits_qcd = MT2EstimateQCD::makeAnalysisFromEstimateTree( "qcdOnly", cfg.regionsSet(), qcdTree_mc, "id>=100 && id<200" );
+  //MT2Analysis<MT2EstimateQCD>* theFits_qcd = MT2EstimateQCD::makeAnalysisFromEstimateTree( "qcdOnly", qcdTree_mc, "id>=100 && id<200" );
+  MT2Analysis<MT2EstimateQCD>* theFits_qcd = MT2EstimateQCD::makeAnalysisFromInclusiveTree( "qcdOnly", cfg.qcdRegionsSet(), qcdTree_mc, "id>=100 && id<200" );
   theFits_qcd->finalize();
 
   theFits_qcd->writeToFile( outputdir + "/mcFits.root", "recreate" );
