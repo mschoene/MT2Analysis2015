@@ -1,30 +1,29 @@
 #ifndef MT2EstimateQCD_h
 #define MT2EstimateQCD_h
 
-#include "MT2Estimate.h"
+#include "MT2EstimateTree.h"
 #include "TF1.h"
 
 #include <iostream>
 #include <vector>
 
 
-class MT2EstimateTree;
 
 
 
-class MT2EstimateQCD : public MT2Estimate {
+class MT2EstimateQCD : public MT2EstimateTree {
 
  public:
 
   MT2EstimateQCD( const MT2EstimateQCD& rhs );
-  MT2EstimateQCD( const MT2EstimateTree& rhs, const std::string& selection="" );
+  //MT2EstimateQCD( const MT2EstimateTree& rhs, const std::string& selection="" );
   MT2EstimateQCD( const std::string& aname, const MT2Region& aregion );
   virtual ~MT2EstimateQCD();
 
   void projectFromTree( const MT2EstimateTree* treeEst, const std::string& selection );
 
-  static MT2Analysis<MT2EstimateQCD>* makeAnalysisFromEstimateTree( const std::string& aname, MT2Analysis<MT2EstimateTree>* analysis, const std::string& selection="" );
-  static MT2Analysis<MT2EstimateQCD>* makeAnalysisFromEstimateTreeInclusive( const std::string& aname, const std::string& regionsSet, MT2Analysis<MT2EstimateTree>* analysis, const std::string& selection="" );
+  static MT2Analysis<MT2EstimateQCD>* makeAnalysisFromTree( const std::string& aname, MT2Analysis<MT2EstimateTree>* analysis, const std::string& selection="" );
+  static MT2Analysis<MT2EstimateQCD>* makeAnalysisFromInclusiveTree( const std::string& aname, const std::string& regionsSet, MT2Analysis<MT2EstimateTree>* analysis, const std::string& selection="" );
 
 
   virtual void setName( const std::string& newName );
