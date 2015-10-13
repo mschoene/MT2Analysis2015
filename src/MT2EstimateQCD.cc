@@ -10,7 +10,7 @@
 #include "TMath.h"
 
 
-MT2EstimateQCD::MT2EstimateQCD( const std::string& aname, const MT2Region& aregion ) : MT2Estimate( aname, aregion ) {
+MT2EstimateQCD::MT2EstimateQCD( const std::string& aname, const MT2Region& aregion ) : MT2EstimateTree( aname, aregion ) {
 
   int nBins;
   double* bins;
@@ -32,7 +32,7 @@ MT2EstimateQCD::MT2EstimateQCD( const std::string& aname, const MT2Region& aregi
 
 
 
-
+/*
 MT2EstimateQCD::MT2EstimateQCD( const MT2EstimateTree& treeEst, const std::string& selection ) : MT2Estimate( treeEst ) {
 
 
@@ -67,10 +67,11 @@ MT2EstimateQCD::MT2EstimateQCD( const MT2EstimateTree& treeEst, const std::strin
   dphi_low = 0.3;
 
 }
-
+*/
 
 
 void MT2EstimateQCD::projectFromTree( const MT2EstimateTree* treeEst, const std::string& selection ) {
+
 
   std::string fullSelection = region->getRegionCuts();
   if( selection!="" ) fullSelection = fullSelection + " && " + selection;
@@ -78,11 +79,15 @@ void MT2EstimateQCD::projectFromTree( const MT2EstimateTree* treeEst, const std:
   treeEst->tree->Project( lDphi->GetName(), "mt2", Form("weight*(deltaPhiMin<0.3 && %s)", fullSelection.c_str()) );
   treeEst->tree->Project( hDphi->GetName(), "mt2", Form("weight*(deltaPhiMin>0.3 && %s)", fullSelection.c_str()) );
 
+  gROOT->cd();
+
+  this->tree = treeEst->tree->CopyTree( Form("deltaPhiMin<0.3 && mt2>40. && %s", fullSelection.c_str()) );
+
 }
 
 
 
-MT2Analysis<MT2EstimateQCD>* MT2EstimateQCD::makeAnalysisFromEstimateTree( const std::string& aname, MT2Analysis<MT2EstimateTree>* estimate, const std::string& selection ) {
+MT2Analysis<MT2EstimateQCD>* MT2EstimateQCD::makeAnalysisFromTree( const std::string& aname, MT2Analysis<MT2EstimateTree>* estimate, const std::string& selection ) {
 
   std::set<MT2Region> regions = estimate->getRegions();
 
@@ -106,7 +111,7 @@ MT2Analysis<MT2EstimateQCD>* MT2EstimateQCD::makeAnalysisFromEstimateTree( const
 
 
 
-MT2Analysis<MT2EstimateQCD>* MT2EstimateQCD::makeAnalysisFromEstimateTreeInclusive( const std::string& aname, const std::string& regionsSet, MT2Analysis<MT2EstimateTree>* estimate, const std::string& selection ) {
+MT2Analysis<MT2EstimateQCD>* MT2EstimateQCD::makeAnalysisFromInclusiveTree( const std::string& aname, const std::string& regionsSet, MT2Analysis<MT2EstimateTree>* estimate, const std::string& selection ) {
 
 
   MT2EstimateTree* treeInclusive = estimate->get( MT2Region("HT450toInf_j2toInf_b0toInf") );
@@ -119,7 +124,7 @@ MT2Analysis<MT2EstimateQCD>* MT2EstimateQCD::makeAnalysisFromEstimateTreeInclusi
   MT2Analysis<MT2EstimateQCD>* analysis = new MT2Analysis<MT2EstimateQCD>( aname, regionsSet );
   std::set<MT2Region> regions = analysis->getRegions();
 
-  TH1D::AddDirectory(kTRUE);
+  //TH1D::AddDirectory(kTRUE);
 
   for( std::set<MT2Region>::iterator iR=regions.begin(); iR!=regions.end(); ++iR ) {
 
@@ -136,7 +141,7 @@ MT2Analysis<MT2EstimateQCD>* MT2EstimateQCD::makeAnalysisFromEstimateTreeInclusi
 
 
 
-MT2EstimateQCD::MT2EstimateQCD( const MT2EstimateQCD& rhs ) : MT2Estimate(rhs) {
+MT2EstimateQCD::MT2EstimateQCD( const MT2EstimateQCD& rhs ) : MT2EstimateTree(rhs) {
 
   this->lDphi = new TH1D(*(rhs.lDphi));
   this->hDphi = new TH1D(*(rhs.hDphi));
@@ -275,7 +280,7 @@ void MT2EstimateQCD::sqrtErrors( float scale ){
 
 void MT2EstimateQCD::write() const {
 
-  MT2Estimate::write();
+  MT2EstimateTree::write();
 
   lDphi->Write();
   hDphi->Write();
