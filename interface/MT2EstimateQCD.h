@@ -21,7 +21,10 @@ class MT2EstimateQCD : public MT2Estimate {
   MT2EstimateQCD( const std::string& aname, const MT2Region& aregion );
   virtual ~MT2EstimateQCD();
 
-  static MT2Analysis<MT2EstimateQCD>* makeAnalysisFromEstimateTree( const std::string& aname, const std::string& regionsSet, MT2Analysis<MT2EstimateTree>* analysis, const std::string& selection="" );
+  void projectFromTree( const MT2EstimateTree* treeEst, const std::string& selection );
+
+  static MT2Analysis<MT2EstimateQCD>* makeAnalysisFromEstimateTree( const std::string& aname, MT2Analysis<MT2EstimateTree>* analysis, const std::string& selection="" );
+  static MT2Analysis<MT2EstimateQCD>* makeAnalysisFromEstimateTreeInclusive( const std::string& aname, const std::string& regionsSet, MT2Analysis<MT2EstimateTree>* analysis, const std::string& selection="" );
 
 
   virtual void setName( const std::string& newName );
