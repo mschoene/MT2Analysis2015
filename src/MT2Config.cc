@@ -32,6 +32,7 @@ MT2Config::MT2Config( const std::string& name ) {
   additionalStuff_ = "";
   analysisType_ = "mt2";
   crRegionsSet_ = "13TeV_inclusive";
+  qcdRegionsSet_ = "zurich_onlyHT";
 
   gammaTemplateRegions_ = "13TeV_inclusive"; // default
   gammaTemplateType_    = "RC"; // default
@@ -89,6 +90,8 @@ MT2Config::MT2Config( const std::string& name ) {
       analysisType_ = std::string(StringValue);
     else if( this_name=="crRegionsSet" )
       crRegionsSet_ = std::string(StringValue);
+    else if( this_name=="qcdRegionsSet" )
+      qcdRegionsSet_ = std::string(StringValue);
     else if( this_name=="gamma2bMethod" )
       gamma2bMethod_ = std::string(StringValue);
     else if( this_name=="zllRegions" )
