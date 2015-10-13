@@ -157,6 +157,18 @@ std::string MT2HTRegion::getNiceNameLatex() const {
 }
 
 
+std::string MT2HTRegion::getCuts() const {
+
+  std::string cuts;
+  if( htMax<0. ) 
+    cuts = std::string( Form( "ht >= %f", htMin) );
+  else
+    cuts = std::string( Form( "ht >= %f && ht<%f", htMin, htMax) );
+
+  return cuts;
+
+}
+
 
 bool MT2HTRegion::operator==( const MT2HTRegion& rhs ) const {
 
@@ -436,6 +448,22 @@ std::string MT2SignalRegion::getNiceJetNameLatex( const std::string& pedix, int 
 }
 
 
+
+std::string MT2SignalRegion::getCuts() const {
+
+  std::string cuts( Form("nJets>=%d && nBJets>=%d", nJetsMin, nBJetsMin) );
+  if( nJetsMax>=0 ) {
+    std::string addition( Form(" && nJets<=%d", nJetsMax) );
+    cuts += addition;
+  }
+  if( nBJetsMax>=0 ) {
+    std::string addition( Form(" && nBJets<=%d", nBJetsMax) );
+    cuts += addition;
+  }
+
+  return cuts;
+
+}
 
 
 
@@ -1353,6 +1381,17 @@ std::vector< std::string> MT2Region::getBinNamesLatex() const {
   names.push_back( getBinNameLatex(bins[nBins-1], lastbin) );
 
   return names;
+
+}
+
+
+std::string MT2Region::getRegionCuts() const {
+
+  std::string sigCuts = sigRegion_->getCuts();
+  std::string htCuts  = htRegion_->getCuts();
+
+  std::string cuts = sigCuts + " && " + htCuts;
+  return cuts;
 
 }
 
