@@ -10,9 +10,10 @@
 
 MT2EstimateTree::MT2EstimateTree( const std::string& aname, const MT2Region& aregion ) : MT2Estimate( aname, aregion ) {
 
-  TH1::AddDirectory(kFALSE);
+  //TH1::AddDirectory(kFALSE);
 
   tree = new TTree(this->getHistoName("tree").c_str(), "" );
+  tree->SetDirectory(0);
   
   this->initTree();
 
@@ -23,9 +24,10 @@ MT2EstimateTree::MT2EstimateTree( const std::string& aname, const MT2Region& are
 
 MT2EstimateTree::MT2EstimateTree( const MT2EstimateTree& rhs ) : MT2Estimate( rhs ) {
 
-  TH1::AddDirectory(kFALSE);
+  //TH1::AddDirectory(kFALSE);
 
   tree = rhs.tree->CloneTree(-1);
+  tree->SetDirectory(0);
 
   this->initTree();
 
