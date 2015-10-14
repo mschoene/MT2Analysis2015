@@ -38,7 +38,7 @@
 //extHT: p0 = 385.588; p1 = -1.30116
 
 
-Bool_t doInclusive=true;
+Bool_t doInclusive=false;
 
 MT2Analysis<MT2Estimate>* estimateYield( const std::string& regionsSetSR, MT2Analysis<MT2EstimateTree>* analysisCR);
 
@@ -204,25 +204,50 @@ void getRhat(int nj, float &r0, float &r1, float &r2, float &r3){
 //  }
 
 
-// with cut on deltaPhi and on diffmetmht
+// with cut on deltaPhi and on diffmetmht and fit from mt2>200
+//r_0b = {'h450toInf_j2to3': 0.781 , 'h450toInf_j4to6': 0.578, 'h450toInf_j7toInf': 0.322}
+//r_1b = {'h450toInf_j2to3': 0.162 , 'h450toInf_j4to6': 0.282, 'h450toInf_j7toInf': 0.365}
+//r_2b = {'h450toInf_j2to3': 0.037 , 'h450toInf_j4to6': 0.118, 'h450toInf_j7toInf': 0.250}
+//r_3b = {'h450toInf_j2to3': 0.0032, 'h450toInf_j4to6': 0.021, 'h450toInf_j7toInf': 0.060}
+
+//high ht
   if (nj<4){
-    r0 = 0.74;
-    r1 = 0.22;
-    r2 = 0.032;
-    r3 = 0.0013;
+    r0 = 0.772;
+    r1 = 0.202;
+    r2 = 0.026;
+    r3 = 0.002;
   }
   else if(nj<7){
-    r0 = 0.59;
-    r1 = 0.28;
-    r2 = 0.11;
-    r3 = 0.018;
+    r0 = 0.534;
+    r1 = 0.289;
+    r2 = 0.129;
+    r3 = 0.026;
   }
   else{
-    r0 = 0.44;
-    r1 = 0.31;
-    r2 = 0.18;
-    r3 = 0.036;
+    r0 = 0.359;
+    r1 = 0.335;
+    r2 = 0.236;
+    r3 = 0.057;
   }
+//inclusive ht
+//  if (nj<4){
+//    r0 = 0.781;
+//    r1 = 0.162;
+//    r2 = 0.037;
+//    r3 = 0.003;
+//  }
+//  else if(nj<7){
+//    r0 = 0.578;
+//    r1 = 0.282;
+//    r2 = 0.118;
+//    r3 = 0.021;
+//  }
+//  else{
+//    r0 = 0.322;
+//    r1 = 0.365;
+//    r2 = 0.250;
+//    r3 = 0.060;
+//  }
 
 }
 
@@ -265,28 +290,27 @@ void  getFnj (float ht, float &f23, float &f46, float &f7){
 //f(46)=5.805375e-01
 //f(7)=3.451356e-01
 
-
-
+//  // from MT2>200
 
   if (ht<575){
-    f23 = 0.21;
-    f46 = 0.79;
+    f23 = 0.30;
+    f46 = 0.70;
     f7  = 0.01;
   }
   else if (ht<1000){
-    f23 = 0.16;
-    f46 = 0.61;
-    f7  = 0.23;
+    f23 = 0.14;
+    f46 = 0.50;
+    f7  = 0.36;
   }
   else if (ht<1500){
-    f23 = 0.08;
-    f46 = 0.64;
-    f7  = 0.29; 
+    f23 = 0.18;
+    f46 = 0.56;
+    f7  = 0.26; 
   }
   else {
-    f23 = 0.08;
-    f46 = 0.58;
-    f7  = 0.35;
+    f23 = 0.12;
+    f46 = 0.59;
+    f7  = 0.29;
   }
 
 }
