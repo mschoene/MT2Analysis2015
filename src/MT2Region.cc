@@ -216,6 +216,7 @@ bool MT2HTRegion::isIncluded( const MT2HTRegion* htRegion ) const {
   if( htMax > htRegion->htMax && htRegion->htMax >=0. ) returnBool = false;
   if( htMax < htRegion->htMax && htMax < 0 ) returnBool = false; //To solve case where htMax is Inf and htRegion->htMax is finite
 
+
   return returnBool;
 
 }
@@ -571,6 +572,7 @@ bool MT2SignalRegion::isIncluded( const MT2SignalRegion* sigRegion ) const {
   if( nBJetsMax < sigRegion->nBJetsMax && nBJetsMax < 0 ) returnBool = false; //To solve case where nBJetsMax is inf and sigRegion->nBJetsMax is finite 
   if( sigRegion->mtCut != "" && mtCut != sigRegion->mtCut ) return false;
 
+
   return returnBool;
 
 }
@@ -648,57 +650,57 @@ void MT2Region::getBins( int &nBins, double*& bins) const {
 
   } 
 
-  else if( regionName == "HT450to575_j2toInf_b0toInf" ) {  // inclusive low HT trigger region
+//else if( regionName == "HT450to575_j2toInf_b0toInf" ) {  // inclusive low HT trigger region
 
-    const int nBins_tmp                        = 50;
-    bins = new double[nBins_tmp+1];
-    for( unsigned i=0; i<nBins_tmp+1; ++i ) 
-      bins[i] = (double)i*10.;
-    nBins = nBins_tmp;
+//  const int nBins_tmp                        = 50;
+//  bins = new double[nBins_tmp+1];
+//  for( unsigned i=0; i<nBins_tmp+1; ++i ) 
+//    bins[i] = (double)i*10.;
+//  nBins = nBins_tmp;
 
-  } 
+//} 
 
-  else if( regionName == "HT575to1000_j2toInf_b0toInf" ) {  // inclusive medium HT trigger region
+//else if( regionName == "HT575to1000_j2toInf_b0toInf" ) {  // inclusive medium HT trigger region
 
-    const int nBins_tmp                        = 50;
-    bins = new double[nBins_tmp+1];
-    for( unsigned i=0; i<nBins_tmp+1; ++i ) 
-      bins[i] = (double)i*10.;
-    nBins = nBins_tmp;
+//  const int nBins_tmp                        = 50;
+//  bins = new double[nBins_tmp+1];
+//  for( unsigned i=0; i<nBins_tmp+1; ++i ) 
+//    bins[i] = (double)i*10.;
+//  nBins = nBins_tmp;
 
-  } 
+//} 
 
-  else if( regionName == "HT575to900_j2toInf_b0toInf" ) {  // modified inclusive medium HT trigger region
+//else if( regionName == "HT575to900_j2toInf_b0toInf" ) {  // modified inclusive medium HT trigger region
 
-    const int nBins_tmp                        = 50;
-    bins = new double[nBins_tmp+1];
-    for( unsigned i=0; i<nBins_tmp+1; ++i ) 
-      bins[i] = (double)i*10.;
-    nBins = nBins_tmp;
+//  const int nBins_tmp                        = 50;
+//  bins = new double[nBins_tmp+1];
+//  for( unsigned i=0; i<nBins_tmp+1; ++i ) 
+//    bins[i] = (double)i*10.;
+//  nBins = nBins_tmp;
 
-  } 
+//} 
 
-  else if( regionName == "HT1000toInf_j2toInf_b0toInf" ) {  // inclusive high HT trigger region
+//else if( regionName == "HT1000toInf_j2toInf_b0toInf" ) {  // inclusive high HT trigger region
 
-    const int nBins_tmp                        = 50;
-    bins = new double[nBins_tmp+1];
-    for( unsigned i=0; i<nBins_tmp+1; ++i ) 
-      bins[i] = (double)i*10.;
-    nBins = nBins_tmp;
+//  const int nBins_tmp                        = 50;
+//  bins = new double[nBins_tmp+1];
+//  for( unsigned i=0; i<nBins_tmp+1; ++i ) 
+//    bins[i] = (double)i*10.;
+//  nBins = nBins_tmp;
 
-  } 
+//} 
 
-  else if( regionName == "HT900toInf_j2toInf_b0toInf" ) {  // modified inclusive high HT trigger region
+//else if( regionName == "HT900toInf_j2toInf_b0toInf" ) {  // modified inclusive high HT trigger region
 
-    const int nBins_tmp                        = 50;
-    bins = new double[nBins_tmp+1];
-    for( unsigned i=0; i<nBins_tmp+1; ++i ) 
-      bins[i] = (double)i*10.;
-    nBins = nBins_tmp;
+//  const int nBins_tmp                        = 50;
+//  bins = new double[nBins_tmp+1];
+//  for( unsigned i=0; i<nBins_tmp+1; ++i ) 
+//    bins[i] = (double)i*10.;
+//  nBins = nBins_tmp;
 
-  } 
+//} 
 
-  //HERE
+////HERE
 
   else if( regionName == "HT450to575_j2to3_b0" ){ // new MT2 binning
     
