@@ -50,9 +50,9 @@ int main( int argc, char* argv[] ) {
 
   std::string regionsSetCR = "zurich_onlyHT";
   std::string regionsSetSR = "zurich";
-  MT2Analysis<MT2EstimateTree>* qcdCR = MT2Analysis<MT2EstimateTree>::readFromFile("qcdCRtree.root", "QCD");
+  MT2Analysis<MT2EstimateTree>* qcdCR = MT2Analysis<MT2EstimateTree>::readFromFile("/shome/casal/qcdCRtree.root", "QCD");
   qcdCR->setName("qcdCR");
-  MT2Analysis<MT2EstimateTree>* qcdSR = MT2Analysis<MT2EstimateTree>::readFromFile("qcdSRtree.root", "QCD");
+  MT2Analysis<MT2EstimateTree>* qcdSR = MT2Analysis<MT2EstimateTree>::readFromFile("/shome/casal/qcdSRtree.root", "QCD");
   qcdSR->setName("qcdSR");
 
   MT2Analysis<MT2Estimate>* qcdSRpred;
