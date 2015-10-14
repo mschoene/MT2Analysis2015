@@ -100,8 +100,10 @@ void MT2EstimateTree::projectFromTree( const MT2EstimateTree* treeEst, const std
   std::string fullSelection = region->getRegionCuts();
   if( selection!="" ) fullSelection = fullSelection + " && " + selection;
 
+  treeEst->tree->Project( yield->GetName(), "mt2", Form("weight*(%s)", fullSelection.c_str()) );
+
   gROOT->cd();
-  this->tree = treeEst->tree->CopyTree( Form("deltaPhiMin<0.3 && mt2>40. && %s", fullSelection.c_str()) );
+  this->tree = treeEst->tree->CopyTree( Form("%s", fullSelection.c_str()) );
   this->tree->SetDirectory(0);
   this->tree->SetName( this->getHistoName("tree").c_str() );
 
