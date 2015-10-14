@@ -92,6 +92,55 @@ void MT2EstimateTree::setName( const std::string& newName ) {
 
 
 
+
+void MT2EstimateTree::projectFromTree( const MT2EstimateTree* treeEst, const std::string& selection ) {
+
+  TDirectory* dir = TDirectory::CurrentDirectory();
+
+  std::string fullSelection = region->getRegionCuts();
+  if( selection!="" ) fullSelection = fullSelection + " && " + selection;
+
+  gROOT->cd();
+  this->tree = treeEst->tree->CopyTree( Form("deltaPhiMin<0.3 && mt2>40. && %s", fullSelection.c_str()) );
+  this->tree->SetDirectory(0);
+  this->tree->SetName( this->getHistoName("tree").c_str() );
+
+  dir->cd();
+
+}
+
+
+
+
+MT2Analysis<MT2EstimateTree>* MT2EstimateTree::makeAnalysisFromInclusiveTree( const std::string& aname, const std::string& regionsSet, MT2Analysis<MT2EstimateTree>* estimate, const std::string& selection ) {
+
+
+  MT2EstimateTree* treeInclusive = estimate->get( MT2Region("HT450toInf_j2toInf_b0toInf") );
+  if( treeInclusive==0 ) {
+    std::cout << "[MT2EstimateTree::makeAnalysisFromEstimateTreeInclusive] ERROR!! You need to pass an inclusive MT2EstimateTree Analysis to use this function!" << std::endl;
+    exit(19191);
+  }
+
+  // will create a new analysis with custom regions from inclusive tree:
+  MT2Analysis<MT2EstimateTree>* analysis = new MT2Analysis<MT2EstimateTree>( aname, regionsSet );
+  std::set<MT2Region> regions = analysis->getRegions();
+
+
+  for( std::set<MT2Region>::iterator iR=regions.begin(); iR!=regions.end(); ++iR ) {
+
+    MT2EstimateTree* thisEstimateTree = analysis->get( *iR );
+    thisEstimateTree->projectFromTree( treeInclusive, selection );
+
+  } // for regions
+
+
+  return analysis;
+
+}
+
+
+
+
 void MT2EstimateTree::addVar( MT2Analysis<MT2EstimateTree>* analysis, const std::string& name ) {
 
 
