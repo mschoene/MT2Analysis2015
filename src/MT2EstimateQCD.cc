@@ -72,20 +72,15 @@ MT2EstimateQCD::MT2EstimateQCD( const MT2EstimateTree& treeEst, const std::strin
 
 void MT2EstimateQCD::projectFromTree( const MT2EstimateTree* treeEst, const std::string& selection ) {
 
-  TDirectory* dir = TDirectory::CurrentDirectory();
+  std::string selection_tree = "deltaPhiMin<0.3 && mt2>40.";
+  if( selection!="" ) selection_tree = selection_tree + " && " + selection;
+  MT2EstimateTree::projectFromTree( treeEst, selection_tree );
 
   std::string fullSelection = region->getRegionCuts();
   if( selection!="" ) fullSelection = fullSelection + " && " + selection;
 
   treeEst->tree->Project( lDphi->GetName(), "mt2", Form("weight*(deltaPhiMin<0.3 && %s)", fullSelection.c_str()) );
   treeEst->tree->Project( hDphi->GetName(), "mt2", Form("weight*(deltaPhiMin>0.3 && %s)", fullSelection.c_str()) );
-
-  gROOT->cd();
-  this->tree = treeEst->tree->CopyTree( Form("deltaPhiMin<0.3 && mt2>40. && %s", fullSelection.c_str()) );
-  this->tree->SetDirectory(0);
-  this->tree->SetName( this->getHistoName("tree").c_str() );
-
-  dir->cd();
 
 }
 
