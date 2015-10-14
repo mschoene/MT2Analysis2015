@@ -230,13 +230,8 @@ TF1* MT2EstimateQCD::getFit( const std::string& functionName, float xMin_fit, fl
 
   f1->SetRange( xMin_fit, xMax_fit );
   ratio->Fit( f1, "QR0" ); 
+  f1->SetRange( xMin, xMax);
 
-  TFile* file = TFile::Open("prova.root", "recreate");
-  file->cd();
-  f1->Write();
-  file->Close();
-
-  delete ratio;
   return f1;
 
 }
