@@ -38,6 +38,7 @@ class MT2Analysis {
   T* get( const MT2Region& r ) const;
   T* get( const MT2Tree& mt2tree ) const;
   T* get( float ht, int njets, int nbjets, float mt=-1., float mt2=-1. ) const;
+  T* getWithMatch( const MT2Region& r ) const;
 
   std::string getName() const { return name_; };
   std::string getFullName() const { return fullName_; };
@@ -478,7 +479,7 @@ MT2Analysis<T>::MT2Analysis( const std::string& aname, const std::string& region
     
     std::set<MT2SignalRegion> signalRegions;
     signalRegions.insert(MT2SignalRegion(2,  3, 0,  -1));
-    signalRegions.insert(MT2SignalRegion(4, 6, 0,  -1));
+    signalRegions.insert(MT2SignalRegion(4,  6, 0,  -1));
     signalRegions.insert(MT2SignalRegion(7, -1, 0,  -1));
 
     regions_ = multiplyHTandSignal( htRegions, signalRegions );
@@ -487,16 +488,23 @@ MT2Analysis<T>::MT2Analysis( const std::string& aname, const std::string& region
   } else if( regionsSet=="zurich_onlyJets" ){
 
     regions_.insert(MT2Region(450., -1., 2,  3, 0,  0));
-    regions_.insert(MT2Region(450., -1., 4, 6, 0,  0));
+    regions_.insert(MT2Region(450., -1., 4,  6, 0,  0));
     regions_.insert(MT2Region(450., -1., 7, -1, 0,  0));
     regions_.insert(MT2Region(450., -1., 2,  3, 1,  1));
-    regions_.insert(MT2Region(450., -1., 4, 6, 1,  1));
+    regions_.insert(MT2Region(450., -1., 4,  6, 1,  1));
     regions_.insert(MT2Region(450., -1., 7, -1, 1,  1));
     regions_.insert(MT2Region(450., -1., 2,  3, 2,  2));
-    regions_.insert(MT2Region(450., -1., 4, 6, 2,  2));
+    regions_.insert(MT2Region(450., -1., 4,  6, 2,  2));
     regions_.insert(MT2Region(450., -1., 7, -1, 2,  2));
-    regions_.insert(MT2Region(450., -1., 2,  6, 3,  -1));
-    regions_.insert(MT2Region(450., -1., 7, -1, 3,  -1));
+    regions_.insert(MT2Region(450., -1., 2,  6, 3, -1));
+    regions_.insert(MT2Region(450., -1., 7, -1, 3, -1));
+
+
+  } else if( regionsSet=="zurich_onlyJets_noB" ){
+
+    regions_.insert(MT2Region(450., -1., 2,  3, 0,  -1));
+    regions_.insert(MT2Region(450., -1., 4,  6, 0,  -1));
+    regions_.insert(MT2Region(450., -1., 7, -1, 0,  -1));
 
 
   } else if( regionsSet=="darkMatter_max1b" ){
@@ -509,10 +517,10 @@ MT2Analysis<T>::MT2Analysis( const std::string& aname, const std::string& region
     
     std::set<MT2SignalRegion> signalRegions;
     signalRegions.insert(MT2SignalRegion(2,  3, 0,  0));
-    signalRegions.insert(MT2SignalRegion(4, 6, 0,  0));
+    signalRegions.insert(MT2SignalRegion(4,  6, 0,  0));
     signalRegions.insert(MT2SignalRegion(7, -1, 0,  0));
     signalRegions.insert(MT2SignalRegion(2,  3, 1,  1));
-    signalRegions.insert(MT2SignalRegion(4, 6, 1,  1));
+    signalRegions.insert(MT2SignalRegion(4,  6, 1,  1));
     signalRegions.insert(MT2SignalRegion(7, -1, 1,  1));
 
     regions_ = multiplyHTandSignal( htRegions, signalRegions );
@@ -1307,6 +1315,16 @@ T* MT2Analysis<T>::get( const MT2Region& r ) const {
 
 }
 
+
+
+template<class T>
+T* MT2Analysis<T>::getWithMatch( const MT2Region& r ) const {
+
+  MT2Region* matchedRegion = this->matchRegion(r);
+  if( matchedRegion==0 ) return 0;
+  return this->get(*matchedRegion);
+
+}
 
 
 template<class T> 
