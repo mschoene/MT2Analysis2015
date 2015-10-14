@@ -25,17 +25,21 @@ class MT2EstimateQCD : public MT2EstimateTree {
   static MT2Analysis<MT2EstimateQCD>* makeAnalysisFromTree( const std::string& aname, MT2Analysis<MT2EstimateTree>* analysis, const std::string& selection="" );
   static MT2Analysis<MT2EstimateQCD>* makeAnalysisFromInclusiveTree( const std::string& aname, const std::string& regionsSet, MT2Analysis<MT2EstimateTree>* analysis, const std::string& selection="" );
 
+  TH1D* getRatio() const;
+  TF1* getFit( const std::string& functionName, float xMin_fit, float xMax_fit );
+
+  void fillDphi( float dphi, float mt2=0., float weight=1. );
 
   virtual void setName( const std::string& newName );
  
   
   TH1D* lDphi;
   TH1D* hDphi;
-  TH1D* ratio;
+  //TH1D* ratio;
 
-  TF1* exp;
-  TF1* expPlusC;
-  TF1* expOrC;
+  //TF1* exp;
+  //TF1* expPlusC;
+  //TF1* expOrC;
 
   const MT2EstimateQCD& operator=( const MT2EstimateQCD& rhs );
   MT2EstimateQCD operator+( const MT2EstimateQCD& rhs ) const;
@@ -53,19 +57,18 @@ class MT2EstimateQCD : public MT2EstimateTree {
   friend MT2EstimateQCD operator*( float k, const MT2EstimateQCD& rhs );
   friend MT2EstimateQCD operator/( float k, const MT2EstimateQCD& rhs );
 
-  void fillDphi( float dphi, float mt2=0., float weight=1. );
 
-  void doFit();
+  //void doFit();
 
-  void getRatio() {
-    ratio->Divide(hDphi, lDphi);
-  }
+  //void getRatio() {
+  //  ratio->Divide(hDphi, lDphi);
+  //}
 
-  float getFitXmin () { return fitXmin; }
-  float getFitXmax () { return fitXmax; }
+  //float getFitXmin () { return fitXmin; }
+  //float getFitXmax () { return fitXmax; }
   float getDphiLow() { return dphi_low; }
-  virtual void setFitXmin(float xmin){ fitXmin = xmin;  }
-  virtual void setFitXmax(float xmax){ fitXmax = xmax;  }
+  //virtual void setFitXmin(float xmin){ fitXmin = xmin;  }
+  //virtual void setFitXmax(float xmax){ fitXmax = xmax;  }
   virtual void setDphiLow(float dphi){ dphi_low = dphi; }
 
   virtual void finalize();
@@ -81,7 +84,7 @@ class MT2EstimateQCD : public MT2EstimateTree {
 
  private:
 
-  float fitXmin, fitXmax;  // fit window
+  //float fitXmin, fitXmax;  // fit window
   float dphi_low;          // threshold to define low dphi region
 
 };
