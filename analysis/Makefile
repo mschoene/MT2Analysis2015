@@ -39,6 +39,9 @@ computeLostLepton_CR: computeLostLepton_CR.cpp MT2Region.o MT2Sample.o MT2Estima
 computeZinvFromZmumu: computeZinvFromZmumu.cpp MT2Region.o MT2Sample.o MT2EstimateSyst.o MT2Estimate.o
 	$(CC) -Wall $(INCLUDES) -o computeZinvFromZmumu computeZinvFromZmumu.cpp MT2Region.o MT2Sample.o MT2EstimateSyst.o MT2Estimate.o $(ROOTFLAG) $(EXTRALIBS)
 
+closureQCD: closureQCD.cpp MT2Region.o MT2Estimate.o MT2EstimateTree.o MT2DrawTools.o
+	$(CC) -Wall $(INCLUDES) -o closureQCD closureQCD.cpp MT2Region.o MT2Estimate.o MT2EstimateTree.o MT2DrawTools.o $(ROOTFLAG) $(EXTRALIBS)
+
 estimateQCD: estimateQCD.cpp MT2Region.o MT2Sample.o MT2EstimateQCD.o MT2Estimate.o MT2DrawTools.o
 	$(CC) -Wall $(INCLUDES) -o estimateQCD estimateQCD.cpp MT2Region.o MT2Sample.o MT2EstimateQCD.o MT2Estimate.o MT2DrawTools.o $(ROOTFLAG) $(EXTRALIBS)
 
