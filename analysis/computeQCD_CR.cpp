@@ -12,11 +12,13 @@
 // this analysis:
 // fills all necesary histograms for QCD estimation
 
-float lumi = 0.042; //fb-1
+float lumi = 0.454; //fb-1
 
 // to do: make these as optional arguments
 bool doDiffMetMht = true;  // apply the |MET-MHT|/MET cut?
-bool doHFjetVeto  = true;  // apply HF jet veto
+bool doHFjetVeto  = false;  // apply HF jet veto
+
+bool onlyData = false;  // run only on data
 
 MT2Analysis<MT2EstimateQCD>* fillCR( const MT2Sample& sample, const std::string& regionsSet);
 MT2Analysis<MT2EstimateQCD>* merge ( std::vector<MT2Analysis<MT2EstimateQCD> *> anas, const std::string& regionsSet, const std::string& name, int id_min, int id_max );
@@ -24,21 +26,25 @@ MT2Analysis<MT2EstimateQCD>* merge ( std::vector<MT2Analysis<MT2EstimateQCD> *> 
 int main( int argc, char* argv[] ) {
 
 
-  if( argc>2 ) {
-    std::cout << "USAGE: ./qcdControlRegion [samplesFileName]" << std::endl;
+  if( argc>3 ) {
+    std::cout << "USAGE: ./qcdControlRegion [samplesFileName]  [regionsSet]" << std::endl;
     std::cout << "Exiting." << std::endl;
     exit(11);
   }
 
-  std::string samplesFileName = "74X_jecV4_MET30_QCD";
+  //std::string samplesFileName = "74X_jecV4_MET30_QCD";
+  std::string samplesFileName = "Spring15_25ns_qcdSkim";
+  //std::string regionsSet = "zurich_HTtriggers";
+  std::string regionsSet = "zurich_onlyHT";
+  //std::string regionsSet = "zurich_HTtriggers2";
   if( argc>1 ) {
     std::string samplesFileName_tmp(argv[1]); 
     samplesFileName = samplesFileName_tmp;
+    if( argc>2 ) {
+      std::string regionsSet_tmp(argv[2]); 
+      regionsSet = regionsSet_tmp; 
+    }
   }
-
-
-  std::string regionsSet = "zurich_HTtriggers";
-  //std::string regionsSet = "zurich_HTtriggers2";
 
   TH1::AddDirectory(kFALSE); // stupid ROOT memory allocation needs this
 
@@ -57,35 +63,39 @@ int main( int argc, char* argv[] ) {
 
   std::vector< MT2Analysis<MT2EstimateQCD>* > controlRegions;
   for( unsigned i=0; i<samples.size(); ++i ) 
-    controlRegions.push_back( fillCR( samples[i], regionsSet ) );
+    if ( !onlyData || samples[i].id<100)
+      controlRegions.push_back( fillCR( samples[i], regionsSet ) );
 
-  MT2Analysis<MT2EstimateQCD>* qcdCR  = merge( controlRegions, regionsSet, "qcdCR", 100, 199 );
-  qcdCR->finalize();
-
-  controlRegions[0]->finalize();
-  controlRegions[0]->writeToFile( outputdir + "/qcdCR.root" );
-  for( unsigned i=1; i<samples.size(); ++i ) {
-    controlRegions[i]->finalize();
-  controlRegions[i]->addToFile( outputdir + "/qcdCR.root" );
+  if ( !onlyData) {
+    MT2Analysis<MT2EstimateQCD>* qcdCR  = merge( controlRegions, regionsSet, "qcdCR", 100, 199 );
+    qcdCR->finalize();
+    
+    controlRegions[0]->finalize();
+    controlRegions[0]->writeToFile( outputdir + "/qcdCR.root" );
+    for( unsigned i=1; i<samples.size(); ++i ) {
+      controlRegions[i]->finalize();
+      controlRegions[i]->addToFile( outputdir + "/qcdCR.root" );
+    }
+    qcdCR->addToFile( outputdir + "/qcdCR.root" );
+    
+    //qcdCR->writeToFile( outputdir + "/qcdCR.root" );
+    
+    MT2Analysis<MT2EstimateQCD>* topCR    = merge( controlRegions, regionsSet, "topCR"  , 300, 499 );
+    MT2Analysis<MT2EstimateQCD>* wjetsCR  = merge( controlRegions, regionsSet, "wjetsCR", 500, 599 );
+    MT2Analysis<MT2EstimateQCD>* zjetsCR  = merge( controlRegions, regionsSet, "zjetsCR", 600, 699 );
+    topCR  ->finalize();
+    wjetsCR->finalize();
+    zjetsCR->finalize();
+    topCR  ->addToFile( outputdir + "/qcdCR.root" );
+    wjetsCR->addToFile( outputdir + "/qcdCR.root" );
+    zjetsCR->addToFile( outputdir + "/qcdCR.root" );
   }
-  qcdCR->addToFile( outputdir + "/qcdCR.root" );
-  
-  //qcdCR->writeToFile( outputdir + "/qcdCR.root" );
 
-  MT2Analysis<MT2EstimateQCD>* topCR    = merge( controlRegions, regionsSet, "topCR"  , 300, 499 );
-  MT2Analysis<MT2EstimateQCD>* wjetsCR  = merge( controlRegions, regionsSet, "wjetsCR", 500, 599 );
-  MT2Analysis<MT2EstimateQCD>* zjetsCR  = merge( controlRegions, regionsSet, "zjetsCR", 600, 699 );
-  topCR  ->finalize();
-  wjetsCR->finalize();
-  zjetsCR->finalize();
 
   MT2Analysis<MT2EstimateQCD>* dataCR  = merge( controlRegions, regionsSet, "dataCR", 1, 99 );
   dataCR->finalize();
-
-  topCR  ->addToFile( outputdir + "/qcdCR.root" );
-  wjetsCR->addToFile( outputdir + "/qcdCR.root" );
-  zjetsCR->addToFile( outputdir + "/qcdCR.root" );
   dataCR ->addToFile( outputdir + "/qcdCR.root" );
+
 }
 
 
@@ -115,7 +125,7 @@ MT2Analysis<MT2EstimateQCD>* fillCR( const MT2Sample& sample, const std::string&
   TTree* tree = (TTree*)file->Get("mt2");
   
   // In absence of skimmed ntuples let's filter to gain some speed
-  TString filter = "mt2>30&&ht>1000"; // ht>1000 for 50ns only! dangerous temporary hardcoded cut to be revisited
+  TString filter = "mt2>30&&ht>450";
   tree->Draw(">>selList", filter);
   TEventList *myEvtList = (TEventList*)gDirectory->Get("selList");
   tree->SetEventList(myEvtList);
@@ -142,9 +152,10 @@ MT2Analysis<MT2EstimateQCD>* fillCR( const MT2Sample& sample, const std::string&
     if ( !(myTree.met_pt>30 && myTree.nVert>0 && myTree.nJet30>=2)   ) continue;
     if ( !(myTree.passLeptonVeto() && myTree.passIsoTrackVeto())     ) continue;
     if ( doDiffMetMht && !(myTree.diffMetMht < 0.5*myTree.met_pt)    ) continue;
-    if ( myTree.isData==1 && !(myTree.Flag_CSCTightHaloFilter==1 && 
-			       myTree.Flag_HBHENoiseFilter   ==1 &&
-			       myTree.Flag_eeBadScFilter     ==1   ) )  continue;
+    if ( myTree.isData==1 && ( !myTree.isGolden==1 ||
+			       !(myTree.Flag_CSCTightHaloFilter==1 && 
+				 myTree.Flag_HBHENoiseFilter   ==1 &&
+				 myTree.Flag_eeBadScFilter     ==1) ) )  continue;
 
 
     if (doHFjetVeto) {
@@ -162,6 +173,9 @@ MT2Analysis<MT2EstimateQCD>* fillCR( const MT2Sample& sample, const std::string&
     int njets  = myTree.nJet30;
     int nbjets = myTree.nBJet20;
     int isData = myTree.isData;
+
+    if (isData && ( (ht<575  && myTree.HLT_ht350prescale==0) ||
+		    (ht>575 && ht<1000 && myTree.HLT_ht475prescale==0) ) )  continue;
 
     Double_t weight = isData ? 1.0 : myTree.evt_scale1fb*lumi;
 
