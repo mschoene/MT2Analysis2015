@@ -79,7 +79,8 @@ int main( int argc, char* argv[] ) {
     std::vector<MT2Sample> samples_qcd  = MT2Sample::loadSamples(samplesFile, 100, 199);
 
 
-    MT2Analysis<MT2EstimateTree>* qcdCRtree = new MT2Analysis<MT2EstimateTree>( "qcdCRtree", cfg.regionsSet() );
+    MT2Analysis<MT2EstimateTree>* qcdCRtree = new MT2Analysis<MT2EstimateTree>( "qcdCRtree", "13TeV_inclusive" );
+    //MT2Analysis<MT2EstimateTree>* qcdCRtree = new MT2Analysis<MT2EstimateTree>( "qcdCRtree", cfg.regionsSet() );
     
     
     for( unsigned i=0; i<samples_wjet.size(); ++i ) 
@@ -110,7 +111,8 @@ int main( int argc, char* argv[] ) {
       exit(1209);
     }
 
-    MT2Analysis<MT2EstimateTree>* data = new MT2Analysis<MT2EstimateTree>( "qcdCRtree", cfg.regionsSet() );
+    MT2Analysis<MT2EstimateTree>* data = new MT2Analysis<MT2EstimateTree>( "qcdCRtree", "13TeV_inclusive" );
+    //MT2Analysis<MT2EstimateTree>* data = new MT2Analysis<MT2EstimateTree>( "qcdCRtree", cfg.regionsSet() );
     for( unsigned i=0; i < samples_data.size(); ++i )
       computeYield( samples_data[i], cfg, data );
 
