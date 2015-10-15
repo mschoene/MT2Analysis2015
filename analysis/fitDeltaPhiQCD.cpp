@@ -155,15 +155,17 @@ int main( int argc, char* argv[] ) {
 
     int bin_bJets = this_r_hat ->yield->FindBin(iR->nBJetsMin());
     float thisRhatValue = this_r_hat ->yield->GetBinContent( bin_bJets );
-    this_estimate->yield->Scale( thisRhatValue );
 
     int bin_jets = this_f_jets->yield->FindBin(iR->nJetsMin() );
     float thisFjetsValue = this_f_jets ->yield->GetBinContent( bin_jets );
+
     if( iR->nBJetsMin()==3 && iR->nJetsMin()==2 ) {
       int bin_jets_2 = this_f_jets->yield->FindBin(4);
       thisFjetsValue += this_f_jets ->yield->GetBinContent( bin_jets_2 );
     }
-    this_estimate->yield->Scale( this_f_jets->yield->GetBinContent( bin_jets  ) );
+
+    this_estimate->yield->Scale( thisRhatValue  );
+    this_estimate->yield->Scale( thisFjetsValue );
 
 
   }  // for regions
@@ -654,7 +656,7 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
   
   TLine* lHT[3];
   for( int iHT=1; iHT < 4; iHT++ ){
-    lHT[iHT-1] = new TLine(11*iHT, 0.0, 11*iHT, yMax );
+    lHT[iHT-1] = new TLine(11*iHT, -3., 11*iHT, yMax );
     lHT[iHT-1]->SetLineColor(kBlack);
     lHT[iHT-1]->SetLineStyle(3);
     lHT[iHT-1]->SetLineWidth(2);
@@ -695,26 +697,26 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
 
   std::string thisName = Form("%s_ratio", hdata->GetName());
   TH1D* h_Ratio = (TH1D*) hdata->Clone(thisName.c_str());
-  h_Ratio->Divide(hestimate);
-  h_Ratio->SetStats(0);
+  for( int iBin=1; iBin<h_Ratio->GetXaxis()->GetNbins()+1; ++iBin ) {
+    float mc = hdata->GetBinContent(iBin);
+    float mc_err = hdata->GetBinError(iBin);
+    float est = hestimate->GetBinContent(iBin);
+    float est_err = hestimate->GetBinError(iBin);
+    float denom = sqrt( mc_err*mc_err + est_err*est_err );
+    if( denom!=0. ) {
+      h_Ratio->SetBinContent( iBin, (mc-est)/denom );
+      h_Ratio->SetBinError( iBin, 1. );
+    }
+  }
   h_Ratio->SetMarkerStyle(20);
   h_Ratio->SetLineColor(1);
-  h_Ratio->GetXaxis()->SetLabelSize(0.00);
-  h_Ratio->GetXaxis()->SetTickLength(0.09);
-  h_Ratio->GetYaxis()->SetNdivisions(5,5,0);
-  h_Ratio->GetYaxis()->SetRangeUser(0.0,2.0);
-  h_Ratio->GetYaxis()->SetTitleSize(0.17);
-  h_Ratio->GetYaxis()->SetTitleOffset(0.4);
-  h_Ratio->GetYaxis()->SetLabelSize(0.17);
-  h_Ratio->GetYaxis()->SetTitle("Ratio");
-
   h_Ratio->SetLineWidth(2);
-  //h_Ratio->Draw("P,E");
   
 
-  TH2D* h2_axes_ratio = MT2DrawTools::getRatioAxes( 0, MT2Regions.size(), 0.0, 2.0 );
+  TH2D* h2_axes_ratio = MT2DrawTools::getRatioAxes( 0, MT2Regions.size(), -3., 3.);
+  h2_axes_ratio->SetYTitle("Pull");
 
-  TLine* LineCentral = new TLine(0, 1.0, MT2Regions.size(), 1.0);
+  TLine* LineCentral = new TLine(0, 0, MT2Regions.size(), 0);
   LineCentral->SetLineColor(1);
 
 
