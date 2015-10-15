@@ -33,17 +33,17 @@
 // note: need to rerun over samples to have an event by event estimation
 // todo: extend MT2EstimateQCD to maybe inherit from MT2EstimateTree so no need to rerun over samples
 
-float lumi = 0.042; //fb-1
+float lumi = 0.454; //fb-1
 
 
 // todo: make optional arguments for these guys
 bool doDiffMetMht = true;
-bool doHFjetVeto = true;
+bool doHFjetVeto = false;
 
 bool doRand = false;
 
 bool recompute     = true; // don't loop over samples if already done and only drawing modifications are desired
-bool recomputeData = false; // force recompute data. For instance if only data or fit to data has changed. 
+bool recomputeData = true; // force recompute data. For instance if only data or fit to data has changed. 
                             // only makes a difference if recompute==false
                             // NOTE: to use with caution. if fit changed then subtraction from non-QCD will be different so things must be recomputed
 
@@ -51,7 +51,7 @@ MT2Analysis<MT2Estimate>* merge ( std::vector<MT2Analysis<MT2Estimate> *> anas, 
 void computeYield( const MT2Sample& sample, const std::string& regionsSet,
 		   MT2Analysis<MT2Estimate>*  analysis,
 		   MT2Analysis<MT2Estimate>*  analysis_QCDfromData, 
-		   MT2Analysis<MT2EstimateQCD>* dataQCD,
+		   MT2Analysis<MT2EstimateQCD>* dataQCD, MT2Analysis<MT2EstimateQCD>* dataQCDpsLow, MT2Analysis<MT2EstimateQCD>* dataQCDpsMed, 
 		   float lumi=1. );
 
 void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, std::vector<MT2Analysis<MT2Estimate>* > bgYields , const std::string& prefix);
@@ -66,9 +66,11 @@ int main( int argc, char* argv[] ) {
     exit(11);
   }
 
-  std::string samplesFileName = "74X_jecV4_MET30_QCD";
+  //std::string samplesFileName = "74X_jecV4_MET30_QCD";
+  std::string samplesFileName = "Spring15_25ns_qcdSkim";
   //std::string regionsSet = "zurich_HTtriggers2";
-  std::string regionsSet = "zurich_HTtriggers";
+  //std::string regionsSet = "zurich_HTtriggers";
+  std::string regionsSet = "zurich_onlyHT";
   std::string postfix = "";
 
   if( argc>1 ) {
@@ -92,7 +94,9 @@ int main( int argc, char* argv[] ) {
 
   // get QCD fits to subtracted data
   std::string rand_text = doRand ? "_rand" : "";
-  MT2Analysis<MT2EstimateQCD>* dataQCD    = MT2Analysis<MT2EstimateQCD>::readFromFile(dir + "/qcdCRmod"+rand_text+".root", "dataSubCR");
+  MT2Analysis<MT2EstimateQCD>* dataQCD      = MT2Analysis<MT2EstimateQCD>::readFromFile(dir + "/qcdCRmod"+rand_text+".root", "dataSubCR");
+  MT2Analysis<MT2EstimateQCD>* dataQCDps180 = MT2Analysis<MT2EstimateQCD>::readFromFile(dir + "/qcdCRmod"+rand_text+".root", "dataSubCRps180");
+  MT2Analysis<MT2EstimateQCD>* dataQCDps60  = MT2Analysis<MT2EstimateQCD>::readFromFile(dir + "/qcdCRmod"+rand_text+".root", "dataSubCRps60");
 
   // get samples
   std::string samplesFile = "../samples/samples_" + samplesFileName + ".dat";
@@ -119,7 +123,7 @@ int main( int argc, char* argv[] ) {
      for( unsigned i=0; i<samples.size(); ++i ) {
        MT2Analysis<MT2Estimate>* analysis = new MT2Analysis<MT2Estimate>( samples[i].sname, regionsSet, samples[i].id );
        MT2Analysis<MT2Estimate>* analysis_QCDfromData = new MT2Analysis<MT2Estimate>( samples[i].sname, regionsSet, samples[i].id );
-       computeYield( samples[i], regionsSet, analysis, analysis_QCDfromData, dataQCD, lumi);
+       computeYield( samples[i], regionsSet, analysis, analysis_QCDfromData, dataQCD, dataQCDps180, dataQCDps60, lumi);
        EventYield.push_back(analysis);
        EventYield_QCDfromData.push_back(analysis_QCDfromData);
      }
@@ -155,7 +159,7 @@ int main( int argc, char* argv[] ) {
         if (samples[i].id>99) continue;
         MT2Analysis<MT2Estimate>* analysis = new MT2Analysis<MT2Estimate>( samples[i].sname, regionsSet, samples[i].id );
         MT2Analysis<MT2Estimate>* analysis_QCDfromData = new MT2Analysis<MT2Estimate>( samples[i].sname, regionsSet, samples[i].id );
-        computeYield( samples[i], regionsSet, analysis, analysis_QCDfromData, dataQCD, lumi);
+        computeYield( samples[i], regionsSet, analysis, analysis_QCDfromData, dataQCD, dataQCDps180, dataQCDps60, lumi);
         EventYield.push_back(analysis);
         EventYield_QCDfromData.push_back(analysis_QCDfromData);
       }
@@ -217,7 +221,7 @@ MT2Analysis<MT2Estimate>* merge( std::vector<MT2Analysis<MT2Estimate> *> anas, c
 void computeYield( const MT2Sample& sample, const std::string& regionsSet,
 		   MT2Analysis<MT2Estimate>* analysis,
 		   MT2Analysis<MT2Estimate>* analysis_QCDfromData, 
-		   MT2Analysis<MT2EstimateQCD>* dataQCD,
+		   MT2Analysis<MT2EstimateQCD>* dataQCD, MT2Analysis<MT2EstimateQCD>* dataQCDpsLow, MT2Analysis<MT2EstimateQCD>* dataQCDpsMed,
 		   float lumi ) {
 
 
@@ -230,7 +234,7 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet,
   TTree* tree = (TTree*)file->Get("mt2");
   
   // In absence of skimmed ntuples let's filter to gain some speed
-  TString filter = "met_pt>30&&ht>1000";
+  TString filter = "met_pt>30&&ht>450";
   tree->Draw(">>selList", filter);
   TEventList *myEvtList = (TEventList*)gDirectory->Get("selList");
   tree->SetEventList(myEvtList);
@@ -258,10 +262,11 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet,
     if ( !(myTree.met_pt>30 && myTree.nVert>0 && myTree.nJet30>=2)   ) continue;
     if ( !(myTree.passLeptonVeto() && myTree.passIsoTrackVeto())     ) continue;
     if ( doDiffMetMht && !(myTree.diffMetMht < 0.5*myTree.met_pt)    ) continue;
-    if ( myTree.isData==1 && !(myTree.Flag_CSCTightHaloFilter==1 && 
-			       myTree.Flag_HBHENoiseFilter   ==1 &&
-			       myTree.Flag_eeBadScFilter     ==1   ) )  continue;
-
+    if ( myTree.isData==1 && ( !myTree.isGolden || 
+			       !(myTree.Flag_CSCTightHaloFilter==1 && 
+				 myTree.Flag_HBHENoiseFilter   ==1 &&
+				 myTree.Flag_eeBadScFilter     ==1) ) )  continue;
+    
 
     if (doHFjetVeto) {
       int nJetHF30 = 0;
@@ -281,20 +286,31 @@ void computeYield( const MT2Sample& sample, const std::string& regionsSet,
     float dphi = myTree.deltaPhiMin;
     int isData = myTree.isData;
 
+    if (isData && ( (ht<575  && myTree.HLT_ht350prescale==0) ||
+		    (ht>575 && ht<1000 && myTree.HLT_ht475prescale==0) ) )  continue;
+
+
     if (met>30) met = 200.;  // don't do met>200 for low HT regions (do met>30)
     //if (ht<1000 && met>30) met = 200.;  // don't do met>200 for low HT regions (do met>30)
 
     Double_t weight = isData ? 1.0 : myTree.evt_scale1fb*lumi;
 
     if (dphi > 0.3){ 
-      MT2Estimate* thisEstimate = analysis->get( ht, njets, nbjets, met, minMTBmet, mt2 );
+      MT2Estimate* thisEstimate = analysis->get( ht, njets, nbjets,  minMTBmet, mt2 );
       if( thisEstimate==0 ) continue;
       thisEstimate->yield->Fill(mt2, weight );
     }
     else{
-      MT2Estimate* thisEstimate = analysis_QCDfromData->get( ht, njets, nbjets, met, minMTBmet, mt2 );
+      MT2Estimate* thisEstimate = analysis_QCDfromData->get( ht, njets, nbjets, minMTBmet, mt2 );
       if( thisEstimate==0 ) continue;
-      float r = dataQCD->get( ht, njets, nbjets, met, minMTBmet, mt2 )->exp->Eval(mt2);
+      float r;
+      if (ht>1000)
+	r = dataQCD->get( ht, njets, nbjets, minMTBmet, mt2 )->exp->Eval(mt2);
+      else if (ht>575)
+	r = dataQCDpsMed->get( ht, njets, nbjets, minMTBmet, mt2 )->exp->Eval(mt2);
+      else
+	r = dataQCDpsLow->get( ht, njets, nbjets, minMTBmet, mt2 )->exp->Eval(mt2);
+
       thisEstimate->yield->Fill(mt2, r*weight );
     }
     
@@ -347,7 +363,13 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
     MT2Region thisRegion( (*iMT2) );
 
 
-    TH1D* h1_data = data->get(thisRegion)->yield;
+    TH1D* h1_data = (TH1D*)data->get(thisRegion)->yield->Clone();
+    h1_data->SetName(Form("%s%s",h1_data->GetName(),prefix.c_str()));
+    // blinded data
+    for (int b = 0; b<=h1_data->GetNbinsX(); b++) {
+      if (h1_data->GetBinLowEdge(b)+h1_data->GetBinWidth(b)>200)
+	h1_data->SetBinContent(b,0);
+    }
 
     TFile* histoFile = TFile::Open( Form("%s/histograms%s_%s.root", fullPath.c_str(), prefix.c_str(), thisRegion.getName().c_str()), "recreate" );
     histoFile->cd();
@@ -370,9 +392,26 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
       	for (int b = 0; b<=6; b++) {
       	  h1_bg->SetBinContent(b,0);
       	}
-
       }
-	
+      
+      // apply prescales to mc components; ps values hardcoded for now
+      std::cout << "bkg is: " << bgYields[index]->getFullName() << std::endl;
+      if ( !(((TString)bgYields[index]->getFullName()).Contains("QCDfromData")) ) {
+	std::cout << "entering mc component: " << bgYields[index]->getFullName() << std::endl;
+	if ( ((TString)thisRegion.getName()).Contains("HT450to575") ){
+	  std::cout << "prescale 180: " << thisRegion.getName() << std::endl;
+	  std::cout << "integral before prescale: " << h1_bg->Integral() << std::endl;
+	  h1_bg->Scale(1./180.);
+	  std::cout << "integral after prescale: " << h1_bg->Integral() << std::endl;
+	}
+	else if ( ((TString)thisRegion.getName()).Contains("HT575to1000") ) {
+	  std::cout << "prescale 60: " << thisRegion.getName() << std::endl;
+	  std::cout << "integral before prescale: " << h1_bg->Integral() << std::endl;
+	  h1_bg->Scale(1./60.);
+	  std::cout << "integral after prescale: " << h1_bg->Integral() << std::endl;
+	}
+      }	
+
       bgStack.Add(h1_bg);
     }
 
