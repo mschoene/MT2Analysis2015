@@ -27,6 +27,8 @@
 
 void projectFromInclusive( MT2Analysis<MT2Estimate>* analysis, MT2Analysis<MT2EstimateTree>* ana_inclusive, const std::string& selection );
 void fillFromTreeAndRatio( MT2Estimate* estimate, MT2Estimate* r_effective, TTree* tree, TF1* f1_ratio );
+void get_rHat( MT2Analysis<MT2Estimate>* rHat, MT2Analysis<MT2EstimateTree>* analysis );
+void get_fJets( MT2Analysis<MT2Estimate>* fJets, MT2Analysis<MT2EstimateTree>* analysis );
 void drawSingleFit( const std::string& outdir, TF1* thisFitQCD, MT2EstimateQCD* qcd, MT2EstimateQCD* all, float xMin_fit, float xMax_fit );
 void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estimate, MT2Analysis<MT2Estimate>* mcTruth );
 
@@ -85,19 +87,28 @@ int main( int argc, char* argv[] ) {
 
 
   std::string regionsSet = cfg.regionsSet();
-  regionsSet = "zurich_onlyHT";
 
-  MT2Analysis<MT2Estimate>*    mcTruth = new MT2Analysis<MT2Estimate>( "mcTruth", regionsSet );
+  MT2Analysis<MT2Estimate>*  mcTruth = new MT2Analysis<MT2Estimate>( "mcTruth", regionsSet );
+  //projectFromInclusive( mcTruth, qcdTree_mc, "id>=154 && id<=157 && deltaPhiMin>0.3 && mt2>200." );
   projectFromInclusive( mcTruth, qcdTree_mc, "id>=100 && id<200 && deltaPhiMin>0.3 && mt2>200." );
   //projectFromInclusive( mcTruth, qcdTree_mc, "((id>=154 && id<=157 && ht>=1500.) || ( id>=100 && id<200 && ht<1500.)) && deltaPhiMin>0.3 && mt2>200." );
 
 
   MT2Analysis<MT2Estimate>* estimate     = new MT2Analysis<MT2Estimate>("qcdEstimate", regionsSet);
   MT2Analysis<MT2Estimate>* r_effective  = new MT2Analysis<MT2Estimate>("r_effective", regionsSet);
-  //MT2Analysis<MT2Estimate>* estimate     = new MT2Analysis<MT2Estimate>("qcdEstimate", regions);
-  //MT2Analysis<MT2Estimate>* r_effective  = new MT2Analysis<MT2Estimate>("r_effective", regions);
-  //MT2Analysis<MT2Estimate>* r_hat        = new MT2Analysis<MT2Estimate>("r_hat"      , regions);
-  //MT2Analysis<MT2Estimate>* f_jets       = new MT2Analysis<MT2Estimate>("f_jets"     , regions);
+  MT2Analysis<MT2Estimate>* r_hat        = new MT2Analysis<MT2Estimate>("r_hat"      , "zurich_onlyJets_noB");
+  MT2Analysis<MT2Estimate>* f_jets       = new MT2Analysis<MT2Estimate>("f_jets"     , "zurich_onlyHT");
+
+
+  MT2Analysis<MT2EstimateTree>* mcTruth_ht   = MT2EstimateTree::makeAnalysisFromInclusiveTree( "mcTruth_ht"  , "zurich_onlyHT"      , qcdTree_mc, "id>=154 && id<=157 && deltaPhiMin>0.3 && mt2>200." );
+  MT2Analysis<MT2EstimateTree>* mcTruth_jets = MT2EstimateTree::makeAnalysisFromInclusiveTree( "mcTruth_jets", "zurich_onlyJets_noB", qcdTree_mc, "id>=154 && id<=157 && deltaPhiMin>0.3 && mt2>200." );
+
+  get_rHat ( r_hat , mcTruth_jets );
+  get_fJets( f_jets, mcTruth_ht   );
+
+
+  MT2Analysis<MT2EstimateQCD>* mc_all  = MT2EstimateQCD::makeAnalysisFromInclusiveTree( "mc"     , cfg.qcdRegionsSet(), qcdTree_mc, "" );
+  MT2Analysis<MT2EstimateQCD>* qcdOnly = MT2EstimateQCD::makeAnalysisFromInclusiveTree( "qcdOnly", cfg.qcdRegionsSet(), qcdTree_mc, "id>=100 && id<200" );
 
 
 
@@ -105,10 +116,6 @@ int main( int argc, char* argv[] ) {
   std::string outputdir = qcdCRdir;
   std::string fitsDir = qcdCRdir + "/fits";
   system( Form("mkdir -p %s", fitsDir.c_str() ));
-
-  MT2Analysis<MT2EstimateQCD>* mc_all  = MT2EstimateQCD::makeAnalysisFromInclusiveTree( "mc"     , cfg.qcdRegionsSet(), qcdTree_mc, "" );
-  MT2Analysis<MT2EstimateQCD>* qcdOnly = MT2EstimateQCD::makeAnalysisFromInclusiveTree( "qcdOnly", cfg.qcdRegionsSet(), qcdTree_mc, "id>=100 && id<200" );
-
 
 
   std::set<MT2Region> regions = estimate->getRegions();
@@ -120,24 +127,44 @@ int main( int argc, char* argv[] ) {
 
     MT2Estimate* this_estimate     = estimate    ->get( *iR );
     MT2Estimate* this_r_effective  = r_effective ->get( *iR );
-    //MT2Estimate* this_r_hat        = r_hat       ->get( *iR );
-    //MT2Estimate* this_f_jets       = f_jets      ->get( *iR );
 
-    MT2Region* matchedRegion = qcdOnly->matchRegion(*iR);
-    MT2EstimateQCD* matchedEstimate_all = mc_all->get( *matchedRegion );
-    MT2EstimateQCD* matchedEstimate_qcd = qcdOnly->get( *matchedRegion );
+    MT2Region* regionToMatch;
+    if( iR->nBJetsMin()==3 && iR->nJetsMin()==2 ) 
+      regionToMatch = new MT2Region( iR->htMin(), iR->htMax(), 4, 6, iR->nBJetsMin(), iR->nBJetsMax() );
+    else
+      regionToMatch = new MT2Region( *iR );
+
+    MT2Estimate* this_r_hat = r_hat->getWithMatch( *regionToMatch );
+    MT2Estimate* this_f_jets = f_jets->getWithMatch( *regionToMatch );
 
 
-    float xMin_fit = (iR->htMin()==1500.) ? 70. : 60.;
+    MT2EstimateQCD* matchedEstimate_all = mc_all->getWithMatch( *iR );
+    MT2EstimateQCD* matchedEstimate_qcd = qcdOnly->getWithMatch( *iR );
+
+
+    float xMin_fit = (iR->htMin()>=1000.) ? 70. : 60.;
     float xMax_fit = 100.;
     TF1* f1_ratio = matchedEstimate_qcd->getFit( "pow", xMin_fit, xMax_fit );
 
-    if( matchedRegion->getName()!=lastRegionName ) // draw only one per HT region
+    if( matchedEstimate_qcd->region->getName()!=lastRegionName ) // draw only one per HT region
       drawSingleFit( fitsDir, f1_ratio, matchedEstimate_qcd, matchedEstimate_all, xMin_fit, xMax_fit );
 
-    lastRegionName = matchedRegion->getName();
+    lastRegionName = matchedEstimate_qcd->region->getName();
 
     fillFromTreeAndRatio( this_estimate, this_r_effective, matchedEstimate_qcd->tree, f1_ratio );
+
+    int bin_bJets = this_r_hat ->yield->FindBin(iR->nBJetsMin());
+    float thisRhatValue = this_r_hat ->yield->GetBinContent( bin_bJets );
+    this_estimate->yield->Scale( thisRhatValue );
+
+    int bin_jets = this_f_jets->yield->FindBin(iR->nJetsMin() );
+    float thisFjetsValue = this_f_jets ->yield->GetBinContent( bin_jets );
+    if( iR->nBJetsMin()==3 && iR->nJetsMin()==2 ) {
+      int bin_jets_2 = this_f_jets->yield->FindBin(4);
+      thisFjetsValue += this_f_jets ->yield->GetBinContent( bin_jets_2 );
+    }
+    this_estimate->yield->Scale( this_f_jets->yield->GetBinContent( bin_jets  ) );
+
 
   }  // for regions
       
@@ -145,9 +172,12 @@ int main( int argc, char* argv[] ) {
   estimate ->writeToFile( outputdir + "/qcdEstimate.root", "recreate" );
   mcTruth->writeToFile( outputdir + "/qcdEstimate.root" );
   r_effective ->writeToFile( outputdir + "/qcdEstimate.root" );
-  //r_hat ->writeToFile( outputdir + "/qcdEstimate.root" );
-  //f_jets ->writeToFile( outputdir + "/qcdEstimate.root" );
+  r_hat ->writeToFile( outputdir + "/qcdEstimate.root" );
+  f_jets ->writeToFile( outputdir + "/qcdEstimate.root" );
 
+
+  mcTruth->setColor(kQCD);
+  estimate->setColor(kBlack);
   drawClosure( qcdCRdir, estimate, mcTruth );
 
   mc_all ->writeToFile( outputdir + "/mcFits.root", "recreate" );
@@ -310,8 +340,8 @@ void drawSingleFit( const std::string& outdir, TF1* thisFitQCD, MT2EstimateQCD* 
   TPaveText* labelTop = MT2DrawTools::getLabelTopSimulation();
   labelTop->Draw("same");
 
-  c1->SaveAs( Form("%s/ratio_%s.eps", outdir.c_str(), qcd->region->getName().c_str()) );
   c1->SaveAs( Form("%s/ratio_%s.pdf", outdir.c_str(), qcd->region->getName().c_str()) );
+  c1->SaveAs( Form("%s/ratio_%s.eps", outdir.c_str(), qcd->region->getName().c_str()) );
   
 
   delete c1;
@@ -320,6 +350,71 @@ void drawSingleFit( const std::string& outdir, TF1* thisFitQCD, MT2EstimateQCD* 
 
 }
 
+
+
+
+
+
+void get_rHat( MT2Analysis<MT2Estimate>* rHat, MT2Analysis<MT2EstimateTree>* analysis ) {
+
+  std::set<MT2Region> regions = rHat->getRegions();
+
+  for( std::set<MT2Region>::iterator iR=regions.begin(); iR!=regions.end(); ++iR ) {
+
+    MT2Estimate* thisEst = rHat->get(*iR);
+
+    std::string name(thisEst->yield->GetName());
+    int nBins = 4;
+    Double_t bins[nBins+1];
+    bins[0] = 0.;
+    bins[1] = 1.;
+    bins[2] = 2.;
+    bins[3] = 3.;
+    bins[4] = 10.;
+
+    delete thisEst->yield;
+    thisEst->yield = new TH1D( name.c_str(), "", nBins, bins );
+    thisEst->yield->Sumw2();
+
+    MT2EstimateTree* thisTree = analysis->get(*iR);
+    thisTree->tree->Project( name.c_str(), "nBJets", "weight" );
+
+    thisEst->yield->Scale( 1./thisEst->yield->Integral(1, nBins+1) );
+
+  } // for regions
+
+    
+}
+
+
+void get_fJets( MT2Analysis<MT2Estimate>* fJets, MT2Analysis<MT2EstimateTree>* analysis ) {
+
+  std::set<MT2Region> regions = fJets->getRegions();
+
+  for( std::set<MT2Region>::iterator iR=regions.begin(); iR!=regions.end(); ++iR ) {
+
+    MT2Estimate* thisEst = fJets->get(*iR);
+
+    std::string name(thisEst->yield->GetName());
+    int nBins = 3;
+    Double_t bins[nBins+1];
+    bins[0] = 2.;
+    bins[1] = 4.;
+    bins[2] = 7.;
+    bins[3] = 25.;
+
+    delete thisEst->yield;
+    thisEst->yield = new TH1D( name.c_str(), "", nBins, bins );
+    thisEst->yield->Sumw2();
+
+    MT2EstimateTree* thisTree = analysis->get(*iR);
+    thisTree->tree->Project( name.c_str(), "nJets", "weight" );
+
+    thisEst->yield->Scale( 1./thisEst->yield->Integral(1, nBins+1) );
+
+  } // for regions
+
+}
 
 
 
@@ -342,7 +437,6 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
   TH1D* hestimate = new TH1D("hestimate", "", (int) MT2Regions.size(), 0, (int) MT2Regions.size());
   hestimate->Sumw2();
   hestimate->GetYaxis()->SetTitle("Entries");
-  //hestimate->SetFillColor(colors[0]);
   hestimate->SetFillColor(0);
   hestimate->SetLineColor( mcTruth->getColor() );
   hestimate->SetMarkerColor( mcTruth->getColor() );
@@ -363,13 +457,10 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
       std::vector<std::string> niceNames = iMT2->getNiceNames();
       
       TH1D* h_first = estimate->get(*iMT2)->yield;
-      
-
-      
       h_first->SetMarkerStyle(20);
       h_first->SetMarkerSize(1.6);
-      h_first->SetLineColor( kBlack );
-      h_first->SetMarkerColor( kBlack );
+      h_first->SetLineColor( estimate->getColor() );
+      h_first->SetMarkerColor( estimate->getColor() );
 
 
       int nBins = h_first->GetXaxis()->GetNbins();
@@ -390,7 +481,6 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
       pad1->Draw();
       pad1->cd();
 
-      //THStack bgStack("bgStack", "");
       TH1D* h_second = mcTruth->get(*iMT2)->yield;
 
       h_second->SetLineColor( mcTruth->getColor() );
@@ -408,15 +498,6 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
       if(int_data>0 && integral>0)
       hPull->Fill((int_data-integral)/sqrt(err_data*err_data+err_int*err_int));
 
-//      for( unsigned i=0; i<bgYields.size(); ++i ) { // reverse ordered stack is prettier
-//        int index = bgYields.size() - i - 1;
-//        TH1D* h_second_ = bgYields[index]->get(*iMT2)->yield;
-//        h_second_->SetFillColor( colors[index] );
-//        h_second_->SetLineColor( kBlack );
-//        bgStack.Add(h_second_);
-//	if( i>0 )
-//	  h_second->Add(h_second_);
-//      }
 
       float xMin = h_first->GetXaxis()->GetXmin();
       float xMax = h_first->GetXaxis()->GetXmax();
@@ -450,7 +531,7 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
       }
 
 
-      TLegend* legend = new TLegend( 0.6, 0.9-0.06, 0.93, 0.9 );
+      TLegend* legend = new TLegend( 0.6, 0.9-2.*0.06, 0.93, 0.9 );
       legend->SetTextSize(0.038);
       legend->SetTextFont(42);
       legend->SetFillColor(0);
@@ -501,45 +582,21 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
       TLine* lineCentral = new TLine(xMin, 1.0, xMax, 1.0);
       lineCentral->SetLineColor(1);
       
-//      TGraphAsymmErrors* graph_ = g_first;
-//      TGraphAsymmErrors* g_ratio = new TGraphAsymmErrors(0); // MT2DrawTools::getRatioGraph( h_first, h_second );
-//
-//      for( int i=0; i < graph_->GetN(); ++i){
-//
-//	Double_t x_tmp, y_tmp, errUp, errDown;
-//	graph_->GetPoint( i, x_tmp, y_tmp );
-//
-//	errUp   = graph_->GetErrorYhigh(i);
-//	errDown = graph_->GetErrorYlow(i);
-//
-//	int iBin = h_second->FindBin(x_tmp);
-//	float mc = h_second->GetBinContent(iBin);
-//	g_ratio->SetPoint(i, x_tmp, y_tmp/mc);
-//	g_ratio->SetPointEYhigh(i, errUp/mc);
-//	g_ratio->SetPointEYlow(i, errDown/mc);
-//
-//      }
-//
-//      g_ratio->SetLineColor(1);
-//      g_ratio->SetMarkerColor(1);
-//      g_ratio->SetMarkerStyle(20);
 
       h2_axes_ratio->Draw("");
       lineCentral->Draw("same");
-      //      g_ratio->Draw("pe,same");
       h_ratio->Draw("pe,same");
 
       gPad->RedrawAxis();
       
       c1->cd();
 
-      c1->SaveAs( Form("%s/closure_%s.pdf", fullPath.c_str(), iMT2->getName().c_str()) );
       c1->SaveAs( Form("%s/closure_%s.eps", fullPath.c_str(), iMT2->getName().c_str()) );
+      c1->SaveAs( Form("%s/closure_%s.pdf", fullPath.c_str(), iMT2->getName().c_str()) );
 
       delete c1;
       delete h2_axes;
       delete h2_axes_ratio;
-      //delete g_ratio;
       delete h_ratio;
       delete h_first;
       delete h_second;
@@ -578,13 +635,12 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
 
   hdata->SetMarkerStyle(20);
   hdata->SetMarkerSize(1.6);
-  hdata->SetLineColor( kBlack );
-  hdata->SetMarkerColor( kBlack );
+  hdata->SetLineColor( estimate->getColor() );
+  hdata->SetMarkerColor( estimate->getColor() );
 
   hdata->Draw("pe,same");
-  //g_data->Draw("pe,same");
 
-  TLegend* legend = new TLegend( 0.8, 0.9-0.06-0.06, 0.93, 0.9-0.06 );
+  TLegend* legend = new TLegend( 0.8, 0.9-0.06-0.06-0.06, 0.93, 0.9-0.06 );
   legend->SetTextSize(0.038);
   legend->SetTextFont(42);
   legend->SetFillColor(0);
@@ -656,48 +712,17 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
   //h_Ratio->Draw("P,E");
   
 
-  //  TH2D* h2_axes_ratio = MT2DrawTools::getRatioAxes( 0, 44, 0.0, 2.0 );
-  TH2D* h2_axes_ratio = MT2DrawTools::getRatioAxes( 0, 4, 0.0, 2.0 );
+  TH2D* h2_axes_ratio = MT2DrawTools::getRatioAxes( 0, MT2Regions.size(), 0.0, 2.0 );
 
-  //  TLine* LineCentral = new TLine(0, 1.0, 44, 1.0);
-  TLine* LineCentral = new TLine(0, 1.0, 4, 1.0);
+  TLine* LineCentral = new TLine(0, 1.0, MT2Regions.size(), 1.0);
   LineCentral->SetLineColor(1);
 
-//  TGraphAsymmErrors* gData_ = g_data;
-//  TGraphAsymmErrors* gRatio = new TGraphAsymmErrors(0); // MT2DrawTools::getRatioGraph( h_first, h_second );                                                                                                                          
-//
-//  for( int i=0; i < gData_->GetN(); ++i){
-//
-//    Double_t x_tmp, y_tmp, errUp, errDown;
-//    gData_->GetPoint( i, x_tmp, y_tmp );
-//
-//    errUp   = gData_->GetErrorYhigh(i);
-//    errDown = gData_->GetErrorYlow(i);
-//
-//    int iBin = hestimate->FindBin(x_tmp);
-//    float mc = hestimate->GetBinContent(iBin);
-//    gRatio->SetPoint(i, x_tmp, y_tmp/mc);
-//    gRatio->SetPointEYhigh(i, errUp/mc);
-//    gRatio->SetPointEYlow(i, errDown/mc);
-//
-//  }
-//
-//  gRatio->SetLineColor(1);
-//  gRatio->SetMarkerColor(1);
-//  gRatio->SetMarkerStyle(20);
 
   h2_axes_ratio->Draw("");
   LineCentral->Draw("same");
   h_Ratio->Draw("pe,same");
-  //  gRatio->Draw("pe,same");
 
-  //  TLine* lHT[3];
   for( int iHT=1; iHT < 4; iHT++ ){
-//    lHT[iHT-1] = new TLine(11*iHT,0.0, 11*iHT, 2.0 );
-//    lHT[iHT-1]->SetLineColor(kBlack);
-//    lHT[iHT-1]->SetLineStyle(3);
-//    lHT[iHT-1]->SetLineWidth(2);
-
     lHT[iHT-1]->Draw("same");
   }
 
