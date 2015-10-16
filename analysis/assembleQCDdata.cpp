@@ -8,10 +8,10 @@
 
 #include "TEventList.h"
 
-float lumi = 0.042; //fb-1
+float lumi = 0.454; //fb-1
 
 bool doDiffMetMht = true;
-bool doHFjetVeto = true;
+bool doHFjetVeto = false;
 
 bool doRand = false; // randomize pseudoData
 
@@ -31,9 +31,11 @@ int main( int argc, char* argv[] ) {
     exit(11);
   }
 
-  std::string samplesFileName = "74X_jecV4_MET30_QCD";
+  //std::string samplesFileName = "74X_jecV4_MET30_QCD";
+  std::string samplesFileName = "Spring15_25ns_qcdSkim";
   //std::string regionsSet = "zurich_HTtriggers2";
-  std::string regionsSet = "zurich_HTtriggers";
+  std::string regionsSet = "zurich_onlyHT";
+  //std::string regionsSet = "zurich_HTtriggers";
   std::string postfix = "";
 
   if( argc>1 ) {
@@ -66,12 +68,14 @@ int main( int argc, char* argv[] ) {
   qcdCR->writeToFile( CRdir + "/qcdCRmod"+rand_text+".root" );
 
   MT2Analysis<MT2EstimateQCD>* allCR = new MT2Analysis<MT2EstimateQCD>("MCallCR", regionsSet);
-  MT2Analysis<MT2EstimateQCD>* allCRps700 = new MT2Analysis<MT2EstimateQCD>("MCallCRps700", regionsSet);
-  MT2Analysis<MT2EstimateQCD>* allCRps175  = new MT2Analysis<MT2EstimateQCD>("MCallCRps175" , regionsSet);
+  MT2Analysis<MT2EstimateQCD>* allCRps180 = new MT2Analysis<MT2EstimateQCD>("MCallCRps180", regionsSet);
+  MT2Analysis<MT2EstimateQCD>* allCRps60  = new MT2Analysis<MT2EstimateQCD>("MCallCRps60" , regionsSet);
+  MT2Analysis<MT2EstimateQCD>* dataCRps180 = new MT2Analysis<MT2EstimateQCD>("dataSubCRps180", regionsSet);
+  MT2Analysis<MT2EstimateQCD>* dataCRps60  = new MT2Analysis<MT2EstimateQCD>("dataSubCRps60" , regionsSet);
 
   *allCR = *qcdCR + *topCR + *wjetsCR + *zjetsCR;
-  *allCRps700 = *allCR;
-  *allCRps175  = *allCR;
+  *allCRps180 = *allCR;
+  *allCRps60  = *allCR;
   allCR->finalize();
   allCR->addToFile( CRdir + "/qcdCRmod"+rand_text+".root" );
 
@@ -91,35 +95,43 @@ int main( int argc, char* argv[] ) {
   allCR->addToFile( CRdir + "/qcdCRmod"+rand_text+".root" );
 
   dataCR->setName("dataSubCR");
+  *dataCRps180 = *dataCR; dataCRps180->setName("dataSubCRps180");
+  *dataCRps60  = *dataCR; dataCRps60 ->setName("dataSubCRps60");
   *dataCR = *dataCR - (*topCR + *wjetsCR + *zjetsCR);
+  *dataCRps180 = *dataCRps180 - (1./180)*(*topCR + *wjetsCR + *zjetsCR);
+  *dataCRps60  = *dataCRps60  - (1./60)*(*topCR + *wjetsCR + *zjetsCR);
   dataCR->finalize();
+  dataCRps180->finalize();
+  dataCRps60->finalize();
   dataCR->addToFile( CRdir + "/qcdCRmod"+rand_text+".root" );
+  dataCRps180->addToFile( CRdir + "/qcdCRmod"+rand_text+".root" );
+  dataCRps60->addToFile( CRdir + "/qcdCRmod"+rand_text+".root" );
 
-  allCRps700->setName("pdataCRps700");
+  allCRps180->setName("pdataCRps180");
   if (doRand)
-      allCRps700->randomizePoisson(1./700);
+      allCRps180->randomizePoisson(1./180);
   else
-      allCRps700->sqrtErrors(1./700);
-  allCRps700->finalize();
-  allCRps700->addToFile( CRdir + "/qcdCRmod"+rand_text+".root" );
+      allCRps180->sqrtErrors(1./180);
+  allCRps180->finalize();
+  allCRps180->addToFile( CRdir + "/qcdCRmod"+rand_text+".root" );
 
-  allCRps700->setName("pdataSubCRps700");
-  *allCRps700 = *allCRps700 - (1./700)*(*topCR + *wjetsCR + *zjetsCR);
-  allCRps700->finalize();
-  allCRps700->addToFile( CRdir + "/qcdCRmod"+rand_text+".root" );
+  allCRps180->setName("pdataSubCRps180");
+  *allCRps180 = *allCRps180 - (1./180)*(*topCR + *wjetsCR + *zjetsCR);
+  allCRps180->finalize();
+  allCRps180->addToFile( CRdir + "/qcdCRmod"+rand_text+".root" );
 
-  allCRps175->setName("pdataCRps175");
+  allCRps60->setName("pdataCRps60");
   if (doRand)
-      allCRps175->randomizePoisson(1./175);
+      allCRps60->randomizePoisson(1./60);
   else
-      allCRps175->sqrtErrors(1./175);
-  allCRps175->finalize();
-  allCRps175->addToFile( CRdir + "/qcdCRmod"+rand_text+".root" );
+      allCRps60->sqrtErrors(1./60);
+  allCRps60->finalize();
+  allCRps60->addToFile( CRdir + "/qcdCRmod"+rand_text+".root" );
 
-  allCRps175->setName("pdataSubCRps175");
-  *allCRps175 = *allCRps175 - (1./175)*(*topCR + *wjetsCR + *zjetsCR);
-  allCRps175->finalize();
-  allCRps175->addToFile( CRdir + "/qcdCRmod"+rand_text+".root" );
+  allCRps60->setName("pdataSubCRps60");
+  *allCRps60 = *allCRps60 - (1./60)*(*topCR + *wjetsCR + *zjetsCR);
+  allCRps60->finalize();
+  allCRps60->addToFile( CRdir + "/qcdCRmod"+rand_text+".root" );
 
 }
 

@@ -23,13 +23,17 @@ class MT2HTRegion {
   std::string getNiceName() const;
   std::string getNiceNameLatex() const;
 
+  std::string getCuts() const;
+
 
   float htMin;
   float htMax;
-  float metMin() const;
+  //float metMin( float ht ) const;
 
-  bool isInclusiveHT() const;
-  bool metMinInclusiveHT( float ht ) const;
+  //float metMin( ) const;
+  //
+  //bool isInclusiveHT() const;
+  //float metMinInclusiveHT( float ht ) const;
 
   bool operator==( const MT2HTRegion& rhs ) const;
   bool operator!=( const MT2HTRegion& rhs ) const;
@@ -61,6 +65,8 @@ class MT2SignalRegion {
   std::string getNameMt() const;
   std::string getNiceName() const;
   std::string getNiceNameLatex() const;
+
+  std::string getCuts() const;
   
   int nJetsMin; 
   int nJetsMax;
@@ -135,6 +141,8 @@ class MT2Region {
   std::string getBinNameLatex( double& min, double& max ) const;
   std::vector< std::string > getBinNamesLatex() const;
 
+  std::string getRegionCuts() const;
+
   MT2HTRegion* htRegion() const {
     return htRegion_;
   }
@@ -145,10 +153,12 @@ class MT2Region {
 
   float htMin()   const { return htRegion_->htMin; };
   float htMax()   const { return htRegion_->htMax; };
-  float metMin()  const { return htRegion_->metMin(); };
+  //float metMin( float ht )  const { return htRegion_->metMin(ht); };
   
-  bool isInclusiveHT()     const { return htRegion_->isInclusiveHT(); };
-  bool metMinInclusiveHT( float ht ) const { return htRegion_->metMinInclusiveHT(ht); };
+  //float metMin( )  const { return htRegion_->metMin(); };
+  //
+  //bool isInclusiveHT()     const { return htRegion_->isInclusiveHT(); };
+  //float metMinInclusiveHT( float ht ) const { return htRegion_->metMinInclusiveHT(ht); };
  
   int nJetsMin()  const { return sigRegion_->nJetsMin; };
   int nJetsMax()  const { return sigRegion_->nJetsMax; };

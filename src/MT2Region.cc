@@ -79,28 +79,40 @@ MT2HTRegion::MT2HTRegion( float ahtMin, float ahtMax ) {
 
 
 
-float MT2HTRegion::metMin() const {
-
-  float metMin = (htMin<999.) ? 200. : 30.;
-  return metMin;
-
-}
-
-
-bool MT2HTRegion::isInclusiveHT() const {
-
-  if( htMin<999. && ( htMax < 0 || htMax >= 1000. )) return true;
-  else return false;
-  
-}
+//float MT2HTRegion::metMin( float ht ) const {
+//
+//  float metMin = (ht<1000.) ? 200. : 30.;
+//  return metMin;
+//
+//}
 
 
-bool MT2HTRegion::metMinInclusiveHT( float ht ) const {
-  
-  float metMin = (ht<1000.) ? 200. : 30.;
-  return metMin;
 
-}
+
+
+
+//float MT2HTRegion::metMin() const {
+// 
+//  float metMin = (htMin<999.) ? 200. : 30.;
+//  return metMin;
+// 
+//}
+
+
+//bool MT2HTRegion::isInclusiveHT() const {
+//
+//  if( htMin<999. && ( htMax < 0 || htMax >= 1000. )) return true;
+//  else return false;
+//  
+//}
+//
+//
+//float MT2HTRegion::metMinInclusiveHT( float ht ) const {
+//  
+//  float metMin = (ht<1000.) ? 200. : 30.;
+//  return metMin;
+//
+//}
 
 std::string MT2HTRegion::getName() const {
 
@@ -144,6 +156,18 @@ std::string MT2HTRegion::getNiceNameLatex() const {
 
 }
 
+
+std::string MT2HTRegion::getCuts() const {
+
+  std::string cuts;
+  if( htMax<0. ) 
+    cuts = std::string( Form( "ht >= %f", htMin) );
+  else
+    cuts = std::string( Form( "ht >= %f && ht<%f", htMin, htMax) );
+
+  return cuts;
+
+}
 
 
 bool MT2HTRegion::operator==( const MT2HTRegion& rhs ) const {
@@ -191,6 +215,7 @@ bool MT2HTRegion::isIncluded( const MT2HTRegion* htRegion ) const {
   if( htMin < htRegion->htMin ) returnBool = false;
   if( htMax > htRegion->htMax && htRegion->htMax >=0. ) returnBool = false;
   if( htMax < htRegion->htMax && htMax < 0 ) returnBool = false; //To solve case where htMax is Inf and htRegion->htMax is finite
+
 
   return returnBool;
 
@@ -425,6 +450,22 @@ std::string MT2SignalRegion::getNiceJetNameLatex( const std::string& pedix, int 
 
 
 
+std::string MT2SignalRegion::getCuts() const {
+
+  std::string cuts( Form("nJets>=%d && nBJets>=%d", nJetsMin, nBJetsMin) );
+  if( nJetsMax>=0 ) {
+    std::string addition( Form(" && nJets<=%d", nJetsMax) );
+    cuts += addition;
+  }
+  if( nBJetsMax>=0 ) {
+    std::string addition( Form(" && nBJets<=%d", nBJetsMax) );
+    cuts += addition;
+  }
+
+  return cuts;
+
+}
+
 
 
 
@@ -531,6 +572,7 @@ bool MT2SignalRegion::isIncluded( const MT2SignalRegion* sigRegion ) const {
   if( nBJetsMax < sigRegion->nBJetsMax && nBJetsMax < 0 ) returnBool = false; //To solve case where nBJetsMax is inf and sigRegion->nBJetsMax is finite 
   if( sigRegion->mtCut != "" && mtCut != sigRegion->mtCut ) return false;
 
+
   return returnBool;
 
 }
@@ -608,57 +650,57 @@ void MT2Region::getBins( int &nBins, double*& bins) const {
 
   } 
 
-  else if( regionName == "HT450to575_j2toInf_b0toInf" ) {  // inclusive low HT trigger region
+//else if( regionName == "HT450to575_j2toInf_b0toInf" ) {  // inclusive low HT trigger region
 
-    const int nBins_tmp                        = 50;
-    bins = new double[nBins_tmp+1];
-    for( unsigned i=0; i<nBins_tmp+1; ++i ) 
-      bins[i] = (double)i*10.;
-    nBins = nBins_tmp;
+//  const int nBins_tmp                        = 50;
+//  bins = new double[nBins_tmp+1];
+//  for( unsigned i=0; i<nBins_tmp+1; ++i ) 
+//    bins[i] = (double)i*10.;
+//  nBins = nBins_tmp;
 
-  } 
+//} 
 
-  else if( regionName == "HT575to1000_j2toInf_b0toInf" ) {  // inclusive medium HT trigger region
+//else if( regionName == "HT575to1000_j2toInf_b0toInf" ) {  // inclusive medium HT trigger region
 
-    const int nBins_tmp                        = 50;
-    bins = new double[nBins_tmp+1];
-    for( unsigned i=0; i<nBins_tmp+1; ++i ) 
-      bins[i] = (double)i*10.;
-    nBins = nBins_tmp;
+//  const int nBins_tmp                        = 50;
+//  bins = new double[nBins_tmp+1];
+//  for( unsigned i=0; i<nBins_tmp+1; ++i ) 
+//    bins[i] = (double)i*10.;
+//  nBins = nBins_tmp;
 
-  } 
+//} 
 
-  else if( regionName == "HT575to900_j2toInf_b0toInf" ) {  // modified inclusive medium HT trigger region
+//else if( regionName == "HT575to900_j2toInf_b0toInf" ) {  // modified inclusive medium HT trigger region
 
-    const int nBins_tmp                        = 50;
-    bins = new double[nBins_tmp+1];
-    for( unsigned i=0; i<nBins_tmp+1; ++i ) 
-      bins[i] = (double)i*10.;
-    nBins = nBins_tmp;
+//  const int nBins_tmp                        = 50;
+//  bins = new double[nBins_tmp+1];
+//  for( unsigned i=0; i<nBins_tmp+1; ++i ) 
+//    bins[i] = (double)i*10.;
+//  nBins = nBins_tmp;
 
-  } 
+//} 
 
-  else if( regionName == "HT1000toInf_j2toInf_b0toInf" ) {  // inclusive high HT trigger region
+//else if( regionName == "HT1000toInf_j2toInf_b0toInf" ) {  // inclusive high HT trigger region
 
-    const int nBins_tmp                        = 50;
-    bins = new double[nBins_tmp+1];
-    for( unsigned i=0; i<nBins_tmp+1; ++i ) 
-      bins[i] = (double)i*10.;
-    nBins = nBins_tmp;
+//  const int nBins_tmp                        = 50;
+//  bins = new double[nBins_tmp+1];
+//  for( unsigned i=0; i<nBins_tmp+1; ++i ) 
+//    bins[i] = (double)i*10.;
+//  nBins = nBins_tmp;
 
-  } 
+//} 
 
-  else if( regionName == "HT900toInf_j2toInf_b0toInf" ) {  // modified inclusive high HT trigger region
+//else if( regionName == "HT900toInf_j2toInf_b0toInf" ) {  // modified inclusive high HT trigger region
 
-    const int nBins_tmp                        = 50;
-    bins = new double[nBins_tmp+1];
-    for( unsigned i=0; i<nBins_tmp+1; ++i ) 
-      bins[i] = (double)i*10.;
-    nBins = nBins_tmp;
+//  const int nBins_tmp                        = 50;
+//  bins = new double[nBins_tmp+1];
+//  for( unsigned i=0; i<nBins_tmp+1; ++i ) 
+//    bins[i] = (double)i*10.;
+//  nBins = nBins_tmp;
 
-  } 
+//} 
 
-  //HERE
+////HERE
 
   else if( regionName == "HT450to575_j2to3_b0" ){ // new MT2 binning
     
@@ -1256,8 +1298,9 @@ void MT2Region::getBins( int &nBins, double*& bins) const {
 }
 
 void MT2Region::getBins_qcdCR( int &nBins, double*& bins) const {
-    const int nBins_tmp = 17;
-    bins = new double[nBins_tmp+1]{30,35,40,45,50,55,60,65,70,75,80,88,100,125,180,250,450,800};
+    const int nBins_tmp = 15;
+    bins = new double[nBins_tmp+1]{40,45,50,55,60,65,70,75,80,88,100,125,180,250,450,800};
+    //bins = new double[nBins_tmp+1]{30,35,40,45,50,55,60,65,70,75,80,88,100,125,180,250,450,800};
     //bins = new double[nBins_tmp+1]{30,35,40,45,50,55,60,65,70,75,80,85,90,95,100,105,110,115,120,125,130,135,140,145,150,155,160,165,170,175,180,185,190,195,200};
     nBins = nBins_tmp;
 }
@@ -1340,6 +1383,17 @@ std::vector< std::string> MT2Region::getBinNamesLatex() const {
   names.push_back( getBinNameLatex(bins[nBins-1], lastbin) );
 
   return names;
+
+}
+
+
+std::string MT2Region::getRegionCuts() const {
+
+  std::string sigCuts = sigRegion_->getCuts();
+  std::string htCuts  = htRegion_->getCuts();
+
+  std::string cuts = sigCuts + " && " + htCuts;
+  return cuts;
 
 }
 
