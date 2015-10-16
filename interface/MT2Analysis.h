@@ -400,6 +400,29 @@ MT2Analysis<T>::MT2Analysis( const std::string& aname, const std::string& region
     regions_.insert(MT2Region(200., -1., 1, 1, 0, -1)); // monojet region
 
 
+  } else if( regionsSet=="monojet" ){ 
+
+    std::set<MT2HTRegion> htRegions;
+    htRegions.insert(MT2HTRegion( 200.,  450.));
+    
+    std::set<MT2SignalRegion> signalRegions;
+    signalRegions.insert(MT2SignalRegion(2,  3, 0,  0));
+    signalRegions.insert(MT2SignalRegion(4, 6, 0,  0));
+    signalRegions.insert(MT2SignalRegion(7, -1, 0,  0));
+    signalRegions.insert(MT2SignalRegion(2,  3, 1,  1));
+    signalRegions.insert(MT2SignalRegion(4, 6, 1,  1));
+    signalRegions.insert(MT2SignalRegion(7, -1, 1,  1));
+    signalRegions.insert(MT2SignalRegion(2,  3, 2,  2));
+    signalRegions.insert(MT2SignalRegion(4, 6, 2,  2));
+    signalRegions.insert(MT2SignalRegion(7, -1, 2,  2));
+    signalRegions.insert(MT2SignalRegion(2,  6, 3,  -1));
+    signalRegions.insert(MT2SignalRegion(7, -1, 3,  -1));
+    
+    regions_ = multiplyHTandSignal( htRegions, signalRegions );
+    
+    regions_.insert(MT2Region(200., -1., 1, 1, 0, 0));
+    regions_.insert(MT2Region(200., -1., 1, 1, 1, -1));
+
   } else if( regionsSet=="zurich_llep" ){
 
     std::set<MT2HTRegion> htRegions;

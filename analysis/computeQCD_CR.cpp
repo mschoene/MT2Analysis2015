@@ -37,8 +37,8 @@ int main( int argc, char* argv[] ) {
   }
 
 
-  std::string regionsSet = "zurich_HTtriggers";
-  //std::string regionsSet = "zurich_HTtriggers2";
+  std::string regionsSet = "zurich_HTtriggers"; // ht > 1000 GeV
+  //std::string regionsSet = "zurich_HTtriggers2"; //ht> 900 GeV
 
   TH1::AddDirectory(kFALSE); // stupid ROOT memory allocation needs this
 

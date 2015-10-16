@@ -353,6 +353,7 @@ MT2Analysis<MT2Estimate>* MT2Estimate::makeIntegralAnalysisFromEstimate( const s
     double integral = thisEstimate->yield->IntegralAndError(1, -1, error);
 
     for( int iBin = 1; iBin < thisEstimate->yield->GetNbinsX()+1; ++iBin ){
+
       thisEstimate->yield->SetBinContent(iBin, integral);
       thisEstimate->yield->SetBinError(iBin, error);
 

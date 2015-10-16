@@ -81,7 +81,7 @@ int main( int argc, char* argv[] ) {
   float htMin=1000, htMax=-1;
 
   std::string selection = "weight*(ht>1000. && nJets>1 && met>30. && mt2>10. && deltaPhiMin>0.3 && diffMetMht<0.5*met)/puWeight";
-  drawYields( cfg, data, mc, "nVert_noPU" , "nVert" , selection, 50, 0.5, 50.5, "Number of Vertices", "" );
+  //  drawYields( cfg, data, mc, "nVert_noPU" , "nVert" , selection, 50, 0.5, 50.5, "Number of Vertices", "" );
 
   htMin=450; 
   htMax=1000;
@@ -89,27 +89,28 @@ int main( int argc, char* argv[] ) {
   //selection = "weight*(ht>450. && ht<1000. && met>200. && nJets>1 && mt2>10. && deltaPhiMin>0.3 && diffMetMht<0.5*met && nJetHF30==0)";
   selection = "weight*(ht>450. && ht<1000. && met>200. && nJets>1 && mt2>10. && deltaPhiMin>0.3 && diffMetMht<0.5*met)";
 
-  drawYields( cfg, data, mc, "lowHT_nVert" , "nVert" , selection, 25, 0.5, 50.5, "Number of Vertices", "", htMin, htMax );
-  drawYields( cfg, data, mc, "lowHT_mt2"   , "mt2"   , selection, 18, 10., 910., "M_{T2}", "GeV", htMin, htMax );
-  drawYields( cfg, data, mc, "lowHT_met"   , "met"   , selection, 20, 200., 1200., "Missing E_{T}", "GeV", htMin, htMax );
-  drawYields( cfg, data, mc, "lowHT_ht"    , "ht"    , selection, 11, 450., 1000., "H_{T}", "GeV", htMin, htMax );
-  drawYields( cfg, data, mc, "lowHT_nJets" , "nJets" , selection, 12, 1.5, 13.5, "Number of Jets (p_{T} > 30 GeV)", "", htMin, htMax );
-  drawYields( cfg, data, mc, "lowHT_nJetHF" , "nJetHF" , selection, 7, -0.5, 6.5, "N(jets, p_{T} > 30 GeV & |#eta|>3.0)", "", htMin, htMax );
-  drawYields( cfg, data, mc, "lowHT_nBJets", "nBJets", selection, 7, -0.5, 6.5, "Number of b-Jets (p_{T} > 20 GeV)", "", htMin, htMax );
-
-  selection = "weight*(ht>450. && ht<1000. && met>200. && nJets>1 && mt2>10. &&  diffMetMht<0.5*met)";
-
-  drawYields( cfg, data, mc, "lowHT_deltaPhiMin", "deltaPhiMin", selection, 32, 0.0, 3.2, "min #Delta#phi(jets, ME_{T})", "", htMin, htMax );
-
-  selection = "weight*(ht>450. && ht<1000. && met>200. && nJets>1 && mt2>10. && deltaPhiMin>0.3)";
-
-  drawYields( cfg, data, mc, "lowHT_diffMetMht_overMet", "diffMetMht/met", selection, 30, 0.0, 3.0, "|ME_{T}-MH_{T}|/ME_{T}", "", htMin, htMax );
-  drawYields( cfg, data, mc, "lowHT_diffMetMht", "diffMetMht", selection, 24, 0., 1200., "|ME_{T}-MH_{T}|", "GeV", htMin, htMax );
+//  drawYields( cfg, data, mc, "lowHT_nVert" , "nVert" , selection, 25, 0.5, 50.5, "Number of Vertices", "", htMin, htMax );
+//  drawYields( cfg, data, mc, "lowHT_mt2"   , "mt2"   , selection, 18, 10., 910., "M_{T2}", "GeV", htMin, htMax );
+//  drawYields( cfg, data, mc, "lowHT_met"   , "met"   , selection, 20, 200., 1200., "Missing E_{T}", "GeV", htMin, htMax );
+//  drawYields( cfg, data, mc, "lowHT_ht"    , "ht"    , selection, 11, 450., 1000., "H_{T}", "GeV", htMin, htMax );
+//  drawYields( cfg, data, mc, "lowHT_nJets" , "nJets" , selection, 12, 1.5, 13.5, "Number of Jets (p_{T} > 30 GeV)", "", htMin, htMax );
+//  drawYields( cfg, data, mc, "lowHT_nJetHF" , "nJetHF" , selection, 7, -0.5, 6.5, "N(jets, p_{T} > 30 GeV & |#eta|>3.0)", "", htMin, htMax );
+//  drawYields( cfg, data, mc, "lowHT_nBJets", "nBJets", selection, 7, -0.5, 6.5, "Number of b-Jets (p_{T} > 20 GeV)", "", htMin, htMax );
+//
+//  selection = "weight*(ht>450. && ht<1000. && met>200. && nJets>1 && mt2>10. &&  diffMetMht<0.5*met)";
+//
+//  drawYields( cfg, data, mc, "lowHT_deltaPhiMin", "deltaPhiMin", selection, 32, 0.0, 3.2, "min #Delta#phi(jets, ME_{T})", "", htMin, htMax );
+//
+//  selection = "weight*(ht>450. && ht<1000. && met>200. && nJets>1 && mt2>10. && deltaPhiMin>0.3)";
+//
+//  drawYields( cfg, data, mc, "lowHT_diffMetMht_overMet", "diffMetMht/met", selection, 30, 0.0, 3.0, "|ME_{T}-MH_{T}|/ME_{T}", "", htMin, htMax );
+//  drawYields( cfg, data, mc, "lowHT_diffMetMht", "diffMetMht", selection, 24, 0., 1200., "|ME_{T}-MH_{T}|", "GeV", htMin, htMax );
 
   htMin=1000;
   htMax=-1;
 
   //selection = "weight*(ht>1000. && nJets>1 && met>30. && mt2>10. && deltaPhiMin>0.3 && diffMetMht<0.5*met && nJetHF30==0)";
+  selection = "weight*(ht>=1000. && nJets>1 && met>30. && mt2>10. && deltaPhiMin>0.3 && diffMetMht<0.5*met)*(1.0-0.3*(id>155 && id<200))";
   selection = "weight*(ht>=1000. && nJets>1 && met>30. && mt2>10. && deltaPhiMin>0.3 && diffMetMht<0.5*met)";
   
   //drawYields( cfg, data, mc, "nVert" , "nVert" , selection, 50, 0.5, 50.5, "Number of Vertices", "", htMin, htMax );
@@ -117,6 +118,7 @@ int main( int argc, char* argv[] ) {
   drawYields( cfg, data, mc, "met"   , "met"   , selection, 80, 30., 430., "Missing E_{T}", "GeV", htMin, htMax );
   drawYields( cfg, data, mc, "mht"   , "mht"   , selection, 80, 30., 430., "Missing H_{T}", "GeV", htMin, htMax );
   drawYields( cfg, data, mc, "ht"    , "ht"    , selection, 50, 1000., 3500., "H_{T}", "GeV", htMin, htMax );
+  drawYields( cfg, data, mc, "ht_fine"    , "ht"    , selection, 500, 1000., 3500., "H_{T}", "GeV", htMin, htMax );
   drawYields( cfg, data, mc, "nJets" , "nJets" , selection, 12, 1.5, 13.5, "Number of Jets (p_{T} > 30 GeV)", "", htMin, htMax );
   drawYields( cfg, data, mc, "nJetHF" , "nJetHF" , selection, 7, -0.5, 6.5, "N(jets, p_{T} > 30 GeV & |#eta|>3.0)", "", htMin, htMax );
   drawYields( cfg, data, mc, "nBJets", "nBJets", selection, 7, -0.5, 6.5, "Number of b-Jets (p_{T} > 20 GeV)", "", htMin, htMax );
@@ -229,7 +231,7 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, std::vector<
       if( shapeNorm )
         histos_mc[index]->Scale( scaleFactor );
       else
-	histos_mc[index]->Scale( 118.9/106.5 );
+	histos_mc[index]->Scale( 453.820/106.5 );
 
       if(i==0) histo_mc = (TH1D*) histos_mc[index]->Clone("histo_mc");
       else histo_mc->Add(histos_mc[index]);
@@ -470,10 +472,12 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, std::vector<
     c1->SaveAs( Form("%s/%s_%s.eps", fullPathPlots.c_str(), saveName.c_str(), thisRegion.getName().c_str()) );
     c1->SaveAs( Form("%s/%s_%s.png", fullPathPlots.c_str(), saveName.c_str(), thisRegion.getName().c_str()) );
     c1->SaveAs( Form("%s/%s_%s.pdf", fullPathPlots.c_str(), saveName.c_str(), thisRegion.getName().c_str()) );
+    c1->SaveAs( Form("%s/%s_%s.root", fullPathPlots.c_str(), saveName.c_str(), thisRegion.getName().c_str()) );
 
     c1_log->SaveAs( Form("%s/%s_%s_log.eps", fullPathPlots.c_str(), saveName.c_str(), thisRegion.getName().c_str()) );
     c1_log->SaveAs( Form("%s/%s_%s_log.png", fullPathPlots.c_str(), saveName.c_str(), thisRegion.getName().c_str()) );
     c1_log->SaveAs( Form("%s/%s_%s_log.pdf", fullPathPlots.c_str(), saveName.c_str(), thisRegion.getName().c_str()) );
+    c1_log->SaveAs( Form("%s/%s_%s_log.root", fullPathPlots.c_str(), saveName.c_str(), thisRegion.getName().c_str()) );
 
     delete c1;
     delete h2_axes;

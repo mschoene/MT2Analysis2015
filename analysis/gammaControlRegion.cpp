@@ -381,26 +381,33 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
     if( myTree.isData )
       if ( myTree.isGolden == 0 ) continue;
 
- 
+
+    if(cfg.analysisType() == "mt2"){
+   
+      if( !myTree.passSelection("gamma") ) continue;
+   
+      if( myTree.mt2>200. ) continue; // orthogonal to signal region
+      if( myTree.gamma_pt[0]<180. ) continue;
+      if( myTree.gamma_mt2<200. ) continue;
+    }
+    
+    
     if( myTree.isData ) {
       if( !myTree.passGammaAdditionalSelection(1) ) continue;
     } else {
       if( !myTree.passGammaAdditionalSelection(sample.id) ) continue;
     }
     
-    if(cfg.analysisType() == "mt2"){
-      if( myTree.mt2>200. ) continue; // orthogonal to signal region
-      if( myTree.gamma_pt[0]<180. ) continue;
-      if( !myTree.passSelection("gamma") ) continue;
-    }
-
-
+    
+    
     //if( myTree.gamma_ht>1000. && sample.id==204 ) continue; // remove high-weight spikes (remove GJet_400to600 leaking into HT>1000)
-
+    
     if( myTree.gamma_idCutBased[0]==0 ) continue;
 
     if( myTree.isData ) {
-    
+
+      if( !(myTree.HLT_Photon165_HE10) ) continue;
+      //if( !(myTree.HLT_Photon165_HE10) || myTree.run < 256843 ) continue;
       if( !(myTree.Flag_HBHENoiseFilter && myTree.Flag_CSCTightHaloFilter && myTree.Flag_eeBadScFilter) ) continue;
       //if( !(myTree.Flag_CSCTightHaloFilter &&  myTree.Flag_eeBadScFilter) ) continue;
       
@@ -420,7 +427,8 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
     int njets       = myTree.gamma_nJet30;
     int nbjets      = myTree.gamma_nBJet20;    
     float ht        = myTree.gamma_ht;
-    float mt2       = (njets>1) ? myTree.gamma_mt2 : ht;
+    //    float mt2       = (njets>1) ? myTree.gamma_mt2 : ht;
+    float mt2       = myTree.gamma_mt2;
 
     if( cfg.gamma2bMethod()=="2b1bRatio" && nbjets==2 )
       continue; // will take 2b from reweighted 1b so skip
