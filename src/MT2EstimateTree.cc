@@ -10,9 +10,10 @@
 
 MT2EstimateTree::MT2EstimateTree( const std::string& aname, const MT2Region& aregion ) : MT2Estimate( aname, aregion ) {
 
-  TH1::AddDirectory(kFALSE);
+  //TH1::AddDirectory(kFALSE);
 
   tree = new TTree(this->getHistoName("tree").c_str(), "" );
+  tree->SetDirectory(0);
   
   this->initTree();
 
@@ -23,9 +24,10 @@ MT2EstimateTree::MT2EstimateTree( const std::string& aname, const MT2Region& are
 
 MT2EstimateTree::MT2EstimateTree( const MT2EstimateTree& rhs ) : MT2Estimate( rhs ) {
 
-  TH1::AddDirectory(kFALSE);
+  //TH1::AddDirectory(kFALSE);
 
   tree = rhs.tree->CloneTree(-1);
+  tree->SetDirectory(0);
 
   this->initTree();
 
@@ -87,6 +89,57 @@ void MT2EstimateTree::setName( const std::string& newName ) {
   tree->SetName( this->getHistoName("tree").c_str() );
 
 }
+
+
+
+
+void MT2EstimateTree::projectFromTree( const MT2EstimateTree* treeEst, const std::string& selection ) {
+
+  TDirectory* dir = TDirectory::CurrentDirectory();
+
+  std::string fullSelection = region->getRegionCuts();
+  if( selection!="" ) fullSelection = fullSelection + " && " + selection;
+
+  treeEst->tree->Project( yield->GetName(), "mt2", Form("weight*(%s)", fullSelection.c_str()) );
+
+  gROOT->cd();
+  this->tree = treeEst->tree->CopyTree( Form("%s", fullSelection.c_str()) );
+  this->tree->SetDirectory(0);
+  this->tree->SetName( this->getHistoName("tree").c_str() );
+
+  dir->cd();
+
+}
+
+
+
+
+MT2Analysis<MT2EstimateTree>* MT2EstimateTree::makeAnalysisFromInclusiveTree( const std::string& aname, const std::string& regionsSet, MT2Analysis<MT2EstimateTree>* estimate, const std::string& selection ) {
+
+
+  MT2EstimateTree* treeInclusive = estimate->get( MT2Region("HT450toInf_j2toInf_b0toInf") );
+  if( treeInclusive==0 ) {
+    std::cout << "[MT2EstimateTree::makeAnalysisFromEstimateTreeInclusive] ERROR!! You need to pass an inclusive MT2EstimateTree Analysis to use this function!" << std::endl;
+    exit(19191);
+  }
+
+  // will create a new analysis with custom regions from inclusive tree:
+  MT2Analysis<MT2EstimateTree>* analysis = new MT2Analysis<MT2EstimateTree>( aname, regionsSet );
+  std::set<MT2Region> regions = analysis->getRegions();
+
+
+  for( std::set<MT2Region>::iterator iR=regions.begin(); iR!=regions.end(); ++iR ) {
+
+    MT2EstimateTree* thisEstimateTree = analysis->get( *iR );
+    thisEstimateTree->projectFromTree( treeInclusive, selection );
+
+  } // for regions
+
+
+  return analysis;
+
+}
+
 
 
 

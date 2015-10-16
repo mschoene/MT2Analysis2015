@@ -80,6 +80,8 @@ class MT2EstimateTree : public MT2Estimate {
   virtual void finalize() {
   }
 
+  void projectFromTree( const MT2EstimateTree* treeEst, const std::string& selection );
+  static MT2Analysis<MT2EstimateTree>* makeAnalysisFromInclusiveTree( const std::string& aname, const std::string& regionsSet, MT2Analysis<MT2EstimateTree>* analysis, const std::string& selection="" );
 
   virtual void getShit( TFile* file, const std::string& path );
 
