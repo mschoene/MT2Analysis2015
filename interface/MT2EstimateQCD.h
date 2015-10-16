@@ -8,13 +8,21 @@
 #include <vector>
 
 
+class MT2EstimateTree;
+
+
+
 class MT2EstimateQCD : public MT2Estimate {
 
  public:
 
   MT2EstimateQCD( const MT2EstimateQCD& rhs );
+  MT2EstimateQCD( const MT2EstimateTree& rhs, const std::string& selection="" );
   MT2EstimateQCD( const std::string& aname, const MT2Region& aregion );
   virtual ~MT2EstimateQCD();
+
+  static MT2Analysis<MT2EstimateQCD>* makeAnalysisFromEstimateTree( const std::string& aname, const std::string& regionsSet, MT2Analysis<MT2EstimateTree>* analysis, const std::string& selection="" );
+
 
   virtual void setName( const std::string& newName );
  
@@ -66,7 +74,7 @@ class MT2EstimateQCD : public MT2Estimate {
 
   virtual void print(const std::string& ofs);
 
-  virtual void randomizePoisson( float scale=1. );
+  virtual void randomizePoisson( float scale=1., int seed=13 );
   virtual void sqrtErrors( float scale=1. );
 
  private:

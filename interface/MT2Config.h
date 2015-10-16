@@ -12,6 +12,11 @@ class MT2Config {
   std::string name() const { return name_; };
 
   float lumi()      const { return lumi_; };
+  float lumi_JetHT()         const;
+  float lumi_HTMHT()         const;
+  float lumi_SinglePhoton()  const;
+  float lumi_DoubleEG()      const;
+  float lumi_DoubleMu()      const;
 
  
   std::string regionsSet()      const { return regionsSet_; };
@@ -41,9 +46,17 @@ class MT2Config {
 
  private:
 
+  float defaultLumi( float lumi) const;
+
   std::string name_;
 
   float lumi_;
+  float lumi_JetHT_;
+  float lumi_HTMHT_;
+  float lumi_SinglePhoton_;
+  float lumi_DoubleEG_;
+  float lumi_DoubleMu_;
+
   std::string regionsSet_;
   std::string mcSamples_;
   std::string sigSamples_;

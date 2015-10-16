@@ -13,6 +13,7 @@
 
 #include "TLorentzVector.h"
 #include "TH1F.h"
+#include "TF1.h"
 
 
 bool alsoSignals = false;
@@ -67,7 +68,7 @@ int main( int argc, char* argv[] ) {
   if( argc > 2 ) {
     std::string dataMC(argv[2]);
     if( dataMC=="data" ) onlyData = true;
-    else if( dataMC=="MC" ) onlyMC = true;
+    else if( dataMC=="MC" || dataMC=="mc" ) onlyMC = true;
     else {
       std::cout << "-> You passed a second argument that isn't 'data' or 'MC', so I don't know what to do about it." << std::endl;
     }
@@ -434,14 +435,14 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
       continue; // will take 2b from reweighted 1b so skip
 
 //    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi()*myTree.puWeight; 
-    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi(); 
+    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb;//*cfg.lumi(); 
 
 
 
     bool passIso = iso<isoCut;
 
-    MT2EstimateTree* thisTree = anaTree->get( ht, njets, nbjets, met, minMTBmet, mt2 );
-    MT2EstimateTree* thisTree_pass = anaTree_pass->get( ht, njets, nbjets, met, minMTBmet, mt2 );
+    MT2EstimateTree* thisTree = anaTree->get( ht, njets, nbjets, minMTBmet, mt2 );
+    MT2EstimateTree* thisTree_pass = anaTree_pass->get( ht, njets, nbjets, minMTBmet, mt2 );
     if( thisTree==0 ) continue;
 
 
@@ -564,8 +565,8 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
 
  
 
-      MT2EstimateTree* thisTree_2b = anaTree->get( ht, njets, 2, met, minMTBmet, mt2 );
-      MT2EstimateTree* thisTree_2b_pass = anaTree_pass->get( ht, 2, nbjets, met, minMTBmet, mt2 );
+      MT2EstimateTree* thisTree_2b = anaTree->get( ht, njets, 2, minMTBmet, mt2 );
+      MT2EstimateTree* thisTree_2b_pass = anaTree_pass->get( ht, 2, nbjets, minMTBmet, mt2 );
       if( thisTree_2b==0 ) continue;
 
       fillOneTree( thisTree_2b, myTree, corr*weight, ht, njets, 2, met, minMTBmet, mt2, iso, nTrueB, nTrueC );
@@ -655,7 +656,7 @@ void fillYields( MT2Analysis<MT2EstimateZinvGamma>* est, float weight, float ht,
 
   if( est!=0 ) {
 
-    MT2EstimateZinvGamma* thisEst = est->get( ht, njets, nbjets, met, minMTBmet, mt2 );
+    MT2EstimateZinvGamma* thisEst = est->get( ht, njets, nbjets, minMTBmet, mt2 );
     if( thisEst==0 ) return;
 
     thisEst->yield->Fill(mt2, weight );

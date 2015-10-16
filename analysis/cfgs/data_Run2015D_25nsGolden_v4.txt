@@ -1,0 +1,5 @@
+lumi 0.1065
+regionsSet 13TeV_inclusive
+mcSamples Spring15_25ns_skimprune_noMT2skim
+dataSamples Run2015D_25nsGolden
+additionalStuff noSignals
