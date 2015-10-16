@@ -26,6 +26,7 @@ class MT2Config {
   std::string additionalStuff() const { return additionalStuff_; };
   std::string analysisType()    const { return analysisType_; };
   std::string crRegionsSet()    const { return crRegionsSet_; };
+  std::string qcdRegionsSet()    const { return qcdRegionsSet_; };
 
   std::string gammaTemplateType() const { return gammaTemplateType_; };
   std::string gammaTemplateRegions() const { return gammaTemplateRegions_; };
@@ -64,6 +65,7 @@ class MT2Config {
   std::string additionalStuff_;
   std::string analysisType_;
   std::string crRegionsSet_;
+  std::string qcdRegionsSet_;
 
   std::string gammaTemplateType_;
   std::string gammaTemplateRegions_;
