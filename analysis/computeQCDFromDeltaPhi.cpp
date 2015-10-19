@@ -496,11 +496,6 @@ void computePurity( TH1D* purity, TH1D* nonQCD, TH1D* all ) {
     
     float qcdPurityErr = (qcdPurity>0.) ? sqrt( nonQCD_err*nonQCD_err/(allCR_val*allCR_val) + allCR_err*allCR_err*nonQCD_val*nonQCD_val/(allCR_val*allCR_val*allCR_val*allCR_val) ) : 0.;
 
-std::cout << nonQCD->GetName() << " bin " << iBin << std::endl;
-std::cout << "nonQCD_val: " << nonQCD_val << " +- " << nonQCD_err << std::endl;
-std::cout << "allCR_val: " << allCR_val << " +- " << allCR_err << std::endl;
-std::cout << "qcdPurity: " << qcdPurity << " +- " << qcdPurityErr << std::endl;
-
     purity->SetBinContent( iBin, qcdPurity    );
     purity->SetBinError  ( iBin, qcdPurityErr );
 
@@ -874,8 +869,37 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
   gPad->RedrawAxis();
 
   c2->cd();
-  c2->SaveAs( Form("%s/closure_allRegions.pdf", outputdir.c_str()) );
-  c2->SaveAs( Form("%s/closure_allRegions.eps", outputdir.c_str()) );
+  c2->SaveAs( Form("%s/closure_allRegions_pull.pdf", outputdir.c_str()) );
+  c2->SaveAs( Form("%s/closure_allRegions_pull.eps", outputdir.c_str()) );
+
+  pad2->cd();
+  pad2->Clear();
+
+  delete h2_axes_ratio;
+  h2_axes_ratio = MT2DrawTools::getRatioAxes( 0, MT2Regions.size(), 0., 2.);
+  h2_axes_ratio->SetYTitle("Data / MC");
+  h2_axes_ratio->Draw("");
+
+  TLine* lineOne = new TLine(0, 1., MT2Regions.size(), 1.);
+  lineOne->SetLineColor(1);
+  lineOne->Draw("same");
+
+  delete h_Ratio;
+  h_Ratio = (TH1D*) h_estimate_tot->Clone(thisName.c_str());
+  h_Ratio->Divide( h_mcTruth_tot );
+  h_Ratio->SetMarkerStyle(20);
+  h_Ratio->SetLineColor(1);
+  h_Ratio->SetLineWidth(2);
+
+  h_Ratio->Draw("pe,same");
+
+  for( int iHT=1; iHT < 4; iHT++ ){
+    lHT[iHT-1]->Draw("same");
+  }
+
+
+  c2->SaveAs( Form("%s/closure_allRegions_ratio.pdf", outputdir.c_str()) );
+  c2->SaveAs( Form("%s/closure_allRegions_ratio.eps", outputdir.c_str()) );
 
 
   gStyle->SetOptStat(1110);
