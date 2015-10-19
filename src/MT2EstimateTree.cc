@@ -100,12 +100,22 @@ void MT2EstimateTree::projectFromTree( const MT2EstimateTree* treeEst, const std
   std::string fullSelection = region->getRegionCuts();
   if( selection!="" ) fullSelection = fullSelection + " && " + selection;
 
-  treeEst->tree->Project( yield->GetName(), "mt2", Form("weight*(%s)", fullSelection.c_str()) );
+  //  treeEst->tree->Project( yield->GetName(), "mt2", Form("weight*(%s)", fullSelection.c_str()) );
 
   gROOT->cd();
+
   this->tree = treeEst->tree->CopyTree( Form("%s", fullSelection.c_str()) );
   this->tree->SetDirectory(0);
   this->tree->SetName( this->getHistoName("tree").c_str() );
+
+  float mt2, weight;
+  this->tree->SetBranchAddress("mt2", &mt2);
+  this->tree->SetBranchAddress("weight", &weight);
+
+  for( int e=0; e < this->tree->GetEntries(); ++e ){
+    this->tree->GetEntry(e);
+    this->yield->Fill(mt2, weight);
+  }
 
   dir->cd();
 
@@ -117,7 +127,8 @@ void MT2EstimateTree::projectFromTree( const MT2EstimateTree* treeEst, const std
 MT2Analysis<MT2EstimateTree>* MT2EstimateTree::makeAnalysisFromInclusiveTree( const std::string& aname, const std::string& regionsSet, MT2Analysis<MT2EstimateTree>* estimate, const std::string& selection ) {
 
 
-  MT2EstimateTree* treeInclusive = estimate->get( MT2Region("HT450toInf_j2toInf_b0toInf") );
+  //  MT2EstimateTree* treeInclusive = estimate->get( MT2Region("HT450toInf_j2toInf_b0toInf") );
+  MT2EstimateTree* treeInclusive = estimate->get( MT2Region("HT200toInf_j1toInf_b0toInf") );
   if( treeInclusive==0 ) {
     std::cout << "[MT2EstimateTree::makeAnalysisFromEstimateTreeInclusive] ERROR!! You need to pass an inclusive MT2EstimateTree Analysis to use this function!" << std::endl;
     exit(19191);
@@ -242,7 +253,11 @@ void MT2EstimateTree::assignTree( const MT2Tree& mt2tree, float w  ) {
 
   nVert  = mt2tree.nVert;
 
-  mt2    = mt2tree.mt2;
+  if(mt2tree.nJet30>1)
+    mt2    = mt2tree.mt2;
+  else if(mt2tree.nJet30==1)
+    mt2    = mt2tree.ht;
+
   ht     = mt2tree.ht;
   met    = mt2tree.met_pt;
 
@@ -275,7 +290,12 @@ void MT2EstimateTree::assignTree_zll( const MT2Tree& mt2tree, float w ) {
 
   nVert  = mt2tree.nVert;
 
-  mt2           = mt2tree.zll_mt2;
+
+  if(mt2tree.nJet30>1)
+    mt2    = mt2tree.zll_mt2;
+  else if(mt2tree.nJet30==1)
+    mt2           = mt2tree.zll_ht;
+ 
   ht            = mt2tree.zll_ht;
   met           = mt2tree.zll_met_pt;
 
@@ -310,7 +330,11 @@ void MT2EstimateTree::assignTree_gamma( const MT2Tree& mt2tree, float w ) {
 
   nVert  = mt2tree.nVert;
 
-  mt2           = mt2tree.gamma_mt2;
+  if(mt2tree.gamma_nJet30>1)
+    mt2    = mt2tree.gamma_mt2;
+  else if(mt2tree.gamma_nJet30==1)
+    mt2    = mt2tree.gamma_ht;
+
   ht            = mt2tree.gamma_ht;
   met           = mt2tree.gamma_met_pt;
   deltaPhiMin   = mt2tree.gamma_deltaPhiMin;
@@ -405,7 +429,7 @@ MT2EstimateTree MT2EstimateTree::operator+( const MT2EstimateTree& rhs ) const{
   result.yield->Add(rhs.yield);
   result.yield3d->Add(rhs.yield3d);
 
-  TList* list = new TList;
+  TList* list = new TList();
   list->Add(result.tree);
   list->Add(rhs.tree);
   result.tree = TTree::MergeTrees( list );
@@ -513,7 +537,7 @@ const MT2EstimateTree& MT2EstimateTree::operator+=( const MT2EstimateTree& rhs )
 
     std::string oldName(this->tree->GetName());
 
-    TList* list = new TList;
+    TList* list = new TList();
     list->Add(this->tree);
     list->Add(rhs.tree);
     this->tree = TTree::MergeTrees( list );

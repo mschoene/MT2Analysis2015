@@ -201,7 +201,7 @@ int main( int argc, char* argv[] ) {
     std::cout << "-> Loading data from file: " << samplesFile_data << std::endl;
 
     //    std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, "JetHTMHT"); //, 1, 99 );
-    std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, 1, 2 );
+    std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, 1, 3 );
     if( samples_data.size()==0 ) {
       std::cout << "There must be an error: samples_data is empty!" << std::endl;
       exit(1209);
@@ -214,7 +214,7 @@ int main( int argc, char* argv[] ) {
     MT2Analysis<MT2EstimateTree>* dataYield;
     //dataYield = EventYield_data[0];
     //dataYield->setName("data");
-    dataYield   = mergeYields( EventYield_data, cfg.regionsSet(), "data", 1, 2 );
+    dataYield   = mergeYields( EventYield_data, cfg.regionsSet(), "data", 1, 3 );
 
     yields.push_back( dataYield );
 
@@ -322,14 +322,15 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg ) {
     
     //    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi()*myTree.puWeight;
     Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb;//*cfg.lumi();
+    //    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi();
     //weight *= myTree.weight_lepsf;
 
     if( myTree.isData ) {
-      if( !(  (myTree.HLT_PFHT800 && ht>=1000.) || (myTree.HLT_PFHT350_PFMET100 && ht<1000.)  ) ) continue;
+      if( !(  (myTree.HLT_PFHT800 && ht>=1000.) || (myTree.HLT_PFHT350_PFMET100 && ht<1000.) || (myTree.HLT_PFMET90_PFMHT90 && (njets==1 || (njets>1 && ht<450))) ) ) continue;
       if( !( myTree.Flag_HBHENoiseFilter && myTree.Flag_CSCTightHaloFilter &&  myTree.Flag_eeBadScFilter ) ) continue;
       //if( !(myTree.Flag_CSCTightHaloFilter && myTree.Flag_eeBadScFilter ) ) continue;
 
-      if( (myTree.evt_id == 1 && ht < 1000.) || (myTree.evt_id == 2 && ht >= 1000.) ) continue;
+      if( (myTree.evt_id == 1 && ht < 1000.) || (myTree.evt_id == 2 && ht >= 1000.) || (myTree.evt_id == 3 && (njets>1 && ht >= 450)) ) continue;
       
     }
 
