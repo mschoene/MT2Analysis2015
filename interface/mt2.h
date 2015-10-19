@@ -1412,7 +1412,7 @@ Bool_t MT2Tree::passBaseline(TString sel) const
 
   if (sel=="gamma")
     return nVert > 0 && 
-      // gamma_nJet30 >= 2 &&
+      gamma_nJet30 >= 1 &&
       gamma_nJet30FailId == 0 &&
       gamma_deltaPhiMin > 0.3 && 
       ( (gamma_ht<1000. && gamma_met_pt>200.) || (gamma_ht>=1000. && gamma_met_pt>30.) ) && 
@@ -1433,6 +1433,7 @@ Bool_t MT2Tree::passBaseline(TString sel) const
   else
     return nVert > 0 && 
       //////(nJet30 >= 2 || sel=="monojet") &&
+      nJet30>=1 &&
       nJet30FailId == 0 &&
       deltaPhiMin > 0.3 && 
       ( (ht<1000. && met_pt>200.) || (ht>=1000. && met_pt>30.) ) && 
@@ -1451,13 +1452,13 @@ Bool_t MT2Tree::passGammaAdditionalSelection(int sampleId) const
   if( ngamma==0 ) return kFALSE;
   //if( gamma_pt[0]<180. ) return kFALSE;
   //if( gamma_mt2<200. ) return kFALSE;     
-  //  if( mt2>200. ) return kFALSE; // orthogonal to signal region
+  //if( mt2>200. ) return kFALSE; // orthogonal to signal region
 
   bool isQCD  = sampleId>=100 && sampleId<200;
   bool isGJet = sampleId>=200 && sampleId<300;
 
   float deltaRmin_parton = gamma_drMinParton[0];
-  if( isQCD && deltaRmin_parton>0.4 ) return kFALSE; // stitching
+  //if( isQCD && deltaRmin_parton>0.4 ) return kFALSE; // stitching
 
   if( gamma_mcMatchId[0]!=22 && isGJet ) return kFALSE; // fakes only from QCD (it's inclusive)
 

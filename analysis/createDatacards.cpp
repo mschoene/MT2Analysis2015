@@ -32,7 +32,7 @@ void writeToTemplateFile_poisson( TFile* file, MT2Analysis<MT2Estimate>* analysi
 MT2Analysis<MT2Estimate>* get( const std::string& name, std::vector< MT2Analysis<MT2Estimate>* > analyses, const std::string& name1, const std::string& name2="", const std::string& name3="", const std::string& name4="" );
 std::string getSimpleSignalName( const std::string& longName );
 std::string gammaConvention( float yieldSR, int yieldCR, int position, const std::string& corrName, const std::string& uncorrName="", float testAlpha=1. );
-
+void getQCDestimate( float htMin, float mt2Min, float mt2Max, float nB, int& NQCD_cr, float& r );
 
 
 int main( int argc, char* argv[] ) {
@@ -187,11 +187,17 @@ int main( int argc, char* argv[] ) {
      TH1D* this_qcd  = qcd ->get(*iR)->yield;
      
      TH1D* this_zinv = zinv->get(*iR)->yield;
-     TH1D* this_zinvCR     = (use_gamma) ? zinvCR->get(*iR)->yield : 0;
      TH1D* this_zinv_ratio     = (use_gamma) ? zinv_ratio->get(*iR)->yield : 0;
+     TH1D* this_zinvCR;
+     if(iR->nBJetsMin()==2){
+       
+       this_zinvCR = (use_gamma) ? zinvCR->get(MT2Region(iR->htMin(), iR->htMax(), iR->nJetsMin(), iR->nJetsMax(), 1, 1))->yield : 0;
+     
+     }
+     else
+       this_zinvCR = (use_gamma) ? zinvCR->get(*iR)->yield : 0;
 
      TH1D* this_llep = llep->get(*iR)->yield;
-
      TH1D* this_llepCR;
      if(iR->nJetsMin()>=7 && iR->nBJetsMin()>=1){
        
@@ -278,8 +284,12 @@ int main( int argc, char* argv[] ) {
 	 
        }
        
+       Int_t NQCD_cr;
+       float r_qcd;
+       getQCDestimate( iR->htMin(), mt2Min, mt2Max, iR->nBJetsMin(), NQCD_cr, r_qcd );
        
-       
+       //       yield_qcd = NQCD_cr*r_qcd;
+
        // sig qcd zinv llep
        datacard << "bin \t" << binName << "\t" << binName << "\t" << binName << "\t" << binName << std::endl;
        datacard << "process \t sig \t zinv \t llep \t qcd" << std::endl;
@@ -412,12 +422,20 @@ int main( int argc, char* argv[] ) {
            } else {
 	     
 	     int Ngamma;
+	     std::string zinvCR_name;
+	     if(iR->nBJetsMin()==2){
+	       MT2Region* thisCR = new MT2Region(iR->htMin(), iR->htMax(), iR->nJetsMin(), iR->nJetsMax(), 2, 2);
+	       zinvCR_name = thisCR->getName();
+	     }
+	     else
+	       zinvCR_name = iR->getName();
+
 	     if ( !use_extrapolation )
 	       Ngamma = round(this_zinvCR->GetBinContent(iBin));
              else
 	       Ngamma = round(this_zinvCR->Integral());
 	     
-	     std::string zinvCR_name = iR->getName();
+	     //std::string zinvCR_name = iR->getName();
 
              Double_t x_tmp, p, p_errUp, p_errDown;
 	     if( use_purity ){
@@ -558,13 +576,41 @@ int main( int argc, char* argv[] ) {
 
        // QCD SYSTEMATICS:
 
-       if( yield_qcd>0. ) {
-         datacard << "qcd_syst_" << binName << " lnN - - - " << 1.+err_qcd_uncorr << std::endl;
-         qcd_systUp += err_qcd_uncorr*err_qcd_uncorr;
-         qcd_systDn += err_qcd_uncorr*err_qcd_uncorr;
-       }
+//       if( yield_qcd>0. ) {
+//         datacard << "qcd_syst_" << binName << " lnN - - - " << 1.+err_qcd_uncorr << std::endl;
+//         qcd_systUp += err_qcd_uncorr*err_qcd_uncorr;
+//         qcd_systDn += err_qcd_uncorr*err_qcd_uncorr;
+//       }
 
 
+       std::string qcdCR_name;
+       if(iR->htMin()==450)
+	 qcdCR_name = "HT450to575";
+       
+       else if(iR->htMin()==575)
+	 qcdCR_name = "HT575to1000";
+       
+       else if(iR->htMin()==1000)
+	 qcdCR_name = "HT1000to1500";
+
+       else if(iR->htMin()==1500)
+	 qcdCR_name = "HT1500toInf";
+       
+       //datacard << "qcd_syst_" << binName << " gmN 0 - - - " << 0.1 << std::endl;
+       //datacard << "qcd_syst_" << qcdCR_name << " gmN 0 - - - " << 0.1 << std::endl;
+
+       datacard << "qcd_syst_" << binName << " lnN - - - " << 1.+err_qcd_uncorr << std::endl; 
+
+//       datacard << "qcd_syst_" << binName << " gmN " << NQCD_cr << " - - - " << std::setprecision(6)  << r_qcd << std::setprecision(3) << std::endl;
+//       
+//       if (iR->nBJetsMin()==1)
+//	 datacard << "qcd_1b_ratio_" << binName << " lnN - - - " << 1.25 << std::endl;
+//
+//       else if (iR->nBJetsMin()>=2)
+//	 datacard << "qcd_2b_ratio_" << binName << " lnN - - - " << 1.5 << std::endl;
+       
+       qcd_systUp += err_qcd_uncorr*err_qcd_uncorr;
+       qcd_systDn += err_qcd_uncorr*err_qcd_uncorr;      
 
        datacard.close();
 
@@ -928,3 +974,64 @@ std::string gammaConvention( float yieldSR, int yieldCR, int position, const std
 
 }
 
+
+
+void getQCDestimate( float htMin, float mt2Min, float mt2Max, float nB, int& NQCD_cr, float& r ){
+
+
+  TF1* QCDpow = new TF1("QCDpow","[0]*TMath::Power(x,[1])");
+
+  Int_t NQCD[6];
+
+  int eLow = (mt2Min-200.)/100.;
+  int eHigh = (mt2Max>0) ? (mt2Max-200.)/100. : 5;
+  if( eLow  > 5 ) eLow =5;
+  if( eHigh > 5 ) eHigh=5;
+
+  if(htMin==450){
+
+    QCDpow->SetParameter(0,73792.1);  QCDpow->SetParameter(1,-2.53584);
+    Int_t NQCD_[6]={131, 9, 1, 0, 0, 0};
+    for(int n=0; n<6; n++)
+      NQCD[n]=NQCD_[n];
+
+  }
+  else if(htMin==575){
+
+    QCDpow->SetParameter(0,57785.8);  QCDpow->SetParameter(1,-2.49123);
+    Int_t NQCD_[6]={449, 49, 6, 1, 0, 0};
+    for(int n=0; n<6; n++)
+      NQCD[n]=NQCD_[n];
+
+
+  }
+  else if(htMin==1000){
+
+    QCDpow->SetParameter(0,1958.03);  QCDpow->SetParameter(1,-1.70589);
+    Int_t NQCD_[6]={192, 34, 7, 2, 0, 0};
+    for(int n=0; n<6; n++)
+      NQCD[n]=NQCD_[n];
+
+  }
+  else if(htMin==1500){
+ 
+    QCDpow->SetParameter(0,385.588);  QCDpow->SetParameter(1,-1.30116);
+    Int_t NQCD_[6]={93, 22, 7, 2, 1, 0};
+    for(int n=0; n<6; n++)
+      NQCD[n]=NQCD_[n];
+    
+  }
+  
+  NQCD_cr=0;
+  for(int e=eLow; e<eHigh; ++e)
+    NQCD_cr+=NQCD[e];
+
+  r = QCDpow->Eval(mt2Min);
+
+  if (nB==1)
+    r*=0.16;
+  else if (nB>=2)
+    r*=0.03;
+    
+
+}

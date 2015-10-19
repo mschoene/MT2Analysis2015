@@ -105,11 +105,10 @@ int main( int argc, char* argv[] ) {
   std::string selection = "weight*(ht>1000. && nJets>1 && met>30. && mt2>10. && deltaPhiMin>0.3 && diffMetMht<0.5*met)/puWeight";
   dt.drawRegionYields_fromTree( "nVert_noPU" , "nVert" , selection, 50, 0.5, 50.5, "Number of Vertices", "", cutsLabel );
 
-
   //selection = "weight*(ht>1000. && nJets>1 && met>30. && mt2>10. && deltaPhiMin>0.3 && diffMetMht<0.5*met && nJetHF30==0)";
+  selection = "weight*(ht>=1000. && nJets>1 && met>30. && mt2>10. && deltaPhiMin>0.3 && diffMetMht<0.5*met)*(1.0-0.3*(id>155 && id<200))";
   selection = "weight*(ht>=1000. && nJets>1 && met>30. && mt2>10. && deltaPhiMin>0.3 && diffMetMht<0.5*met)";
   
-  //drawYields( cfg, data, mc, "nVert" , "nVert" , selection, 50, 0.5, 50.5, "Number of Vertices", "", htMin, htMax );
   dt.drawRegionYields_fromTree( "mt2"   , "mt2"   , selection, 60, 10., 310., "M_{T2}", "GeV", cutsLabel );
   dt.drawRegionYields_fromTree( "met"   , "met"   , selection, 80, 30., 430., "Missing E_{T}", "GeV", cutsLabel );
   dt.drawRegionYields_fromTree( "mht"   , "mht"   , selection, 80, 30., 430., "Missing H_{T}", "GeV", cutsLabel );
@@ -149,8 +148,6 @@ int main( int argc, char* argv[] ) {
   //selection = "weight*(ht>450. && ht<1000. && met>200. && nJets>1 && mt2>10. && deltaPhiMin>0.3 && diffMetMht<0.5*met && nJetHF30==0)";
   selection = "weight*(ht>450. && ht<1000. && met>200. && nJets>1 && mt2>10. && deltaPhiMin>0.3 && diffMetMht<0.5*met)";
 
-  
-
   dt.drawRegionYields_fromTree( "lowHT_nVert" , "nVert" , selection, 25, 0.5, 50.5, "Number of Vertices", "", cutsLabel );
   dt.drawRegionYields_fromTree( "lowHT_mt2"   , "mt2"   , selection, 18, 10., 910., "M_{T2}", "GeV", cutsLabel );
   dt.drawRegionYields_fromTree( "lowHT_met"   , "met"   , selection, 20, 200., 1200., "Missing E_{T}", "GeV", cutsLabel );
@@ -171,8 +168,6 @@ int main( int argc, char* argv[] ) {
   return 0;
 
 }
-
-
 
 std::string getCutLabel( float theMin, float theMax, const std::string& name, const std::string& units ) {
 
