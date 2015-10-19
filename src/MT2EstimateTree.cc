@@ -104,13 +104,9 @@ void MT2EstimateTree::projectFromTree( const MT2EstimateTree* treeEst, const std
 
   gROOT->cd();
 
-  //////  treeEst->tree->Project( this->getHistoName("yield").c_str() , "mt2", Form("weight*(%s)", fullSelection.c_str()) );
-
   this->tree = treeEst->tree->CopyTree( Form("%s", fullSelection.c_str()) );
   this->tree->SetDirectory(0);
   this->tree->SetName( this->getHistoName("tree").c_str() );
-
-  std::cout << "Filling yield: " << this->yield->GetName() << std::endl;
 
   float mt2, weight;
   this->tree->SetBranchAddress("mt2", &mt2);
@@ -121,8 +117,6 @@ void MT2EstimateTree::projectFromTree( const MT2EstimateTree* treeEst, const std
     this->yield->Fill(mt2, weight);
   }
 
-  std::cout << "Filled with entries: " << this->yield->Integral() << std::endl;
-		       
   dir->cd();
 
 }
