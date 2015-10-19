@@ -1,6 +1,5 @@
 lumi 0.549
 regionsSet 13TeV_inclusive
-#mcSamples Spring15_25ns_noSkim
-mcSamples Spring15_25ns_skimprune_monojet
+mcSamples Spring15_25ns_noSkim
 dataSamples Run2015D_25nsGolden_v3
 additionalStuff noSignals
