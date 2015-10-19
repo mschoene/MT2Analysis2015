@@ -1412,8 +1412,8 @@ Bool_t MT2Tree::passBaseline(TString sel) const
 
   if (sel=="gamma")
     return nVert > 0 && 
-      gamma_nJet30 >= 2 &&
-      //gamma_nJet30FailId == 0 &&
+      gamma_nJet30 >= 1 &&
+      gamma_nJet30FailId == 0 &&
       gamma_deltaPhiMin > 0.3 && 
       ( (gamma_ht<1000. && gamma_met_pt>200.) || (gamma_ht>=1000. && gamma_met_pt>30.) ) && 
       gamma_diffMetMht < 0.5*gamma_met_pt;
@@ -1433,8 +1433,8 @@ Bool_t MT2Tree::passBaseline(TString sel) const
   else
     return nVert > 0 && 
       //////(nJet30 >= 2 || sel=="monojet") &&
+      nJet30>=1 &&
       nJet30FailId == 0 &&
-      //      deltaPhiMin > 0.3 && 
       deltaPhiMin > 0.3 && 
       ( (ht<1000. && met_pt>200.) || (ht>=1000. && met_pt>30.) ) && 
       diffMetMht < 0.5*met_pt;
