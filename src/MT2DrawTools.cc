@@ -166,7 +166,7 @@ TStyle* MT2DrawTools::setStyle() {
 std::string MT2DrawTools::getLumiText( float lumi ) {
 
   std::string returnText;
-  if( lumi>=0.2 )
+  if( lumi>=1.0 )
     returnText = (std::string)Form(" %.1f fb^{-1}", lumi);
   else if( lumi>0.01 )
     returnText = (std::string)Form(" %.0f pb^{-1}", 1000.*lumi);

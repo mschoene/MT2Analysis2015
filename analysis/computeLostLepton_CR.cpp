@@ -18,7 +18,9 @@
 #include "interface/MT2Sample.h"
 #include "interface/MT2Region.h"
 #include "interface/MT2Analysis.h"
+#include "interface/MT2Estimate.h"
 #include "interface/MT2EstimateSyst.h"
+#include "interface/MT2EstimateTree.h"
 #include "interface/MT2DrawTools.h"
 
 #define mt2_cxx
@@ -35,8 +37,8 @@ struct lepcand {
   bool isPFCand;
 
 };
-
-MT2Analysis<MT2EstimateSyst> computeYield( const MT2Sample& sample, const MT2Config& cfg );
+void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT2EstimateTree>* anaTree );
+//MT2Analysis<MT2EstimateTree> computeYield( const MT2Sample& sample, const MT2Config& cfg );
 
 float DeltaR(float eta1, float eta2, float phi1, float phi2);
 
@@ -72,7 +74,8 @@ int main( int argc, char* argv[] ) {
   std::cout << std::endl << std::endl;
   std::cout << "-> Loading samples from file: " << samplesFileName << std::endl;
 
-  std::vector<MT2Sample> fSamples = MT2Sample::loadSamples(samplesFileName, 300, 599); // only top (tt, t, ttW, ttZ) and WJets
+  //  std::vector<MT2Sample> fSamples = MT2Sample::loadSamples(samplesFileName, 300, 599); // only top (tt, t, ttW, ttZ) and WJets
+  std::vector<MT2Sample> fSamples = MT2Sample::loadSamples(samplesFileName, 100, 999); // only top (tt, t, ttW, ttZ) and WJets
   if( fSamples.size()==0 ) {
     std::cout << "There must be an error: samples is empty!" << std::endl;
     exit(1209);
@@ -92,11 +95,43 @@ int main( int argc, char* argv[] ) {
 
   std::cout << "using region set " << regionsSet << std::endl;
   
-  MT2Analysis<MT2EstimateSyst>* lostLeptonEstimate = new MT2Analysis<MT2EstimateSyst> ( "llep", regionsSet );  
+  std::string regionsSet_="13TeV_inclusive";
+
+  //  MT2Analysis<MT2EstimateTree>* lostLeptonEstimate = new MT2Analysis<MT2EstimateTree> ( "llep", regionsSet );  
+  MT2Analysis<MT2EstimateTree>* lostLeptonEstimate = new MT2Analysis<MT2EstimateTree> ( "llep", regionsSet_ );  
+//  for( unsigned i=0; i < fSamples.size(); ++i )
+//    (*lostLeptonEstimate) += ( computeYield( fSamples[i], cfg ) );
   for( unsigned i=0; i < fSamples.size(); ++i )
-    (*lostLeptonEstimate) += ( computeYield( fSamples[i], cfg ) );
+    computeYield( fSamples[i], cfg, lostLeptonEstimate );
   
-  lostLeptonEstimate->writeToFile( cfg.getEventYieldDir() + "/llepEstimate.root" ); //Form("llep_%s_%s_%.0ffb.root", sampleName.c_str(), regionsSet.c_str(), lumi));
+  std::cout << "-> Making MT2EstimateTrees from inclusive tree (might take a sec)...";
+  std::string mcTruthSelection = "id>=151 && id<=157 && mt2>200.";
+  MT2Analysis<MT2EstimateTree>* QCD = MT2EstimateTree::makeAnalysisFromInclusiveTree( "QCD", regionsSet, lostLeptonEstimate, mcTruthSelection+"&&deltaPhiMin>0.3&&diffMetMht/met<0.5" ); 
+
+  mcTruthSelection = "id>=301 && id<=499 && mt2>200.";
+  MT2Analysis<MT2EstimateTree>* Top = MT2EstimateTree::makeAnalysisFromInclusiveTree( "Top", regionsSet, lostLeptonEstimate, mcTruthSelection+"&&deltaPhiMin>0.3&&diffMetMht/met<0.5" ); 
+
+  mcTruthSelection = "id>=501 && id<=599 && mt2>200.";
+  MT2Analysis<MT2EstimateTree>* WJets = MT2EstimateTree::makeAnalysisFromInclusiveTree( "WJets", regionsSet, lostLeptonEstimate, mcTruthSelection+"&&deltaPhiMin>0.3&&diffMetMht/met<0.5" ); 
+  
+  mcTruthSelection = "id>=601 && id<=699 && mt2>200.";
+  MT2Analysis<MT2EstimateTree>* ZJets = MT2EstimateTree::makeAnalysisFromInclusiveTree( "ZJets", regionsSet, lostLeptonEstimate, mcTruthSelection+"&&deltaPhiMin>0.3&&diffMetMht/met<0.5" ); 
+
+  mcTruthSelection = "id>=701 && id<=799 && mt2>200.";
+  MT2Analysis<MT2EstimateTree>* DYJets = MT2EstimateTree::makeAnalysisFromInclusiveTree( "DYJets", regionsSet, lostLeptonEstimate, mcTruthSelection+"&&deltaPhiMin>0.3&&diffMetMht/met<0.5" ); 
+
+  mcTruthSelection = "id>=201 && id<=299 && mt2>200.";
+  MT2Analysis<MT2EstimateTree>* GJets = MT2EstimateTree::makeAnalysisFromInclusiveTree( "GJets", regionsSet, lostLeptonEstimate, mcTruthSelection+"&&deltaPhiMin>0.3&&diffMetMht/met<0.5" ); 
+
+  std::string outfile = cfg.getEventYieldDir() + "/llepEstimate.root";
+
+  lostLeptonEstimate->writeToFile( outfile ); //Form("llep_%s_%s_%.0ffb.root", sampleName.c_str(), regionsSet.c_str(), lumi));
+  QCD->addToFile( outfile );
+  Top->addToFile( outfile );
+  WJets->addToFile( outfile );
+  ZJets->addToFile( outfile );
+  DYJets->addToFile( outfile );
+  GJets->addToFile( outfile );
 
   return 0;
   
@@ -104,8 +139,7 @@ int main( int argc, char* argv[] ) {
 
 
 
-
-MT2Analysis<MT2EstimateSyst> computeYield( const MT2Sample& sample, const MT2Config& cfg ) {
+void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT2EstimateTree>* anaTree ){
 
   std::cout << std::endl << std::endl;
   std::cout << "-> Starting computation for sample: " << sample.name << std::endl;
@@ -125,8 +159,8 @@ MT2Analysis<MT2EstimateSyst> computeYield( const MT2Sample& sample, const MT2Con
     regionsSet=cfg.regionsSet();
   
 
-  std::cout << "-> Setting up MT2Analysis with name: " << sample.sname << std::endl;
-  MT2Analysis<MT2EstimateSyst> analysis( sample.sname, regionsSet, sample.id );
+//  std::cout << "-> Setting up MT2Analysis with name: " << sample.sname << std::endl;
+//  MT2Analysis<MT2EstimateTree> analysis( sample.sname, regionsSet, sample.id );
 
   int nentries = tree->GetEntries();
     
@@ -254,10 +288,12 @@ MT2Analysis<MT2EstimateSyst> computeYield( const MT2Sample& sample, const MT2Con
     //float fullweight_btagUp = weight;
     //float fullweight_btagDown = weight;
 
-    MT2EstimateSyst* thisEstimate = analysis.get( ht, njets, nbjets, met, minMTBmet, mt2 );
+    MT2EstimateTree* thisEstimate = anaTree->get( ht, njets, nbjets, minMTBmet, mt2 );
     if( thisEstimate==0 ) continue;
-
-    thisEstimate->yield         ->Fill(mt2, weight );
+    
+    thisEstimate->assignTree( myTree, weight );
+    thisEstimate->tree->Fill();
+    thisEstimate->yield->Fill(mt2, weight );
     //thisEstimate->yield_btagUp  ->Fill(mt2, fullweight_btagUp );
     //thisEstimate->yield_btagDown->Fill(mt2, fullweight_btagDown );
 
@@ -267,14 +303,14 @@ MT2Analysis<MT2EstimateSyst> computeYield( const MT2Sample& sample, const MT2Con
 
   //ofs.close();
 
-  analysis.finalize();
+  anaTree->finalize();
 
   delete tree;
 
   file->Close();
   delete file;
 
-  return analysis;
+  //  return analysis;
 
 }
 
