@@ -114,24 +114,28 @@ MT2Analysis<MT2EstimateQCD>* MT2EstimateQCD::makeAnalysisFromTree( const std::st
 
 MT2Analysis<MT2EstimateQCD>* MT2EstimateQCD::makeAnalysisFromInclusiveTree( const std::string& aname, const std::string& regionsSet, MT2Analysis<MT2EstimateTree>* estimate, const std::string& selection ) {
 
+  std::set<MT2Region> regions = estimate->getRegions();
 
-  MT2EstimateTree* treeInclusive = estimate->get( MT2Region("HT450toInf_j2toInf_b0toInf") );
-  if( treeInclusive==0 ) {
+  if( regions.size()!=1 ) {
+  //if( treeInclusive==0 ) {
     std::cout << "[MT2EstimateQCD::makeAnalysisFromEstimateTreeInclusive] ERROR!! You need to pass an inclusive MT2EstimateTree Analysis to use this function!" << std::endl;
     exit(19191);
   }
 
+  //MT2EstimateTree* treeInclusive = estimate->get( MT2Region("HT450toInf_j2toInf_b0toInf") );
+  MT2EstimateTree* treeInclusive = estimate->get( *(regions.begin()) );
+
   // will create a new analysis with custom regions from inclusive tree:
   MT2Analysis<MT2EstimateQCD>* analysis = new MT2Analysis<MT2EstimateQCD>( aname, regionsSet );
-  std::set<MT2Region> regions = analysis->getRegions();
+  std::set<MT2Region> newRegions = analysis->getRegions();
 
 
-  for( std::set<MT2Region>::iterator iR=regions.begin(); iR!=regions.end(); ++iR ) {
+  for( std::set<MT2Region>::iterator iR=newRegions.begin(); iR!=newRegions.end(); ++iR ) {
 
     MT2EstimateQCD* thisEstimateQCD = analysis->get( *iR );
     thisEstimateQCD->projectFromTree( treeInclusive, selection );
 
-  } // for regions
+  } // for newRegions
 
 
   return analysis;
