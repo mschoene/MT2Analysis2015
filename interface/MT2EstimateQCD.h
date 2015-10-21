@@ -16,7 +16,6 @@ class MT2EstimateQCD : public MT2EstimateTree {
  public:
 
   MT2EstimateQCD( const MT2EstimateQCD& rhs );
-  //MT2EstimateQCD( const MT2EstimateTree& rhs, const std::string& selection="" );
   MT2EstimateQCD( const std::string& aname, const MT2Region& aregion );
   virtual ~MT2EstimateQCD();
 
@@ -35,11 +34,6 @@ class MT2EstimateQCD : public MT2EstimateTree {
   
   TH1D* lDphi;
   TH1D* hDphi;
-  //TH1D* ratio;
-
-  //TF1* exp;
-  //TF1* expPlusC;
-  //TF1* expOrC;
 
   const MT2EstimateQCD& operator=( const MT2EstimateQCD& rhs );
   MT2EstimateQCD operator+( const MT2EstimateQCD& rhs ) const;
@@ -58,17 +52,7 @@ class MT2EstimateQCD : public MT2EstimateTree {
   friend MT2EstimateQCD operator/( float k, const MT2EstimateQCD& rhs );
 
 
-  //void doFit();
-
-  //void getRatio() {
-  //  ratio->Divide(hDphi, lDphi);
-  //}
-
-  //float getFitXmin () { return fitXmin; }
-  //float getFitXmax () { return fitXmax; }
   float getDphiLow() { return dphi_low; }
-  //virtual void setFitXmin(float xmin){ fitXmin = xmin;  }
-  //virtual void setFitXmax(float xmax){ fitXmax = xmax;  }
   virtual void setDphiLow(float dphi){ dphi_low = dphi; }
 
   virtual void finalize();
@@ -84,7 +68,6 @@ class MT2EstimateQCD : public MT2EstimateTree {
 
  private:
 
-  //float fitXmin, fitXmax;  // fit window
   float dphi_low;          // threshold to define low dphi region
 
 };
