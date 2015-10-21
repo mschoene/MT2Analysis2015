@@ -131,6 +131,9 @@ drawGammaControlRegionDataMC: drawGammaControlRegionDataMC.cpp MT2Region.o MT2Es
 drawZllControlRegion: drawZllControlRegion.cpp MT2Region.o MT2Estimate.o MT2EstimateTree.o MT2DrawTools.o MT2Config.o
 	$(CC) -Wall $(INCLUDES) -o drawZllControlRegion drawZllControlRegion.cpp MT2Region.o MT2Estimate.o MT2EstimateTree.o MT2DrawTools.o MT2Config.o $(ROOTFLAG) $(EXTRALIBS)
 
+drawQCDFromDeltaPhi: drawQCDFromDeltaPhi.cpp MT2Region.o MT2Estimate.o MT2EstimateTree.o MT2DrawTools.o MT2Config.o
+	$(CC) -Wall $(INCLUDES) -o drawQCDFromDeltaPhi drawQCDFromDeltaPhi.cpp MT2Region.o MT2Estimate.o MT2EstimateTree.o MT2DrawTools.o MT2Config.o $(ROOTFLAG) $(EXTRALIBS)
+
 computeQCDFromDeltaPhi: computeQCDFromDeltaPhi.cpp  MT2Region.o MT2Estimate.o MT2EstimateQCD.o  MT2EstimateTree.o MT2Config.o MT2DrawTools.o
 	$(CC) -Wall $(INCLUDES) -o computeQCDFromDeltaPhi computeQCDFromDeltaPhi.cpp MT2Region.o MT2Estimate.o MT2EstimateQCD.o MT2EstimateTree.o MT2Config.o MT2DrawTools.o $(ROOTFLAG) $(EXTRALIBS)
 
