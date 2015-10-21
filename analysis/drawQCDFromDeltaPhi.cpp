@@ -16,6 +16,12 @@
 #include "../interface/MT2DrawTools.h"
 
 
+
+bool closureTest = false;
+
+
+
+void compareFractions( const MT2Config& cfg, const std::string& outputdir, const std::string& dataFile, const std::string& mcFile, const std::string& analysisName, const std::string& xaxisName, const std::string& yaxisName, bool logPlot );
 void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estimate, MT2Analysis<MT2Estimate>* mcTruth );
 
 
@@ -48,20 +54,30 @@ int main( int argc, char* argv[] ) {
 
 
   std::string qcdCRdir = cfg.getEventYieldDir() + "/qcdControlRegion/";
+  std::string qcdESTdir = qcdCRdir;
+  if( closureTest ) qcdESTdir += "/test";
   std::string outputdir = qcdCRdir;
+  if( closureTest ) outputdir += "/test";
   std::string fitsDir = outputdir;
   if( useMC ) fitsDir = fitsDir + "/fitsMC";
   else        fitsDir = fitsDir + "/fitsData";
   system( Form("mkdir -p %s", fitsDir.c_str() ));
 
 
-
-  MT2Analysis<MT2EstimateTree>* qcdTree_mc   = MT2Analysis<MT2EstimateTree>::readFromFile( qcdCRdir + "/mc.root",   "qcdCRtree" );
-  //MT2Analysis<MT2EstimateTree>* qcdTree_data = MT2Analysis<MT2EstimateTree>::readFromFile( qcdCRdir + "/data.root", "qcdCRtree" );
-  MT2Analysis<MT2EstimateTree>* mcTruth = MT2EstimateTree::makeAnalysisFromInclusiveTree( "mcTruth", cfg.regionsSet(), qcdTree_mc, "id>=153 && id<200 && mt2>200. && deltaPhiMin>0.3" ); // signal region for mcTruth
-
   std::string mcFile   = qcdCRdir + "qcdEstimateMC.root";
   std::string dataFile = qcdCRdir + "qcdEstimateData.root";
+
+
+  compareFractions( cfg, outputdir, dataFile, mcFile, "f_jets", "Number of Jets", "F_{jets}", false );
+  compareFractions( cfg, outputdir, dataFile, mcFile, "r_hat", "Number of b-Jets", "#hat{r}_{b}", true );
+
+
+  MT2Analysis<MT2EstimateTree>* qcdTree_mc   = MT2Analysis<MT2EstimateTree>::readFromFile( qcdCRdir + "/mc.root",   "qcdCRtree" );
+  MT2Analysis<MT2EstimateTree>* qcdTree_data = MT2Analysis<MT2EstimateTree>::readFromFile( qcdCRdir + "/data.root", "qcdCRtree" );
+
+  MT2Analysis<MT2EstimateTree>* mcTruth;
+  if( closureTest ) mcTruth = MT2EstimateTree::makeAnalysisFromInclusiveTree( "data"   , cfg.regionsSet(), qcdTree_data, "id==1 && mt2>150. && mt2<200. && deltaPhiMin>0.3" ); // signal region for mcTruth
+  else              mcTruth = MT2EstimateTree::makeAnalysisFromInclusiveTree( "mcTruth", cfg.regionsSet(), qcdTree_mc  , "id>=153 && id<200 && mt2>200. && deltaPhiMin>0.3" ); // signal region for mcTruth
 
   MT2Analysis<MT2Estimate>* estimateMC     = MT2Analysis<MT2Estimate>::readFromFile( mcFile  , "qcdEstimate" );
   MT2Analysis<MT2Estimate>* estimateData   = MT2Analysis<MT2Estimate>::readFromFile( dataFile, "qcdEstimate" );
@@ -70,71 +86,99 @@ int main( int argc, char* argv[] ) {
   estimateMC->setColor(kBlack);
   estimateData->setColor(kBlack);
 
-  std::string plotsDirMC = qcdCRdir + "/plotsMC";
+  std::string plotsDirMC = qcdESTdir + "/plotsMC";
   drawClosure( plotsDirMC, estimateMC, (MT2Analysis<MT2Estimate>*)mcTruth );
 
-  std::string plotsDirData = qcdCRdir + "/plotsData";
+  std::string plotsDirData = qcdESTdir + "/plotsData";
   drawClosure( plotsDirData, estimateData, (MT2Analysis<MT2Estimate>*)mcTruth );
+
+
 
   return 0;
 
 } 
 
+           
 
-//  MT2Analysis<MT2Estimate>* fjets_mc   = MT2Analysis<MT2Estimate>::readFromFile(mcFile  , "f_jets");
-//  MT2Analysis<MT2Estimate>* fjets_data = MT2Analysis<MT2Estimate>::readFromFile(dataFile, "f_jets");
-//
-//
-//  std::set<MT2Region> regions = fjets_data->getRegions();
-//
-//  for( std::set<MT2Region>::iterator iR=regions.begin(); iR!=regions.end(); ++iR ) {
-//
-//    MT2Estimate* thisFJets_mc   = fjets_mc  ->get(iR);
-//    MT2Estimate* thisFJets_data = fjets_data->get(iR);
-//
-//    TH1D* h1_mc   = thisFJets_mc  ->yield;
-//    TH1D* h1_data = thisFJets_data->yield;
-//
-//
-//    TCanvas* c1 = new TCanvas( "c1", "", 600, 600 );
-//    c1->cd();
-//
-//    float yMax_data = h1_data->GetMaximum()/h1_data->Integral();
-//    float yMax = 1.2*yMax_data;
-//    TH1D* h2_axes = new TH2D( "axes", "", 10, 1.5, 8.5, 10, 0., yMax );
-//    h2_axes->SetXTitle( "Number of Jets" );
-//    h2_axes->SetYTitle( "Fraction" );
-//    h2_axes->Draw();
-//
-//    h1_mc->SetLineColor(kRed);
-//    h1_mc->SetLineWidth(2);
-//
-//    h1_data->SetMarkerStyle(20);
-//    h1_data->SetMarkerSize(1.6);
-//
-//    h1_mc  ->Draw("histo norm same");
-//    h1_data->Draw("p same norm");
-//
-//
-//    TPaveText* labelTop = MT2DrawTools::getLabelTop( cfg.get_lumi() );
-//    labelTop->Draw("same");
-//
-//    TLegend* legend = new TLegend( 0.55, 0.7, 0.9, 0.9 );
-//    legend->SetFillColor(0);
-//    legend->SetTextSize(0.038);
-//    legend->AddEntry( h1_data, "Data", "P");
-//    legend->AddEntry( h1_mc, "MC", "L");
-//    legend->Draw("same");
-//
-//    gPad->RedrawAxis();
-//
-//    c1->SaveAs( Form("%s/fJets_%s.eps", outputdir.c_str(), iR->getName().c_str()) );
-//    c1->SaveAs( Form("%s/fJets_%s.pdf", outputdir.c_str(), iR->getName().c_str()) );
-//
-//    delete c1;
-//    delete h2_axes;
-//
-//}
+ 
+
+
+void compareFractions( const MT2Config& cfg, const std::string& outputdir, const std::string& dataFile, const std::string& mcFile, const std::string& analysisName, const std::string& xaxisName, const std::string& yaxisName, bool logPlot ) {
+
+  MT2Analysis<MT2Estimate>* fraction_mc   = MT2Analysis<MT2Estimate>::readFromFile(mcFile  , analysisName);
+  MT2Analysis<MT2Estimate>* fraction_data = MT2Analysis<MT2Estimate>::readFromFile(dataFile, analysisName);
+
+
+  std::set<MT2Region> regions = fraction_data->getRegions();
+
+  for( std::set<MT2Region>::iterator iR=regions.begin(); iR!=regions.end(); ++iR ) {
+
+    MT2Estimate* thisFraction_mc   = fraction_mc  ->get(*iR);
+    MT2Estimate* thisFraction_data = fraction_data->get(*iR);
+
+    TH1D* h1_mc   = thisFraction_mc  ->yield;
+    TH1D* h1_data = thisFraction_data->yield;
+
+
+    TCanvas* c1 = new TCanvas( "c1", "", 600, 600 );
+    c1->cd();
+    if( logPlot ) c1->SetLogy();
+
+    //float yMax_data = h1_data->GetMaximum()/h1_data->Integral();
+    //float yMax = 1.6*yMax_data;
+    float yMin = (logPlot) ? h1_mc->GetMinimum()/7. : 0.;
+    float yMax = 1.2;
+    TH2D* h2_axes = new TH2D( "axes", "", 10, h1_mc->GetXaxis()->GetXmin(), h1_mc->GetXaxis()->GetXmax(), 10, yMin, yMax );
+    h2_axes->SetXTitle( xaxisName.c_str() );
+    h2_axes->SetYTitle( yaxisName.c_str() );
+    h2_axes->Draw();
+
+    h1_mc->SetLineColor(kRed);
+    h1_mc->SetLineWidth(2);
+
+    TH1D* h1_mcBand = MT2DrawTools::getMCBandHisto( h1_mc );
+
+    h1_data->SetMarkerStyle(20);
+    h1_data->SetMarkerSize(1.6);
+    h1_data->SetLineWidth(2);
+
+    h1_mcBand->Draw("e2 same");
+    h1_mc  ->Draw("histo norm same");
+    h1_data->Draw("p same norm");
+
+
+    TPaveText* labelTop = MT2DrawTools::getLabelTop( cfg.lumi() );
+    labelTop->Draw("same");
+
+    std::vector<std::string> regionNiceNames = iR->getNiceNames();
+    std::string niceJetName;
+    if( iR->nJetsMax()<0 ) 
+      niceJetName = std::string( Form( "N(jets) #geq %d", iR->nJetsMin() ) );
+    else 
+      niceJetName = std::string( Form( "%d #leq N(jets) #leq %d", iR->nJetsMin(), iR->nJetsMax() ) );
+
+    std::string legendTitle = (analysisName=="f_jets") ? regionNiceNames[0].c_str() : niceJetName;
+    TLegend* legend = new TLegend( 0.55, 0.7, 0.9, 0.9, legendTitle.c_str() );
+    legend->SetFillColor(0);
+    legend->SetTextSize(0.038);
+    legend->AddEntry( h1_data, "Data", "PL");
+    legend->AddEntry( h1_mc, "MC", "L");
+    legend->Draw("same");
+
+    gPad->RedrawAxis();
+
+    c1->SaveAs( Form("%s/%s_%s.eps", outputdir.c_str(), analysisName.c_str(), iR->getName().c_str()) );
+    c1->SaveAs( Form("%s/%s_%s.pdf", outputdir.c_str(), analysisName.c_str(), iR->getName().c_str()) );
+
+    delete c1;
+    delete h2_axes;
+  
+  }
+
+
+}
+
+
 
 
 

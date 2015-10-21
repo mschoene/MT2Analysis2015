@@ -22,6 +22,7 @@
 
 
 
+bool closureTest = false;
 
 
 
@@ -82,6 +83,9 @@ int main( int argc, char* argv[] ) {
 
   std::string qcdCRdir = cfg.getEventYieldDir() + "/qcdControlRegion/";
   std::string outputdir = qcdCRdir;
+  if( closureTest ) {
+    outputdir = outputdir + "/test/";
+  }
   std::string fitsDir = outputdir;
   if( useMC ) fitsDir = fitsDir + "/fitsMC";
   else        fitsDir = fitsDir + "/fitsData";
@@ -129,6 +133,20 @@ int main( int argc, char* argv[] ) {
   MT2Analysis<MT2Estimate>* f_jets       = new MT2Analysis<MT2Estimate>("f_jets"     , regionsSet_fJets);
   std::cout << " Done." << std::endl;
 
+
+  if( closureTest ) {
+
+    MT2Estimate::rebinYields( estimate    , 1, 150., 200. );
+    MT2Estimate::rebinYields( nCR         , 1, 150., 200. );
+    MT2Estimate::rebinYields( r_effective , 1, 150., 200. );
+
+    MT2Estimate::rebinYields( est_mcRest  , 1, 150., 200. );
+    MT2Estimate::rebinYields( nCR_mcRest  , 1, 150., 200. );
+    MT2Estimate::rebinYields( r_eff_mcRest, 1, 150., 200. );
+
+    MT2Estimate::rebinYields( qcdPurity   , 1, 150., 200. );
+
+  }
 
   std::cout << "-> Getting fJets...";
   get_fJets( f_jets, qcd_4fJets );
@@ -317,6 +335,13 @@ void projectFromInclusive( MT2Analysis<MT2Estimate>* analysis, MT2Analysis<MT2Es
 
 void get_rHat( MT2Analysis<MT2Estimate>* rHat, MT2Analysis<MT2EstimateTree>* analysis ) {
 
+
+  std::vector<float> uncert;
+  uncert.push_back( 0.08 ); // from bruno
+  uncert.push_back( 0.20 ); 
+  uncert.push_back( 0.35 ); 
+  uncert.push_back( 0.70 ); 
+
   std::set<MT2Region> regions = rHat->getRegions();
 
   for( std::set<MT2Region>::iterator iR=regions.begin(); iR!=regions.end(); ++iR ) {
@@ -330,7 +355,7 @@ void get_rHat( MT2Analysis<MT2Estimate>* rHat, MT2Analysis<MT2EstimateTree>* ana
     bins[1] = 1.;
     bins[2] = 2.;
     bins[3] = 3.;
-    bins[4] = 10.;
+    bins[4] = 6.;
 
     delete thisEst->yield;
     thisEst->yield = new TH1D( name.c_str(), "", nBins, bins );
@@ -338,6 +363,19 @@ void get_rHat( MT2Analysis<MT2Estimate>* rHat, MT2Analysis<MT2EstimateTree>* ana
 
     MT2EstimateTree* thisTree = analysis->get(*iR);
     thisTree->tree->Project( name.c_str(), "nBJets", "weight" );
+    MT2DrawTools::addOverflowSingleHisto(thisEst->yield);
+
+    for( int iBin=1; iBin<nBins+1; ++iBin ) {
+
+      // add error in quadrature to estimate
+      float val_est    = thisEst->yield->GetBinContent(iBin);
+      float error_est  = thisEst->yield->GetBinError(iBin);
+      float errorRel_est = error_est/val_est;
+
+      float errorRel_tot = sqrt( errorRel_est*errorRel_est + uncert[iBin-1]*uncert[iBin-1] );
+      thisEst->yield->SetBinError( iBin, errorRel_tot*val_est );
+
+    }
 
     thisEst->yield->Scale( 1./thisEst->yield->Integral(1, nBins+1) );
 
@@ -349,6 +387,10 @@ void get_rHat( MT2Analysis<MT2Estimate>* rHat, MT2Analysis<MT2EstimateTree>* ana
 
 void get_fJets( MT2Analysis<MT2Estimate>* fJets, MT2Analysis<MT2EstimateTree>* analysis ) {
 
+  std::vector<float> uncert;
+  uncert.push_back( 0.25 ); // from bruno
+  uncert.push_back( 0.07 ); 
+  uncert.push_back( 0.20 ); 
 
   std::set<MT2Region> regions = fJets->getRegions();
 
@@ -362,7 +404,7 @@ void get_fJets( MT2Analysis<MT2Estimate>* fJets, MT2Analysis<MT2EstimateTree>* a
     bins[0] = 2.;
     bins[1] = 4.;
     bins[2] = 7.;
-    bins[3] = 25.;
+    bins[3] = 11.;
 
     delete thisEst->yield;
     thisEst->yield = new TH1D( name.c_str(), "", nBins, bins );
@@ -370,6 +412,22 @@ void get_fJets( MT2Analysis<MT2Estimate>* fJets, MT2Analysis<MT2EstimateTree>* a
 
     MT2EstimateTree* thisTree = analysis->get(*iR);
     thisTree->tree->Project( name.c_str(), "nJets", "weight" );
+
+    MT2DrawTools::addOverflowSingleHisto(thisEst->yield);
+
+
+    for( int iBin=1; iBin<nBins+1; ++iBin ) {
+
+      // add error in quadrature to estimate
+      float val_est    = thisEst->yield->GetBinContent(iBin);
+      float error_est  = thisEst->yield->GetBinError(iBin);
+      float errorRel_est = error_est/val_est;
+
+      float errorRel_tot = sqrt( errorRel_est*errorRel_est + uncert[iBin-1]*uncert[iBin-1] );
+      thisEst->yield->SetBinError( iBin, errorRel_tot*val_est );
+
+    }
+    
 
     thisEst->yield->Scale( 1./thisEst->yield->Integral(1, nBins+1) );
 
@@ -428,11 +486,12 @@ void fillFromTreeAndRatio( MT2Estimate* estimate, MT2Estimate* nCR, MT2Estimate*
 
     // add R error in quadrature to estimate
     float errorRel_r = error_r/r;
+    float val_est    = estimate->yield->GetBinContent(iBin);
     float error_est  = estimate->yield->GetBinError(iBin);
-    float errorRel_est = error_est/estimate->yield->GetBinContent(iBin);
+    float errorRel_est = error_est/val_est;
 
     float errorRel_tot = sqrt( errorRel_est*errorRel_est + errorRel_r*errorRel_r );
-    estimate->yield->SetBinError( iBin, errorRel_tot );
+    estimate->yield->SetBinError( iBin, errorRel_tot*val_est );
 
   }
 
