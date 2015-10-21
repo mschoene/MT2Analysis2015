@@ -71,11 +71,10 @@ int main( int argc, char* argv[] ) {
   estimateData->setColor(kBlack);
 
   std::string plotsDirMC = qcdCRdir + "/plotsMC";
-  system( Form("mkdir -p %s", plotsDirMC.c_str()) );
+  drawClosure( plotsDirMC, estimateMC, (MT2Analysis<MT2Estimate>*)mcTruth );
 
   std::string plotsDirData = qcdCRdir + "/plotsData";
-
-  drawClosure( plotsDirMC, estimateMC, (MT2Analysis<MT2Estimate>*)mcTruth );
+  drawClosure( plotsDirData, estimateData, (MT2Analysis<MT2Estimate>*)mcTruth );
 
   return 0;
 
@@ -318,9 +317,9 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
       delete c1;
       delete h2_axes;
       delete h2_axes_ratio;
-      delete h_ratio;
-      delete h_estimate;
-      delete h_mcTruth;
+      //delete h_ratio;
+      //delete h_estimate;
+      //delete h_mcTruth;
       
       ++iRegion;
 
@@ -489,7 +488,6 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
   c2->SaveAs( Form("%s/closure_allRegions_ratio.eps", outputdir.c_str()) );
 
 
-  gStyle->SetOptStat(1110);
   TCanvas* c3 = new TCanvas("c3", "", 600, 600);
   c3->cd();
   hPull->SetStats(1110);
@@ -509,14 +507,14 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
   c3->SaveAs( Form("%s/closure_pull.pdf", outputdir.c_str()) );
   c3->SaveAs( Form("%s/closure_pull.eps", outputdir.c_str()) );
 
-  //TFile* file_4snt = TFile::Open("qcd_histo.root", "recreate");
-  //file_4snt->cd();
-  //h_mcTruth_tot->Write();
-  //file_4snt->Close();
 
   delete c2;
   delete c3;
   delete h2_axes_ratio;
+
+  delete h_estimate_tot;
+  delete h_mcTruth_tot;
+  delete hPull;
   
 }
 
