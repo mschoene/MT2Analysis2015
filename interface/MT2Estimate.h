@@ -59,6 +59,8 @@ class MT2Estimate {
 
   static MT2Analysis<MT2Estimate>* makeIntegralAnalysisFromEstimate( const std::string& aname, const std::string& regionsSet, MT2Analysis<MT2Estimate>* analysis );
 
+  static void rebinYields( MT2Analysis<MT2Estimate>* analysis, int nBins, float xMin, float xMax );
+
   const MT2Estimate& operator=( const MT2Estimate& rhs );
 
   MT2Estimate operator+( const MT2Estimate& rhs ) const;
@@ -80,13 +82,7 @@ class MT2Estimate {
   friend MT2Estimate operator*( float k, const MT2Estimate& rhs );
   friend MT2Estimate operator/( float k, const MT2Estimate& rhs );
 
-  virtual void finalize() {
-    //return this->addOverflow();
-  }
-
-  //virtual void addOverflow();
-  //void addOverflowSingleHisto( TH3D* yield3d );
-  //void addOverflowSingleHisto( TH1D* yield );
+  virtual void finalize() {};
 
   virtual void write() const {
     yield3d->Write();

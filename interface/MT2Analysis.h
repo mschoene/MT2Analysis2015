@@ -197,6 +197,10 @@ MT2Analysis<T>::MT2Analysis( const std::string& aname, const std::string& region
 
     regions_.insert(MT2Region( 200. )); // inclusive 200-inf at least one jet requirement
 
+  } else if( regionsSet=="13TeV_inclusive450" ) {
+
+    regions_.insert(MT2Region( 450., -1., 2., -1. )); // inclusive 450-inf at least two jet requirement
+
   } else if( regionsSet=="13TeV_inclusive_bjets" ) {
 
     regions_.insert(MT2Region( 450., -1., 2, -1, 0, 0 )); 
@@ -499,10 +503,14 @@ MT2Analysis<T>::MT2Analysis( const std::string& aname, const std::string& region
 
   } else if( regionsSet=="zurich_onlyHT" ){
 
-    regions_.insert(MT2Region( 450.,   575.)); // no cut on jets
-    regions_.insert(MT2Region( 575.,  1000.));
-    regions_.insert(MT2Region(1000.,  1500.));
-    regions_.insert(MT2Region(1500.,    -1.));
+    //regions_.insert(MT2Region( 450.,   575., 2., -1.)); // no cut on jets
+    //regions_.insert(MT2Region( 575.,  1000., 2., -1.));
+    //regions_.insert(MT2Region(1000.,  1500., 2., -1.));
+    //regions_.insert(MT2Region(1500.,    -1., 2., -1.));
+    regions_.insert(MT2Region( 450.,   575., 2., -1.)); // no cut on jets
+    regions_.insert(MT2Region( 575.,  1000., 2., -1.));
+    regions_.insert(MT2Region(1000.,  1500., 2., -1.));
+    regions_.insert(MT2Region(1500.,    -1., 2., -1.));
 
 
   } else if( regionsSet=="zurich_HTtriggers" ){
