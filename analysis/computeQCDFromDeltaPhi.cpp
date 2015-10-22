@@ -519,7 +519,7 @@ void drawSingleFit( const MT2Config& cfg, bool useMC, const std::string& outdir,
 
   
   float xMin = thisRatioAll->GetXaxis()->GetXmin();
-  float xMax = thisRatioAll->GetXaxis()->GetXmax();
+  float xMax = useMC ? thisRatioAll->GetXaxis()->GetXmax() : 200;  // we are blind to MT2>200 in data
 
   float yMax    = thisRatioAll->GetMaximum()*5.;
   float yMinAll = thisRatioQCD->GetMinimum()/2.;
