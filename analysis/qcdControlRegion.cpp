@@ -108,7 +108,6 @@ int main( int argc, char* argv[] ) {
     std::cout << std::endl << std::endl;
     std::cout << "-> Loading data from file: " << samplesFile_data << std::endl;
 
-    //std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, 3, 3 );
     std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, 1, 3 );
     if( samples_data.size()==0 ) {
       std::cout << "There must be an error: samples_data is empty!" << std::endl;
@@ -216,7 +215,8 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
 
     Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb;//*cfg.lumi(); 
 
-    MT2EstimateTree* thisTree = anaTree->get( ht, njets, nbjets, minMTBmet, mt2 );
+    float myht = njets==1 ? 201. : ht; // let everything (mt2=ht>40) pass for monojet
+    MT2EstimateTree* thisTree = anaTree->get( myht, njets, nbjets, minMTBmet, mt2 );
     if( thisTree==0 ) continue;
 
 
