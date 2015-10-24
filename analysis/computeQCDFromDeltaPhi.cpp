@@ -228,14 +228,14 @@ int main( int argc, char* argv[] ) {
 
 
     matchedEstimate_mnQ->lDphi = (TH1D*) matchedEstimate->lDphi->Clone(matchedEstimate_mnQ->lDphi->GetName());
-    if (scaleMC!=0.)  matchedEstimate_mnQ->lDphi->Scale(lumiScale);
+    if (useMC && scaleMC!=0.)  matchedEstimate_mnQ->lDphi->Scale(lumiScale);
     matchedEstimate_mnQ->lDphi->Add( matchedEstimate_rest->lDphi, -lumiScale );
 
     matchedEstimate_mnQ->hDphi = (TH1D*) matchedEstimate->hDphi->Clone(matchedEstimate_mnQ->hDphi->GetName());
-    if (scaleMC!=0.)  matchedEstimate_mnQ->hDphi->Scale(lumiScale);
+    if (useMC && scaleMC!=0.)  matchedEstimate_mnQ->hDphi->Scale(lumiScale);
     matchedEstimate_mnQ->hDphi->Add( matchedEstimate_rest->hDphi, -lumiScale );
 
-    if (scaleMC!=0.)  matchedEstimate_mnQ->sqrtErrors();
+    if (useMC && scaleMC!=0.)  matchedEstimate_mnQ->sqrtErrors();
 
     float xMin_fit = (iR->htMin()>=1000.) ? 70. : 60.;
     float xMax_fit = 100.;
