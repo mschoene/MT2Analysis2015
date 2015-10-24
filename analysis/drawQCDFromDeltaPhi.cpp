@@ -395,6 +395,7 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
     if( h_mcTruth_tot->GetBinContent(iBin)>0. && h_mcTruth_tot->GetBinContent(iBin)<yMin ) yMin = h_mcTruth_tot->GetBinContent(iBin);
   }
   yMin /= 3.;
+  yMin = TMath::Max(yMin, (float)1e-3); // i don't care about anything below 1e-3 and it only makes it ugly
   
   h_mcTruth_tot->GetXaxis()->SetRangeUser(0, (int) MT2Regions.size());
   h_mcTruth_tot->GetYaxis()->SetRangeUser(yMin, yMax);
@@ -421,9 +422,9 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
   TPaveText* labelTop = MT2DrawTools::getLabelTopSimulation();
   labelTop->Draw("same");
   
-  TLine* lHT[3];
-  for( int iHT=1; iHT < 4; iHT++ ){
-    lHT[iHT-1] = new TLine(11*iHT, -3., 11*iHT, yMax );
+  TLine* lHT[4];
+  for( int iHT=1; iHT < 5; iHT++ ){
+    lHT[iHT-1] = new TLine(11*iHT, -3, 11*iHT, yMax );
     lHT[iHT-1]->SetLineColor(kBlack);
     lHT[iHT-1]->SetLineStyle(3);
     lHT[iHT-1]->SetLineWidth(2);
@@ -431,8 +432,9 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
     lHT[iHT-1]->Draw("same");
   }
 
-  int nHTRegions = 4;
+  int nHTRegions = 5;
   std::vector< std::string > htRegions;
+  htRegions.push_back("very low H_{T}");
   htRegions.push_back("low H_{T}");
   htRegions.push_back("medium H_{T}");
   htRegions.push_back("high H_{T}");
@@ -441,7 +443,7 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
   TPaveText* htBox[nHTRegions];
   for( int iHT = 0; iHT < nHTRegions; ++iHT){
     
-    htBox[iHT] = new TPaveText(0.16+0.2*iHT, 0.9-0.06, 0.34+0.2*iHT, 0.9, "brNDC");
+    htBox[iHT] = new TPaveText(0.14+0.16*iHT, 0.9-0.06, 0.32+0.16*iHT, 0.9, "brNDC");
     htBox[iHT]->AddText( htRegions[iHT].c_str() );
     
     htBox[iHT]->SetBorderSize(0);
@@ -491,7 +493,7 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
   LineCentral->Draw("same");
   h_Ratio->Draw("pe,same");
 
-  for( int iHT=1; iHT < 4; iHT++ ){
+  for( int iHT=1; iHT < 5; iHT++ ){
     lHT[iHT-1]->Draw("same");
   }
 
@@ -523,7 +525,7 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
 
   h_Ratio->Draw("pe,same");
 
-  for( int iHT=1; iHT < 4; iHT++ ){
+  for( int iHT=1; iHT < 5; iHT++ ){
     lHT[iHT-1]->Draw("same");
   }
 
