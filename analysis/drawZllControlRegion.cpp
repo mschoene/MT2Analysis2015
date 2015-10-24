@@ -1,3 +1,4 @@
+
 #include "TFile.h"
 #include "TMath.h"
 #include "TF1.h"
@@ -43,6 +44,7 @@ void drawStacks(std::string fullPath, float *binss, unsigned int size,  std::str
 
 void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, std::vector<MT2Analysis<MT2EstimateTree>* >  bgYields, const std::string& saveName, const std::string& varName, const std::string& selection, int nBins, float xMin, float xMax, std::string axisName="", const std::string& units="" );
 
+std::string getCutLabel( float theMin, float theMax, const std::string& name, const std::string& units );
 
 
 int main(int argc, char* argv[]){
@@ -60,9 +62,13 @@ int main(int argc, char* argv[]){
     }
   }
 
+  if( shapeNorm )
+    std::cout << "-> Using shape normalization." << std::endl;
+  else
+    std::cout << "-> Using lumi normalization." << std::endl;
 
   if( argc<2 ) {
-    std::cout << "USAGE: ./coputeZllGammaRatio [configFileName] regionSet" << std::endl;
+    std::cout << "USAGE: ./drawZllControlRegio [configFileName]" << std::endl;
     std::cout << "Exiting." << std::endl;
     exit(11);
   }
@@ -102,10 +108,15 @@ int main(int argc, char* argv[]){
   if( Zll==0 ) {
     std::cout << "-> Please run zllPurityTrees first. I need to get the yields from there." << std::endl;    std::cout << "-> Thank you for your cooperation." << std::endl;    exit(197);
   } 
+  Zll->setColor(kZJets);
   MT2Analysis<MT2EstimateTree>* qcd = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s/ZllPurityTrees.root", ZllDir.c_str()  ), "QCD");
+  qcd->setColor(kQCD);
   MT2Analysis<MT2EstimateTree>* top = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s/ZllPurityTrees.root", ZllDir.c_str() ), "Top");
+  top->setColor(kTop);
   MT2Analysis<MT2EstimateTree>* wjets = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s/ZllPurityTrees.root", ZllDir.c_str() ), "WJets");
+  wjets->setColor(kWJets);
   
+
   MT2Analysis<MT2EstimateTree>* data = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s/data.root", ZllDir.c_str() ) , "data");
  
   data->setFullName("Data");
@@ -114,16 +125,20 @@ int main(int argc, char* argv[]){
 
   std::vector<MT2Analysis<MT2EstimateTree>* > bgYields; 
   bgYields.push_back( Zll );
-  bgYields.push_back( qcd );
-  bgYields.push_back( wjets );
+  //  bgYields.push_back( qcd );
+  //  bgYields.push_back( wjets );
   bgYields.push_back( top );
 
 
   //OPPOSITE FLAVOR TREES
   MT2Analysis<MT2EstimateTree>* Zll_of = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s/ZllPurityTrees_of.root", ZllDir_of.c_str() ), "DYJets");
+  Zll_of->setColor(kZJets);
   MT2Analysis<MT2EstimateTree>* qcd_of = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s/ZllPurityTrees_of.root", ZllDir_of.c_str()  ), "QCD");
+  qcd_of->setColor(kQCD);
   MT2Analysis<MT2EstimateTree>* top_of = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s/ZllPurityTrees_of.root", ZllDir_of.c_str() ), "Top");
+  top_of->setColor(kTop);
   MT2Analysis<MT2EstimateTree>* wjets_of = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s/ZllPurityTrees_of.root", ZllDir_of.c_str() ), "WJets");
+  wjets_of->setColor(kWJets);
   MT2Analysis<MT2EstimateTree>* data_of = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s/data_of.root", ZllDir_of.c_str() ) , "data_of");
 
   Zll_of->setFullName("Z+jets");
@@ -136,31 +151,105 @@ int main(int argc, char* argv[]){
   bgYields_of.push_back( wjets_of );
   bgYields_of.push_back( top_of );
   
-  std::string    selection = "weight*(abs(Z_mass-91.19)<20 && ht>200)";
-  /*
-  std::string      selection_mass_el = "weight*(Z_mass>50 && Z_pt>180 && Z_lepId==11)";
-  std::string      selection_mass_mu = "weight*(Z_mass>50 && Z_pt>180 && Z_lepId==13)";
-  std::string selection = "weight*(Z_pt>180 && abs(Z_mass-91.19)<20)";
-  */
+
+  std::string plotsDir = cfg.getEventYieldDir() + "/plotsDataMC";
+  if( shapeNorm ) plotsDir += "_shape";
+
+
+  MT2DrawTools dt(plotsDir, cfg.lumi() );
+  dt.set_shapeNorm( shapeNorm );
+
+  dt.set_data( data );
+  dt.set_mc( &bgYields );
+
+
+  // +++++++++++++++++++++++++
+  // +++      w/ monjet   +++
+  // +++++++++++++++++++++++++
+
+  dt.set_lumi( cfg.lumi() );
+
+  float htMin=200, htMax=-1;
+  std::string cutsLabel = getCutLabel(htMin, htMax, "H_{T}", "GeV");
+
+  std::string selection = "weight*(ht>200. && Z_pt>180 && nJets==1 && met>200 && mt2>10. && deltaPhiMin>0.3 && diffMetMht<0.5*met && abs(Z_mass-91.19)<20  )";
+  //savename, var, sel, nbins, xmin, xmax, axis label, units, cutslabel
+  dt.drawRegionYields_fromTree( "mt2"   , "mt2"   , selection, 40, 10., 810., "M_{T2}", "GeV", cutsLabel, "=1j, #geq0b"  );
+  dt.drawRegionYields_fromTree( "met"   , "met"   , selection, 30, 200., 800., "ME_{T}", "GeV", cutsLabel, "=1j, #geq0b" );
+  dt.drawRegionYields_fromTree( "ht"    , "ht"    , selection, 50, 200., 1200., "H_{T}", "GeV", cutsLabel, "=1j, #geq0b" );
+  dt.drawRegionYields_fromTree( "nJets" , "nJets" , selection, 13, 0.5, 13.5, "Number of Jets (p_{T} > 30 GeV)", "", cutsLabel, "=1j, #geq0b" );
+  dt.drawRegionYields_fromTree( "nBJets", "nBJets", selection, 7, -0.5, 6.5, "Number of b-Jets (p_{T} > 20 GeV)", "", cutsLabel, "=1j, #geq0b" );
+  dt.drawRegionYields_fromTree( "Z_pt"   , "Z_pt"   , selection, 50, 10., 1010., "Z p_{T}", "GeV", cutsLabel, "=1j, #geq0b" );
+  dt.drawRegionYields_fromTree( "lep_pt0"   , "lep_pt0"   , selection, 35, 0., 700., "Leading Lepton p_{T}", "GeV", cutsLabel, "=1j, #geq0b" );
+  dt.drawRegionYields_fromTree( "lep_pt1"   , "lep_pt1"   , selection, 25, 0., 500., "Sub-Leading Lepton p_{T}", "GeV", cutsLabel, "=1j, #geq0b" );
+  dt.drawRegionYields_fromTree( "lep_eta0"   , "lep_eta0"   , selection, 30, -3., 3., "Leading Lepton #eta", "", cutsLabel, "=1j, #geq0b" );
+  dt.drawRegionYields_fromTree( "lep_eta1"   , "lep_eta1"   , selection, 30, -3., 3., "Sub-Leading Lepton #eta", "", cutsLabel, "=1j, #geq0b" );
+  dt.drawRegionYields_fromTree( "Z_lepId", "Z_lepId", selection, 5, 9.5, 14.5, "Lepton Id", "", cutsLabel, "=1j, #geq0b" );
+ 
+
+  std::string selection_mass = "weight*(ht>200. && Z_pt>180 &&nJets==1 && met>200. && mt2>10. && deltaPhiMin>0.3 && diffMetMht<0.5*met   )";
+  dt.drawRegionYields_fromTree( "mll"   , "Z_mass"   , selection_mass, 50, 50., 150., "M_{ll}", "GeV", cutsLabel, "=1j, #geq0b" );
+  std::string selection_mass_el = "weight*(ht>200. && Z_pt>180 &&nJets==1 && met>200. && mt2>10. && deltaPhiMin>0.3 && diffMetMht<0.5*met && Z_lepId==11   )";
+  dt.drawRegionYields_fromTree( "mll_el"   , "Z_mass"   , selection_mass_el, 50, 50., 150., "M_{e^{+}e^{-}}", "GeV", cutsLabel, "=1j, #geq0b" );
+  std::string selection_mass_mu = "weight*(ht>200. && Z_pt>180 &&nJets==1 && met>200. && mt2>10. && deltaPhiMin>0.3 && diffMetMht<0.5*met && Z_lepId==13   )";
+  dt.drawRegionYields_fromTree( "mll_mu"   , "Z_mass"   , selection_mass_mu, 50, 50., 150., "M_{#mu^{+}#mu^{-}}", "GeV", cutsLabel, "=1j, #geq0b" );
+
+
+
   
+
+  // +++++++++++++++++++++++++
+  // +++      w/o monjet   +++
+  // +++++++++++++++++++++++++
+
+  //  htMin=200; 
+  // cutsLabel = getCutLabel(htMin, htMax, "H_{T}", "GeV");
+
+  selection = "weight*(ht>200. && Z_pt>180 &&nJets>1 && met>200. && mt2>10. && deltaPhiMin>0.3 && diffMetMht<0.5*met && abs(Z_mass-91.19)<20  )";
+  dt.drawRegionYields_fromTree( "zurich_mt2"   , "mt2"   , selection, 40, 10., 810., "M_{T2}", "GeV", cutsLabel, "#geq2j, #geq0b");
+  dt.drawRegionYields_fromTree( "zurich_met"   , "met"   , selection, 40, 200, 1000, "ME_{T}", "GeV", cutsLabel, "#geq2j, #geq0b");
+  dt.drawRegionYields_fromTree( "zurich_ht"    , "ht"    , selection, 50, 200., 2200., "H_{T}", "GeV", cutsLabel, "#geq2j, #geq0b");
+  dt.drawRegionYields_fromTree( "zurich_nJets" , "nJets" , selection, 13, 0.5, 13.5, "Number of Jets (p_{T} > 30 GeV)", "", cutsLabel, "#geq2j, #geq0b");
+  dt.drawRegionYields_fromTree( "zurich_nBJets", "nBJets", selection, 7, -0.5, 6.5, "Number of b-Jets (p_{T} > 20 GeV)", "", cutsLabel, "#geq2j, #geq0b");
+  dt.drawRegionYields_fromTree( "zurich_Z_pt"   , "Z_pt"   , selection, 50, 10., 1010., "Z p_{T}", "GeV", cutsLabel, "#geq2j, #geq0b");
+  dt.drawRegionYields_fromTree( "zurich_lep_pt0"   , "lep_pt0"   , selection, 40, 0., 700., "Leading Lepton p_{T}", "GeV", cutsLabel, "#geq2j, #geq0b");
+  dt.drawRegionYields_fromTree( "zurich_lep_pt1"   , "lep_pt1"   , selection, 20, 0., 500., "Sub-Leading Lepton p_{T}", "GeV", cutsLabel, "#geq2j, #geq0b");
+  dt.drawRegionYields_fromTree( "zurich_lep_eta0"   , "lep_eta0"   , selection,30 , -3., 3., "Leading Lepton #eta", "", cutsLabel, "#geq2j, #geq0b");
+  dt.drawRegionYields_fromTree( "zurich_lep_eta1"   , "lep_eta1"   , selection, 30, -3., 3., "Sub-Leading Lepton #eta", "", cutsLabel, "#geq2j, #geq0b");
+  dt.drawRegionYields_fromTree( "zurich_Z_lepId", "Z_lepId", selection, 5, 9.5, 14.5, "Lepton Id", "", cutsLabel, "#geq2j, #geq0b");
+ 
+
+ 
+  selection_mass = "weight*(ht>200. && nJets>1 && Z_pt>180 &&met>200 && mt2>10. && deltaPhiMin>0.3 && diffMetMht<0.5*met   )";
+  dt.drawRegionYields_fromTree( "zurich_mll"   , "Z_mass"   , selection_mass, 50, 50., 150., "M_{ll}", "GeV", cutsLabel ,"#geq2j, #geq0b");
+
+  selection_mass_el = "weight*(ht>200. && nJets>1 && Z_pt>180 &&met> 200. && mt2>10. && deltaPhiMin>0.3 && diffMetMht<0.5*met && Z_lepId==11 )";
+  dt.drawRegionYields_fromTree( "zurich_mll_el"   , "Z_mass"   , selection_mass_el, 50 , 50., 150., "M_{e^{+}e^{-}}", "GeV", cutsLabel, "#geq2j, #geq0b");
+  selection_mass_mu = "weight*(ht>200. && nJets>1 && Z_pt>180 &&met>200. && mt2>10. && deltaPhiMin>0.3 && diffMetMht<0.5*met && Z_lepId==13 )";
+  dt.drawRegionYields_fromTree( "zurich_mll_mu"   , "Z_mass"   , selection_mass_mu, 50, 50., 150., "M_{#mu^{+}#mu^{-}}", "GeV", cutsLabel, "#geq2j, #geq0b");
+
+
+
+
+  /*
+  // std::string    selection = "weight*(abs(Z_mass-91.19)<20 && ht>200)";
+  std::string selection_mass_el = "weight*(Z_mass>50 && Z_pt>180 && Z_lepId==11)";
+  std::string selection_mass_mu = "weight*(Z_mass>50 && Z_pt>180 && Z_lepId==13)";
+  std::string selection = "weight*(Z_pt>180 && abs(Z_mass-91.19)<20)";
   drawYields( cfg, data, bgYields, "mt2" , "mt2" , selection, 24, 0, 600, "M_{T2}", "GeV" );
   drawYields( cfg, data, bgYields, "raw_mt2" , "raw_mt2" , selection, 24, 0, 600, "Raw M_{T2}", "GeV" );
   drawYields( cfg, data, bgYields, "ht" , "ht" , selection, 24, 0, 600, "H_{T}", "GeV" );
   drawYields( cfg, data, bgYields, "met" , "met" , selection, 24, 0, 600, "ME_{T}", "GeV" );
-  drawYields( cfg, data, bgYields, "nJets", "nJets", selection, 11, 0.5, 11.5, "Number of Jets (p_{T} > 30 GeV)", "" );
-  drawYields( cfg, data,  bgYields, "nBJets", "nBJets", selection, 6, -0.5, 5.5, "Number of b-Jets (p_{T} > 20 GeV)", "" );
+  drawYields( cfg, data, bgYields, "nJets", "nJets", selection,11,0.5,11.5, "Number of Jets (p_{T} > 30 GeV)", "" );
+  drawYields( cfg, data,  bgYields,"nBJets","nBJets",selection,6,-0.5,5.5, "Number of b-Jets (p_{T} > 20 GeV)", "" );
   drawYields( cfg, data, bgYields, "Z_pt" , "Z_pt" , selection, 36 , 0, 900, "Z p_{T}", "GeV" );
   drawYields( cfg, data, bgYields, "Z_lepId" , "Z_lepId" , selection, 5, 10,15 , "Lepton Id", "" );
-
   std::string    selection2 = "weight*(ht>200)";
   drawYields( cfg, data, bgYields, "Z_mass" , "Z_mass" , selection2, 40, 50, 150, "M_{ll}", "GeV" );
-
   drawYields( cfg, data_of, bgYields_of, "Z_mass_of" , "Z_mass" , selection2, 46, 20, 250, "M_{ll}", "GeV" );
-  
   std::string    selection_ele = "weight*(ht>100 && Z_lepId==11 && (lep_eta0>1.4 || lep_eta1>1.4))";
-
- drawYields( cfg, data, bgYields, "Z_mass_el" , "Z_mass" , selection_ele, 40, 50, 150, "M_{ll}", "GeV" );
-
+  drawYields( cfg, data, bgYields, "Z_mass_el" , "Z_mass" , selection_ele, 40, 50, 150, "M_{ll}", "GeV" );
+  */
 
 
   return 0;
@@ -170,6 +259,16 @@ int main(int argc, char* argv[]){
 
 
 
+
+std::string getCutLabel( float theMin, float theMax, const std::string& name, const std::string& units ) {
+
+  std::string cutLabel;
+  if( theMax>theMin ) cutLabel = std::string(Form("%.0f < %s < %.0f %s", theMin, name.c_str(), theMax, units.c_str()) );
+  else                cutLabel = std::string(Form("%s > %.0f %s", name.c_str(), theMin, units.c_str()) );
+
+  return cutLabel;
+
+}
 
 
 

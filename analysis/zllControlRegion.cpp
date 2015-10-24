@@ -243,6 +243,7 @@ void addVariables(MT2Analysis<MT2EstimateTree>* anaTree){
 
   MT2EstimateTree::addVar( anaTree, "Z_pt" );
   MT2EstimateTree::addVar( anaTree, "Z_phi" );
+  MT2EstimateTree::addVar( anaTree, "Z_eta" );
   MT2EstimateTree::addVar( anaTree, "Z_mass" );
   MT2EstimateTree::addVar( anaTree, "Z_lepId" );
   MT2EstimateTree::addVar( anaTree, "nLep" );
@@ -293,7 +294,7 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
     if(myTree.nVert < 1) continue;
     if(myTree.nJet30 < 1) continue;
 
-    if(cfg.analysisType() == "mt2"){
+    if( cfg.analysisType() == "mt2"){
       if( !(myTree.passSelection("zll")) ) continue;
     }
 
@@ -332,7 +333,7 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
     if( !(myTree.lep_pdgId[0] == -myTree.lep_pdgId[1]) ) isOF = true;
     
     if(isSF){ //////////SAME FLAVOR//////////////////////////////////////////
-      if(  !(myTree.HLT_DoubleMu || myTree.HLT_DoubleEl) ) continue;
+      if(  !(myTree.HLT_DoubleMu || myTree.HLT_DoubleEl || myTree.HLT_Photon165_HE10 ) ) continue;
       MT2EstimateTree* thisTree = anaTree->get( myTree.zll_ht, njets, nbjets, minMTBmet, myTree.zll_mt2 );
       if (thisTree==0) continue;
 
@@ -344,6 +345,7 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
 
       thisTree->assignVar("Z_pt", z.Perp() );
       thisTree->assignVar("Z_phi", z.Phi() );
+      thisTree->assignVar("Z_eta", z.Eta() );
       thisTree->assignVar("Z_mass", z.M() );
       thisTree->assignVar("Z_lepId", abs(myTree.lep_pdgId[0])  );
 
