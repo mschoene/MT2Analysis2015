@@ -102,18 +102,19 @@ int main( int argc, char* argv[] ) {
   std::string regionsSet_rHat  = "zurich_onlyJets_noB";
 
   std::cout << "-> Making MT2EstimateTrees from inclusive tree...";
-  MT2Analysis<MT2EstimateTree>* qcd_4rHat ;
-  MT2Analysis<MT2EstimateTree>* qcd_4fJets;
-  MT2Analysis<MT2EstimateTree>* qcd_4rHat_rest ;
-  MT2Analysis<MT2EstimateTree>* qcd_4fJets_rest;
-  if( useMC ) {
-    qcd_4rHat  = MT2EstimateTree::makeAnalysisFromInclusiveTree( "mc_4rHat"   , regionsSet_rHat  , qcdTree_mc, "id>=153 && id<200 && mt2>100. && mt2<200. && nJets>1 && deltaPhiMin<0.3" ); // invert deltaPhi
-    qcd_4fJets = MT2EstimateTree::makeAnalysisFromInclusiveTree( "mc_4fJets"  , regionsSet_fJets , qcdTree_mc, "id>=153 && id<200 && mt2>100. && mt2<200. && nJets>1 && deltaPhiMin<0.3" ); // invert deltaPhi 
-  } else {
-    qcd_4rHat  = MT2EstimateTree::makeAnalysisFromInclusiveTree( "data_4rHat" , regionsSet_rHat  , qcdTree_data, "id==1 && ht>1000. &&  mt2>100. && mt2<200. && nJets>1 && deltaPhiMin<0.3" ); // invert deltaPhi
-    qcd_4fJets = MT2EstimateTree::makeAnalysisFromInclusiveTree( "data_4fJets", regionsSet_fJets , qcdTree_data, "id==1 &&              mt2>100. && mt2<200. && nJets>1 && deltaPhiMin<0.3" ); // invert deltaPhi 
-    qcd_4rHat_rest  = MT2EstimateTree::makeAnalysisFromInclusiveTree( "rest_4rHat" , regionsSet_rHat  , qcdTree_mc, "id>=300 && ht>1000. &&  mt2>100. && mt2<200. && nJets>1 && deltaPhiMin<0.3" ); // invert deltaPhi
-    qcd_4fJets_rest = MT2EstimateTree::makeAnalysisFromInclusiveTree( "rest_4fJets", regionsSet_fJets , qcdTree_mc, "id>=300 &&              mt2>100. && mt2<200. && nJets>1 && deltaPhiMin<0.3" ); // invert deltaPhi 
+  MT2Analysis<MT2EstimateTree>* data_4rHat ;
+  MT2Analysis<MT2EstimateTree>* data_4fJets;
+  MT2Analysis<MT2EstimateTree>* qcdmc_4rHat ;
+  MT2Analysis<MT2EstimateTree>* qcdmc_4fJets;
+  MT2Analysis<MT2EstimateTree>* rest_4rHat ;
+  MT2Analysis<MT2EstimateTree>* rest_4fJets;
+  qcdmc_4rHat  = MT2EstimateTree::makeAnalysisFromInclusiveTree( "qcdmc_4rHat"   , regionsSet_rHat  , qcdTree_mc, "id>=153 && id<200 && mt2>100. && mt2<200. && nJets>1 && deltaPhiMin<0.3" ); // invert deltaPhi
+  qcdmc_4fJets = MT2EstimateTree::makeAnalysisFromInclusiveTree( "qcdmc_4fJets"  , regionsSet_fJets , qcdTree_mc, "id>=153 && id<200 && mt2>100. && mt2<200. && nJets>1 && deltaPhiMin<0.3" ); // invert deltaPhi 
+  if ( !useMC ) {
+    data_4rHat  = MT2EstimateTree::makeAnalysisFromInclusiveTree( "data_4rHat" , regionsSet_rHat  , qcdTree_data, "id==1 && ht>1000. &&  mt2>100. && mt2<200. && nJets>1 && deltaPhiMin<0.3" ); // invert deltaPhi
+    data_4fJets = MT2EstimateTree::makeAnalysisFromInclusiveTree( "data_4fJets", regionsSet_fJets , qcdTree_data, "id==1 &&              mt2>100. && mt2<200. && nJets>1 && deltaPhiMin<0.3" ); // invert deltaPhi 
+    rest_4rHat  = MT2EstimateTree::makeAnalysisFromInclusiveTree( "rest_4rHat" , regionsSet_rHat  , qcdTree_mc  , "id>=300 && ht>1000. &&  mt2>100. && mt2<200. && nJets>1 && deltaPhiMin<0.3" ); // invert deltaPhi
+    rest_4fJets = MT2EstimateTree::makeAnalysisFromInclusiveTree( "rest_4fJets", regionsSet_fJets , qcdTree_mc  , "id>=300 &&              mt2>100. && mt2<200. && nJets>1 && deltaPhiMin<0.3" ); // invert deltaPhi 
   }
 
   //MT2Analysis<MT2EstimateTree>* mc_4rHat    = MT2EstimateTree::makeAnalysisFromInclusiveTree( "mc_4rHat"   , regionsSet_rHat  , qcdTree_mc, "id>=153 && id<200 && mt2>100. && mt2<200. && deltaPhiMin<0.3" ); // invert deltaPhi
@@ -133,8 +134,10 @@ int main( int argc, char* argv[] ) {
 
   MT2Analysis<MT2Estimate>* qcdPurity    = new MT2Analysis<MT2Estimate>("qcdPurity"  , regionsSet);
 
-  MT2Analysis<MT2Estimate>* r_hat        = new MT2Analysis<MT2Estimate>("r_hat"      , regionsSet_rHat);
-  MT2Analysis<MT2Estimate>* f_jets       = new MT2Analysis<MT2Estimate>("f_jets"     , regionsSet_fJets);
+  MT2Analysis<MT2Estimate>* r_hat_mc     = new MT2Analysis<MT2Estimate>("r_hat_mc"   , regionsSet_rHat);
+  MT2Analysis<MT2Estimate>* f_jets_mc    = new MT2Analysis<MT2Estimate>("f_jets_mc"  , regionsSet_fJets);
+  MT2Analysis<MT2Estimate>* r_hat_data   = new MT2Analysis<MT2Estimate>("r_hat_data" , regionsSet_rHat);
+  MT2Analysis<MT2Estimate>* f_jets_data  = new MT2Analysis<MT2Estimate>("f_jets_data", regionsSet_fJets);
   std::cout << " Done." << std::endl;
 
 
@@ -153,16 +156,14 @@ int main( int argc, char* argv[] ) {
   }
 
   std::cout << "-> Getting fJets...";
-  if ( useMC ) 
-    get_fJets( f_jets, qcd_4fJets );
-  else
-    get_fJets( f_jets, qcd_4fJets, qcd_4fJets_rest );    
+  get_fJets( f_jets_mc, qcdmc_4fJets );
+  if ( !useMC ) 
+    get_fJets( f_jets_data, data_4fJets, rest_4fJets );    
   std::cout << " Done." << std::endl;
   std::cout << "-> Getting rHat...";
-  if ( useMC ) 
-    get_rHat ( r_hat , qcd_4rHat );
-  else
-    get_rHat ( r_hat , qcd_4rHat, qcd_4rHat_rest );
+    get_rHat ( r_hat_mc , qcdmc_4rHat );
+  if ( !useMC ) 
+    get_rHat ( r_hat_data , data_4rHat, rest_4rHat );
   std::cout << " Done." << std::endl;
 
 
@@ -172,9 +173,9 @@ int main( int argc, char* argv[] ) {
   if( useMC ) {
     est_all  = MT2EstimateQCD::makeAnalysisFromInclusiveTree( "est", cfg.qcdRegionsSet(), qcdTree_mc  , "" );
   } else {
-    est_all  = MT2EstimateQCD::makeAnalysisFromInclusiveTree( "est", cfg.qcdRegionsSet(), qcdTree_data, "", "id==1" ); //use HT-only triggers for dphi-ratio
+    est_all  = MT2EstimateQCD::makeAnalysisFromInclusiveTree( "est", cfg.qcdRegionsSet(), qcdTree_data, "((id==1&&ht>1000)||(id==2&&ht>450&&ht<1000)||(id==3&&ht<450))", "id==1" ); //use HT-only triggers for dphi-ratio
   }
-  MT2Analysis<MT2EstimateQCD>* mc_rest = MT2EstimateQCD::makeAnalysisFromInclusiveTree( "mc_rest", cfg.qcdRegionsSet(), qcdTree_mc  , "id>=300" );
+  MT2Analysis<MT2EstimateQCD>* mc_rest = MT2EstimateQCD::makeAnalysisFromInclusiveTree( "mc_rest", cfg.qcdRegionsSet(), qcdTree_mc  , "id>=300", "id>=300" );
   //MT2Analysis<MT2EstimateQCD>* data    = MT2EstimateQCD::makeAnalysisFromInclusiveTree( "data"   , cfg.qcdRegionsSet(), qcdTree_data, "(ht>1000. && id==1) || (ht>450 && ht<1000. && id==2)" );
 
   MT2Analysis<MT2EstimateQCD>* est_minus_nonQCD = new MT2Analysis<MT2EstimateQCD>("est_minus_nonQCD"  , cfg.qcdRegionsSet() );
@@ -208,9 +209,17 @@ int main( int argc, char* argv[] ) {
     else
       regionToMatch = new MT2Region( *iR );
 
-    MT2Estimate* this_r_hat  = r_hat ->getWithMatch( *regionToMatch );
-    MT2Estimate* this_f_jets = f_jets->getWithMatch( *regionToMatch );
-
+    MT2Estimate* this_r_hat ;
+    MT2Estimate *this_f_jets;
+    
+    if ( useMC || iR->htMin() < 300. ) { // take MC for very low ht region
+      this_r_hat  = r_hat_mc ->getWithMatch( *regionToMatch );
+      this_f_jets = f_jets_mc->getWithMatch( *regionToMatch );
+    }
+    else {
+      this_r_hat  = r_hat_data ->getWithMatch( *regionToMatch );
+      this_f_jets = f_jets_data->getWithMatch( *regionToMatch );
+    }
 
     MT2EstimateQCD* matchedEstimate      = est_all          ->getWithMatch( *iR );
     //MT2EstimateQCD* matchedEstimate_qcd  = (useMC) ? mc_qcd ->getWithMatch( *iR ) : 0;
@@ -292,8 +301,10 @@ int main( int argc, char* argv[] ) {
   estimate   ->writeToFile( outfileName, "recreate" );
   nCR        ->writeToFile( outfileName );
   r_effective->writeToFile( outfileName );
-  r_hat      ->writeToFile( outfileName );
-  f_jets     ->writeToFile( outfileName );
+  r_hat_mc   ->writeToFile( outfileName );
+  f_jets_mc  ->writeToFile( outfileName );
+  r_hat_data ->writeToFile( outfileName );
+  f_jets_data->writeToFile( outfileName );
   qcdPurity  ->writeToFile( outfileName );
 
 
@@ -553,7 +564,8 @@ void drawSingleFit( const MT2Config& cfg, bool useMC, const std::string& outdir,
   c1->SetLogy();
 
   
-  float xMin = thisRatioAll->GetXaxis()->GetXmin();
+  //float xMin = thisRatioAll->GetXaxis()->GetXmin();
+  float xMin = 50;
   float xMax = useMC ? thisRatioAll->GetXaxis()->GetXmax() : 200;  // we are blind to MT2>200 in data
 
   float yMax    = thisRatioAll->GetMaximum()*5.;

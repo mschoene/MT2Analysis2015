@@ -21,8 +21,8 @@ bool closureTest = false;
 
 
 
-void compareFractions( const MT2Config& cfg, const std::string& outputdir, const std::string& dataFile, const std::string& mcFile, const std::string& analysisName, const std::string& xaxisName, const std::string& yaxisName, bool logPlot );
-void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estimate, MT2Analysis<MT2Estimate>* mcTruth );
+void compareFractions( const MT2Config& cfg, const std::string& outputdir, const std::string& dataFile, const std::string& analysisName, const std::string& xaxisName, const std::string& yaxisName, bool logPlot );
+void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estimate, MT2Analysis<MT2Estimate>* mcTruth, float scaleEst, float lumi );
 
 
 int main( int argc, char* argv[] ) {
@@ -68,8 +68,8 @@ int main( int argc, char* argv[] ) {
   std::string dataFile = qcdCRdir + "qcdEstimateData.root";
 
 
-  compareFractions( cfg, outputdir, dataFile, mcFile, "f_jets", "Number of Jets", "F_{jets}", false );
-  compareFractions( cfg, outputdir, dataFile, mcFile, "r_hat", "Number of b-Jets", "#hat{r}_{b}", true );
+  compareFractions( cfg, outputdir, dataFile, "f_jets", "Number of Jets", "F_{jets}", false );
+  compareFractions( cfg, outputdir, dataFile, "r_hat", "Number of b-Jets", "#hat{r}_{b}", true );
 
 
   MT2Analysis<MT2EstimateTree>* qcdTree_mc   = MT2Analysis<MT2EstimateTree>::readFromFile( qcdCRdir + "/mc.root",   "qcdCRtree" );
@@ -87,10 +87,10 @@ int main( int argc, char* argv[] ) {
   estimateData->setColor(kBlack);
 
   std::string plotsDirMC = qcdESTdir + "/plotsMC";
-  drawClosure( plotsDirMC, estimateMC, (MT2Analysis<MT2Estimate>*)mcTruth );
+  drawClosure( plotsDirMC, estimateMC, (MT2Analysis<MT2Estimate>*)mcTruth, cfg.lumi(), cfg.lumi() );
 
   std::string plotsDirData = qcdESTdir + "/plotsData";
-  drawClosure( plotsDirData, estimateData, (MT2Analysis<MT2Estimate>*)mcTruth );
+  drawClosure( plotsDirData, estimateData, (MT2Analysis<MT2Estimate>*)mcTruth, 1.0, cfg.lumi() );
 
 
 
@@ -103,10 +103,10 @@ int main( int argc, char* argv[] ) {
  
 
 
-void compareFractions( const MT2Config& cfg, const std::string& outputdir, const std::string& dataFile, const std::string& mcFile, const std::string& analysisName, const std::string& xaxisName, const std::string& yaxisName, bool logPlot ) {
+void compareFractions( const MT2Config& cfg, const std::string& outputdir, const std::string& dataFile, const std::string& analysisName, const std::string& xaxisName, const std::string& yaxisName, bool logPlot ) {
 
-  MT2Analysis<MT2Estimate>* fraction_mc   = MT2Analysis<MT2Estimate>::readFromFile(mcFile  , analysisName);
-  MT2Analysis<MT2Estimate>* fraction_data = MT2Analysis<MT2Estimate>::readFromFile(dataFile, analysisName);
+  MT2Analysis<MT2Estimate>* fraction_mc   = MT2Analysis<MT2Estimate>::readFromFile(dataFile, analysisName+"_mc");
+  MT2Analysis<MT2Estimate>* fraction_data = MT2Analysis<MT2Estimate>::readFromFile(dataFile, analysisName+"_data");
 
 
   std::set<MT2Region> regions = fraction_data->getRegions();
@@ -182,7 +182,7 @@ void compareFractions( const MT2Config& cfg, const std::string& outputdir, const
 
 
 
-void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estimate, MT2Analysis<MT2Estimate>* mcTruth ) {
+void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estimate, MT2Analysis<MT2Estimate>* mcTruth , float scaleEst, float lumi) {
 
 
   system(Form("mkdir -p %s", outputdir.c_str()));
@@ -215,6 +215,10 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
   
   int iRegion = 1;
   for( std::set<MT2Region>::iterator iMT2 = MT2Regions.begin(); iMT2!=MT2Regions.end(); ++iMT2 ) {
+
+
+      estimate->get(*iMT2)->yield->Scale(scaleEst);
+      mcTruth ->get(*iMT2)->yield->Scale(lumi    );
 
       std::string fullPath = outputdir;
 
