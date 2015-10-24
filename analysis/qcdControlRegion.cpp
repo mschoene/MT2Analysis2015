@@ -75,11 +75,14 @@ int main( int argc, char* argv[] ) {
     std::string samplesFile = "../samples/samples_" + cfg.mcSamples() + ".dat";
     
     std::vector<MT2Sample> samples_wjet = MT2Sample::loadSamples(samplesFile, 502, 505);
-    std::vector<MT2Sample> samples_top  = MT2Sample::loadSamples(samplesFile, 300, 499);
+    std::vector<MT2Sample> samples_top  = MT2Sample::loadSamples(samplesFile, 300, 399); // ignore single top and rares: faster
+    //std::vector<MT2Sample> samples_top  = MT2Sample::loadSamples(samplesFile, 300, 499);
     std::vector<MT2Sample> samples_qcd  = MT2Sample::loadSamples(samplesFile, 100, 199);
 
 
     MT2Analysis<MT2EstimateTree>* qcdCRtree = new MT2Analysis<MT2EstimateTree>( "qcdCRtree", "13TeV_inclusive" );
+    MT2EstimateTree::addVar( qcdCRtree, "jet1_pt" );
+    MT2EstimateTree::addVar( qcdCRtree, "jet2_pt" );
     //MT2Analysis<MT2EstimateTree>* qcdCRtree = new MT2Analysis<MT2EstimateTree>( "qcdCRtree", cfg.regionsSet() );
     
     
@@ -105,13 +108,16 @@ int main( int argc, char* argv[] ) {
     std::cout << std::endl << std::endl;
     std::cout << "-> Loading data from file: " << samplesFile_data << std::endl;
 
-    std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, 1, 2 );
+    //std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, 3, 3 );
+    std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, 1, 3 );
     if( samples_data.size()==0 ) {
       std::cout << "There must be an error: samples_data is empty!" << std::endl;
       exit(1209);
     }
 
     MT2Analysis<MT2EstimateTree>* data = new MT2Analysis<MT2EstimateTree>( "qcdCRtree", "13TeV_inclusive" );
+    MT2EstimateTree::addVar( data, "jet1_pt" );
+    MT2EstimateTree::addVar( data, "jet2_pt" );
     //MT2Analysis<MT2EstimateTree>* data = new MT2Analysis<MT2EstimateTree>( "qcdCRtree", cfg.regionsSet() );
     for( unsigned i=0; i < samples_data.size(); ++i )
       computeYield( samples_data[i], cfg, data );
@@ -215,6 +221,8 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
 
 
     thisTree->yield->Fill( mt2, weight );
+    thisTree->assignVar( "jet1_pt", myTree.jet1_pt );
+    thisTree->assignVar( "jet2_pt", myTree.jet2_pt );
     thisTree->fillTree( myTree, weight );
 
     
