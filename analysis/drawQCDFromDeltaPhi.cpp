@@ -249,11 +249,11 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
       h_estimate->SetLineColor( estimate->getColor() );
       h_estimate->SetMarkerColor( estimate->getColor() );
 
-      //if ( doClosureTestData ) h_estimate->Add(nonQCD->get(*iMT2)->yield); // add non-QCD mc to estimate. todo: make stack
+      if ( doClosureTestData ) h_estimate->Add(nonQCD->get(*iMT2)->yield); // add non-QCD mc to estimate. todo: make stack
 
       int nBins = h_estimate->GetXaxis()->GetNbins();
       double err_estimate;
-      if ( doClosureTestData ) nBins -= 1;  // remove overflow for validation in 100<mt2<200
+      if ( closureTest ) nBins -= 1;  // remove overflow for validation in 100<mt2<200 (for both mc and data)
       double int_estimate = h_estimate->IntegralAndError(1, nBins+1, err_estimate);
  
       h_estimate_tot->SetBinContent(iRegion, int_estimate);
