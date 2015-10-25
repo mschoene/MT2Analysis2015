@@ -17,12 +17,12 @@
 
 
 
-bool closureTest = false;
+bool closureTest = true;
 
 
 
 void compareFractions( const MT2Config& cfg, const std::string& outputdir, const std::string& dataFile, const std::string& analysisName, const std::string& xaxisName, const std::string& yaxisName, bool logPlot );
-void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estimate, MT2Analysis<MT2Estimate>* mcTruth, float scaleEst, float lumi );
+void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estimate, MT2Analysis<MT2Estimate>* mcTruth, float scaleEst, float lumi, MT2Analysis<MT2Estimate>* nonQCD=NULL );
 
 
 int main( int argc, char* argv[] ) {
@@ -64,8 +64,8 @@ int main( int argc, char* argv[] ) {
   system( Form("mkdir -p %s", fitsDir.c_str() ));
 
 
-  std::string mcFile   = qcdCRdir + "qcdEstimateMC.root";
-  std::string dataFile = qcdCRdir + "qcdEstimateData.root";
+  std::string mcFile   = qcdESTdir + "/qcdEstimateMC.root";
+  std::string dataFile = qcdESTdir + "/qcdEstimateData.root";
 
 
   compareFractions( cfg, outputdir, dataFile, "f_jets", "Number of Jets", "F_{jets}", false );
@@ -76,8 +76,18 @@ int main( int argc, char* argv[] ) {
   MT2Analysis<MT2EstimateTree>* qcdTree_data = MT2Analysis<MT2EstimateTree>::readFromFile( qcdCRdir + "/data.root", "qcdCRtree" );
 
   MT2Analysis<MT2EstimateTree>* mcTruth;
-  if( closureTest ) mcTruth = MT2EstimateTree::makeAnalysisFromInclusiveTree( "data"   , cfg.regionsSet(), qcdTree_data, "id==1 && mt2>150. && mt2<200. && deltaPhiMin>0.3" ); // signal region for mcTruth
-  else              mcTruth = MT2EstimateTree::makeAnalysisFromInclusiveTree( "mcTruth", cfg.regionsSet(), qcdTree_mc  , "id>=153 && id<200 && mt2>200. && deltaPhiMin>0.3" ); // signal region for mcTruth
+
+
+  MT2Analysis<MT2EstimateTree>* data  ;
+  MT2Analysis<MT2EstimateTree>* nonQCD;
+  if( closureTest ) {
+    mcTruth = MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( "mcTruth", cfg.regionsSet(), qcdTree_mc  , "id>=152 && id<200 && mt2>100 && mt2<200. && deltaPhiMin>0.3", 4, 100, 200 ); // signal region for mcTruth
+    data    = MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( "data"   , cfg.regionsSet(), qcdTree_data, "id==1   && mt2>100. && mt2<200. && deltaPhiMin>0.3"         , 4, 100, 200 ); // signal region for data
+    nonQCD  = MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( "nonQCD" , cfg.regionsSet(), qcdTree_mc  , "id>=300 && mt2>100. && mt2<200. && deltaPhiMin>0.3"         , 4, 100, 200 ); // signal region for nonQCD mcTruth
+  }
+  else
+    mcTruth = MT2EstimateTree::makeAnalysisFromInclusiveTree( "mcTruth", cfg.regionsSet(), qcdTree_mc  , "id>=153 && id<200 && mt2>200. && deltaPhiMin>0.3" ); // signal region for mcTruth
+
 
   MT2Analysis<MT2Estimate>* estimateMC     = MT2Analysis<MT2Estimate>::readFromFile( mcFile  , "qcdEstimate" );
   MT2Analysis<MT2Estimate>* estimateData   = MT2Analysis<MT2Estimate>::readFromFile( dataFile, "qcdEstimate" );
@@ -87,11 +97,17 @@ int main( int argc, char* argv[] ) {
   estimateData->setColor(kBlack);
 
   std::string plotsDirMC = qcdESTdir + "/plotsMC";
-  drawClosure( plotsDirMC, estimateMC, (MT2Analysis<MT2Estimate>*)mcTruth, cfg.lumi(), cfg.lumi() );
-
   std::string plotsDirData = qcdESTdir + "/plotsData";
-  drawClosure( plotsDirData, estimateData, (MT2Analysis<MT2Estimate>*)mcTruth, 1.0, cfg.lumi() );
-
+  if ( closureTest ) {
+    estimateData->setColor(kQCD  );
+    data        ->setColor(kBlack);
+    drawClosure( plotsDirMC  , estimateMC  , (MT2Analysis<MT2Estimate>*)mcTruth, cfg.lumi(), cfg.lumi() );
+    drawClosure( plotsDirData, estimateData, (MT2Analysis<MT2Estimate>*)data   ,   1.0     , cfg.lumi(), (MT2Analysis<MT2Estimate>*) nonQCD);
+  } 
+  else {
+    drawClosure( plotsDirMC  , estimateMC  , (MT2Analysis<MT2Estimate>*)mcTruth, cfg.lumi(), cfg.lumi() );
+    drawClosure( plotsDirData, estimateData, (MT2Analysis<MT2Estimate>*)mcTruth,   1.0     , cfg.lumi() );
+  }
 
 
   return 0;
@@ -182,8 +198,10 @@ void compareFractions( const MT2Config& cfg, const std::string& outputdir, const
 
 
 
-void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estimate, MT2Analysis<MT2Estimate>* mcTruth , float scaleEst, float lumi) {
+void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estimate, MT2Analysis<MT2Estimate>* mcTruth , float scaleEst, float lumi, MT2Analysis<MT2Estimate>* nonQCD) {
 
+  bool doClosureTestData = false;
+  if ( nonQCD != NULL ) doClosureTestData = true;
 
   system(Form("mkdir -p %s", outputdir.c_str()));
 
@@ -219,6 +237,7 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
 
       estimate->get(*iMT2)->yield->Scale(scaleEst);
       mcTruth ->get(*iMT2)->yield->Scale(lumi    );
+      if ( doClosureTestData ) nonQCD->get(*iMT2)->yield->Scale(lumi);
 
       std::string fullPath = outputdir;
 
@@ -230,9 +249,11 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
       h_estimate->SetLineColor( estimate->getColor() );
       h_estimate->SetMarkerColor( estimate->getColor() );
 
+      //if ( doClosureTestData ) h_estimate->Add(nonQCD->get(*iMT2)->yield); // add non-QCD mc to estimate. todo: make stack
 
       int nBins = h_estimate->GetXaxis()->GetNbins();
       double err_estimate;
+      if ( doClosureTestData ) nBins -= 1;  // remove overflow for validation in 100<mt2<200
       double int_estimate = h_estimate->IntegralAndError(1, nBins+1, err_estimate);
  
       h_estimate_tot->SetBinContent(iRegion, int_estimate);
@@ -303,8 +324,14 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
       legend->SetTextSize(0.038);
       legend->SetTextFont(42);
       legend->SetFillColor(0);
-      legend->AddEntry( h_estimate, "data-driven", "P" );
-      legend->AddEntry( h_mcTruth, "MC QCD", "P" );
+      if ( doClosureTestData ) {
+	legend->AddEntry( h_estimate, "data-driven + non-QCD", "P" );
+	legend->AddEntry( h_mcTruth, "data", "P" );
+      }
+      else{
+	legend->AddEntry( h_estimate, "data-driven", "P" );
+	legend->AddEntry( h_mcTruth, "MC QCD", "P" );
+      }
 
       legend->Draw("same");
 
@@ -447,7 +474,7 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
   TPaveText* htBox[nHTRegions];
   for( int iHT = 0; iHT < nHTRegions; ++iHT){
     
-    htBox[iHT] = new TPaveText(0.14+0.16*iHT, 0.9-0.06, 0.32+0.16*iHT, 0.9, "brNDC");
+    htBox[iHT] = new TPaveText(0.20+0.15*iHT, 0.9-0.06, 0.32+0.15*iHT, 0.9, "brNDC");
     htBox[iHT]->AddText( htRegions[iHT].c_str() );
     
     htBox[iHT]->SetBorderSize(0);

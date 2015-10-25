@@ -23,7 +23,7 @@
 
 
 
-bool closureTest = false;
+bool closureTest = true;
 
 float scaleMC = 0.; // simulate stats for the given lumi [0 means MC stats]
 
