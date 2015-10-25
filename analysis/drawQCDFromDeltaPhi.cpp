@@ -238,7 +238,6 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
 
       estimate->get(*iMT2)->yield->Scale(scaleEst);
       mcTruth ->get(*iMT2)->yield->Scale(lumi    );
-      if ( doClosureTestData ) nonQCD->get(*iMT2)->yield->Scale(lumi);
 
       std::string fullPath = outputdir;
 
@@ -250,7 +249,15 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
       h_estimate->SetLineColor( estimate->getColor() );
       h_estimate->SetMarkerColor( estimate->getColor() );
 
-      if ( doClosureTestData ) h_estimate->Add(nonQCD->get(*iMT2)->yield); // add non-QCD mc to estimate. todo: make stack
+
+      if ( doClosureTestData ){ 
+	float ps = 1.;
+	if     ( iMT2->htMin() < 300. ) ps = 7000.; // prescale
+	else if( iMT2->htMin() < 500. ) ps =  180.;
+	else if( iMT2->htMin() < 600. ) ps =   60.;
+	nonQCD->get(*iMT2)->yield->Scale(lumi/ps);
+	h_estimate->Add(nonQCD->get(*iMT2)->yield); // add non-QCD mc to estimate. todo: make stack
+      }
 
       int nBins = h_estimate->GetXaxis()->GetNbins();
       double err_estimate;
@@ -326,18 +333,18 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
       legend->SetTextFont(42);
       legend->SetFillColor(0);
       if ( doClosureTestData ) {
-	legend->AddEntry( h_estimate, "data-driven + non-QCD", "P" );
-	legend->AddEntry( h_mcTruth, "data", "P" );
+	legend->AddEntry( h_estimate, "data-driven + non-QCD", "PL" );
+	legend->AddEntry( h_mcTruth, "data", "PL" );
       }
       else{
-	legend->AddEntry( h_estimate, "data-driven", "P" );
-	legend->AddEntry( h_mcTruth, "MC QCD", "P" );
+	legend->AddEntry( h_estimate, "data-driven", "PL" );
+	legend->AddEntry( h_mcTruth, "MC QCD", "PL" );
       }
 
       legend->Draw("same");
 
-      h_estimate->Draw("P same");
-      h_mcTruth->Draw("P same");
+      h_estimate->Draw("Pe same");
+      h_mcTruth->Draw("Pe same");
       //      bgStack.Draw("histoE, same");
 
       TPaveText* labelTop = MT2DrawTools::getLabelTopSimulation();
@@ -440,14 +447,20 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
   h_estimate_tot->SetLineColor( estimate->getColor() );
   h_estimate_tot->SetMarkerColor( estimate->getColor() );
 
-  h_estimate_tot->Draw("pe,same");
+  h_estimate_tot->Draw( doClosureTestData ? "same" : "pe,same" );
 
   TLegend* legend = new TLegend( 0.18, 0.7, 0.32, 0.82 );
   legend->SetTextSize(0.038);
   legend->SetTextFont(42);
   legend->SetFillColor(0);
-  legend->AddEntry( h_estimate_tot, "data-driven", "PL" );
-  legend->AddEntry( h_mcTruth_tot, "QCD MC", "PL" );
+  if ( doClosureTestData ) {
+    legend->AddEntry( h_estimate_tot, "data-driven + non-QCD", "L" );
+    legend->AddEntry( h_mcTruth_tot , "data"                 , "PL" );
+  }
+  else{
+    legend->AddEntry( h_estimate_tot, "data-driven", "PL" );
+    legend->AddEntry( h_mcTruth_tot , "QCD MC"     , "PL" );
+  }
 
   legend->Draw("same");
 
