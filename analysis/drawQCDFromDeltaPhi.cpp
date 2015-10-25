@@ -17,11 +17,11 @@
 
 
 
-bool closureTest = true;
+bool closureTest = false;
 
 
 
-void compareFractions( const MT2Config& cfg, const std::string& outputdir, const std::string& dataFile, const std::string& analysisName, const std::string& xaxisName, const std::string& yaxisName, bool logPlot );
+void compareFractions( const MT2Config& cfg, const std::string& outputdir, const std::string& dataFile, const std::string& analysisName, const std::string& xaxisName, const std::string& yaxisName, bool logPlot, const std::string& postfix="" );
 void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estimate, MT2Analysis<MT2Estimate>* mcTruth, float scaleEst, float lumi, MT2Analysis<MT2Estimate>* nonQCD=NULL );
 
 
@@ -68,8 +68,9 @@ int main( int argc, char* argv[] ) {
   std::string dataFile = qcdESTdir + "/qcdEstimateData.root";
 
 
-  compareFractions( cfg, outputdir, dataFile, "f_jets", "Number of Jets", "F_{jets}", false );
-  compareFractions( cfg, outputdir, dataFile, "r_hat", "Number of b-Jets", "#hat{r}_{b}", true );
+  compareFractions( cfg, outputdir, dataFile, "f_jets", "Number of Jets"  , "F_{jets}"   , false           );
+  compareFractions( cfg, outputdir, dataFile, "f_jets", "Number of Jets"  , "F_{jets}"   , false , "_noPS" );
+  compareFractions( cfg, outputdir, dataFile, "r_hat" , "Number of b-Jets", "#hat{r}_{b}", true            );
 
 
   MT2Analysis<MT2EstimateTree>* qcdTree_mc   = MT2Analysis<MT2EstimateTree>::readFromFile( qcdCRdir + "/mc.root",   "qcdCRtree" );
@@ -119,10 +120,10 @@ int main( int argc, char* argv[] ) {
  
 
 
-void compareFractions( const MT2Config& cfg, const std::string& outputdir, const std::string& dataFile, const std::string& analysisName, const std::string& xaxisName, const std::string& yaxisName, bool logPlot ) {
+void compareFractions( const MT2Config& cfg, const std::string& outputdir, const std::string& dataFile, const std::string& analysisName, const std::string& xaxisName, const std::string& yaxisName, bool logPlot, const std::string& postfix ) {
 
   MT2Analysis<MT2Estimate>* fraction_mc   = MT2Analysis<MT2Estimate>::readFromFile(dataFile, analysisName+"_mc");
-  MT2Analysis<MT2Estimate>* fraction_data = MT2Analysis<MT2Estimate>::readFromFile(dataFile, analysisName+"_data");
+  MT2Analysis<MT2Estimate>* fraction_data = MT2Analysis<MT2Estimate>::readFromFile(dataFile, analysisName+"_data"+postfix.c_str());
 
 
   std::set<MT2Region> regions = fraction_data->getRegions();
@@ -183,8 +184,8 @@ void compareFractions( const MT2Config& cfg, const std::string& outputdir, const
 
     gPad->RedrawAxis();
 
-    c1->SaveAs( Form("%s/%s_%s.eps", outputdir.c_str(), analysisName.c_str(), iR->getName().c_str()) );
-    c1->SaveAs( Form("%s/%s_%s.pdf", outputdir.c_str(), analysisName.c_str(), iR->getName().c_str()) );
+    c1->SaveAs( Form("%s/%s_%s%s.eps", outputdir.c_str(), analysisName.c_str(), iR->getName().c_str(), postfix.c_str()) );
+    c1->SaveAs( Form("%s/%s_%s%s.pdf", outputdir.c_str(), analysisName.c_str(), iR->getName().c_str(), postfix.c_str()) );
 
     delete c1;
     delete h2_axes;

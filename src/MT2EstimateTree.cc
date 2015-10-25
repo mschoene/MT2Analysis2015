@@ -134,7 +134,7 @@ MT2Analysis<MT2EstimateTree>* MT2EstimateTree::makeRebinnedAnalysisFromInclusive
   std::set<MT2Region> newRegions = analysis->getRegions();
 
   if ( nBins!=0 )
-    MT2EstimateTree::rebinYields( analysis, nBins, xMin, xMax );
+    MT2Estimate::rebinYields( (MT2Analysis<MT2Estimate>*)analysis, nBins, xMin, xMax );
 
   for( std::set<MT2Region>::iterator iR=newRegions.begin(); iR!=newRegions.end(); ++iR ) {
 
@@ -145,25 +145,6 @@ MT2Analysis<MT2EstimateTree>* MT2EstimateTree::makeRebinnedAnalysisFromInclusive
 
 
   return analysis;
-
-}
-
-
-void MT2EstimateTree::rebinYields( MT2Analysis<MT2EstimateTree>* analysis, int nBins, float xMin, float xMax ) {
-
-  std::set<MT2Region> regions = analysis->getRegions();
-
-  for( std::set<MT2Region>::iterator iR = regions.begin(); iR!=regions.end(); ++iR ) {
-
-    MT2EstimateTree* estimate = analysis->get(*iR);
-    TH1D* thisYield = estimate->yield;
-
-    std::string oldName(thisYield->GetName());
-
-    delete thisYield;
-    thisYield = new TH1D( oldName.c_str(), "", nBins, xMin, xMax );
-
-  }
 
 }
 

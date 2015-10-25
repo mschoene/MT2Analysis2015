@@ -23,7 +23,7 @@
 
 
 
-bool closureTest = true;
+bool closureTest = false;
 
 float scaleMC = 0.; // simulate stats for the given lumi [0 means MC stats]
 
@@ -105,17 +105,19 @@ int main( int argc, char* argv[] ) {
   std::cout << "-> Making MT2EstimateTrees from inclusive tree...";
   MT2Analysis<MT2EstimateTree>* data_4rHat ;
   MT2Analysis<MT2EstimateTree>* data_4fJets;
+  MT2Analysis<MT2EstimateTree>* data_noPS_4fJets;
   MT2Analysis<MT2EstimateTree>* qcdmc_4rHat ;
   MT2Analysis<MT2EstimateTree>* qcdmc_4fJets;
   MT2Analysis<MT2EstimateTree>* rest_4rHat ;
   MT2Analysis<MT2EstimateTree>* rest_4fJets;
   qcdmc_4rHat  = MT2EstimateTree::makeAnalysisFromInclusiveTree( "qcdmc_4rHat"   , regionsSet_rHat  , qcdTree_mc, "id>=153 && id<200 && mt2>100. && mt2<200. && nJets>1 && deltaPhiMin<0.3" ); // invert deltaPhi
-  qcdmc_4fJets = MT2EstimateTree::makeAnalysisFromInclusiveTree( "qcdmc_4fJets"  , regionsSet_fJets , qcdTree_mc, "id>=153 && id<200 && mt2>100. && mt2<200. && nJets>1 && deltaPhiMin<0.3" ); // invert deltaPhi 
+  qcdmc_4fJets = MT2EstimateTree::makeAnalysisFromInclusiveTree( "qcdmc_4fJets"  , regionsSet_fJets , qcdTree_mc, "(id>=153||ht<450) && id<200 && mt2>100. && mt2<200. && nJets>1 && deltaPhiMin<0.3" ); // invert deltaPhi ; id=152 plays a role for VLHT in 100<mt2<200
   if ( !useMC ) {
-    data_4rHat  = MT2EstimateTree::makeAnalysisFromInclusiveTree( "data_4rHat" , regionsSet_rHat  , qcdTree_data, "id==1 && ht>1000. &&  mt2>100. && mt2<200. && nJets>1 && deltaPhiMin<0.3" ); // invert deltaPhi
-    data_4fJets = MT2EstimateTree::makeAnalysisFromInclusiveTree( "data_4fJets", regionsSet_fJets , qcdTree_data, "id==1 &&              mt2>100. && mt2<200. && nJets>1 && deltaPhiMin<0.3" ); // invert deltaPhi 
-    rest_4rHat  = MT2EstimateTree::makeAnalysisFromInclusiveTree( "rest_4rHat" , regionsSet_rHat  , qcdTree_mc  , "id>=300 && ht>1000. &&  mt2>100. && mt2<200. && nJets>1 && deltaPhiMin<0.3" ); // invert deltaPhi
-    rest_4fJets = MT2EstimateTree::makeAnalysisFromInclusiveTree( "rest_4fJets", regionsSet_fJets , qcdTree_mc  , "id>=300 &&              mt2>100. && mt2<200. && nJets>1 && deltaPhiMin<0.3" ); // invert deltaPhi 
+    data_4rHat       = MT2EstimateTree::makeAnalysisFromInclusiveTree( "data_4rHat"      , regionsSet_rHat  , qcdTree_data, "id==1 && ht>1000. &&  mt2>100. && mt2<200. && nJets>1 && deltaPhiMin<0.3" ); // invert deltaPhi; ht>1000 unprescaled triggers
+    data_4fJets      = MT2EstimateTree::makeAnalysisFromInclusiveTree( "data_4fJets"     , regionsSet_fJets , qcdTree_data, "id==1 &&              mt2>100. && mt2<200. && nJets>1 && deltaPhiMin<0.3" ); // invert deltaPhi; HT-only triggers, ps'ed for HT<1000, empty for HT<450
+    data_noPS_4fJets = MT2EstimateTree::makeAnalysisFromInclusiveTree( "data_noPS_4fJets", regionsSet_fJets , qcdTree_data, "((id==1&&ht>100)||(id==2&&ht>450&&ht<1000)||(id==3&&ht<450))&& mt2>100. && mt2<200. && nJets>1 && deltaPhiMin<0.3" ); // invert deltaPhi; unprescaled triggers, HT-only for ht>100, HTMHT for450< ht<1000, MET for ht<450 (below ht<1000 we live in turnon, better not to subtract an unknown amount of non-QCD [smaller than 18% for VLHT])
+    rest_4rHat       = MT2EstimateTree::makeAnalysisFromInclusiveTree( "rest_4rHat"      , regionsSet_rHat  , qcdTree_mc  , "id>=300 && ht>1000. &&  mt2>100. && mt2<200. && nJets>1 && deltaPhiMin<0.3" ); // invert deltaPhi
+    rest_4fJets      = MT2EstimateTree::makeAnalysisFromInclusiveTree( "rest_4fJets"     , regionsSet_fJets , qcdTree_mc  , "id>=300 &&              mt2>100. && mt2<200. && nJets>1 && deltaPhiMin<0.3" ); // invert deltaPhi 
   }
 
   //MT2Analysis<MT2EstimateTree>* mc_4rHat    = MT2EstimateTree::makeAnalysisFromInclusiveTree( "mc_4rHat"   , regionsSet_rHat  , qcdTree_mc, "id>=153 && id<200 && mt2>100. && mt2<200. && deltaPhiMin<0.3" ); // invert deltaPhi
@@ -125,20 +127,21 @@ int main( int argc, char* argv[] ) {
 
 
   std::cout << "-> Creating the MT2Estimates...";
-  MT2Analysis<MT2Estimate>* estimate     = new MT2Analysis<MT2Estimate>("qcdEstimate", regionsSet);
-  MT2Analysis<MT2Estimate>* nCR          = new MT2Analysis<MT2Estimate>("nCR"        , regionsSet);
-  MT2Analysis<MT2Estimate>* r_effective  = new MT2Analysis<MT2Estimate>("r_effective", regionsSet);
+  MT2Analysis<MT2Estimate>* estimate         = new MT2Analysis<MT2Estimate>("qcdEstimate"     , regionsSet);
+  MT2Analysis<MT2Estimate>* nCR              = new MT2Analysis<MT2Estimate>("nCR"             , regionsSet);
+  MT2Analysis<MT2Estimate>* r_effective      = new MT2Analysis<MT2Estimate>("r_effective"     , regionsSet);
 
-  MT2Analysis<MT2Estimate>* est_mcRest   = new MT2Analysis<MT2Estimate>("est_mcRest"  , regionsSet);
-  MT2Analysis<MT2Estimate>* nCR_mcRest   = new MT2Analysis<MT2Estimate>("nCR_mcRest"  , regionsSet);
-  MT2Analysis<MT2Estimate>* r_eff_mcRest = new MT2Analysis<MT2Estimate>("r_eff_mcRest", regionsSet);
+  MT2Analysis<MT2Estimate>* est_mcRest       = new MT2Analysis<MT2Estimate>("est_mcRest"      , regionsSet);
+  MT2Analysis<MT2Estimate>* nCR_mcRest       = new MT2Analysis<MT2Estimate>("nCR_mcRest"      , regionsSet);
+  MT2Analysis<MT2Estimate>* r_eff_mcRest     = new MT2Analysis<MT2Estimate>("r_eff_mcRest"    , regionsSet);
 
-  MT2Analysis<MT2Estimate>* qcdPurity    = new MT2Analysis<MT2Estimate>("qcdPurity"  , regionsSet);
+  MT2Analysis<MT2Estimate>* qcdPurity        = new MT2Analysis<MT2Estimate>("qcdPurity"       , regionsSet);
 
-  MT2Analysis<MT2Estimate>* r_hat_mc     = new MT2Analysis<MT2Estimate>("r_hat_mc"   , regionsSet_rHat);
-  MT2Analysis<MT2Estimate>* f_jets_mc    = new MT2Analysis<MT2Estimate>("f_jets_mc"  , regionsSet_fJets);
-  MT2Analysis<MT2Estimate>* r_hat_data   = new MT2Analysis<MT2Estimate>("r_hat_data" , regionsSet_rHat);
-  MT2Analysis<MT2Estimate>* f_jets_data  = new MT2Analysis<MT2Estimate>("f_jets_data", regionsSet_fJets);
+  MT2Analysis<MT2Estimate>* r_hat_mc         = new MT2Analysis<MT2Estimate>("r_hat_mc"        , regionsSet_rHat);
+  MT2Analysis<MT2Estimate>* f_jets_mc        = new MT2Analysis<MT2Estimate>("f_jets_mc"       , regionsSet_fJets);
+  MT2Analysis<MT2Estimate>* r_hat_data       = new MT2Analysis<MT2Estimate>("r_hat_data"      , regionsSet_rHat);
+  MT2Analysis<MT2Estimate>* f_jets_data      = new MT2Analysis<MT2Estimate>("f_jets_data"     , regionsSet_fJets);
+  MT2Analysis<MT2Estimate>* f_jets_data_noPS = new MT2Analysis<MT2Estimate>("f_jets_data_noPS", regionsSet_fJets);
   std::cout << " Done." << std::endl;
 
 
@@ -158,8 +161,10 @@ int main( int argc, char* argv[] ) {
 
   std::cout << "-> Getting fJets...";
   get_fJets( f_jets_mc, qcdmc_4fJets );
-  if ( !useMC ) 
-    get_fJets( f_jets_data, data_4fJets, rest_4fJets );    
+  if ( !useMC ) {
+    get_fJets( f_jets_data     , data_4fJets     , rest_4fJets );    
+    get_fJets( f_jets_data_noPS, data_noPS_4fJets              ); // don't subtract an unknown amount (trigger turnon) small in any case
+  }
   std::cout << " Done." << std::endl;
   std::cout << "-> Getting rHat...";
     get_rHat ( r_hat_mc , qcdmc_4rHat );
@@ -255,11 +260,15 @@ int main( int argc, char* argv[] ) {
     MT2Estimate* this_r_hat ;
     MT2Estimate *this_f_jets;
     
-    if ( useMC || iR->htMin() < 300. ) { // take MC for very low ht region
+    if ( useMC ) {
       this_r_hat  = r_hat_mc ->getWithMatch( *regionToMatch );
       this_f_jets = f_jets_mc->getWithMatch( *regionToMatch );
     }
-    else {
+    else if ( iR->htMin() < 300. ) { // if we are in VLHT take the values for fjet from the monojet trigger w/o bkg subtraction
+      this_r_hat  = r_hat_data      ->getWithMatch( *regionToMatch );
+      this_f_jets = f_jets_data_noPS->getWithMatch( *regionToMatch );      
+    }
+    else { // otherwise take values from HT-only triggers w/ proper bkg subtractions
       this_r_hat  = r_hat_data ->getWithMatch( *regionToMatch );
       this_f_jets = f_jets_data->getWithMatch( *regionToMatch );
     }
@@ -309,14 +318,15 @@ int main( int argc, char* argv[] ) {
   if( useMC ) outfileName = outfileName + "/qcdEstimateMC.root";
   else        outfileName = outfileName + "/qcdEstimateData.root";
 
-  estimate   ->writeToFile( outfileName, "recreate" );
-  nCR        ->writeToFile( outfileName );
-  r_effective->writeToFile( outfileName );
-  r_hat_mc   ->writeToFile( outfileName );
-  f_jets_mc  ->writeToFile( outfileName );
-  r_hat_data ->writeToFile( outfileName );
-  f_jets_data->writeToFile( outfileName );
-  qcdPurity  ->writeToFile( outfileName );
+  estimate        ->writeToFile( outfileName, "recreate" );
+  nCR             ->writeToFile( outfileName );
+  r_effective     ->writeToFile( outfileName );
+  r_hat_mc        ->writeToFile( outfileName );
+  f_jets_mc       ->writeToFile( outfileName );
+  r_hat_data      ->writeToFile( outfileName );
+  f_jets_data     ->writeToFile( outfileName );
+  f_jets_data_noPS->writeToFile( outfileName );
+  qcdPurity       ->writeToFile( outfileName );
 
 
 
@@ -406,6 +416,12 @@ void get_rHat( MT2Analysis<MT2Estimate>* rHat, MT2Analysis<MT2EstimateTree>* ana
       MT2EstimateTree* anotherTree = ana_rest->get(*iR);
       anotherTree->tree->Project( Form("%s_rest",name.c_str()), "nBJets", "weight" );
       MT2DrawTools::addOverflowSingleHisto(toSubtract);
+
+      std::cout << "rhat region: " << iR->sigRegion()->getNiceName() << std::endl
+		<< "amount of non-QCD subtracted: ";
+      for ( int iBin=1; iBin<=nBins; iBin++ )
+	std::cout << toSubtract->GetBinContent(iBin)/thisEst->yield->GetBinContent(iBin)*100 << "\%\t";
+      std::cout << std::endl;
       
       thisEst->yield->Add(toSubtract,-1);
     }
@@ -470,7 +486,14 @@ void get_fJets( MT2Analysis<MT2Estimate>* fJets, MT2Analysis<MT2EstimateTree>* a
       if      (iR->htMin() < 500.) ps = 180.;
       else if (iR->htMin() < 600.) ps =  60.;
       
-      thisEst->yield->Add(toSubtract,-1/ps);
+      std::cout << "f_j region: " << iR->htRegion()->getNiceName() << std::endl
+		<< "amount of non-QCD subtracted: ";
+      for ( int iBin=1; iBin<=nBins; iBin++ )
+	std::cout << toSubtract->GetBinContent(iBin)/ps/thisEst->yield->GetBinContent(iBin)*100 << "\%\t";
+      std::cout << std::endl;
+
+      if ( iR->htMin() > 400. )  // HT dataset not filled for VLHT, leave it empty
+	thisEst->yield->Add(toSubtract,-1/ps);
     }
 
     for( int iBin=1; iBin<nBins+1; ++iBin ) {
