@@ -1,5 +1,6 @@
 #include <cmath>
 #include <iostream>
+#include <map>
 
 #include "TCanvas.h"
 #include "TAxis.h"
@@ -143,15 +144,15 @@ int main( int argc, char* argv[] ) {
 
   if( closureTest ) {
 
-    MT2Estimate::rebinYields( estimate    , 1, 150., 200. );
-    MT2Estimate::rebinYields( nCR         , 1, 150., 200. );
-    MT2Estimate::rebinYields( r_effective , 1, 150., 200. );
+    MT2Estimate::rebinYields( estimate    , 4, 100., 200. );
+    MT2Estimate::rebinYields( nCR         , 4, 100., 200. );
+    MT2Estimate::rebinYields( r_effective , 4, 100., 200. );
 
-    MT2Estimate::rebinYields( est_mcRest  , 1, 150., 200. );
-    MT2Estimate::rebinYields( nCR_mcRest  , 1, 150., 200. );
-    MT2Estimate::rebinYields( r_eff_mcRest, 1, 150., 200. );
+    MT2Estimate::rebinYields( est_mcRest  , 4, 100., 200. );
+    MT2Estimate::rebinYields( nCR_mcRest  , 4, 100., 200. );
+    MT2Estimate::rebinYields( r_eff_mcRest, 4, 100., 200. );
 
-    MT2Estimate::rebinYields( qcdPurity   , 1, 150., 200. );
+    MT2Estimate::rebinYields( qcdPurity   , 4, 100., 200. );
 
   }
 
@@ -183,13 +184,55 @@ int main( int argc, char* argv[] ) {
   std::cout << " Done." << std::endl;
 
 
+  // fits need to be done only once
+  std::set<MT2Region> QCDregions = est_all->getRegions();
+  std::map<MT2Region, TF1* > fits ;
+  std::map<MT2Region, TH1D*> bands;
 
+  for( std::set<MT2Region>::iterator iR = QCDregions.begin(); iR!=QCDregions.end(); ++iR ) {
+
+    MT2EstimateQCD* matchedEstimate      = est_all          ->getWithMatch( *iR );
+    //MT2EstimateQCD* matchedEstimate_qcd  = (useMC) ? mc_qcd ->getWithMatch( *iR ) : 0;
+    MT2EstimateQCD* matchedEstimate_rest = mc_rest          ->getWithMatch( *iR );
+    MT2EstimateQCD* matchedEstimate_mnQ  = est_minus_nonQCD ->getWithMatch( *iR );
+
+    float lumiScale = 1.;
+    if( !useMC || scaleMC!=0. ) {
+      lumiScale = useMC ? scaleMC : cfg.lumi();
+      if     ( iR->htMin() < 300. ) lumiScale /= 7000.; // prescale
+      else if( iR->htMin() < 500. ) lumiScale /=  180.; // prescale
+      else if( iR->htMin() < 600. ) lumiScale /=   60.;
+    }
+
+    matchedEstimate_mnQ->lDphi = (TH1D*) matchedEstimate->lDphi->Clone(matchedEstimate_mnQ->lDphi->GetName());
+    if (useMC && scaleMC!=0.)  matchedEstimate_mnQ->lDphi->Scale(lumiScale);
+    matchedEstimate_mnQ->lDphi->Add( matchedEstimate_rest->lDphi, -lumiScale );
+
+    matchedEstimate_mnQ->hDphi = (TH1D*) matchedEstimate->hDphi->Clone(matchedEstimate_mnQ->hDphi->GetName());
+    if (useMC && scaleMC!=0.)  matchedEstimate_mnQ->hDphi->Scale(lumiScale);
+    matchedEstimate_mnQ->hDphi->Add( matchedEstimate_rest->hDphi, -lumiScale );
+
+    if (useMC && scaleMC!=0.)  matchedEstimate_mnQ->sqrtErrors();
+
+    float xMin_fit = (iR->htMin()>=1000.) ? 70. : 60.;
+    float xMax_fit = 100.;
+    //fits.insert(std::pair<MT2Region, TF1*>(*iR, matchedEstimate_mnQ->getFit( "pow", xMin_fit, xMax_fit ) ) );
+    fits[*iR] = matchedEstimate_mnQ->getFit( "pow", xMin_fit, xMax_fit );
+    bands[*iR] = new TH1D(Form("band_%s",iR->getName().c_str()), "", 500, matchedEstimate->lDphi->GetXaxis()->GetXmin(), matchedEstimate->lDphi->GetXaxis()->GetXmax());
+    (TVirtualFitter::GetFitter())->GetConfidenceIntervals(bands[*iR], 0.68);
+
+    std::cout << iR->htRegion()->getNiceName() << std::endl
+              << "par0 : " << fits[*iR]->GetParameter(0) << " +/- " << fits[*iR]->GetParError(0) << std::endl
+	      << "par1 : " << fits[*iR]->GetParameter(1) << " +/- " << fits[*iR]->GetParError(1) << std::endl;
+
+    drawSingleFit( cfg, useMC, fitsDir, matchedEstimate_mnQ, matchedEstimate, fits[*iR], bands[*iR], xMin_fit, xMax_fit );
+
+  } // end loop qcd regions
 
 
   std::set<MT2Region> regions = estimate->getRegions();
 
-
-  std::string lastRegionName = "";
+  //std::string lastRegionName = "";
 
   for( std::set<MT2Region>::iterator iR = regions.begin(); iR!=regions.end(); ++iR ) {
 
@@ -222,47 +265,15 @@ int main( int argc, char* argv[] ) {
     }
 
     MT2EstimateQCD* matchedEstimate      = est_all          ->getWithMatch( *iR );
-    //MT2EstimateQCD* matchedEstimate_qcd  = (useMC) ? mc_qcd ->getWithMatch( *iR ) : 0;
     MT2EstimateQCD* matchedEstimate_rest = mc_rest          ->getWithMatch( *iR );
-    MT2EstimateQCD* matchedEstimate_mnQ  = est_minus_nonQCD ->getWithMatch( *iR );
+
+    MT2Region *fit_matchedRegion = est_all->matchRegion(*iR);
+    if( iR->htMin() < 300. )  // take fit from low HT also for the very low HT region
+      fit_matchedRegion = new MT2Region( 450, 575, 2, -1, 0, -1 );
 
 
-    float lumiScale = 1.;
-    if( !useMC || scaleMC!=0. ) {
-      lumiScale = useMC ? scaleMC : cfg.lumi();
-      if     ( iR->htMin() < 300. ) lumiScale /= 7000.; // prescale
-      else if( iR->htMin() < 500. ) lumiScale /=  180.; // prescale
-      else if( iR->htMin() < 600. ) lumiScale /=   60.;
-    }
-
-
-    matchedEstimate_mnQ->lDphi = (TH1D*) matchedEstimate->lDphi->Clone(matchedEstimate_mnQ->lDphi->GetName());
-    if (useMC && scaleMC!=0.)  matchedEstimate_mnQ->lDphi->Scale(lumiScale);
-    matchedEstimate_mnQ->lDphi->Add( matchedEstimate_rest->lDphi, -lumiScale );
-
-    matchedEstimate_mnQ->hDphi = (TH1D*) matchedEstimate->hDphi->Clone(matchedEstimate_mnQ->hDphi->GetName());
-    if (useMC && scaleMC!=0.)  matchedEstimate_mnQ->hDphi->Scale(lumiScale);
-    matchedEstimate_mnQ->hDphi->Add( matchedEstimate_rest->hDphi, -lumiScale );
-
-    if (useMC && scaleMC!=0.)  matchedEstimate_mnQ->sqrtErrors();
-
-    float xMin_fit = (iR->htMin()>=1000.) ? 70. : 60.;
-    float xMax_fit = 100.;
-    TF1* f1_ratio = matchedEstimate_mnQ->getFit( "pow", xMin_fit, xMax_fit );
-    TH1D* h_band = new TH1D("band", "", 500, matchedEstimate->lDphi->GetXaxis()->GetXmin(), matchedEstimate->lDphi->GetXaxis()->GetXmax());
-    (TVirtualFitter::GetFitter())->GetConfidenceIntervals(h_band, 0.68);
-
-    //std::cout << iR->htRegion()->getNiceName() << std::endl
-    //          << "par0 : " << f1_ratio->GetParameter(0) << " +/- " << f1_ratio->GetParError(0) << std::endl
-    //	        << "par1 : " << f1_ratio->GetParameter(1) << " +/- " << f1_ratio->GetParError(1) << std::endl;
-
-    if( matchedEstimate->region->getName()!=lastRegionName ) // draw only one per HT region
-      drawSingleFit( cfg, useMC, fitsDir, matchedEstimate_mnQ, matchedEstimate, f1_ratio, h_band, xMin_fit, xMax_fit );
-    lastRegionName = matchedEstimate->region->getName();
-
-
-    fillFromTreeAndRatio( this_estimate  , this_nCR       , this_r_effective , matchedEstimate->tree     , f1_ratio, h_band );
-    fillFromTreeAndRatio( this_est_mcRest, this_nCR_mcRest, this_r_eff_mcRest, matchedEstimate_rest->tree, f1_ratio, h_band );
+    fillFromTreeAndRatio( this_estimate  , this_nCR       , this_r_effective , matchedEstimate->tree     , fits[*fit_matchedRegion], bands[*fit_matchedRegion] );
+    fillFromTreeAndRatio( this_est_mcRest, this_nCR_mcRest, this_r_eff_mcRest, matchedEstimate_rest->tree, fits[*fit_matchedRegion], bands[*fit_matchedRegion] );
     //fillFromTreeAndRatio( this_estimate, this_nCR, this_r_effective, matchedEstimate_qcd->tree, f1_ratio, h_band );
 
     
@@ -289,7 +300,7 @@ int main( int argc, char* argv[] ) {
     scaleHisto( this_estimate->yield, thisRhatValue , thisRhatError  );
     scaleHisto( this_estimate->yield, thisFjetsValue, thisFjetsError );
 
-    delete h_band;
+    //delete h_band;
 
   }  // for regions
       
