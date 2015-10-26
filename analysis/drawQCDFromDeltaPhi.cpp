@@ -162,7 +162,7 @@ void compareFractions( const MT2Config& cfg, const std::string& outputdir, const
     h1_data->SetLineWidth(2);
 
     h1_mcBand->Draw("e2 same");
-    h1_mc  ->Draw("histo norm same");
+    h1_mc  ->Draw("hist norm same");
     h1_data->Draw("p same norm");
 
 
@@ -224,6 +224,7 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
   h_nonQCD_tot->GetYaxis()->SetTitle("Events");
   
   if ( doClosureTestData ){
+    h_estimate_tot->SetMarkerSize(0);
     h_estimate_tot->SetFillColor( estimate->getColor() );
     h_nonQCD_tot  ->SetLineColor( nonQCD  ->getColor() );
     h_nonQCD_tot  ->SetFillColor( nonQCD  ->getColor() );
@@ -241,7 +242,7 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
   
   TH1D* hPull = new TH1D("hPull", "", 20, -5, 5);
   hPull->Sumw2();
-  hPull->GetXaxis()->SetTitle("(Data Driven - MC)/#sigma");
+  hPull->GetXaxis()->SetTitle(doClosureTestData ? "(Data Driven - MC)/#sigma" : "(Data Driven - Pred)/#sigma");
   hPull->GetYaxis()->SetTitle("Events");
   
   
@@ -250,7 +251,8 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
 
 
       estimate->get(*iMT2)->yield->Scale(scaleEst);
-      mcTruth ->get(*iMT2)->yield->Scale(lumi    );
+      if ( !doClosureTestData ) // mcTruth is data in this case
+	mcTruth ->get(*iMT2)->yield->Scale(lumi);
 
       std::string fullPath = outputdir;
 
@@ -275,9 +277,10 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
 	h_nonQCD->Scale(lumi/ps);
 	//h_estimate->Add(nonQCD->get(*iMT2)->yield); // add non-QCD mc to estimate. todo: make stack
 
-	h_estimate->SetFillColor( estimate->getColor() );
-	h_nonQCD  ->SetLineColor( nonQCD  ->getColor() );
-	h_nonQCD  ->SetFillColor( nonQCD  ->getColor() );
+	h_estimate->SetMarkerSize(0);
+	h_estimate->SetFillColor ( estimate->getColor() );
+	h_nonQCD  ->SetLineColor ( nonQCD  ->getColor() );
+	h_nonQCD  ->SetFillColor ( nonQCD  ->getColor() );
 	stack->Add(h_nonQCD);
 	stack->Add(h_estimate);
       }
@@ -382,7 +385,7 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
       legend->Draw("same");
 
       if  (doClosureTestData )
-	stack->Draw("histo same");
+	stack->Draw("histe1 same");
       else
 	h_estimate->Draw("Pe same");
       h_mcTruth->Draw("Pe same");
@@ -401,8 +404,15 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
       pad2->cd();
 
       std::string thisName = Form("%s_ratio", h_estimate->GetName());
-      TH1D* h_ratio = (TH1D*) ( doClosureTestData ? stack->GetStack()->Last()->Clone(thisName.c_str()) : h_estimate->Clone(thisName.c_str()) );
-      h_ratio->Divide(h_mcTruth);
+      TH1D* h_ratio;
+      if ( doClosureTestData ) {
+	h_ratio = (TH1D*) ( h_mcTruth->Clone(thisName.c_str()) );
+	h_ratio->Divide((TH1D*)stack->GetStack()->Last());
+      }
+      else {
+	h_ratio = (TH1D*) ( h_estimate->Clone(thisName.c_str()) );
+	h_ratio->Divide(h_mcTruth);
+      }
       h_ratio->SetStats(0);	    
       h_ratio->SetMarkerStyle(20);
       h_ratio->SetLineColor(1);
@@ -488,13 +498,8 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
   h_mcTruth_tot->Draw("PE");
 
 
-  h_estimate_tot->SetMarkerStyle(20);
-  h_estimate_tot->SetMarkerSize(1.6);
-  h_estimate_tot->SetLineColor( estimate->getColor() );
-  h_estimate_tot->SetMarkerColor( estimate->getColor() );
-
   if ( doClosureTestData ) {
-    stack_tot ->Draw("histo same");
+    stack_tot ->Draw("histe1 same");
     h_mcTruth_tot->Draw("PEsame");
   }
   else
@@ -606,7 +611,7 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
 
   delete h2_axes_ratio;
   h2_axes_ratio = MT2DrawTools::getRatioAxes( 0, MT2Regions.size(), 0., 2.);
-  h2_axes_ratio->SetYTitle("Data / MC");
+  h2_axes_ratio->SetYTitle(doClosureTestData ? "Data / MC" : "Data / Pred.");
   h2_axes_ratio->Draw("");
 
   TLine* lineOne = new TLine(0, 1., MT2Regions.size(), 1.);
@@ -614,8 +619,14 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
   lineOne->Draw("same");
 
   delete h_Ratio;
-  h_Ratio = (TH1D*) ( doClosureTestData ? stack_tot->GetStack()->Last()->Clone(thisName.c_str()) : h_estimate_tot->Clone(thisName.c_str()) );
-  h_Ratio->Divide( h_mcTruth_tot );
+  if ( doClosureTestData ){
+    h_Ratio = (TH1D*) ( h_mcTruth_tot->Clone(thisName.c_str()) );
+    h_Ratio->Divide( (TH1D*)stack_tot->GetStack()->Last() );
+  }
+  else {
+    h_Ratio = (TH1D*) ( h_estimate_tot->Clone(thisName.c_str()) );
+    h_Ratio->Divide( h_mcTruth_tot );
+  }
   h_Ratio->SetMarkerStyle(20);
   h_Ratio->SetLineColor(1);
   h_Ratio->SetLineWidth(2);
