@@ -5,6 +5,7 @@
 #include "TH2D.h"
 #include "TH1D.h"
 #include "TF1.h"
+#include "THStack.h"
 #include "TFile.h"
 #include "TGraphErrors.h"
 
@@ -93,15 +94,16 @@ int main( int argc, char* argv[] ) {
   MT2Analysis<MT2Estimate>* estimateMC     = MT2Analysis<MT2Estimate>::readFromFile( mcFile  , "qcdEstimate" );
   MT2Analysis<MT2Estimate>* estimateData   = MT2Analysis<MT2Estimate>::readFromFile( dataFile, "qcdEstimate" );
 
-  mcTruth->setColor(kQCD);
-  estimateMC->setColor(kBlack);
+  mcTruth     ->setColor(kQCD  );
+  estimateMC  ->setColor(kBlack);
   estimateData->setColor(kBlack);
 
   std::string plotsDirMC = qcdESTdir + "/plotsMC";
   std::string plotsDirData = qcdESTdir + "/plotsData";
   if ( closureTest ) {
-    estimateData->setColor(kQCD  );
-    data        ->setColor(kBlack);
+    estimateData->setColor(kQCD       );
+    data        ->setColor(kBlack     );
+    nonQCD      ->setColor(kLostLepton);
     drawClosure( plotsDirMC  , estimateMC  , (MT2Analysis<MT2Estimate>*)mcTruth, cfg.lumi(), cfg.lumi() );
     drawClosure( plotsDirData, estimateData, (MT2Analysis<MT2Estimate>*)data   ,   1.0     , cfg.lumi(), (MT2Analysis<MT2Estimate>*) nonQCD);
   } 
@@ -217,6 +219,17 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
   h_estimate_tot->SetLineColor( estimate->getColor() );
   h_estimate_tot->SetMarkerColor( estimate->getColor() );
   
+  TH1D* h_nonQCD_tot = new TH1D("h_nonQCD_tot", "", (int) MT2Regions.size(), 0, (int) MT2Regions.size());
+  h_nonQCD_tot->Sumw2();
+  h_nonQCD_tot->GetYaxis()->SetTitle("Events");
+  
+  if ( doClosureTestData ){
+    h_estimate_tot->SetFillColor( estimate->getColor() );
+    h_nonQCD_tot  ->SetLineColor( nonQCD  ->getColor() );
+    h_nonQCD_tot  ->SetFillColor( nonQCD  ->getColor() );
+  }
+  THStack* stack_tot = new THStack("stack_tot","");
+
   TH1D* h_mcTruth_tot = new TH1D("h_mcTruth_tot", "", (int) MT2Regions.size(), 0, (int) MT2Regions.size());
   h_mcTruth_tot->Sumw2();
   h_mcTruth_tot->GetYaxis()->SetTitle("Events");
@@ -249,26 +262,46 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
       h_estimate->SetLineColor( estimate->getColor() );
       h_estimate->SetMarkerColor( estimate->getColor() );
 
+      THStack* stack = new THStack("stack","");
 
+      TH1D* h_nonQCD;
       if ( doClosureTestData ){ 
 	float ps = 1.;
 	if     ( iMT2->htMin() < 300. ) ps = 7000.; // prescale
 	else if( iMT2->htMin() < 500. ) ps =  180.;
 	else if( iMT2->htMin() < 600. ) ps =   60.;
-	nonQCD->get(*iMT2)->yield->Scale(lumi/ps);
-	h_estimate->Add(nonQCD->get(*iMT2)->yield); // add non-QCD mc to estimate. todo: make stack
+
+	h_nonQCD = nonQCD->get(*iMT2)->yield;
+	h_nonQCD->Scale(lumi/ps);
+	//h_estimate->Add(nonQCD->get(*iMT2)->yield); // add non-QCD mc to estimate. todo: make stack
+
+	h_estimate->SetFillColor( estimate->getColor() );
+	h_nonQCD  ->SetLineColor( nonQCD  ->getColor() );
+	h_nonQCD  ->SetFillColor( nonQCD  ->getColor() );
+	stack->Add(h_nonQCD);
+	stack->Add(h_estimate);
       }
 
       int nBins = h_estimate->GetXaxis()->GetNbins();
+      if ( closureTest )  nBins -= 1;  // remove overflow for validation in 100<mt2<200 (for both mc and data)
+
       double err_estimate;
-      if ( closureTest ) nBins -= 1;  // remove overflow for validation in 100<mt2<200 (for both mc and data)
       double int_estimate = h_estimate->IntegralAndError(1, nBins+1, err_estimate);
  
       h_estimate_tot->SetBinContent(iRegion, int_estimate);
-      h_estimate_tot->SetBinError(iRegion, err_estimate);
+      h_estimate_tot->SetBinError  (iRegion, err_estimate);
       
-
       h_estimate_tot->GetXaxis()->SetBinLabel( iRegion, niceNames[1].c_str() );
+
+      double int_nonQCD=0., err_nonQCD=0.;
+      if ( doClosureTestData ) {
+	int_nonQCD = h_nonQCD->IntegralAndError(1, nBins+1, err_nonQCD);
+ 
+	h_nonQCD_tot->SetBinContent(iRegion, int_nonQCD);
+	h_nonQCD_tot->SetBinError  (iRegion, err_nonQCD);
+	h_nonQCD_tot->GetXaxis()->SetBinLabel( iRegion, niceNames[1].c_str() );
+      }
+
       
       TCanvas* c1 = new TCanvas( "c1", "", 600, 700 );
       c1->cd();
@@ -292,6 +325,10 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
       h_mcTruth_tot->SetBinError(iRegion, err_int);
       h_mcTruth_tot->GetXaxis()->SetBinLabel( iRegion, niceNames[1].c_str() );
 
+      if ( doClosureTestData ) {
+	int_estimate += int_nonQCD;
+	err_estimate = sqrt(err_estimate*err_estimate + err_nonQCD*err_nonQCD);
+      }
       if(int_mcTruth>0)
         hPull->Fill((int_estimate-int_mcTruth)/sqrt(err_estimate*err_estimate+err_int*err_int));
 
@@ -333,17 +370,21 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
       legend->SetTextFont(42);
       legend->SetFillColor(0);
       if ( doClosureTestData ) {
-	legend->AddEntry( h_estimate, "data-driven + non-QCD", "PL" );
-	legend->AddEntry( h_mcTruth, "data", "PL" );
+	legend->AddEntry( h_nonQCD  , " non-QCD"   , "F" );
+	legend->AddEntry( h_estimate, "data-driven", "F" );
+	legend->AddEntry( h_mcTruth , "data"       , "PL" );
       }
       else{
 	legend->AddEntry( h_estimate, "data-driven", "PL" );
-	legend->AddEntry( h_mcTruth, "MC QCD", "PL" );
+	legend->AddEntry( h_mcTruth , "MC QCD"     , "PL" );
       }
 
       legend->Draw("same");
 
-      h_estimate->Draw("Pe same");
+      if  (doClosureTestData )
+	stack->Draw("histo same");
+      else
+	h_estimate->Draw("Pe same");
       h_mcTruth->Draw("Pe same");
       //      bgStack.Draw("histoE, same");
 
@@ -360,7 +401,7 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
       pad2->cd();
 
       std::string thisName = Form("%s_ratio", h_estimate->GetName());
-      TH1D* h_ratio = (TH1D*) h_estimate->Clone(thisName.c_str());
+      TH1D* h_ratio = (TH1D*) ( doClosureTestData ? stack->GetStack()->Last()->Clone(thisName.c_str()) : h_estimate->Clone(thisName.c_str()) );
       h_ratio->Divide(h_mcTruth);
       h_ratio->SetStats(0);	    
       h_ratio->SetMarkerStyle(20);
@@ -408,6 +449,11 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
 
   } // for MT2 regions
 
+
+  if ( doClosureTestData ) {
+    stack_tot->Add( h_nonQCD_tot   );
+    stack_tot->Add( h_estimate_tot );
+  }
   
   TCanvas* c2 = new TCanvas("c2", "", 1200, 600);
   c2->cd();
@@ -447,15 +493,21 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
   h_estimate_tot->SetLineColor( estimate->getColor() );
   h_estimate_tot->SetMarkerColor( estimate->getColor() );
 
-  h_estimate_tot->Draw( doClosureTestData ? "same" : "pe,same" );
+  if ( doClosureTestData ) {
+    stack_tot ->Draw("histo same");
+    h_mcTruth_tot->Draw("PEsame");
+  }
+  else
+    h_estimate_tot->Draw( "pe,same" );
 
   TLegend* legend = new TLegend( 0.18, 0.7, 0.32, 0.82 );
   legend->SetTextSize(0.038);
   legend->SetTextFont(42);
   legend->SetFillColor(0);
   if ( doClosureTestData ) {
-    legend->AddEntry( h_estimate_tot, "data-driven + non-QCD", "L" );
-    legend->AddEntry( h_mcTruth_tot , "data"                 , "PL" );
+    legend->AddEntry( h_nonQCD_tot  , "non-QCD MC" , "F" );
+    legend->AddEntry( h_estimate_tot, "data-driven", "F" );
+    legend->AddEntry( h_mcTruth_tot , "data"       , "PL" );
   }
   else{
     legend->AddEntry( h_estimate_tot, "data-driven", "PL" );
@@ -512,8 +564,8 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
   std::string thisName = Form("%s_ratio", h_estimate_tot->GetName());
   TH1D* h_Ratio = (TH1D*) h_estimate_tot->Clone(thisName.c_str());
   for( int iBin=1; iBin<h_Ratio->GetXaxis()->GetNbins()+1; ++iBin ) {
-    float mc = h_estimate_tot->GetBinContent(iBin);
-    float mc_err = h_estimate_tot->GetBinError(iBin);
+    float mc = doClosureTestData ? ((TH1F*)stack_tot->GetStack()->Last())->GetBinContent(iBin) : h_estimate_tot->GetBinContent(iBin);
+    float mc_err = doClosureTestData ?  ((TH1F*)stack_tot->GetStack()->Last())->GetBinError(iBin) : h_estimate_tot->GetBinError(iBin);
     float est = h_mcTruth_tot->GetBinContent(iBin);
     float est_err = h_mcTruth_tot->GetBinError(iBin);
     float denom = sqrt( mc_err*mc_err + est_err*est_err );
@@ -562,7 +614,7 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
   lineOne->Draw("same");
 
   delete h_Ratio;
-  h_Ratio = (TH1D*) h_estimate_tot->Clone(thisName.c_str());
+  h_Ratio = (TH1D*) ( doClosureTestData ? stack_tot->GetStack()->Last()->Clone(thisName.c_str()) : h_estimate_tot->Clone(thisName.c_str()) );
   h_Ratio->Divide( h_mcTruth_tot );
   h_Ratio->SetMarkerStyle(20);
   h_Ratio->SetLineColor(1);
@@ -605,6 +657,7 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
 
   delete h_estimate_tot;
   delete h_mcTruth_tot;
+  delete stack_tot;
   delete hPull;
   
 }
