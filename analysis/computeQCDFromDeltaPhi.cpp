@@ -513,7 +513,9 @@ void get_fJets( MT2Analysis<MT2Estimate>* fJets, MT2Analysis<MT2EstimateTree>* a
       float error_est  = thisEst->yield->GetBinError(iBin);
       float errorRel_est = error_est/val_est;
 
-      float errorRel_tot = sqrt( errorRel_est*errorRel_est + uncert[iBin-1]*uncert[iBin-1] );
+      float inflateUncert = iR->htMin() < 400. ? 2.0 : 1.0; // inflate by a factor two in the VLHT
+
+      float errorRel_tot = sqrt( errorRel_est*errorRel_est + inflateUncert*inflateUncert*uncert[iBin-1]*uncert[iBin-1] );
       thisEst->yield->SetBinError( iBin, errorRel_tot*val_est );
 
     }
@@ -533,7 +535,7 @@ void fillFromTreeAndRatio( MT2Estimate* estimate, MT2Estimate* nCR, MT2Estimate*
 
   int nBins;
   double* bins;
-  estimate->region->getBins(nBins, bins);
+  estimate->getYieldBins(nBins, bins);
 
   TProfile* hp_r = new TProfile( "r", "", nBins, bins );
   TProfile* hp_rErr = new TProfile( "rErr", "", nBins, bins );
@@ -552,13 +554,13 @@ void fillFromTreeAndRatio( MT2Estimate* estimate, MT2Estimate* nCR, MT2Estimate*
 
     float r = f1_ratio->Eval( mt2 );
 
-    weight /= prescale;
+    float ps_weight = weight/prescale;
 
-    nCR     ->yield->Fill( mt2, weight   );
-    estimate->yield->Fill( mt2, weight*r );
+    nCR     ->yield->Fill( mt2, ps_weight   );
+    estimate->yield->Fill( mt2, ps_weight*r );
 
-    hp_r->Fill( mt2, r, weight );
-    hp_rErr->Fill( mt2, h_band->GetBinError(h_band->FindBin(mt2)), weight );
+    hp_r->Fill( mt2, r, ps_weight );
+    hp_rErr->Fill( mt2, h_band->GetBinError(h_band->FindBin(mt2)), ps_weight );
 
   } // for entries
 
