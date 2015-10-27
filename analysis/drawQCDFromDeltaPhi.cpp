@@ -242,7 +242,7 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
   
   TH1D* hPull = new TH1D("hPull", "", 20, -5, 5);
   hPull->Sumw2();
-  hPull->GetXaxis()->SetTitle(doClosureTestData ? "(Data Driven - MC)/#sigma" : "(Data Driven - Pred)/#sigma");
+  hPull->GetXaxis()->SetTitle(!doClosureTestData ? "(Data Driven - MC)/#sigma" : "(Data Driven - Pred)/#sigma");
   hPull->GetYaxis()->SetTitle("Events");
   
   
@@ -611,7 +611,7 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
 
   delete h2_axes_ratio;
   h2_axes_ratio = MT2DrawTools::getRatioAxes( 0, MT2Regions.size(), 0., 2.);
-  h2_axes_ratio->SetYTitle(doClosureTestData ? "Data / MC" : "Data / Pred.");
+  h2_axes_ratio->SetYTitle(!doClosureTestData ? "Data / MC" : "Data / Pred.");
   h2_axes_ratio->Draw("");
 
   TLine* lineOne = new TLine(0, 1., MT2Regions.size(), 1.);
