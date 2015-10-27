@@ -19,10 +19,10 @@ class MT2EstimateQCD : public MT2EstimateTree {
   MT2EstimateQCD( const std::string& aname, const MT2Region& aregion );
   virtual ~MT2EstimateQCD();
 
-  void projectFromTree( const MT2EstimateTree* treeEst, const std::string& selection, const std::string& selectionDphi="" );
+  void projectFromTree( const MT2EstimateTree* treeEst, const std::string& selectionTree, const std::string& selectionDphi="" );
 
-  static MT2Analysis<MT2EstimateQCD>* makeAnalysisFromTree( const std::string& aname, MT2Analysis<MT2EstimateTree>* analysis, const std::string& selection="", const std::string& selectionDphi=""  );
-  static MT2Analysis<MT2EstimateQCD>* makeAnalysisFromInclusiveTree( const std::string& aname, const std::string& regionsSet, MT2Analysis<MT2EstimateTree>* analysis, const std::string& selection="", const std::string& selectionDphi=""  );
+  static MT2Analysis<MT2EstimateQCD>* makeAnalysisFromTree( const std::string& aname, MT2Analysis<MT2EstimateTree>* analysis, const std::string& selectionTree="", const std::string& selectionDphi=""  );
+  static MT2Analysis<MT2EstimateQCD>* makeAnalysisFromInclusiveTree( const std::string& aname, const std::string& regionsSet, MT2Analysis<MT2EstimateTree>* analysis, const std::string& selectionTree="", const std::string& selectionDphi=""  );
 
   TH1D* getRatio() const;
   TF1* getFit( const std::string& functionName, float xMin_fit, float xMax_fit );

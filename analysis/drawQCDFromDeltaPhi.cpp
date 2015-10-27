@@ -5,6 +5,7 @@
 #include "TH2D.h"
 #include "TH1D.h"
 #include "TF1.h"
+#include "THStack.h"
 #include "TFile.h"
 #include "TGraphErrors.h"
 
@@ -21,8 +22,8 @@ bool closureTest = false;
 
 
 
-void compareFractions( const MT2Config& cfg, const std::string& outputdir, const std::string& dataFile, const std::string& mcFile, const std::string& analysisName, const std::string& xaxisName, const std::string& yaxisName, bool logPlot );
-void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estimate, MT2Analysis<MT2Estimate>* mcTruth );
+void compareFractions( const MT2Config& cfg, const std::string& outputdir, const std::string& dataFile, const std::string& analysisName, const std::string& xaxisName, const std::string& yaxisName, bool logPlot, const std::string& postfix="" );
+void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estimate, MT2Analysis<MT2Estimate>* mcTruth, float scaleEst, float lumi, MT2Analysis<MT2Estimate>* nonQCD=NULL );
 
 
 int main( int argc, char* argv[] ) {
@@ -64,34 +65,52 @@ int main( int argc, char* argv[] ) {
   system( Form("mkdir -p %s", fitsDir.c_str() ));
 
 
-  std::string mcFile   = qcdCRdir + "qcdEstimateMC.root";
-  std::string dataFile = qcdCRdir + "qcdEstimateData.root";
+  std::string mcFile   = qcdESTdir + "/qcdEstimateMC.root";
+  std::string dataFile = qcdESTdir + "/qcdEstimateData.root";
 
 
-  compareFractions( cfg, outputdir, dataFile, mcFile, "f_jets", "Number of Jets", "F_{jets}", false );
-  compareFractions( cfg, outputdir, dataFile, mcFile, "r_hat", "Number of b-Jets", "#hat{r}_{b}", true );
+  compareFractions( cfg, outputdir, dataFile, "f_jets", "Number of Jets"  , "F_{jets}"   , false           );
+  compareFractions( cfg, outputdir, dataFile, "f_jets", "Number of Jets"  , "F_{jets}"   , false , "_noPS" );
+  compareFractions( cfg, outputdir, dataFile, "r_hat" , "Number of b-Jets", "#hat{r}_{b}", true            );
 
 
   MT2Analysis<MT2EstimateTree>* qcdTree_mc   = MT2Analysis<MT2EstimateTree>::readFromFile( qcdCRdir + "/mc.root",   "qcdCRtree" );
   MT2Analysis<MT2EstimateTree>* qcdTree_data = MT2Analysis<MT2EstimateTree>::readFromFile( qcdCRdir + "/data.root", "qcdCRtree" );
 
   MT2Analysis<MT2EstimateTree>* mcTruth;
-  if( closureTest ) mcTruth = MT2EstimateTree::makeAnalysisFromInclusiveTree( "data"   , cfg.regionsSet(), qcdTree_data, "id==1 && mt2>150. && mt2<200. && deltaPhiMin>0.3" ); // signal region for mcTruth
-  else              mcTruth = MT2EstimateTree::makeAnalysisFromInclusiveTree( "mcTruth", cfg.regionsSet(), qcdTree_mc  , "id>=153 && id<200 && mt2>200. && deltaPhiMin>0.3" ); // signal region for mcTruth
+
+
+  MT2Analysis<MT2EstimateTree>* data  ;
+  MT2Analysis<MT2EstimateTree>* nonQCD;
+  if( closureTest ) {
+    mcTruth = MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( "mcTruth", cfg.regionsSet(), qcdTree_mc  , "id>=152 && id<200 && mt2>100 && mt2<200. && deltaPhiMin>0.3", 4, 100, 200 ); // signal region for mcTruth
+    data    = MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( "data"   , cfg.regionsSet(), qcdTree_data, "id==1   && mt2>100. && mt2<200. && deltaPhiMin>0.3"         , 4, 100, 200 ); // signal region for data
+    nonQCD  = MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( "nonQCD" , cfg.regionsSet(), qcdTree_mc  , "id>=300 && mt2>100. && mt2<200. && deltaPhiMin>0.3"         , 4, 100, 200 ); // signal region for nonQCD mcTruth
+  }
+  else
+    mcTruth = MT2EstimateTree::makeAnalysisFromInclusiveTree( "mcTruth", cfg.regionsSet(), qcdTree_mc  , "id>=153 && id<200 && mt2>200. && deltaPhiMin>0.3" ); // signal region for mcTruth
+
 
   MT2Analysis<MT2Estimate>* estimateMC     = MT2Analysis<MT2Estimate>::readFromFile( mcFile  , "qcdEstimate" );
   MT2Analysis<MT2Estimate>* estimateData   = MT2Analysis<MT2Estimate>::readFromFile( dataFile, "qcdEstimate" );
 
-  mcTruth->setColor(kQCD);
-  estimateMC->setColor(kBlack);
+  mcTruth     ->setColor(kQCD  );
+  estimateMC  ->setColor(kBlack);
   estimateData->setColor(kBlack);
 
   std::string plotsDirMC = qcdESTdir + "/plotsMC";
-  drawClosure( plotsDirMC, estimateMC, (MT2Analysis<MT2Estimate>*)mcTruth );
-
   std::string plotsDirData = qcdESTdir + "/plotsData";
-  drawClosure( plotsDirData, estimateData, (MT2Analysis<MT2Estimate>*)mcTruth );
-
+  if ( closureTest ) {
+    estimateData->setColor(kQCD       );
+    data        ->setColor(kBlack     );
+    nonQCD      ->setColor(kLostLepton);
+    drawClosure( plotsDirMC  , estimateMC  , (MT2Analysis<MT2Estimate>*)mcTruth, cfg.lumi(), cfg.lumi() );
+    drawClosure( plotsDirData, estimateData, (MT2Analysis<MT2Estimate>*)data   ,   1.0     , cfg.lumi(), (MT2Analysis<MT2Estimate>*) nonQCD);
+  } 
+  else {
+    drawClosure( plotsDirMC  , estimateMC  , (MT2Analysis<MT2Estimate>*)mcTruth, cfg.lumi(), cfg.lumi() );
+    drawClosure( plotsDirData, estimateData, (MT2Analysis<MT2Estimate>*)mcTruth,   1.0     , cfg.lumi() );
+  }
 
 
   return 0;
@@ -103,10 +122,10 @@ int main( int argc, char* argv[] ) {
  
 
 
-void compareFractions( const MT2Config& cfg, const std::string& outputdir, const std::string& dataFile, const std::string& mcFile, const std::string& analysisName, const std::string& xaxisName, const std::string& yaxisName, bool logPlot ) {
+void compareFractions( const MT2Config& cfg, const std::string& outputdir, const std::string& dataFile, const std::string& analysisName, const std::string& xaxisName, const std::string& yaxisName, bool logPlot, const std::string& postfix ) {
 
-  MT2Analysis<MT2Estimate>* fraction_mc   = MT2Analysis<MT2Estimate>::readFromFile(mcFile  , analysisName);
-  MT2Analysis<MT2Estimate>* fraction_data = MT2Analysis<MT2Estimate>::readFromFile(dataFile, analysisName);
+  MT2Analysis<MT2Estimate>* fraction_mc   = MT2Analysis<MT2Estimate>::readFromFile(dataFile, analysisName+"_mc");
+  MT2Analysis<MT2Estimate>* fraction_data = MT2Analysis<MT2Estimate>::readFromFile(dataFile, analysisName+"_data"+postfix.c_str());
 
 
   std::set<MT2Region> regions = fraction_data->getRegions();
@@ -143,7 +162,7 @@ void compareFractions( const MT2Config& cfg, const std::string& outputdir, const
     h1_data->SetLineWidth(2);
 
     h1_mcBand->Draw("e2 same");
-    h1_mc  ->Draw("histo norm same");
+    h1_mc  ->Draw("hist norm same");
     h1_data->Draw("p same norm");
 
 
@@ -167,8 +186,8 @@ void compareFractions( const MT2Config& cfg, const std::string& outputdir, const
 
     gPad->RedrawAxis();
 
-    c1->SaveAs( Form("%s/%s_%s.eps", outputdir.c_str(), analysisName.c_str(), iR->getName().c_str()) );
-    c1->SaveAs( Form("%s/%s_%s.pdf", outputdir.c_str(), analysisName.c_str(), iR->getName().c_str()) );
+    c1->SaveAs( Form("%s/%s_%s%s.eps", outputdir.c_str(), analysisName.c_str(), iR->getName().c_str(), postfix.c_str()) );
+    c1->SaveAs( Form("%s/%s_%s%s.pdf", outputdir.c_str(), analysisName.c_str(), iR->getName().c_str(), postfix.c_str()) );
 
     delete c1;
     delete h2_axes;
@@ -182,8 +201,10 @@ void compareFractions( const MT2Config& cfg, const std::string& outputdir, const
 
 
 
-void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estimate, MT2Analysis<MT2Estimate>* mcTruth ) {
+void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estimate, MT2Analysis<MT2Estimate>* mcTruth , float scaleEst, float lumi, MT2Analysis<MT2Estimate>* nonQCD) {
 
+  bool doClosureTestData = false;
+  if ( nonQCD != NULL ) doClosureTestData = true;
 
   system(Form("mkdir -p %s", outputdir.c_str()));
 
@@ -198,6 +219,18 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
   h_estimate_tot->SetLineColor( estimate->getColor() );
   h_estimate_tot->SetMarkerColor( estimate->getColor() );
   
+  TH1D* h_nonQCD_tot = new TH1D("h_nonQCD_tot", "", (int) MT2Regions.size(), 0, (int) MT2Regions.size());
+  h_nonQCD_tot->Sumw2();
+  h_nonQCD_tot->GetYaxis()->SetTitle("Events");
+  
+  if ( doClosureTestData ){
+    h_estimate_tot->SetMarkerSize(0);
+    h_estimate_tot->SetFillColor( estimate->getColor() );
+    h_nonQCD_tot  ->SetLineColor( nonQCD  ->getColor() );
+    h_nonQCD_tot  ->SetFillColor( nonQCD  ->getColor() );
+  }
+  THStack* stack_tot = new THStack("stack_tot","");
+
   TH1D* h_mcTruth_tot = new TH1D("h_mcTruth_tot", "", (int) MT2Regions.size(), 0, (int) MT2Regions.size());
   h_mcTruth_tot->Sumw2();
   h_mcTruth_tot->GetYaxis()->SetTitle("Events");
@@ -209,12 +242,17 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
   
   TH1D* hPull = new TH1D("hPull", "", 20, -5, 5);
   hPull->Sumw2();
-  hPull->GetXaxis()->SetTitle("(Data Driven - MC)/#sigma");
+  hPull->GetXaxis()->SetTitle(doClosureTestData ? "(Data Driven - MC)/#sigma" : "(Data Driven - Pred)/#sigma");
   hPull->GetYaxis()->SetTitle("Events");
   
   
   int iRegion = 1;
   for( std::set<MT2Region>::iterator iMT2 = MT2Regions.begin(); iMT2!=MT2Regions.end(); ++iMT2 ) {
+
+
+      estimate->get(*iMT2)->yield->Scale(scaleEst);
+      if ( !doClosureTestData ) // mcTruth is data in this case
+	mcTruth ->get(*iMT2)->yield->Scale(lumi);
 
       std::string fullPath = outputdir;
 
@@ -226,16 +264,47 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
       h_estimate->SetLineColor( estimate->getColor() );
       h_estimate->SetMarkerColor( estimate->getColor() );
 
+      THStack* stack = new THStack("stack","");
+
+      TH1D* h_nonQCD;
+      if ( doClosureTestData ){ 
+	float ps = 1.;
+	if     ( iMT2->htMin() < 300. ) ps = 7000.; // prescale
+	else if( iMT2->htMin() < 500. ) ps =  180.;
+	else if( iMT2->htMin() < 600. ) ps =   60.;
+
+	h_nonQCD = nonQCD->get(*iMT2)->yield;
+	h_nonQCD->Scale(lumi/ps);
+	//h_estimate->Add(nonQCD->get(*iMT2)->yield); // add non-QCD mc to estimate. todo: make stack
+
+	h_estimate->SetMarkerSize(0);
+	h_estimate->SetFillColor ( estimate->getColor() );
+	h_nonQCD  ->SetLineColor ( nonQCD  ->getColor() );
+	h_nonQCD  ->SetFillColor ( nonQCD  ->getColor() );
+	stack->Add(h_nonQCD);
+	stack->Add(h_estimate);
+      }
 
       int nBins = h_estimate->GetXaxis()->GetNbins();
+      if ( closureTest )  nBins -= 1;  // remove overflow for validation in 100<mt2<200 (for both mc and data)
+
       double err_estimate;
       double int_estimate = h_estimate->IntegralAndError(1, nBins+1, err_estimate);
  
       h_estimate_tot->SetBinContent(iRegion, int_estimate);
-      h_estimate_tot->SetBinError(iRegion, err_estimate);
+      h_estimate_tot->SetBinError  (iRegion, err_estimate);
       
-
       h_estimate_tot->GetXaxis()->SetBinLabel( iRegion, niceNames[1].c_str() );
+
+      double int_nonQCD=0., err_nonQCD=0.;
+      if ( doClosureTestData ) {
+	int_nonQCD = h_nonQCD->IntegralAndError(1, nBins+1, err_nonQCD);
+ 
+	h_nonQCD_tot->SetBinContent(iRegion, int_nonQCD);
+	h_nonQCD_tot->SetBinError  (iRegion, err_nonQCD);
+	h_nonQCD_tot->GetXaxis()->SetBinLabel( iRegion, niceNames[1].c_str() );
+      }
+
       
       TCanvas* c1 = new TCanvas( "c1", "", 600, 700 );
       c1->cd();
@@ -259,6 +328,10 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
       h_mcTruth_tot->SetBinError(iRegion, err_int);
       h_mcTruth_tot->GetXaxis()->SetBinLabel( iRegion, niceNames[1].c_str() );
 
+      if ( doClosureTestData ) {
+	int_estimate += int_nonQCD;
+	err_estimate = sqrt(err_estimate*err_estimate + err_nonQCD*err_nonQCD);
+      }
       if(int_mcTruth>0)
         hPull->Fill((int_estimate-int_mcTruth)/sqrt(err_estimate*err_estimate+err_int*err_int));
 
@@ -299,13 +372,23 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
       legend->SetTextSize(0.038);
       legend->SetTextFont(42);
       legend->SetFillColor(0);
-      legend->AddEntry( h_estimate, "data-driven", "P" );
-      legend->AddEntry( h_mcTruth, "MC QCD", "P" );
+      if ( doClosureTestData ) {
+	legend->AddEntry( h_nonQCD  , " non-QCD"   , "F" );
+	legend->AddEntry( h_estimate, "data-driven", "F" );
+	legend->AddEntry( h_mcTruth , "data"       , "PL" );
+      }
+      else{
+	legend->AddEntry( h_estimate, "data-driven", "PL" );
+	legend->AddEntry( h_mcTruth , "MC QCD"     , "PL" );
+      }
 
       legend->Draw("same");
 
-      h_estimate->Draw("P same");
-      h_mcTruth->Draw("P same");
+      if  (doClosureTestData )
+	stack->Draw("histe1 same");
+      else
+	h_estimate->Draw("Pe same");
+      h_mcTruth->Draw("Pe same");
       //      bgStack.Draw("histoE, same");
 
       TPaveText* labelTop = MT2DrawTools::getLabelTopSimulation();
@@ -321,8 +404,15 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
       pad2->cd();
 
       std::string thisName = Form("%s_ratio", h_estimate->GetName());
-      TH1D* h_ratio = (TH1D*) h_estimate->Clone(thisName.c_str());
-      h_ratio->Divide(h_mcTruth);
+      TH1D* h_ratio;
+      if ( doClosureTestData ) {
+	h_ratio = (TH1D*) ( h_mcTruth->Clone(thisName.c_str()) );
+	h_ratio->Divide((TH1D*)stack->GetStack()->Last());
+      }
+      else {
+	h_ratio = (TH1D*) ( h_estimate->Clone(thisName.c_str()) );
+	h_ratio->Divide(h_mcTruth);
+      }
       h_ratio->SetStats(0);	    
       h_ratio->SetMarkerStyle(20);
       h_ratio->SetLineColor(1);
@@ -369,6 +459,11 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
 
   } // for MT2 regions
 
+
+  if ( doClosureTestData ) {
+    stack_tot->Add( h_nonQCD_tot   );
+    stack_tot->Add( h_estimate_tot );
+  }
   
   TCanvas* c2 = new TCanvas("c2", "", 1200, 600);
   c2->cd();
@@ -403,19 +498,26 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
   h_mcTruth_tot->Draw("PE");
 
 
-  h_estimate_tot->SetMarkerStyle(20);
-  h_estimate_tot->SetMarkerSize(1.6);
-  h_estimate_tot->SetLineColor( estimate->getColor() );
-  h_estimate_tot->SetMarkerColor( estimate->getColor() );
-
-  h_estimate_tot->Draw("pe,same");
+  if ( doClosureTestData ) {
+    stack_tot ->Draw("histe1 same");
+    h_mcTruth_tot->Draw("PEsame");
+  }
+  else
+    h_estimate_tot->Draw( "pe,same" );
 
   TLegend* legend = new TLegend( 0.18, 0.7, 0.32, 0.82 );
   legend->SetTextSize(0.038);
   legend->SetTextFont(42);
   legend->SetFillColor(0);
-  legend->AddEntry( h_estimate_tot, "data-driven", "PL" );
-  legend->AddEntry( h_mcTruth_tot, "QCD MC", "PL" );
+  if ( doClosureTestData ) {
+    legend->AddEntry( h_nonQCD_tot  , "non-QCD MC" , "F" );
+    legend->AddEntry( h_estimate_tot, "data-driven", "F" );
+    legend->AddEntry( h_mcTruth_tot , "data"       , "PL" );
+  }
+  else{
+    legend->AddEntry( h_estimate_tot, "data-driven", "PL" );
+    legend->AddEntry( h_mcTruth_tot , "QCD MC"     , "PL" );
+  }
 
   legend->Draw("same");
 
@@ -443,7 +545,7 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
   TPaveText* htBox[nHTRegions];
   for( int iHT = 0; iHT < nHTRegions; ++iHT){
     
-    htBox[iHT] = new TPaveText(0.14+0.16*iHT, 0.9-0.06, 0.32+0.16*iHT, 0.9, "brNDC");
+    htBox[iHT] = new TPaveText(0.20+0.15*iHT, 0.9-0.06, 0.32+0.15*iHT, 0.9, "brNDC");
     htBox[iHT]->AddText( htRegions[iHT].c_str() );
     
     htBox[iHT]->SetBorderSize(0);
@@ -467,8 +569,8 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
   std::string thisName = Form("%s_ratio", h_estimate_tot->GetName());
   TH1D* h_Ratio = (TH1D*) h_estimate_tot->Clone(thisName.c_str());
   for( int iBin=1; iBin<h_Ratio->GetXaxis()->GetNbins()+1; ++iBin ) {
-    float mc = h_estimate_tot->GetBinContent(iBin);
-    float mc_err = h_estimate_tot->GetBinError(iBin);
+    float mc = doClosureTestData ? ((TH1F*)stack_tot->GetStack()->Last())->GetBinContent(iBin) : h_estimate_tot->GetBinContent(iBin);
+    float mc_err = doClosureTestData ?  ((TH1F*)stack_tot->GetStack()->Last())->GetBinError(iBin) : h_estimate_tot->GetBinError(iBin);
     float est = h_mcTruth_tot->GetBinContent(iBin);
     float est_err = h_mcTruth_tot->GetBinError(iBin);
     float denom = sqrt( mc_err*mc_err + est_err*est_err );
@@ -509,7 +611,7 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
 
   delete h2_axes_ratio;
   h2_axes_ratio = MT2DrawTools::getRatioAxes( 0, MT2Regions.size(), 0., 2.);
-  h2_axes_ratio->SetYTitle("Data / MC");
+  h2_axes_ratio->SetYTitle(doClosureTestData ? "Data / MC" : "Data / Pred.");
   h2_axes_ratio->Draw("");
 
   TLine* lineOne = new TLine(0, 1., MT2Regions.size(), 1.);
@@ -517,8 +619,14 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
   lineOne->Draw("same");
 
   delete h_Ratio;
-  h_Ratio = (TH1D*) h_estimate_tot->Clone(thisName.c_str());
-  h_Ratio->Divide( h_mcTruth_tot );
+  if ( doClosureTestData ){
+    h_Ratio = (TH1D*) ( h_mcTruth_tot->Clone(thisName.c_str()) );
+    h_Ratio->Divide( (TH1D*)stack_tot->GetStack()->Last() );
+  }
+  else {
+    h_Ratio = (TH1D*) ( h_estimate_tot->Clone(thisName.c_str()) );
+    h_Ratio->Divide( h_mcTruth_tot );
+  }
   h_Ratio->SetMarkerStyle(20);
   h_Ratio->SetLineColor(1);
   h_Ratio->SetLineWidth(2);
@@ -560,6 +668,7 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
 
   delete h_estimate_tot;
   delete h_mcTruth_tot;
+  delete stack_tot;
   delete hPull;
   
 }
