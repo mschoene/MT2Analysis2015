@@ -291,7 +291,6 @@ int main( int argc, char* argv[] ) {
       else if( iR->htMin() < 600. ) ps =   60.;
     }
 
-    std::cout << iR->htRegion()->getNiceName() << "; " << iR->sigRegion()->getNiceName() << std::endl;
     fillFromTreeAndRatio( this_estimate  , this_nCR       , this_r_effective , matchedEstimate->tree     , fits[*fit_matchedRegion], bands[*fit_matchedRegion]     );
     fillFromTreeAndRatio( this_est_mcRest, this_nCR_mcRest, this_r_eff_mcRest, matchedEstimate_rest->tree, fits[*fit_matchedRegion], bands[*fit_matchedRegion] , ps);
     //fillFromTreeAndRatio( this_estimate, this_nCR, this_r_effective, matchedEstimate_qcd->tree, f1_ratio, h_band );
@@ -579,12 +578,6 @@ void fillFromTreeAndRatio( MT2Estimate* estimate, MT2Estimate* nCR, MT2Estimate*
       r          = f1_ratio->Eval( mt2 );
       error_fit  = h_band->GetBinError(h_band->FindBin(mt2));
       error_mean = 0.0;
-
-      if (mt2>700) 
-	std::cout << "mt2 = " << mt2 
-		  << ", r = " << r
-		  << ", error_fit = " << error_fit
-		  << std::endl;
     }
 
     // fill r_effective
