@@ -291,6 +291,7 @@ int main( int argc, char* argv[] ) {
       else if( iR->htMin() < 600. ) ps =   60.;
     }
 
+    std::cout << iR->htRegion()->getNiceName() << "; " << iR->sigRegion()->getNiceName() << std::endl;
     fillFromTreeAndRatio( this_estimate  , this_nCR       , this_r_effective , matchedEstimate->tree     , fits[*fit_matchedRegion], bands[*fit_matchedRegion]     );
     fillFromTreeAndRatio( this_est_mcRest, this_nCR_mcRest, this_r_eff_mcRest, matchedEstimate_rest->tree, fits[*fit_matchedRegion], bands[*fit_matchedRegion] , ps);
     //fillFromTreeAndRatio( this_estimate, this_nCR, this_r_effective, matchedEstimate_qcd->tree, f1_ratio, h_band );
@@ -568,13 +569,28 @@ void fillFromTreeAndRatio( MT2Estimate* estimate, MT2Estimate* nCR, MT2Estimate*
 
   for( int iBin=1; iBin<nBins+1; ++iBin ) {
 
-    float r = hp_r->GetBinContent(iBin);
-    r_effective->yield->SetBinContent( iBin, hp_r   ->GetBinContent(iBin) );
-
+    float r          = hp_r   ->GetBinContent(iBin);
+    float error_mean = hp_r   ->GetBinError  (iBin);
     float error_fit  = hp_rErr->GetBinContent(iBin);
 
-    // add fit error in quadrature to R
-    float error_mean = hp_r   ->GetBinError  (iBin);
+    // if zero events in control region, take r from lower mt2 edge
+    if ( nCR->yield->GetBinContent(iBin)==0 ){
+      float mt2  = nCR->yield->GetXaxis()->GetBinLowEdge(iBin);
+      r          = f1_ratio->Eval( mt2 );
+      error_fit  = h_band->GetBinError(h_band->FindBin(mt2));
+      error_mean = 0.0;
+
+      if (mt2>700) 
+	std::cout << "mt2 = " << mt2 
+		  << ", r = " << r
+		  << ", error_fit = " << error_fit
+		  << std::endl;
+    }
+
+    // fill r_effective
+    r_effective->yield->SetBinContent( iBin, r );
+
+    // add fit error in quadrature to R and fill r_effective error
     float error_r    = sqrt(error_fit*error_fit + error_mean*error_mean);
     r_effective->yield->SetBinError(iBin, error_r);
 
@@ -735,11 +751,16 @@ void multiplyHisto( TH1D* histo, TH1D* other ) {
 
   for( int iBin=1; iBin<histo->GetXaxis()->GetNbins()+1; ++iBin ) {
 
+    // val2==0 means zero purity, i.e, nCR=0, then don't modifiy original histo
+    // 1. it won't change estimate that was zero in any case
+    // 2. we keep the r_eff from the lower mt2 edge
+    float val2     = other->GetBinContent(iBin);
+    if ( val2==0 )   continue;
+
     float val1     = histo->GetBinContent(iBin);
     float val1_err = histo->GetBinError  (iBin);
     float val1_errRel = val1_err/val1;
 
-    float val2     = other->GetBinContent(iBin);
     float val2_err = other->GetBinError  (iBin);
     float val2_errRel = val2_err/val2;
 
