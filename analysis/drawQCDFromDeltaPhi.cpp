@@ -281,7 +281,8 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
 	h_estimate->SetFillColor ( estimate->getColor() );
 	h_nonQCD  ->SetLineColor ( nonQCD  ->getColor() );
 	h_nonQCD  ->SetFillColor ( nonQCD  ->getColor() );
-	stack->Add(h_nonQCD);
+	if ( iMT2->htMin() >300 ) // don't fill for the VLHT
+	  stack->Add(h_nonQCD);
 	stack->Add(h_estimate);
       }
 
@@ -300,8 +301,10 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
       if ( doClosureTestData ) {
 	int_nonQCD = h_nonQCD->IntegralAndError(1, nBins+1, err_nonQCD);
  
-	h_nonQCD_tot->SetBinContent(iRegion, int_nonQCD);
-	h_nonQCD_tot->SetBinError  (iRegion, err_nonQCD);
+	if ( iMT2->htMin()>300 ){
+	  h_nonQCD_tot->SetBinContent(iRegion, int_nonQCD);
+	  h_nonQCD_tot->SetBinError  (iRegion, err_nonQCD);
+	}
 	h_nonQCD_tot->GetXaxis()->SetBinLabel( iRegion, niceNames[1].c_str() );
       }
 
