@@ -43,6 +43,8 @@ class MT2Estimate {
     return region->getBins(nBins, bins);
   }
 
+  void getYieldBins( int& nBins, double*& bins ) const;
+
   MT2HTRegion* htRegion() const {
     return region->htRegion();
   }
