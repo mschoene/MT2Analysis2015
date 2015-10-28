@@ -391,7 +391,12 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
       h_mcTruth->Draw("Pe same");
       //      bgStack.Draw("histoE, same");
 
-      TPaveText* labelTop = MT2DrawTools::getLabelTopSimulation();
+
+      TPaveText* labelTop;
+      if ( scaleEst==1.0 )
+	labelTop = MT2DrawTools::getLabelTop( lumi );
+      else
+	labelTop = MT2DrawTools::getLabelTopSimulation();
       labelTop->Draw("same");
 
       gPad->RedrawAxis();
@@ -521,7 +526,12 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
 
   legend->Draw("same");
 
-  TPaveText* labelTop = MT2DrawTools::getLabelTopSimulation();
+  
+  TPaveText* labelTop;
+  if ( scaleEst==1.0 )
+    labelTop = MT2DrawTools::getLabelTop( lumi );
+  else
+    labelTop = MT2DrawTools::getLabelTopSimulation();
   labelTop->Draw("same");
   
   TLine* lHT[4];
@@ -641,6 +651,7 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
   c2->SaveAs( Form("%s/closure_allRegions_ratio.pdf", outputdir.c_str()) );
   c2->SaveAs( Form("%s/closure_allRegions_ratio.eps", outputdir.c_str()) );
 
+  //h_estimate_tot->SaveAs("QCDdataDriven_estimate_dPhi.root");
 
   TCanvas* c3 = new TCanvas("c3", "", 600, 600);
   c3->cd();
