@@ -18,7 +18,7 @@
 
 
 
-bool closureTest = true;
+bool closureTest = false;
 
 
 
@@ -249,6 +249,11 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
   hPull->GetXaxis()->SetTitle(!doClosureTestData ? "(Data Driven - MC)/#sigma" : "(Data - Estimate)/#sigma");
   hPull->GetYaxis()->SetTitle("Events");
   
+  TH1D* hPull_int = new TH1D("hPull_int", "", 20, -5, 5);
+  hPull_int->Sumw2();
+  hPull_int->GetXaxis()->SetTitle(!doClosureTestData ? "(Data Driven - MC)/#sigma" : "(Data - Estimate)/#sigma");
+  hPull_int->GetYaxis()->SetTitle("Events");
+  
   
   int iRegion = 1;
   for( std::set<MT2Region>::iterator iMT2 = MT2Regions.begin(); iMT2!=MT2Regions.end(); ++iMT2 ) {
@@ -339,8 +344,17 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
 	err_estimate = sqrt(err_estimate*err_estimate + err_nonQCD*err_nonQCD);
       }
       if(int_mcTruth>0)
-        hPull->Fill((int_estimate-int_mcTruth)/sqrt(err_estimate*err_estimate+err_int*err_int));
+        hPull_int->Fill((int_estimate-int_mcTruth)/sqrt(err_estimate*err_estimate+err_int*err_int));
 
+      for (int iBin=1; iBin<=h_mcTruth->GetNbinsX(); iBin++){
+	double vEst = (!doClosureTestData) ? h_estimate->GetBinContent(iBin) : ((TH1F*)stack->GetStack()->Last())->GetBinContent(iBin);
+	double eEst = (!doClosureTestData) ? h_estimate->GetBinError  (iBin) : ((TH1F*)stack->GetStack()->Last())->GetBinContent(iBin);
+	double vPre = h_mcTruth ->GetBinContent(iBin);
+	double ePre = h_mcTruth ->GetBinError  (iBin);
+	
+	if ( vPre>0 && eEst+ePre != 0 )
+	  hPull->Fill( ( doClosureTestData ? (vPre-vEst) : (vEst-vPre) )/sqrt(eEst*eEst + ePre*ePre) );
+      }
 
       float xMin = h_estimate->GetXaxis()->GetXmin();
       float xMax = h_estimate->GetXaxis()->GetXmax();
@@ -728,10 +742,10 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
 
   TCanvas* c3 = new TCanvas("c3", "", 600, 600);
   c3->cd();
-  hPull->SetStats(1110);
+  hPull_int->SetStats(1110);
   TF1* f1_gaus = new TF1("f1_pull", "gaus", -2., 2.);
   f1_gaus->SetLineColor(kRed);
-  hPull->Fit( f1_gaus, "QRL" );
+  hPull_int->Fit( f1_gaus, "QRL" );
   TPaveText* fitPars = new TPaveText( 0.2, 0.7, 0.5, 0.9, "brNDC" );
   fitPars->SetTextSize(0.03);
   fitPars->SetTextAlign(11);
@@ -740,24 +754,47 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
   fitPars->AddText(Form("Mean : %.2f +/- %.2f", f1_gaus->GetParameter(1), f1_gaus->GetParError(1) ));
   fitPars->AddText(Form("Sigma: %.2f +/- %.2f", f1_gaus->GetParameter(2), f1_gaus->GetParError(2) ));
   fitPars->Draw("same");
-  hPull->Draw("hist same");
+  hPull_int->Draw("hist same");
   f1_gaus->Draw("l same");
 
-  filename = Form("closure%s_pull_%s", closureTest==false ? "SR" : "VR", scaleEst==1.0 ? "data" : "mc");
+  filename = Form("closure%s_pull_int_%s", closureTest==false ? "SR" : "VR", scaleEst==1.0 ? "data" : "mc");
   c3->SaveAs( Form("%s/eps/%s.eps"  , outputdir.c_str(), filename.Data()) );
   c3->SaveAs( Form("%s/pdf/%s.pdf"  , outputdir.c_str(), filename.Data()) );
   c3->SaveAs( Form("%s/C/%s.C"      , outputdir.c_str(), filename.Data()) );
   c3->SaveAs( Form("%s/root/%s.root", outputdir.c_str(), filename.Data()) );
 
+  TCanvas* c4 = new TCanvas("c4", "", 600, 600);
+  c4->cd();
+  hPull->SetStats(1110);
+  f1_gaus->SetLineColor(kRed);
+  hPull->Fit( f1_gaus, "QRL" );
+  TPaveText* fitPars2 = new TPaveText( 0.2, 0.7, 0.5, 0.9, "brNDC" );
+  fitPars2->SetTextSize(0.03);
+  fitPars2->SetTextAlign(11);
+  fitPars2->SetFillColor(0);
+  fitPars2->AddText("Gaussian Fit:");
+  fitPars2->AddText(Form("Mean : %.2f +/- %.2f", f1_gaus->GetParameter(1), f1_gaus->GetParError(1) ));
+  fitPars2->AddText(Form("Sigma: %.2f +/- %.2f", f1_gaus->GetParameter(2), f1_gaus->GetParError(2) ));
+  fitPars2->Draw("same");
+  hPull->Draw("hist same");
+  f1_gaus->Draw("l same");
+
+  filename = Form("closure%s_pull_%s", closureTest==false ? "SR" : "VR", scaleEst==1.0 ? "data" : "mc");
+  c4->SaveAs( Form("%s/eps/%s.eps"  , outputdir.c_str(), filename.Data()) );
+  c4->SaveAs( Form("%s/pdf/%s.pdf"  , outputdir.c_str(), filename.Data()) );
+  c4->SaveAs( Form("%s/C/%s.C"      , outputdir.c_str(), filename.Data()) );
+  c4->SaveAs( Form("%s/root/%s.root", outputdir.c_str(), filename.Data()) );
+
 
   delete c2;
   delete c3;
+  delete c4;
   delete h2_axes_ratio;
 
   delete h_estimate_tot;
   delete h_mcTruth_tot;
   delete stack_tot;
-  delete hPull;
+  delete hPull_int;
   
 }
 
