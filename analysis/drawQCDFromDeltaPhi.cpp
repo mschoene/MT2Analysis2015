@@ -18,7 +18,7 @@
 
 
 
-bool closureTest = false;
+bool closureTest = true;
 
 
 
@@ -227,10 +227,11 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
   h_nonQCD_tot->GetYaxis()->SetTitle("Events");
   
   if ( doClosureTestData ){
-    h_estimate_tot->SetMarkerSize(0);
-    h_estimate_tot->SetFillColor( estimate->getColor() );
-    h_nonQCD_tot  ->SetLineColor( nonQCD  ->getColor() );
-    h_nonQCD_tot  ->SetFillColor( nonQCD  ->getColor() );
+    h_estimate_tot->SetMarkerStyle(1);
+    h_estimate_tot->SetFillColor  (estimate->getColor());
+    h_nonQCD_tot  ->SetLineColor  (nonQCD  ->getColor());
+    h_nonQCD_tot  ->SetFillColor  (nonQCD  ->getColor());
+    h_nonQCD_tot  ->SetMarkerSize (0);
   }
   THStack* stack_tot = new THStack("stack_tot","");
 
@@ -245,7 +246,7 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
   
   TH1D* hPull = new TH1D("hPull", "", 20, -5, 5);
   hPull->Sumw2();
-  hPull->GetXaxis()->SetTitle(!doClosureTestData ? "(Data Driven - MC)/#sigma" : "(Data Driven - Pred)/#sigma");
+  hPull->GetXaxis()->SetTitle(!doClosureTestData ? "(Data Driven - MC)/#sigma" : "(Data - Estimate)/#sigma");
   hPull->GetYaxis()->SetTitle("Events");
   
   
@@ -278,10 +279,11 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
 	h_nonQCD->Scale(lumi/ps);
 	//h_estimate->Add(nonQCD->get(*iMT2)->yield); // add non-QCD mc to estimate. todo: make stack
 
-	h_estimate->SetMarkerSize(0);
-	h_estimate->SetFillColor ( estimate->getColor() );
-	h_nonQCD  ->SetLineColor ( nonQCD  ->getColor() );
-	h_nonQCD  ->SetFillColor ( nonQCD  ->getColor() );
+	h_estimate->SetMarkerStyle(1);
+	h_estimate->SetFillColor  (estimate->getColor());
+	h_nonQCD  ->SetLineColor  (nonQCD  ->getColor());
+	h_nonQCD  ->SetFillColor  (nonQCD  ->getColor());
+	h_nonQCD  ->SetMarkerSize (0);
 	if ( iMT2->htMin() >300 ) // don't fill for the VLHT
 	  stack->Add(h_nonQCD);
 	stack->Add(h_estimate);
@@ -441,8 +443,8 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
       thisName =  Form("%s_band", h_estimate->GetName());
       TH1D* h_band = (TH1D*)h_estimate->Clone(thisName.c_str());
       h_band->SetMarkerSize(0);
-      h_band->SetFillColor (kQCD);
-      h_band->SetFillStyle (3002);
+      h_band->SetFillColor (kQCD-4);
+      h_band->SetFillStyle (3001);
       for ( int iBin=1; iBin <= h_estimate->GetNbinsX(); iBin++){
 	h_band->SetBinContent(iBin,1);
 	double error;
@@ -524,6 +526,10 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
   h_mcTruth_tot->GetXaxis()->SetRangeUser(0, (int) MT2Regions.size());
   h_mcTruth_tot->GetYaxis()->SetRangeUser(yMin, yMax);
   h_mcTruth_tot->GetXaxis()->LabelsOption("v");
+
+  if ( doClosureTestData )
+    h_mcTruth_tot->GetXaxis()->SetRange(12,55);
+
   h_mcTruth_tot->Draw("PE");
 
 
@@ -565,12 +571,14 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
     lHT[iHT-1]->SetLineStyle(3);
     lHT[iHT-1]->SetLineWidth(2);
 
+    if ( doClosureTestData && iHT==1) continue;
     lHT[iHT-1]->Draw("same");
   }
 
   int nHTRegions = 5;
   std::vector< std::string > htRegions;
-  htRegions.push_back("very low H_{T}");
+  if ( !doClosureTestData )
+    htRegions.push_back("very low H_{T}");
   htRegions.push_back("low H_{T}");
   htRegions.push_back("medium H_{T}");
   htRegions.push_back("high H_{T}");
@@ -579,7 +587,13 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
   TPaveText* htBox[nHTRegions];
   for( int iHT = 0; iHT < nHTRegions; ++iHT){
     
-    htBox[iHT] = new TPaveText(0.20+0.15*iHT, 0.9-0.06, 0.32+0.15*iHT, 0.9, "brNDC");
+    if ( !doClosureTestData )
+      htBox[iHT] = new TPaveText(0.20+0.15*iHT, 0.9-0.06, 0.32+0.15*iHT, 0.9, "brNDC");
+    else {
+      htBox[iHT] = new TPaveText(0.16+0.2*iHT, 0.9-0.06, 0.34+0.2*iHT, 0.9, "brNDC");
+      if ( iHT==nHTRegions-1 ) continue;
+    }
+
     htBox[iHT]->AddText( htRegions[iHT].c_str() );
     
     htBox[iHT]->SetBorderSize(0);
@@ -621,15 +635,18 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
   TH2D* h2_axes_ratio = MT2DrawTools::getRatioAxes( 0, MT2Regions.size(), -3., 3.);
   h2_axes_ratio->SetYTitle("Pull");
 
-  TLine* LineCentral = new TLine(0, 0, MT2Regions.size(), 0);
+  TLine* LineCentral = new TLine(!doClosureTestData ? 0 : 11, 0, MT2Regions.size(), 0);
   LineCentral->SetLineColor(1);
 
+  if ( doClosureTestData )
+    h2_axes_ratio->GetXaxis()->SetRangeUser(12,55);
 
   h2_axes_ratio->Draw("");
   LineCentral->Draw("same");
   h_Ratio->Draw("pe,same");
 
   for( int iHT=1; iHT < 5; iHT++ ){
+    if ( doClosureTestData && iHT==1) continue;
     lHT[iHT-1]->Draw("same");
   }
 
@@ -649,13 +666,15 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
   delete h2_axes_ratio;
   h2_axes_ratio = MT2DrawTools::getRatioAxes( 0, MT2Regions.size(), 0., 2.);
   h2_axes_ratio->SetYTitle(!doClosureTestData ? "Pred. / MC" : "Data / Pred.");
+  if ( doClosureTestData )
+    h2_axes_ratio->GetXaxis()->SetRangeUser(12,55);
   h2_axes_ratio->Draw("");
 
   thisName =  Form("%s_band", h_estimate_tot->GetName());
   TH1D* h_Band = (TH1D*)h_estimate_tot->Clone(thisName.c_str());
   h_Band->SetMarkerSize(0);
-  h_Band->SetFillColor (kQCD);
-  h_Band->SetFillStyle (3002);
+  h_Band->SetFillColor (kQCD-4);
+  h_Band->SetFillStyle (3001);
   for ( int iBin=1; iBin <= h_estimate_tot->GetNbinsX(); iBin++){
     h_Band->SetBinContent(iBin,1);
     double error;
@@ -670,7 +689,7 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
 
   h_Band->Draw("e2same");
 
-  TLine* lineOne = new TLine(0, 1., MT2Regions.size(), 1.);
+  TLine* lineOne = new TLine(!doClosureTestData ? 0 : 11, 1., MT2Regions.size(), 1.);
   lineOne->SetLineColor(1);
   lineOne->Draw("same");
 
@@ -691,6 +710,7 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
 
 
   for( int iHT=1; iHT < 5; iHT++ ){
+    if ( doClosureTestData && iHT==1) continue;
     lHT[iHT-1]->Draw("same");
   }
 
