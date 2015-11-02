@@ -53,6 +53,7 @@ int main( int argc, char* argv[] ) {
 
 
   bool useMC = true;
+  useMC=false;
 
   if( argc>2 ) {
     std::string data_or_mc = std::string(argv[2]); 
@@ -185,6 +186,11 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
     if( !myTree.passSelection("gamma") ) continue;
     if( !myTree.passGammaAdditionalSelection(sample.id) ) continue;
 
+    if( !(myTree.HLT_Photon165_HE10) ) continue;
+
+    if( myTree.mt2>200. ) continue; // orthogonal to signal region                                                                                                                                               
+    if( myTree.gamma_pt[0]<180. ) continue;
+    if( (myTree.gamma_nJet30>1 && myTree.gamma_mt2<200.) || (myTree.gamma_nJet30==1 && myTree.gamma_ht<200.) ) continue;
 
     // AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH REMOVE THIS SOOOOON
     if( myTree.evt_scale1fb>1. ) continue;
@@ -273,7 +279,8 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
 
     if( isWorkingPrompt ) {
 
-      MT2EstimateZinvGamma* thisPrompt = prompt->get( ht, njets, nbjets, met, minMTBmet, mt2 );
+      //      MT2EstimateZinvGamma* thisPrompt = prompt->get( ht, njets, nbjets, met, minMTBmet, mt2 );
+      MT2EstimateZinvGamma* thisPrompt = prompt->get( ht, njets, nbjets, minMTBmet, mt2 );
       if( thisPrompt==0 ) continue;
 
       thisPrompt->yield->Fill(mt2, weight );
@@ -282,7 +289,8 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
 
     } else {
 
-      MT2EstimateZinvGamma* thisFake = fake->get( ht, njets, nbjets, met, minMTBmet, mt2 );
+      //      MT2EstimateZinvGamma* thisFake = fake->get( ht, njets, nbjets, met, minMTBmet, mt2 );
+      MT2EstimateZinvGamma* thisFake = fake->get( ht, njets, nbjets, minMTBmet, mt2 );
       if( thisFake==0 ) continue;
 
       thisFake->yield->Fill(mt2, weight );

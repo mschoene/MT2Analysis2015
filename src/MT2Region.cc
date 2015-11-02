@@ -664,8 +664,8 @@ void MT2Region::getBins( int &nBins, double*& bins) const {
   }
   else if( regionName == "HT200toInf_j1_b1toInf" ){ // new MT2 binning
     
-    const int nBins_tmp                        = 7;
-    bins = new double[nBins_tmp+1]{200., 300., 400., 500., 600., 800., 1000., 1500.};
+    const int nBins_tmp                        = 6;
+    bins = new double[nBins_tmp+1]{200., 300., 400., 500., 600., 800., 1500.};
     nBins = nBins_tmp;
     
   }
@@ -713,36 +713,36 @@ void MT2Region::getBins( int &nBins, double*& bins) const {
   } 
   else if( regionName == "HT200to450_j7toInf_b0" ){ // new MT2 binning
     
-    const int nBins_tmp                        = 3;
-    bins = new double[nBins_tmp+1]{200., 300., 400., 1500.};
+    const int nBins_tmp                        = 1;
+    bins = new double[nBins_tmp+1]{200., 1500.};
     nBins = nBins_tmp;
     
   } 
   else if( regionName == "HT200to450_j7toInf_b1" ){ // new MT2 binning
     
-    const int nBins_tmp                        = 3;
-    bins = new double[nBins_tmp+1]{200., 300., 400., 1500.};
+    const int nBins_tmp                        = 1;
+    bins = new double[nBins_tmp+1]{200., 1500.};
     nBins = nBins_tmp;
     
   } 
   else if( regionName == "HT200to450_j7toInf_b2" ){ // new MT2 binning
     
-    const int nBins_tmp                        = 3;
-    bins = new double[nBins_tmp+1]{200., 300., 400., 1500.};
+    const int nBins_tmp                        = 1;
+    bins = new double[nBins_tmp+1]{200., 1500.};
     nBins = nBins_tmp;
     
   } 
   else if( regionName == "HT200to450_j2to6_b3toInf" ){ // new MT2 binning
     
-    const int nBins_tmp                        = 3;
-    bins = new double[nBins_tmp+1]{200., 300., 400., 1500.};
+    const int nBins_tmp                        = 2;
+    bins = new double[nBins_tmp+1]{200., 300., 1500.};
     nBins = nBins_tmp;
     
   } 
   else if( regionName == "HT200to450_j7toInf_b3toInf" ){ // new MT2 binning
     
-    const int nBins_tmp                        = 3;
-    bins = new double[nBins_tmp+1]{200., 300., 400., 1500.};
+    const int nBins_tmp                        = 1;
+    bins = new double[nBins_tmp+1]{200., 1500.};
     nBins = nBins_tmp;
     
   } 

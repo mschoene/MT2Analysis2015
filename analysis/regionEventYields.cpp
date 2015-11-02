@@ -221,19 +221,25 @@ int main( int argc, char* argv[] ) {
   }
 
 
-  if( yields.size()==0 ) {
+  if( yields.size()==0 && signals.size()==0 ) {
     std::cout << "-> Didn't end up with a single yield... something's wrong." << std::endl;
     exit(87);
   }
 
 
   // save MT2Analyses:
-  yields[0]->writeToFile(outputdir + "/analyses.root");
+  if( yields.size()>0 ){
+    yields[0]->writeToFile(outputdir + "/analyses.root");
   for( unsigned i=1; i<yields.size(); ++i )
     yields[i]->writeToFile(outputdir + "/analyses.root");
   for( unsigned i=0; i<signals.size(); ++i )
     signals[i]->writeToFile(outputdir + "/analyses.root");
-
+  }
+  else if( signals.size()>0 ){
+    signals[0]->writeToFile(outputdir + "/analyses.root");
+    for( unsigned i=1; i<signals.size(); ++i )
+      signals[i]->writeToFile(outputdir + "/analyses.root");
+  }
   cfg.saveAs(outputdir + "/config.txt");
 
   return 0;
@@ -309,6 +315,9 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg ) {
       if( !myTree.passSelection(cfg.additionalStuff()) ) continue;
 
     
+    if( myTree.nJet30==1 && (myTree.jet_id[0]<3 || myTree.jet_chHEF[0]<0.05 || myTree.jet_neHEF[0]>0.8 || myTree.jet_phEF[0]>0.7) ) continue;
+    
+
     float ht   = myTree.ht;
     //float met  = myTree.met_pt;
     float minMTBmet = myTree.minMTBMet;
@@ -321,18 +330,45 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg ) {
     float GenSusyMScan2 = myTree.GenSusyMScan2;
     
     //    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi()*myTree.puWeight;
-    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb;//*cfg.lumi();
-    //    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi();
+    //Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb;//*cfg.lumi();
+    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi();
     //weight *= myTree.weight_lepsf;
 
     if( myTree.isData ) {
-      if( !(  (myTree.HLT_PFHT800 && ht>=1000.) || (myTree.HLT_PFHT350_PFMET100 && ht<1000.) || (myTree.HLT_PFMET90_PFMHT90 && (njets==1 || (njets>1 && ht<450))) ) ) continue;
-      if( !( myTree.Flag_HBHENoiseFilter && myTree.Flag_CSCTightHaloFilter &&  myTree.Flag_eeBadScFilter ) ) continue;
-      //if( !(myTree.Flag_CSCTightHaloFilter && myTree.Flag_eeBadScFilter ) ) continue;
 
-      if( (myTree.evt_id == 1 && ht < 1000.) || (myTree.evt_id == 2 && ht >= 1000.) || (myTree.evt_id == 3 && (njets>1 && ht >= 450)) ) continue;
-      
+           if( !( myTree.Flag_HBHENoiseFilter && myTree.Flag_CSCTightHaloFilter &&  myTree.Flag_eeBadScFilter ) ) continue; 
+
+	   if( myTree.run < 254231 || myTree.run > 257599 ) continue; //Unblinded data (149/pb)
+
     }
+
+    if (myTree.isData) {
+
+      int id = sample.id;
+      // sample IDs for data:
+      // JetHT = 1
+      // HTMHT = 2
+      // MET   = 3
+
+      if( njets==1 ) {
+
+        if( !( id==3 && myTree.HLT_PFMET90_PFMHT90) ) continue;
+
+      } else { // njets>=2
+
+        if( ht>1000. ) {
+          if( !( id==1 && myTree.HLT_PFHT800) ) continue;
+        } else if( ht>575. ) {
+          if( !( id==2 && myTree.HLT_PFHT350_PFMET100 )  ) continue;
+        } else if( ht>450. ) {
+          if( !( id==2 && myTree.HLT_PFHT350_PFMET100 )  ) continue;
+        } else if( ht>200. ) {
+          if( !( id==3 && myTree.HLT_PFMET90_PFMHT90  )  ) continue;
+        }
+
+      }
+
+    } // if is data
 
    
     T* thisEstimate = analysis->get( ht, njets, nbjets, minMTBmet, mt2 );

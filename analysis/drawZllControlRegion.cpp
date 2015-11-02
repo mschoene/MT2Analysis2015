@@ -143,6 +143,8 @@ int main(int argc, char* argv[]){
   std::string selection = "weight*(Z_pt>180 && abs(Z_mass-91.19)<20)";
   */
   
+  std::cout << "Calling drawYields" << std::endl;
+
   drawYields( cfg, data, bgYields, "mt2" , "mt2" , selection, 24, 0, 600, "M_{T2}", "GeV" );
   drawYields( cfg, data, bgYields, "raw_mt2" , "raw_mt2" , selection, 24, 0, 600, "Raw M_{T2}", "GeV" );
   drawYields( cfg, data, bgYields, "ht" , "ht" , selection, 24, 0, 600, "H_{T}", "GeV" );
@@ -157,9 +159,14 @@ int main(int argc, char* argv[]){
 
   drawYields( cfg, data_of, bgYields_of, "Z_mass_of" , "Z_mass" , selection2, 46, 20, 250, "M_{ll}", "GeV" );
   
-  std::string    selection_ele = "weight*(ht>100 && Z_lepId==11 && (lep_eta0>1.4 || lep_eta1>1.4))";
+  selection2 = "weight*(ht>200 && Z_lepId==11)";
+  drawYields( cfg, data, bgYields, "Z_mass_ele" , "Z_mass" , selection2, 40, 50, 150, "M_{ee}", "GeV" );
 
- drawYields( cfg, data, bgYields, "Z_mass_el" , "Z_mass" , selection_ele, 40, 50, 150, "M_{ll}", "GeV" );
+  selection2 = "weight*(ht>200 && Z_lepId==13)";
+  drawYields( cfg, data, bgYields, "Z_mass_mu" , "Z_mass" , selection2, 40, 50, 150, "M_{#mu#mu}", "GeV" );
+
+  std::string    selection_ele = "weight*(ht>200 && Z_lepId==11 && (lep_eta0>1.4 || lep_eta1>1.4))";
+  drawYields( cfg, data, bgYields, "Z_mass_ele_endcap" , "Z_mass" , selection_ele, 40, 50, 150, "M_{ee}", "GeV" );
 
 
 
@@ -254,6 +261,8 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, std::vector<
       if( shapeNorm ) {
         histos_mc[index]->Scale( scaleFactor );
       }
+      else
+	histos_mc[index]->Scale( 145.0/106.5 );
 
       if(i==0) histo_mc = (TH1D*) histos_mc[index]->Clone("histo_mc");
       else histo_mc->Add(histos_mc[index]);

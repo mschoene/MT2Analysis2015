@@ -60,7 +60,9 @@ void MT2EstimateTree::initTree( ) {
 
   tree->Branch( "met", &met, "met/F");
   tree->Branch( "nJets", &nJets, "nJets/I");
+  tree->Branch( "nJets40", &nJets40, "nJets40/I");
   tree->Branch( "nBJets", &nBJets, "nBJets/I");
+  tree->Branch( "nBJets40", &nBJets40, "nBJets40/I");
   
   tree->Branch( "nJetHF", &nJetHF, "nJetHF/I");
   
@@ -75,6 +77,10 @@ void MT2EstimateTree::initTree( ) {
 
   tree->Branch( "GenSusyMScan1", &GenSusyMScan1, "GenSusyMScan1/I");
   tree->Branch( "GenSusyMScan2", &GenSusyMScan2, "GenSusyMScan2/I");
+
+//  tree->Branch( "LHEweight_original", &LHEweight_original, "LHEweight_original/F" );
+//  tree->Branch( "LHEweight_id", &LHEweight_id, "LHEweight_id[446]/I" );
+//  tree->Branch( "LHEweight_wgt", &LHEweight_wgt, "LHEweight_wgt[446]/F" );
 
   tree->SetDirectory(0);
 }
@@ -262,7 +268,9 @@ void MT2EstimateTree::assignTree( const MT2Tree& mt2tree, float w  ) {
   met    = mt2tree.met_pt;
 
   nJets  = mt2tree.nJet30;
+  nJets40= mt2tree.nJet40;
   nBJets = mt2tree.nBJet20;
+  nBJets40 = mt2tree.nBJet40;
 
   deltaPhiMin   = mt2tree.deltaPhiMin;
   diffMetMht    = mt2tree.diffMetMht;
@@ -276,6 +284,12 @@ void MT2EstimateTree::assignTree( const MT2Tree& mt2tree, float w  ) {
   GenSusyMScan1 = mt2tree.GenSusyMScan1;
   GenSusyMScan2 = mt2tree.GenSusyMScan2;
  
+//  LHEweight_original = mt2tree.LHEweight_original;
+//  for (int i=0; i < 446; ++i){
+//    LHEweight_id[i] = mt2tree.LHEweight_id[i];
+//    LHEweight_wgt[i] = mt2tree.LHEweight_wgt[i];
+//  }
+
 }
   
 
@@ -316,6 +330,12 @@ void MT2EstimateTree::assignTree_zll( const MT2Tree& mt2tree, float w ) {
   GenSusyMScan1 = mt2tree.GenSusyMScan1;
   GenSusyMScan2 = mt2tree.GenSusyMScan2;
 
+//  LHEweight_original = mt2tree.LHEweight_original;
+//  for (int i=0; i < 446; ++i){
+//    LHEweight_id[i] = mt2tree.LHEweight_id[i];
+//    LHEweight_wgt[i] = mt2tree.LHEweight_wgt[i];
+//  }
+
 }
 
 
@@ -350,6 +370,12 @@ void MT2EstimateTree::assignTree_gamma( const MT2Tree& mt2tree, float w ) {
 
   GenSusyMScan1 = mt2tree.GenSusyMScan1;
   GenSusyMScan2 = mt2tree.GenSusyMScan2;
+
+//  LHEweight_original = mt2tree.LHEweight_original;
+//  for (int i=0; i < 446; ++i){
+//    LHEweight_id[i] = mt2tree.LHEweight_id[i];
+//    LHEweight_wgt[i] = mt2tree.LHEweight_wgt[i];
+//  }
 
 }
 

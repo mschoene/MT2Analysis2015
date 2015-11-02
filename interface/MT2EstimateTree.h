@@ -50,7 +50,9 @@ class MT2EstimateTree : public MT2Estimate {
   int nVert;
 
   int nJets;
+  int nJets40;
   int nBJets;
+  int nBJets40;
   int nElectrons;
   int nMuons;
   int nPFLep;
@@ -59,7 +61,12 @@ class MT2EstimateTree : public MT2Estimate {
 
   int GenSusyMScan1;
   int GenSusyMScan2;
- 
+
+//  float LHEweight_original;
+//  int LHEweight_id[446];
+//  float LHEweight_wgt[446];
+  
+
   //std::map< std::string, size_t > extraVars;
   std::map< std::string, float* > extraVars;
  
