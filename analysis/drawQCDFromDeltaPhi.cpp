@@ -454,23 +454,7 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
       h_ratio->SetLineWidth(2);
       //h_ratio->Draw("PE");
       
-      thisName =  Form("%s_band", h_estimate->GetName());
-      TH1D* h_band = (TH1D*)h_estimate->Clone(thisName.c_str());
-      h_band->SetMarkerSize(0);
-      h_band->SetFillColor (kQCD-4);
-      h_band->SetFillStyle (3001);
-      for ( int iBin=1; iBin <= h_estimate->GetNbinsX(); iBin++){
-	h_band->SetBinContent(iBin,1);
-	double error;
-	if ( doClosureTestData )
-	  error = ((TH1D*)stack->GetStack()->Last())->GetBinContent(iBin) ?
-	    ((TH1D*)stack->GetStack()->Last())->GetBinError(iBin)/((TH1D*)stack->GetStack()->Last())->GetBinContent(iBin) : 0.0;
-	else
-	  error = h_mcTruth->GetBinContent(iBin) ?
-	    h_mcTruth->GetBinError(iBin)/h_mcTruth->GetBinContent(iBin) : 0.0;
-	h_band->SetBinError(iBin, error);
-      }
-      
+      TH1D* h_band = MT2DrawTools::getBandAtOne( doClosureTestData ? ((TH1D*)stack->GetStack()->Last()) : h_mcTruth );
 
       TH2D* h2_axes_ratio = MT2DrawTools::getRatioAxes( xMin, xMax, 0.0, 2.0 );
       
@@ -684,22 +668,7 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
     h2_axes_ratio->GetXaxis()->SetRangeUser(12,55);
   h2_axes_ratio->Draw("");
 
-  thisName =  Form("%s_band", h_estimate_tot->GetName());
-  TH1D* h_Band = (TH1D*)h_estimate_tot->Clone(thisName.c_str());
-  h_Band->SetMarkerSize(0);
-  h_Band->SetFillColor (kQCD-4);
-  h_Band->SetFillStyle (3001);
-  for ( int iBin=1; iBin <= h_estimate_tot->GetNbinsX(); iBin++){
-    h_Band->SetBinContent(iBin,1);
-    double error;
-    if ( doClosureTestData )
-      error = ((TH1D*)stack_tot->GetStack()->Last())->GetBinContent(iBin) ?
-	((TH1D*)stack_tot->GetStack()->Last())->GetBinError(iBin)/((TH1D*)stack_tot->GetStack()->Last())->GetBinContent(iBin) : 0.0;
-    else
-      error = h_mcTruth_tot->GetBinContent(iBin) ?
-	h_mcTruth_tot->GetBinError(iBin)/h_mcTruth_tot->GetBinContent(iBin) : 0.0;
-    h_Band->SetBinError(iBin, error);
-  }
+  TH1D *h_Band = MT2DrawTools::getBandAtOne( doClosureTestData ? ((TH1D*)stack_tot->GetStack()->Last()) : h_mcTruth_tot );
 
   h_Band->Draw("e2same");
 

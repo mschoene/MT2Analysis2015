@@ -61,6 +61,7 @@ class MT2DrawTools {
 
   static TGraphAsymmErrors* getPoissonGraph( TH1D* h1, bool drawZeros=true, const std::string& xerrType="0", float nSigma=1. );
   static TGraphAsymmErrors* getRatioGraph( TH1D* h1, TH1D* h2 );
+  static TH1D* getBandAtOne( TH1D* h );
   
   static TPad* getCanvasMainPad( bool logY=false );
   static TPad* getCanvasRatioPad( bool logY=false );
