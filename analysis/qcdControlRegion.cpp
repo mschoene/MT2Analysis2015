@@ -105,7 +105,7 @@ int main( int argc, char* argv[] ) {
     std::cout << std::endl << std::endl;
     std::cout << "-> Loading data from file: " << samplesFile_data << std::endl;
 
-    std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, 1, 2 );
+    std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, 1, 3 );
     if( samples_data.size()==0 ) {
       std::cout << "There must be an error: samples_data is empty!" << std::endl;
       exit(1209);
@@ -154,7 +154,6 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
 
   int nentries = tree->GetEntries();
 
-
   for( int iEntry=0; iEntry<nentries; ++iEntry ) {
 
     if( iEntry % 50000 == 0 ) std::cout << "    Entry: " << iEntry << " / " << nentries << std::endl;
@@ -177,16 +176,45 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
     float mt2       = (njets>1) ? myTree.mt2 : myTree.jet1_pt;
     float ht        = myTree.ht;
 
-    if (myTree.isData && ( (ht<575  && myTree.HLT_ht350prescale==0) ||
-                 (ht>575 && ht<1000 && myTree.HLT_ht475prescale==0) ) )  continue;
+
+    if (myTree.isData) {
+
+      int id = sample.id;
+      // sample IDs for data:
+      // JetHT = 1
+      // HTMHT = 2
+      // MET   = 3
+      //myTree.evt_id = id; // useful when using american trees
+
+      if( njets==1 ) {
+
+        if( !( id==3 && myTree.HLT_PFMET90_PFMHT90) ) continue;
+
+      } else { // njets>=2
+
+        if( ht>1000. ) {
+          if( !( id==1 && myTree.HLT_PFHT800) ) continue;
+        } else if( ht>575. ) {
+          if( !( (id==2 && myTree.HLT_PFHT350_PFMET100 ) || (id==1 && myTree.HLT_ht475prescale))  ) continue;
+          //if( !( (id==2 && myTree.HLT_PFHT350_PFMET100 ) || (id==1 && myTree.HLT_PFHT475_Prescale))  ) continue; // gio's tree
+        } else if( ht>450. ) {
+          if( !( (id==2 && myTree.HLT_PFHT350_PFMET100 ) || (id==1 && myTree.HLT_ht350prescale))  ) continue;
+          //if( !( (id==2 && myTree.HLT_PFHT350_PFMET100 ) || (id==1 && myTree.HLT_PFHT350_Prescale))  ) continue; // gio's tree
+        } else if( ht>200. ) {
+          if( !( id==3 && myTree.HLT_PFMET90_PFMHT90) ) continue;
+        }
+
+      }
+
+    } // if is data
 
 
-
-    if( mt2<30. ) continue;
+    if( mt2<40. ) continue;
 
     Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb;//*cfg.lumi(); 
 
-    MT2EstimateTree* thisTree = anaTree->get( ht, njets, nbjets, minMTBmet, mt2 );
+    float myht = njets==1 ? 201. : ht; // let everything (mt2=ht>40) pass for monojet
+    MT2EstimateTree* thisTree = anaTree->get( myht, njets, nbjets, minMTBmet, mt2 );
     if( thisTree==0 ) continue;
 
 

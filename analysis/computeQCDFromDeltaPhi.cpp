@@ -1,5 +1,6 @@
 #include <cmath>
 #include <iostream>
+#include <map>
 
 #include "TCanvas.h"
 #include "TAxis.h"
@@ -22,14 +23,17 @@
 
 
 
+bool closureTest = false;
 
-
+float scaleMC = 0.; // simulate stats for the given lumi [0 means MC stats]
 
 void projectFromInclusive( MT2Analysis<MT2Estimate>* analysis, MT2Analysis<MT2EstimateTree>* ana_inclusive, const std::string& selection );
-void fillFromTreeAndRatio( MT2Estimate* estimate, MT2Estimate* nCR, MT2Estimate* r_effective, TTree* tree, TF1* f1_ratio, TH1D* h_band );
-void get_rHat( MT2Analysis<MT2Estimate>* rHat, MT2Analysis<MT2EstimateTree>* analysis );
-void get_fJets( MT2Analysis<MT2Estimate>* fJets, MT2Analysis<MT2EstimateTree>* analysis );
-void drawSingleFit( const std::string& outdir, MT2EstimateQCD* qcd, MT2EstimateQCD* all, TF1* thisFitQCD, TH1D* h_band, float xMin_fit, float xMax_fit );
+void fillFromTreeAndRatio( MT2Estimate* estimate, MT2Estimate* nCR, MT2Estimate* r_effective, TTree* tree, TF1* f1_ratio, TH1D* h_band, float prescale=1. );
+void get_rHat( MT2Analysis<MT2Estimate>* rHat  , MT2Analysis<MT2EstimateTree>* analysis, MT2Analysis<MT2EstimateTree>* ana_rest=NULL );
+void get_fJets( MT2Analysis<MT2Estimate>* fJets, MT2Analysis<MT2EstimateTree>* analysis, MT2Analysis<MT2EstimateTree>* ana_rest=NULL );
+void drawSingleFit( const MT2Config& cfg, bool useMC, const std::string& outdir, MT2EstimateQCD* qcd, MT2EstimateQCD* all, TF1* thisFitQCD, TH1D* h_band, float xMin_fit, float xMax_fit );
+void computePurity( TH1D* purity, TH1D* nonQCD, TH1D* all );
+void multiplyHisto( TH1D* histo, TH1D* other );
 void scaleHisto( TH1D* histo, float val, float err );
 void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estimate, MT2Analysis<MT2Estimate>* mcTruth );
 
@@ -67,14 +71,10 @@ int main( int argc, char* argv[] ) {
 
   if( argc>2 ) {
 
-    std::string mc_or_data_templates = std::string(argv[2]); 
-    if( mc_or_data_templates=="mc" ) mc_or_data_templates="MC";
-    std::cout << std::endl;
-    std::cout << "-> Will disobey the cfg and use mc_or_data_templates = " << mc_or_data_templates << std::endl;
-    cfg.set_gammaTemplateType(mc_or_data_templates);
-    if( mc_or_data_templates=="MC" ) useMC = true;
+    std::string mc_or_data = std::string(argv[2]); 
+    if( mc_or_data=="mc" ) mc_or_data="MC";
+    if( mc_or_data=="MC" ) useMC = true;
     else useMC=false;
-    std::cout << std::endl;
 
   } 
 
@@ -82,56 +82,165 @@ int main( int argc, char* argv[] ) {
 
 
 
-  // always start from inclusive qcd tree:
-  MT2Analysis<MT2EstimateTree>* qcdTree_mc = MT2Analysis<MT2EstimateTree>::readFromFile( "EventYields_data_Run2015D_25nsGolden_v4/qcdControlRegion/mc.root", "qcdCRtree" );
-  //MT2Analysis<MT2EstimateTree>* qcdTree_mc = MT2Analysis<MT2EstimateTree>::readFromFile( qcdCRdir + "/mc.root", "qcdCRtree" );
+  std::string qcdCRdir = cfg.getEventYieldDir() + "/qcdControlRegion/";
+  std::string outputdir = qcdCRdir;
+  if( closureTest ) {
+    outputdir = outputdir + "/test/";
+  }
+  std::string fitsDir = outputdir;
+  if( useMC ) fitsDir = fitsDir + "/fitsMC";
+  else        fitsDir = fitsDir + "/fitsData";
+  system( Form("mkdir -p %s", fitsDir.c_str() ));
 
+
+
+  MT2Analysis<MT2EstimateTree>* qcdTree_mc   = MT2Analysis<MT2EstimateTree>::readFromFile( qcdCRdir + "/mc.root",   "qcdCRtree" );
+  MT2Analysis<MT2EstimateTree>* qcdTree_data = MT2Analysis<MT2EstimateTree>::readFromFile( qcdCRdir + "/data.root", "qcdCRtree" );
+  
 
   std::string regionsSet = cfg.regionsSet();
   std::string regionsSet_fJets = "zurich_onlyHT";
   std::string regionsSet_rHat  = "zurich_onlyJets_noB";
 
   std::cout << "-> Making MT2EstimateTrees from inclusive tree...";
-  MT2Analysis<MT2EstimateTree>* mcTruth        = MT2EstimateTree::makeAnalysisFromInclusiveTree( "mcTruth"       , regionsSet       , qcdTree_mc, "id>=153&&id<200 && mt2>200.&&deltaPhiMin>0.3" ); // signal region for mcTruth
-  MT2Analysis<MT2EstimateTree>* mcTruth_4rHat  = MT2EstimateTree::makeAnalysisFromInclusiveTree( "mcTruth_4rHat" , regionsSet_rHat  , qcdTree_mc, "id>=153&&id<200 && mt2>100.&&deltaPhiMin<0.3" ); // invert deltaPhi
-  MT2Analysis<MT2EstimateTree>* mcTruth_4fJets = MT2EstimateTree::makeAnalysisFromInclusiveTree( "mcTruth_4fJets", regionsSet_fJets , qcdTree_mc, "id>=153&&id<200 && mt2>100.&&deltaPhiMin<0.3" ); // invert deltaPhi 
+  MT2Analysis<MT2EstimateTree>* data_4rHat ;
+  MT2Analysis<MT2EstimateTree>* data_4fJets;
+  MT2Analysis<MT2EstimateTree>* data_noPS_4fJets;
+  MT2Analysis<MT2EstimateTree>* qcdmc_4rHat ;
+  MT2Analysis<MT2EstimateTree>* qcdmc_4fJets;
+  MT2Analysis<MT2EstimateTree>* rest_4rHat ;
+  MT2Analysis<MT2EstimateTree>* rest_4fJets;
+  qcdmc_4rHat  = MT2EstimateTree::makeAnalysisFromInclusiveTree( "qcdmc_4rHat"   , regionsSet_rHat  , qcdTree_mc, "id>=153 && id<200 && mt2>100. && mt2<200. && nJets>1 && deltaPhiMin<0.3" ); // invert deltaPhi
+  qcdmc_4fJets = MT2EstimateTree::makeAnalysisFromInclusiveTree( "qcdmc_4fJets"  , regionsSet_fJets , qcdTree_mc, "(id>=153||ht<450) && id<200 && mt2>100. && mt2<200. && nJets>1 && deltaPhiMin<0.3" ); // invert deltaPhi ; id=152 plays a role for VLHT in 100<mt2<200
+  if ( !useMC ) {
+    data_4rHat       = MT2EstimateTree::makeAnalysisFromInclusiveTree( "data_4rHat"      , regionsSet_rHat  , qcdTree_data, "id==1 && ht>1000. &&  mt2>100. && mt2<200. && nJets>1 && deltaPhiMin<0.3" ); // invert deltaPhi; ht>1000 unprescaled triggers
+    data_4fJets      = MT2EstimateTree::makeAnalysisFromInclusiveTree( "data_4fJets"     , regionsSet_fJets , qcdTree_data, "id==1 &&              mt2>100. && mt2<200. && nJets>1 && deltaPhiMin<0.3" ); // invert deltaPhi; HT-only triggers, ps'ed for HT<1000, empty for HT<450
+    data_noPS_4fJets = MT2EstimateTree::makeAnalysisFromInclusiveTree( "data_noPS_4fJets", regionsSet_fJets , qcdTree_data, "((id==1&&ht>100)||(id==2&&ht>450&&ht<1000)||(id==3&&ht<450))&& mt2>100. && mt2<200. && nJets>1 && deltaPhiMin<0.3" ); // invert deltaPhi; unprescaled triggers, HT-only for ht>100, HTMHT for450< ht<1000, MET for ht<450 (below ht<1000 we live in turnon, better not to subtract an unknown amount of non-QCD [smaller than 18% for VLHT])
+    rest_4rHat       = MT2EstimateTree::makeAnalysisFromInclusiveTree( "rest_4rHat"      , regionsSet_rHat  , qcdTree_mc  , "id>=300 && ht>1000. &&  mt2>100. && mt2<200. && nJets>1 && deltaPhiMin<0.3" ); // invert deltaPhi
+    rest_4fJets      = MT2EstimateTree::makeAnalysisFromInclusiveTree( "rest_4fJets"     , regionsSet_fJets , qcdTree_mc  , "id>=300 &&              mt2>100. && mt2<200. && nJets>1 && deltaPhiMin<0.3" ); // invert deltaPhi 
+  }
+
+  //MT2Analysis<MT2EstimateTree>* mc_4rHat    = MT2EstimateTree::makeAnalysisFromInclusiveTree( "mc_4rHat"   , regionsSet_rHat  , qcdTree_mc, "id>=153 && id<200 && mt2>100. && mt2<200. && deltaPhiMin<0.3" ); // invert deltaPhi
+  //MT2Analysis<MT2EstimateTree>* mc_4fJets   = MT2EstimateTree::makeAnalysisFromInclusiveTree( "mc_4fJets"  , regionsSet_fJets , qcdTree_mc, "id>=153 && id<200 && mt2>100. && mt2<200. && deltaPhiMin<0.3" ); // invert deltaPhi 
+
   std::cout << " Done." << std::endl;
 
 
   std::cout << "-> Creating the MT2Estimates...";
-  MT2Analysis<MT2Estimate>* estimate     = new MT2Analysis<MT2Estimate>("qcdEstimate", regionsSet);
-  MT2Analysis<MT2Estimate>* nCR          = new MT2Analysis<MT2Estimate>("nCR"        , regionsSet);
-  MT2Analysis<MT2Estimate>* r_effective  = new MT2Analysis<MT2Estimate>("r_effective", regionsSet);
-  MT2Analysis<MT2Estimate>* r_hat        = new MT2Analysis<MT2Estimate>("r_hat"      , regionsSet_rHat);
-  MT2Analysis<MT2Estimate>* f_jets       = new MT2Analysis<MT2Estimate>("f_jets"     , regionsSet_fJets);
+  MT2Analysis<MT2Estimate>* estimate         = new MT2Analysis<MT2Estimate>("qcdEstimate"     , regionsSet);
+  MT2Analysis<MT2Estimate>* nCR              = new MT2Analysis<MT2Estimate>("nCR"             , regionsSet);
+  MT2Analysis<MT2Estimate>* r_effective      = new MT2Analysis<MT2Estimate>("r_effective"     , regionsSet);
+
+  MT2Analysis<MT2Estimate>* est_mcRest       = new MT2Analysis<MT2Estimate>("est_mcRest"      , regionsSet);
+  MT2Analysis<MT2Estimate>* nCR_mcRest       = new MT2Analysis<MT2Estimate>("nCR_mcRest"      , regionsSet);
+  MT2Analysis<MT2Estimate>* r_eff_mcRest     = new MT2Analysis<MT2Estimate>("r_eff_mcRest"    , regionsSet);
+
+  MT2Analysis<MT2Estimate>* qcdPurity        = new MT2Analysis<MT2Estimate>("qcdPurity"       , regionsSet);
+
+  MT2Analysis<MT2Estimate>* r_hat_mc         = new MT2Analysis<MT2Estimate>("r_hat_mc"        , regionsSet_rHat);
+  MT2Analysis<MT2Estimate>* f_jets_mc        = new MT2Analysis<MT2Estimate>("f_jets_mc"       , regionsSet_fJets);
+  MT2Analysis<MT2Estimate>* r_hat_data       = new MT2Analysis<MT2Estimate>("r_hat_data"      , regionsSet_rHat);
+  MT2Analysis<MT2Estimate>* f_jets_data      = new MT2Analysis<MT2Estimate>("f_jets_data"     , regionsSet_fJets);
+  MT2Analysis<MT2Estimate>* f_jets_data_noPS = new MT2Analysis<MT2Estimate>("f_jets_data_noPS", regionsSet_fJets);
   std::cout << " Done." << std::endl;
 
+
+  if( closureTest ) {
+
+    MT2Estimate::rebinYields( estimate    , 4, 100., 200. );
+    MT2Estimate::rebinYields( nCR         , 4, 100., 200. );
+    MT2Estimate::rebinYields( r_effective , 4, 100., 200. );
+
+    MT2Estimate::rebinYields( est_mcRest  , 4, 100., 200. );
+    MT2Estimate::rebinYields( nCR_mcRest  , 4, 100., 200. );
+    MT2Estimate::rebinYields( r_eff_mcRest, 4, 100., 200. );
+
+    MT2Estimate::rebinYields( qcdPurity   , 4, 100., 200. );
+
+  }
 
   std::cout << "-> Getting fJets...";
-  get_fJets( f_jets, mcTruth_4fJets );
+  get_fJets( f_jets_mc, qcdmc_4fJets );
+  if ( !useMC ) {
+    get_fJets( f_jets_data     , data_4fJets     , rest_4fJets );    
+    get_fJets( f_jets_data_noPS, data_noPS_4fJets              ); // don't subtract an unknown amount (trigger turnon) small in any case
+  }
   std::cout << " Done." << std::endl;
   std::cout << "-> Getting rHat...";
-  get_rHat ( r_hat , mcTruth_4rHat );
+    get_rHat ( r_hat_mc , qcdmc_4rHat );
+  if ( !useMC ) 
+    get_rHat ( r_hat_data , data_4rHat, rest_4rHat );
   std::cout << " Done." << std::endl;
+
 
 
   std::cout << "-> Making MT2EstimateQCD from inclusive tree...";
-  MT2Analysis<MT2EstimateQCD>* mc_all  = MT2EstimateQCD::makeAnalysisFromInclusiveTree( "mc"     , cfg.qcdRegionsSet(), qcdTree_mc, "" );
-  MT2Analysis<MT2EstimateQCD>* qcdOnly = MT2EstimateQCD::makeAnalysisFromInclusiveTree( "qcdOnly", cfg.qcdRegionsSet(), qcdTree_mc, "id>=100 && id<200" );
+  MT2Analysis<MT2EstimateQCD>* est_all;
+  if( useMC ) {
+    est_all  = MT2EstimateQCD::makeAnalysisFromInclusiveTree( "est", cfg.qcdRegionsSet(), qcdTree_mc  , "" );
+  } else {
+    if ( closureTest ) // fill tree with ht-only triggers
+      est_all  = MT2EstimateQCD::makeAnalysisFromInclusiveTree( "est", cfg.qcdRegionsSet(), qcdTree_data, "id==1", "id==1" ); //use HT-only triggers for dphi-ratio
+    else // fill tree with signal triggers
+      est_all  = MT2EstimateQCD::makeAnalysisFromInclusiveTree( "est", cfg.qcdRegionsSet(), qcdTree_data, "((id==1&&ht>1000)||(id==2&&ht>450&&ht<1000)||(id==3&&ht<450))", "id==1" ); //use HT-only triggers for dphi-ratio
+  }
+  MT2Analysis<MT2EstimateQCD>* mc_rest = MT2EstimateQCD::makeAnalysisFromInclusiveTree( "mc_rest", cfg.qcdRegionsSet(), qcdTree_mc  , "id>=300", "id>=300" );
+  //MT2Analysis<MT2EstimateQCD>* data    = MT2EstimateQCD::makeAnalysisFromInclusiveTree( "data"   , cfg.qcdRegionsSet(), qcdTree_data, "(ht>1000. && id==1) || (ht>450 && ht<1000. && id==2)" );
+
+  MT2Analysis<MT2EstimateQCD>* est_minus_nonQCD = new MT2Analysis<MT2EstimateQCD>("est_minus_nonQCD"  , cfg.qcdRegionsSet() );
+  //MT2Analysis<MT2EstimateQCD>* data_minus_nonQCD  = new MT2Analysis<MT2EstimateQCD>("data_minus_nonQCD", cfg.qcdRegionsSet() );
   std::cout << " Done." << std::endl;
 
 
+  // fits need to be done only once
+  std::set<MT2Region> QCDregions = est_all->getRegions();
+  std::map<MT2Region, TF1* > fits ;
+  std::map<MT2Region, TH1D*> bands;
 
-  std::string qcdCRdir = cfg.getEventYieldDir() + "/qcdControlRegion/";
-  std::string outputdir = qcdCRdir;
-  std::string fitsDir = qcdCRdir + "/fits";
-  system( Form("mkdir -p %s", fitsDir.c_str() ));
+  for( std::set<MT2Region>::iterator iR = QCDregions.begin(); iR!=QCDregions.end(); ++iR ) {
+
+    MT2EstimateQCD* matchedEstimate      = est_all          ->getWithMatch( *iR );
+    //MT2EstimateQCD* matchedEstimate_qcd  = (useMC) ? mc_qcd ->getWithMatch( *iR ) : 0;
+    MT2EstimateQCD* matchedEstimate_rest = mc_rest          ->getWithMatch( *iR );
+    MT2EstimateQCD* matchedEstimate_mnQ  = est_minus_nonQCD ->getWithMatch( *iR );
+
+    float lumiScale = 1.;
+    if( !useMC || scaleMC!=0. ) {
+      lumiScale = useMC ? scaleMC : cfg.lumi();
+      if     ( iR->htMin() < 300. ) lumiScale /= 7000.; // prescale
+      else if( iR->htMin() < 500. ) lumiScale /=  180.; // prescale
+      else if( iR->htMin() < 600. ) lumiScale /=   60.;
+    }
+
+    matchedEstimate_mnQ->lDphi = (TH1D*) matchedEstimate->lDphi->Clone(matchedEstimate_mnQ->lDphi->GetName());
+    if (useMC && scaleMC!=0.)  matchedEstimate_mnQ->lDphi->Scale(lumiScale);
+    matchedEstimate_mnQ->lDphi->Add( matchedEstimate_rest->lDphi, -lumiScale );
+
+    matchedEstimate_mnQ->hDphi = (TH1D*) matchedEstimate->hDphi->Clone(matchedEstimate_mnQ->hDphi->GetName());
+    if (useMC && scaleMC!=0.)  matchedEstimate_mnQ->hDphi->Scale(lumiScale);
+    matchedEstimate_mnQ->hDphi->Add( matchedEstimate_rest->hDphi, -lumiScale );
+
+    if (useMC && scaleMC!=0.)  matchedEstimate_mnQ->sqrtErrors();
+
+    float xMin_fit = (iR->htMin()>=1000.) ? 70. : 60.;
+    float xMax_fit = 100.;
+    //fits.insert(std::pair<MT2Region, TF1*>(*iR, matchedEstimate_mnQ->getFit( "pow", xMin_fit, xMax_fit ) ) );
+    fits[*iR] = matchedEstimate_mnQ->getFit( "pow", xMin_fit, xMax_fit );
+    bands[*iR] = new TH1D(Form("band_%s",iR->getName().c_str()), "", 500, matchedEstimate->lDphi->GetXaxis()->GetXmin(), matchedEstimate->lDphi->GetXaxis()->GetXmax());
+    (TVirtualFitter::GetFitter())->GetConfidenceIntervals(bands[*iR], 0.68);
+
+    std::cout << iR->htRegion()->getNiceName() << std::endl
+              << "par0 : " << fits[*iR]->GetParameter(0) << " +/- " << fits[*iR]->GetParError(0) << std::endl
+	      << "par1 : " << fits[*iR]->GetParameter(1) << " +/- " << fits[*iR]->GetParError(1) << std::endl;
+
+    drawSingleFit( cfg, useMC, fitsDir, matchedEstimate_mnQ, matchedEstimate, fits[*iR], bands[*iR], xMin_fit, xMax_fit );
+
+  } // end loop qcd regions
 
 
   std::set<MT2Region> regions = estimate->getRegions();
 
-
-  std::string lastRegionName = "";
+  //std::string lastRegionName = "";
 
   for( std::set<MT2Region>::iterator iR = regions.begin(); iR!=regions.end(); ++iR ) {
 
@@ -139,32 +248,57 @@ int main( int argc, char* argv[] ) {
     MT2Estimate* this_nCR         = nCR         ->get( *iR );
     MT2Estimate* this_r_effective = r_effective ->get( *iR );
 
+    MT2Estimate* this_est_mcRest   = est_mcRest  ->get( *iR );
+    MT2Estimate* this_nCR_mcRest   = nCR_mcRest  ->get( *iR );
+    MT2Estimate* this_r_eff_mcRest = r_eff_mcRest->get( *iR );
+
+    MT2Estimate* this_qcdPurity   = qcdPurity   ->get( *iR );
+
     MT2Region* regionToMatch;
     if( iR->nBJetsMin()==3 && iR->nJetsMin()==2 ) 
       regionToMatch = new MT2Region( iR->htMin(), iR->htMax(), 4, 6, iR->nBJetsMin(), iR->nBJetsMax() );
     else
       regionToMatch = new MT2Region( *iR );
 
-    MT2Estimate* this_r_hat = r_hat->getWithMatch( *regionToMatch );
-    MT2Estimate* this_f_jets = f_jets->getWithMatch( *regionToMatch );
+    MT2Estimate* this_r_hat ;
+    MT2Estimate *this_f_jets;
+    
+    if ( useMC ) {
+      this_r_hat  = r_hat_mc ->getWithMatch( *regionToMatch );
+      this_f_jets = f_jets_mc->getWithMatch( *regionToMatch );
+    }
+    else if ( iR->htMin() < 300. ) { // if we are in VLHT take the values for fjet from the monojet trigger w/o bkg subtraction
+      this_r_hat  = r_hat_data      ->getWithMatch( *regionToMatch );
+      this_f_jets = f_jets_data_noPS->getWithMatch( *regionToMatch );      
+    }
+    else { // otherwise take values from HT-only triggers w/ proper bkg subtractions
+      this_r_hat  = r_hat_data ->getWithMatch( *regionToMatch );
+      this_f_jets = f_jets_data->getWithMatch( *regionToMatch );
+    }
+
+    MT2EstimateQCD* matchedEstimate      = est_all          ->getWithMatch( *iR );
+    MT2EstimateQCD* matchedEstimate_rest = mc_rest          ->getWithMatch( *iR );
+
+    MT2Region *fit_matchedRegion = est_all->matchRegion(*iR);
+    if( iR->htMin() < 300. )  // take fit from low HT also for the very low HT region
+      fit_matchedRegion = new MT2Region( 450, 575, 2, -1, 0, -1 );
 
 
-    MT2EstimateQCD* matchedEstimate_all = mc_all->getWithMatch( *iR );
-    MT2EstimateQCD* matchedEstimate_qcd = qcdOnly->getWithMatch( *iR );
+    float ps = 1.;
+    if ( closureTest && !useMC ){
+      if     ( iR->htMin() < 300. ) ps = 7000.; // prescale
+      else if( iR->htMin() < 500. ) ps =  180.;
+      else if( iR->htMin() < 600. ) ps =   60.;
+    }
 
+    fillFromTreeAndRatio( this_estimate  , this_nCR       , this_r_effective , matchedEstimate->tree     , fits[*fit_matchedRegion], bands[*fit_matchedRegion]     );
+    fillFromTreeAndRatio( this_est_mcRest, this_nCR_mcRest, this_r_eff_mcRest, matchedEstimate_rest->tree, fits[*fit_matchedRegion], bands[*fit_matchedRegion] , ps);
+    //fillFromTreeAndRatio( this_estimate, this_nCR, this_r_effective, matchedEstimate_qcd->tree, f1_ratio, h_band );
 
-    float xMin_fit = (iR->htMin()>=1000.) ? 70. : 60.;
-    float xMax_fit = 100.;
-    TF1* f1_ratio = matchedEstimate_qcd->getFit( "pow", xMin_fit, xMax_fit );
-    TH1D* h_band = new TH1D("band", "", 500, matchedEstimate_qcd->yield->GetXaxis()->GetXmin(), matchedEstimate_qcd->yield->GetXaxis()->GetXmax());
-    (TVirtualFitter::GetFitter())->GetConfidenceIntervals(h_band, 0.68);
-
-    if( matchedEstimate_qcd->region->getName()!=lastRegionName ) // draw only one per HT region
-      drawSingleFit( fitsDir, matchedEstimate_qcd, matchedEstimate_all, f1_ratio, h_band, xMin_fit, xMax_fit );
-
-    lastRegionName = matchedEstimate_qcd->region->getName();
-
-    fillFromTreeAndRatio( this_estimate, this_nCR, this_r_effective, matchedEstimate_qcd->tree, f1_ratio, h_band );
+    
+    computePurity( this_qcdPurity->yield, this_est_mcRest->yield, this_estimate->yield );
+    multiplyHisto( this_estimate->yield, this_qcdPurity->yield );
+    multiplyHisto( this_r_effective->yield, this_qcdPurity->yield );
 
     int bin_bJets = this_r_hat ->yield->FindBin(iR->nBJetsMin());
     float thisRhatValue = this_r_hat->yield->GetBinContent( bin_bJets );
@@ -185,25 +319,39 @@ int main( int argc, char* argv[] ) {
     scaleHisto( this_estimate->yield, thisRhatValue , thisRhatError  );
     scaleHisto( this_estimate->yield, thisFjetsValue, thisFjetsError );
 
-    delete h_band;
+    //delete h_band;
 
   }  // for regions
       
     
-  estimate   ->writeToFile( outputdir + "/qcdEstimate.root", "recreate" );
-  nCR        ->writeToFile( outputdir + "/qcdEstimate.root" );
-  mcTruth    ->writeToFile( outputdir + "/qcdEstimate.root" );
-  r_effective->writeToFile( outputdir + "/qcdEstimate.root" );
-  r_hat      ->writeToFile( outputdir + "/qcdEstimate.root" );
-  f_jets     ->writeToFile( outputdir + "/qcdEstimate.root" );
+  std::string outfileName = outputdir;
+  if( useMC ) outfileName = outfileName + "/qcdEstimateMC.root";
+  else        outfileName = outfileName + "/qcdEstimateData.root";
+
+  estimate        ->writeToFile( outfileName, "recreate" );
+  nCR             ->writeToFile( outfileName );
+  r_effective     ->writeToFile( outfileName );
+  r_hat_mc        ->writeToFile( outfileName );
+  f_jets_mc       ->writeToFile( outfileName );
+  r_hat_data      ->writeToFile( outfileName );
+  f_jets_data     ->writeToFile( outfileName );
+  f_jets_data_noPS->writeToFile( outfileName );
+  qcdPurity       ->writeToFile( outfileName );
 
 
-  mcTruth->setColor(kQCD);
-  estimate->setColor(kBlack);
-  drawClosure( qcdCRdir, estimate, (MT2Analysis<MT2Estimate>*)mcTruth );
 
-  mc_all ->writeToFile( outputdir + "/mcFits.root", "recreate" );
-  qcdOnly->writeToFile( outputdir + "/mcFits.root" );
+
+  std::string outputFile_fits = fitsDir;
+  if( useMC ) outputFile_fits = outputFile_fits + "/qcdFitsMC.root";
+  else        outputFile_fits = outputFile_fits + "/qcdFitsData.root";
+
+  est_all          ->writeToFile( outputFile_fits, "recreate" );
+  if( useMC ) {
+    MT2Analysis<MT2EstimateQCD>* mc_qcd  = MT2EstimateQCD::makeAnalysisFromInclusiveTree( "mc_qcd" , cfg.qcdRegionsSet(), qcdTree_mc  , "id>=100 && id<200" );
+    mc_qcd         ->writeToFile( outputFile_fits );
+  }
+  mc_rest          ->writeToFile( outputFile_fits );
+  est_minus_nonQCD ->writeToFile( outputFile_fits );
 
 
 
@@ -241,13 +389,153 @@ void projectFromInclusive( MT2Analysis<MT2Estimate>* analysis, MT2Analysis<MT2Es
 
 
 
+void get_rHat( MT2Analysis<MT2Estimate>* rHat, MT2Analysis<MT2EstimateTree>* analysis, MT2Analysis<MT2EstimateTree>* ana_rest ) {
 
-void fillFromTreeAndRatio( MT2Estimate* estimate, MT2Estimate* nCR, MT2Estimate* r_effective, TTree* tree, TF1* f1_ratio, TH1D* h_band ) {
+
+  std::vector<float> uncert;
+  uncert.push_back( 0.08 ); // from bruno
+  uncert.push_back( 0.20 ); 
+  uncert.push_back( 0.35 ); 
+  uncert.push_back( 0.70 ); 
+
+  std::set<MT2Region> regions = rHat->getRegions();
+
+  for( std::set<MT2Region>::iterator iR=regions.begin(); iR!=regions.end(); ++iR ) {
+
+    MT2Estimate* thisEst = rHat->get(*iR);
+
+    std::string name(thisEst->yield->GetName());
+    int nBins = 4;
+    Double_t bins[nBins+1];
+    bins[0] = 0.;
+    bins[1] = 1.;
+    bins[2] = 2.;
+    bins[3] = 3.;
+    bins[4] = 6.;
+
+    delete thisEst->yield;
+    thisEst->yield = new TH1D( name.c_str(), "", nBins, bins );
+    thisEst->yield->Sumw2();
+
+    MT2EstimateTree* thisTree = analysis->get(*iR);
+    thisTree->tree->Project( name.c_str(), "nBJets", "weight" );
+    MT2DrawTools::addOverflowSingleHisto(thisEst->yield);
+
+    if ( ana_rest!=NULL ) {
+      TH1D *toSubtract = new TH1D( Form("%s_rest",name.c_str()), "", nBins, bins );
+      MT2EstimateTree* anotherTree = ana_rest->get(*iR);
+      anotherTree->tree->Project( Form("%s_rest",name.c_str()), "nBJets", "weight" );
+      MT2DrawTools::addOverflowSingleHisto(toSubtract);
+
+      std::cout << "rhat region: " << iR->sigRegion()->getNiceName() << std::endl
+		<< "amount of non-QCD subtracted: ";
+      for ( int iBin=1; iBin<=nBins; iBin++ )
+	std::cout << toSubtract->GetBinContent(iBin)/thisEst->yield->GetBinContent(iBin)*100 << "\%\t";
+      std::cout << std::endl;
+      
+      thisEst->yield->Add(toSubtract,-1);
+    }
+
+    for( int iBin=1; iBin<nBins+1; ++iBin ) {
+
+      // add error in quadrature to estimate
+      float val_est    = thisEst->yield->GetBinContent(iBin);
+      float error_est  = thisEst->yield->GetBinError(iBin);
+      float errorRel_est = error_est/val_est;
+
+      float errorRel_tot = sqrt( errorRel_est*errorRel_est + uncert[iBin-1]*uncert[iBin-1] );
+      thisEst->yield->SetBinError( iBin, errorRel_tot*val_est );
+
+    }
+
+    thisEst->yield->Scale( 1./thisEst->yield->Integral(1, nBins+1) );
+
+  } // for regions
+
+    
+}
+
+
+void get_fJets( MT2Analysis<MT2Estimate>* fJets, MT2Analysis<MT2EstimateTree>* analysis, MT2Analysis<MT2EstimateTree>* ana_rest ) {
+
+  std::vector<float> uncert;
+  uncert.push_back( 0.25 ); // from bruno
+  uncert.push_back( 0.07 ); 
+  uncert.push_back( 0.20 ); 
+
+  std::set<MT2Region> regions = fJets->getRegions();
+
+  for( std::set<MT2Region>::iterator iR=regions.begin(); iR!=regions.end(); ++iR ) {
+
+    MT2Estimate* thisEst = fJets->get(*iR);
+
+    std::string name(thisEst->yield->GetName());
+    int nBins = 3;
+    Double_t bins[nBins+1];
+    bins[0] = 2.;
+    bins[1] = 4.;
+    bins[2] = 7.;
+    bins[3] = 11.;
+
+    delete thisEst->yield;
+    thisEst->yield = new TH1D( name.c_str(), "", nBins, bins );
+    thisEst->yield->Sumw2();
+
+    MT2EstimateTree* thisTree = analysis->get(*iR);
+    thisTree->tree->Project( name.c_str(), "nJets", "weight" );
+
+    MT2DrawTools::addOverflowSingleHisto(thisEst->yield);
+
+    if ( ana_rest!=NULL ) {
+      TH1D *toSubtract = new TH1D( Form("%s_rest",name.c_str()), "", nBins, bins );
+      MT2EstimateTree* anotherTree = ana_rest->get(*iR);
+      anotherTree->tree->Project( Form("%s_rest",name.c_str()), "nJets", "weight" );
+      MT2DrawTools::addOverflowSingleHisto(toSubtract);
+      
+      float ps = 1.;
+      if      (iR->htMin() < 500.) ps = 180.;
+      else if (iR->htMin() < 600.) ps =  60.;
+      
+      std::cout << "f_j region: " << iR->htRegion()->getNiceName() << std::endl
+		<< "amount of non-QCD subtracted: ";
+      for ( int iBin=1; iBin<=nBins; iBin++ )
+	std::cout << toSubtract->GetBinContent(iBin)/ps/thisEst->yield->GetBinContent(iBin)*100 << "\%\t";
+      std::cout << std::endl;
+
+      if ( iR->htMin() > 400. )  // HT dataset not filled for VLHT, leave it empty
+	thisEst->yield->Add(toSubtract,-1/ps);
+    }
+
+    for( int iBin=1; iBin<nBins+1; ++iBin ) {
+
+      // add error in quadrature to estimate
+      float val_est    = thisEst->yield->GetBinContent(iBin);
+      float error_est  = thisEst->yield->GetBinError(iBin);
+      float errorRel_est = error_est/val_est;
+
+      float inflateUncert = iR->htMin() < 400. ? 2.0 : 1.0; // inflate by a factor two in the VLHT
+
+      float errorRel_tot = sqrt( errorRel_est*errorRel_est + inflateUncert*inflateUncert*uncert[iBin-1]*uncert[iBin-1] );
+      thisEst->yield->SetBinError( iBin, errorRel_tot*val_est );
+
+    }
+    
+
+    thisEst->yield->Scale( 1./thisEst->yield->Integral(1, nBins+1) );
+
+  } // for regions
+
+}
+
+
+
+
+void fillFromTreeAndRatio( MT2Estimate* estimate, MT2Estimate* nCR, MT2Estimate* r_effective, TTree* tree, TF1* f1_ratio, TH1D* h_band , float prescale) {
 
 
   int nBins;
   double* bins;
-  estimate->region->getBins(nBins, bins);
+  estimate->getYieldBins(nBins, bins);
 
   TProfile* hp_r = new TProfile( "r", "", nBins, bins );
   TProfile* hp_rErr = new TProfile( "rErr", "", nBins, bins );
@@ -266,16 +554,21 @@ void fillFromTreeAndRatio( MT2Estimate* estimate, MT2Estimate* nCR, MT2Estimate*
 
     float r = f1_ratio->Eval( mt2 );
 
-    nCR     ->yield->Fill( mt2, weight   );
-    estimate->yield->Fill( mt2, weight*r );
+    float ps_weight = weight/prescale;
 
-    hp_r->Fill( mt2, r, weight );
-    hp_rErr->Fill( mt2, h_band->GetBinError(h_band->FindBin(mt2)), weight );
+    nCR     ->yield->Fill( mt2, ps_weight   );
+    estimate->yield->Fill( mt2, ps_weight*r );
+
+    hp_r->Fill( mt2, r, ps_weight );
+    hp_rErr->Fill( mt2, h_band->GetBinError(h_band->FindBin(mt2)), ps_weight );
 
   } // for entries
 
+
+
   for( int iBin=1; iBin<nBins+1; ++iBin ) {
 
+    float r = hp_r->GetBinContent(iBin);
     r_effective->yield->SetBinContent( iBin, hp_r   ->GetBinContent(iBin) );
 
     float error_fit  = hp_rErr->GetBinContent(iBin);
@@ -286,8 +579,13 @@ void fillFromTreeAndRatio( MT2Estimate* estimate, MT2Estimate* nCR, MT2Estimate*
     r_effective->yield->SetBinError(iBin, error_r);
 
     // add R error in quadrature to estimate
+    float errorRel_r = error_r/r;
+    float val_est    = estimate->yield->GetBinContent(iBin);
     float error_est  = estimate->yield->GetBinError(iBin);
-    estimate->yield->SetBinError( iBin, sqrt(error_r*error_r + error_est*error_est) );
+    float errorRel_est = error_est/val_est;
+
+    float errorRel_tot = sqrt( errorRel_est*errorRel_est + errorRel_r*errorRel_r );
+    estimate->yield->SetBinError( iBin, errorRel_tot*val_est );
 
   }
 
@@ -298,7 +596,11 @@ void fillFromTreeAndRatio( MT2Estimate* estimate, MT2Estimate* nCR, MT2Estimate*
 
 
 
-void drawSingleFit( const std::string& outdir, MT2EstimateQCD* qcd, MT2EstimateQCD* all, TF1* thisFitQCD, TH1D* h_band, float xMin_fit, float xMax_fit ) {
+
+
+
+
+void drawSingleFit( const MT2Config& cfg, bool useMC, const std::string& outdir, MT2EstimateQCD* qcd, MT2EstimateQCD* all, TF1* thisFitQCD, TH1D* h_band, float xMin_fit, float xMax_fit ) {
 
 
   TH1D* thisRatioAll = all->getRatio();
@@ -310,8 +612,9 @@ void drawSingleFit( const std::string& outdir, MT2EstimateQCD* qcd, MT2EstimateQ
   c1->SetLogy();
 
   
-  float xMin = thisRatioAll->GetXaxis()->GetXmin();
-  float xMax = thisRatioAll->GetXaxis()->GetXmax();
+  //float xMin = thisRatioAll->GetXaxis()->GetXmin();
+  float xMin = 50;
+  float xMax = useMC ? thisRatioAll->GetXaxis()->GetXmax() : 200;  // we are blind to MT2>200 in data
 
   float yMax    = thisRatioAll->GetMaximum()*5.;
   float yMinAll = thisRatioQCD->GetMinimum()/2.;
@@ -335,13 +638,19 @@ void drawSingleFit( const std::string& outdir, MT2EstimateQCD* qcd, MT2EstimateQ
   regionName->SetFillColor( 0 );
   regionName->AddText( regionNiceNames[0].c_str() );
   regionName->AddText( regionNiceNames[1].c_str() );
-  regionName->Draw("same");
+  //regionName->Draw("same");
 
-  TLegend* legend = new TLegend( 0.4, 0.65, 0.8, 0.82 );
+  TLegend* legend = new TLegend( 0.4, 0.7, 0.8, 0.92, regionNiceNames[0].c_str() );
+  //TLegend* legend = new TLegend( 0.4, 0.65, 0.8, 0.82 );
   legend->SetFillColor(0);
   legend->SetTextSize(0.035);
-  legend->AddEntry( thisRatioAll, "MC (all)", "P" );
-  legend->AddEntry( thisRatioQCD, "MC (QCD Only)", "P" );
+  if( useMC ) {
+    legend->AddEntry( thisRatioAll, "MC (all)", "P" );
+    legend->AddEntry( thisRatioQCD, "MC (QCD Only)", "P" );
+  } else {
+    legend->AddEntry( thisRatioAll, "Data (all)", "P" );
+    legend->AddEntry( thisRatioQCD, "Data (non-QCD subtracted)", "P" );
+  }
   legend->AddEntry( thisFitQCD, "Fit", "L" );
   legend->Draw("same");
 
@@ -375,11 +684,14 @@ void drawSingleFit( const std::string& outdir, MT2EstimateQCD* qcd, MT2EstimateQ
 
   gPad->RedrawAxis();
 
-  TPaveText* labelTop = MT2DrawTools::getLabelTopSimulation();
+  TPaveText* labelTop;
+  if( useMC && scaleMC==0.) labelTop = MT2DrawTools::getLabelTopSimulation();
+  else if( useMC )          labelTop = MT2DrawTools::getLabelTopSimulation(scaleMC);
+  else        labelTop = MT2DrawTools::getLabelTop(cfg.lumi());
   labelTop->Draw("same");
 
-  c1->SaveAs( Form("%s/ratio_%s.pdf", outdir.c_str(), qcd->region->getName().c_str()) );
-  c1->SaveAs( Form("%s/ratio_%s.eps", outdir.c_str(), qcd->region->getName().c_str()) );
+  c1->SaveAs( Form("%s/ratio_%s%s.pdf", outdir.c_str(), qcd->region->getName().c_str(), (useMC && scaleMC!=0) ? Form("_%.1ffb",scaleMC) : "" ));
+  c1->SaveAs( Form("%s/ratio_%s%s.eps", outdir.c_str(), qcd->region->getName().c_str(), (useMC && scaleMC!=0) ? Form("_%.1ffb",scaleMC) : "" ));
   
 
   delete c1;
@@ -391,65 +703,52 @@ void drawSingleFit( const std::string& outdir, MT2EstimateQCD* qcd, MT2EstimateQ
 
 
 
+void computePurity( TH1D* purity, TH1D* nonQCD, TH1D* all ) {
 
-void get_rHat( MT2Analysis<MT2Estimate>* rHat, MT2Analysis<MT2EstimateTree>* analysis ) {
 
-  std::set<MT2Region> regions = rHat->getRegions();
+  for( int iBin=1; iBin<nonQCD->GetXaxis()->GetNbins()+1; ++iBin ) {
 
-  for( std::set<MT2Region>::iterator iR=regions.begin(); iR!=regions.end(); ++iR ) {
+    float nonQCD_val = nonQCD->GetBinContent(iBin);
+    float nonQCD_err = nonQCD->GetBinError  (iBin);
+    if( nonQCD_err>nonQCD_val ) nonQCD_err = nonQCD_val;
 
-    MT2Estimate* thisEst = rHat->get(*iR);
+    float allCR_val  = all->GetBinContent(iBin);
+    float allCR_err  = all->GetBinError  (iBin);
+    if( allCR_err>allCR_val ) allCR_err = allCR_val;
+    //float allCR_err  = sqrt( allCR_val );
 
-    std::string name(thisEst->yield->GetName());
-    int nBins = 4;
-    Double_t bins[nBins+1];
-    bins[0] = 0.;
-    bins[1] = 1.;
-    bins[2] = 2.;
-    bins[3] = 3.;
-    bins[4] = 10.;
-
-    delete thisEst->yield;
-    thisEst->yield = new TH1D( name.c_str(), "", nBins, bins );
-    thisEst->yield->Sumw2();
-
-    MT2EstimateTree* thisTree = analysis->get(*iR);
-    thisTree->tree->Project( name.c_str(), "nBJets", "weight" );
-
-    thisEst->yield->Scale( 1./thisEst->yield->Integral(1, nBins+1) );
-
-  } // for regions
-
+    float qcdPurity = (allCR_val>0.) ? (allCR_val-nonQCD_val)/allCR_val : 0.;
+    if( qcdPurity<0. ) qcdPurity = 0.;
     
+    float qcdPurityErr = (qcdPurity>0.) ? sqrt( nonQCD_err*nonQCD_err/(allCR_val*allCR_val) + allCR_err*allCR_err*nonQCD_val*nonQCD_val/(allCR_val*allCR_val*allCR_val*allCR_val) ) : 0.;
+
+    purity->SetBinContent( iBin, qcdPurity    );
+    purity->SetBinError  ( iBin, qcdPurityErr );
+
+  }
+
 }
 
 
-void get_fJets( MT2Analysis<MT2Estimate>* fJets, MT2Analysis<MT2EstimateTree>* analysis ) {
 
-  std::set<MT2Region> regions = fJets->getRegions();
+void multiplyHisto( TH1D* histo, TH1D* other ) {
 
-  for( std::set<MT2Region>::iterator iR=regions.begin(); iR!=regions.end(); ++iR ) {
+  for( int iBin=1; iBin<histo->GetXaxis()->GetNbins()+1; ++iBin ) {
 
-    MT2Estimate* thisEst = fJets->get(*iR);
+    float val1     = histo->GetBinContent(iBin);
+    float val1_err = histo->GetBinError  (iBin);
+    float val1_errRel = val1_err/val1;
 
-    std::string name(thisEst->yield->GetName());
-    int nBins = 3;
-    Double_t bins[nBins+1];
-    bins[0] = 2.;
-    bins[1] = 4.;
-    bins[2] = 7.;
-    bins[3] = 25.;
+    float val2     = other->GetBinContent(iBin);
+    float val2_err = other->GetBinError  (iBin);
+    float val2_errRel = val2_err/val2;
 
-    delete thisEst->yield;
-    thisEst->yield = new TH1D( name.c_str(), "", nBins, bins );
-    thisEst->yield->Sumw2();
+    float errRel = sqrt( val1_errRel*val1_errRel + val2_errRel*val2_errRel );
 
-    MT2EstimateTree* thisTree = analysis->get(*iR);
-    thisTree->tree->Project( name.c_str(), "nJets", "weight" );
+    histo->SetBinContent( iBin, val1*val2 );
+    histo->SetBinError  ( iBin, errRel*val1*val2 );
 
-    thisEst->yield->Scale( 1./thisEst->yield->Integral(1, nBins+1) );
-
-  } // for regions
+  }
 
 }
 
@@ -476,354 +775,6 @@ void scaleHisto( TH1D* histo, float val, float err ) {
   }
 
 
-}
-
-
-void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estimate, MT2Analysis<MT2Estimate>* mcTruth ) {
-
-
-  system(Form("mkdir -p %s", outputdir.c_str()));
-
-  
-  std::set<MT2Region> MT2Regions = estimate->getRegions();
-  
-  TH1D* h_estimate_tot = new TH1D("h_estimate_tot", "", (int) MT2Regions.size(), 0, (int) MT2Regions.size());
-  h_estimate_tot->Sumw2();
-  h_estimate_tot->GetYaxis()->SetTitle("Entries");
-  h_estimate_tot->SetMarkerStyle(20);
-  h_estimate_tot->SetMarkerSize(1.6);
-  h_estimate_tot->SetLineColor( estimate->getColor() );
-  h_estimate_tot->SetMarkerColor( estimate->getColor() );
-  
-  TH1D* h_mcTruth_tot = new TH1D("h_mcTruth_tot", "", (int) MT2Regions.size(), 0, (int) MT2Regions.size());
-  h_mcTruth_tot->Sumw2();
-  h_mcTruth_tot->GetYaxis()->SetTitle("Entries");
-  h_mcTruth_tot->SetFillColor(0);
-  h_mcTruth_tot->SetLineColor( mcTruth->getColor() );
-  h_mcTruth_tot->SetMarkerColor( mcTruth->getColor() );
-  h_mcTruth_tot->SetMarkerStyle(20);
-  h_mcTruth_tot->SetMarkerSize(1.6);
-  
-  TH1D* hPull = new TH1D("hPull", "", 20, -5, 5);
-  hPull->Sumw2();
-  hPull->GetXaxis()->SetTitle("(Data Driven - MC)/#sigma");
-  hPull->GetYaxis()->SetTitle("Entries");
-  
-  
-  int iRegion = 1;
-  for( std::set<MT2Region>::iterator iMT2 = MT2Regions.begin(); iMT2!=MT2Regions.end(); ++iMT2 ) {
-
-      std::string fullPath = outputdir;
-
-      std::vector<std::string> niceNames = iMT2->getNiceNames();
-      
-      TH1D* h_estimate = estimate->get(*iMT2)->yield;
-      h_estimate->SetMarkerStyle(20);
-      h_estimate->SetMarkerSize(1.6);
-      h_estimate->SetLineColor( estimate->getColor() );
-      h_estimate->SetMarkerColor( estimate->getColor() );
-
-
-      int nBins = h_estimate->GetXaxis()->GetNbins();
-      double err_estimate;
-      double int_estimate = h_estimate->IntegralAndError(1, nBins+1, err_estimate);
- 
-      h_estimate_tot->SetBinContent(iRegion, int_estimate);
-      h_estimate_tot->SetBinError(iRegion, err_estimate);
-      
-
-      h_estimate_tot->GetXaxis()->SetBinLabel( iRegion, niceNames[1].c_str() );
-      
-      TCanvas* c1 = new TCanvas( "c1", "", 600, 700 );
-      c1->cd();
-
-      TPad *pad1 = new TPad("pad1","pad1",0,0.3-0.1,1,1);
-      pad1->SetBottomMargin(0.15);
-      pad1->Draw();
-      pad1->cd();
-
-      TH1D* h_mcTruth = mcTruth->get(*iMT2)->yield;
-
-      h_mcTruth->SetLineColor( mcTruth->getColor() );
-      h_mcTruth->SetMarkerColor( mcTruth->getColor() );
-      h_mcTruth->SetMarkerStyle(20);
-      h_mcTruth->SetMarkerSize(1.6);
-      
-   
-      double err_int;
-      double int_mcTruth = h_mcTruth->IntegralAndError(1, nBins+1, err_int);
-      h_mcTruth_tot->SetBinContent(iRegion, h_mcTruth->Integral());
-      h_mcTruth_tot->SetBinError(iRegion, err_int);
-      h_mcTruth_tot->GetXaxis()->SetBinLabel( iRegion, niceNames[1].c_str() );
-
-      if(int_mcTruth>0)
-        hPull->Fill((int_estimate-int_mcTruth)/sqrt(err_estimate*err_estimate+err_int*err_int));
-
-
-      float xMin = h_estimate->GetXaxis()->GetXmin();
-      float xMax = h_estimate->GetXaxis()->GetXmax();
-      float yMax_1 = h_estimate->GetMaximum()*1.5;
-      float yMax_2 = 1.2*(h_estimate->GetMaximum() + h_estimate->GetBinError(h_estimate->GetMaximumBin()));
-      float yMax1 = (yMax_1>yMax_2) ? yMax_1 : yMax_2;
-      float yMax_3 = h_mcTruth->GetMaximum()*1.5;
-      float yMax_4 = 1.2*(h_mcTruth->GetMaximum() + h_mcTruth->GetBinError(h_mcTruth->GetMaximumBin()));
-      float yMax2 = (yMax_3>yMax_4) ? yMax_3 : yMax_4;
-      float yMax = (yMax1>yMax2) ? yMax1 : yMax2;
-
-      TH2D* h2_axes = new TH2D("axes", "", 10, xMin, xMax, 10, 0., yMax );
-      h2_axes->SetXTitle("M_{T2} [GeV]");
-      h2_axes->SetYTitle("Entries");
-
-      h2_axes->Draw();
- 
-      //std::vector<std::string> niceNames = iMT2->getNiceNames();
-      for( unsigned i=0; i<niceNames.size(); ++i ) {
-
-        float yMax = 0.9-(float)i*0.05;
-        float yMin = yMax - 0.05;
-        TPaveText* regionText = new TPaveText( 0.18, yMin, 0.55, yMax, "brNDC" );
-        regionText->SetTextSize(0.035);
-        regionText->SetTextFont(42);
-        regionText->SetFillColor(0);
-        regionText->SetTextAlign(11);
-        regionText->AddText( niceNames[i].c_str() );
-        regionText->Draw("same");
-
-      }
-
-
-      TLegend* legend = new TLegend( 0.6, 0.9-2.*0.06, 0.93, 0.9 );
-      legend->SetTextSize(0.038);
-      legend->SetTextFont(42);
-      legend->SetFillColor(0);
-      legend->AddEntry( h_estimate, "data-driven", "P" );
-      legend->AddEntry( h_mcTruth, "MC QCD", "P" );
-
-      legend->Draw("same");
-
-      h_estimate->Draw("P same");
-      h_mcTruth->Draw("P same");
-      //      bgStack.Draw("histoE, same");
-
-      TPaveText* labelTop = MT2DrawTools::getLabelTopSimulation();
-      labelTop->Draw("same");
-
-      gPad->RedrawAxis();
-
-      c1->cd();
-      TPad *pad2 = new TPad("pad2","pad2",0,0,1,0.21);
-      pad2->SetTopMargin(0.05);
-      pad2->SetBottomMargin(0.1);
-      pad2->Draw();
-      pad2->cd();
-
-      std::string thisName = Form("%s_ratio", h_estimate->GetName());
-      TH1D* h_ratio = (TH1D*) h_estimate->Clone(thisName.c_str());
-      h_ratio->Divide(h_mcTruth);
-      h_ratio->SetStats(0);	    
-      h_ratio->SetMarkerStyle(20);
-      h_ratio->SetLineColor(1);
-      //      h_ratio->SetMarkerSize(0.02);
-      h_ratio->GetXaxis()->SetLabelSize(0.00);
-      h_ratio->GetXaxis()->SetTickLength(0.09);
-      h_ratio->GetYaxis()->SetNdivisions(5,5,0);
-      h_ratio->GetYaxis()->SetRangeUser(0.0,2.0);
-      h_ratio->GetYaxis()->SetTitleSize(0.17);
-      h_ratio->GetYaxis()->SetTitleOffset(0.4);
-      h_ratio->GetYaxis()->SetLabelSize(0.17);
-      h_ratio->GetYaxis()->SetTitle("Ratio");
-      
-      
-
-      h_ratio->SetLineWidth(2);
-      //h_ratio->Draw("PE");
-      
-      TH2D* h2_axes_ratio = MT2DrawTools::getRatioAxes( xMin, xMax, 0.0, 2.0 );
-      
-      TLine* lineCentral = new TLine(xMin, 1.0, xMax, 1.0);
-      lineCentral->SetLineColor(1);
-      
-
-      h2_axes_ratio->Draw("");
-      lineCentral->Draw("same");
-      h_ratio->Draw("pe,same");
-
-      gPad->RedrawAxis();
-      
-      c1->cd();
-
-      c1->SaveAs( Form("%s/closure_%s.eps", fullPath.c_str(), iMT2->getName().c_str()) );
-      c1->SaveAs( Form("%s/closure_%s.pdf", fullPath.c_str(), iMT2->getName().c_str()) );
-
-      delete c1;
-      delete h2_axes;
-      delete h2_axes_ratio;
-      delete h_ratio;
-      delete h_estimate;
-      delete h_mcTruth;
-      
-      ++iRegion;
-
-  } // for MT2 regions
-
-  
-  TCanvas* c2 = new TCanvas("c2", "", 1200, 600);
-  c2->cd();
-  
-  TPad *pad1 = new TPad("pad1","pad1",0,0.3-0.1,1,1);
-  pad1->SetBottomMargin(0.15);
-  pad1->Draw();
-  pad1->cd();
-
-  pad1->SetLogy();
-  
-  float yMax_1 = h_estimate_tot->GetMaximum()*1.5;
-  float yMax_2 = 1.2*(h_estimate_tot->GetMaximum() + h_estimate_tot->GetBinError(h_mcTruth_tot->GetMaximumBin()));
-  float yMax1 = (yMax_1>yMax_2) ? yMax_1 : yMax_2;
-  float yMax_3 = h_mcTruth_tot->GetMaximum()*1.5;
-  float yMax_4 = 1.2*(h_mcTruth_tot->GetMaximum() + h_mcTruth_tot->GetBinError(h_mcTruth_tot->GetMaximumBin()));
-  float yMax2 = (yMax_3>yMax_4) ? yMax_3 : yMax_4;
-  float yMax = (yMax1>yMax2) ? yMax1 : yMax2;
-  yMax*=20.;
-  
-  float yMin = 1e-1;
-  for( int iBin=1; iBin<h_estimate_tot->GetXaxis()->GetNbins()+1; ++iBin ) {
-    if( h_estimate_tot    ->GetBinContent(iBin)>0. && h_estimate_tot    ->GetBinContent(iBin)<yMin ) yMin = h_estimate_tot    ->GetBinContent(iBin);
-    if( h_mcTruth_tot->GetBinContent(iBin)>0. && h_mcTruth_tot->GetBinContent(iBin)<yMin ) yMin = h_mcTruth_tot->GetBinContent(iBin);
-  }
-  yMin /= 3.;
-  
-  h_mcTruth_tot->GetXaxis()->SetRangeUser(0, (int) MT2Regions.size());
-  h_mcTruth_tot->GetYaxis()->SetRangeUser(yMin, yMax);
-  h_mcTruth_tot->GetXaxis()->LabelsOption("v");
-  h_mcTruth_tot->Draw("PE");
-
-
-  h_estimate_tot->SetMarkerStyle(20);
-  h_estimate_tot->SetMarkerSize(1.6);
-  h_estimate_tot->SetLineColor( estimate->getColor() );
-  h_estimate_tot->SetMarkerColor( estimate->getColor() );
-
-  h_estimate_tot->Draw("pe,same");
-
-  TLegend* legend = new TLegend( 0.18, 0.2, 0.32, 0.2+0.06 );
-  legend->SetTextSize(0.038);
-  legend->SetTextFont(42);
-  legend->SetFillColor(0);
-  legend->AddEntry( h_estimate_tot, "data-driven", "PL" );
-  legend->AddEntry( h_mcTruth_tot, "QCD MC", "PL" );
-
-  legend->Draw("same");
-
-  TPaveText* labelTop = MT2DrawTools::getLabelTopSimulation();
-  labelTop->Draw("same");
-  
-  TLine* lHT[3];
-  for( int iHT=1; iHT < 4; iHT++ ){
-    lHT[iHT-1] = new TLine(11*iHT, -3., 11*iHT, yMax );
-    lHT[iHT-1]->SetLineColor(kBlack);
-    lHT[iHT-1]->SetLineStyle(3);
-    lHT[iHT-1]->SetLineWidth(2);
-
-    lHT[iHT-1]->Draw("same");
-  }
-
-  int nHTRegions = 4;
-  std::vector< std::string > htRegions;
-  htRegions.push_back("low H_{T}");
-  htRegions.push_back("medium H_{T}");
-  htRegions.push_back("high H_{T}");
-  htRegions.push_back("extreme H_{T}");
-  
-  TPaveText* htBox[nHTRegions];
-  for( int iHT = 0; iHT < nHTRegions; ++iHT){
-    
-    htBox[iHT] = new TPaveText(0.16+0.2*iHT, 0.9-0.06, 0.34+0.2*iHT, 0.9, "brNDC");
-    htBox[iHT]->AddText( htRegions[iHT].c_str() );
-    
-    htBox[iHT]->SetBorderSize(0);
-    htBox[iHT]->SetFillColor(kWhite);
-    htBox[iHT]->SetTextSize(0.038);
-    htBox[iHT]->SetTextAlign(21); // align centered
-    htBox[iHT]->SetTextFont(62);
-    htBox[iHT]->Draw("same");
-
-  }
-
-  gPad->RedrawAxis();
-  
-  c2->cd();
-  TPad *pad2 = new TPad("pad2","pad2",0,0,1,0.21);
-  pad2->SetTopMargin(0.05);
-  pad2->SetBottomMargin(0.1);
-  pad2->Draw();
-  pad2->cd();
-
-  std::string thisName = Form("%s_ratio", h_estimate_tot->GetName());
-  TH1D* h_Ratio = (TH1D*) h_estimate_tot->Clone(thisName.c_str());
-  for( int iBin=1; iBin<h_Ratio->GetXaxis()->GetNbins()+1; ++iBin ) {
-    float mc = h_estimate_tot->GetBinContent(iBin);
-    float mc_err = h_estimate_tot->GetBinError(iBin);
-    float est = h_mcTruth_tot->GetBinContent(iBin);
-    float est_err = h_mcTruth_tot->GetBinError(iBin);
-    float denom = sqrt( mc_err*mc_err + est_err*est_err );
-    if( denom!=0. && mc>0. ) {
-      h_Ratio->SetBinContent( iBin, (mc-est)/denom );
-      h_Ratio->SetBinError( iBin, 1. );
-    }
-  }
-  h_Ratio->SetMarkerStyle(20);
-  h_Ratio->SetLineColor(1);
-  h_Ratio->SetLineWidth(2);
-  
-
-  TH2D* h2_axes_ratio = MT2DrawTools::getRatioAxes( 0, MT2Regions.size(), -3., 3.);
-  h2_axes_ratio->SetYTitle("Pull");
-
-  TLine* LineCentral = new TLine(0, 0, MT2Regions.size(), 0);
-  LineCentral->SetLineColor(1);
-
-
-  h2_axes_ratio->Draw("");
-  LineCentral->Draw("same");
-  h_Ratio->Draw("pe,same");
-
-  for( int iHT=1; iHT < 4; iHT++ ){
-    lHT[iHT-1]->Draw("same");
-  }
-
-
-  gPad->RedrawAxis();
-
-  c2->cd();
-  c2->SaveAs( Form("%s/closure_allRegions.pdf", outputdir.c_str()) );
-  c2->SaveAs( Form("%s/closure_allRegions.eps", outputdir.c_str()) );
-
-
-  gStyle->SetOptStat(1110);
-  TCanvas* c3 = new TCanvas("c3", "", 600, 600);
-  c3->cd();
-  hPull->SetStats(1110);
-  TF1* f1_gaus = new TF1("f1_pull", "gaus", -2., 2.);
-  f1_gaus->SetLineColor(kRed);
-  hPull->Fit( f1_gaus, "QRL" );
-  TPaveText* fitPars = new TPaveText( 0.2, 0.7, 0.5, 0.9, "brNDC" );
-  fitPars->SetTextSize(0.03);
-  fitPars->SetTextAlign(11);
-  fitPars->SetFillColor(0);
-  fitPars->AddText("Gaussian Fit:");
-  fitPars->AddText(Form("Mean : %.2f +/- %.2f", f1_gaus->GetParameter(1), f1_gaus->GetParError(1) ));
-  fitPars->AddText(Form("Sigma: %.2f +/- %.2f", f1_gaus->GetParameter(2), f1_gaus->GetParError(2) ));
-  fitPars->Draw("same");
-  hPull->Draw("hist same");
-  f1_gaus->Draw("l same");
-  c3->SaveAs( Form("%s/closure_pull.pdf", outputdir.c_str()) );
-  c3->SaveAs( Form("%s/closure_pull.eps", outputdir.c_str()) );
-
-  delete c2;
-  delete c3;
-  delete h2_axes_ratio;
-  
 }
 
 
