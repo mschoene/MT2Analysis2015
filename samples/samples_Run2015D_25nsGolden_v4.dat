@@ -1,0 +1,8 @@
+# miniaodv1 lumi = 550/pb
+dcap://t3se01.psi.ch:22125/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/MT2production/74X/Spring15/PostProcessed/19Oct2015_goldenJSON_qcdSkim_miniAODv1/HTMHT_Run2015D_post.root
+dcap://t3se01.psi.ch:22125/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/MT2production/74X/Spring15/PostProcessed/19Oct2015_goldenJSON_qcdSkim_miniAODv1/JetHT_Run2015D_post.root
+dcap://t3se01.psi.ch:22125/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/MT2production/74X/Spring15/PostProcessed/19Oct2015_goldenJSON_qcdSkim_miniAODv1/MET_Run2015D_post.root
+# miniaodv2 lumi = 700/pb
+dcap://t3se01.psi.ch:22125/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/MT2production/74X/Spring15/PostProcessed/19Oct2015_goldenJSON_qcdSkim/HTMHT_Run2015D_post.root
+dcap://t3se01.psi.ch:22125/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/MT2production/74X/Spring15/PostProcessed/19Oct2015_goldenJSON_qcdSkim/JetHT_Run2015D_post.root
+dcap://t3se01.psi.ch:22125/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/MT2production/74X/Spring15/PostProcessed/19Oct2015_goldenJSON_qcdSkim/MET_Run2015D_post.root

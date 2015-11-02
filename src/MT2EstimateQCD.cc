@@ -18,66 +18,23 @@ MT2EstimateQCD::MT2EstimateQCD( const std::string& aname, const MT2Region& aregi
 
   lDphi = new TH1D( this->getHistoName("lDphi").c_str(), "", nBins, bins); lDphi->Sumw2();
   hDphi = new TH1D( this->getHistoName("hDphi").c_str(), "", nBins, bins); hDphi->Sumw2();
-  //ratio = new TH1D( this->getHistoName("ratio").c_str(), "", nBins, bins); ratio->Sumw2();
 
-  //exp      = new TF1(this->getHistoName("exp"     ).c_str(), "expo(0)"                                   , bins[0], bins[nBins]);
-  //expPlusC = new TF1(this->getHistoName("expPlusC").c_str(), "expo(0)+[2]"                               , bins[0], bins[nBins]);
-  //expOrC   = new TF1(this->getHistoName("expOrC"  ).c_str(), "(x>=200)*exp([0]+200.*[1])+(x<200)*expo(0)", bins[0], bins[nBins]);
-
-  //fitXmin  = 60.;
-  //fitXmax  = 100.;
   dphi_low = 0.3;
 
 }
 
 
 
-/*
-MT2EstimateQCD::MT2EstimateQCD( const MT2EstimateTree& treeEst, const std::string& selection ) : MT2Estimate( treeEst ) {
 
-
-  TH1::AddDirectory(kTRUE);
-
-  int nBins;
-  double* bins;
-  region->getBins_qcdCR(nBins, bins);
-
-  std::string lDphiName = this->getHistoName("lDphi");
-  std::string hDphiName = this->getHistoName("hDphi");
-
-  lDphi = new TH1D( lDphiName.c_str(), "", nBins, bins); lDphi->Sumw2();
-  hDphi = new TH1D( hDphiName.c_str(), "", nBins, bins); hDphi->Sumw2();
-
-  if( selection!="" ) {
-    treeEst.tree->Project( lDphiName.c_str(), "mt2", Form("weight*(deltaPhiMin<0.3 && %s)", selection.c_str()) );
-    treeEst.tree->Project( hDphiName.c_str(), "mt2", Form("weight*(deltaPhiMin>0.3 && %s)", selection.c_str()) );
-  } else {
-    treeEst.tree->Project( lDphiName.c_str(), "mt2",      "weight*(deltaPhiMin<0.3)" );
-    treeEst.tree->Project( hDphiName.c_str(), "mt2",      "weight*(deltaPhiMin>0.3)" );
-  }
-
-  ratio = new TH1D( this->getHistoName("ratio").c_str(), "", nBins, bins); ratio->Sumw2();
-
-  exp      = new TF1(this->getHistoName("exp"     ).c_str(), "expo(0)"                                   , bins[0], bins[nBins]);
-  expPlusC = new TF1(this->getHistoName("expPlusC").c_str(), "expo(0)+[2]"                               , bins[0], bins[nBins]);
-  expOrC   = new TF1(this->getHistoName("expOrC"  ).c_str(), "(x>=200)*exp([0]+200.*[1])+(x<200)*expo(0)", bins[0], bins[nBins]);
-
-  fitXmin  = 60.;
-  fitXmax  = 100.;
-  dphi_low = 0.3;
-
-}
-*/
-
-
-void MT2EstimateQCD::projectFromTree( const MT2EstimateTree* treeEst, const std::string& selection ) {
+void MT2EstimateQCD::projectFromTree( const MT2EstimateTree* treeEst, const std::string& selectionTree, const std::string& selectionDphi ) {
 
   std::string selection_tree = "deltaPhiMin<0.3 && mt2>40.";
-  if( selection!="" ) selection_tree = selection_tree + " && " + selection;
+  if( selectionTree!="" ) selection_tree = selection_tree + " && " + selectionTree;
   MT2EstimateTree::projectFromTree( treeEst, selection_tree );
 
   std::string fullSelection = region->getRegionCuts();
-  if( selection!="" ) fullSelection = fullSelection + " && " + selection;
+  //if( selection    !="" ) fullSelection = fullSelection + " && " + selection;
+  if( selectionDphi!="" ) fullSelection = fullSelection + " && " + selectionDphi;
 
   treeEst->tree->Project( lDphi->GetName(), "mt2", Form("weight*(deltaPhiMin<0.3 && %s)", fullSelection.c_str()) );
   treeEst->tree->Project( hDphi->GetName(), "mt2", Form("weight*(deltaPhiMin>0.3 && %s)", fullSelection.c_str()) );
@@ -87,7 +44,7 @@ void MT2EstimateQCD::projectFromTree( const MT2EstimateTree* treeEst, const std:
 
 
 // not sure this method works:
-MT2Analysis<MT2EstimateQCD>* MT2EstimateQCD::makeAnalysisFromTree( const std::string& aname, MT2Analysis<MT2EstimateTree>* estimate, const std::string& selection ) {
+MT2Analysis<MT2EstimateQCD>* MT2EstimateQCD::makeAnalysisFromTree( const std::string& aname, MT2Analysis<MT2EstimateTree>* estimate, const std::string& selectionTree, const std::string& selectionDphi ) {
 
   std::set<MT2Region> regions = estimate->getRegions();
 
@@ -97,7 +54,7 @@ MT2Analysis<MT2EstimateQCD>* MT2EstimateQCD::makeAnalysisFromTree( const std::st
 
     MT2EstimateTree*  thisEstimate = estimate->get( *iR );
     MT2EstimateQCD* thisEstimateQCD = new MT2EstimateQCD( aname, *iR );
-    thisEstimateQCD->projectFromTree( thisEstimate, selection );
+    thisEstimateQCD->projectFromTree( thisEstimate, selectionTree, selectionDphi );
     data.insert( thisEstimateQCD );
 
   } // for regions
@@ -112,26 +69,30 @@ MT2Analysis<MT2EstimateQCD>* MT2EstimateQCD::makeAnalysisFromTree( const std::st
 
 
 
-MT2Analysis<MT2EstimateQCD>* MT2EstimateQCD::makeAnalysisFromInclusiveTree( const std::string& aname, const std::string& regionsSet, MT2Analysis<MT2EstimateTree>* estimate, const std::string& selection ) {
+MT2Analysis<MT2EstimateQCD>* MT2EstimateQCD::makeAnalysisFromInclusiveTree( const std::string& aname, const std::string& regionsSet, MT2Analysis<MT2EstimateTree>* estimate, const std::string& selectionTree, const std::string& selectionDphi ) {
 
+  std::set<MT2Region> regions = estimate->getRegions();
 
-  MT2EstimateTree* treeInclusive = estimate->get( MT2Region("HT450toInf_j2toInf_b0toInf") );
-  if( treeInclusive==0 ) {
+  if( regions.size()!=1 ) {
+  //if( treeInclusive==0 ) {
     std::cout << "[MT2EstimateQCD::makeAnalysisFromEstimateTreeInclusive] ERROR!! You need to pass an inclusive MT2EstimateTree Analysis to use this function!" << std::endl;
     exit(19191);
   }
 
+  //MT2EstimateTree* treeInclusive = estimate->get( MT2Region("HT450toInf_j2toInf_b0toInf") );
+  MT2EstimateTree* treeInclusive = estimate->get( *(regions.begin()) );
+
   // will create a new analysis with custom regions from inclusive tree:
   MT2Analysis<MT2EstimateQCD>* analysis = new MT2Analysis<MT2EstimateQCD>( aname, regionsSet );
-  std::set<MT2Region> regions = analysis->getRegions();
+  std::set<MT2Region> newRegions = analysis->getRegions();
 
 
-  for( std::set<MT2Region>::iterator iR=regions.begin(); iR!=regions.end(); ++iR ) {
+  for( std::set<MT2Region>::iterator iR=newRegions.begin(); iR!=newRegions.end(); ++iR ) {
 
     MT2EstimateQCD* thisEstimateQCD = analysis->get( *iR );
-    thisEstimateQCD->projectFromTree( treeInclusive, selection );
+    thisEstimateQCD->projectFromTree( treeInclusive, selectionTree, selectionDphi );
 
-  } // for regions
+  } // for newRegions
 
 
   return analysis;
@@ -145,14 +106,7 @@ MT2EstimateQCD::MT2EstimateQCD( const MT2EstimateQCD& rhs ) : MT2EstimateTree(rh
 
   this->lDphi = new TH1D(*(rhs.lDphi));
   this->hDphi = new TH1D(*(rhs.hDphi));
-  //this->ratio = new TH1D(*(rhs.ratio));
 
-  //this->exp      = new TF1(*(rhs.exp));
-  //this->expPlusC = new TF1(*(rhs.expPlusC));
-  //this->expOrC   = new TF1(*(rhs.expOrC));
-
-  //this->fitXmin  = rhs.fitXmin;
-  //this->fitXmax  = rhs.fitXmax;
   this->dphi_low = rhs.dphi_low;
 
 }
@@ -162,13 +116,11 @@ MT2EstimateQCD::~MT2EstimateQCD() {
 
   delete lDphi;
   delete hDphi;
-  //delete ratio;
-
-  //delete exp;
-  //delete expPlusC;
-  //delete expOrC;
 
 }
+
+
+
 
 void MT2EstimateQCD::setName( const std::string& newName ) {
 
@@ -176,13 +128,11 @@ void MT2EstimateQCD::setName( const std::string& newName ) {
 
   lDphi->SetName( this->getHistoName("lDphi").c_str() );
   hDphi->SetName( this->getHistoName("hDphi").c_str() );
-  //ratio->SetName( this->getHistoName("ratio").c_str() );
-
-  //exp     ->SetName( this->getHistoName("exp"     ).c_str() );
-  //expPlusC->SetName( this->getHistoName("expPlusC").c_str() );
-  //expOrC  ->SetName( this->getHistoName("expOrC"  ).c_str() );
 
 }
+
+
+
 
 void MT2EstimateQCD::fillDphi(float dphi, float weight, float mt2) {
 
@@ -231,21 +181,6 @@ TF1* MT2EstimateQCD::getFit( const std::string& functionName, float xMin_fit, fl
 
 }
 
-//  f1->SetRange( xMin_fit, xMax_fit );
-
-  
-
-/*
-void MT2EstimateQCD::doFit() {
-
-  ratio->Fit(expPlusC, "Q0", "", fitXmin, expPlusC->GetXmax() ); // fit to exponential + constant
-  ratio->Fit(exp     , "Q0", "", fitXmin, fitXmax             ); // fit to exponential only
-  expOrC->SetParameter(0, exp->GetParameter(0));
-  expOrC->SetParameter(1, exp->GetParameter(1));
-
-}
-
-*/
 
 
 void MT2EstimateQCD::finalize() {
@@ -255,19 +190,18 @@ void MT2EstimateQCD::finalize() {
 }
 
 
+
+
 void MT2EstimateQCD::getShit( TFile* file, const std::string& path ) {
 
   MT2EstimateTree::getShit(file, path);
 
   lDphi = (TH1D*)file->Get(Form("%s/%s", path.c_str(), lDphi->GetName()));
   hDphi = (TH1D*)file->Get(Form("%s/%s", path.c_str(), hDphi->GetName()));
-  //ratio = (TH1D*)file->Get(Form("%s/%s", path.c_str(), ratio->GetName()));
-
-  //exp      = (TF1*)file->Get(Form("%s/%s", path.c_str(), exp     ->GetName()));
-  //expPlusC = (TF1*)file->Get(Form("%s/%s", path.c_str(), expPlusC->GetName()));
-  //expOrC   = (TF1*)file->Get(Form("%s/%s", path.c_str(), expOrC  ->GetName()));
 
 }
+
+
 
 void MT2EstimateQCD::print(const std::string& ofs){
 
@@ -328,11 +262,6 @@ void MT2EstimateQCD::write() const {
 
   lDphi->Write();
   hDphi->Write();
-  //ratio->Write();
-
-  //exp     ->Write();
-  //expPlusC->Write();
-  //expOrC  ->Write();
 
 }
 
@@ -344,14 +273,7 @@ const MT2EstimateQCD& MT2EstimateQCD::operator=( const MT2EstimateQCD& rhs ) {
 
   this->lDphi = new TH1D(*(rhs.lDphi));
   this->hDphi = new TH1D(*(rhs.hDphi));
-  //this->ratio = new TH1D(*(rhs.ratio));
 
-  //this->exp      = new TF1(*(rhs.exp     ));
-  //this->expPlusC = new TF1(*(rhs.expPlusC));
-  //this->expOrC   = new TF1(*(rhs.expOrC  ));
-
-  //this->fitXmin  = rhs.fitXmin ;
-  //this->fitXmax  = rhs.fitXmax ;
   this->dphi_low = rhs.dphi_low;
 
   this->setName(this->getName());

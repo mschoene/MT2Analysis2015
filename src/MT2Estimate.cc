@@ -77,6 +77,36 @@ void MT2Estimate::setName( const std::string& newName ) {
 }
 
 
+
+void MT2Estimate::getYieldBins( int& nBins, double*& bins ) const {
+  nBins = yield->GetNbinsX();
+  bins = new double[nBins+1];
+  for (int iBin = 0; iBin <= nBins; iBin++)
+    bins[iBin] = yield->GetXaxis()->GetBinLowEdge(iBin+1);
+}
+
+
+
+void MT2Estimate::rebinYields( MT2Analysis<MT2Estimate>* analysis, int nBins, float xMin, float xMax ) {
+
+  std::set<MT2Region> regions = analysis->getRegions();
+
+  for( std::set<MT2Region>::iterator iR = regions.begin(); iR!=regions.end(); ++iR ) {
+
+    MT2Estimate* estimate = analysis->get(*iR);
+    TH1D* thisYield = estimate->yield;
+
+    std::string oldName(thisYield->GetName());
+
+    delete thisYield;
+    thisYield = new TH1D( oldName.c_str(), "", nBins, xMin, xMax );
+
+  }
+
+}
+
+
+
 const MT2Estimate& MT2Estimate::operator=( const MT2Estimate& rhs ) {
 
 

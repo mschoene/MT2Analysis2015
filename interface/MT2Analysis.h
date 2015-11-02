@@ -197,6 +197,10 @@ MT2Analysis<T>::MT2Analysis( const std::string& aname, const std::string& region
 
     regions_.insert(MT2Region( 200. )); // inclusive 200-inf at least one jet requirement
 
+  } else if( regionsSet=="13TeV_inclusive450" ) {
+
+    regions_.insert(MT2Region( 450., -1., 2., -1. )); // inclusive 450-inf at least two jet requirement
+
   } else if( regionsSet=="13TeV_inclusive_bjets" ) {
 
     regions_.insert(MT2Region( 450., -1., 2, -1, 0, 0 )); 
@@ -375,6 +379,30 @@ MT2Analysis<T>::MT2Analysis( const std::string& aname, const std::string& region
     regions_ = multiplyHTandSignal( htRegions, signalRegions );
 
 
+  } else if( regionsSet=="zurichPlus_noMonojet" ){
+
+    std::set<MT2HTRegion> htRegions;
+    htRegions.insert(MT2HTRegion( 200.,  450.));
+    htRegions.insert(MT2HTRegion( 450.,   575.));
+    htRegions.insert(MT2HTRegion( 575.,  1000.));
+    htRegions.insert(MT2HTRegion(1000.,  1500.));
+    htRegions.insert(MT2HTRegion(1500.,    -1 ));
+    
+    std::set<MT2SignalRegion> signalRegions;
+    signalRegions.insert(MT2SignalRegion(2,  3, 0,  0));
+    signalRegions.insert(MT2SignalRegion(4, 6, 0,  0));
+    signalRegions.insert(MT2SignalRegion(7, -1, 0,  0));
+    signalRegions.insert(MT2SignalRegion(2,  3, 1,  1));
+    signalRegions.insert(MT2SignalRegion(4, 6, 1,  1));
+    signalRegions.insert(MT2SignalRegion(7, -1, 1,  1));
+    signalRegions.insert(MT2SignalRegion(2,  3, 2,  2));
+    signalRegions.insert(MT2SignalRegion(4, 6, 2,  2));
+    signalRegions.insert(MT2SignalRegion(7, -1, 2,  2));
+    signalRegions.insert(MT2SignalRegion(2,  6, 3,  -1));
+    signalRegions.insert(MT2SignalRegion(7, -1, 3,  -1));
+
+    regions_ = multiplyHTandSignal( htRegions, signalRegions );
+
   } else if( regionsSet=="zurichPlus" ){
 
     std::set<MT2HTRegion> htRegions;
@@ -547,10 +575,12 @@ MT2Analysis<T>::MT2Analysis( const std::string& aname, const std::string& region
     
   } else if( regionsSet=="zurich_onlyHT" ){
 
-    regions_.insert(MT2Region( 450.,   575.)); // no cut on jets
-    regions_.insert(MT2Region( 575.,  1000.));
-    regions_.insert(MT2Region(1000.,  1500.));
-    regions_.insert(MT2Region(1500.,    -1.));
+    //regions_.insert(MT2Region( 200.,    -1., 1.,  1.));
+    regions_.insert(MT2Region( 200.,   450., 2., -1.));
+    regions_.insert(MT2Region( 450.,   575., 2., -1.));
+    regions_.insert(MT2Region( 575.,  1000., 2., -1.));
+    regions_.insert(MT2Region(1000.,  1500., 2., -1.));
+    regions_.insert(MT2Region(1500.,    -1., 2., -1.));
 
 
   } else if( regionsSet=="zurich_HTtriggers" ){
@@ -600,9 +630,10 @@ MT2Analysis<T>::MT2Analysis( const std::string& aname, const std::string& region
 
   } else if( regionsSet=="zurich_onlyJets_noB" ){
 
-    regions_.insert(MT2Region(450., -1., 2,  3, 0,  -1));
-    regions_.insert(MT2Region(450., -1., 4,  6, 0,  -1));
-    regions_.insert(MT2Region(450., -1., 7, -1, 0,  -1));
+    //regions_.insert(MT2Region(200., -1., 1,  1, 0,  -1));
+    regions_.insert(MT2Region(200., -1., 2,  3, 0,  -1));
+    regions_.insert(MT2Region(200., -1., 4,  6, 0,  -1));
+    regions_.insert(MT2Region(200., -1., 7, -1, 0,  -1));
 
 
   } else if( regionsSet=="darkMatter_max1b" ){

@@ -53,6 +53,7 @@ public :
    Float_t         HLT_DiJet;
    Float_t         HLT_DoubleEl;
    Float_t         HLT_DoubleMu;
+   Float_t         HLT_PFMET90_PFMHT90;
    Float_t         Flag_EcalDeadCellTriggerPrimitiveFilter;
    Float_t         Flag_trkPOG_manystripclus53X;
    Float_t         Flag_ecalLaserCorrFilter;
@@ -483,6 +484,7 @@ public :
    TBranch        *b_HLT_DiJet;   //!
    TBranch        *b_HLT_DoubleEl;   //!
    TBranch        *b_HLT_DoubleMu;   //!
+   TBranch        *b_HLT_PFMET90_PFMHT90;   //!
    TBranch        *b_Flag_EcalDeadCellTriggerPrimitiveFilter;   //!
    TBranch        *b_Flag_trkPOG_manystripclus53X;   //!
    TBranch        *b_Flag_ecalLaserCorrFilter;   //!
@@ -981,6 +983,7 @@ void MT2Tree::Init(TTree *tree)
    fChain->SetBranchAddress("HLT_DiJet", &HLT_DiJet, &b_HLT_DiJet);
    fChain->SetBranchAddress("HLT_DoubleEl", &HLT_DoubleEl, &b_HLT_DoubleEl);
    fChain->SetBranchAddress("HLT_DoubleMu", &HLT_DoubleMu, &b_HLT_DoubleMu);
+   fChain->SetBranchAddress("HLT_PFMET90_PFMHT90", &HLT_PFMET90_PFMHT90, &b_HLT_PFMET90_PFMHT90);
    fChain->SetBranchAddress("Flag_EcalDeadCellTriggerPrimitiveFilter", &Flag_EcalDeadCellTriggerPrimitiveFilter, &b_Flag_EcalDeadCellTriggerPrimitiveFilter);
    fChain->SetBranchAddress("Flag_trkPOG_manystripclus53X", &Flag_trkPOG_manystripclus53X, &b_Flag_trkPOG_manystripclus53X);
    fChain->SetBranchAddress("Flag_ecalLaserCorrFilter", &Flag_ecalLaserCorrFilter, &b_Flag_ecalLaserCorrFilter);

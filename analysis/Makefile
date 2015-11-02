@@ -18,6 +18,9 @@ all:  assembleQCDdata createDatacards regionEventYields gammaControlRegion makeZ
 zllPurityTrees: zllPurityTrees.cpp MT2Region.o MT2Sample.o MT2EstimateSyst.o MT2Estimate.o MT2DrawTools.o MT2Config.o MT2EstimateTree.o
 	$(CC) -Wall $(INCLUDES) -o zllPurityTrees zllPurityTrees.cpp MT2Region.o MT2Sample.o MT2EstimateSyst.o MT2Estimate.o MT2DrawTools.o MT2Config.o MT2EstimateTree.o $(ROOTFLAG) $(EXTRALIBS) -fpermissive
 
+computeZGratio: computeZGratio.cpp MT2Region.o MT2Sample.o MT2EstimateSyst.o MT2Estimate.o MT2DrawTools.o MT2Config.o MT2EstimateTree.o
+	$(CC) -Wall $(INCLUDES) -o computeZGratio computeZGratio.cpp MT2Region.o MT2Sample.o MT2EstimateSyst.o MT2Estimate.o MT2DrawTools.o MT2Config.o MT2EstimateTree.o $(ROOTFLAG) $(EXTRALIBS) -fpermissive
+
 computeZllGammaRatio: computeZllGammaRatio.cpp MT2Region.o MT2Sample.o MT2EstimateSyst.o MT2Estimate.o MT2DrawTools.o MT2Config.o MT2EstimateTree.o
 	$(CC) -Wall $(INCLUDES) -o computeZllGammaRatio computeZllGammaRatio.cpp MT2Region.o MT2Sample.o MT2EstimateSyst.o MT2Estimate.o MT2DrawTools.o MT2Config.o MT2EstimateTree.o $(ROOTFLAG) $(EXTRALIBS) -fpermissive
 
@@ -172,6 +175,12 @@ drawLostLeptonControlRegionDataMC_EAs: drawLostLeptonControlRegionDataMC_EAs.cpp
 
 fitDeltaPhiQCD: fitDeltaPhiQCD.cpp  MT2Region.o MT2Estimate.o MT2EstimateQCD.o  MT2EstimateTree.o MT2Config.o MT2DrawTools.o
 	$(CC) -Wall $(INCLUDES) -o fitDeltaPhiQCD fitDeltaPhiQCD.cpp MT2Region.o MT2Estimate.o MT2EstimateQCD.o MT2EstimateTree.o MT2Config.o MT2DrawTools.o $(ROOTFLAG) $(EXTRALIBS)
+
+drawQCDFromDeltaPhi: drawQCDFromDeltaPhi.cpp MT2Region.o MT2Estimate.o MT2EstimateTree.o MT2DrawTools.o MT2Config.o
+	$(CC) -Wall $(INCLUDES) -o drawQCDFromDeltaPhi drawQCDFromDeltaPhi.cpp MT2Region.o MT2Estimate.o MT2EstimateTree.o MT2DrawTools.o MT2Config.o $(ROOTFLAG) $(EXTRALIBS)
+
+computeQCDFromDeltaPhi: computeQCDFromDeltaPhi.cpp  MT2Region.o MT2Estimate.o MT2EstimateQCD.o  MT2EstimateTree.o MT2Config.o MT2DrawTools.o
+	$(CC) -Wall $(INCLUDES) -o computeQCDFromDeltaPhi computeQCDFromDeltaPhi.cpp MT2Region.o MT2Estimate.o MT2EstimateQCD.o MT2EstimateTree.o MT2Config.o MT2DrawTools.o $(ROOTFLAG) $(EXTRALIBS)
 
 checkQCDclosure: checkQCDclosure.cpp  MT2Region.o MT2Estimate.o MT2EstimateQCD.o  MT2EstimateTree.o MT2Config.o MT2DrawTools.o
 	$(CC) -Wall $(INCLUDES) -o checkQCDclosure checkQCDclosure.cpp MT2Region.o MT2Estimate.o MT2EstimateQCD.o MT2EstimateTree.o MT2Config.o MT2DrawTools.o $(ROOTFLAG) $(EXTRALIBS)
