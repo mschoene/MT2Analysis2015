@@ -19,10 +19,14 @@ MT2DrawTools::MT2DrawTools( const std::string& outDir, float lumi ) {
   data_ = 0;
   mc_ = 0;
 
+  mcSF_ = 1.;
+
+
   std::cout << "[MT2DrawTools] Initiating: " << std::endl;
   std::cout << "     lumi: " << lumi_ << std::endl;
   std::cout << "     lumiErr: " << lumiErr_ << std::endl;
   std::cout << "     shapeNorm: " << shapeNorm_ << std::endl;
+  std::cout << "     mcSF: " << mcSF_ << std::endl;
   std::cout << "     outDir: " << outdir_ << std::endl;
 
 }
@@ -74,6 +78,15 @@ void MT2DrawTools::set_shapeNorm( bool shapeNorm ) {
   else
     std::cout << "[MT2DrawTools] Using lumi normalization." << std::endl;
   shapeNorm_ = shapeNorm;
+
+}
+
+
+
+void MT2DrawTools::set_mcSF( float mcsf ) {
+
+  std::cout << "[MT2DrawTools] Setting MC SF to: " << mcsf << std::endl;
+  mcSF_ = mcsf;
 
 }
 
@@ -652,9 +665,11 @@ TH1D* MT2DrawTools::getBand(TF1 *f, TMatrixD const& m, std::string name, bool ge
 
 
 
-void MT2DrawTools::drawRegionYields_fromTree( const std::string& saveName, const std::string& varName, const std::string& selection, int nBins, float xMin, float xMax, std::string axisName, const std::string& units, const std::string& kinCuts, const std::string& topoCuts ) {
+std::vector<TCanvas*> MT2DrawTools::drawRegionYields_fromTree( const std::string& saveName, const std::string& varName, const std::string& selection, int nBins, float xMin, float xMax, std::string axisName, const std::string& units, const std::string& kinCuts, const std::string& topoCuts ) {
 //void MT2DrawTools::drawRegionYields_fromTree( MT2Analysis<MT2EstimateTree>* data, std::vector<MT2Analysis<MT2EstimateTree>* >  bgYields, const std::string& saveName, const std::string& varName, const std::string& selection, int nBins, float xMin, float xMax, std::string axisName, const std::string& units, const std::string& kinCuts ) {
 
+
+  std::vector<TCanvas*> returnVector;
 
   system( Form("mkdir -p %s", outdir_.c_str()) );
 
@@ -670,6 +685,9 @@ void MT2DrawTools::drawRegionYields_fromTree( const std::string& saveName, const
   std::set<MT2Region> MT2Regions = mc_->at(0)->getRegions();
   
   for( std::set<MT2Region>::iterator iMT2 = MT2Regions.begin(); iMT2!=MT2Regions.end(); ++iMT2 ) {
+
+    TCanvas *old_c1 = (TCanvas*)gROOT->GetListOfCanvases()->FindObject(Form("c1_%s", iMT2->getName().c_str()));
+    if( old_c1 != 0 ) delete old_c1;
   
     MT2Region thisRegion( (*iMT2) );
 
@@ -679,6 +697,7 @@ void MT2DrawTools::drawRegionYields_fromTree( const std::string& saveName, const
     if( tree_data ) {
       h1_data = new TH1D("h1_data", "", nBins, xMin, xMax );
       tree_data->Project( "h1_data", varName.c_str(), selection.c_str() );
+      //tree_data->Project( "h1_data", varName.c_str(), Form("%f*(%s)", data_->getWeight(), selection.c_str()) );
       MT2DrawTools::addOverflowSingleHisto(h1_data);
       gr_data = MT2DrawTools::getPoissonGraph(h1_data);
       gr_data->SetMarkerStyle(20);
@@ -694,10 +713,11 @@ void MT2DrawTools::drawRegionYields_fromTree( const std::string& saveName, const
       TH1D* h1_mc = new TH1D( thisName.c_str(), "", nBins, xMin, xMax );
       h1_mc->Sumw2();
       if( selection!="" )
-	//tree_mc->Project( thisName.c_str(), varName.c_str(), Form("%s/puWeight", selection.c_str()) );
-        tree_mc->Project( thisName.c_str(), varName.c_str(), Form("%f*(%s)", lumi_, selection.c_str()) );
+        tree_mc->Project( thisName.c_str(), varName.c_str(), Form("%f*%f*(%s)", mcSF_, lumi_, selection.c_str()) );
+        //tree_mc->Project( thisName.c_str(), varName.c_str(), Form("%f*(%s)", lumi_*mc_->at(i)->getWeight(), selection.c_str()) );
       else
-        tree_mc->Project( thisName.c_str(), varName.c_str(), Form("%f", lumi_) );
+        tree_mc->Project( thisName.c_str(), varName.c_str(), Form("%f*%f", mcSF_, lumi_) );
+        //tree_mc->Project( thisName.c_str(), varName.c_str(), Form("%f", lumi_*mc_->at(i)->getWeight()) );
 
       MT2DrawTools::addOverflowSingleHisto(h1_mc);
 
@@ -762,10 +782,10 @@ void MT2DrawTools::drawRegionYields_fromTree( const std::string& saveName, const
     TH1D* mcBand = MT2DrawTools::getMCBandHisto( histo_mc, lumiErr_ );
 
 
-    TCanvas* c1 = new TCanvas("c1", "", 600, 600);
+    TCanvas* c1 = new TCanvas(Form("c1_%s", iMT2->getName().c_str()), "", 600, 600);
     c1->cd();
     
-    TCanvas* c1_log = new TCanvas("c1_log", "", 600, 600);
+    TCanvas* c1_log = new TCanvas(Form("c1_log_%s", iMT2->getName().c_str()), "", 600, 600);
 
     float yMaxScale = 1.1;
     float yMax1 = (data_) ? h1_data->GetMaximum()*yMaxScale : 0.;
@@ -897,22 +917,24 @@ void MT2DrawTools::drawRegionYields_fromTree( const std::string& saveName, const
       
     }
 
+    TPaveText* normText = new TPaveText( 0.35, 0.8, 0.75, 0.9, "brNDC" );
+    normText->SetFillColor(0);
+    normText->SetTextSize(0.035);
     if( shapeNorm_ ) {
-      TPaveText* normText = new TPaveText( 0.35, 0.8, 0.75, 0.9, "brNDC" );
-      normText->SetFillColor(0);
-      normText->SetTextSize(0.035);
       normText->AddText( "#splitline{Shape}{Norm.}" );
-      if( this->twoPads() ) 
-        pad1->cd();
-      else
-        c1->cd();
-      normText->Draw("same");
-      if( this->twoPads() ) 
-        pad1_log->cd();
-      else
-        c1_log->cd();
-      normText->Draw("same");
+    } else if( mcSF_!=1. ) {
+      normText->AddText( Form("#splitline{MC Scaled}{by %.2f}", mcSF_) );
     }
+    if( this->twoPads() ) 
+      pad1->cd();
+    else
+      c1->cd();
+    normText->Draw("same");
+    if( this->twoPads() ) 
+      pad1_log->cd();
+    else
+      c1_log->cd();
+    normText->Draw("same");
 
 
     int addLines = (data_) ? 2 : 0;
@@ -920,10 +942,27 @@ void MT2DrawTools::drawRegionYields_fromTree( const std::string& saveName, const
     legend->SetTextSize(0.038);
     legend->SetTextFont(42);
     legend->SetFillColor(0);
-    if( data_ ) legend->AddEntry( gr_data, "Data", "P" );
+    //float data_int = 0.;
+    if( data_ ) {
+      legend->AddEntry( gr_data, "Data", "P" );
+      //std::cout<< h1_data->GetName() << std::endl;
+      //std::cout << "integral: " << h1_data->Integral(3, -1) << std::endl;
+      //std::cout << "data(30-60): "<< h1_data->GetBinContent(3) + h1_data->GetBinContent(4) << std::endl;
+      //data_int = h1_data->GetBinContent(3) + h1_data->GetBinContent(4);
+    }
+    //float mc_int = 0.;
     for( unsigned i=0; i<histos_mc.size(); ++i ) {  
       legend->AddEntry( histos_mc[i], mc_->at(i)->getFullName().c_str(), "F" );
+      //std::cout<< histos_mc[i]->GetName() << std::endl;
+      //std::cout << "integral: " << histos_mc[i]->Integral(3, -1) << std::endl;
+      //std::cout << "30-60: "<< histos_mc[i]->GetBinContent(3) + histos_mc[i]->GetBinContent(4) << std::endl;
+      //mc_int += histos_mc[i]->GetBinContent(3) + histos_mc[i]->GetBinContent(4);
     }
+    //float qcdFrac = (histos_mc[0]->GetBinContent(3) + histos_mc[0]->GetBinContent(4) )/ mc_int;
+    //std::cout << "qcd frac: " << qcdFrac << std::endl;
+    //std::cout << "qcd estimate: " << data_int*qcdFrac << std::endl;
+    //std::cout << "qcd true (0-30): " <<  1.27*(histos_mc[0]->GetBinContent(1) + histos_mc[0]->GetBinContent(2)) << std::endl;
+    //std::cout << "qcd true (30-60): " << 1.27*(histos_mc[0]->GetBinContent(3) + histos_mc[0]->GetBinContent(3)) << std::endl;
     if( data_ ) 
       legend->AddEntry( mcBand, "MC Uncert.", "F" );
 
@@ -1039,10 +1078,10 @@ void MT2DrawTools::drawRegionYields_fromTree( const std::string& saveName, const
     //c1_log->SaveAs( Form("%s/%s%s_log.png", outdir_.c_str(), saveName.c_str(), regionSaveName.c_str()) );
     c1_log->SaveAs( Form("%s/%s%s_log.pdf", outdir_.c_str(), saveName.c_str(), regionSaveName.c_str()) );
 
-    delete c1;
+    returnVector.push_back(c1);
+
     delete h2_axes;
 
-    delete c1_log;
     delete h2_axes_log;
     
     delete h2_axes_ratio;
@@ -1052,9 +1091,82 @@ void MT2DrawTools::drawRegionYields_fromTree( const std::string& saveName, const
     for( unsigned i=0; i<histos_mc.size(); ++i )
       delete histos_mc[i];
 
+    delete c1_log;
+
   }// for MT2 regions
 
+  return returnVector;
+
 }
+
+
+
+
+float MT2DrawTools::getDataMCSF( TCanvas* c1 ) {
+
+  TList* list = getCorrectList( c1 );
+
+  TGraphAsymmErrors* gr_data = (TGraphAsymmErrors*)list->FindObject("Graph");
+  float dataInt = MT2DrawTools::graphIntegral( gr_data );
+
+  THStack* mcStack = (THStack*)list->FindObject("bgStack");
+  TList* listStack = mcStack->GetHists();
+
+  float mcInt = 0.;
+
+  for( int i=0; i<listStack->GetSize(); ++i ) {
+
+    TH1D* thisHisto = (TH1D*)listStack->At(i);
+    mcInt += thisHisto->Integral();
+
+  }
+
+  return dataInt/mcInt;
+
+}
+
+
+
+
+float MT2DrawTools::graphIntegral( TGraphAsymmErrors* graph, float xMin, float xMax ) {
+
+  float integral = 0.;
+
+  for( int iPoint=0; iPoint<graph->GetN(); ++iPoint ) {
+
+    Double_t x, y;
+    graph->GetPoint( iPoint, x, y );
+
+    if( x >= xMin && x <= xMax ) 
+      integral += y;
+
+  }
+
+  return integral;
+
+}
+
+    
+
+
+
+
+TList* MT2DrawTools::getCorrectList( TCanvas* c1 ) {
+
+  TList* list = c1->GetListOfPrimitives();
+
+  if( list->GetSize()==2 ) { // means that it's a two-pad canvas
+
+    TPad* pad1 = (TPad*)list->FindObject("pad1");
+    list = pad1->GetListOfPrimitives();
+
+  }
+
+  return list;
+
+}
+
+  
 
 
 bool MT2DrawTools::twoPads() const {
