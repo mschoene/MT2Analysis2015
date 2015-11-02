@@ -19,12 +19,12 @@ using namespace std;
 
 class EventKey {
 public:
-  EventKey(int input_run, int input_lumi, int input_evt) : 
+  EventKey(int input_run, int input_lumi, unsigned long long input_evt) : 
     run_(input_run), lumi_(input_lumi), evt_(input_evt){;}
 
   int run() const {return run_;}
   int lumi() const {return lumi_;}
-  int evt() const {return evt_;}
+  unsigned long long evt() const {return evt_;}
 
   bool operator<(EventKey const& right) const{
     if (run_ == right.run()) {
@@ -39,7 +39,7 @@ public:
 private:
   int run_;
   int lumi_;
-  int evt_;
+  unsigned long long evt_;
 
 };
 
@@ -59,7 +59,8 @@ void removeDuplicates(string inputFile="duplicates.root",
   
   cout << "In input tree, nentries = " << nentries << endl;
 
-  int run,lumi,evt;
+  int run,lumi;
+  unsigned long long evt;
   oldtree->SetBranchAddress("run",&run);
   oldtree->SetBranchAddress("lumi",&lumi);
   oldtree->SetBranchAddress("evt",&evt);
