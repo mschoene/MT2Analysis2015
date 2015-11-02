@@ -74,6 +74,7 @@ int main( int argc, char* argv[] ) {
 
     std::string samplesFile = "../samples/samples_" + cfg.mcSamples() + ".dat";
     
+    std::vector<MT2Sample> samples_zinv = MT2Sample::loadSamples(samplesFile, 602, 605);
     std::vector<MT2Sample> samples_wjet = MT2Sample::loadSamples(samplesFile, 502, 505);
     std::vector<MT2Sample> samples_top  = MT2Sample::loadSamples(samplesFile, 300, 499);
     std::vector<MT2Sample> samples_qcd  = MT2Sample::loadSamples(samplesFile, 100, 199);
@@ -83,6 +84,8 @@ int main( int argc, char* argv[] ) {
     //MT2Analysis<MT2EstimateTree>* qcdCRtree = new MT2Analysis<MT2EstimateTree>( "qcdCRtree", cfg.regionsSet() );
     
     
+    for( unsigned i=0; i<samples_zinv.size(); ++i ) 
+      computeYield( samples_zinv[i], cfg, qcdCRtree );
     for( unsigned i=0; i<samples_wjet.size(); ++i ) 
       computeYield( samples_wjet[i], cfg, qcdCRtree );
     for( unsigned i=0; i<samples_top.size(); ++i ) 
@@ -213,7 +216,8 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
 
     Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb;//*cfg.lumi(); 
 
-    float myht = njets==1 ? 201. : ht; // let everything (mt2=ht>40) pass for monojet
+    //float myht = njets==1 ? 201. : ht; // let everything (mt2=ht>40) pass for monojet
+    float myht = ht; // replace by above line if one wants to explore monojet
     MT2EstimateTree* thisTree = anaTree->get( myht, njets, nbjets, minMTBmet, mt2 );
     if( thisTree==0 ) continue;
 
