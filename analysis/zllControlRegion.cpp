@@ -255,6 +255,10 @@ void addVariables(MT2Analysis<MT2EstimateTree>* anaTree){
   MT2EstimateTree::addVar( anaTree, "raw_mt2"); // = mt2 with the two leptons
 
   MT2EstimateTree::addVar( anaTree, "nJetHF30" );
+
+  MT2EstimateTree::addVar( anaTree, "nJetHF30" );
+
+  MT2EstimateTree::addVar( anaTree, "jet1_pt" );
   
 }
 
@@ -283,6 +287,7 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
   myTree.Init(tree);
 
   int nentries = tree->GetEntries();
+
   for( int iEntry=0; iEntry<nentries; ++iEntry ) {
 
     if( iEntry % 50000 == 0 ) std::cout << "   Entry: " << iEntry << " / " << nentries << std::endl;
@@ -290,12 +295,20 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
 
     if(!( myTree.nlep==2 )) continue; 
 
+    int njets  = myTree.nJet30;
+    int nbjets = myTree.nBJet20;
+    float ht   = myTree.zll_ht;
+    float met  = myTree.zll_met_pt;
+    float mt2  = (njets>1) ? myTree.zll_mt2 : myTree.zll_ht;
+    float minMTBmet = myTree.minMTBMet;
+
     //Minimal selection for the standard model Z/Gamma ratio
     if(myTree.nVert < 1) continue;
     if(myTree.nJet30 < 1) continue;
 
     if( cfg.analysisType() == "mt2"){
-      if( !(myTree.passSelection("zll")) ) continue;
+      if( regionsSet!="13TeV_noCut" )
+        if( !myTree.passSelection("zll") ) continue;
     }
 
     if(( myTree.lep_pdgId[0]*myTree.lep_pdgId[1])>0 )   continue;
@@ -317,12 +330,6 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
 
     TLorentzVector z = LVec[0] + LVec[1]; //leptons invariant mass
 
-    int njets  = myTree.nJet30;
-    int nbjets = myTree.nBJet20;
-    float ht   = myTree.zll_ht;
-    float met  = myTree.zll_met_pt;
-    float mt2  = (njets>1) ? myTree.zll_mt2 : myTree.zll_ht;
-    float minMTBmet = myTree.minMTBMet;
     
     Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb;//*cfg.lumi(); 
     //Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi(); 
@@ -359,6 +366,9 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
       thisTree->assignVar("raw_mt2", myTree.mt2 );
 
       thisTree->assignVar( "nJetHF30",  nJetHF30_ );
+
+      thisTree->assignVar( "jet1_pt",  myTree.jet1_pt );
+
 
       thisTree->fillTree_zll(myTree, weight );
       thisTree->yield->Fill(myTree.zll_mt2, weight );

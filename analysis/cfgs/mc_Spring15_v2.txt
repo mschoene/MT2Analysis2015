@@ -1,4 +1,5 @@
 lumi 3.0
-regionsSet zurich
+regionsSet 13TeV_inclusive
 mcSamples Spring15_25ns_skimprune
 dataSamples datatest
+additionalStuff noSignals
