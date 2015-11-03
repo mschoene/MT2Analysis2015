@@ -709,7 +709,9 @@ std::vector<TCanvas*> MT2DrawTools::drawRegionYields_fromTree( const std::string
     std::vector< TH1D* > histos_mc;
     for( unsigned i=0; i<mc_->size(); ++i ) { 
       TTree* tree_mc = (mc_->at(i)->get(thisRegion)->tree);
-      std::string thisName = "h1_" + mc_->at(i)->getName();
+      std::string thisName = "h1_" + mc_->at(i)->getName() + "_" + thisRegion.getName();
+      TObject* obj = gROOT->FindObject(thisName.c_str());
+      if( obj ) delete obj;
       TH1D* h1_mc = new TH1D( thisName.c_str(), "", nBins, xMin, xMax );
       h1_mc->Sumw2();
       if( selection!="" )
@@ -725,7 +727,7 @@ std::vector<TCanvas*> MT2DrawTools::drawRegionYields_fromTree( const std::string
 
     }
 
-    TH1::AddDirectory(kFALSE); // stupid ROOT memory allocation needs this
+    //TH1::AddDirectory(kFALSE); // stupid ROOT memory allocation needs this
 
     TH1D* mc_sum;
     for( unsigned i=0; i<histos_mc.size(); ++i ) { 
@@ -745,8 +747,11 @@ std::vector<TCanvas*> MT2DrawTools::drawRegionYields_fromTree( const std::string
       std::cout << "SF: " << scaleFactor << std::endl;
     }
 
+
+    TObject* oldStack = gROOT->FindObject("bgStack");
+    if( oldStack ) delete oldStack;
     TH1D* histo_mc;
-    THStack bgStack("bgStack", "");
+    THStack* bgStack = new THStack("bgStack", "");
     for( unsigned i=0; i<histos_mc.size(); ++i ) { 
       int index = mc_->size() - i - 1;
       histos_mc[index]->SetFillColor( mc_->at(index)->getColor() );
@@ -758,7 +763,7 @@ std::vector<TCanvas*> MT2DrawTools::drawRegionYields_fromTree( const std::string
 
       if(i==0) histo_mc = (TH1D*) histos_mc[index]->Clone("histo_mc");
       else histo_mc->Add(histos_mc[index]);
-      bgStack.Add(histos_mc[index]);
+      bgStack->Add(histos_mc[index]);
     }
     
     TGraphAsymmErrors* g_ratio = 0;
@@ -790,7 +795,7 @@ std::vector<TCanvas*> MT2DrawTools::drawRegionYields_fromTree( const std::string
     float yMaxScale = 1.1;
     float yMax1 = (data_) ? h1_data->GetMaximum()*yMaxScale : 0.;
     float yMax2 = (data_) ? yMaxScale*(h1_data->GetMaximum() + sqrt(h1_data->GetMaximum())) : 0.;
-    float yMax3 = yMaxScale*(bgStack.GetMaximum());
+    float yMax3 = yMaxScale*(bgStack->GetMaximum());
     float yMax = (yMax1>yMax2) ? yMax1 : yMax2;
     if( yMax3 > yMax ) yMax = yMax3;
     if( histo_mc->GetNbinsX()<2 ) yMax *=3.;
@@ -985,7 +990,7 @@ std::vector<TCanvas*> MT2DrawTools::drawRegionYields_fromTree( const std::string
     if( this->twoPads() )
       pad1->cd();
     legend->Draw("same");
-    bgStack.Draw("histo same");
+    bgStack->Draw("histo same");
     if( data_ ) {
       mcBand->Draw("E2 same");
       gr_data->Draw("p same");
@@ -1001,7 +1006,7 @@ std::vector<TCanvas*> MT2DrawTools::drawRegionYields_fromTree( const std::string
     if( this->twoPads() )
       pad1_log->cd();
     legend->Draw("same");
-    bgStack.Draw("histo same");
+    bgStack->Draw("histo same");
     if( data_ ) {
       mcBand->Draw("E2 same");
       gr_data->Draw("p same");
@@ -1081,15 +1086,13 @@ std::vector<TCanvas*> MT2DrawTools::drawRegionYields_fromTree( const std::string
     returnVector.push_back(c1);
 
     delete h2_axes;
-
     delete h2_axes_log;
-    
     delete h2_axes_ratio;
     
     delete h1_data;
   
-    for( unsigned i=0; i<histos_mc.size(); ++i )
-      delete histos_mc[i];
+    //for( unsigned i=0; i<histos_mc.size(); ++i )
+    //  delete histos_mc[i];
 
     delete c1_log;
 
@@ -1104,22 +1107,16 @@ std::vector<TCanvas*> MT2DrawTools::drawRegionYields_fromTree( const std::string
 
 float MT2DrawTools::getDataMCSF( TCanvas* c1 ) {
 
+
   TList* list = getCorrectList( c1 );
+  
 
   TGraphAsymmErrors* gr_data = (TGraphAsymmErrors*)list->FindObject("Graph");
+
+  TH1D* mcBand = (TH1D*)list->FindObject("histo_band");
+  float mcInt = mcBand->Integral();
+
   float dataInt = MT2DrawTools::graphIntegral( gr_data );
-
-  THStack* mcStack = (THStack*)list->FindObject("bgStack");
-  TList* listStack = mcStack->GetHists();
-
-  float mcInt = 0.;
-
-  for( int i=0; i<listStack->GetSize(); ++i ) {
-
-    TH1D* thisHisto = (TH1D*)listStack->At(i);
-    mcInt += thisHisto->Integral();
-
-  }
 
   return dataInt/mcInt;
 
