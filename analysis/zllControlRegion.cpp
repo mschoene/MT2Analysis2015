@@ -312,8 +312,8 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
     }
 
     if(( myTree.lep_pdgId[0]*myTree.lep_pdgId[1])>0 )   continue;
-
-    if( myTree.nJet30==1 && (myTree.jet_id[0]<3 || myTree.jet_chHEF[0]<0.05 || myTree.jet_neHEF[0]>0.8 || myTree.jet_phEF[0]>0.7) ) continue;
+    
+    if ( myTree.nJet30==1 && !myTree.passMonoJetId(0) ) continue;
 
     //FILTERS
     if( myTree.isData &&( myTree.Flag_HBHENoiseFilter==0 || myTree.Flag_CSCTightHaloFilter==0 || myTree.Flag_goodVertices==0 ||  myTree.Flag_eeBadScFilter==0 ) ) continue;

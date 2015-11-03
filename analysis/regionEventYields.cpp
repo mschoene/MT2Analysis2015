@@ -314,9 +314,8 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg ) {
     if( regionsSet!="13TeV_noCut" )
       if( !myTree.passSelection(cfg.additionalStuff()) ) continue;
 
-    
-    if( myTree.nJet30==1 && (myTree.jet_id[0]<3 || myTree.jet_chHEF[0]<0.05 || myTree.jet_neHEF[0]>0.8 || myTree.jet_phEF[0]>0.7) ) continue;
-    
+    if ( myTree.nJet30==1 && !myTree.passMonoJetId(0) ) continue;
+      
 
     float ht   = myTree.ht;
     //float met  = myTree.met_pt;

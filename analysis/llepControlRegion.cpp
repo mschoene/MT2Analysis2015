@@ -191,8 +191,8 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
     if( !myTree.passBaseline() ) continue;
     if( myTree.nLepLowMT==1 ) ; // For lost lepton CR
     else continue;
-
-    if( myTree.nJet30==1 && (myTree.jet_id[0]<3 || myTree.jet_chHEF[0]<0.05 || myTree.jet_neHEF[0]>0.8 || myTree.jet_phEF[0]>0.7) ) continue;
+    
+    if ( myTree.nJet30==1 && !myTree.passMonoJetId(0) ) continue;
 
     int njets  = myTree.nJet30;
     int nbjets = myTree.nBJet20; 

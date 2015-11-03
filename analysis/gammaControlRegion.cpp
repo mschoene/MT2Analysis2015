@@ -399,9 +399,7 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
 
     }
  
-    bool failPrivateID = false;
     if( myTree.gamma_nJet30==1 ){
-
       
       float maxDR=0;
       int J=0;
@@ -415,13 +413,10 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
 
       }
       
-      if( (myTree.jet_id[J]<3 || myTree.jet_chHEF[J]<0.05 || myTree.jet_neHEF[J]>0.8 || myTree.jet_phEF[J]>0.7) )
-	failPrivateID=true;
-
+      if ( !myTree.passMonoJetId(J) ) continue;
+    
     }
    
-    if( failPrivateID ) continue;
-    
     if( myTree.isData ) {
       if( !myTree.passGammaAdditionalSelection(1) ) continue;
     } else {

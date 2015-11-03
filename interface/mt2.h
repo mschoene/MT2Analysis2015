@@ -886,6 +886,7 @@ public :
    virtual Bool_t   passLeptonVeto  () const;
    virtual Bool_t   passIsoTrackVeto() const;
    virtual Bool_t   passGammaAdditionalSelection( int sampleId ) const;
+   virtual Bool_t   passMonoJetId( int j ) const;
    virtual Int_t    get_nJetHF( float etaCut = 3.0 ) const;
 
    virtual Int_t    Cut(Long64_t entry);
@@ -1419,6 +1420,9 @@ Bool_t MT2Tree::passIsoTrackVeto() const {
 }
 
 
+Bool_t MT2Tree::passMonoJetId( int j ) const {
+  return jet_id[j]>=3 && jet_chHEF[j]>0.05 && jet_neHEF[j]<0.8 && jet_phEF[j]<0.7;
+}
 
 Bool_t MT2Tree::passBaseline(TString sel) const 
 {
