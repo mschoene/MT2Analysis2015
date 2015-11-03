@@ -264,9 +264,7 @@ void MT2EstimateTree::assignTree( const MT2Tree& mt2tree, float w  ) {
   met    = mt2tree.met_pt;
 
   nJets  = mt2tree.nJet30;
-  nJets40= mt2tree.nJet40;
   nBJets = mt2tree.nBJet20;
-  nBJets40 = mt2tree.nBJet40;
 
   deltaPhiMin   = mt2tree.deltaPhiMin;
   diffMetMht    = mt2tree.diffMetMht;

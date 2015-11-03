@@ -50,9 +50,7 @@ class MT2EstimateTree : public MT2Estimate {
   int nVert;
 
   int nJets;
-  int nJets40;
   int nBJets;
-  int nBJets40;
   int nElectrons;
   int nMuons;
   int nPFLep;
