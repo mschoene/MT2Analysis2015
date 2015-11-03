@@ -66,6 +66,8 @@ class MT2SignalRegion {
   std::string getNiceName() const;
   std::string getNiceNameLatex() const;
 
+  std::string getJetCuts() const;
+  std::string getBJetCuts() const;
   std::string getCuts() const;
   
   int nJetsMin; 
