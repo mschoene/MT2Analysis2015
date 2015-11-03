@@ -91,7 +91,8 @@ int main( int argc, char* argv[] ) {
   TTree* tree_mc_zinv = (TTree*)file_mc_zinv->Get("ZJets/HT450toInf_j2toInf_b0toInf/tree_ZJets_HT450toInf_j2toInf_b0toInf");
 
   if( tree_mc_zinv ) {
-    histo_mc_zinv = getRatioHisto( cfg, tree_mc_zinv, "zinv", "Z #rightarrow #nu#nu MC" );
+    histo_mc_zinv = getRatioHisto( cfg, tree_mc_zinv, "zinv", "Z #rightarrow #nu#nu MC", "nJets", 1, 1.5, 6.5, "Number of Jets" );
+    //histo_mc_zinv = getRatioHisto( cfg, tree_mc_zinv, "zinv", "Z #rightarrow #nu#nu MC" );
     getRatioHisto( cfg, tree_mc_zinv, "zinv", "Z #rightarrow #nu#nu MC", "mt2", 25, 200., 750., "M_{T2} [GeV]" );
     getRatioHisto( cfg, tree_mc_zinv, "zinv", "Z #rightarrow #nu#nu MC", "ht" , 30, 450., 1950., "H_{T} [GeV]" );
     getRatioHisto( cfg, tree_mc_zinv, "zinv", "Z #rightarrow #nu#nu MC", "met", 30, 0., 600., "ME_{T} [GeV]" );
@@ -212,10 +213,14 @@ TH1D* getRatioHisto( MT2Config cfg, TTree* tree, const std::string& name, const 
     float binMax = h1_ratio->GetBinLowEdge( ibin+1 );
     tree->Project( name_bjets.c_str(), "nBJets", Form("weight*(%s>=%f && %s<%f && %s )", varName.c_str(), binMin, varName.c_str(), binMax, selection.c_str() ) );
 
-    float n1 = h1_nbjets->GetBinContent( h1_nbjets->FindBin( 1 ) );
-    float n1_err = h1_nbjets->GetBinError( h1_nbjets->FindBin( 1 ) );
-    float n2 = h1_nbjets->GetBinContent( h1_nbjets->FindBin( 2 ) );
-    float n2_err = h1_nbjets->GetBinError( h1_nbjets->FindBin( 2 ) );
+    //float n1 = h1_nbjets->GetBinContent( h1_nbjets->FindBin( 1 ) );
+    //float n1_err = h1_nbjets->GetBinError( h1_nbjets->FindBin( 1 ) );
+    //float n2 = h1_nbjets->GetBinContent( h1_nbjets->FindBin( 2 ) );
+    //float n2_err = h1_nbjets->GetBinError( h1_nbjets->FindBin( 2 ) );
+    float n1 = h1_nbjets->GetBinContent( h1_nbjets->FindBin( 2 ) );
+    float n1_err = h1_nbjets->GetBinError( h1_nbjets->FindBin( 2 ) );
+    float n2 = h1_nbjets->GetBinContent( h1_nbjets->FindBin( 3 ) );
+    float n2_err = h1_nbjets->GetBinError( h1_nbjets->FindBin( 3 ) );
 
     if( cfg.dataSamples()=="datatest" ) {
       // add stat error:

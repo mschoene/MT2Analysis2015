@@ -85,6 +85,7 @@ class MT2DrawTools {
 
   static TGraphErrors* getSystBand(float xMin, float xMax, double SystErr=0.0);
   static TH1D* getMCBandHisto( TH1D* histo_mc, double SystErr=0.0 );
+  static TH1D* getBandAtOne( TH1D* h );
 
   static void addOverflowSingleHisto( TH1D* yield );
   static void addOverflowSingleHisto( TH3D* yield3d );
