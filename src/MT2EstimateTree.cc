@@ -60,9 +60,7 @@ void MT2EstimateTree::initTree( ) {
 
   tree->Branch( "met", &met, "met/F");
   tree->Branch( "nJets", &nJets, "nJets/I");
-  tree->Branch( "nJets40", &nJets40, "nJets40/I");
   tree->Branch( "nBJets", &nBJets, "nBJets/I");
-  tree->Branch( "nBJets40", &nBJets40, "nBJets40/I");
   
   tree->Branch( "nJetHF", &nJetHF, "nJetHF/I");
   
