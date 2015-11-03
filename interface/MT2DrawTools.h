@@ -47,6 +47,8 @@ class MT2DrawTools {
   void set_lumi( float lumi );
   void set_lumiErr( float lumiErr );
   void set_shapeNorm( bool shapeNorm );
+  void set_mcSF( float mcsf );
+
 
   bool twoPads() const;
 
@@ -61,7 +63,10 @@ class MT2DrawTools {
 
   static TGraphAsymmErrors* getPoissonGraph( TH1D* h1, bool drawZeros=true, const std::string& xerrType="0", float nSigma=1. );
   static TGraphAsymmErrors* getRatioGraph( TH1D* h1, TH1D* h2 );
-  static TH1D* getBandAtOne( TH1D* h );
+
+  static float getDataMCSF( TCanvas* c1 );
+  static float graphIntegral( TGraphAsymmErrors* graph, float xMin = -99999., float xMax=999999. );
+  static TList* getCorrectList( TCanvas* c1 );
   
   static TPad* getCanvasMainPad( bool logY=false );
   static TPad* getCanvasRatioPad( bool logY=false );
@@ -80,6 +85,7 @@ class MT2DrawTools {
 
   static TGraphErrors* getSystBand(float xMin, float xMax, double SystErr=0.0);
   static TH1D* getMCBandHisto( TH1D* histo_mc, double SystErr=0.0 );
+  static TH1D* getBandAtOne( TH1D* h );
 
   static void addOverflowSingleHisto( TH1D* yield );
   static void addOverflowSingleHisto( TH3D* yield3d );
@@ -88,7 +94,7 @@ class MT2DrawTools {
   static TH1D* getBand(TF1 *f, TMatrixD const& m, std::string name, bool getRelativeBand=false, int npx=100); 
 
 
-  void drawRegionYields_fromTree( const std::string& saveName, const std::string& varName, const std::string& selection, int nBins, float xMin, float xMax, std::string axisName="", const std::string& units="", const std::string& kinCuts="", const std::string& topoCuts="" );
+  std::vector<TCanvas*> drawRegionYields_fromTree( const std::string& saveName, const std::string& varName, const std::string& selection, int nBins, float xMin, float xMax, std::string axisName="", const std::string& units="", const std::string& kinCuts="", const std::string& topoCuts="" );
   //void drawRegionYields_fromTree( MT2Analysis<MT2EstimateTree>* data, std::vector<MT2Analysis<MT2EstimateTree>* >  bgYields, const std::string& saveName, const std::string& varName, const std::string& selection, int nBins, float xMin, float xMax, std::string axisName="", const std::string& units="", const std::string& cutsLabel="" );
 
  private:
@@ -100,6 +106,7 @@ class MT2DrawTools {
 
   MT2Analysis<MT2EstimateTree>* data_;
   std::vector< MT2Analysis<MT2EstimateTree>* >* mc_;
+  float mcSF_;
   
 
 };
