@@ -467,8 +467,8 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
       continue; // will take 2b from reweighted 1b so skip
 
 //    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi()*myTree.puWeight; 
-//    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb;//*cfg.lumi(); 
-    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi(); 
+    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb;//*cfg.lumi(); 
+//    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi(); 
 
 
 
@@ -709,5 +709,5 @@ float DeltaPhi(float phi1, float phi2){
   float dPhi = phi1 - phi2;
   while (dPhi  >  TMath::Pi()) dPhi -= 2*TMath::Pi();
   while (dPhi <= -TMath::Pi()) dPhi += 2*TMath::Pi();
-  return fabs(dPhi);
+  return dPhi;
 }
