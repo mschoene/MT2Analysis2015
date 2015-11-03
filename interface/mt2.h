@@ -53,7 +53,6 @@ public :
    Float_t         HLT_DiJet;
    Float_t         HLT_DoubleEl;
    Float_t         HLT_DoubleMu;
-   Float_t         HLT_PFMET90_PFMHT90;
    Float_t         Flag_EcalDeadCellTriggerPrimitiveFilter;
    Float_t         Flag_trkPOG_manystripclus53X;
    Float_t         Flag_ecalLaserCorrFilter;
@@ -484,7 +483,6 @@ public :
    TBranch        *b_HLT_DiJet;   //!
    TBranch        *b_HLT_DoubleEl;   //!
    TBranch        *b_HLT_DoubleMu;   //!
-   TBranch        *b_HLT_PFMET90_PFMHT90;   //!
    TBranch        *b_Flag_EcalDeadCellTriggerPrimitiveFilter;   //!
    TBranch        *b_Flag_trkPOG_manystripclus53X;   //!
    TBranch        *b_Flag_ecalLaserCorrFilter;   //!
