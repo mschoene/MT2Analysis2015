@@ -2,16 +2,11 @@
 
 # --- configuration (consider to move this into a separate file) ---
 treeName="mt2"
-#inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/casal/babies/MT2_CMGTools-from-CMSSW_7_4_12/data_Run2015D_round2/"
-#inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/babies/MT2_CMGTools-from-CMSSW_7_4_7/prod747mc_Spring15/"
-#inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/babies/MT2_CMGTools-from-CMSSW_7_4_12/MC_forZGratio_05Oct2015/"
-#inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/MT2production/74X/Spring15/22Sep2015_singleTop/"
 inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/babies/MT2_CMGTools-from-CMSSW_7_4_12/fullData_miniAODv2_04Nov2015/"
 productionName="05Nov2015_dataRunD_goldenJSON_1p25ifb"
-#productionName="05Oct2015_forMonojetBins"
 fileExt="_post.root"
 isCrab=1
-inputPU="/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/MT2production/74X/firstData2015/PostProcessed/04Sep2015_GoldenJSON_v2/JetHT_Run2015C_post.root"
+inputPU="/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/MT2production/74X/Spring15/PostProcessed/23Oct2015_data_noSkim/JetHT_Run2015D_post.root"
 PUvar="nVert"
 #GoldenJSON="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-255031_13TeV_PromptReco_Collisions15_25ns_JSON_v2.txt"
 #GoldenJSON="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-257599_13TeV_PromptReco_Collisions15_25ns_JSON.txt"
