@@ -6,8 +6,8 @@ treeName="mt2"
 #inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/babies/MT2_CMGTools-from-CMSSW_7_4_7/prod747mc_Spring15/"
 #inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/babies/MT2_CMGTools-from-CMSSW_7_4_12/MC_forZGratio_05Oct2015/"
 #inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/MT2production/74X/Spring15/22Sep2015_singleTop/"
-inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/babies/MT2_CMGTools-from-CMSSW_7_4_12/data_Run2015D_04Oct2015_MECCA0/"
-productionName="09Oct2015_dataRunD_goldenJSON"
+inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/babies/MT2_CMGTools-from-CMSSW_7_4_12/fullData_miniAODv2_04Nov2015/"
+productionName="05Nov2015_dataRunD_goldenJSON_1p25ifb"
 #productionName="05Oct2015_forMonojetBins"
 fileExt="_post.root"
 isCrab=1
@@ -15,9 +15,11 @@ inputPU="/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/MT2production/74X/firstDat
 PUvar="nVert"
 #GoldenJSON="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-255031_13TeV_PromptReco_Collisions15_25ns_JSON_v2.txt"
 #GoldenJSON="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-257599_13TeV_PromptReco_Collisions15_25ns_JSON.txt"
-GoldenJSON="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-258159_13TeV_PromptReco_Collisions15_25ns_JSON.txt"
+#GoldenJSON="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-258159_13TeV_PromptReco_Collisions15_25ns_JSON.txt"
+GoldenJSON="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-258750_13TeV_PromptReco_Collisions15_25ns_JSON.txt"
 #GoldenJSON="/afs/cern.ch/user/g/gzevi/public/Cert_246908-256869_13TeV_PromptReco_Collisions15_25ns_JSON_Photon.txt"
 applyJSON=1
+doFilterTxt=1
 # --------------------------
 
 
@@ -89,6 +91,11 @@ do
     xsec=`echo $line |awk '{print $3}'`
     filter=`echo $line |awk '{print $4}'`
     kfactor=`echo $line |awk '{print $5}'`
+
+    if [[ $id -lt 10 && $doFilterTxt == 1 ]]; then	
+	filterTxt=/shome/casal/eventlist_csc2015/eventlist_`echo $name | cut -d _ -f 1`_csc2015.txt
+	outputFilteredFile=${workingFolder}/${name}_filtered$fileExt;
+    fi;
     
     outputFile=${workingFolder}/${name}$fileExt;
 
@@ -133,6 +140,12 @@ echo "postProcessing(\"$name\",\"$inputFolder\",\"$outputFile\",\"$treeName\",$f
 #echo "gSystem->Load(\"goodrun_cc\"); gROOT->LoadMacro(\"postProcessing.C\"); postProcessing(\"$name\",\"$inputFolder\",\"$outputFile\",\"$treeName\",$filter,$kfactor,$xsec,$id,\"$crabExt\",\"$inputPU\",\"$PUvar\",$applyJSON); gSystem->Exit(0);" |root.exe -b -l ;
 ### Comment for ROOT v5
 echo "gROOT->LoadMacro(\"postProcessing.C\"); postProcessing(\"$name\",\"$inputFolder\",\"$outputFile\",\"$treeName\",$filter,$kfactor,$xsec,$id,\"$crabExt\",\"$inputPU\",\"$PUvar\",$applyJSON); gSystem->Exit(0);" |root.exe -b -l ;
+
+if [[ $id -lt 10 && $doFilterTxt == 1 ]]; then 
+   echo "gROOT->LoadMacro(\"filterFromTxt.C\"); filterFromTxt(\"$filterTxt\",\"$outputFile\",1,\"$outputFilteredFile\",\"mt2\",\"\"); gSystem->Exit(0);" |root.exe -b -l ;
+
+   mv $outputFilteredFile $outputFile;
+fi;
 
 #mv $outputFile $outputFolder
 gfal-copy file://$outputFile srm://t3se01.psi.ch/$outputFolder
