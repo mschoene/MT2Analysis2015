@@ -93,7 +93,7 @@ do
     kfactor=`echo $line |awk '{print $5}'`
 
     if [[ $id -lt 10 && $doFilterTxt == 1 ]]; then	
-	filterTxt=eventlist_`echo $name | cut -d _ -f 1`_csc2015.txt
+	filterTxt=/shome/casal/eventlist_csc2015/eventlist_`echo $name | cut -d _ -f 1`_csc2015.txt
 	outputFilteredFile=${workingFolder}/${name}_filtered$fileExt;
     fi;
     
