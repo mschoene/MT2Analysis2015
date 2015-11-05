@@ -72,12 +72,14 @@ int main( int argc, char* argv[] ) {
 
   bool onlyData = false;
   bool onlyMC   = false;
+  bool onlySignal = false;
   if( argc > 2 ) {
     std::string dataMC(argv[2]);
     if( dataMC=="data" ) onlyData = true;
-    else if( dataMC=="MC" ) onlyMC = true;
+    else if( dataMC=="MC" || dataMC=="mc" ) onlyMC = true;
+    else if( dataMC=="signal" ) onlySignal = true;
     else {
-      std::cout << "-> You passed a second argument that isn't 'data' nor 'MC', so I don't know what to do about it." << std::endl;
+      std::cout << "-> You passed a second argument that isn't 'data', nor 'MC', nor 'signal', so I don't know what to do about it." << std::endl;
     }
   }
 
@@ -91,7 +93,7 @@ int main( int argc, char* argv[] ) {
   std::vector<MT2Analysis<MT2EstimateTree>* > yields;
   //MT2Analysis<MT2EstimateTree>* dataYield;  
 
-  if( cfg.useMC() && !onlyData ) { // use MC BG estimates
+  if( cfg.useMC() && !onlyData && !onlySignal ) { // use MC BG estimates
 
     std::string samplesFileName = "../samples/samples_" + cfg.mcSamples() + ".dat";
     std::cout << std::endl << std::endl;
@@ -191,7 +193,7 @@ int main( int argc, char* argv[] ) {
   } // if sig samples
   
 
-  if( !(cfg.dummyAnalysis()) && cfg.dataSamples()!="" && !onlyMC ) {
+  if( !(cfg.dummyAnalysis()) && cfg.dataSamples()!="" && !onlyMC  && !onlySignal ) {
 
     std::string samplesFile_data = "../samples/samples_" + cfg.dataSamples() + ".dat";
 
@@ -199,7 +201,7 @@ int main( int argc, char* argv[] ) {
     std::cout << "-> Loading data from file: " << samplesFile_data << std::endl;
 
     //    std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, "JetHTMHT"); //, 1, 99 );
-    std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, 1, 2 );
+    std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, 1, 3 );
     if( samples_data.size()==0 ) {
       std::cout << "There must be an error: samples_data is empty!" << std::endl;
       exit(1209);
@@ -212,7 +214,7 @@ int main( int argc, char* argv[] ) {
     MT2Analysis<MT2EstimateTree>* dataYield;
     //dataYield = EventYield_data[0];
     //dataYield->setName("data");
-    dataYield   = mergeYields( EventYield_data, cfg.regionsSet(), "data", 1, 2 );
+    dataYield   = mergeYields( EventYield_data, cfg.regionsSet(), "data", 1, 3 );
 
     yields.push_back( dataYield );
 
@@ -289,7 +291,6 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg ) {
     T::addVar( analysis, "nTrueC" );
   }
   
-  T::addVar( analysis, "nJetHF30" );
   T::addVar( analysis, "jet1_pt" );
   T::addVar( analysis, "jet2_pt" );
   T::addVar( analysis, "mht" );
@@ -301,36 +302,41 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg ) {
     if( iEntry % 50000 == 0 ) std::cout << "    Entry: " << iEntry << " / " << nentries << std::endl;
 
     myTree.GetEntry(iEntry);
+    
+    if( myTree.isData && !myTree.isGolden ) continue;
 
     if( regionsSet!="13TeV_noCut" )
       if( !myTree.passSelection(cfg.additionalStuff()) ) continue;
 
     
     float ht   = myTree.ht;
-    float met  = myTree.met_pt;
+    //float met  = myTree.met_pt;
     float minMTBmet = myTree.minMTBMet;
     int njets  = myTree.nJet30;
     int nbjets = myTree.nBJet20;    
-    float mt2  = (njets>1) ? myTree.mt2 : myTree.jet1_pt;
+    float mt2  = (njets>1) ? myTree.mt2 : ht;
     //float mt2  = myTree.mt2;
     
     float GenSusyMScan1 = myTree.GenSusyMScan1;
     float GenSusyMScan2 = myTree.GenSusyMScan2;
     
-    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi()*myTree.puWeight;
+    //    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi()*myTree.puWeight;
+    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb;//*cfg.lumi();
+    //    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi();
     //weight *= myTree.weight_lepsf;
 
     if( myTree.isData ) {
-      if( !(  (myTree.HLT_PFHT800 && ht>=1000.) || (myTree.HLT_PFHT350_PFMET100 && ht<1000.)  ) ) continue;
-      //if( !( myTree.Flag_HBHENoiseFilter && myTree.Flag_CSCTightHaloFilter && myTree.Flag_goodVertices && myTree.Flag_eeBadScFilter ) ) continue;
+      if( !(  (myTree.HLT_PFHT800 && ht>=1000.) || (myTree.HLT_PFHT350_PFMET100 && ht<1000.) || (myTree.HLT_PFMET90_PFMHT90 && (njets==1 || (njets>1 && ht<450))) ) ) continue;
+      if( !( myTree.Flag_HBHENoiseFilter && myTree.Flag_CSCTightHaloFilter &&  myTree.Flag_eeBadScFilter ) ) continue;
       //if( !(myTree.Flag_CSCTightHaloFilter && myTree.Flag_eeBadScFilter ) ) continue;
 
-      if( (myTree.evt_id == 1 && ht < 1000.) || (myTree.evt_id == 2 && ht >= 1000.) ) continue;
+      if( (myTree.evt_id == 1 && ht < 1000.) || (myTree.evt_id == 2 && ht >= 1000.) || (myTree.evt_id == 3 && (njets>1 && ht >= 450)) ) continue;
       
     }
 
    
-    T* thisEstimate = analysis->get( ht, njets, nbjets, met, minMTBmet, mt2 );
+    T* thisEstimate = analysis->get( ht, njets, nbjets, minMTBmet, mt2 );
+    //T* thisEstimate = analysis->get( ht, njets, nbjets, met, minMTBmet, mt2 );
     if( thisEstimate==0 ) continue;
 
 
@@ -340,15 +346,7 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg ) {
 //    else if( ht > 1500. && mt2 < 400. ) continue;
 //    //////
     
-    int nJetHF30_ = 0;
-    for(int j=0; j<myTree.njet; ++j){
-      
-      if( myTree.jet_pt[j] < 30. || fabs(myTree.jet_eta[j]) < 3.0 ) continue;
-      else ++nJetHF30_;
 
-    }
-
-    thisEstimate->assignVar( "nJetHF30",  nJetHF30_ );
     thisEstimate->assignVar( "jet1_pt",  myTree.jet1_pt );
     thisEstimate->assignVar( "jet2_pt",  myTree.jet2_pt );
     thisEstimate->assignVar( "mht",  myTree.mht_pt );

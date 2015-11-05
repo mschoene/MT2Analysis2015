@@ -32,12 +32,13 @@ class MT2Analysis {
   std::set<MT2HTRegion> getHTRegions() const; //{ return htRegions_; };
   std::set<MT2SignalRegion> getSignalRegions() const; // { return signalRegions_; };
 
-  MT2Region* getRegion( float ht, int njets, int nbjets, float met=-1., float mt=-1., float mt2=-1. ) const;
+  MT2Region* getRegion( float ht, int njets, int nbjets, float mt=-1., float mt2=-1. ) const;
   MT2Region* matchRegion( MT2Region region ) const;
 
   T* get( const MT2Region& r ) const;
   T* get( const MT2Tree& mt2tree ) const;
-  T* get( float ht, int njets, int nbjets, float met=-1., float mt=-1., float mt2=-1. ) const;
+  T* get( float ht, int njets, int nbjets, float mt=-1., float mt2=-1. ) const;
+  T* getWithMatch( const MT2Region& r ) const;
 
   std::string getName() const { return name_; };
   std::string getFullName() const { return fullName_; };
@@ -49,6 +50,7 @@ class MT2Analysis {
   void setColor( const int& newColor ) { color_ = newColor; };
   void setId( const int& newId ) { id_ = newId; };
   
+
   const MT2Analysis& operator=( const MT2Analysis& rhs);
   //template<class T2>
   //const MT2Analysis<T>& operator=( const MT2Analysis<T2>& rhs);
@@ -193,7 +195,11 @@ MT2Analysis<T>::MT2Analysis( const std::string& aname, const std::string& region
 
   } else if( regionsSet=="13TeV_inclusive" ) {
 
-    regions_.insert(MT2Region( 450. )); // inclusive 450-inf and no jet requirement
+    regions_.insert(MT2Region( 200. )); // inclusive 200-inf at least one jet requirement
+
+  } else if( regionsSet=="13TeV_inclusive450" ) {
+
+    regions_.insert(MT2Region( 450., -1., 2., -1. )); // inclusive 450-inf at least two jet requirement
 
   } else if( regionsSet=="13TeV_inclusive_bjets" ) {
 
@@ -373,6 +379,107 @@ MT2Analysis<T>::MT2Analysis( const std::string& aname, const std::string& region
     regions_ = multiplyHTandSignal( htRegions, signalRegions );
 
 
+  } else if( regionsSet=="zurichPlus_noMonojet" ){
+
+    std::set<MT2HTRegion> htRegions;
+    htRegions.insert(MT2HTRegion( 200.,  450.));
+    htRegions.insert(MT2HTRegion( 450.,   575.));
+    htRegions.insert(MT2HTRegion( 575.,  1000.));
+    htRegions.insert(MT2HTRegion(1000.,  1500.));
+    htRegions.insert(MT2HTRegion(1500.,    -1 ));
+    
+    std::set<MT2SignalRegion> signalRegions;
+    signalRegions.insert(MT2SignalRegion(2,  3, 0,  0));
+    signalRegions.insert(MT2SignalRegion(4, 6, 0,  0));
+    signalRegions.insert(MT2SignalRegion(7, -1, 0,  0));
+    signalRegions.insert(MT2SignalRegion(2,  3, 1,  1));
+    signalRegions.insert(MT2SignalRegion(4, 6, 1,  1));
+    signalRegions.insert(MT2SignalRegion(7, -1, 1,  1));
+    signalRegions.insert(MT2SignalRegion(2,  3, 2,  2));
+    signalRegions.insert(MT2SignalRegion(4, 6, 2,  2));
+    signalRegions.insert(MT2SignalRegion(7, -1, 2,  2));
+    signalRegions.insert(MT2SignalRegion(2,  6, 3,  -1));
+    signalRegions.insert(MT2SignalRegion(7, -1, 3,  -1));
+
+    regions_ = multiplyHTandSignal( htRegions, signalRegions );
+
+  } else if( regionsSet=="zurichPlus" ){
+
+    std::set<MT2HTRegion> htRegions;
+    htRegions.insert(MT2HTRegion( 200.,  450.));
+    htRegions.insert(MT2HTRegion( 450.,   575.));
+    htRegions.insert(MT2HTRegion( 575.,  1000.));
+    htRegions.insert(MT2HTRegion(1000.,  1500.));
+    htRegions.insert(MT2HTRegion(1500.,    -1 ));
+    
+    std::set<MT2SignalRegion> signalRegions;
+    signalRegions.insert(MT2SignalRegion(2,  3, 0,  0));
+    signalRegions.insert(MT2SignalRegion(4, 6, 0,  0));
+    signalRegions.insert(MT2SignalRegion(7, -1, 0,  0));
+    signalRegions.insert(MT2SignalRegion(2,  3, 1,  1));
+    signalRegions.insert(MT2SignalRegion(4, 6, 1,  1));
+    signalRegions.insert(MT2SignalRegion(7, -1, 1,  1));
+    signalRegions.insert(MT2SignalRegion(2,  3, 2,  2));
+    signalRegions.insert(MT2SignalRegion(4, 6, 2,  2));
+    signalRegions.insert(MT2SignalRegion(7, -1, 2,  2));
+    signalRegions.insert(MT2SignalRegion(2,  6, 3,  -1));
+    signalRegions.insert(MT2SignalRegion(7, -1, 3,  -1));
+
+    regions_ = multiplyHTandSignal( htRegions, signalRegions );
+
+    regions_.insert(MT2Region(200., -1., 1, 1, 0, 0));
+    regions_.insert(MT2Region(200., -1., 1, 1, 1, -1));
+
+  } else if( regionsSet=="zurich_monojet" ){
+
+    std::set<MT2HTRegion> htRegions;
+    htRegions.insert(MT2HTRegion( 450.,   575.));
+    htRegions.insert(MT2HTRegion( 575.,  1000.));
+    htRegions.insert(MT2HTRegion(1000.,  1500.));
+    htRegions.insert(MT2HTRegion(1500.,    -1 ));
+    
+    std::set<MT2SignalRegion> signalRegions;
+    signalRegions.insert(MT2SignalRegion(2,  3, 0,  0));
+    signalRegions.insert(MT2SignalRegion(4, 6, 0,  0));
+    signalRegions.insert(MT2SignalRegion(7, -1, 0,  0));
+    signalRegions.insert(MT2SignalRegion(2,  3, 1,  1));
+    signalRegions.insert(MT2SignalRegion(4, 6, 1,  1));
+    signalRegions.insert(MT2SignalRegion(7, -1, 1,  1));
+    signalRegions.insert(MT2SignalRegion(2,  3, 2,  2));
+    signalRegions.insert(MT2SignalRegion(4, 6, 2,  2));
+    signalRegions.insert(MT2SignalRegion(7, -1, 2,  2));
+    signalRegions.insert(MT2SignalRegion(2,  6, 3,  -1));
+    signalRegions.insert(MT2SignalRegion(7, -1, 3,  -1));
+
+    regions_ = multiplyHTandSignal( htRegions, signalRegions );
+
+    //    regions_.insert(MT2Region(450., -1., 1, 1, 0, -1)); // monojet region
+    regions_.insert(MT2Region(200., -1., 1, 1, 0, -1)); // monojet region
+
+
+  } else if( regionsSet=="monojet" ){ 
+
+    std::set<MT2HTRegion> htRegions;
+    htRegions.insert(MT2HTRegion( 200.,  450.));
+    
+    std::set<MT2SignalRegion> signalRegions;
+    signalRegions.insert(MT2SignalRegion(2,  3, 0,  0));
+    signalRegions.insert(MT2SignalRegion(4, 6, 0,  0));
+    signalRegions.insert(MT2SignalRegion(7, -1, 0,  0));
+    signalRegions.insert(MT2SignalRegion(2,  3, 1,  1));
+    signalRegions.insert(MT2SignalRegion(4, 6, 1,  1));
+    signalRegions.insert(MT2SignalRegion(7, -1, 1,  1));
+    signalRegions.insert(MT2SignalRegion(2,  3, 2,  2));
+    signalRegions.insert(MT2SignalRegion(4, 6, 2,  2));
+    signalRegions.insert(MT2SignalRegion(7, -1, 2,  2));
+    signalRegions.insert(MT2SignalRegion(2,  6, 3,  -1));
+    signalRegions.insert(MT2SignalRegion(7, -1, 3,  -1));
+    
+    regions_ = multiplyHTandSignal( htRegions, signalRegions );
+    
+    regions_.insert(MT2Region(200., -1., 1, 1, 0, 0));
+    regions_.insert(MT2Region(200., -1., 1, 1, 1, -1));
+
   } else if( regionsSet=="zurich_llep" ){
 
     std::set<MT2HTRegion> htRegions;
@@ -394,13 +501,38 @@ MT2Analysis<T>::MT2Analysis( const std::string& aname, const std::string& region
 
     regions_ = multiplyHTandSignal( htRegions, signalRegions );
 
+  } else if( regionsSet=="zurich_monojet_llep" ){
+
+    std::set<MT2HTRegion> htRegions;
+    htRegions.insert(MT2HTRegion( 450.,   575.));
+    htRegions.insert(MT2HTRegion( 575.,  1000.));
+    htRegions.insert(MT2HTRegion(1000.,  1500.));
+    htRegions.insert(MT2HTRegion(1500.,    -1 ));
+    
+    std::set<MT2SignalRegion> signalRegions;
+    signalRegions.insert(MT2SignalRegion(2,  3, 0,  0));
+    signalRegions.insert(MT2SignalRegion(4, 6, 0,  0));
+    signalRegions.insert(MT2SignalRegion(7, -1, 0,  0));
+    signalRegions.insert(MT2SignalRegion(2,  3, 1,  1));
+    signalRegions.insert(MT2SignalRegion(4, 6, 1,  1));
+    signalRegions.insert(MT2SignalRegion(2,  3, 2,  2));
+    signalRegions.insert(MT2SignalRegion(4, 6, 2,  2));
+    signalRegions.insert(MT2SignalRegion(7, -1, 1,  2));
+    signalRegions.insert(MT2SignalRegion(2,  6, 3,  -1));
+
+    regions_ = multiplyHTandSignal( htRegions, signalRegions );
+
+    //    regions_.insert(MT2Region(450., -1., 1, 1, 0, -1)); // monojet region
+    regions_.insert(MT2Region(200., -1., 1, 1, 0, -1)); // monojet region
 
   } else if( regionsSet=="zurich_onlyHT" ){
 
-    regions_.insert(MT2Region( 450.,   575.)); // no cut on jets
-    regions_.insert(MT2Region( 575.,  1000.));
-    regions_.insert(MT2Region(1000.,  1500.));
-    regions_.insert(MT2Region(1500.,    -1.));
+    //regions_.insert(MT2Region( 200.,    -1., 1.,  1.));
+    regions_.insert(MT2Region( 200.,   450., 2., -1.));
+    regions_.insert(MT2Region( 450.,   575., 2., -1.));
+    regions_.insert(MT2Region( 575.,  1000., 2., -1.));
+    regions_.insert(MT2Region(1000.,  1500., 2., -1.));
+    regions_.insert(MT2Region(1500.,    -1., 2., -1.));
 
 
   } else if( regionsSet=="zurich_HTtriggers" ){
@@ -427,7 +559,7 @@ MT2Analysis<T>::MT2Analysis( const std::string& aname, const std::string& region
     
     std::set<MT2SignalRegion> signalRegions;
     signalRegions.insert(MT2SignalRegion(2,  3, 0,  -1));
-    signalRegions.insert(MT2SignalRegion(4, 6, 0,  -1));
+    signalRegions.insert(MT2SignalRegion(4,  6, 0,  -1));
     signalRegions.insert(MT2SignalRegion(7, -1, 0,  -1));
 
     regions_ = multiplyHTandSignal( htRegions, signalRegions );
@@ -436,16 +568,24 @@ MT2Analysis<T>::MT2Analysis( const std::string& aname, const std::string& region
   } else if( regionsSet=="zurich_onlyJets" ){
 
     regions_.insert(MT2Region(450., -1., 2,  3, 0,  0));
-    regions_.insert(MT2Region(450., -1., 4, 6, 0,  0));
+    regions_.insert(MT2Region(450., -1., 4,  6, 0,  0));
     regions_.insert(MT2Region(450., -1., 7, -1, 0,  0));
     regions_.insert(MT2Region(450., -1., 2,  3, 1,  1));
-    regions_.insert(MT2Region(450., -1., 4, 6, 1,  1));
+    regions_.insert(MT2Region(450., -1., 4,  6, 1,  1));
     regions_.insert(MT2Region(450., -1., 7, -1, 1,  1));
     regions_.insert(MT2Region(450., -1., 2,  3, 2,  2));
-    regions_.insert(MT2Region(450., -1., 4, 6, 2,  2));
+    regions_.insert(MT2Region(450., -1., 4,  6, 2,  2));
     regions_.insert(MT2Region(450., -1., 7, -1, 2,  2));
-    regions_.insert(MT2Region(450., -1., 2,  6, 3,  -1));
-    regions_.insert(MT2Region(450., -1., 7, -1, 3,  -1));
+    regions_.insert(MT2Region(450., -1., 2,  6, 3, -1));
+    regions_.insert(MT2Region(450., -1., 7, -1, 3, -1));
+
+
+  } else if( regionsSet=="zurich_onlyJets_noB" ){
+
+    //regions_.insert(MT2Region(200., -1., 1,  1, 0,  -1));
+    regions_.insert(MT2Region(200., -1., 2,  3, 0,  -1));
+    regions_.insert(MT2Region(200., -1., 4,  6, 0,  -1));
+    regions_.insert(MT2Region(200., -1., 7, -1, 0,  -1));
 
 
   } else if( regionsSet=="darkMatter_max1b" ){
@@ -458,10 +598,10 @@ MT2Analysis<T>::MT2Analysis( const std::string& aname, const std::string& region
     
     std::set<MT2SignalRegion> signalRegions;
     signalRegions.insert(MT2SignalRegion(2,  3, 0,  0));
-    signalRegions.insert(MT2SignalRegion(4, 6, 0,  0));
+    signalRegions.insert(MT2SignalRegion(4,  6, 0,  0));
     signalRegions.insert(MT2SignalRegion(7, -1, 0,  0));
     signalRegions.insert(MT2SignalRegion(2,  3, 1,  1));
-    signalRegions.insert(MT2SignalRegion(4, 6, 1,  1));
+    signalRegions.insert(MT2SignalRegion(4,  6, 1,  1));
     signalRegions.insert(MT2SignalRegion(7, -1, 1,  1));
 
     regions_ = multiplyHTandSignal( htRegions, signalRegions );
@@ -1111,7 +1251,7 @@ void MT2Analysis<T>::printRegions() const {
 
 
 template<class T>
-MT2Region* MT2Analysis<T>::getRegion( float ht, int njets, int nbjets, float met, float mt, float mt2 ) const {
+MT2Region* MT2Analysis<T>::getRegion( float ht, int njets, int nbjets, float mt, float mt2 ) const {
 
   MT2Region* foundRegion = 0;
   
@@ -1120,14 +1260,20 @@ MT2Region* MT2Analysis<T>::getRegion( float ht, int njets, int nbjets, float met
 
     float htMin  = (*it)->region->htRegion()->htMin;
     float htMax  = (*it)->region->htRegion()->htMax;
-    float metMin = (*it)->region->htRegion()->metMin();
-    bool isInclusiveHT = (*it)->region->htRegion()->isInclusiveHT();
-    float metMinInclusiveHT = (*it)->region->htRegion()->metMinInclusiveHT( ht );
+    //float metMin = (*it)->region->htRegion()->metMin( ht );
+    
+    //float metMin = (*it)->region->htRegion()->metMin();
+    //bool isInclusiveHT = (*it)->region->htRegion()->isInclusiveHT();
+    //float metMinInclusiveHT = (*it)->region->htRegion()->metMinInclusiveHT( ht );
+
     
     if( ht<htMin ) continue;
     if( htMax>0. && ht>htMax ) continue;
-    if( !(isInclusiveHT) && metMin>0. && met>0. && met<metMin ) continue;
-    if( isInclusiveHT && metMinInclusiveHT>0. && met>0. && met<metMinInclusiveHT ) continue;
+    //if( metMin>0. && met>0. && met<metMin ) continue;
+    
+    //if( !(isInclusiveHT) && metMin>0. && met>0. && met<metMin ) continue;
+    //if( metMinInclusiveHT>0. && met>0. && met<metMinInclusiveHT ) continue;
+    //if( isInclusiveHT && metMinInclusiveHT>0. && met>0. && met<metMinInclusiveHT ) continue;
 
     int njetsmin  = (*it)->region->sigRegion()->nJetsMin;
     int njetsmax  = (*it)->region->sigRegion()->nJetsMax;
@@ -1192,6 +1338,8 @@ MT2Region* MT2Analysis<T>::matchRegion( MT2Region region ) const {
     if(!( region.isIncluded( thisRegion ) ) ) continue;
     foundRegion = ( thisRegion );
     break;
+
+    delete thisRegion;
     
   }
     
@@ -1207,15 +1355,18 @@ MT2Region* MT2Analysis<T>::matchRegion( MT2Region region ) const {
 template<class T>
 T* MT2Analysis<T>::get( const MT2Tree& mt2tree ) const {
 
-  return this->get( mt2tree.ht, mt2tree.nJet30, mt2tree.nBJet20, mt2tree.met_pt, mt2tree.minMTBMet, mt2tree.mt2 );
+  return this->get( mt2tree.ht, mt2tree.nJet30, mt2tree.nBJet20, mt2tree.minMTBMet, mt2tree.mt2 );
+  //return this->get( mt2tree.ht, mt2tree.nJet30, mt2tree.nBJet20, mt2tree.met_pt, mt2tree.minMTBMet, mt2tree.mt2 );
 
 }
 
 
 template<class T>
-T* MT2Analysis<T>::get( float ht, int njets, int nbjets, float met, float mt, float mt2 ) const {
+T* MT2Analysis<T>::get( float ht, int njets, int nbjets, float mt, float mt2 ) const {
+//T* MT2Analysis<T>::get( float ht, int njets, int nbjets, float met, float mt, float mt2 ) const {
 
-  MT2Region* foundRegion = this->getRegion(ht, njets, nbjets, met, mt, mt2);
+  MT2Region* foundRegion = this->getRegion(ht, njets, nbjets, mt, mt2);
+  //MT2Region* foundRegion = this->getRegion(ht, njets, nbjets, met, mt, mt2);
 
   if( foundRegion==0 ) return 0;
 
@@ -1247,6 +1398,16 @@ T* MT2Analysis<T>::get( const MT2Region& r ) const {
 
 
 
+template<class T>
+T* MT2Analysis<T>::getWithMatch( const MT2Region& r ) const {
+
+  MT2Region* matchedRegion = this->matchRegion(r);
+  if( matchedRegion==0 ) return 0;
+  return this->get(*matchedRegion);
+
+}
+
+
 template<class T> 
 void MT2Analysis<T>::setName( const std::string& newName ) {
 
@@ -1264,6 +1425,9 @@ void MT2Analysis<T>::setName( const std::string& newName ) {
 
 }
 
+
+
+    
 
 // operator overloading:
 
@@ -1935,8 +2099,8 @@ std::vector<MT2Analysis<T>*> MT2Analysis<T>::readAllFromFile( const std::string&
     //TString analysisName_tstr(analysisName);
     //if( matchExpression!="" && !(analysisName_tstr.Contains(matchExpression)) ) continue;
     TString analysisName_tstr(analysisName);
-    if( (matchName=="SMS" || matchName=="DarkMatter") && !(analysisName_tstr.Contains(matchName)) ) continue;
-    else if( matchName!="" && matchName!="SMS" && matchName!="DarkMatter" && matchName!=analysisName ) continue;
+    if( (matchName=="SMS" || matchName=="DarkMatter" || matchName=="Zprime" || matchName=="Wprime") && !(analysisName_tstr.Contains(matchName)) ) continue;
+    else if( matchName!="" && matchName!="SMS" && matchName!="DarkMatter" && matchName!="Zprime" && matchName!="Wprime" && matchName!=analysisName ) continue;
 
     // now that we know name and region structure we can istantiate an MT2Analysis:
     MT2Analysis<T>* analysis = new MT2Analysis<T>( analysisName, regions );

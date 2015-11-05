@@ -27,6 +27,7 @@ public :
    Int_t           lumi;
    ULong64_t       evt;
    Int_t           isData;
+   Int_t           isGolden;
    Float_t         xsec;
    Float_t         HLT_PFMET170;
    Float_t         HLT_Photon90_R9Id90_HE10_IsoM;
@@ -51,6 +52,7 @@ public :
    Float_t         HLT_DiJet;
    Float_t         HLT_DoubleEl;
    Float_t         HLT_DoubleMu;
+   Float_t         HLT_PFMET90_PFMHT90;
    Float_t         Flag_EcalDeadCellTriggerPrimitiveFilter;
    Float_t         Flag_trkPOG_manystripclus53X;
    Float_t         Flag_ecalLaserCorrFilter;
@@ -80,6 +82,7 @@ public :
    Int_t           nBJetLoose40;
    Int_t           nBJetMedium40;
    Int_t           nBJetTight40;
+   Int_t           nJet30FailId;
    Int_t           nLepGood20;
    Int_t           nLepGood15;
    Int_t           nLepGood10;
@@ -143,6 +146,7 @@ public :
    Int_t           gamma_nBJet20;
    Int_t           gamma_nBJet25;
    Int_t           gamma_nBJet40;
+   Int_t           gamma_nJet30FailId;
    Float_t         gamma_ht;
    Float_t         gamma_deltaPhiMin;
    Float_t         gamma_diffMetMht;
@@ -448,6 +452,7 @@ public :
    TBranch        *b_lumi;   //!
    TBranch        *b_evt;   //!
    TBranch        *b_isData;   //!
+   TBranch        *b_isGolden;   //!
    TBranch        *b_xsec;   //!
    TBranch        *b_HLT_PFMET170;   //!
    TBranch        *b_HLT_Photon90_R9Id90_HE10_IsoM;   //!
@@ -474,6 +479,7 @@ public :
    TBranch        *b_HLT_DiJet;   //!
    TBranch        *b_HLT_DoubleEl;   //!
    TBranch        *b_HLT_DoubleMu;   //!
+   TBranch        *b_HLT_PFMET90_PFMHT90;   //!
    TBranch        *b_Flag_EcalDeadCellTriggerPrimitiveFilter;   //!
    TBranch        *b_Flag_trkPOG_manystripclus53X;   //!
    TBranch        *b_Flag_ecalLaserCorrFilter;   //!
@@ -503,6 +509,7 @@ public :
    TBranch        *b_nBJetLoose40;   //!
    TBranch        *b_nBJetMedium40;   //!
    TBranch        *b_nBJetTight40;   //!
+   TBranch        *b_nJet30FailId;   //!
    TBranch        *b_nLepGood20;   //!
    TBranch        *b_nLepGood15;   //!
    TBranch        *b_nLepGood10;   //!
@@ -564,6 +571,7 @@ public :
    TBranch        *b_gamma_nBJet20;   //! 
    TBranch        *b_gamma_nBJet25;   //! 
    TBranch        *b_gamma_nBJet40;   //!
+   TBranch        *b_gamma_nJet30FailId;   //!
    TBranch        *b_gamma_ht;   //!
    TBranch        *b_gamma_deltaPhiMin;   //!
    TBranch        *b_gamma_diffMetMht;   //!
@@ -867,11 +875,13 @@ public :
 
    MT2Tree(TTree *tree=0);
    virtual ~MT2Tree();
-   virtual Bool_t   passSelection(TString sel = "");
-   virtual Bool_t   passBaseline (TString sel = "");
-   virtual Bool_t   passLeptonVeto  ();
-   virtual Bool_t   passIsoTrackVeto();
-   virtual Bool_t   passGammaAdditionalSelection( int sampleId );
+   virtual Bool_t   passSelection(TString sel = "") const;
+   virtual Bool_t   passBaseline (TString sel = "") const;
+   virtual Bool_t   passLeptonVeto  () const;
+   virtual Bool_t   passIsoTrackVeto() const;
+   virtual Bool_t   passGammaAdditionalSelection( int sampleId ) const;
+   virtual Int_t    get_nJetHF( float etaCut = 3.0 ) const;
+
    virtual Int_t    Cut(Long64_t entry);
    virtual Int_t    GetEntry(Long64_t entry);
    virtual Long64_t LoadTree(Long64_t entry);
@@ -936,6 +946,7 @@ void MT2Tree::Init(TTree *tree)
    fChain->SetBranchAddress("lumi", &lumi, &b_lumi);
    fChain->SetBranchAddress("evt", &evt, &b_evt);
    fChain->SetBranchAddress("isData", &isData, &b_isData);
+   fChain->SetBranchAddress("isGolden", &isGolden, &b_isGolden);
    fChain->SetBranchAddress("xsec", &xsec, &b_xsec);
    fChain->SetBranchAddress("HLT_PFMET170", &HLT_PFMET170, &b_HLT_PFMET170);
    fChain->SetBranchAddress("HLT_Photon90_R9Id90_HE10_IsoM", &HLT_Photon90_R9Id90_HE10_IsoM, &b_HLT_Photon90_R9Id90_HE10_IsoM);
@@ -963,6 +974,7 @@ void MT2Tree::Init(TTree *tree)
    fChain->SetBranchAddress("HLT_DiJet", &HLT_DiJet, &b_HLT_DiJet);
    fChain->SetBranchAddress("HLT_DoubleEl", &HLT_DoubleEl, &b_HLT_DoubleEl);
    fChain->SetBranchAddress("HLT_DoubleMu", &HLT_DoubleMu, &b_HLT_DoubleMu);
+   fChain->SetBranchAddress("HLT_PFMET90_PFMHT90", &HLT_PFMET90_PFMHT90, &b_HLT_PFMET90_PFMHT90);
    fChain->SetBranchAddress("Flag_EcalDeadCellTriggerPrimitiveFilter", &Flag_EcalDeadCellTriggerPrimitiveFilter, &b_Flag_EcalDeadCellTriggerPrimitiveFilter);
    fChain->SetBranchAddress("Flag_trkPOG_manystripclus53X", &Flag_trkPOG_manystripclus53X, &b_Flag_trkPOG_manystripclus53X);
    fChain->SetBranchAddress("Flag_ecalLaserCorrFilter", &Flag_ecalLaserCorrFilter, &b_Flag_ecalLaserCorrFilter);
@@ -992,6 +1004,7 @@ void MT2Tree::Init(TTree *tree)
    fChain->SetBranchAddress("nBJetLoose40", &nBJetLoose40, &b_nBJetLoose40);
    fChain->SetBranchAddress("nBJetMedium40", &nBJetMedium40, &b_nBJetMedium40);
    fChain->SetBranchAddress("nBJetTight40", &nBJetTight40, &b_nBJetTight40);
+   fChain->SetBranchAddress("nJet30FailId", &nJet30FailId, &b_nJet30FailId);
    fChain->SetBranchAddress("nLepGood20", &nLepGood20, &b_nLepGood20);
    fChain->SetBranchAddress("nLepGood15", &nLepGood15, &b_nLepGood15);
    fChain->SetBranchAddress("nLepGood10", &nLepGood10, &b_nLepGood10);
@@ -1053,6 +1066,7 @@ void MT2Tree::Init(TTree *tree)
    fChain->SetBranchAddress("gamma_nBJet20", &gamma_nBJet20, &b_gamma_nBJet20);
    fChain->SetBranchAddress("gamma_nBJet25", &gamma_nBJet25, &b_gamma_nBJet25);
    fChain->SetBranchAddress("gamma_nBJet40", &gamma_nBJet40, &b_gamma_nBJet40);
+   fChain->SetBranchAddress("gamma_nJet30FailId", &gamma_nJet30FailId, &b_gamma_nJet30FailId);
    fChain->SetBranchAddress("gamma_ht", &gamma_ht, &b_gamma_ht);
    fChain->SetBranchAddress("gamma_deltaPhiMin", &gamma_deltaPhiMin, &b_gamma_deltaPhiMin);
    fChain->SetBranchAddress("gamma_diffMetMht", &gamma_diffMetMht, &b_gamma_diffMetMht);
@@ -1376,9 +1390,9 @@ void MT2Tree::Show(Long64_t entry)
    fChain->Show(entry);
 }
 
-Bool_t MT2Tree::passSelection(TString sel)
+Bool_t MT2Tree::passSelection(TString sel) const 
 {
-  if(sel=="zll"){
+  if(sel=="zll" || sel=="singleLepton"){
     return passBaseline(sel);
   }else{
   return passBaseline(sel) && passLeptonVeto() && passIsoTrackVeto();
@@ -1386,64 +1400,62 @@ Bool_t MT2Tree::passSelection(TString sel)
 }
 
 
-Bool_t MT2Tree::passLeptonVeto(){
+Bool_t MT2Tree::passLeptonVeto() const {
   return nMuons10==0 && nElectrons10==0;
 }
 
-Bool_t MT2Tree::passIsoTrackVeto(){
+Bool_t MT2Tree::passIsoTrackVeto() const {
   return nPFLep5LowMT==0 && nPFHad10LowMT==0;
 }
 
 
 
-Bool_t MT2Tree::passBaseline(TString sel)
+Bool_t MT2Tree::passBaseline(TString sel) const 
 {
+
   if (sel=="gamma")
     return nVert > 0 && 
-      // gamma_nJet30 >= 2 && 
+      gamma_nJet30 >= 1 &&
+      gamma_nJet30FailId == 0 &&
       gamma_deltaPhiMin > 0.3 && 
+      ( (gamma_ht<1000. && gamma_met_pt>200.) || (gamma_ht>=1000. && gamma_met_pt>30.) ) && 
       gamma_diffMetMht < 0.5*gamma_met_pt;
   else if (sel=="zll")
     return nVert > 0 &&
-      // nJet30 >= 2 && 
+      // nJet30 >= 2 &&
+      nJet30FailId == 0 &&
       zll_deltaPhiMin > 0.3 && 
+      ( (zll_ht<1000. && zll_met_pt>200.) || (zll_ht>=1000. && zll_met_pt>30.) ) && 
       zll_diffMetMht < 0.5*zll_met_pt && 
       nlep > 1 ;
+  else if (sel=="qcd")
+    return nVert > 0 && 
+      nJet30FailId == 0 &&
+      met_pt>30. && 
+      diffMetMht < 0.5*met_pt;
   else
-    return nVert > 0;// && 
-  //(nJet30 >= 2 || sel=="monojet") &&
-  //      deltaPhiMin > 0.3 && 
-  //      diffMetMht < 0.5*met_pt;
+    return nVert > 0 && 
+      //////(nJet30 >= 2 || sel=="monojet") &&
+      nJet30>=1 &&
+      nJet30FailId == 0 &&
+      deltaPhiMin > 0.3 && 
+      ( (ht<1000. && met_pt>200.) || (ht>=1000. && met_pt>30.) ) && 
+      diffMetMht < 0.5*met_pt;
   
   return kFALSE;
 }
 
 
 
-//Bool_t MT2Tree::passBaseline(TString sel)
-//{
-//  if (sel=="")
-//    return nVert > 0 && nJet40 >= 2 &&
-//      deltaPhiMin > 0.3 && 
-//      diffMetMht < 0.5*met_pt && 
-//      jet1_pt > 40. && jet2_pt > 40. ;
-//  else if (sel=="gamma")
-//    return nVert > 0 && gamma_nJet40 >= 2 && 
-//      gamma_deltaPhiMin > 0.3 && 
-//      gamma_diffMetMht < 0.5*gamma_met_pt && 
-//      gamma_jet1_pt > 40. && gamma_jet2_pt > 40. ;
-//  else
-//    return kFALSE;
-//}
 
 
-Bool_t MT2Tree::passGammaAdditionalSelection(int sampleId) 
+Bool_t MT2Tree::passGammaAdditionalSelection(int sampleId) const
 {
 
   if( ngamma==0 ) return kFALSE;
-  if( gamma_pt[0]<180. ) return kFALSE;
+  //if( gamma_pt[0]<180. ) return kFALSE;
   //if( gamma_mt2<200. ) return kFALSE;     
-  if( mt2>200. ) return kFALSE; // orthogonal to signal region
+  //if( mt2>200. ) return kFALSE; // orthogonal to signal region
 
   bool isQCD  = sampleId>=100 && sampleId<200;
   bool isGJet = sampleId>=200 && sampleId<300;
@@ -1456,6 +1468,25 @@ Bool_t MT2Tree::passGammaAdditionalSelection(int sampleId)
   return kTRUE;
 
 }
+
+
+
+
+Int_t MT2Tree::get_nJetHF( float etaCut ) const {
+
+  int nJetHF=0;
+
+  for(int j=0; j<njet; ++j){
+    if( jet_pt[j] < 30. || fabs(jet_eta[j]) < etaCut ) continue;
+    else ++nJetHF;
+  }
+
+  return nJetHF;
+
+}
+
+
+
 
 Int_t MT2Tree::Cut(Long64_t entry)
 {

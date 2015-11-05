@@ -1,4 +1,5 @@
 #include "../interface/MT2Estimate.h"
+#include "../interface/MT2Region.h"
 
 #include <iostream>
 #include <iomanip>
@@ -76,39 +77,34 @@ void MT2Estimate::setName( const std::string& newName ) {
 }
 
 
-void MT2Estimate::addOverflow() {
 
-  MT2Estimate::addOverflowSingleHisto( yield3d );
-  MT2Estimate::addOverflowSingleHisto( yield );
-
+void MT2Estimate::getYieldBins( int& nBins, double*& bins ) const {
+  nBins = yield->GetNbinsX();
+  bins = new double[nBins+1];
+  for (int iBin = 0; iBin <= nBins; iBin++)
+    bins[iBin] = yield->GetXaxis()->GetBinLowEdge(iBin+1);
 }
 
 
-void MT2Estimate::addOverflowSingleHisto( TH3D* yield3d ) {
-  
-  for (int y=1; y<=yield3d->GetNbinsY()+1; ++y)
-    for (int z=1; z<=yield3d->GetNbinsZ()+1; ++z){
 
-      yield3d->SetBinContent(yield3d->GetNbinsX(), y, z,
-			   yield3d->GetBinContent(yield3d->GetNbinsX(), y, z  )+
-			   yield3d->GetBinContent(yield3d->GetNbinsX()+1, y, z)  );
-      yield3d->SetBinError(  yield3d->GetNbinsX(), y, z,
-			   sqrt(yield3d->GetBinError(yield3d->GetNbinsX(), y, z  )*
-				yield3d->GetBinError(yield3d->GetNbinsX(), y, z  )+
-				yield3d->GetBinError(yield3d->GetNbinsX()+1, y, z)*
-				yield3d->GetBinError(yield3d->GetNbinsX()+1, y, z)  ));
-      
-      yield3d->SetBinContent(yield3d->GetNbinsX()+1, y, z, 0.);
-      yield3d->SetBinError  (yield3d->GetNbinsX()+1, y, z, 0.);
-    }
-  
+void MT2Estimate::rebinYields( MT2Analysis<MT2Estimate>* analysis, int nBins, float xMin, float xMax ) {
+
+  std::set<MT2Region> regions = analysis->getRegions();
+
+  for( std::set<MT2Region>::iterator iR = regions.begin(); iR!=regions.end(); ++iR ) {
+
+    MT2Estimate* estimate = analysis->get(*iR);
+    TH1D* thisYield = estimate->yield;
+
+    std::string oldName(thisYield->GetName());
+
+    delete thisYield;
+    thisYield = new TH1D( oldName.c_str(), "", nBins, xMin, xMax );
+
+  }
+
 }
 
-void MT2Estimate::addOverflowSingleHisto( TH1D* yield ) {
-
-  MT2DrawTools::addOverflowSingleHisto( yield );
-        
-}
 
 
 const MT2Estimate& MT2Estimate::operator=( const MT2Estimate& rhs ) {
@@ -353,6 +349,7 @@ MT2Analysis<MT2Estimate>* MT2Estimate::makeIntegralAnalysisFromEstimate( const s
     double integral = thisEstimate->yield->IntegralAndError(1, -1, error);
 
     for( int iBin = 1; iBin < thisEstimate->yield->GetNbinsX()+1; ++iBin ){
+
       thisEstimate->yield->SetBinContent(iBin, integral);
       thisEstimate->yield->SetBinError(iBin, error);
 
@@ -427,9 +424,9 @@ void MT2Estimate::print( std::ofstream& ofs_file, Int_t mt2_bin ){
   
 }
 
-void MT2Estimate::randomizePoisson( float scale ){
+void MT2Estimate::randomizePoisson( float scale, int seed ){
 
-  TRandom3 rand(13);
+  TRandom3 rand(seed);
   
   for( int ibin=1; ibin<yield->GetXaxis()->GetNbins()+1; ++ibin ) {
     

@@ -10,9 +10,10 @@
 
 MT2EstimateTree::MT2EstimateTree( const std::string& aname, const MT2Region& aregion ) : MT2Estimate( aname, aregion ) {
 
-  TH1::AddDirectory(kFALSE);
+  //TH1::AddDirectory(kFALSE);
 
   tree = new TTree(this->getHistoName("tree").c_str(), "" );
+  tree->SetDirectory(0);
   
   this->initTree();
 
@@ -23,9 +24,10 @@ MT2EstimateTree::MT2EstimateTree( const std::string& aname, const MT2Region& are
 
 MT2EstimateTree::MT2EstimateTree( const MT2EstimateTree& rhs ) : MT2Estimate( rhs ) {
 
-  TH1::AddDirectory(kFALSE);
+  //TH1::AddDirectory(kFALSE);
 
   tree = rhs.tree->CloneTree(-1);
+  tree->SetDirectory(0);
 
   this->initTree();
 
@@ -60,6 +62,8 @@ void MT2EstimateTree::initTree( ) {
   tree->Branch( "nJets", &nJets, "nJets/I");
   tree->Branch( "nBJets", &nBJets, "nBJets/I");
   
+  tree->Branch( "nJetHF", &nJetHF, "nJetHF/I");
+  
   tree->Branch( "deltaPhiMin", &deltaPhiMin, "deltaPhiMin/F");
   tree->Branch("diffMetMht", &diffMetMht, "diffMetMht/F");
   tree->Branch( "nVert", &nVert, "nVert/I");
@@ -83,6 +87,64 @@ void MT2EstimateTree::setName( const std::string& newName ) {
   MT2Estimate::setName(newName);
 
   tree->SetName( this->getHistoName("tree").c_str() );
+
+}
+
+
+
+
+void MT2EstimateTree::projectFromTree( const MT2EstimateTree* treeEst, const std::string& selection ) {
+
+  TDirectory* dir = TDirectory::CurrentDirectory();
+
+  std::string fullSelection = region->getRegionCuts();
+  if( selection!="" ) fullSelection = fullSelection + " && " + selection;
+
+  treeEst->tree->Project( yield->GetName(), "mt2", Form("weight*(%s)", fullSelection.c_str()) );
+
+  gROOT->cd();
+
+  this->tree = treeEst->tree->CopyTree( Form("%s", fullSelection.c_str()) );
+  this->tree->SetDirectory(0);
+  this->tree->SetName( this->getHistoName("tree").c_str() );
+
+  dir->cd();
+
+}
+
+
+
+
+MT2Analysis<MT2EstimateTree>* MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( const std::string& aname, const std::string& regionsSet, MT2Analysis<MT2EstimateTree>* estimate, const std::string& selection, int nBins, float xMin, float xMax ) {
+
+
+  std::set<MT2Region> regions = estimate->getRegions();
+
+  //  MT2EstimateTree* treeInclusive = estimate->get( MT2Region("HT450toInf_j2toInf_b0toInf") );
+  if( regions.size()!=1 ) {
+  //if( treeInclusive==0 ) {
+    std::cout << "[MT2EstimateTree::makeAnalysisFromEstimateTreeInclusive] ERROR!! You need to pass an inclusive MT2EstimateTree Analysis to use this function!" << std::endl;
+    exit(19191);
+  }
+
+  MT2EstimateTree* treeInclusive = estimate->get( *(regions.begin()) );
+
+  // will create a new analysis with custom regions from inclusive tree:
+  MT2Analysis<MT2EstimateTree>* analysis = new MT2Analysis<MT2EstimateTree>( aname, regionsSet );
+  std::set<MT2Region> newRegions = analysis->getRegions();
+
+  if ( nBins!=0 )
+    MT2Estimate::rebinYields( (MT2Analysis<MT2Estimate>*)analysis, nBins, xMin, xMax );
+
+  for( std::set<MT2Region>::iterator iR=newRegions.begin(); iR!=newRegions.end(); ++iR ) {
+
+    MT2EstimateTree* thisEstimateTree = analysis->get( *iR );
+    thisEstimateTree->projectFromTree( treeInclusive, selection );
+
+  } // for regions
+
+
+  return analysis;
 
 }
 
@@ -178,31 +240,37 @@ void MT2EstimateTree::fillTree_zll( const MT2Tree& mt2tree, float w ) {
 
 void MT2EstimateTree::assignTree( const MT2Tree& mt2tree, float w  ) {
 
-    run    = mt2tree.run;
-    lumi   = mt2tree.lumi;
-    evt    = mt2tree.evt;
-    weight = w;
-    puWeight = mt2tree.puWeight;
-    id     = mt2tree.evt_id;
+  run    = mt2tree.run;
+  lumi   = mt2tree.lumi;
+  evt    = mt2tree.evt;
+  weight = w;
+  puWeight = mt2tree.puWeight;
+  id     = mt2tree.evt_id;
 
+  nVert  = mt2tree.nVert;
+
+  if(mt2tree.nJet30>1)
     mt2    = mt2tree.mt2;
-    ht     = mt2tree.ht;
-    met    = mt2tree.met_pt;
+  else if(mt2tree.nJet30==1)
+    mt2    = mt2tree.ht;
 
-    nJets  = mt2tree.nJet30;
-    nBJets = mt2tree.nBJet20;
+  ht     = mt2tree.ht;
+  met    = mt2tree.met_pt;
 
-    deltaPhiMin   = mt2tree.deltaPhiMin;
-    diffMetMht    = mt2tree.diffMetMht;
-    nElectrons    = mt2tree.nElectrons10;
-    nMuons        = mt2tree.nMuons10;
-    nPFLep        = mt2tree.nPFLep5LowMT;
-    nPFHad        = mt2tree.nPFHad10LowMT;
+  nJets  = mt2tree.nJet30;
+  nBJets = mt2tree.nBJet20;
+
+  deltaPhiMin   = mt2tree.deltaPhiMin;
+  diffMetMht    = mt2tree.diffMetMht;
+  nElectrons    = mt2tree.nElectrons10;
+  nMuons        = mt2tree.nMuons10;
+  nPFLep        = mt2tree.nPFLep5LowMT;
+  nPFHad        = mt2tree.nPFHad10LowMT;
+
+  nJetHF = mt2tree.get_nJetHF();
     
-    nVert  = mt2tree.nVert;
-
-    GenSusyMScan1 = mt2tree.GenSusyMScan1;
-    GenSusyMScan2 = mt2tree.GenSusyMScan2;
+  GenSusyMScan1 = mt2tree.GenSusyMScan1;
+  GenSusyMScan2 = mt2tree.GenSusyMScan2;
  
 }
   
@@ -218,7 +286,12 @@ void MT2EstimateTree::assignTree_zll( const MT2Tree& mt2tree, float w ) {
 
   nVert  = mt2tree.nVert;
 
-  mt2           = mt2tree.zll_mt2;
+
+  if(mt2tree.nJet30>1)
+    mt2    = mt2tree.zll_mt2;
+  else if(mt2tree.nJet30==1)
+    mt2           = mt2tree.zll_ht;
+ 
   ht            = mt2tree.zll_ht;
   met           = mt2tree.zll_met_pt;
 
@@ -233,6 +306,8 @@ void MT2EstimateTree::assignTree_zll( const MT2Tree& mt2tree, float w ) {
   nMuons        = mt2tree.nMuons10;
   nPFLep        = mt2tree.nPFLep5LowMT;
   nPFHad        = mt2tree.nPFHad10LowMT;
+
+  nJetHF = mt2tree.get_nJetHF();
 
   GenSusyMScan1 = mt2tree.GenSusyMScan1;
   GenSusyMScan2 = mt2tree.GenSusyMScan2;
@@ -251,7 +326,11 @@ void MT2EstimateTree::assignTree_gamma( const MT2Tree& mt2tree, float w ) {
 
   nVert  = mt2tree.nVert;
 
-  mt2           = mt2tree.gamma_mt2;
+  if(mt2tree.gamma_nJet30>1)
+    mt2    = mt2tree.gamma_mt2;
+  else if(mt2tree.gamma_nJet30==1)
+    mt2    = mt2tree.gamma_ht;
+
   ht            = mt2tree.gamma_ht;
   met           = mt2tree.gamma_met_pt;
   deltaPhiMin   = mt2tree.gamma_deltaPhiMin;
@@ -262,6 +341,8 @@ void MT2EstimateTree::assignTree_gamma( const MT2Tree& mt2tree, float w ) {
   nMuons        = mt2tree.nMuons10;
   nPFLep        = mt2tree.nPFLep5LowMT;
   nPFHad        = mt2tree.nPFHad10LowMT;
+
+  nJetHF = mt2tree.get_nJetHF();
 
   GenSusyMScan1 = mt2tree.GenSusyMScan1;
   GenSusyMScan2 = mt2tree.GenSusyMScan2;
@@ -344,7 +425,7 @@ MT2EstimateTree MT2EstimateTree::operator+( const MT2EstimateTree& rhs ) const{
   result.yield->Add(rhs.yield);
   result.yield3d->Add(rhs.yield3d);
 
-  TList* list = new TList;
+  TList* list = new TList();
   list->Add(result.tree);
   list->Add(rhs.tree);
   result.tree = TTree::MergeTrees( list );
@@ -452,7 +533,7 @@ const MT2EstimateTree& MT2EstimateTree::operator+=( const MT2EstimateTree& rhs )
 
     std::string oldName(this->tree->GetName());
 
-    TList* list = new TList;
+    TList* list = new TList();
     list->Add(this->tree);
     list->Add(rhs.tree);
     this->tree = TTree::MergeTrees( list );

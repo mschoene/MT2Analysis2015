@@ -2,12 +2,12 @@
 #define MT2Estimate_h
 
 #include "MT2Analysis.h"
-#include "MT2Region.h"
-#include "MT2DrawTools.h"
 #include "TH3D.h"
 #include "TH1D.h"
 #include "TFile.h"
 
+
+class MT2Region;
 
 
 // this is the basic Estimate class: 
@@ -43,6 +43,8 @@ class MT2Estimate {
     return region->getBins(nBins, bins);
   }
 
+  void getYieldBins( int& nBins, double*& bins ) const;
+
   MT2HTRegion* htRegion() const {
     return region->htRegion();
   }
@@ -58,6 +60,8 @@ class MT2Estimate {
   }
 
   static MT2Analysis<MT2Estimate>* makeIntegralAnalysisFromEstimate( const std::string& aname, const std::string& regionsSet, MT2Analysis<MT2Estimate>* analysis );
+
+  static void rebinYields( MT2Analysis<MT2Estimate>* analysis, int nBins, float xMin, float xMax );
 
   const MT2Estimate& operator=( const MT2Estimate& rhs );
 
@@ -80,13 +84,7 @@ class MT2Estimate {
   friend MT2Estimate operator*( float k, const MT2Estimate& rhs );
   friend MT2Estimate operator/( float k, const MT2Estimate& rhs );
 
-  virtual void finalize() {
-    return this->addOverflow();
-  }
-
-  virtual void addOverflow();
-  void addOverflowSingleHisto( TH3D* yield3d );
-  void addOverflowSingleHisto( TH1D* yield );
+  virtual void finalize() {};
 
   virtual void write() const {
     yield3d->Write();
@@ -99,7 +97,7 @@ class MT2Estimate {
   virtual void print( std::ofstream& ofs_file );
   virtual void print( std::ofstream& ofs_file, Int_t mt2_bin );
   
-  virtual void randomizePoisson( float scale=1. );
+  virtual void randomizePoisson( float scale=1., int seed=13 );
   
  private:
   

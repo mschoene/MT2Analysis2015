@@ -132,9 +132,10 @@ int main( int argc, char* argv[] ) {
   }
 
 
-
-  std::string templateFileName = "gammaTemplates" + templateType;
-  templateFileName = templateFileName + "_" + samplesName + "_" + cfg.gammaTemplateRegions() + ".root";
+  std::string templateFileName = cfg.getEventYieldDir() + "/gammaControlRegion/gammaTemplates" + templateType;
+  if( useMC ) templateFileName = templateFileName + "_MC";
+  else        templateFileName = templateFileName + "_data";
+  templateFileName = templateFileName + ".root";
 
 
   templatesFake->writeToFile(templateFileName);
@@ -194,14 +195,22 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
     gamma.SetPtEtaPhiM( myTree.gamma_pt[0], myTree.gamma_eta[0], myTree.gamma_phi[0], myTree.gamma_mass[0] );
 
 
-    float ht        = myTree.gamma_ht;
-    float met       = myTree.gamma_met_pt;
-    float mt2       = myTree.gamma_mt2;
-    float minMTBmet = myTree.gamma_minMTBMet;
     int njets       = myTree.gamma_nJet30;
     int nbjets      = myTree.gamma_nBJet20;    
+    float ht        = myTree.gamma_ht;
+    float met       = myTree.gamma_met_pt;
+    float mt2       = (njets>1) ? myTree.gamma_mt2 : ht;
+    float minMTBmet = myTree.gamma_minMTBMet;
 
+    int nJetHF30_ = 0;
+    for(int j=0; j<myTree.njet; ++j){
+      
+      if( myTree.jet_pt[j] < 30. || fabs(myTree.jet_eta[j]) < 3.0 ) continue;
+      else ++nJetHF30_;
 
+    }
+//    //HF Veto
+//    if( nJetHF30_ >0 ) continue;
 
     float iso = myTree.gamma_chHadIso[0];
 

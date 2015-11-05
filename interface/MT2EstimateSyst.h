@@ -66,8 +66,6 @@ class MT2EstimateSyst : public MT2Estimate {
 
   virtual void finalize();
 
-  virtual void addOverflow();
-
   virtual void getShit( TFile* file, const std::string& path );
 
   virtual void write() const;

@@ -55,6 +55,7 @@ class MT2EstimateTree : public MT2Estimate {
   int nMuons;
   int nPFLep;
   int nPFHad;
+  int nJetHF;
 
   int GenSusyMScan1;
   int GenSusyMScan2;
@@ -78,6 +79,10 @@ class MT2EstimateTree : public MT2Estimate {
 
   virtual void finalize() {
   }
+
+  void projectFromTree( const MT2EstimateTree* treeEst, const std::string& selection );
+  static MT2Analysis<MT2EstimateTree>* makeRebinnedAnalysisFromInclusiveTree( const std::string& aname, const std::string& regionsSet, MT2Analysis<MT2EstimateTree>* analysis, const std::string& selection="", int nBins=0, float xMin=0., float xMax=0. );
+  static MT2Analysis<MT2EstimateTree>* makeAnalysisFromInclusiveTree( const std::string& aname, const std::string& regionsSet, MT2Analysis<MT2EstimateTree>* analysis, const std::string& selection="" ) { return makeRebinnedAnalysisFromInclusiveTree( aname, regionsSet, analysis, selection ); };
 
 
   virtual void getShit( TFile* file, const std::string& path );

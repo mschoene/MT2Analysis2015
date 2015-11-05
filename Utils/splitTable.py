@@ -12,9 +12,9 @@ maxline=int(sys.argv[2])
 lines=open(filename).readlines()
 
 for index, line in enumerate(lines):
-    if line=="" or line=="\n":
+    if line=="" or line=="\n" or ("end" in line):
         continue
-    elif "hline" in line:
+    elif "hline" in line or ("begin" in line) or ("centering") in line or ("caption") in line:
         print line
     elif "multicolumn" in line:
         htl=index+1
@@ -31,7 +31,7 @@ print "\\hline"
 for index, line in enumerate(lines):
     if index < htl+1 or line=="" or line=="\n":
         continue
-    elif "hline" in line:
+    elif "hline" in line or ("begin" in line) or ("end" in line) or ("centering") in line or ("caption") in line:
         print line
     else:
         yields=line.split("&")

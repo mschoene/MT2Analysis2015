@@ -65,7 +65,7 @@
 ####
 ### With Spring15 JEC, OKAY FOR COMMISSIONING PLOTS
 dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/mmasciov/MT2production/Phys14/PostProcessed/16Aug2015_noSkim/skimAndPrune/QCD_Pt1000to1400_50ns_post_skim_prune.root
-#dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/mmasciov/MT2production/Phys14/PostProcessed/16Aug2015_noSkim/skimAndPrune/QCD_Pt120to170_50ns_post_skim_prune.root
+dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/mmasciov/MT2production/Phys14/PostProcessed/16Aug2015_noSkim/skimAndPrune/QCD_Pt120to170_50ns_post_skim_prune.root
 dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/mmasciov/MT2production/Phys14/PostProcessed/16Aug2015_noSkim/skimAndPrune/QCD_Pt1400to1800_50ns_post_skim_prune.root
 dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/mmasciov/MT2production/Phys14/PostProcessed/16Aug2015_noSkim/skimAndPrune/QCD_Pt170to300_50ns_post_skim_prune.root
 dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/mmasciov/MT2production/Phys14/PostProcessed/16Aug2015_noSkim/skimAndPrune/QCD_Pt1800to2400_50ns_post_skim_prune.root
@@ -75,7 +75,7 @@ dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/mmasciov/MT2produ
 dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/mmasciov/MT2production/Phys14/PostProcessed/16Aug2015_noSkim/skimAndPrune/QCD_Pt470to600_50ns_post_skim_prune.root
 dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/mmasciov/MT2production/Phys14/PostProcessed/16Aug2015_noSkim/skimAndPrune/QCD_Pt600to800_50ns_post_skim_prune.root
 dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/mmasciov/MT2production/Phys14/PostProcessed/16Aug2015_noSkim/skimAndPrune/QCD_Pt800to1000_50ns_post_skim_prune.root
-#dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/mmasciov/MT2production/Phys14/PostProcessed/16Aug2015_noSkim/skimAndPrune/QCD_Pt80to120_50ns_post_skim_prune.root
+dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/mmasciov/MT2production/Phys14/PostProcessed/16Aug2015_noSkim/skimAndPrune/QCD_Pt80to120_50ns_post_skim_prune.root
 #
 dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/mmasciov/MT2production/Phys14/PostProcessed/16Aug2015_noSkim_v2/skimAndPrune/GJets_HT100to200_post_skim_prune.root
 dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/mmasciov/MT2production/Phys14/PostProcessed/16Aug2015_noSkim/GJets_HT200to400_post.root
