@@ -32,19 +32,22 @@ void MT2EstimateZinvGamma::rebinYields( MT2Analysis<MT2EstimateZinvGamma>* thisE
     std::vector<RooDataSet*> this_iso_bins = estimate->iso_bins;
  
 
+    std::string oldNames_hist[old_size];
     std::string oldNames[old_size];
 
     for( unsigned int i=0; i<old_size; ++i ){
-      std::string temp(this_iso_bins_hist[i]->GetName());
+      std::string temp(this_iso_bins[i]->GetName());
         oldNames[i] = temp;
+      std::string temp_hist(this_iso_bins_hist[i]->GetName());
+        oldNames_hist[i] = temp_hist;
     }   
-
-
 
     for( unsigned i=0; i<old_size; ++i ) { 
       delete this_iso_bins_hist[i];
+      delete this_iso_bins[i];
     }
     this_iso_bins_hist.clear();
+    this_iso_bins.clear();
   
 
     int nbins_mt2 = nBins;
@@ -57,15 +60,27 @@ void MT2EstimateZinvGamma::rebinYields( MT2Analysis<MT2EstimateZinvGamma>* thisE
     int xmax = 10.;
 
 
+    RooRealVar* this_x_ = estimate->x_;
+    delete this_x_;
+    RooRealVar* this_w_ = estimate->w_;
+    delete this_w_;
+    this_x_ = new RooRealVar( "x", "", 0., xmax );
+    this_w_ = new RooRealVar( "w", "", 0., 1000. );
+
     for( int i=0; i<nbins_mt2; ++i ) {
 
       // RooDataSet* isoDataset = new RooDataSet( oldNames[i].c_str(), "", RooArgSet(*x_,*w_), w_->GetName() );
       //  iso_bins.push_back(isoDataset);
       //TH1D* this_iso_hist = new TH1D( this->getHistoName(Form("iso_bin%d_hist", i)).c_str() , "", nbins-1, bins );
-      TH1D* this_iso_hist = new TH1D( oldNames[i].c_str() , "", nbins, 0., xmax );
+      RooDataSet* this_isoDataset = new RooDataSet( oldNames[i].c_str() , "", RooArgSet(*this_x_,*this_w_), this_w_->GetName() );
+      this_iso_bins.push_back(this_isoDataset);
+    std::cout << "FUCKKKKKKKKKKKK" << std::endl;
+
+      TH1D* this_iso_hist = new TH1D( oldNames_hist[i].c_str() , "", nbins, 0., xmax );
       this_iso_hist->Sumw2();
       this_iso_bins_hist.push_back(this_iso_hist);
   }
+  
    
   }//end regions
 
@@ -115,8 +130,10 @@ MT2Analysis<MT2EstimateZinvGamma>*  MT2EstimateZinvGamma::makeInclusiveEstimateF
     treeInclusive->tree->GetEntry(iEntry);
 
     if( iEntry % 5000 == 0 ) std::cout << "    Entry: " << iEntry << " / " << nentries << std::endl;
+    std::cout << "FUUUUUUUUUCK1 " << std::endl;
 
     theEst->fillIso( iso, weight, ht );
+    std::cout << "FUUUUUUUUUCK2 " << std::endl;
 
  
   }
@@ -241,10 +258,17 @@ void MT2EstimateZinvGamma::fillIso( float iso, float weight, float mt2 ) {
   
     foundBin-=1; // want first bin to be 0 (fuck you root)
     if( foundBin>=0 ) {
+
       x_->setVal(iso);
+std::cout << "FUU in fill " << std::endl;
+ 
       w_->setVal(weight);
       iso_bins[foundBin]->add( RooArgList(*x_, *w_), weight );
+ 
       iso_bins_hist[foundBin]->Fill( iso, weight );
+ std::cout << "FUU in fill " << std::endl;
+ 
+        
     }
   }  
       

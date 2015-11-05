@@ -586,23 +586,13 @@ MT2Analysis<T>::MT2Analysis( const std::string& aname, const std::string& region
     
   } else if( regionsSet=="zurich_onlyHT" ){
 
-<<<<<<< HEAD
-    regions_.insert(MT2Region( 200.,   450., 2, -1)); // no cut on jets
-    regions_.insert(MT2Region( 450.,   575., 2, -1)); // no cut on jets
-    regions_.insert(MT2Region( 575.,  1000., 2, -1));
-    regions_.insert(MT2Region(1000.,  1500., 2, -1));
-    regions_.insert(MT2Region(1500.,    -1., 2, -1));
-=======
     //regions_.insert(MT2Region( 200.,    -1., 1.,  1.));
     regions_.insert(MT2Region( 200.,   450., 2., -1.));
     regions_.insert(MT2Region( 450.,   575., 2., -1.));
     regions_.insert(MT2Region( 575.,  1000., 2., -1.));
     regions_.insert(MT2Region(1000.,  1500., 2., -1.));
     regions_.insert(MT2Region(1500.,    -1., 2., -1.));
->>>>>>> a7f111c8b37dd39e1ef4110bf24dc03d6a6132d7
 
-    regions_.insert(MT2Region(200., -1., 1, 1, 0, -1)); // monojet region
- 
 
   } else if( regionsSet=="zurich_HTtriggers" ){
 
