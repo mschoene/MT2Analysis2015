@@ -304,7 +304,7 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
 
     //Minimal selection for the standard model Z/Gamma ratio
     if(myTree.nVert < 1) continue;
-    if(myTree.nJet30 < 1) continue;
+    //    if(myTree.nJet30 < 1) continue;
 
     if( cfg.analysisType() == "mt2"){
       if( regionsSet!="13TeV_noCut" )
