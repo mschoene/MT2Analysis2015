@@ -77,9 +77,8 @@ int main( int argc, char* argv[] ) {
 
 
   bool useMC = true;
-
+  /*
   if( argc>2 ) {
-
     std::string mc_or_data_templates = std::string(argv[2]); 
     if( mc_or_data_templates=="mc" ) mc_or_data_templates="MC";
     std::cout << std::endl;
@@ -88,8 +87,33 @@ int main( int argc, char* argv[] ) {
     if( mc_or_data_templates=="MC" ) useMC = true;
     else useMC=false;
     std::cout << std::endl;
-
   } 
+  */
+
+  if( argc>2 ) {
+    std::string data_or_mc = std::string(argv[2]); 
+    if( data_or_mc=="data" || data_or_mc=="Data" || data_or_mc=="DATA" ) useMC=false;
+    else if( data_or_mc!="mc" && data_or_mc!="MC" ) {
+      std::cout << std::endl;
+      std::cout << "-> WARNING! Second argument should be 'data' or 'MC'." << std::endl;
+      std::cout << "Exiting." << std::endl;
+      std::cout << std::endl;
+      exit(817);
+    }
+  } 
+
+
+  std::string templateType = cfg.gammaTemplateType();
+  if( argc>3 ) {
+    templateType = std::string(argv[3]); 
+    std::cout << std::endl;
+    std::cout << "-> Will disobey the cfg and use templateType = " << argv[2] << std::endl;
+    std::cout << std::endl;
+  } 
+  cfg.set_gammaTemplateType(templateType);
+
+
+
 
 
 
@@ -111,11 +135,11 @@ int main( int argc, char* argv[] ) {
   MT2Analysis<MT2EstimateZinvGamma>* templates_fake   = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( templateFileName, "templatesFake" );
 
   MT2EstimateZinvGamma* templatePrompt, *templateFake;
-  if( cfg.gammaTemplateRegions()=="13TeV_inclusive" ) { // just get them once
-    templatePrompt = templates_prompt->get( MT2Region("HT450toInf_j2toInf_b0toInf") );
-    templateFake   = templates_fake  ->get( MT2Region("HT450toInf_j2toInf_b0toInf") );
-//    templatePrompt = templates_prompt->get( MT2Region("HT450toInf_j1toInf_b0toInf") );
-//    templateFake   = templates_fake  ->get( MT2Region("HT450toInf_j1toInf_b0toInf") );
+   if( cfg.gammaTemplateRegions()=="13TeV_inclusive" ) { // just get them once
+//    templatePrompt = templates_prompt->get( MT2Region("HT450toInf_j2toInf_b0toInf") );
+//    templateFake   = templates_fake  ->get( MT2Region("HT450toInf_j2toInf_b0toInf") );
+    templatePrompt = templates_prompt->get( MT2Region("HT200toInf_j1toInf_b0toInf") );
+    templateFake   = templates_fake  ->get( MT2Region("HT200toInf_j1toInf_b0toInf") );
   }
 
   std::string outputdir = gammaCRdir + "/PurityFits" + cfg.gammaTemplateType();
@@ -153,8 +177,15 @@ int main( int argc, char* argv[] ) {
     
 
 
-  purityLoose->writeToFile( outputdir + "/purityFit.root" );
-  purityTight->addToFile( outputdir + "/purityFit.root" );
+  //  if( useMC )  "_MC";
+  // else        templateFileName = templateFileName + "_data";
+  if(useMC) {
+    purityLoose->writeToFile( outputdir + "/purityFit_MC.root" );
+    purityTight->addToFile( outputdir + "/purityFit_MC.root" );
+  } else {
+    purityLoose->writeToFile( outputdir + "/purityFit_data.root" );
+    purityTight->addToFile( outputdir + "/purityFit_data.root" );
+  }
 
   return 0;
 
