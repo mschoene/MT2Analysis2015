@@ -697,6 +697,8 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
     lHT[iHT-1]->Draw("same");
   }
 
+  gPad->RedrawAxis();
+
   filename = Form("closure%s_allRegions_ratio_%s", closureTest==false ? "SR" : "VR", scaleEst==1.0 ? "data" : "mc");
   c2->SaveAs( Form("%s/eps/%s.eps"  , outputdir.c_str(), filename.Data()) );
   c2->SaveAs( Form("%s/pdf/%s.pdf"  , outputdir.c_str(), filename.Data()) );

@@ -17,15 +17,15 @@ MT2EstimateZinvGamma::MT2EstimateZinvGamma( const std::string& aname, const MT2R
   sietaieta = new TH1D( this->getHistoName("sietaieta").c_str(), "", 200, 0., 0.035 );
   sietaieta->Sumw2();
 
-  int nbins = 8;
-  int xmax = 10.;
+  nbins_iso_ = 8;
+  iso_max_   = 10.;
 
   // this histo will be used to create histogram templates:
   //iso = new TH1D( this->getHistoName("iso").c_str(), "", nbins-1, bins );
-  iso = new TH1D( this->getHistoName("iso").c_str(), "", nbins, 0., xmax );
+  iso = new TH1D( this->getHistoName("iso").c_str(), "", nbins_iso_, 0., iso_max_ );
   iso->Sumw2();
 
-  x_ = new RooRealVar( "x", "", 0., xmax );
+  x_ = new RooRealVar( "x", "", 0., iso_max_ );
   w_ = new RooRealVar( "w", "", 0., 1000. );
 
   int nbins_mt2;
@@ -39,7 +39,7 @@ MT2EstimateZinvGamma::MT2EstimateZinvGamma( const std::string& aname, const MT2R
     iso_bins.push_back(isoDataset);
 
     //TH1D* this_iso_hist = new TH1D( this->getHistoName(Form("iso_bin%d_hist", i)).c_str() , "", nbins-1, bins );
-    TH1D* this_iso_hist = new TH1D( this->getHistoName(Form("iso_bin%d_hist", i)).c_str() , "", nbins, 0., xmax );
+    TH1D* this_iso_hist = new TH1D( this->getHistoName(Form("iso_bin%d_hist", i)).c_str() , "", nbins_iso_, 0., iso_max_ );
     this_iso_hist->Sumw2();
     iso_bins_hist.push_back(this_iso_hist);
 
@@ -71,6 +71,7 @@ MT2EstimateZinvGamma::MT2EstimateZinvGamma( const MT2EstimateZinvGamma& rhs ) : 
 
 
 
+
 // destructor
 
 MT2EstimateZinvGamma::~MT2EstimateZinvGamma() {
@@ -85,6 +86,26 @@ MT2EstimateZinvGamma::~MT2EstimateZinvGamma() {
 
 
 }
+
+
+
+
+void MT2EstimateZinvGamma::clearBins() {
+
+  std::vector<TH1D*>* this_iso_bins_hist  = &(this->iso_bins_hist);
+  std::vector<RooDataSet*>* this_iso_bins = &(this->iso_bins);
+
+  for( unsigned i=0; i<this_iso_bins_hist->size(); ++i ) { 
+    delete this_iso_bins_hist->at(i);
+    delete this_iso_bins->at(i);
+  }
+  this_iso_bins_hist->clear();
+  this_iso_bins->clear();
+
+}
+
+
+
 
 
 
@@ -169,22 +190,14 @@ void MT2EstimateZinvGamma::rebinYields( MT2Analysis<MT2EstimateZinvGamma>* analy
     thisYield = new TH1D( oldName.c_str(), "", nBins, bins );
 
 
+    estimate->clearBins();
+
+  
+    int nbins_iso = estimate->getNbinsIso();
+    int xmax  = estimate->getIsoMax();
 
     std::vector<TH1D*>* this_iso_bins_hist  = &(estimate->iso_bins_hist);
     std::vector<RooDataSet*>* this_iso_bins = &(estimate->iso_bins);
- 
-
-    for( unsigned i=0; i<this_iso_bins_hist->size(); ++i ) { 
-      delete this_iso_bins_hist->at(i);
-      delete this_iso_bins->at(i);
-    }
-    this_iso_bins_hist->clear();
-    this_iso_bins->clear();
-
-  
-
-    int nbins_iso = 8;
-    int xmax = 10.;
 
 
     for( int i=0; i<nBins; ++i ) {
@@ -313,12 +326,15 @@ void MT2EstimateZinvGamma::finalize() {
 void MT2EstimateZinvGamma::getShit( TFile* file, const std::string& path ) {
 
   MT2Estimate::getShit(file, path);
+
   iso = (TH1D*)file->Get(Form("%s/%s", path.c_str(), iso->GetName()));
   sietaieta = (TH1D*)file->Get(Form("%s/%s", path.c_str(), sietaieta->GetName()));
 
-  for( unsigned i=0; i<iso_bins.size(); ++i ) {
-    iso_bins[i] = (RooDataSet*)file->Get(Form("%s/%s", path.c_str(), iso_bins[i]->GetName()));
-    iso_bins_hist[i] = (TH1D*)file->Get(Form("%s/%s", path.c_str(), iso_bins_hist[i]->GetName()));
+  this->clearBins();
+
+  for( int i=0; i<this->yield->GetNbinsX(); ++i ) {
+    iso_bins.push_back( (RooDataSet*)file->Get(Form("%s/%s", path.c_str(), this->getHistoName(Form("iso_bin%d", i)).c_str())) );
+    iso_bins_hist.push_back( (TH1D*)file->Get(Form("%s/%s", path.c_str(), this->getHistoName(Form("iso_bin%d_hist", i)).c_str())) );
   }
 
 
