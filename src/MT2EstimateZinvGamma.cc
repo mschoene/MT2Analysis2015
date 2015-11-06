@@ -169,7 +169,6 @@ void MT2EstimateZinvGamma::rebinYields( MT2Analysis<MT2EstimateZinvGamma>* analy
     thisYield = new TH1D( oldName.c_str(), "", nBins, bins );
 
 
-
     std::vector<TH1D*>* this_iso_bins_hist  = &(estimate->iso_bins_hist);
     std::vector<RooDataSet*>* this_iso_bins = &(estimate->iso_bins);
  
@@ -180,7 +179,6 @@ void MT2EstimateZinvGamma::rebinYields( MT2Analysis<MT2EstimateZinvGamma>* analy
     }
     this_iso_bins_hist->clear();
     this_iso_bins->clear();
-
   
 
     int nbins_iso = 8;

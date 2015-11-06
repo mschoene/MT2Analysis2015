@@ -36,13 +36,6 @@ class MT2EstimateZinvGamma : public MT2Estimate {
   std::vector<RooDataSet*> iso_bins;
   std::vector<TH1D*> iso_bins_hist;
 
-  //  MT2EstimateZinvGamma( const MT2EstimateTree tree,  const std::string& aname, const MT2Region& aregion , const std::string& var );
-
-  //function to get binning from the regionsset?
-  // void getBins      ( int& nBins, double*& bins, const MT2Region& aregion);
-
-  // void fillIso( float iso, float weight=1., float mt2=-1, const std::string& var );
-
 
   static MT2Analysis<MT2EstimateZinvGamma>*  makeInclusiveAnalysisFromInclusiveTree( const std::string& aname, MT2Analysis<MT2EstimateTree>* analysis, const std::string& selectionTree="", const std::string& var="mt2", int nBins=-1, Double_t* bins=0  );
 
