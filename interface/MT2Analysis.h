@@ -200,6 +200,7 @@ MT2Analysis<T>::MT2Analysis( const std::string& aname, const std::string& region
   } else if( regionsSet=="13TeV_inclusive450" ) {
 
     regions_.insert(MT2Region( 450., -1., 2., -1. )); // inclusive 450-inf at least two jet requirement
+    regions_.insert(MT2Region( 450., -1., 2., -1. )); // inclusive 450-inf at least two jet requirement
 
   } else if( regionsSet=="13TeV_inclusive_bjets" ) {
 
@@ -378,19 +379,11 @@ MT2Analysis<T>::MT2Analysis( const std::string& aname, const std::string& region
 
     regions_ = multiplyHTandSignal( htRegions, signalRegions );
 
-  } else if( regionsSet=="13TeV_inclusive2J" ){
+  } else if( regionsSet=="13TeV_inclusive2j" ){
 
-    //regions_.insert(MT2Region( 200. ));
+    regions_.insert(MT2Region( 200., -1., 2., -1. )); // inclusive 200-inf at least two jet requirement
 
-    std::set<MT2HTRegion> htRegions;
-    htRegions.insert(MT2HTRegion( 200.,  -1 ));
- 
-    std::set<MT2SignalRegion> signalRegions;
-    signalRegions.insert(MT2SignalRegion(2,  -1, 0,  -1));
- 
-    regions_ = multiplyHTandSignal( htRegions, signalRegions );
-
-  } else if( regionsSet=="zurichPlus_noMonojet" ){
+   } else if( regionsSet=="zurichPlus_noMonojet" ){
 
     std::set<MT2HTRegion> htRegions;
     htRegions.insert(MT2HTRegion( 200.,  450.));
@@ -976,7 +969,8 @@ MT2Analysis<T>::MT2Analysis( const std::string& aname, const std::string& region
     regions_.insert(MT2Region(450., 575., 7, -1, 3,  -1, "loMT"));
     regions_.insert(MT2Region(450., 575., 7, -1, 3,  -1, "hiMT"));
 
-    regions_.insert(MT2Region(575., 1000., 2,  6, 3,  -1, "loMT"));
+    regions_.insert(MT2Region(575., 1000., 2,  6, 3,  -1,
+    fitPurity( cfg, thisLoosePurity_ht, thisTightPurity_ht, thisEstimate_ht->x_, thisEstimate_ht->iso_bins, templatePrompt->iso, templateFake->iso); "loMT"));
     regions_.insert(MT2Region(575., 1000., 2,  6, 3,  -1, "hiMT"));
     regions_.insert(MT2Region(575., 1000., 7, -1, 3,  -1, "loMT"));
     regions_.insert(MT2Region(575., 1000., 7, -1, 3,  -1, "hiMT"));
