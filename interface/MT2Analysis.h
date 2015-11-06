@@ -378,7 +378,7 @@ MT2Analysis<T>::MT2Analysis( const std::string& aname, const std::string& region
 
     regions_ = multiplyHTandSignal( htRegions, signalRegions );
 
-  } else if( regionsSet=="HT_incl" ){
+  } else if( regionsSet=="13TeV_inclusive2J" ){
 
     //regions_.insert(MT2Region( 200. ));
 

@@ -24,7 +24,7 @@ int main( int argc, char* argv[] ) {
 
 
   if( argc<2 ) {
-    std::cout << "USAGE: ./drawGammaControlRegionDataMC [configFileName] [lumi/shape]" << std::endl;
+    std::cout << "USAGE: ./createPurityEstimates [configFileName]" << std::endl;
     std::cout << "Exiting." << std::endl;
     exit(11);
   }
@@ -39,14 +39,31 @@ int main( int argc, char* argv[] ) {
   MT2Analysis<MT2EstimateTree>* mc_   = MT2Analysis<MT2EstimateTree>::readFromFile(mcFile, "gammaCRtree_loose");
   // MT2Analysis<MT2EstimateTree>* data = MT2Analysis<MT2EstimateTree>::readFromFile(dataFile, "gammaCRtree_loose");
 
-  Double_t bins_HT[6] = {200,450, 575, 1000, 1500, 2000};
+  Double_t bins_ht[] = {200,450, 575, 1000, 1500};
+  int size_ht = sizeof(bins_ht)/sizeof(double)-1;
+  
+  Double_t bins_njets[] = {2,4,7,12};
+  int size_njets = sizeof(bins_njets)/sizeof(double)-1;
+  
+  Double_t bins_nbjets[] = {0,1,2,3,6};
+  int size_nbjets = sizeof(bins_nbjets)/sizeof(double)-1;
 
-  MT2Analysis<MT2EstimateZinvGamma>* mc_ht = MT2EstimateZinvGamma::makeInclusiveEstimateFromInclusiveTree( "purity_ht", mc_ ,"", "ht", 5, bins_HT ); 
+  
+  MT2Analysis<MT2EstimateZinvGamma>* mc_ht = MT2EstimateZinvGamma::makeInclusiveEstimateFromInclusiveTree( "purity_ht", mc_ ,"", "ht", size_ht, bins_ht ); 
 
+  MT2Analysis<MT2EstimateZinvGamma>* mc_njets = MT2EstimateZinvGamma::makeInclusiveEstimateFromInclusiveTree( "purity_njets", mc_ ,"", "nJets", size_njets, bins_njets ); 
 
+  MT2Analysis<MT2EstimateZinvGamma>* mc_nbjets = MT2EstimateZinvGamma::makeInclusiveEstimateFromInclusiveTree( "purity_nbjets", mc_ ,"", "nBJets", size_nbjets, bins_nbjets );
+ 
 
   std::string outFile = cfg.getEventYieldDir() + "/gammaControlRegion/purity_HT.root";
   mc_ht->writeToFile(outFile, "recreate");
+
+  std::string outFile_njets = cfg.getEventYieldDir() + "/gammaControlRegion/purity_nJets.root";
+  mc_njets->writeToFile(outFile_njets, "recreate");
+
+  std::string outFile_nbjets = cfg.getEventYieldDir() + "/gammaControlRegion/purity_nBJets.root";
+  mc_nbjets->writeToFile(outFile_nbjets, "recreate");
 
   return 0;
 

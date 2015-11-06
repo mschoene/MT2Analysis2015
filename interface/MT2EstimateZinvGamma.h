@@ -73,7 +73,7 @@ class MT2EstimateZinvGamma : public MT2Estimate {
   friend MT2EstimateZinvGamma operator/( float k, const MT2EstimateZinvGamma& rhs );
 
 
-  void fillIso( float iso, float weight=1., float mt2=-1 );
+  void fillIso( float iso, float weight=1., float var=-1 );
 
   virtual void finalize();
 

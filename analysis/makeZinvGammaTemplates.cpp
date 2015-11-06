@@ -245,8 +245,8 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
 
       if( !sietaietaOK ) continue;
       
-      // isWorkingPrompt =( myTree.gamma_mcMatchId[0]==22 && myTree.gamma_drMinParton[0]>0.4); // prompt = matched //no fakes
-      isWorkingPrompt = myTree.gamma_mcMatchId[0]==22; // prompt = matched
+      isWorkingPrompt =( myTree.gamma_mcMatchId[0]==22 && myTree.gamma_drMinParton[0]>0.4); // prompt = matched //no fakes
+      // isWorkingPrompt = myTree.gamma_mcMatchId[0]==22; // prompt = matched
 
     } else if( cfg.gammaTemplateType()=="FR" ) { 
 
