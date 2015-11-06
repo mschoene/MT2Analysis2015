@@ -71,6 +71,7 @@ MT2EstimateZinvGamma::MT2EstimateZinvGamma( const MT2EstimateZinvGamma& rhs ) : 
 
 
 
+
 // destructor
 
 MT2EstimateZinvGamma::~MT2EstimateZinvGamma() {
@@ -85,6 +86,26 @@ MT2EstimateZinvGamma::~MT2EstimateZinvGamma() {
 
 
 }
+
+
+
+
+void MT2EstimateZinvGamma::clearBins() {
+
+  std::vector<TH1D*>* this_iso_bins_hist  = &(this->iso_bins_hist);
+  std::vector<RooDataSet*>* this_iso_bins = &(this->iso_bins);
+
+  for( unsigned i=0; i<this_iso_bins_hist->size(); ++i ) { 
+    delete this_iso_bins_hist->at(i);
+    delete this_iso_bins->at(i);
+  }
+  this_iso_bins_hist->clear();
+  this_iso_bins->clear();
+
+}
+
+
+
 
 
 
@@ -169,22 +190,15 @@ void MT2EstimateZinvGamma::rebinYields( MT2Analysis<MT2EstimateZinvGamma>* analy
     thisYield = new TH1D( oldName.c_str(), "", nBins, bins );
 
 
-
-    std::vector<TH1D*>* this_iso_bins_hist  = &(estimate->iso_bins_hist);
-    std::vector<RooDataSet*>* this_iso_bins = &(estimate->iso_bins);
- 
-
-    for( unsigned i=0; i<this_iso_bins_hist->size(); ++i ) { 
-      delete this_iso_bins_hist->at(i);
-      delete this_iso_bins->at(i);
-    }
-    this_iso_bins_hist->clear();
-    this_iso_bins->clear();
+    estimate->clearBins();
 
   
 
     int nbins_iso = 8;
     int xmax = 10.;
+
+    std::vector<TH1D*>* this_iso_bins_hist  = &(estimate->iso_bins_hist);
+    std::vector<RooDataSet*>* this_iso_bins = &(estimate->iso_bins);
 
 
     for( int i=0; i<nBins; ++i ) {
@@ -313,12 +327,15 @@ void MT2EstimateZinvGamma::finalize() {
 void MT2EstimateZinvGamma::getShit( TFile* file, const std::string& path ) {
 
   MT2Estimate::getShit(file, path);
+
   iso = (TH1D*)file->Get(Form("%s/%s", path.c_str(), iso->GetName()));
   sietaieta = (TH1D*)file->Get(Form("%s/%s", path.c_str(), sietaieta->GetName()));
 
-  for( unsigned i=0; i<iso_bins.size(); ++i ) {
-    iso_bins[i] = (RooDataSet*)file->Get(Form("%s/%s", path.c_str(), iso_bins[i]->GetName()));
-    iso_bins_hist[i] = (TH1D*)file->Get(Form("%s/%s", path.c_str(), iso_bins_hist[i]->GetName()));
+  this->clearBins();
+
+  for( int i=0; i<this->yield->GetNbinsX(); ++i ) {
+    iso_bins.push_back( (RooDataSet*)file->Get(Form("%s/%s", path.c_str(), this->getHistoName(Form("iso_bin%d", i)).c_str())) );
+    iso_bins_hist.push_back( (TH1D*)file->Get(Form("%s/%s", path.c_str(), this->getHistoName(Form("iso_bin%d_hist", i)).c_str())) );
   }
 
 

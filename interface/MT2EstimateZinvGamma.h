@@ -20,6 +20,8 @@ class MT2EstimateZinvGamma : public MT2Estimate {
   virtual ~MT2EstimateZinvGamma();
 
   virtual void setName( const std::string& newName );
+
+  void clearBins();
  
   
   TH1D* sietaieta;
