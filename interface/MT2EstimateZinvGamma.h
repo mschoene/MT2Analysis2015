@@ -44,7 +44,7 @@ class MT2EstimateZinvGamma : public MT2Estimate {
   // void fillIso( float iso, float weight=1., float mt2=-1, const std::string& var );
 
 
-  static MT2Analysis<MT2EstimateZinvGamma>*  makeInclusiveEstimateFromInclusiveTree( const std::string& aname, MT2Analysis<MT2EstimateTree>* analysis, const std::string& selectionTree="", const std::string& var="mt2", int nBins=-1, Double_t* bins=0  );
+  static MT2Analysis<MT2EstimateZinvGamma>*  makeInclusiveAnalysisFromInclusiveTree( const std::string& aname, MT2Analysis<MT2EstimateTree>* analysis, const std::string& selectionTree="", const std::string& var="mt2", int nBins=-1, Double_t* bins=0  );
 
   static void rebinYields( MT2Analysis<MT2EstimateZinvGamma>* analysis, int nBins=-1, Double_t* bins=0 );
 

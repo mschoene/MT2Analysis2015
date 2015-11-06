@@ -49,11 +49,11 @@ int main( int argc, char* argv[] ) {
   int size_nbjets = sizeof(bins_nbjets)/sizeof(double)-1;
 
   
-  MT2Analysis<MT2EstimateZinvGamma>* mc_ht = MT2EstimateZinvGamma::makeInclusiveEstimateFromInclusiveTree( "purity_ht", mc_ ,"", "ht", size_ht, bins_ht ); 
+  MT2Analysis<MT2EstimateZinvGamma>* mc_ht = MT2EstimateZinvGamma::makeInclusiveAnalysisFromInclusiveTree( "purity_ht", mc_ ,"", "ht", size_ht, bins_ht ); 
 
-  MT2Analysis<MT2EstimateZinvGamma>* mc_njets = MT2EstimateZinvGamma::makeInclusiveEstimateFromInclusiveTree( "purity_njets", mc_ ,"", "nJets", size_njets, bins_njets ); 
+  MT2Analysis<MT2EstimateZinvGamma>* mc_njets = MT2EstimateZinvGamma::makeInclusiveAnalysisFromInclusiveTree( "purity_njets", mc_ ,"", "nJets", size_njets, bins_njets ); 
 
-  MT2Analysis<MT2EstimateZinvGamma>* mc_nbjets = MT2EstimateZinvGamma::makeInclusiveEstimateFromInclusiveTree( "purity_nbjets", mc_ ,"", "nBJets", size_nbjets, bins_nbjets );
+  MT2Analysis<MT2EstimateZinvGamma>* mc_nbjets = MT2EstimateZinvGamma::makeInclusiveAnalysisFromInclusiveTree( "purity_nbjets", mc_ ,"", "nBJets", size_nbjets, bins_nbjets );
  
 
   std::string outFile = cfg.getEventYieldDir() + "/gammaControlRegion/purity_HT.root";

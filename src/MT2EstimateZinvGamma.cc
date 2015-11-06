@@ -8,8 +8,6 @@
 #include "TRandom3.h"
 #include "TTree.h"
 
-#include "../interface/MT2EstimateTree.h"
-
 
 
 
@@ -91,13 +89,13 @@ MT2EstimateZinvGamma::~MT2EstimateZinvGamma() {
 
 
 
-MT2Analysis<MT2EstimateZinvGamma>*  MT2EstimateZinvGamma::makeInclusiveEstimateFromInclusiveTree( const std::string& aname, MT2Analysis<MT2EstimateTree>* analysis, const std::string& selectionTree, const std::string& var, int nBins, Double_t* bins ){
+MT2Analysis<MT2EstimateZinvGamma>*  MT2EstimateZinvGamma::makeInclusiveAnalysisFromInclusiveTree( const std::string& aname, MT2Analysis<MT2EstimateTree>* analysis, const std::string& selectionTree, const std::string& var, int nBins, Double_t* bins ){
 
 
   std::set<MT2Region> regions = analysis->getRegions();
 
   if( regions.size()!=1 ) {
-    std::cout << "[MT2EstimateTree::makeAnalysisFromEstimateTreeInclusive] ERROR!! You need to pass an inclusive MT2EstimateTree Analysis to use this function!" << std::endl;
+    std::cout << "[MT2EstimateTree::makeInclusiveAnalysisFromInclusiveTree] ERROR!! You need to pass an inclusive MT2EstimateTree Analysis to use this function!" << std::endl;
     exit(19191);
   }
 
