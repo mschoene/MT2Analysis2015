@@ -14,10 +14,8 @@
 
 MT2EstimateZinvGamma::MT2EstimateZinvGamma( const std::string& aname, const MT2Region& aregion ) : MT2Estimate( aname, aregion ) {
 
-
   sietaieta = new TH1D( this->getHistoName("sietaieta").c_str(), "", 200, 0., 0.035 );
   sietaieta->Sumw2();
-
 
   int nbins = 8;
   int xmax = 10.;
@@ -90,6 +88,128 @@ MT2EstimateZinvGamma::~MT2EstimateZinvGamma() {
 
 
 
+
+MT2Analysis<MT2EstimateZinvGamma>*  MT2EstimateZinvGamma::makeInclusiveAnalysisFromInclusiveTree( const std::string& aname, MT2Analysis<MT2EstimateTree>* analysis, const std::string& selectionTree, const std::string& var, int nBins, Double_t* bins ){
+
+
+  std::set<MT2Region> regions = analysis->getRegions();
+
+  if( regions.size()!=1 ) {
+    std::cout << "[MT2EstimateTree::makeInclusiveAnalysisFromInclusiveTree] ERROR!! You need to pass an inclusive MT2EstimateTree Analysis to use this function!" << std::endl;
+    exit(19191);
+  }
+
+  MT2EstimateTree* treeInclusive = analysis->get( *(regions.begin()) );
+
+
+  // will create a new analysis with same region as original one (i.e. inclusive)
+  // BUT different binning for the yield and iso histogram
+  std::set<MT2Region> newRegions = analysis->getRegions();
+ 
+  MT2Analysis<MT2EstimateZinvGamma>* newanalysis  = new MT2Analysis<MT2EstimateZinvGamma>( aname, newRegions );
+  if ( nBins>0 ){
+    MT2EstimateZinvGamma::rebinYields( newanalysis, nBins, bins );
+  }
+
+  MT2EstimateZinvGamma* theEst = newanalysis->get( *(regions.begin()));
+
+  //fill the new iso with the tree
+  int nentries = treeInclusive->tree->GetEntries();
+
+  Float_t var_float;
+  Int_t var_int;
+
+  treeInclusive->tree->SetBranchAddress(var.c_str(), &var_int);
+  treeInclusive->tree->SetBranchAddress(var.c_str(), &var_float);
+
+  Float_t weight;
+  treeInclusive->tree->SetBranchAddress("weight", &weight);
+  Float_t iso;
+  treeInclusive->tree->SetBranchAddress("iso", &iso);
+
+
+  for( int iEntry=0; iEntry<nentries; ++iEntry ) {
+
+    if( iEntry % 10000 == 0 ) std::cout << "    Entry: " << iEntry << " / " << nentries << std::endl;
+
+    treeInclusive->tree->GetEntry(iEntry);
+
+    theEst->yield->Fill(var_int, weight);
+
+    if(var == "nJets" || var == "nBJets"){
+      theEst->yield->Fill(var_int, weight);
+      theEst->fillIso( iso, weight, var_int );
+    } else {
+      theEst->yield->Fill(var_float, weight);
+      theEst->fillIso( iso, weight, var_float );
+    }
+
+  }
+
+  newanalysis->finalize();
+
+  //done and over
+  return newanalysis;
+
+}
+
+
+
+//some function to create a newly binned MT2EstimateZinGamma
+void MT2EstimateZinvGamma::rebinYields( MT2Analysis<MT2EstimateZinvGamma>* analysis, int nBins, Double_t* bins ){
+
+  std::set<MT2Region> regions = analysis->getRegions();
+
+  for( std::set<MT2Region>::iterator iR = regions.begin(); iR!=regions.end(); ++iR ) {
+
+    MT2EstimateZinvGamma* estimate = analysis->get(*iR);
+    TH1D* thisYield = estimate->yield;
+    std::string oldName(thisYield->GetName());
+    delete thisYield;
+    thisYield = new TH1D( oldName.c_str(), "", nBins, bins );
+
+
+
+    std::vector<TH1D*>* this_iso_bins_hist  = &(estimate->iso_bins_hist);
+    std::vector<RooDataSet*>* this_iso_bins = &(estimate->iso_bins);
+ 
+
+    for( unsigned i=0; i<this_iso_bins_hist->size(); ++i ) { 
+      delete this_iso_bins_hist->at(i);
+      delete this_iso_bins->at(i);
+    }
+    this_iso_bins_hist->clear();
+    this_iso_bins->clear();
+
+  
+
+    int nbins_iso = 8;
+    int xmax = 10.;
+
+
+    for( int i=0; i<nBins; ++i ) {
+
+      RooDataSet* this_isoDataset = new RooDataSet( estimate->getHistoName(Form("iso_bin%d", i)).c_str() , "", RooArgSet(*(estimate->x_),*(estimate->w_)), estimate->w_->GetName() );
+      this_iso_bins->push_back(this_isoDataset);
+
+      TH1D* this_iso_hist = new TH1D( estimate->getHistoName(Form("iso_bin%d_hist", i)).c_str() , "", nbins_iso, 0., xmax );
+      this_iso_hist->Sumw2();
+      this_iso_bins_hist->push_back(this_iso_hist);
+
+    }
+  
+   
+  }//end regions
+
+
+}
+
+
+
+
+
+
+
 void MT2EstimateZinvGamma::setName( const std::string& newName ) {
 
   MT2Estimate::setName(newName);
@@ -106,13 +226,13 @@ void MT2EstimateZinvGamma::setName( const std::string& newName ) {
 
 
 
-void MT2EstimateZinvGamma::fillIso( float iso, float weight, float mt2 ) {
+void MT2EstimateZinvGamma::fillIso( float iso, float weight, float var ) {
 
   this->iso->Fill( iso, weight );
 
 
-  if( mt2>0. ) {
-    int foundBin = this->yield->FindBin(mt2);
+  if( var>0. ) {
+    int foundBin = this->yield->FindBin(var);
     if( foundBin > this->yield->GetNbinsX() ) foundBin=this->yield->GetNbinsX(); // overflow will go in last bin
     foundBin-=1; // want first bin to be 0 (fuck you root)
     if( foundBin>=0 ) {

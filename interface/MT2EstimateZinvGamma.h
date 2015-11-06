@@ -1,7 +1,9 @@
+
 #ifndef MT2EstimateZinvGamma_h
 #define MT2EstimateZinvGamma_h
 
 #include "MT2Estimate.h"
+#include "MT2EstimateTree.h"
 
 #include <iostream>
 #include <vector>
@@ -34,6 +36,23 @@ class MT2EstimateZinvGamma : public MT2Estimate {
   std::vector<RooDataSet*> iso_bins;
   std::vector<TH1D*> iso_bins_hist;
 
+  //  MT2EstimateZinvGamma( const MT2EstimateTree tree,  const std::string& aname, const MT2Region& aregion , const std::string& var );
+
+  //function to get binning from the regionsset?
+  // void getBins      ( int& nBins, double*& bins, const MT2Region& aregion);
+
+  // void fillIso( float iso, float weight=1., float mt2=-1, const std::string& var );
+
+
+  static MT2Analysis<MT2EstimateZinvGamma>*  makeInclusiveAnalysisFromInclusiveTree( const std::string& aname, MT2Analysis<MT2EstimateTree>* analysis, const std::string& selectionTree="", const std::string& var="mt2", int nBins=-1, Double_t* bins=0  );
+
+  static void rebinYields( MT2Analysis<MT2EstimateZinvGamma>* analysis, int nBins=-1, Double_t* bins=0 );
+
+
+
+
+//  void fillIso( float iso, float weight=1., float mt2=-1 );
+
 
   void fakeDatasetsFromHistos( int seed=0 );
 
@@ -54,7 +73,7 @@ class MT2EstimateZinvGamma : public MT2Estimate {
   friend MT2EstimateZinvGamma operator/( float k, const MT2EstimateZinvGamma& rhs );
 
 
-  void fillIso( float iso, float weight=1., float mt2=-1 );
+  void fillIso( float iso, float weight=1., float var=-1 );
 
   virtual void finalize();
 

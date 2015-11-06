@@ -89,6 +89,17 @@ void MT2Estimate::getYieldBins( int& nBins, double*& bins ) const {
 
 void MT2Estimate::rebinYields( MT2Analysis<MT2Estimate>* analysis, int nBins, float xMin, float xMax ) {
 
+  double bins[nBins+1];
+  double step = (xMax-xMin)/(double)nBins;
+
+  for(int i=0; i <= nBins+1; i++){
+    bins[i] = xMin + ((double)i )* step;
+  }
+
+  MT2Estimate::rebinYields( analysis, nBins, bins);
+
+
+  /*
   std::set<MT2Region> regions = analysis->getRegions();
 
   for( std::set<MT2Region>::iterator iR = regions.begin(); iR!=regions.end(); ++iR ) {
@@ -100,6 +111,25 @@ void MT2Estimate::rebinYields( MT2Analysis<MT2Estimate>* analysis, int nBins, fl
 
     delete thisYield;
     thisYield = new TH1D( oldName.c_str(), "", nBins, xMin, xMax );
+
+  }
+  */
+}
+
+
+void MT2Estimate::rebinYields( MT2Analysis<MT2Estimate>* analysis, int nBins, double* bins) {
+
+  std::set<MT2Region> regions = analysis->getRegions();
+
+  for( std::set<MT2Region>::iterator iR = regions.begin(); iR!=regions.end(); ++iR ) {
+
+    MT2Estimate* estimate = analysis->get(*iR);
+    TH1D* thisYield = estimate->yield;
+
+    std::string oldName(thisYield->GetName());
+
+    delete thisYield;
+    thisYield = new TH1D( oldName.c_str(), "", nBins, bins );
 
   }
 
