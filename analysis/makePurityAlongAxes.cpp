@@ -24,7 +24,7 @@ int main( int argc, char* argv[] ) {
 
 
   if( argc<2 ) {
-    std::cout << "USAGE: ./createPurityEstimates [configFileName]" << std::endl;
+    std::cout << "USAGE: ./makePurityAlongAxis [configFileName]" << std::endl;
     std::cout << "Exiting." << std::endl;
     exit(11);
   }
