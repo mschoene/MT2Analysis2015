@@ -968,8 +968,7 @@ MT2Analysis<T>::MT2Analysis( const std::string& aname, const std::string& region
     regions_.insert(MT2Region(450., 575., 7, -1, 3,  -1, "loMT"));
     regions_.insert(MT2Region(450., 575., 7, -1, 3,  -1, "hiMT"));
 
-    regions_.insert(MT2Region(575., 1000., 2,  6, 3,  -1,
-    fitPurity( cfg, thisLoosePurity_ht, thisTightPurity_ht, thisEstimate_ht->x_, thisEstimate_ht->iso_bins, templatePrompt->iso, templateFake->iso); "loMT"));
+    regions_.insert(MT2Region(575., 1000., 2,  6, 3,  -1, "loMT"));
     regions_.insert(MT2Region(575., 1000., 2,  6, 3,  -1, "hiMT"));
     regions_.insert(MT2Region(575., 1000., 7, -1, 3,  -1, "loMT"));
     regions_.insert(MT2Region(575., 1000., 7, -1, 3,  -1, "hiMT"));
