@@ -78,6 +78,7 @@ int main( int argc, char* argv[] ) {
 
   bool useMC = true;
   /*
+>>>>>>> ana-mt2/MT2Analysis2015_RandD
   if( argc>2 ) {
     std::string mc_or_data_templates = std::string(argv[2]); 
     if( mc_or_data_templates=="mc" ) mc_or_data_templates="MC";
@@ -135,7 +136,7 @@ int main( int argc, char* argv[] ) {
   MT2Analysis<MT2EstimateZinvGamma>* templates_fake   = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( templateFileName, "templatesFake" );
 
   MT2EstimateZinvGamma* templatePrompt, *templateFake;
-   if( cfg.gammaTemplateRegions()=="13TeV_inclusive" ) { // just get them once
+  if( cfg.gammaTemplateRegions()=="13TeV_inclusive" ) { // just get them once
 //    templatePrompt = templates_prompt->get( MT2Region("HT450toInf_j2toInf_b0toInf") );
 //    templateFake   = templates_fake  ->get( MT2Region("HT450toInf_j2toInf_b0toInf") );
     templatePrompt = templates_prompt->get( MT2Region("HT200toInf_j1toInf_b0toInf") );
@@ -205,13 +206,35 @@ void fitPurity( const MT2Config& cfg, MT2EstimateSyst* purityLoose, MT2EstimateS
     Purity loose, tight;
     fitSinglePurity( cfg, loose, tight, x, data[i], templPrompt, templFake );
 
-    purityLoose->yield         ->SetBinContent( ibin, loose.purity );
-    purityLoose->yield_systUp  ->SetBinContent( ibin, loose.purity + loose.purityErrUp );
-    purityLoose->yield_systDown->SetBinContent( ibin, loose.purity - loose.purityErrDown );
+    if( loose.purity>=0. ){
+    
+      purityLoose->yield         ->SetBinContent( ibin, loose.purity );
+      purityLoose->yield_systUp  ->SetBinContent( ibin, loose.purity + loose.purityErrUp );
+      purityLoose->yield_systDown->SetBinContent( ibin, loose.purity - loose.purityErrDown );
+      
+    }
+    else{
 
-    purityTight->yield         ->SetBinContent( ibin, tight.purity );
-    purityTight->yield_systUp  ->SetBinContent( ibin, tight.purity + tight.purityErrUp );
-    purityTight->yield_systDown->SetBinContent( ibin, tight.purity - tight.purityErrDown );
+      purityLoose->yield         ->SetBinContent( ibin, 1.0 );
+      purityLoose->yield_systUp  ->SetBinContent( ibin, 1.0 );
+      purityLoose->yield_systDown->SetBinContent( ibin, 0.0 );
+
+    }
+
+    if( tight.purity>=0 ){
+      
+      purityTight->yield         ->SetBinContent( ibin, tight.purity );
+      purityTight->yield_systUp  ->SetBinContent( ibin, tight.purity + tight.purityErrUp );
+      purityTight->yield_systDown->SetBinContent( ibin, tight.purity - tight.purityErrDown );
+    
+    }
+    else{
+      
+      purityTight->yield         ->SetBinContent( ibin, 1.0 );
+      purityTight->yield_systUp  ->SetBinContent( ibin, 1.0 );
+      purityTight->yield_systDown->SetBinContent( ibin, 0.0 );  
+
+    }
 
   }
 
