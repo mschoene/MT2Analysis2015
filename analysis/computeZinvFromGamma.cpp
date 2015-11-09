@@ -29,9 +29,10 @@
 
 
 
+//int type = 0;
 int type = 1;
 
-// 0: use bare MC for ratio (pure GJet)
+// 0: use bare MC for ratiopure GJet)
 // 1: use GJet+QCD and multiply by fitted purity
 
 bool use_extrapolation = true;
@@ -76,15 +77,18 @@ int main( int argc, char* argv[] ) {
   std::string gammaControlRegionDir = cfg.getEventYieldDir() + "/gammaControlRegion"; //(Form("GammaControlRegion_%s_%s_%.0ffb", samples.c_str(), regionsSet.c_str(), lumi));
 
   MT2Analysis<MT2Estimate>* gammaCR = MT2Analysis<MT2Estimate>::readFromFile(gammaControlRegionDir + "/data.root", "gammaCR");
-  MT2Analysis<MT2Estimate>* gamma_prompt = MT2Analysis<MT2Estimate>::readFromFile(gammaControlRegionDir + "/mc.root", "prompt");
+  MT2Analysis<MT2Estimate>* gamma_prompt_ = MT2Analysis<MT2Estimate>::readFromFile(gammaControlRegionDir + "/mc.root", "prompt");
   
+  MT2Analysis<MT2Estimate>* gamma_prompt;
+  if ( !use_extrapolation ) gamma_prompt = MT2Analysis<MT2Estimate>::readFromFile(gammaControlRegionDir + "/mc.root", "prompt");
+
   MT2Analysis<MT2Estimate>* gamma_prompt_integral;
   if( use_extrapolation )
-    gamma_prompt_integral = MT2Estimate::makeIntegralAnalysisFromEstimate( "gamma_prompt_integral", cfg.regionsSet(), gamma_prompt );
+    gamma_prompt_integral = MT2Estimate::makeIntegralAnalysisFromEstimate( "prompt_integral", cfg.regionsSet(), gamma_prompt_ );
 
-  if( gammaCR==0 || gamma_prompt==0 ) {
+  if( gammaCR==0 || gamma_prompt_==0  ) {
     std::cout << "-> Please run gammaControlRegion first. I need to get the gammaCR yields from there." << std::endl;
-    std::cout << "-> Thank you for your cooperation." << std::endl;
+    std::cout << "->Thank you for your cooperation." << std::endl;
     exit(193);
   }
 
@@ -105,32 +109,48 @@ int main( int argc, char* argv[] ) {
     (*ZgammaRatioMC) = ( (* (MT2Analysis<MT2Estimate>*)Zinv) / (*gamma_prompt) );
   else
     (*ZgammaRatioMC) = ( (* (MT2Analysis<MT2Estimate>*)Zinv) / (*gamma_prompt_integral) );
-
+  //  (*ZgammaRatioMC) = ( (* (MT2Analysis<MT2Estimate>*)Zinv) / (*gamma_prompt) );
 
   //MT2Analysis<MT2Estimate>* ZgammaRatio = MT2EstimateSyst::makeAnalysisFromEstimate( "ZgammaRatio", regionsSet, ZgammaRatioMC );
   MT2Analysis<MT2Estimate>* ZgammaRatio = new MT2Analysis<MT2Estimate>( "ZgammaRatio", cfg.regionsSet() );
-  (*ZgammaRatio) = (*ZgammaRatioMC);
+  (*ZgammaRatio) = (*ZgammaRatioMC)/1.23;
+  (*ZgammaRatio) = (*ZgammaRatio)*0.9;
   MT2Analysis<MT2EstimateSyst>* purity;
   if( type > 0 ) {
     purity = MT2Analysis<MT2EstimateSyst>::readFromFile( gammaControlRegionDir + "/PurityFitsRC/purityFit.root", "purity" );
+    ////purity = MT2Analysis<MT2EstimateSyst>::readFromFile( gammaControlRegionDir + "/PurityFitsMC/purityFit.root", "purity" );
+    //purity = MT2Analysis<MT2EstimateSyst>::readFromFile( gammaControlRegionDir + "/purityMC.root", "purity" );
   }
 
 
-  MT2Analysis<MT2EstimateSyst>* gamma_est = MT2EstimateSyst::makeAnalysisFromEstimate( "gamma_est", cfg.regionsSet(), gammaCR );
-  if( type!=0 ) {
-    (*gamma_est) *= (*purity);
+  MT2Analysis<MT2EstimateSyst>* gamma_est_ = MT2EstimateSyst::makeAnalysisFromEstimate( "gamma_est_", cfg.regionsSet(), gammaCR );
+  
+  MT2Analysis<MT2EstimateSyst>* gamma_est;
+  if( !use_extrapolation ) {
+    gamma_est = MT2EstimateSyst::makeAnalysisFromEstimate( "gamma_est", cfg.regionsSet(), gammaCR );
+    if( type!=0 ) {
+      (*gamma_est) *= (*purity);
+      //  (*gamma_est) *= 0.90;
+    }
     (*gamma_est) *= 0.90;
+    
   }
 
   MT2Analysis<MT2EstimateSyst>* gamma_est_integral;
-  if( use_extrapolation )
-    gamma_est_integral = MT2EstimateSyst::makeIntegralAnalysisFromEstimate( "gamma_est_integral", cfg.regionsSet(), gamma_est );
+  if( use_extrapolation ){
+    gamma_est_integral = MT2EstimateSyst::makeIntegralAnalysisFromEstimate( "gamma_est_integral", cfg.regionsSet(), gamma_est_ );
+    if( type!=0 ) {
+      (*gamma_est_integral) *= (*purity);
+    }
+      (*gamma_est_integral) *= 0.92;
+      //(*gamma_est_integral) *= 0.95;
+  }
 
   MT2Analysis<MT2EstimateSyst>* ZinvEstimateFromGamma = new MT2Analysis<MT2EstimateSyst>( "ZinvEstimateFromGamma", cfg.regionsSet() );
   if( !use_extrapolation )
     (*ZinvEstimateFromGamma) = (*gamma_est) * (*ZgammaRatio);
   else
-    (*ZinvEstimateFromGamma) = (*gamma_est_integral)*(*ZgammaRatio);
+    (*ZinvEstimateFromGamma) = (*gamma_est_integral) * (*ZgammaRatio);
 
   MT2Analysis<MT2EstimateSyst>* ZinvEstimate = combineDataAndMC( ZinvEstimateFromGamma, (MT2Analysis<MT2Estimate>*)Zinv );
 
@@ -142,7 +162,14 @@ int main( int argc, char* argv[] ) {
   ZgammaRatio->addToFile( outFile );
   Zinv->setName("Zinv");
   Zinv->addToFile( outFile );
-  gamma_est->addToFile( outFile );
+  if( !use_extrapolation ){
+    gamma_prompt->addToFile( outFile );
+    gamma_est->addToFile( outFile );
+  }
+  else{
+    gamma_prompt_integral->addToFile( outFile );
+    gamma_est_integral->addToFile( outFile );
+  }
   if( purity !=0 && type > 0 ) purity->addToFile( outFile );
 
   return 0;
@@ -233,7 +260,9 @@ MT2Analysis<MT2EstimateSyst>* combineDataAndMC( MT2Analysis<MT2EstimateSyst>* da
     MT2Estimate* mcEst = mc->get(*iR);
 
     MT2EstimateSyst* thisNewEstimate;
-    if( (!use_extrapolation && iR->nBJetsMin()>1) || iR->nBJetsMin()>2 || iR->nJetsMin()==1 ) {
+    if( (!(use_extrapolation) && iR->nBJetsMin()>1) || iR->nBJetsMin()>3 /*|| iR->nJetsMin()==1*/ ) {
+    //    if( (!(use_extrapolation) && iR->nBJetsMin()>1) || iR->nBJetsMin()>2 /*|| iR->nJetsMin()==1*/ ) {
+      
       thisNewEstimate =  new MT2EstimateSyst(*mcEst);
       for( int ibin=1; ibin<thisNewEstimate->yield->GetNbinsX()+1; ++ibin ) {
         thisNewEstimate->yield_systUp->SetBinContent( ibin, 2.*thisNewEstimate->yield->GetBinContent(ibin) );

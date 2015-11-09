@@ -129,75 +129,7 @@ MT2Analysis<MT2EstimateZinvGamma>* gammaJet_data_nbjets = MT2Analysis<MT2Estimat
   makePurity( cfg, outputdir,  gammaJet_data_ht, templates_prompt, templates_fake, useMC, "ht_");
   makePurity( cfg, outputdir,  gammaJet_data_njets, templates_prompt, templates_fake, useMC, "njets_");
   makePurity( cfg, outputdir,  gammaJet_data_nbjets, templates_prompt, templates_fake, useMC, "nbjets_");
-  /*
-  MT2EstimateZinvGamma* templatePrompt, *templateFake;
-   if( cfg.gammaTemplateRegions()=="13TeV_inclusive" ) { // just get them once
-    templatePrompt = templates_prompt->get( MT2Region("HT200toInf_j1toInf_b0toInf") );
-    templateFake   = templates_fake  ->get( MT2Region("HT200toInf_j1toInf_b0toInf") );
-  }
 
-  std::set<MT2Region> regions = gammaJet_data->getRegions();
-
-
-  MT2Analysis<MT2EstimateSyst>* purityLoose = new MT2Analysis<MT2EstimateSyst>( "purityLoose", cfg.regionsSet() );
-  MT2Analysis<MT2EstimateSyst>* purityTight = new MT2Analysis<MT2EstimateSyst>( "purity"     , cfg.regionsSet() );
-
-  for( std::set<MT2Region>::iterator iR=regions.begin(); iR!=regions.end(); ++iR ) {
-
-    if( iR->nBJetsMin()>2 ) continue;
-
-    MT2EstimateZinvGamma* thisEstimate = gammaJet_data->get( *iR );
-
-    MT2EstimateZinvGamma* thisEstimate_ht = gammaJet_data_ht->get( *iR );
-
-    if( cfg.gammaTemplateRegions()!="13TeV_inclusive" ) {
-      templatePrompt = templates_prompt->get( *(templates_prompt->matchRegion( *iR )) );
-      templateFake   = templates_fake  ->get( *(templates_fake  ->matchRegion( *iR )) );
-    }
-
-    MT2EstimateSyst* thisLoosePurity_ht = purityLoose_ht->get( *iR );
-    MT2EstimateSyst* thisTightPurity_ht = purityTight_ht->get( *iR );
-
-    int nBins;
-    double* bins;
-    thisEstimate_ht->MT2Estimate::getYieldBins(nBins, bins);
-
-    thisLoosePurity_ht->rebinYields( (MT2Analysis<MT2Estimate>*)purityLoose_ht,nBins,bins);
-    thisTightPurity_ht->rebinYields( (MT2Analysis<MT2Estimate>*)purityTight_ht,nBins,bins);
-
-    MT2EstimateSyst* thisLoosePurity = purityLoose->get( *iR );
-    std::string nameLoose = thisLoosePurity->yield->GetName();
-
-    MT2EstimateSyst* thisTightPurity = purityTight->get( *iR );
-    std::string nameTight = thisTightPurity->yield->GetName();
-
-    std::cout << thisEstimate_ht->yield->GetNbinsX()  << std::endl;
-
-     fitPurity( cfg, thisLoosePurity, thisTightPurity, thisEstimate->x_, thisEstimate->iso_bins, templatePrompt->iso, templateFake->iso);
-
-    fitPurity( cfg, thisLoosePurity_ht, thisTightPurity_ht, thisEstimate_ht->x_, thisEstimate_ht->iso_bins, templatePrompt->iso, templateFake->iso);
-
-    thisLoosePurity->yield->SetName( nameLoose.c_str() );
-    thisTightPurity->yield->SetName( nameTight.c_str() );
-
-  }
-    
-  //  if( useMC )  "_MC";
-  // else        templateFileName = templateFileName + "_data";
-  if(useMC) {
-    purityLoose->writeToFile( outputdir + "/purityFit_MC.root" );
-    purityTight->addToFile( outputdir + "/purityFit_MC.root" );
-
-    purityLoose_ht->writeToFile( outputdir + "/purityFitHT_MC.root" );
-    purityTight_ht->addToFile( outputdir + "/purityFitHT_MC.root" );
-  } else {
-    purityLoose->writeToFile( outputdir + "/purityFit_data.root" );
-    purityTight->addToFile( outputdir + "/purityFit_data.root" );
-
-    purityLoose_ht->writeToFile( outputdir + "/purityFitHT_data.root" );
-    purityTight_ht->addToFile( outputdir + "/purityFitHT_data.root" );
-  }
-  */
 
   return 0;
 
@@ -289,13 +221,35 @@ void fitPurity( const MT2Config& cfg, MT2EstimateSyst* purityLoose, MT2EstimateS
     Purity loose, tight;
     fitSinglePurity( cfg, loose, tight, x, data[i], templPrompt, templFake );
 
-    purityLoose->yield         ->SetBinContent( ibin, loose.purity );
-    purityLoose->yield_systUp  ->SetBinContent( ibin, loose.purity + loose.purityErrUp );
-    purityLoose->yield_systDown->SetBinContent( ibin, loose.purity - loose.purityErrDown );
+    if( loose.purity>=0. ){
+    
+      purityLoose->yield         ->SetBinContent( ibin, loose.purity );
+      purityLoose->yield_systUp  ->SetBinContent( ibin, loose.purity + loose.purityErrUp );
+      purityLoose->yield_systDown->SetBinContent( ibin, loose.purity - loose.purityErrDown );
+      
+    }
+    else{
 
-    purityTight->yield         ->SetBinContent( ibin, tight.purity );
-    purityTight->yield_systUp  ->SetBinContent( ibin, tight.purity + tight.purityErrUp );
-    purityTight->yield_systDown->SetBinContent( ibin, tight.purity - tight.purityErrDown );
+      purityLoose->yield         ->SetBinContent( ibin, 1.0 );
+      purityLoose->yield_systUp  ->SetBinContent( ibin, 1.0 );
+      purityLoose->yield_systDown->SetBinContent( ibin, 0.0 );
+
+    }
+
+    if( tight.purity>=0 ){
+      
+      purityTight->yield         ->SetBinContent( ibin, tight.purity );
+      purityTight->yield_systUp  ->SetBinContent( ibin, tight.purity + tight.purityErrUp );
+      purityTight->yield_systDown->SetBinContent( ibin, tight.purity - tight.purityErrDown );
+    
+    }
+    else{
+      
+      purityTight->yield         ->SetBinContent( ibin, 1.0 );
+      purityTight->yield_systUp  ->SetBinContent( ibin, 1.0 );
+      purityTight->yield_systDown->SetBinContent( ibin, 0.0 );  
+
+    }
 
   }
 

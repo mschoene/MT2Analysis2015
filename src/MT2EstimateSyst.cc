@@ -479,18 +479,18 @@ MT2EstimateSyst MT2EstimateSyst::operator*( const MT2EstimateSyst& rhs ) const{
     float thisBinDown  = result.yield_systDown->GetBinContent(iBin);
     float otherBinDown = rhs.yield_systDown->GetBinContent(iBin);
 
-    float thisErrUp = thisBinUp - thisBin;
-    float thisErrDown = thisBin - thisBinDown;
-    float otherErrUp = otherBinUp - otherBin;
-    float otherErrDown = otherBin - otherBinDown;
+    float thisErrUp = (thisBinUp - thisBin)/thisBin;
+    float thisErrDown = (thisBin - thisBinDown)/thisBin;
+    float otherErrUp = (otherBinUp - otherBin)/otherBin;
+    float otherErrDown = (otherBin - otherBinDown)/otherBin;
 
     float newBin = thisBin*otherBin;
-    float newErrUp = sqrt( thisBin*thisBin*otherErrUp*otherErrUp + otherBin*otherBin*thisErrUp*thisErrUp );
-    float newErrDown = sqrt( thisBin*thisBin*otherErrDown*otherErrDown + otherBin*otherBin*thisErrDown*thisErrDown );
+    float newErrUp = sqrt( otherErrUp*otherErrUp + thisErrUp*thisErrUp );
+    float newErrDown = sqrt( otherErrDown*otherErrDown + thisErrDown*thisErrDown );
 
     result.yield         ->SetBinContent( iBin, newBin );
-    result.yield_systUp  ->SetBinContent( iBin, newBin + newErrUp );
-    result.yield_systDown->SetBinContent( iBin, newBin - newErrDown );
+    result.yield_systUp  ->SetBinContent( iBin, newBin + newErrUp*newBin );
+    result.yield_systDown->SetBinContent( iBin, newBin - newErrDown*newBin );
 
     for( int iBinY=1; iBinY<result.yield3d->GetNbinsY()+1; ++iBinY)
       for( int iBinZ=1; iBinZ<result.yield3d->GetNbinsZ()+1; ++iBinZ)

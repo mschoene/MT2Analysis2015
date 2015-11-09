@@ -3,7 +3,7 @@
 # --- configuration (consider to move this into a separate file) ---
 treeName="mt2"
 inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/babies/MT2_CMGTools-from-CMSSW_7_4_12/fullData_miniAODv2_04Nov2015/"
-productionName="05Nov2015_dataRunD_goldenJSON_1p25ifb"
+productionName="05Nov2015_dataRunD_goldenJSON_1p25ifb_dataSkim"
 fileExt="_post.root"
 isCrab=1
 inputPU="/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/MT2production/74X/Spring15/PostProcessed/23Oct2015_data_noSkim/JetHT_Run2015D_post.root"
@@ -87,6 +87,11 @@ do
     filter=`echo $line |awk '{print $4}'`
     kfactor=`echo $line |awk '{print $5}'`
 
+    doPruning="true"
+    if [ $id -lt 10 ]; then
+	doPruning="false"
+    fi;
+
     if [[ $id -lt 10 && $doFilterTxt == 1 ]]; then	
 	filterTxt=/shome/casal/eventlist_csc2015/eventlist_`echo $name | cut -d _ -f 1`_csc2015.txt
 	outputFilteredFile=${workingFolder}/${name}_filtered$fileExt;
@@ -137,6 +142,7 @@ echo "postProcessing(\"$name\",\"$inputFolder\",\"$outputFile\",\"$treeName\",$f
 echo "gROOT->LoadMacro(\"postProcessing.C\"); postProcessing(\"$name\",\"$inputFolder\",\"$outputFile\",\"$treeName\",$filter,$kfactor,$xsec,$id,\"$crabExt\",\"$inputPU\",\"$PUvar\",$applyJSON); gSystem->Exit(0);" |root.exe -b -l ;
 
 if [[ $id -lt 10 && $doFilterTxt == 1 ]]; then 
+   echo "filterFromTxt(\"$filterTxt\",\"$outputFile\",1,\"$outputFilteredFile\",\"mt2\",\"\")"
    echo "gROOT->LoadMacro(\"filterFromTxt.C\"); filterFromTxt(\"$filterTxt\",\"$outputFile\",1,\"$outputFilteredFile\",\"mt2\",\"\"); gSystem->Exit(0);" |root.exe -b -l ;
 
    mv $outputFilteredFile $outputFile;
@@ -148,7 +154,7 @@ rm $outputFile
 
 skimmingPruningCfg="${workingFolder}/skimmingPruning_${name}.cfg"
     cat skimmingPruning.cfg |grep -v \# | sed  "s#INPUTDIR#${outputFolder}#" |sed "s#INPUTFILTER#${name}#" \
-	| sed "s#OUTPUTDIR#${outputFolder}/skimAndPrune#" > \$skimmingPruningCfg
+	| sed "s#OUTPUTDIR#${outputFolder}/skimAndPrune#" | sed "s#DOPRUNING#${doPruning}#" > \$skimmingPruningCfg
 
 ./runSkimmingPruning.sh \$skimmingPruningCfg
 rm \$skimmingPruningCfg

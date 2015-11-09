@@ -76,6 +76,10 @@ void MT2EstimateTree::initTree( ) {
   tree->Branch( "GenSusyMScan1", &GenSusyMScan1, "GenSusyMScan1/I");
   tree->Branch( "GenSusyMScan2", &GenSusyMScan2, "GenSusyMScan2/I");
 
+//  tree->Branch( "LHEweight_original", &LHEweight_original, "LHEweight_original/F" );
+//  tree->Branch( "LHEweight_id", &LHEweight_id, "LHEweight_id[446]/I" );
+//  tree->Branch( "LHEweight_wgt", &LHEweight_wgt, "LHEweight_wgt[446]/F" );
+
   tree->SetDirectory(0);
 }
 
@@ -301,6 +305,12 @@ void MT2EstimateTree::assignTree( const MT2Tree& mt2tree, float w  ) {
   GenSusyMScan1 = mt2tree.GenSusyMScan1;
   GenSusyMScan2 = mt2tree.GenSusyMScan2;
  
+//  LHEweight_original = mt2tree.LHEweight_original;
+//  for (int i=0; i < 446; ++i){
+//    LHEweight_id[i] = mt2tree.LHEweight_id[i];
+//    LHEweight_wgt[i] = mt2tree.LHEweight_wgt[i];
+//  }
+
 }
   
 
@@ -341,6 +351,12 @@ void MT2EstimateTree::assignTree_zll( const MT2Tree& mt2tree, float w ) {
   GenSusyMScan1 = mt2tree.GenSusyMScan1;
   GenSusyMScan2 = mt2tree.GenSusyMScan2;
 
+//  LHEweight_original = mt2tree.LHEweight_original;
+//  for (int i=0; i < 446; ++i){
+//    LHEweight_id[i] = mt2tree.LHEweight_id[i];
+//    LHEweight_wgt[i] = mt2tree.LHEweight_wgt[i];
+//  }
+
 }
 
 
@@ -375,6 +391,12 @@ void MT2EstimateTree::assignTree_gamma( const MT2Tree& mt2tree, float w ) {
 
   GenSusyMScan1 = mt2tree.GenSusyMScan1;
   GenSusyMScan2 = mt2tree.GenSusyMScan2;
+
+//  LHEweight_original = mt2tree.LHEweight_original;
+//  for (int i=0; i < 446; ++i){
+//    LHEweight_id[i] = mt2tree.LHEweight_id[i];
+//    LHEweight_wgt[i] = mt2tree.LHEweight_wgt[i];
+//  }
 
 }
 
