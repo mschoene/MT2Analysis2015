@@ -23,11 +23,11 @@ using namespace std;
 
 class EventKey {
 public:
-  EventKey(int input_run=0, int input_lumi=0, unsigned long long input_evt=0) : 
+  EventKey(unsigned int input_run=0, unsigned int input_lumi=0, unsigned long long input_evt=0) : 
     run_(input_run), lumi_(input_lumi), evt_(input_evt){;}
 
-  int  run () const {return run_; }
-  int  lumi() const {return lumi_;}
+  unsigned int  run () const {return run_; }
+  unsigned int  lumi() const {return lumi_;}
   unsigned long long evt () const {return evt_; }
 
   bool operator<(EventKey const& right) const{
@@ -41,8 +41,8 @@ public:
   }
 
 private:
-  int run_;
-  int lumi_;
+  unsigned int run_;
+  unsigned int lumi_;
   unsigned long long evt_;
 
 };
@@ -61,7 +61,7 @@ std::ifstream& operator>>(std::ifstream& is, EventKey& event) {
 };
 
 void filterFromTxt(string filterList="eventlist_JetHT_csc2015.txt",
-		   string inputFile="duplicates.root",
+		   string inputFile="input.root",
 		   bool fillNewTree=false,
 		   string outputFile="output.root",
 		   string treeName="mt2",
@@ -76,7 +76,7 @@ void filterFromTxt(string filterList="eventlist_JetHT_csc2015.txt",
   
   cout << "In input tree, nentries = " << nentries << endl;
 
-  int run,lumi;
+  unsigned int run,lumi;
   unsigned long long evt;
   oldtree->SetBranchAddress("run" ,&run );
   oldtree->SetBranchAddress("lumi",&lumi);
@@ -96,15 +96,19 @@ void filterFromTxt(string filterList="eventlist_JetHT_csc2015.txt",
   //Create set where we store list of event keys
   std::set<EventKey> listFromTxt;
 
+  cout << "filling set with filter list" << filterList << endl;
   ifstream infile(filterList.c_str());
   while (!infile.eof()) {
     EventKey aEvent;
     infile >> aEvent;
     listFromTxt.insert( aEvent );
   }
+  cout << "size of filterList set: " << filterList.size() << endl;
 
   int nRemoved=0;
 
+  cout << "starting loop over tree events" << endl;
+  
   for (Long64_t i=0;i<nentries; i++) {
     //for (Long64_t i=0;i<1000; i++) {
     oldtree->GetEntry(i);

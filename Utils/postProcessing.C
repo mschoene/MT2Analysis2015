@@ -161,6 +161,8 @@ int postProcessing(string inputString,
   
   ULong64_t nData = hPU_data->Integral();
   hPU_data->Scale(1.0/nData);
+
+  std::cout << "Initialized PU file." << std::endl;
   
   // here I set the "Count" histograms
   TIter nextfile(chain->GetListOfFiles());
@@ -170,10 +172,25 @@ int postProcessing(string inputString,
   unsigned long int allHistoEntries=0;
   TH1D* newSumW=0;
   unsigned long int allSumGenWeight=0;
+  
+  std::cout << "Entering loop over chain elements..." << std::endl;
+  
+  int nFiles=0;
+
   while ((elem = (TChainElement*)nextfile())) {
     TFile *f; f = TFile::Open(elem->GetTitle(),"READ");
     TH1D *countH = (TH1D*)f->Get("Count");
+    
+//    ++nFiles;
+//    std::cout << elem->GetTitle() << std::endl;
+//
+//    std::cout << "Read Count histogram for file "<< nFiles <<": " << countH->GetEntries() << std::endl;
+
     TH1D *sumW = (TH1D*)f->Get("SumGenWeights");
+//
+//    std::cout << "Read SumGenWeights histogram for file "<< nFiles <<": " << sumW->GetEntries() << std::endl;
+//
+
     if(isFirst){
       newH = (TH1D*) countH->Clone();
       newH->SetDirectory(0);  
@@ -198,6 +215,8 @@ int postProcessing(string inputString,
   newH->SetBinContent(1,allHistoEntries);
   newSumW->SetBinContent(1,allSumGenWeight);
 
+  std::cout << "Read gen weights and count histogram..." << std::endl;
+
   // This line should be uncommented for all the branches that we want to overwrite.
   // If the branch is not in the input tree, we don't need this.
   //
@@ -210,8 +229,12 @@ int postProcessing(string inputString,
   TBranch* thisPUWeight = (TBranch*) chain->GetListOfBranches()->FindObject("puWeight");
   if (thisPUWeight) chain->SetBranchStatus("puWeight", 0);
 
+  std::cout << "Cloning tree..." << std::endl;
+
   clone = chain->CloneTree(-1, "fast"); 
   clone->SetName("mt2");
+  
+  std::cout << "Cloned tree." << std::endl;
   
   //if(SortBasketsByEntry)
   // clone = t->CloneTree(-1, "fastSortBasketsByEntry");

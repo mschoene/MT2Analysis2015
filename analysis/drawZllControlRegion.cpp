@@ -172,7 +172,7 @@ int main(int argc, char* argv[]){
   float htMin=200, htMax=-1;
   std::string cutsLabel = getCutLabel(htMin, htMax, "H_{T}", "GeV");
 
-  std::string selection = "weight*(ht>200. && Z_pt>180 && nJets==1 && met>200 && mt2>10. && deltaPhiMin>0.3 && diffMetMht<0.5*met && abs(Z_mass-91.19)<20  )";
+  std::string selection = "weight*(ht>200. && Z_pt>180 && nJets==1 && met>200 && mt2>200. && deltaPhiMin>0.3 && diffMetMht<0.5*met && abs(Z_mass-91.19)<20  )";
   //savename, var, sel, nbins, xmin, xmax, axis label, units, cutslabel
   dt.drawRegionYields_fromTree( "mt2"   , "mt2"   , selection, 40, 10., 810., "M_{T2}", "GeV", cutsLabel, "=1j, #geq0b"  );
   dt.drawRegionYields_fromTree( "met"   , "met"   , selection, 30, 200., 800., "ME_{T}", "GeV", cutsLabel, "=1j, #geq0b" );
@@ -187,11 +187,11 @@ int main(int argc, char* argv[]){
   dt.drawRegionYields_fromTree( "Z_lepId", "Z_lepId", selection, 5, 9.5, 14.5, "Lepton Id", "", cutsLabel, "=1j, #geq0b" );
  
 
-  std::string selection_mass = "weight*(ht>200. && Z_pt>180 &&nJets==1 && met>200. && mt2>10. && deltaPhiMin>0.3 && diffMetMht<0.5*met   )";
+  std::string selection_mass = "weight*(ht>200. && Z_pt>180 &&nJets==1 && met>200. && mt2>200. && deltaPhiMin>0.3 && diffMetMht<0.5*met   )";
   dt.drawRegionYields_fromTree( "mll"   , "Z_mass"   , selection_mass, 50, 50., 150., "M_{ll}", "GeV", cutsLabel, "=1j, #geq0b" );
-  std::string selection_mass_el = "weight*(ht>200. && Z_pt>180 &&nJets==1 && met>200. && mt2>10. && deltaPhiMin>0.3 && diffMetMht<0.5*met && Z_lepId==11   )";
+  std::string selection_mass_el = "weight*(ht>200. && Z_pt>180 &&nJets==1 && met>200. && mt2>200. && deltaPhiMin>0.3 && diffMetMht<0.5*met && Z_lepId==11   )";
   dt.drawRegionYields_fromTree( "mll_el"   , "Z_mass"   , selection_mass_el, 50, 50., 150., "M_{e^{+}e^{-}}", "GeV", cutsLabel, "=1j, #geq0b" );
-  std::string selection_mass_mu = "weight*(ht>200. && Z_pt>180 &&nJets==1 && met>200. && mt2>10. && deltaPhiMin>0.3 && diffMetMht<0.5*met && Z_lepId==13   )";
+  std::string selection_mass_mu = "weight*(ht>200. && Z_pt>180 &&nJets==1 && met>200. && mt2>200. && deltaPhiMin>0.3 && diffMetMht<0.5*met && Z_lepId==13   )";
   dt.drawRegionYields_fromTree( "mll_mu"   , "Z_mass"   , selection_mass_mu, 50, 50., 150., "M_{#mu^{+}#mu^{-}}", "GeV", cutsLabel, "=1j, #geq0b" );
 
 
@@ -205,7 +205,7 @@ int main(int argc, char* argv[]){
   //  htMin=200; 
   // cutsLabel = getCutLabel(htMin, htMax, "H_{T}", "GeV");
 
-  selection = "weight*(ht>200. && Z_pt>180 &&nJets>1 && met>200. && mt2>10. && deltaPhiMin>0.3 && diffMetMht<0.5*met && abs(Z_mass-91.19)<20  )";
+  selection = "weight*(ht>200. && Z_pt>180 &&nJets>1 && met>200. && mt2>200. && deltaPhiMin>0.3 && diffMetMht<0.5*met && abs(Z_mass-91.19)<20  )";
   dt.drawRegionYields_fromTree( "zurich_mt2"   , "mt2"   , selection, 40, 10., 810., "M_{T2}", "GeV", cutsLabel, "#geq2j, #geq0b");
   dt.drawRegionYields_fromTree( "zurich_met"   , "met"   , selection, 40, 200, 1000, "ME_{T}", "GeV", cutsLabel, "#geq2j, #geq0b");
   dt.drawRegionYields_fromTree( "zurich_ht"    , "ht"    , selection, 50, 200., 2200., "H_{T}", "GeV", cutsLabel, "#geq2j, #geq0b");
@@ -220,12 +220,12 @@ int main(int argc, char* argv[]){
  
 
  
-  selection_mass = "weight*(ht>200. && nJets>1 && Z_pt>180 &&met>200 && mt2>10. && deltaPhiMin>0.3 && diffMetMht<0.5*met   )";
+  selection_mass = "weight*(ht>200. && nJets>1 && Z_pt>180 &&met>200 && mt2>200. && deltaPhiMin>0.3 && diffMetMht<0.5*met   )";
   dt.drawRegionYields_fromTree( "zurich_mll"   , "Z_mass"   , selection_mass, 50, 50., 150., "M_{ll}", "GeV", cutsLabel ,"#geq2j, #geq0b");
 
-  selection_mass_el = "weight*(ht>200. && nJets>1 && Z_pt>180 &&met> 200. && mt2>10. && deltaPhiMin>0.3 && diffMetMht<0.5*met && Z_lepId==11 )";
+  selection_mass_el = "weight*(ht>200. && nJets>1 && Z_pt>180 &&met> 200. && mt2>200. && deltaPhiMin>0.3 && diffMetMht<0.5*met && Z_lepId==11 )";
   dt.drawRegionYields_fromTree( "zurich_mll_el"   , "Z_mass"   , selection_mass_el, 50 , 50., 150., "M_{e^{+}e^{-}}", "GeV", cutsLabel, "#geq2j, #geq0b");
-  selection_mass_mu = "weight*(ht>200. && nJets>1 && Z_pt>180 &&met>200. && mt2>10. && deltaPhiMin>0.3 && diffMetMht<0.5*met && Z_lepId==13 )";
+  selection_mass_mu = "weight*(ht>200. && nJets>1 && Z_pt>180 &&met>200. && mt2>200. && deltaPhiMin>0.3 && diffMetMht<0.5*met && Z_lepId==13 )";
   dt.drawRegionYields_fromTree( "zurich_mll_mu"   , "Z_mass"   , selection_mass_mu, 50, 50., 150., "M_{#mu^{+}#mu^{-}}", "GeV", cutsLabel, "#geq2j, #geq0b");
 
 

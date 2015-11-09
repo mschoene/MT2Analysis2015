@@ -62,6 +62,7 @@ class MT2Estimate {
   static MT2Analysis<MT2Estimate>* makeIntegralAnalysisFromEstimate( const std::string& aname, const std::string& regionsSet, MT2Analysis<MT2Estimate>* analysis );
 
   static void rebinYields( MT2Analysis<MT2Estimate>* analysis, int nBins, float xMin, float xMax );
+  static void rebinYields( MT2Analysis<MT2Estimate>* analysis, int nBins, double* bins );
 
   const MT2Estimate& operator=( const MT2Estimate& rhs );
 

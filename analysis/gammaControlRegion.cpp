@@ -424,6 +424,7 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
     }
     
     
+    if( !(myTree.HLT_Photon165_HE10) ) continue;
     
     //if( myTree.gamma_ht>1000. && sample.id==204 ) continue; // remove high-weight spikes (remove GJet_400to600 leaking into HT>1000)
     
