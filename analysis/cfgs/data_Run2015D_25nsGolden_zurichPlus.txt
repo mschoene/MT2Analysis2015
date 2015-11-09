@@ -1,0 +1,6 @@
+lumi 1.25
+regionsSet zurichPlus
+mcSamples Spring15_25ns_zurichPlus
+dataSamples Run2015D_25nsGolden_v3
+#dataSamples datatest
+#additionalStuff noSignals

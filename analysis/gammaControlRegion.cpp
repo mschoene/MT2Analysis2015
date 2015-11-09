@@ -34,7 +34,9 @@ void roundLikeData( MT2Analysis<MT2EstimateZinvGamma>* data );
 void fillYields( MT2Analysis<MT2EstimateZinvGamma>* est, float weight, float ht, int njets, int nbjets, float met, float minMTBmet, float mt2, float iso );
 void fillOneTree( MT2EstimateTree* thisTree, const MT2Tree& myTree, float weight, float ht, int njets, int nbjets, float met, float minMTBmet, float mt2, float iso, int nTrueB, int nTrueC );
 
+float DeltaR(float eta1, float eta2, float phi1, float phi2);
 
+float DeltaPhi(float phi1, float phi2);
 
 
 int main( int argc, char* argv[] ) {
@@ -386,13 +388,35 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
     if(cfg.analysisType() == "mt2"){
    
       if( !myTree.passSelection("gamma") ) continue;
+
+      if( !(myTree.HLT_Photon165_HE10) ) continue;
    
       if( myTree.mt2>200. ) continue; // orthogonal to signal region
       if( myTree.gamma_pt[0]<180. ) continue;
       if( (myTree.gamma_nJet30>1 && myTree.gamma_mt2<200.) || (myTree.gamma_nJet30==1 && myTree.gamma_ht<200.) ) continue;
+    
+      //////if( myTree.gamma_nJet30==1 && (myTree.gamma_jet_id[0]<3 || myTree.gamma_jet_chHEF[0]<0.05 || myTree.gamma_jet_neHEF[0]>0.8 || myTree.gamma_jet_phEF[0]>0.7) ) continue;
+
     }
+ 
+    if( myTree.gamma_nJet30==1 ){
+      
+      float maxDR=0;
+      int J=0;
+      for( int j=0; j<myTree.njet; ++j ){
+
+	if( fabs( myTree.jet_eta[j] ) > 2.5 || myTree.jet_pt[j] < 30. ) continue;
+	
+	float thisDR = DeltaR( myTree.gamma_eta[0], myTree.jet_eta[j], myTree.gamma_phi[0], myTree.jet_phi[j] );
+	maxDR = ( thisDR > maxDR ) ? thisDR : maxDR; 
+	J = ( thisDR > maxDR ) ? j : J;
+
+      }
+      
+      if ( !myTree.passMonoJetId(J) ) continue;
     
-    
+    }
+   
     if( myTree.isData ) {
       if( !myTree.passGammaAdditionalSelection(1) ) continue;
     } else {
@@ -415,6 +439,9 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
       
     }
 
+    if( myTree.isData &&( myTree.Flag_HBHENoiseFilter==0 || myTree.Flag_CSCTightHaloFilter==0 || myTree.Flag_goodVertices==0 ||  myTree.Flag_eeBadScFilter==0 ) ) continue;
+    if(myTree.isData && myTree.isGolden == 0) continue;
+    
 
     TLorentzVector gamma;
     gamma.SetPtEtaPhiM( myTree.gamma_pt[0], myTree.gamma_eta[0], myTree.gamma_phi[0], myTree.gamma_mass[0] );
@@ -666,4 +693,17 @@ void fillYields( MT2Analysis<MT2EstimateZinvGamma>* est, float weight, float ht,
 
   }
 
+}
+
+float DeltaR(float eta1, float eta2, float phi1, float phi2){
+  float dEta = eta1 - eta2;
+  float dPhi = DeltaPhi(phi1, phi2);
+  return TMath::Sqrt(dEta*dEta + dPhi*dPhi);
+}
+
+float DeltaPhi(float phi1, float phi2){
+  float dPhi = phi1 - phi2;
+  while (dPhi  >  TMath::Pi()) dPhi -= 2*TMath::Pi();
+  while (dPhi <= -TMath::Pi()) dPhi += 2*TMath::Pi();
+  return dPhi;
 }

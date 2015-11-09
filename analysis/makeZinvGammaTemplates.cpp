@@ -53,6 +53,7 @@ int main( int argc, char* argv[] ) {
 
 
   bool useMC = true;
+  useMC=false;
 
   if( argc>2 ) {
     std::string data_or_mc = std::string(argv[2]); 
@@ -187,6 +188,11 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
     if( !myTree.passSelection("gamma") ) continue;
     if( !myTree.passGammaAdditionalSelection(sample.id) ) continue;
 
+    if( !(myTree.HLT_Photon165_HE10) ) continue;
+
+    if( myTree.mt2>200. ) continue; // orthogonal to signal region                                                                                                                                               
+    if( myTree.gamma_pt[0]<180. ) continue;
+    if( (myTree.gamma_nJet30>1 && myTree.gamma_mt2<200.) || (myTree.gamma_nJet30==1 && myTree.gamma_ht<200.) ) continue;
 
     if( myTree.mt2>200. ) continue; // orthogonal to signal region
     if( myTree.gamma_pt[0]<180. ) continue;
