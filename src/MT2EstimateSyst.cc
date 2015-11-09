@@ -248,7 +248,6 @@ void MT2EstimateSyst::print(const std::string& ofs){
   Int_t binXmin=1;
   Int_t binXmax=-1;
 
-  Double_t error;
   Double_t integral = yield->Integral(binXmin, binXmax);
   Double_t integral_up = yield_systUp->Integral(binXmin, binXmax);
   Double_t integral_down = yield_systDown->Integral(binXmin, binXmax);

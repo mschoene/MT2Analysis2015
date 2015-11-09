@@ -68,7 +68,7 @@ int main( int argc, char* argv[] ) {
 
 
   std::string templateType = cfg.gammaTemplateType();
-
+ 
   if( argc>3 ) {
 
     templateType = std::string(argv[3]); 
@@ -77,6 +77,8 @@ int main( int argc, char* argv[] ) {
     std::cout << std::endl;
 
   } 
+ cfg.set_gammaTemplateType(templateType);
+
 
 
   if( templateType!="FR" && templateType!="MC" && templateType!="RC" ) {
@@ -186,7 +188,16 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
     if( !myTree.passGammaAdditionalSelection(sample.id) ) continue;
 
 
+    if( myTree.mt2>200. ) continue; // orthogonal to signal region
+    if( myTree.gamma_pt[0]<180. ) continue;
+    if( (myTree.gamma_nJet30>1 && myTree.gamma_mt2<200.) || (myTree.gamma_nJet30==1 && myTree.gamma_ht<200.) ) continue;
+
+
+    if( !(myTree.HLT_Photon165_HE10) ) continue;
+    
+
     // AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH REMOVE THIS SOOOOON
+    // or maybe not due to spiky behavior
     if( myTree.evt_scale1fb>1. ) continue;
 
 
@@ -233,7 +244,9 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
     if( cfg.gammaTemplateType()=="MC" ) {
 
       if( !sietaietaOK ) continue;
-      isWorkingPrompt = myTree.gamma_mcMatchId[0]==22; // prompt = matched
+      
+      isWorkingPrompt =( myTree.gamma_mcMatchId[0]==22 && myTree.gamma_drMinParton[0]>0.4); // prompt = matched //no fakes
+      // isWorkingPrompt = myTree.gamma_mcMatchId[0]==22; // prompt = matched
 
     } else if( cfg.gammaTemplateType()=="FR" ) { 
 
@@ -246,7 +259,6 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
         if( njets>6 ) continue;
         if( nbjets>0 ) continue;
       }
-
 
     } else if( cfg.gammaTemplateType()=="RC" ) { 
 
@@ -273,7 +285,8 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
 
     if( isWorkingPrompt ) {
 
-      MT2EstimateZinvGamma* thisPrompt = prompt->get( ht, njets, nbjets, met, minMTBmet, mt2 );
+      //      MT2EstimateZinvGamma* thisPrompt = prompt->get( ht, njets, nbjets, met, minMTBmet, mt2 );
+      MT2EstimateZinvGamma* thisPrompt = prompt->get( ht, njets, nbjets, minMTBmet, mt2 );
       if( thisPrompt==0 ) continue;
 
       thisPrompt->yield->Fill(mt2, weight );
@@ -282,7 +295,8 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
 
     } else {
 
-      MT2EstimateZinvGamma* thisFake = fake->get( ht, njets, nbjets, met, minMTBmet, mt2 );
+      //      MT2EstimateZinvGamma* thisFake = fake->get( ht, njets, nbjets, met, minMTBmet, mt2 );
+      MT2EstimateZinvGamma* thisFake = fake->get( ht, njets, nbjets, minMTBmet, mt2 );
       if( thisFake==0 ) continue;
 
       thisFake->yield->Fill(mt2, weight );
