@@ -9,6 +9,7 @@
 
 
 
+
 MT2EstimateSyst::MT2EstimateSyst( const std::string& aname, const MT2Region& aregion ) : MT2Estimate( aname, aregion ) {
 
   int nBins;
@@ -27,10 +28,19 @@ MT2EstimateSyst::MT2EstimateSyst( const std::string& aname, const MT2Region& are
 
 MT2EstimateSyst::MT2EstimateSyst( const std::string& aname, const MT2Region& aregion, const MT2Estimate& pass, const MT2Estimate& tot ) : MT2Estimate( aname, aregion ) {
 
+  //get the right bins from the input files
+  MT2Estimate* estimate = new MT2Estimate(pass);
   int nBins;
   double* bins;
-  region->getBins(nBins, bins);
+  estimate->MT2Estimate::getYieldBins(nBins, bins);
 
+  //Rebinning the yield
+  TH1D* thisYield = this->yield;
+  std::string oldName(thisYield->GetName());
+  delete thisYield;
+  thisYield = new TH1D( oldName.c_str(), "", nBins, bins );
+  
+ 
   yield_systUp = new TH1D( this->getHistoName("yield_systUp").c_str(), "", nBins, bins);
   yield_systUp->Sumw2();
   yield_systDown = new TH1D( this->getHistoName("yield_systDown").c_str(), "", nBins, bins);
@@ -49,6 +59,7 @@ MT2EstimateSyst::MT2EstimateSyst( const std::string& aname, const MT2Region& are
 
 
 }
+
 
 
 
@@ -80,6 +91,7 @@ MT2EstimateSyst::~MT2EstimateSyst() {
   delete yield_systDown;
 
 }
+
 
 
 
@@ -248,7 +260,6 @@ void MT2EstimateSyst::print(const std::string& ofs){
   Int_t binXmin=1;
   Int_t binXmax=-1;
 
-  Double_t error;
   Double_t integral = yield->Integral(binXmin, binXmax);
   Double_t integral_up = yield_systUp->Integral(binXmin, binXmax);
   Double_t integral_down = yield_systDown->Integral(binXmin, binXmax);

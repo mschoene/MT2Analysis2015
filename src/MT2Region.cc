@@ -450,11 +450,32 @@ std::string MT2SignalRegion::getNiceJetNameLatex( const std::string& pedix, int 
 
 std::string MT2SignalRegion::getCuts() const {
 
-  std::string cuts( Form("nJets>=%d && nBJets>=%d", nJetsMin, nBJetsMin) );
+  std::string  jetCuts = this->getJetCuts();
+  std::string bjetCuts = this->getBJetCuts();
+  std::string fullCuts = jetCuts + " && " + bjetCuts;
+
+  return fullCuts;
+
+}
+
+
+
+std::string MT2SignalRegion::getJetCuts() const {
+
+  std::string cuts( Form("nJets>=%d", nJetsMin) );
   if( nJetsMax>=0 ) {
     std::string addition( Form(" && nJets<=%d", nJetsMax) );
     cuts += addition;
   }
+
+  return cuts;
+
+}
+
+
+std::string MT2SignalRegion::getBJetCuts() const {
+
+  std::string cuts( Form("nBJets>=%d", nBJetsMin) );
   if( nBJetsMax>=0 ) {
     std::string addition( Form(" && nBJets<=%d", nBJetsMax) );
     cuts += addition;
@@ -463,6 +484,7 @@ std::string MT2SignalRegion::getCuts() const {
   return cuts;
 
 }
+
 
 
 
@@ -648,21 +670,21 @@ void MT2Region::getBins( int &nBins, double*& bins) const {
 
   } 
   // Monojet
-  else if( regionName == "HT200toInf_j1_b0toInf" ){ // new MT2 binning
+  else if( regionName == "HT200toInf_j1_b0toInf" ){ // monojet inclusive
     
     const int nBins_tmp                        = 7;
     bins = new double[nBins_tmp+1]{200., 300., 400., 500., 600., 800., 1000., 1500.};
     nBins = nBins_tmp;
     
   }
-  else if( regionName == "HT200toInf_j1_b0" ){ // new MT2 binning
+  else if( regionName == "HT200toInf_j1_b0" ){ // monojet 0b
     
     const int nBins_tmp                        = 7;
     bins = new double[nBins_tmp+1]{200., 300., 400., 500., 600., 800., 1000., 1500.};
     nBins = nBins_tmp;
     
   }
-  else if( regionName == "HT200toInf_j1_b1toInf" ){ // new MT2 binning
+  else if( regionName == "HT200toInf_j1_b1toInf" ){ // monojet 1b
     
     const int nBins_tmp                        = 7;
     bins = new double[nBins_tmp+1]{200., 300., 400., 500., 600., 800., 1000., 1500.};
@@ -1369,7 +1391,7 @@ void MT2Region::getBins( int &nBins, double*& bins) const {
     nBins = nBins_tmp;
 
    
-  } else if( regionName == "HT450toInf_j1_b0toInf" ){ // monojet region
+  } else if( regionName == "HT450toInf_j1_b0toInf" ){ // monojet old inclusive
 
 //    const int nBins_tmp                        = 3;
 //    bins = new double[nBins_tmp+1]{450., 575., 1000., 1500.};
@@ -1398,8 +1420,8 @@ void MT2Region::getBins( int &nBins, double*& bins) const {
 }
 
 void MT2Region::getBins_qcdCR( int &nBins, double*& bins) const {
-    const int nBins_tmp = 15;
-    bins = new double[nBins_tmp+1]{40,45,50,55,60,65,70,75,80,88,100,125,200,300,450,800};
+    const int nBins_tmp = 16;
+    bins = new double[nBins_tmp+1]{40,45,50,55,60,65,70,75,80,88,100,125,200,300,450,800, 1500};
     //bins = new double[nBins_tmp+1]{40,45,50,55,60,65,70,75,80,88,100,125,180,250,450,800};
     //bins = new double[nBins_tmp+1]{30,35,40,45,50,55,60,65,70,75,80,88,100,125,180,250,450,800};
     //bins = new double[nBins_tmp+1]{30,35,40,45,50,55,60,65,70,75,80,85,90,95,100,105,110,115,120,125,130,135,140,145,150,155,160,165,170,175,180,185,190,195,200};

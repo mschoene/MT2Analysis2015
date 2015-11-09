@@ -74,15 +74,20 @@ int main( int argc, char* argv[] ) {
 
     std::string samplesFile = "../samples/samples_" + cfg.mcSamples() + ".dat";
     
+    std::vector<MT2Sample> samples_zinv = MT2Sample::loadSamples(samplesFile, 602, 605);
     std::vector<MT2Sample> samples_wjet = MT2Sample::loadSamples(samplesFile, 502, 505);
-    std::vector<MT2Sample> samples_top  = MT2Sample::loadSamples(samplesFile, 300, 499);
+    std::vector<MT2Sample> samples_top  = MT2Sample::loadSamples(samplesFile, 300, 399); // ignore single top and rares: faster
+    //std::vector<MT2Sample> samples_top  = MT2Sample::loadSamples(samplesFile, 300, 499);
     std::vector<MT2Sample> samples_qcd  = MT2Sample::loadSamples(samplesFile, 100, 199);
 
 
     MT2Analysis<MT2EstimateTree>* qcdCRtree = new MT2Analysis<MT2EstimateTree>( "qcdCRtree", "13TeV_inclusive" );
-    //MT2Analysis<MT2EstimateTree>* qcdCRtree = new MT2Analysis<MT2EstimateTree>( "qcdCRtree", cfg.regionsSet() );
+    MT2EstimateTree::addVar( qcdCRtree, "jet1_pt" );
+    MT2EstimateTree::addVar( qcdCRtree, "jet2_pt" );
     
     
+    for( unsigned i=0; i<samples_zinv.size(); ++i ) 
+      computeYield( samples_zinv[i], cfg, qcdCRtree );
     for( unsigned i=0; i<samples_wjet.size(); ++i ) 
       computeYield( samples_wjet[i], cfg, qcdCRtree );
     for( unsigned i=0; i<samples_top.size(); ++i ) 
@@ -112,6 +117,8 @@ int main( int argc, char* argv[] ) {
     }
 
     MT2Analysis<MT2EstimateTree>* data = new MT2Analysis<MT2EstimateTree>( "qcdCRtree", "13TeV_inclusive" );
+    MT2EstimateTree::addVar( data, "jet1_pt" );
+    MT2EstimateTree::addVar( data, "jet2_pt" );
     //MT2Analysis<MT2EstimateTree>* data = new MT2Analysis<MT2EstimateTree>( "qcdCRtree", cfg.regionsSet() );
     for( unsigned i=0; i < samples_data.size(); ++i )
       computeYield( samples_data[i], cfg, data );
@@ -213,12 +220,14 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
 
     Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb;//*cfg.lumi(); 
 
-    float myht = njets==1 ? 201. : ht; // let everything (mt2=ht>40) pass for monojet
-    MT2EstimateTree* thisTree = anaTree->get( myht, njets, nbjets, minMTBmet, mt2 );
+    //float myht = njets==1 ? 201. : ht; // let everything (mt2=ht>40) pass for monojet
+    MT2EstimateTree* thisTree = anaTree->get( ht, njets, nbjets, minMTBmet, mt2 );
     if( thisTree==0 ) continue;
 
 
     thisTree->yield->Fill( mt2, weight );
+    thisTree->assignVar( "jet1_pt", myTree.jet1_pt );
+    thisTree->assignVar( "jet2_pt", myTree.jet2_pt );
     thisTree->fillTree( myTree, weight );
 
     

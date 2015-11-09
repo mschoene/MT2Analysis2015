@@ -93,14 +93,14 @@ void MT2EstimateTree::setName( const std::string& newName ) {
 
 
 
-void MT2EstimateTree::projectFromTree( const MT2EstimateTree* treeEst, const std::string& selection ) {
+void MT2EstimateTree::projectFromTree( const MT2EstimateTree* treeEst, const std::string& selection, const std::string& variable ) {
 
   TDirectory* dir = TDirectory::CurrentDirectory();
 
   std::string fullSelection = region->getRegionCuts();
   if( selection!="" ) fullSelection = fullSelection + " && " + selection;
 
-  treeEst->tree->Project( yield->GetName(), "mt2", Form("weight*(%s)", fullSelection.c_str()) );
+  treeEst->tree->Project( yield->GetName(), variable.c_str(), Form("weight*(%s)", fullSelection.c_str()) );
 
   gROOT->cd();
 
@@ -115,18 +115,15 @@ void MT2EstimateTree::projectFromTree( const MT2EstimateTree* treeEst, const std
 
 
 
-MT2Analysis<MT2EstimateTree>* MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( const std::string& aname, const std::string& regionsSet, MT2Analysis<MT2EstimateTree>* estimate, const std::string& selection, int nBins, float xMin, float xMax ) {
-
+MT2Analysis<MT2EstimateTree>* MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( const std::string& aname, const std::string& regionsSet, MT2Analysis<MT2EstimateTree>* estimate, const std::string& selection, int nBins, float xMin, float xMax, const std::string& variable ) {
 
   std::set<MT2Region> regions = estimate->getRegions();
 
-  //  MT2EstimateTree* treeInclusive = estimate->get( MT2Region("HT450toInf_j2toInf_b0toInf") );
   if( regions.size()!=1 ) {
-  //if( treeInclusive==0 ) {
     std::cout << "[MT2EstimateTree::makeAnalysisFromEstimateTreeInclusive] ERROR!! You need to pass an inclusive MT2EstimateTree Analysis to use this function!" << std::endl;
     exit(19191);
   }
-
+  
   MT2EstimateTree* treeInclusive = estimate->get( *(regions.begin()) );
 
   // will create a new analysis with custom regions from inclusive tree:
@@ -139,7 +136,39 @@ MT2Analysis<MT2EstimateTree>* MT2EstimateTree::makeRebinnedAnalysisFromInclusive
   for( std::set<MT2Region>::iterator iR=newRegions.begin(); iR!=newRegions.end(); ++iR ) {
 
     MT2EstimateTree* thisEstimateTree = analysis->get( *iR );
-    thisEstimateTree->projectFromTree( treeInclusive, selection );
+    thisEstimateTree->projectFromTree( treeInclusive, selection, variable );
+
+  } // for regions
+
+
+  return analysis;
+
+}
+
+
+
+MT2Analysis<MT2EstimateTree>* MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( const std::string& aname, const std::string& regionsSet, MT2Analysis<MT2EstimateTree>* estimate, int nBins, double* bins, const std::string& selection , const std::string& variable ) {
+
+  std::set<MT2Region> regions = estimate->getRegions();
+
+  if( regions.size()!=1 ) {
+    std::cout << "[MT2EstimateTree::makeAnalysisFromEstimateTreeInclusive] ERROR!! You need to pass an inclusive MT2EstimateTree Analysis to use this function!" << std::endl;
+    exit(19191);
+  }
+  
+  MT2EstimateTree* treeInclusive = estimate->get( *(regions.begin()) );
+
+  // will create a new analysis with custom regions from inclusive tree:
+  MT2Analysis<MT2EstimateTree>* analysis = new MT2Analysis<MT2EstimateTree>( aname, regionsSet );
+  std::set<MT2Region> newRegions = analysis->getRegions();
+
+  if ( nBins!=0 )
+    MT2Estimate::rebinYields( (MT2Analysis<MT2Estimate>*)analysis, nBins, bins );
+
+  for( std::set<MT2Region>::iterator iR=newRegions.begin(); iR!=newRegions.end(); ++iR ) {
+
+    MT2EstimateTree* thisEstimateTree = analysis->get( *iR );
+    thisEstimateTree->projectFromTree( treeInclusive, selection, variable );
 
   } // for regions
 

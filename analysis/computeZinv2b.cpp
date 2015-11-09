@@ -91,10 +91,17 @@ int main( int argc, char* argv[] ) {
   TTree* tree_mc_zinv = (TTree*)file_mc_zinv->Get("ZJets/HT450toInf_j2toInf_b0toInf/tree_ZJets_HT450toInf_j2toInf_b0toInf");
 
   if( tree_mc_zinv ) {
-    histo_mc_zinv = getRatioHisto( cfg, tree_mc_zinv, "zinv", "Z #rightarrow #nu#nu MC" );
+    histo_mc_zinv = getRatioHisto( cfg, tree_mc_zinv, "zinv", "Z #rightarrow #nu#nu MC", "nJets", 1, 1.5, 6.5, "Number of Jets" );
+    //histo_mc_zinv = getRatioHisto( cfg, tree_mc_zinv, "zinv", "Z #rightarrow #nu#nu MC" );
     getRatioHisto( cfg, tree_mc_zinv, "zinv", "Z #rightarrow #nu#nu MC", "mt2", 25, 200., 750., "M_{T2} [GeV]" );
     getRatioHisto( cfg, tree_mc_zinv, "zinv", "Z #rightarrow #nu#nu MC", "ht" , 30, 450., 1950., "H_{T} [GeV]" );
     getRatioHisto( cfg, tree_mc_zinv, "zinv", "Z #rightarrow #nu#nu MC", "met", 30, 0., 600., "ME_{T} [GeV]" );
+
+    if( cfg.additionalStuff()=="hfContent" ) {
+      TH1D* histo_mc_zinv_fake = getRatioHisto( cfg, tree_mc_zinv, "zinv_fake", "Z + fakes", "nJets", 11, 1.5, 12.5, "Number of Jets", "nTrueB+nTrueC<2" );
+      TH1D* histo_mc_zinv_true = getRatioHisto( cfg, tree_mc_zinv, "zinv_true", "Z + HF"   , "nJets", 11, 1.5, 12.5, "Number of Jets", "nTrueB+nTrueC>=2" );
+      compareHistos( cfg, "compare_zinv_true_fake", histo_mc_zinv_true, histo_mc_zinv_fake );
+    } 
 
     drawMt2VsB( cfg, tree_mc_zinv, "zinv", "Z #rightarrow #nu#nu", "mt2", "M_{T2} [GeV]", 100, 0., 1450. );
   }
@@ -105,6 +112,11 @@ int main( int argc, char* argv[] ) {
   if( tree_mc_gjet ) {
     histo_mc_gjet = getRatioHisto( cfg, tree_mc_gjet, "gjetMC", "#gamma + Jets MC", "nJets", 11, 1.5, 12.5, "Number of Jets", "prompt>1.5" );
     getRatioHisto( cfg, tree_mc_gjet, "gjetMC", "#gamma + Jets MC", "mt2", 25, 200., 750., "M_{T2} [GeV]" );
+    //if( cfg.additionalStuff()=="hfContent" ) {
+    //  TH1D* histo_mc_gjet_fake = getRatioHisto( cfg, tree_mc_gjet, "gjet_fake", "Z + fakes", "nJets", 11, 1.5, 12.5, "Number of Jets", "nTrueB+nTrueC==0" );
+    //  TH1D* histo_mc_gjet_true = getRatioHisto( cfg, tree_mc_gjet, "gjet_true", "Z + HF"   , "nJets", 11, 1.5, 12.5, "Number of Jets", "nTrueB+nTrueC>0" );
+    //  compareHistos( cfg, "compare_gjet_true_fake", histo_mc_gjet_true, histo_mc_gjet_fake );
+    //} 
   }
 
   TFile* file_data_gjet = TFile::Open( Form("%s/data.root", gammaDir.c_str()) );
@@ -115,19 +127,24 @@ int main( int argc, char* argv[] ) {
   }
 
 
-  TFile* file_zll = TFile::Open( Form("%s/mc.root"  , zllDir.c_str()) );
-  TFile* file_zllData = TFile::Open( Form("%s/data.root"  , zllDir.c_str()) );
-  if( file_zll==0 && file_zllData==0 ) {
+  TFile* file_mc_zll = TFile::Open( Form("%s/mc.root"  , zllDir.c_str()) );
+  TFile* file_data_zll = TFile::Open( Form("%s/data.root"  , zllDir.c_str()) );
+  if( file_mc_zll==0 && file_data_zll==0 ) {
     std::cout << "-> You need to run at least the Zll control region! Please do so with zllControlRegion before running this program" << std::endl;
     exit(19871);
   }
-  TTree* tree_zll = (TTree*)file_zll->Get("zllCR/HT450toInf_j2toInf_b0toInf/tree_zllCR_HT450toInf_j2toInf_b0toInf");
-  TTree* tree_zllData = (TTree*)file_zllData->Get("data/HT450toInf_j2toInf_b0toInf/tree_data_HT450toInf_j2toInf_b0toInf");
+  TTree* tree_mc_zll = (TTree*)file_mc_zll->Get("zllCR/HT450toInf_j2toInf_b0toInf/tree_zllCR_HT450toInf_j2toInf_b0toInf");
+  //if( cfg.additionalStuff()=="hfContent" ) {
+  //  TH1D* histo_mc_zll_fake = getRatioHisto( cfg, tree_mc_zll, "zll_fake", "Z + fakes", "nJets", 11, 1.5, 12.5, "Number of Jets", "nTrueB+nTrueC==0" );
+  //  TH1D* histo_mc_zll_true = getRatioHisto( cfg, tree_mc_zll, "zll_true", "Z + HF"   , "nJets", 11, 1.5, 12.5, "Number of Jets", "nTrueB+nTrueC>0" );
+  //  compareHistos( cfg, "compare_zll_true_fake", histo_mc_zll_true, histo_mc_zll_fake );
+  //} 
+  TTree* tree_data_zll = (TTree*)file_data_zll->Get("data/HT450toInf_j2toInf_b0toInf/tree_data_HT450toInf_j2toInf_b0toInf");
 
-  histo_mc_zll = getRatioHisto( cfg, tree_zll, "zllMC", "Z #rightarrow ll MC", "nJets", 11, 1.5, 12.5, "Number of Jets", "mt2>200. && ht>450. && Z_mass > 70. && Z_mass<110." );
-  TH1D* histo_mc_zll_loose = getRatioHisto( cfg, tree_zll, "zllMC_loose", "Z #rightarrow ll MC (loose)", "nJets", 11, 1.5, 12.5, "Number of Jets", "ht>450. && Z_mass > 70. && Z_mass<110." );
+  histo_mc_zll = getRatioHisto( cfg, tree_mc_zll, "zllMC", "Z #rightarrow ll MC", "nJets", 11, 1.5, 12.5, "Number of Jets", "mt2>200. && ht>450. && Z_mass > 70. && Z_mass<110." );
+  TH1D* histo_mc_zll_loose = getRatioHisto( cfg, tree_mc_zll, "zllMC_loose", "Z #rightarrow ll MC (loose)", "nJets", 11, 1.5, 12.5, "Number of Jets", "ht>450. && Z_mass > 70. && Z_mass<110." );
 
-  histo_data_zll = getRatioHisto( cfg, tree_zllData, "zllData", "Z #rightarrow ll Data (loose)", "nJets", 11, 1.5, 12.5, "Number of Jets", "ht>450." );
+  histo_data_zll = getRatioHisto( cfg, tree_data_zll, "data_zll", "Z #rightarrow ll Data (loose)", "nJets", 11, 1.5, 12.5, "Number of Jets", "ht>450." );
 
   if( histo_mc_zinv ) {
     compareHistos( cfg, "compare_mc", histo_mc_zinv, histo_mc_zll, histo_mc_zll_loose );
@@ -196,10 +213,14 @@ TH1D* getRatioHisto( MT2Config cfg, TTree* tree, const std::string& name, const 
     float binMax = h1_ratio->GetBinLowEdge( ibin+1 );
     tree->Project( name_bjets.c_str(), "nBJets", Form("weight*(%s>=%f && %s<%f && %s )", varName.c_str(), binMin, varName.c_str(), binMax, selection.c_str() ) );
 
-    float n1 = h1_nbjets->GetBinContent( h1_nbjets->FindBin( 1 ) );
-    float n1_err = h1_nbjets->GetBinError( h1_nbjets->FindBin( 1 ) );
-    float n2 = h1_nbjets->GetBinContent( h1_nbjets->FindBin( 2 ) );
-    float n2_err = h1_nbjets->GetBinError( h1_nbjets->FindBin( 2 ) );
+    //float n1 = h1_nbjets->GetBinContent( h1_nbjets->FindBin( 1 ) );
+    //float n1_err = h1_nbjets->GetBinError( h1_nbjets->FindBin( 1 ) );
+    //float n2 = h1_nbjets->GetBinContent( h1_nbjets->FindBin( 2 ) );
+    //float n2_err = h1_nbjets->GetBinError( h1_nbjets->FindBin( 2 ) );
+    float n1 = h1_nbjets->GetBinContent( h1_nbjets->FindBin( 2 ) );
+    float n1_err = h1_nbjets->GetBinError( h1_nbjets->FindBin( 2 ) );
+    float n2 = h1_nbjets->GetBinContent( h1_nbjets->FindBin( 3 ) );
+    float n2_err = h1_nbjets->GetBinError( h1_nbjets->FindBin( 3 ) );
 
     if( cfg.dataSamples()=="datatest" ) {
       // add stat error:
@@ -224,9 +245,11 @@ TH1D* getRatioHisto( MT2Config cfg, TTree* tree, const std::string& name, const 
 
 
 
-  TF1* line = new TF1("line", "[0] + [1]*x", xMin, xMax );
+  TF1* line = new TF1("line", "[0]*x", xMin, xMax );
+  //TF1* line = new TF1("line", "[0] + [1]*x", xMin, 6.5 );
   line->SetLineColor(46);
-  h1_ratio->Fit( line, "RQ+" );
+  h1_ratio->Fit( line, "R+" );
+  //h1_ratio->Fit( line, "RQ+" );
 
 
 

@@ -92,28 +92,13 @@ void MT2Estimate::rebinYields( MT2Analysis<MT2Estimate>* analysis, int nBins, fl
   double bins[nBins+1];
   double step = (xMax-xMin)/(double)nBins;
 
-  for(int i=0; i <= nBins+1; i++){
+  for(int i=0; i <= nBins; i++){
     bins[i] = xMin + ((double)i )* step;
+    std::cout <<  xMin + ((double)i )* step  << std::endl;
   }
 
   MT2Estimate::rebinYields( analysis, nBins, bins);
 
-
-  /*
-  std::set<MT2Region> regions = analysis->getRegions();
-
-  for( std::set<MT2Region>::iterator iR = regions.begin(); iR!=regions.end(); ++iR ) {
-
-    MT2Estimate* estimate = analysis->get(*iR);
-    TH1D* thisYield = estimate->yield;
-
-    std::string oldName(thisYield->GetName());
-
-    delete thisYield;
-    thisYield = new TH1D( oldName.c_str(), "", nBins, xMin, xMax );
-
-  }
-  */
 }
 
 
@@ -127,10 +112,9 @@ void MT2Estimate::rebinYields( MT2Analysis<MT2Estimate>* analysis, int nBins, do
     TH1D* thisYield = estimate->yield;
 
     std::string oldName(thisYield->GetName());
-
     delete thisYield;
     thisYield = new TH1D( oldName.c_str(), "", nBins, bins );
-
+  
   }
 
 }

@@ -91,7 +91,11 @@ int main( int argc, char* argv[] ) {
   if( doLumiScan ) niter = 201;
 
 
+  TH1D::AddDirectory(kTRUE);
+
+
   std::string qcdCRdir = cfg.getEventYieldDir() + "/qcdControlRegion";
+  //std::string qcdCRdir = "EventYields_data_Run2015D_25nsGolden_v4/qcdControlRegion";
   MT2Analysis<MT2EstimateQCD>* qcd = MT2Analysis<MT2EstimateQCD>::readFromFile( qcdCRdir + "/mcFits.root", "qcdOnly" );
   MT2Analysis<MT2EstimateQCD>* all = MT2Analysis<MT2EstimateQCD>::readFromFile( qcdCRdir + "/mcFits.root", "mc" );
 
@@ -127,13 +131,16 @@ int main( int argc, char* argv[] ) {
 
   int nRegions = regions.size();
   int binMax_regions = 0;
-  TH1D* h1_yield_mc = new TH1D("yield_mc", "", nRegions, 0., nRegions );
-  TH1D* h1_yield_est = new TH1D("yield_est", "", nRegions, 0., nRegions );
+
+  MT2Analysis<MT2Estimate>* yieldEstimate = new MT2Analysis<MT2Estimate>("qcdEstimate", regions);
+
 
 
   for( std::set<MT2Region>::iterator iR=regions.begin(); iR!=regions.end(); ++iR ) {
 
 
+      std::cout << "region: " << iR->getName() << std::endl;
+std::cout << "kkk1" << std::endl;
     if( iR->nBJetsMin()>=2 ) continue; // who cares
     //if( iR->htMin()<1500. ) continue; // who cares
     //if( iR->getName()=="HT450to575_j7toInf_b0" ) continue; // this fit fails!
@@ -141,6 +148,7 @@ int main( int argc, char* argv[] ) {
     if( doLumiScan )
       std::cout << "region: " << iR->getName() << std::endl;
 
+std::cout << "kkk2" << std::endl;
     float prescale = 1.;
     if( iR->htMin() < 500. ) prescale = 180.;  // HLT_HT350 for HT>=450
     else if( iR->htMin() < 600. ) prescale = 60.; // HLT_HT_475 for HT >=575
@@ -148,11 +156,18 @@ int main( int argc, char* argv[] ) {
 
     bool stopLumiScan = false;
     float lumiStep = 0.5;
+std::cout << "kkk3" << std::endl;
 
-    MT2EstimateQCD* thisQCD_old = new MT2EstimateQCD( *(qcd->get( *iR )) );
-    MT2EstimateQCD* thisAll = new MT2EstimateQCD( *(all->get( *iR )) );
+    MT2EstimateQCD* thisQCD_old = qcd->get( *iR );
+std::cout << "kkk31" << std::endl;
 
+    MT2EstimateQCD* thisAll = all->get( *iR );
+std::cout << "kkk32" << std::endl;
+    //MT2EstimateQCD* thisQCD_old = new MT2EstimateQCD( *(qcd->get( *iR )) );
+    //MT2EstimateQCD* thisAll = new MT2EstimateQCD( *(all->get( *iR )) );
+    MT2Estimate* thisYieldEst = yieldEstimate->get( *iR );
 
+std::cout << "kkk4" << std::endl;
 
     for( float lumiToCheck=lumiScenario; (lumiToCheck<=100. || !doLumiScan) && !stopLumiScan; lumiToCheck+=lumiStep ) {
 
@@ -164,6 +179,7 @@ int main( int argc, char* argv[] ) {
       if( doLumiScan )
         std::cout << "  lumi: " << lumiToCheck << std::endl;
 
+std::cout << "kkk5" << std::endl;
       TH1D* h1_thisPull = new TH1D( Form("pull_%s", iR->getName().c_str()), "", 100, -10., 10.);
       TH1D* h1_fitPar0 = new TH1D( Form("fitPar0_%s", iR->getName().c_str()), "", 300, 0., 20.);
       TH1D* h1_fitPar1 = new TH1D( Form("fitPar1_%s", iR->getName().c_str()), "", 300, -0.14, 0.01 );
@@ -173,6 +189,7 @@ int main( int argc, char* argv[] ) {
       h1_fitInt  ->SetXTitle( "Fit Integral (M_{T2} > 150)" );
 
 
+std::cout << "kkk6" << std::endl;
       float fitPar0_MC    = -999.;
       float fitPar0Err_MC = -999.;
       float fitPar1_MC    = -999.;
@@ -180,7 +197,7 @@ int main( int argc, char* argv[] ) {
       float fitInt_MC     = -999.;
 
 
-      TH1D::AddDirectory(kTRUE);
+      //TH1D::AddDirectory(kTRUE);
 
 
       for( int iter=0; iter<niter; ++iter ) {
@@ -196,12 +213,14 @@ int main( int argc, char* argv[] ) {
 
         }
 
+std::cout << "kkk7" << std::endl;
         //thisAll->finalize();
         thisQCD->finalize();
+std::cout << "kkk8" << std::endl;
 
        
-        TH1D* thisRatioAll = thisAll->ratio;    
-        TH1D* thisRatioQCD = thisQCD->ratio;    
+        TH1D* thisRatioAll = thisAll->getRatio();    
+        TH1D* thisRatioQCD = thisQCD->getRatio();    
 
         Double_t xMin = thisRatioAll->GetXaxis()->GetXmin();
         Double_t xMax = thisRatioAll->GetXaxis()->GetXmax();
@@ -216,33 +235,36 @@ int main( int argc, char* argv[] ) {
           thisFitQCD = new TF1( "fit_draw", powerlaw, xMin, xMax, 2 );
           thisFitQCD->SetParameter( 0, thisFit->GetParameter(0) );
           thisFitQCD->SetParameter( 1, thisFit->GetParameter(1) );
-        } else {
-          thisFitQCD = thisQCD->exp; 
+        //} else {
+        //  thisFitQCD = thisQCD->exp; 
         }
+std::cout << "kkk9" << std::endl;
 
-
-        h1_yield_mc ->GetXaxis()->SetBinLabel(iRegion+1, iR->getName().c_str());
-        h1_yield_est->GetXaxis()->SetBinLabel(iRegion+1, iR->getName().c_str());
 
         Double_t xMin_int = thisRatioAll->GetBinLowEdge(thisRatioAll->FindBin(150.));
         int binMin = thisRatioAll->FindBin(xMin_int);
         int binMax = thisRatioAll->FindBin(xMax);
+std::cout << "kkk10" << std::endl;
 
-        Double_t intErr_mc;
-        Double_t integral_mc = thisQCD->hDphi->IntegralAndError( binMin, binMax, intErr_mc );
-        h1_yield_mc->SetBinContent(iRegion+1, integral_mc);
-        h1_yield_mc->SetBinError(iRegion+1, intErr_mc );
+        //Double_t intErr_mc;
+        //Double_t integral_mc = thisQCD->hDphi->IntegralAndError( binMin, binMax, intErr_mc );
+        //h1_yield_mc->SetBinContent(iRegion+1, integral_mc);
+        //h1_yield_mc->SetBinError(iRegion+1, intErr_mc );
 
-        Double_t integral_est = 0.;
-        for( int iBin=binMin; iBin<=binMax; ++iBin ) {
+        TH1D* thisYield = thisYieldEst->yield;    
+        int binMinYield = thisYield->GetXaxis()->GetXmin();
+        int binMaxYield = thisYield->GetXaxis()->GetXmax();
+        for( int iBin=binMinYield; iBin<=binMaxYield; ++iBin ) {
           float x = thisQCD->hDphi->GetBinCenter(iBin);
           //float x = thisQCD->hDphi->GetBinLowEdge(iBin);
-          integral_est += thisFitQCD->Eval(x)*thisQCD->lDphi->GetBinContent(iBin);
+          thisYield->SetBinContent( iBin, thisFitQCD->Eval(x)*thisQCD->lDphi->GetBinContent(iBin));
+          //integral_est += thisFitQCD->Eval(x)*thisQCD->lDphi->GetBinContent(iBin);
         }
-        h1_yield_est->SetBinContent(iRegion+1, integral_est);
-        h1_yield_est->SetBinError(iRegion+1, sqrt(integral_est) );
-        binMax_regions = iRegion+1;
+        //h1_yield_est->SetBinContent(iRegion+1, integral_est);
+        //h1_yield_est->SetBinError(iRegion+1, sqrt(integral_est) );
+        //binMax_regions = iRegion+1;
 
+std::cout << "kkk11" << std::endl;
 
         Double_t intErr_ratio;
         Double_t int_ratio = thisRatioQCD->IntegralAndError( binMin, binMax, intErr_ratio );
@@ -280,6 +302,7 @@ int main( int argc, char* argv[] ) {
 
         }
 
+std::cout << "kkk12" << std::endl;
         
         if( lumiToCheck<=0. && !doLumiScan ) {
 
@@ -344,10 +367,12 @@ int main( int argc, char* argv[] ) {
        
           thisRatioAll->SetMarkerStyle(20);
           thisRatioAll->SetMarkerSize(1.3);
+          thisRatioAll->SetLineColor(0);
           thisRatioAll->Draw("P same");
        
           thisRatioQCD->SetMarkerStyle(24);
           thisRatioQCD->SetMarkerSize(1.3);
+          thisRatioQCD->SetLineColor(0);
           thisRatioQCD->Draw("P same");
        
           gPad->RedrawAxis();
@@ -493,50 +518,52 @@ int main( int argc, char* argv[] ) {
     c1 = new TCanvas( "c1", "", 1200, 600 );
     c1->SetLogy();
 
-    TH2D* h2_axes = new TH2D("axes", "", binMax_regions, 0., binMax_regions, 10, 0.2, h1_yield_mc->GetMaximum()*4.);
-    h2_axes->SetYTitle("Events");
-    for( unsigned iBinx=1; iBinx<binMax_regions+1; ++iBinx ) 
-      h2_axes->GetXaxis()->SetBinLabel(iBinx, h1_yield_mc->GetXaxis()->GetBinLabel(iBinx));
-    h2_axes->Draw();
+    //TH2D* h2_axes = new TH2D("axes", "", binMax_regions, 0., binMax_regions, 10, 0.2, h1_yield_mc->GetMaximum()*4.);
+    //h2_axes->SetYTitle("Events");
+    //for( unsigned iBinx=1; iBinx<binMax_regions+1; ++iBinx ) 
+    //  h2_axes->GetXaxis()->SetBinLabel(iBinx, h1_yield_mc->GetXaxis()->GetBinLabel(iBinx));
+    //h2_axes->Draw();
 
-    h1_yield_mc->SetFillColor(kQCD);
-    h1_yield_mc->SetLineColor(kBlack);
+    //h1_yield_mc->SetFillColor(kQCD);
+    //h1_yield_mc->SetLineColor(kBlack);
 
-    h1_yield_est->SetMarkerStyle(20);
-    h1_yield_est->SetMarkerSize(1.3);
-    h1_yield_est->SetMarkerColor(kBlack);
+    //h1_yield_est->SetMarkerStyle(20);
+    //h1_yield_est->SetMarkerSize(1.3);
+    //h1_yield_est->SetMarkerColor(kBlack);
 
-    labelTop->Draw("same");
+    //labelTop->Draw("same");
 
-    TLegend* legend1 = new TLegend( 0.6, 0.8, 0.9, 0.9 );
-    legend1->SetFillColor(0);
-    legend1->SetTextSize(0.04);
-    legend1->AddEntry( h1_yield_mc, "MC", "F" );
-    legend1->Draw("same");
+    //TLegend* legend1 = new TLegend( 0.6, 0.8, 0.9, 0.9 );
+    //legend1->SetFillColor(0);
+    //legend1->SetTextSize(0.04);
+    //legend1->AddEntry( h1_yield_mc, "MC", "F" );
+    //legend1->Draw("same");
 
-    TLegend* legend2 = new TLegend( 0.75, 0.8, 0.9, 0.9 );
-    legend2->SetFillColor(0);
-    legend2->SetTextSize(0.04);
-    legend2->AddEntry( h1_yield_est, "Estimate", "PL" );
-    legend2->Draw("same");
+    //TLegend* legend2 = new TLegend( 0.75, 0.8, 0.9, 0.9 );
+    //legend2->SetFillColor(0);
+    //legend2->SetTextSize(0.04);
+    //legend2->AddEntry( h1_yield_est, "Estimate", "PL" );
+    //legend2->Draw("same");
 
-    h1_yield_mc->Draw("histo same");
-    h1_yield_est->Draw("p same");
+    //h1_yield_mc->Draw("histo same");
+    //h1_yield_est->Draw("p same");
 
-    gPad->RedrawAxis();
+    //gPad->RedrawAxis();
 
-    c1->SaveAs(Form("%s/mc_closure.eps", qcdCRdir.c_str()) );
-    c1->SaveAs(Form("%s/mc_closure.pdf", qcdCRdir.c_str()) );
+    //c1->SaveAs(Form("%s/mc_closure.eps", qcdCRdir.c_str()) );
+    //c1->SaveAs(Form("%s/mc_closure.pdf", qcdCRdir.c_str()) );
 
 
-    TFile* outfile = TFile::Open("prova.root", "recreate");
-    outfile->cd();
-    h1_pull->Write();
-    h1_chiSquare_fit->Write();
-    h1_chiSquare_tail->Write();
-    h1_yield_est->Write();
-    h1_yield_mc->Write();
-    outfile->Close();
+//  TFile* outfile = TFile::Open("prova.root", "recreate");
+//  outfile->cd();
+//  h1_pull->Write();
+//  h1_chiSquare_fit->Write();
+//  h1_chiSquare_tail->Write();
+//  //h1_yield_est->Write();
+//  //h1_yield_mc->Write();
+//  outfile->Close();
+
+    yieldEstimate->writeToFile("prova.root", "recreate");
     
     delete c1;
     delete legend;

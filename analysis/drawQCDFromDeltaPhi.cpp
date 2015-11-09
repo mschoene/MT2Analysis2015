@@ -206,7 +206,10 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
   bool doClosureTestData = false;
   if ( nonQCD != NULL ) doClosureTestData = true;
 
-  system(Form("mkdir -p %s", outputdir.c_str()));
+  system(Form("mkdir -p %s/pdf/" , outputdir.c_str()));
+  system(Form("mkdir -p %s/eps/" , outputdir.c_str()));
+  system(Form("mkdir -p %s/C/"   , outputdir.c_str()));
+  system(Form("mkdir -p %s/root/", outputdir.c_str()));
 
   
   std::set<MT2Region> MT2Regions = estimate->getRegions();
@@ -224,10 +227,11 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
   h_nonQCD_tot->GetYaxis()->SetTitle("Events");
   
   if ( doClosureTestData ){
-    h_estimate_tot->SetMarkerSize(0);
-    h_estimate_tot->SetFillColor( estimate->getColor() );
-    h_nonQCD_tot  ->SetLineColor( nonQCD  ->getColor() );
-    h_nonQCD_tot  ->SetFillColor( nonQCD  ->getColor() );
+    h_estimate_tot->SetMarkerStyle(1);
+    h_estimate_tot->SetFillColor  (estimate->getColor());
+    h_nonQCD_tot  ->SetLineColor  (nonQCD  ->getColor());
+    h_nonQCD_tot  ->SetFillColor  (nonQCD  ->getColor());
+    h_nonQCD_tot  ->SetMarkerSize (0);
   }
   THStack* stack_tot = new THStack("stack_tot","");
 
@@ -242,8 +246,13 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
   
   TH1D* hPull = new TH1D("hPull", "", 20, -5, 5);
   hPull->Sumw2();
-  hPull->GetXaxis()->SetTitle(doClosureTestData ? "(Data Driven - MC)/#sigma" : "(Data Driven - Pred)/#sigma");
+  hPull->GetXaxis()->SetTitle(!doClosureTestData ? "(Data Driven - MC)/#sigma" : "(Data - Estimate)/#sigma");
   hPull->GetYaxis()->SetTitle("Events");
+  
+  TH1D* hPull_int = new TH1D("hPull_int", "", 20, -5, 5);
+  hPull_int->Sumw2();
+  hPull_int->GetXaxis()->SetTitle(!doClosureTestData ? "(Data Driven - MC)/#sigma" : "(Data - Estimate)/#sigma");
+  hPull_int->GetYaxis()->SetTitle("Events");
   
   
   int iRegion = 1;
@@ -253,8 +262,6 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
       estimate->get(*iMT2)->yield->Scale(scaleEst);
       if ( !doClosureTestData ) // mcTruth is data in this case
 	mcTruth ->get(*iMT2)->yield->Scale(lumi);
-
-      std::string fullPath = outputdir;
 
       std::vector<std::string> niceNames = iMT2->getNiceNames();
       
@@ -277,11 +284,13 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
 	h_nonQCD->Scale(lumi/ps);
 	//h_estimate->Add(nonQCD->get(*iMT2)->yield); // add non-QCD mc to estimate. todo: make stack
 
-	h_estimate->SetMarkerSize(0);
-	h_estimate->SetFillColor ( estimate->getColor() );
-	h_nonQCD  ->SetLineColor ( nonQCD  ->getColor() );
-	h_nonQCD  ->SetFillColor ( nonQCD  ->getColor() );
-	stack->Add(h_nonQCD);
+	h_estimate->SetMarkerStyle(1);
+	h_estimate->SetFillColor  (estimate->getColor());
+	h_nonQCD  ->SetLineColor  (nonQCD  ->getColor());
+	h_nonQCD  ->SetFillColor  (nonQCD  ->getColor());
+	h_nonQCD  ->SetMarkerSize (0);
+	if ( iMT2->htMin() >300 ) // don't fill for the VLHT
+	  stack->Add(h_nonQCD);
 	stack->Add(h_estimate);
       }
 
@@ -300,8 +309,10 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
       if ( doClosureTestData ) {
 	int_nonQCD = h_nonQCD->IntegralAndError(1, nBins+1, err_nonQCD);
  
-	h_nonQCD_tot->SetBinContent(iRegion, int_nonQCD);
-	h_nonQCD_tot->SetBinError  (iRegion, err_nonQCD);
+	if ( iMT2->htMin()>300 ){
+	  h_nonQCD_tot->SetBinContent(iRegion, int_nonQCD);
+	  h_nonQCD_tot->SetBinError  (iRegion, err_nonQCD);
+	}
 	h_nonQCD_tot->GetXaxis()->SetBinLabel( iRegion, niceNames[1].c_str() );
       }
 
@@ -333,8 +344,17 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
 	err_estimate = sqrt(err_estimate*err_estimate + err_nonQCD*err_nonQCD);
       }
       if(int_mcTruth>0)
-        hPull->Fill((int_estimate-int_mcTruth)/sqrt(err_estimate*err_estimate+err_int*err_int));
+        hPull_int->Fill((int_estimate-int_mcTruth)/sqrt(err_estimate*err_estimate+err_int*err_int));
 
+      for (int iBin=1; iBin<=h_mcTruth->GetNbinsX(); iBin++){
+	double vEst = (!doClosureTestData) ? h_estimate->GetBinContent(iBin) : ((TH1F*)stack->GetStack()->Last())->GetBinContent(iBin);
+	double eEst = (!doClosureTestData) ? h_estimate->GetBinError  (iBin) : ((TH1F*)stack->GetStack()->Last())->GetBinContent(iBin);
+	double vPre = h_mcTruth ->GetBinContent(iBin);
+	double ePre = h_mcTruth ->GetBinError  (iBin);
+	
+	if ( vPre>0 && eEst+ePre != 0 )
+	  hPull->Fill( ( doClosureTestData ? (vPre-vEst) : (vEst-vPre) )/sqrt(eEst*eEst + ePre*ePre) );
+      }
 
       float xMin = h_estimate->GetXaxis()->GetXmin();
       float xMax = h_estimate->GetXaxis()->GetXmax();
@@ -391,7 +411,12 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
       h_mcTruth->Draw("Pe same");
       //      bgStack.Draw("histoE, same");
 
-      TPaveText* labelTop = MT2DrawTools::getLabelTopSimulation();
+
+      TPaveText* labelTop;
+      if ( scaleEst==1.0 )
+	labelTop = MT2DrawTools::getLabelTop( lumi );
+      else
+	labelTop = MT2DrawTools::getLabelTopSimulation();
       labelTop->Draw("same");
 
       gPad->RedrawAxis();
@@ -426,27 +451,31 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
       h_ratio->GetYaxis()->SetLabelSize(0.17);
       h_ratio->GetYaxis()->SetTitle("Ratio");
       
-      
-
       h_ratio->SetLineWidth(2);
       //h_ratio->Draw("PE");
       
+      TH1D* h_band = MT2DrawTools::getBandAtOne( doClosureTestData ? ((TH1D*)stack->GetStack()->Last()) : h_mcTruth );
+
       TH2D* h2_axes_ratio = MT2DrawTools::getRatioAxes( xMin, xMax, 0.0, 2.0 );
       
       TLine* lineCentral = new TLine(xMin, 1.0, xMax, 1.0);
       lineCentral->SetLineColor(1);
       
 
-      h2_axes_ratio->Draw("");
-      lineCentral->Draw("same");
-      h_ratio->Draw("pe,same");
+      h2_axes_ratio->Draw(""       );
+      h_band       ->Draw("e2same" );
+      lineCentral  ->Draw("same"   );
+      h_ratio      ->Draw("pe,same");
 
       gPad->RedrawAxis();
       
       c1->cd();
 
-      c1->SaveAs( Form("%s/closure_%s.eps", fullPath.c_str(), iMT2->getName().c_str()) );
-      c1->SaveAs( Form("%s/closure_%s.pdf", fullPath.c_str(), iMT2->getName().c_str()) );
+      TString filename = Form("closure%s_%s_%s", closureTest==false ? "SR" : "VR", iMT2->getName().c_str(), scaleEst==1.0 ? "data" : "mc");
+      c1->SaveAs( Form("%s/eps/%s.eps"  , outputdir.c_str(), filename.Data()) );
+      c1->SaveAs( Form("%s/pdf/%s.pdf"  , outputdir.c_str(), filename.Data()) );
+      c1->SaveAs( Form("%s/C/%s.C"      , outputdir.c_str(), filename.Data()) );
+      c1->SaveAs( Form("%s/root/%s.root", outputdir.c_str(), filename.Data()) );
 
       delete c1;
       delete h2_axes;
@@ -495,6 +524,10 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
   h_mcTruth_tot->GetXaxis()->SetRangeUser(0, (int) MT2Regions.size());
   h_mcTruth_tot->GetYaxis()->SetRangeUser(yMin, yMax);
   h_mcTruth_tot->GetXaxis()->LabelsOption("v");
+
+  if ( doClosureTestData )
+    h_mcTruth_tot->GetXaxis()->SetRange(12,55);
+
   h_mcTruth_tot->Draw("PE");
 
 
@@ -521,7 +554,12 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
 
   legend->Draw("same");
 
-  TPaveText* labelTop = MT2DrawTools::getLabelTopSimulation();
+  
+  TPaveText* labelTop;
+  if ( scaleEst==1.0 )
+    labelTop = MT2DrawTools::getLabelTop( lumi );
+  else
+    labelTop = MT2DrawTools::getLabelTopSimulation();
   labelTop->Draw("same");
   
   TLine* lHT[4];
@@ -531,12 +569,14 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
     lHT[iHT-1]->SetLineStyle(3);
     lHT[iHT-1]->SetLineWidth(2);
 
+    if ( doClosureTestData && iHT==1) continue;
     lHT[iHT-1]->Draw("same");
   }
 
   int nHTRegions = 5;
   std::vector< std::string > htRegions;
-  htRegions.push_back("very low H_{T}");
+  if ( !doClosureTestData )
+    htRegions.push_back("very low H_{T}");
   htRegions.push_back("low H_{T}");
   htRegions.push_back("medium H_{T}");
   htRegions.push_back("high H_{T}");
@@ -545,7 +585,13 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
   TPaveText* htBox[nHTRegions];
   for( int iHT = 0; iHT < nHTRegions; ++iHT){
     
-    htBox[iHT] = new TPaveText(0.20+0.15*iHT, 0.9-0.06, 0.32+0.15*iHT, 0.9, "brNDC");
+    if ( !doClosureTestData )
+      htBox[iHT] = new TPaveText(0.20+0.15*iHT, 0.9-0.06, 0.32+0.15*iHT, 0.9, "brNDC");
+    else {
+      htBox[iHT] = new TPaveText(0.16+0.2*iHT, 0.9-0.06, 0.34+0.2*iHT, 0.9, "brNDC");
+      if ( iHT==nHTRegions-1 ) continue;
+    }
+
     htBox[iHT]->AddText( htRegions[iHT].c_str() );
     
     htBox[iHT]->SetBorderSize(0);
@@ -587,15 +633,18 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
   TH2D* h2_axes_ratio = MT2DrawTools::getRatioAxes( 0, MT2Regions.size(), -3., 3.);
   h2_axes_ratio->SetYTitle("Pull");
 
-  TLine* LineCentral = new TLine(0, 0, MT2Regions.size(), 0);
+  TLine* LineCentral = new TLine(!doClosureTestData ? 0 : 11, 0, MT2Regions.size(), 0);
   LineCentral->SetLineColor(1);
 
+  if ( doClosureTestData )
+    h2_axes_ratio->GetXaxis()->SetRangeUser(12,55);
 
   h2_axes_ratio->Draw("");
   LineCentral->Draw("same");
   h_Ratio->Draw("pe,same");
 
   for( int iHT=1; iHT < 5; iHT++ ){
+    if ( doClosureTestData && iHT==1) continue;
     lHT[iHT-1]->Draw("same");
   }
 
@@ -603,18 +652,27 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
   gPad->RedrawAxis();
 
   c2->cd();
-  c2->SaveAs( Form("%s/closure_allRegions_pull.pdf", outputdir.c_str()) );
-  c2->SaveAs( Form("%s/closure_allRegions_pull.eps", outputdir.c_str()) );
+  TString filename = Form("closure%s_allRegions_pull_%s", closureTest==false ? "SR" : "VR", scaleEst==1.0 ? "data" : "mc");
+  c2->SaveAs( Form("%s/eps/%s.eps"  , outputdir.c_str(), filename.Data()) );
+  c2->SaveAs( Form("%s/pdf/%s.pdf"  , outputdir.c_str(), filename.Data()) );
+  c2->SaveAs( Form("%s/C/%s.C"      , outputdir.c_str(), filename.Data()) );
+  c2->SaveAs( Form("%s/root/%s.root", outputdir.c_str(), filename.Data()) );
 
   pad2->cd();
   pad2->Clear();
 
   delete h2_axes_ratio;
   h2_axes_ratio = MT2DrawTools::getRatioAxes( 0, MT2Regions.size(), 0., 2.);
-  h2_axes_ratio->SetYTitle(doClosureTestData ? "Data / MC" : "Data / Pred.");
+  h2_axes_ratio->SetYTitle(!doClosureTestData ? "Pred. / MC" : "Data / Pred.");
+  if ( doClosureTestData )
+    h2_axes_ratio->GetXaxis()->SetRangeUser(12,55);
   h2_axes_ratio->Draw("");
 
-  TLine* lineOne = new TLine(0, 1., MT2Regions.size(), 1.);
+  TH1D *h_Band = MT2DrawTools::getBandAtOne( doClosureTestData ? ((TH1D*)stack_tot->GetStack()->Last()) : h_mcTruth_tot );
+
+  h_Band->Draw("e2same");
+
+  TLine* lineOne = new TLine(!doClosureTestData ? 0 : 11, 1., MT2Regions.size(), 1.);
   lineOne->SetLineColor(1);
   lineOne->Draw("same");
 
@@ -633,21 +691,32 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
 
   h_Ratio->Draw("pe,same");
 
+
   for( int iHT=1; iHT < 5; iHT++ ){
+    if ( doClosureTestData && iHT==1) continue;
     lHT[iHT-1]->Draw("same");
   }
 
+  gPad->RedrawAxis();
 
-  c2->SaveAs( Form("%s/closure_allRegions_ratio.pdf", outputdir.c_str()) );
-  c2->SaveAs( Form("%s/closure_allRegions_ratio.eps", outputdir.c_str()) );
+  filename = Form("closure%s_allRegions_ratio_%s", closureTest==false ? "SR" : "VR", scaleEst==1.0 ? "data" : "mc");
+  c2->SaveAs( Form("%s/eps/%s.eps"  , outputdir.c_str(), filename.Data()) );
+  c2->SaveAs( Form("%s/pdf/%s.pdf"  , outputdir.c_str(), filename.Data()) );
+  c2->SaveAs( Form("%s/C/%s.C"      , outputdir.c_str(), filename.Data()) );
+  c2->SaveAs( Form("%s/root/%s.root", outputdir.c_str(), filename.Data()) );
 
+
+  // if ( scaleEst==1.0 )
+  //   h_estimate_tot->SaveAs("QCDdataDriven_estimate_dPhi_data.root");
+  // else 
+  //   h_estimate_tot->SaveAs("QCDdataDriven_estimate_dPhi_mc.root");
 
   TCanvas* c3 = new TCanvas("c3", "", 600, 600);
   c3->cd();
-  hPull->SetStats(1110);
+  hPull_int->SetStats(1110);
   TF1* f1_gaus = new TF1("f1_pull", "gaus", -2., 2.);
   f1_gaus->SetLineColor(kRed);
-  hPull->Fit( f1_gaus, "QRL" );
+  hPull_int->Fit( f1_gaus, "QRL" );
   TPaveText* fitPars = new TPaveText( 0.2, 0.7, 0.5, 0.9, "brNDC" );
   fitPars->SetTextSize(0.03);
   fitPars->SetTextAlign(11);
@@ -656,20 +725,47 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
   fitPars->AddText(Form("Mean : %.2f +/- %.2f", f1_gaus->GetParameter(1), f1_gaus->GetParError(1) ));
   fitPars->AddText(Form("Sigma: %.2f +/- %.2f", f1_gaus->GetParameter(2), f1_gaus->GetParError(2) ));
   fitPars->Draw("same");
+  hPull_int->Draw("hist same");
+  f1_gaus->Draw("l same");
+
+  filename = Form("closure%s_pull_int_%s", closureTest==false ? "SR" : "VR", scaleEst==1.0 ? "data" : "mc");
+  c3->SaveAs( Form("%s/eps/%s.eps"  , outputdir.c_str(), filename.Data()) );
+  c3->SaveAs( Form("%s/pdf/%s.pdf"  , outputdir.c_str(), filename.Data()) );
+  c3->SaveAs( Form("%s/C/%s.C"      , outputdir.c_str(), filename.Data()) );
+  c3->SaveAs( Form("%s/root/%s.root", outputdir.c_str(), filename.Data()) );
+
+  TCanvas* c4 = new TCanvas("c4", "", 600, 600);
+  c4->cd();
+  hPull->SetStats(1110);
+  f1_gaus->SetLineColor(kRed);
+  hPull->Fit( f1_gaus, "QRL" );
+  TPaveText* fitPars2 = new TPaveText( 0.2, 0.7, 0.5, 0.9, "brNDC" );
+  fitPars2->SetTextSize(0.03);
+  fitPars2->SetTextAlign(11);
+  fitPars2->SetFillColor(0);
+  fitPars2->AddText("Gaussian Fit:");
+  fitPars2->AddText(Form("Mean : %.2f +/- %.2f", f1_gaus->GetParameter(1), f1_gaus->GetParError(1) ));
+  fitPars2->AddText(Form("Sigma: %.2f +/- %.2f", f1_gaus->GetParameter(2), f1_gaus->GetParError(2) ));
+  fitPars2->Draw("same");
   hPull->Draw("hist same");
   f1_gaus->Draw("l same");
-  c3->SaveAs( Form("%s/closure_pull.pdf", outputdir.c_str()) );
-  c3->SaveAs( Form("%s/closure_pull.eps", outputdir.c_str()) );
+
+  filename = Form("closure%s_pull_%s", closureTest==false ? "SR" : "VR", scaleEst==1.0 ? "data" : "mc");
+  c4->SaveAs( Form("%s/eps/%s.eps"  , outputdir.c_str(), filename.Data()) );
+  c4->SaveAs( Form("%s/pdf/%s.pdf"  , outputdir.c_str(), filename.Data()) );
+  c4->SaveAs( Form("%s/C/%s.C"      , outputdir.c_str(), filename.Data()) );
+  c4->SaveAs( Form("%s/root/%s.root", outputdir.c_str(), filename.Data()) );
 
 
   delete c2;
   delete c3;
+  delete c4;
   delete h2_axes_ratio;
 
   delete h_estimate_tot;
   delete h_mcTruth_tot;
   delete stack_tot;
-  delete hPull;
+  delete hPull_int;
   
 }
 
