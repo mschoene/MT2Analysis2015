@@ -61,7 +61,7 @@ std::ifstream& operator>>(std::ifstream& is, EventKey& event) {
 };
 
 void filterFromTxt(string filterList="eventlist_JetHT_csc2015.txt",
-		   string inputFile="duplicates.root",
+		   string inputFile="input.root",
 		   bool fillNewTree=false,
 		   string outputFile="output.root",
 		   string treeName="mt2",
@@ -96,15 +96,19 @@ void filterFromTxt(string filterList="eventlist_JetHT_csc2015.txt",
   //Create set where we store list of event keys
   std::set<EventKey> listFromTxt;
 
+  cout << "filling set with filter list" << filterList << endl;
   ifstream infile(filterList.c_str());
   while (!infile.eof()) {
     EventKey aEvent;
     infile >> aEvent;
     listFromTxt.insert( aEvent );
   }
+  cout << "size of filterList set: " << filterList.size() << endl;
 
   int nRemoved=0;
 
+  cout << "starting loop over tree events" << endl;
+  
   for (Long64_t i=0;i<nentries; i++) {
     //for (Long64_t i=0;i<1000; i++) {
     oldtree->GetEntry(i);
