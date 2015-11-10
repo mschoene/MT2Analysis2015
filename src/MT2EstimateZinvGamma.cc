@@ -122,8 +122,7 @@ MT2Analysis<MT2EstimateZinvGamma>*  MT2EstimateZinvGamma::makeInclusiveAnalysisF
 
   MT2EstimateTree* treeInclusive = analysis->get( *(regions.begin()) );
 
-
-  // will create a new analysis with same region as original one (i.e. inclusive)
+  // will create a new analysis with same region as original one
   // BUT different binning for the yield and iso histogram
   std::set<MT2Region> newRegions = analysis->getRegions();
  
@@ -242,7 +241,7 @@ void MT2EstimateZinvGamma::fillIso( float iso, float weight, float var ) {
   this->iso->Fill( iso, weight );
 
 
-  if( var>0. ) {
+  if( var>=0. ) {
     int foundBin = this->yield->FindBin(var);
     if( foundBin > this->yield->GetNbinsX() ) foundBin=this->yield->GetNbinsX(); // overflow will go in last bin
     foundBin-=1; // want first bin to be 0 (fuck you root)

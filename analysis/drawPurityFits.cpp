@@ -101,6 +101,9 @@ int main( int argc, char* argv[] ) {
   doAllPurityPlots( cfg, mc_or_data, "purityLoose", "_nbjets" ); 
   doAllPurityPlots( cfg, mc_or_data, "purity", "_nbjets" ); 
 
+  doAllPurityPlots( cfg, mc_or_data, "purityLoose", "_mono_nbjets" ); 
+  doAllPurityPlots( cfg, mc_or_data, "purity", "_mono_nbjets" ); 
+
 
   return 0;
 
