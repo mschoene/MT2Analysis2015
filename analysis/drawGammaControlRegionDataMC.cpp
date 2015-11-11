@@ -61,9 +61,9 @@ int main( int argc, char* argv[] ) {
   MT2Analysis<MT2EstimateTree>* mc_   = MT2Analysis<MT2EstimateTree>::readFromFile(mcFile, "gammaCRtree_loose");
   MT2Analysis<MT2EstimateTree>* data = MT2Analysis<MT2EstimateTree>::readFromFile(dataFile, "gammaCRtree_loose");
 
-  MT2Analysis<MT2EstimateTree>* mc_prompt = MT2EstimateTree::makeAnalysisFromInclusiveTree( "Prompt", cfg.regionsSet(), mc_, "prompt==2" ); 
-  MT2Analysis<MT2EstimateTree>* mc_nip    = MT2EstimateTree::makeAnalysisFromInclusiveTree( "Fragm."   , cfg.regionsSet(), mc_, "prompt==1" ); 
-  MT2Analysis<MT2EstimateTree>* mc_fake   = MT2EstimateTree::makeAnalysisFromInclusiveTree( "Fakes"  , cfg.regionsSet(), mc_, "prompt==0" ); 
+  MT2Analysis<MT2EstimateTree>* mc_prompt = MT2EstimateTree::makeAnalysisFromInclusiveTree( "Prompt" , cfg.crRegionsSet(), mc_, "prompt==2" ); 
+  MT2Analysis<MT2EstimateTree>* mc_nip    = MT2EstimateTree::makeAnalysisFromInclusiveTree( "Fragm." , cfg.crRegionsSet(), mc_, "prompt==1" ); 
+  MT2Analysis<MT2EstimateTree>* mc_fake   = MT2EstimateTree::makeAnalysisFromInclusiveTree( "Fakes"  , cfg.crRegionsSet(), mc_, "prompt==0" ); 
   mc_prompt->setColor(18);
   mc_nip   ->setColor(46);
   mc_fake  ->setColor(38);
@@ -94,19 +94,19 @@ int main( int argc, char* argv[] ) {
 
   std::string selection = "weight*(ptGamma>180. && ht>450. && nJets>1 && iso<2.5 && deltaPhiMin>0.3 && diffMetMht<0.5*met && mt2>200. && met>200)";
 
-  dt.drawRegionYields_fromTree( "nVert"            , "nVert"              , selection, 25, 0.5   , 50.5  , "Number of Vertices"               , ""    , cutsLabel );
-  dt.drawRegionYields_fromTree( "mt2"              , "mt2"                , selection, 12, 0.    , 600.  , "M_{T2} (Photon Removed)"          , "GeV" , cutsLabel );
-  dt.drawRegionYields_fromTree( "met"              , "met"                , selection, 18, 0.    , 900.  , "Missing E_{T}"                    , "GeV" , cutsLabel );
-  dt.drawRegionYields_fromTree( "ht"               , "ht"                 , selection, 22, 450.  , 1550. , "H_{T}"                            , "GeV" , cutsLabel );
-  dt.drawRegionYields_fromTree( "nJets"            , "nJets"              , selection, 10, 1.5   , 11.5  , "Number of Jets (p_{T} > 30 GeV)"  , ""    , cutsLabel );
-  dt.drawRegionYields_fromTree( "nBJets"           , "nBJets"             , selection, 6 , -0.5  , 5.5   , "Number of b-Jets (p_{T} > 20 GeV)", ""    , cutsLabel );
-  dt.drawRegionYields_fromTree( "ptGamma"          , "ptGamma"            , selection, 18, 180.  , 1080  , "Photon p_{T}"                     , "GeV" , cutsLabel );
-  dt.drawRegionYields_fromTree( "etaGamma"         , "etaGamma"           , selection, 10, -2.5  , 2.5   , "Photon #eta"                      , ""    , cutsLabel );
-  dt.drawRegionYields_fromTree( "sietaieta"        , "sietaieta"          , selection, 12, 0.0075, 0.0111, "Photon #sigma_{i#eta i#eta}"      , ""    , cutsLabel );
-  dt.drawRegionYields_fromTree( "gamma_chHadIsoRC" , "gamma_chHadIsoRC[0]", selection, 20, 0.    , 10.   , "Charged Isolation RC"             , "GeV" , cutsLabel );
+  dt.drawRegionYields_fromTree( "nVert"      , "nVert"              , selection, 25, 0.5   , 50.5  , "Number of Vertices"               , ""    , cutsLabel, "#geq 2 j" );
+  dt.drawRegionYields_fromTree( "mt2"        , "mt2"                , selection, 40, 0.    , 1000. , "M_{T2} (Photon Removed)"          , "GeV" , cutsLabel, "#geq 2 j" );
+  dt.drawRegionYields_fromTree( "met"        , "met"                , selection, 36, 0.    , 900.  , "Missing E_{T}"                    , "GeV" , cutsLabel, "#geq 2 j" );
+  dt.drawRegionYields_fromTree( "ht"         , "ht"                 , selection, 64, 450.  , 2050. , "H_{T}"                            , "GeV" , cutsLabel, "#geq 2 j" );
+  dt.drawRegionYields_fromTree( "nJets"      , "nJets"              , selection, 10, 1.5   , 11.5  , "Number of Jets (p_{T} > 30 GeV)"  , ""    , cutsLabel, "#geq 2 j" );
+  dt.drawRegionYields_fromTree( "nBJets"     , "nBJets"             , selection, 6 , -0.5  , 5.5   , "Number of b-Jets (p_{T} > 20 GeV)", ""    , cutsLabel, "#geq 2 j" );
+  dt.drawRegionYields_fromTree( "ptGamma"    , "ptGamma"            , selection, 36, 180.  , 1080  , "Photon p_{T}"                     , "GeV" , cutsLabel, "#geq 2 j" );
+  dt.drawRegionYields_fromTree( "etaGamma"   , "etaGamma"           , selection, 50, -2.5  , 2.5   , "Photon #eta"                      , ""    , cutsLabel, "#geq 2 j" );
+  dt.drawRegionYields_fromTree( "sietaieta"  , "sietaieta"          , selection, 12, 0.0075, 0.0111, "Photon #sigma_{i#eta i#eta}"      , ""    , cutsLabel, "#geq 2 j" );
+  dt.drawRegionYields_fromTree( "isoRC"      , "gamma_chHadIsoRC[0]", selection, 40, 0.    , 10.   , "Random Cone Isolation"            , "GeV" , cutsLabel, "#geq 2 j" );
 
   selection = "weight*(ptGamma>180. && ht>450. && nJets>1 && deltaPhiMin>0.3 && diffMetMht<0.5*met && mt2>200.)";
-  dt.drawRegionYields_fromTree("loose_iso"         , "iso"                , selection, 20, 0.    , 10.   , "Photon Charged Isolation"         , "GeV" , cutsLabel );
+  dt.drawRegionYields_fromTree("loose_iso"         , "iso"                , selection, 40, 0.    , 10.   , "Photon Charged Isolation"         , "GeV" , cutsLabel, "#ge 2 j" );
 
 
 
@@ -119,19 +119,19 @@ int main( int argc, char* argv[] ) {
 
   selection = "weight*(ptGamma>180. && ht>200 && met>200. && nJets>=1 && iso<2.5 && deltaPhiMin>0.3 && diffMetMht<0.5*met && mt2>200.)";
   
-  dt.drawRegionYields_fromTree( "inclusive_nVert"            , "nVert"              , selection, 25, 0.5   , 50.5  , "Number of Vertices"               , ""    , cutsLabel );
-  dt.drawRegionYields_fromTree( "inclusive_mt2"              , "mt2"                , selection, 12, 0.    , 600.  , "M_{T2} (Photon Removed)"          , "GeV" , cutsLabel );
-  dt.drawRegionYields_fromTree( "inclusive_met"              , "met"                , selection, 18, 0.    , 900.  , "Missing E_{T}"                    , "GeV" , cutsLabel );
-  dt.drawRegionYields_fromTree( "inclusive_ht"               , "ht"                 , selection, 37, 200.  , 2050. , "H_{T}"                            , "GeV" , cutsLabel );
-  dt.drawRegionYields_fromTree( "inclusive_nJets"            , "nJets"              , selection, 10, 1.5   , 11.5  , "Number of Jets (p_{T} > 30 GeV)"  , ""    , cutsLabel );
-  dt.drawRegionYields_fromTree( "inclusive_nBJets"           , "nBJets"             , selection, 6 , -0.5  , 5.5   , "Number of b-Jets (p_{T} > 20 GeV)", ""    , cutsLabel );
-  dt.drawRegionYields_fromTree( "inclusive_ptGamma"          , "ptGamma"            , selection, 18, 180.  , 1080  , "Photon p_{T}"                     , "GeV" , cutsLabel );
-  dt.drawRegionYields_fromTree( "inclusive_etaGamma"         , "etaGamma"           , selection, 10, -2.5  , 2.5   , "Photon #eta"                      , ""    , cutsLabel );
-  dt.drawRegionYields_fromTree( "inclusive_sietaieta"        , "sietaieta"          , selection, 12, 0.0075, 0.0111, "Photon #sigma_{i#eta i#eta}"      , ""    , cutsLabel );
-  dt.drawRegionYields_fromTree( "inclusive_gamma_chHadIsoRC" , "gamma_chHadIsoRC[0]", selection, 20, 0.    , 10.   , "Charged Isolation RC"             , "GeV" , cutsLabel );
+  dt.drawRegionYields_fromTree( "inclusive_nVert"      , "nVert"              , selection, 25, 0.5   , 50.5  , "Number of Vertices"               , ""    , cutsLabel );
+  dt.drawRegionYields_fromTree( "inclusive_mt2"        , "mt2"                , selection, 40, 0.    , 1000. , "M_{T2} (Photon Removed)"          , "GeV" , cutsLabel );
+  dt.drawRegionYields_fromTree( "inclusive_met"        , "met"                , selection, 36, 0.    , 900.  , "Missing E_{T}"                    , "GeV" , cutsLabel );
+  dt.drawRegionYields_fromTree( "inclusive_ht"         , "ht"                 , selection, 72, 200.  , 2000. , "H_{T}"                            , "GeV" , cutsLabel );
+  dt.drawRegionYields_fromTree( "inclusive_nJets"      , "nJets"              , selection, 10, 1.5   , 11.5  , "Number of Jets (p_{T} > 30 GeV)"  , ""    , cutsLabel );
+  dt.drawRegionYields_fromTree( "inclusive_nBJets"     , "nBJets"             , selection, 6 , -0.5  , 5.5   , "Number of b-Jets (p_{T} > 20 GeV)", ""    , cutsLabel );
+  dt.drawRegionYields_fromTree( "inclusive_ptGamma"    , "ptGamma"            , selection, 36, 180.  , 1080  , "Photon p_{T}"                     , "GeV" , cutsLabel );
+  dt.drawRegionYields_fromTree( "inclusive_etaGamma"   , "etaGamma"           , selection, 50, -2.5  , 2.5   , "Photon #eta"                      , ""    , cutsLabel );
+  dt.drawRegionYields_fromTree( "inclusive_sietaieta"  , "sietaieta"          , selection, 12, 0.0075, 0.0111, "Photon #sigma_{i#eta i#eta}"      , ""    , cutsLabel );
+  dt.drawRegionYields_fromTree( "inclusive_isoRC"      , "gamma_chHadIsoRC[0]", selection, 40, 0.    , 10.   , "Random Cone Isolation"            , "GeV" , cutsLabel );
 
   selection = "weight*(ptGamma>180. && ht>200. && met>200. && nJets>=1 && deltaPhiMin>0.3 && diffMetMht<0.5*met && mt2>200.)";
-  dt.drawRegionYields_fromTree("inclusive_loose_iso"         , "iso"                , selection, 20, 0.    , 10.   , "Photon Charged Isolation"         , "GeV" , cutsLabel );
+  dt.drawRegionYields_fromTree("inclusive_loose_iso"         , "iso"                , selection, 40, 0.    , 10.   , "Photon Charged Isolation"         , "GeV" , cutsLabel );
 
 
   // +++++++++++++++++++++++++
@@ -143,19 +143,19 @@ int main( int argc, char* argv[] ) {
 
   selection = "weight*(ptGamma>180. && ht>200 && met>200. && nJets==1 && iso<2.5 && deltaPhiMin>0.3 && diffMetMht<0.5*met)";
 
-  dt.drawRegionYields_fromTree( "monojet_nVert"            , "nVert"              , selection, 25, 0.5   , 50.5  , "Number of Vertices"               , ""    , cutsLabel );
-  dt.drawRegionYields_fromTree( "monojet_mt2"              , "mt2"                , selection, 12, 0.    , 600.  , "M_{T2} (Photon Removed)"          , "GeV" , cutsLabel );
-  dt.drawRegionYields_fromTree( "monojet_met"              , "met"                , selection, 18, 0.    , 900.  , "Missing E_{T}"                    , "GeV" , cutsLabel );
-  dt.drawRegionYields_fromTree( "monojet_ht"               , "ht"                 , selection, 27, 200.  , 1550. , "H_{T}"                            , "GeV" , cutsLabel );
-  dt.drawRegionYields_fromTree( "monojet_nJets"            , "nJets"              , selection, 12, -0.5  , 11.5  , "Number of Jets (p_{T} > 30 GeV)"  , ""    , cutsLabel );
-  dt.drawRegionYields_fromTree( "monojet_nBJets"           , "nBJets"             , selection, 6 , -0.5  , 5.5   , "Number of b-Jets (p_{T} > 20 GeV)", ""    , cutsLabel );
-  dt.drawRegionYields_fromTree( "monojet_ptGamma"          , "ptGamma"            , selection, 18, 180.  , 1080  , "Photon p_{T}"                     , "GeV" , cutsLabel );
-  dt.drawRegionYields_fromTree( "monojet_etaGamma"         , "etaGamma"           , selection, 10, -2.5  , 2.5   , "Photon #eta"                      , ""    , cutsLabel );
-  dt.drawRegionYields_fromTree( "monojet_sietaieta"        , "sietaieta"          , selection, 12, 0.0075, 0.0111, "Photon #sigma_{i#eta i#eta}"      , ""    , cutsLabel );
-  dt.drawRegionYields_fromTree( "monojet_gamma_chHadIsoRC" , "gamma_chHadIsoRC[0]", selection, 20, 0.    , 10.   , "Charged Isolation RC"             , "GeV" , cutsLabel );
+  dt.drawRegionYields_fromTree( "monojet_nVert"     , "nVert"              , selection, 25, 0.5   , 50.5  , "Number of Vertices"               , ""    , cutsLabel );
+  //dt.drawRegionYields_fromTree( "monojet_mt2"       , "mt2"                , selection, 12, 0.    , 600.  , "M_{T2} (Photon Removed)"          , "GeV" , cutsLabel );
+  dt.drawRegionYields_fromTree( "monojet_met"       , "met"                , selection, 36, 0.    , 900.  , "Missing E_{T}"                    , "GeV" , cutsLabel );
+  dt.drawRegionYields_fromTree( "monojet_ht"        , "ht"                 , selection, 72, 200.  , 2000. , "H_{T}"                            , "GeV" , cutsLabel );
+  dt.drawRegionYields_fromTree( "monojet_nJets"     , "nJets"              , selection, 12, -0.5  , 11.5  , "Number of Jets (p_{T} > 30 GeV)"  , ""    , cutsLabel );
+  dt.drawRegionYields_fromTree( "monojet_nBJets"    , "nBJets"             , selection, 6 , -0.5  , 5.5   , "Number of b-Jets (p_{T} > 20 GeV)", ""    , cutsLabel );
+  dt.drawRegionYields_fromTree( "monojet_ptGamma"   , "ptGamma"            , selection, 36, 180.  , 1080  , "Photon p_{T}"                     , "GeV" , cutsLabel );
+  dt.drawRegionYields_fromTree( "monojet_etaGamma"  , "etaGamma"           , selection, 50, -2.5  , 2.5   , "Photon #eta"                      , ""    , cutsLabel );
+  dt.drawRegionYields_fromTree( "monojet_sietaieta" , "sietaieta"          , selection, 25, 0.0075, 0.0111, "Photon #sigma_{i#eta i#eta}"      , ""    , cutsLabel );
+  dt.drawRegionYields_fromTree( "monojet_isoRC"     , "gamma_chHadIsoRC[0]", selection, 40, 0.    , 10.   , "Random Cone Charged Isolation"    , "GeV" , cutsLabel );
 
   selection = "weight*(ptGamma>180. && ht>200 && met>200. && nJets==1 && deltaPhiMin>0.3 && diffMetMht<0.5*met)";
-  dt.drawRegionYields_fromTree("monojet_loose_iso"         , "iso"                , selection, 20, 0.    , 10.   , "Photon Charged Isolation"         , "GeV" , cutsLabel );
+  dt.drawRegionYields_fromTree("monojet_loose_iso"  , "iso"                , selection, 40, 0.    , 10.   , "Photon Charged Isolation"         , "GeV" , cutsLabel );
 
   return 0;
 
