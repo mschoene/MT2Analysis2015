@@ -82,6 +82,17 @@ void MT2DrawTools::set_shapeNorm( bool shapeNorm ) {
 }
 
 
+void MT2DrawTools::set_addOverflow( bool addOver ) { 
+
+  if( addOver )
+    std::cout << "[MT2DrawTools] Adding overflow bins." << std::endl;
+  else
+    std::cout << "[MT2DrawTools] Disabled adding overflow bins." << std::endl;
+  addOverflow_ = addOver;
+
+}
+
+
 
 void MT2DrawTools::set_mcSF( float mcsf ) {
 
@@ -687,6 +698,11 @@ std::vector<TCanvas*> MT2DrawTools::drawRegionYields_fromTree( const std::string
 //void MT2DrawTools::drawRegionYields_fromTree( MT2Analysis<MT2EstimateTree>* data, std::vector<MT2Analysis<MT2EstimateTree>* >  bgYields, const std::string& saveName, const std::string& varName, const std::string& selection, int nBins, float xMin, float xMax, std::string axisName, const std::string& units, const std::string& kinCuts ) {
 
 
+  TString sel_tstr(selection);
+  if( sel_tstr.Contains("weight") ) {
+    std::cout << "[MT2DrawTools::drawRegionYields_fromTree] WARNING!! Selection contains 'weight'!! Are you sure you know what you're doing??" << syd::endl;
+  }
+
   std::vector<TCanvas*> returnVector;
 
   system( Form("mkdir -p %s", outdir_.c_str()) );
@@ -716,7 +732,8 @@ std::vector<TCanvas*> MT2DrawTools::drawRegionYields_fromTree( const std::string
       h1_data = new TH1D("h1_data", "", nBins, xMin, xMax );
       tree_data->Project( "h1_data", varName.c_str(), selection.c_str() );
       //tree_data->Project( "h1_data", varName.c_str(), Form("%f*(%s)", data_->getWeight(), selection.c_str()) );
-      MT2DrawTools::addOverflowSingleHisto(h1_data);
+      if( addOverflow_ )
+        MT2DrawTools::addOverflowSingleHisto(h1_data);
       gr_data = MT2DrawTools::getPoissonGraph(h1_data);
       gr_data->SetMarkerStyle(20);
       gr_data->SetMarkerSize(1.2);
@@ -733,13 +750,14 @@ std::vector<TCanvas*> MT2DrawTools::drawRegionYields_fromTree( const std::string
       TH1D* h1_mc = new TH1D( thisName.c_str(), "", nBins, xMin, xMax );
       h1_mc->Sumw2();
       if( selection!="" )
-        tree_mc->Project( thisName.c_str(), varName.c_str(), Form("%f*(%s)", lumi_, selection.c_str()) );
+        tree_mc->Project( thisName.c_str(), varName.c_str(), Form("%f*weight*(%s)", lumi_, selection.c_str()) );
         //tree_mc->Project( thisName.c_str(), varName.c_str(), Form("%f*(%s)", lumi_*mc_->at(i)->getWeight(), selection.c_str()) );
       else
-        tree_mc->Project( thisName.c_str(), varName.c_str(), Form("%f", lumi_) );
+        tree_mc->Project( thisName.c_str(), varName.c_str(), Form("%f*weight", lumi_) );
         //tree_mc->Project( thisName.c_str(), varName.c_str(), Form("%f", lumi_*mc_->at(i)->getWeight()) );
 
-      MT2DrawTools::addOverflowSingleHisto(h1_mc);
+      if( addOverflow_ )
+        MT2DrawTools::addOverflowSingleHisto(h1_mc);
 
       histos_mc.push_back(h1_mc);
 
@@ -759,8 +777,10 @@ std::vector<TCanvas*> MT2DrawTools::drawRegionYields_fromTree( const std::string
 
     float scaleFactor = mcSF_;
     if( data_ ) {
-      std::cout << "Integrals: " << h1_data->Integral(0, nBins+1) << "\t" << mc_sum->Integral(0, nBins+1) << std::endl;
-      float sf  = h1_data->Integral(0, nBins+1)/mc_sum->Integral(0, nBins+1);
+      std::cout << "Integrals: " << h1_data->Integral(0, nBins) << "\t" << mc_sum->Integral(0, nBins) << std::endl;
+      float sf  = h1_data->Integral(0, nBins)/mc_sum->Integral(0, nBins);
+      //std::cout << "Integrals: " << h1_data->Integral(0, nBins+1) << "\t" << mc_sum->Integral(0, nBins+1) << std::endl;
+      //float sf  = h1_data->Integral(0, nBins+1)/mc_sum->Integral(0, nBins+1);
       std::cout << "SF: " << sf << std::endl;
       if( shapeNorm_ ) scaleFactor *= sf;
     }
@@ -830,11 +850,17 @@ std::vector<TCanvas*> MT2DrawTools::drawRegionYields_fromTree( const std::string
       else
 	yAxisTitle = (std::string)(Form("Events / (%.0f)", binWidth));
     }
-    else{
+    else if(binWidth>0.099){
       if( units!="" ) 
 	yAxisTitle = (std::string)(Form("Events / (%.2f %s)", binWidth, units.c_str()));
       else
 	yAxisTitle = (std::string)(Form("Events / (%.2f)", binWidth));
+    }
+    else{
+      if( units!="" ) 
+	yAxisTitle = (std::string)(Form("Events / (%.4f %s)", binWidth, units.c_str()));
+      else
+	yAxisTitle = (std::string)(Form("Events / (%.4f)", binWidth));
     }
 
     TH2D* h2_axes = new TH2D("axes", "", 10, xMin, xMax, 10, 0., yMax );
