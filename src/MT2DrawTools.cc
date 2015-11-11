@@ -700,7 +700,7 @@ std::vector<TCanvas*> MT2DrawTools::drawRegionYields_fromTree( const std::string
 
   TString sel_tstr(selection);
   if( sel_tstr.Contains("weight") ) {
-    std::cout << "[MT2DrawTools::drawRegionYields_fromTree] WARNING!! Selection contains 'weight'!! Are you sure you know what you're doing??" << syd::endl;
+    std::cout << "[MT2DrawTools::drawRegionYields_fromTree] WARNING!! Selection contains 'weight'!! Are you sure you know what you're doing??" << std::endl;
   }
 
   std::vector<TCanvas*> returnVector;
