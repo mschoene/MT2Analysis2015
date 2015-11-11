@@ -200,13 +200,7 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
     if( myTree.gamma_pt[0]<180. ) continue;
     if( (myTree.gamma_nJet30>1 && myTree.gamma_mt2<200.) || (myTree.gamma_nJet30==1 && myTree.gamma_ht<200.) ) continue;
 
-    if( myTree.mt2>200. ) continue; // orthogonal to signal region
-    if( myTree.gamma_pt[0]<180. ) continue;
-    if( (myTree.gamma_nJet30>1 && myTree.gamma_mt2<200.) || (myTree.gamma_nJet30==1 && myTree.gamma_ht<200.) ) continue;
 
-
-    if( !(myTree.HLT_Photon165_HE10) ) continue;
-    
 
     // AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH REMOVE THIS SOOOOON
     // or maybe not due to spiky behavior
@@ -251,17 +245,20 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
     sietaietaOK = (sietaieta < id_thresh);
 
     bool isWorkingPrompt = false;
+    bool isWorkingFake   = false;
 
     if( cfg.gammaTemplateType()=="MC" ) {
 
       if( !sietaietaOK ) continue;
       
-      isWorkingPrompt =( myTree.gamma_mcMatchId[0]==22 && myTree.gamma_drMinParton[0]>0.4); // prompt = matched //no fakes
+      isWorkingPrompt = ( myTree.gamma_mcMatchId[0]==22 && myTree.gamma_drMinParton[0]>0.4); // prompt = matched //no fakes
+      isWorkingFake   = ( myTree.gamma_mcMatchId[0]!=22 && myTree.gamma_mcMatchId[0]!=7 && sample.id>=100 && sample.id<199 );
       // isWorkingPrompt = myTree.gamma_mcMatchId[0]==22; // prompt = matched
 
     } else if( cfg.gammaTemplateType()=="FR" ) { 
 
       isWorkingPrompt = sietaietaOK;
+      isWorkingFake = !isWorkingPrompt;
 
       if( isWorkingPrompt ) {
         // for prompts use only low-sensitivity regions:
@@ -274,6 +271,7 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
     } else if( cfg.gammaTemplateType()=="RC" ) { 
 
       isWorkingPrompt = sietaietaOK;
+      isWorkingFake = !isWorkingPrompt;
 
       if( isWorkingPrompt ) iso = myTree.gamma_chHadIsoRC[0]; // random cone
 
@@ -304,7 +302,7 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
       thisPrompt->sietaieta->Fill(myTree.gamma_sigmaIetaIeta[0], weight );
       thisPrompt->fillIso( iso, weight, mt2 );
 
-    } else {
+    } else if( isWorkingFake ) {
 
       //      MT2EstimateZinvGamma* thisFake = fake->get( ht, njets, nbjets, met, minMTBmet, mt2 );
       MT2EstimateZinvGamma* thisFake = fake->get( ht, njets, nbjets, minMTBmet, mt2 );
