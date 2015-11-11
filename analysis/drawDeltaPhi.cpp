@@ -64,8 +64,8 @@ int main( int argc, char* argv[] ) {
     h1_fake->Scale( 1./gjet_int );  
 
     h1_prompt->SetFillColor(18);
-    h1_frag  ->SetFillColor(46);
-    h1_fake  ->SetFillColor(38);
+    h1_frag  ->SetFillColor(38);
+    h1_fake  ->SetFillColor(46);
 
 
     THStack* stack = new THStack(0);
