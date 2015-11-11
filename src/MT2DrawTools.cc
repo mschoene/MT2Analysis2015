@@ -733,10 +733,10 @@ std::vector<TCanvas*> MT2DrawTools::drawRegionYields_fromTree( const std::string
       TH1D* h1_mc = new TH1D( thisName.c_str(), "", nBins, xMin, xMax );
       h1_mc->Sumw2();
       if( selection!="" )
-        tree_mc->Project( thisName.c_str(), varName.c_str(), Form("%f*%f*(%s)", mcSF_, lumi_, selection.c_str()) );
+        tree_mc->Project( thisName.c_str(), varName.c_str(), Form("%f*(%s)", lumi_, selection.c_str()) );
         //tree_mc->Project( thisName.c_str(), varName.c_str(), Form("%f*(%s)", lumi_*mc_->at(i)->getWeight(), selection.c_str()) );
       else
-        tree_mc->Project( thisName.c_str(), varName.c_str(), Form("%f*%f", mcSF_, lumi_) );
+        tree_mc->Project( thisName.c_str(), varName.c_str(), Form("%f", lumi_) );
         //tree_mc->Project( thisName.c_str(), varName.c_str(), Form("%f", lumi_*mc_->at(i)->getWeight()) );
 
       MT2DrawTools::addOverflowSingleHisto(h1_mc);
@@ -757,12 +757,12 @@ std::vector<TCanvas*> MT2DrawTools::drawRegionYields_fromTree( const std::string
       }
     }
 
-    float scaleFactor = 1.;
+    float scaleFactor = mcSF_;
     if( data_ ) {
       std::cout << "Integrals: " << h1_data->Integral(0, nBins+1) << "\t" << mc_sum->Integral(0, nBins+1) << std::endl;
-      scaleFactor = h1_data->Integral(0, nBins+1)/mc_sum->Integral(0, nBins+1);
-    //    if( shapeNorm )
-      std::cout << "SF: " << scaleFactor << std::endl;
+      float sf  = h1_data->Integral(0, nBins+1)/mc_sum->Integral(0, nBins+1);
+      std::cout << "SF: " << sf << std::endl;
+      if( shapeNorm_ ) scaleFactor *= sf;
     }
 
 
@@ -774,8 +774,8 @@ std::vector<TCanvas*> MT2DrawTools::drawRegionYields_fromTree( const std::string
       int index = mc_->size() - i - 1;
       histos_mc[index]->SetFillColor( mc_->at(index)->getColor() );
       histos_mc[index]->SetLineColor( kBlack );
-      if( shapeNorm_ && data_ )
-        histos_mc[index]->Scale( scaleFactor );
+      //if( shapeNorm_ && data_ )
+      histos_mc[index]->Scale( scaleFactor );
 
       if(i==0) histo_mc = (TH1D*) histos_mc[index]->Clone("histo_mc");
       else histo_mc->Add(histos_mc[index]);
@@ -938,13 +938,11 @@ std::vector<TCanvas*> MT2DrawTools::drawRegionYields_fromTree( const std::string
       
     }
 
-    TPaveText* normText = new TPaveText( 0.35, 0.8, 0.75, 0.9, "brNDC" );
+    TPaveText* normText = new TPaveText( 0.35, 0.78, 0.75, 0.9, "brNDC" );
     normText->SetFillColor(0);
     normText->SetTextSize(0.035);
-    if( shapeNorm_ ) {
-      normText->AddText( "#splitline{Shape}{Norm.}" );
-    } else if( mcSF_!=1. ) {
-      normText->AddText( Form("#splitline{MC Scaled}{by %.2f}", mcSF_) );
+    if( scaleFactor!=1. ) {
+      normText->AddText( Form("#splitline{MC scaled}{by %.2f}", scaleFactor) );
     }
     if( this->twoPads() ) 
       pad1->cd();
