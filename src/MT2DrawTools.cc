@@ -147,7 +147,7 @@ TStyle* MT2DrawTools::setStyle() {
   style->SetTitleFont(42, "XYZ");
   style->SetTitleSize(0.05, "XYZ");
   style->SetTitleXOffset(1.15);//0.9);
-  style->SetTitleYOffset(1.3); // => 1.15 if exponents
+  style->SetTitleYOffset(1.5); // => 1.15 if exponents
   // For the axis labels:
   style->SetLabelColor(1, "XYZ");
   style->SetLabelFont(42, "XYZ");
