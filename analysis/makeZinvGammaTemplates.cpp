@@ -141,7 +141,7 @@ int main( int argc, char* argv[] ) {
   }
 
 
-  std::string templateFileName = cfg.getEventYieldDir() + "/gammaControlRegion/gammaTemplates" + templateType;
+  std::string templateFileName = cfg.getGammaCRdir() + "/gammaTemplates" + templateType;
   if( useMC ) templateFileName = templateFileName + "_MC";
   else        templateFileName = templateFileName + "_data";
   templateFileName = templateFileName + ".root";
