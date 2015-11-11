@@ -479,18 +479,20 @@ TGraphErrors* MT2DrawTools::getSFFitBand(TF1* f, float xMin, float xMax){
 
 TPaveText* MT2DrawTools::getFitText( TF1* f ){
  
-  double chi2, sf, sfErr;
-  int ndof;
-  MT2DrawTools::getSFFitParameters(f, sf, sfErr, chi2, ndof);
 
   TPaveText* ratioText = new TPaveText( 0.135, -0.051, 0.4, 0.1 , "brNDC" );
-  ratioText->SetTextSize(0.025);
+  //ratioText->SetTextSize(0.025);
+  ratioText->SetTextSize(0.031);
   ratioText->SetTextFont(62);
   ratioText->SetTextColor(2);
   ratioText->SetFillColor(0);
   ratioText->SetTextAlign(11);
   
-  ratioText->AddText( Form("Data/MC = %.2f #pm %.2f (#chi^{2}/ndof = %.2f / %d)", sf, sfErr, chi2, ndof) );
+  double chi2, sf, sfErr;
+  int ndof;
+  MT2DrawTools::getSFFitParameters(f, sf, sfErr, chi2, ndof);
+  //ratioText->AddText( Form("Data/MC = %.2f #pm %.2f (#chi^{2}/ndof = %.2f / %d)", sf, sfErr, chi2, ndof) );
+  ratioText->AddText( Form("Data/MC = %.2f #pm %.2f", sf, sfErr) );
 
   return ratioText;
 
