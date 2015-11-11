@@ -1486,7 +1486,7 @@ Bool_t MT2Tree::passGammaAdditionalSelection(int sampleId) const
   float deltaRmin_parton = gamma_drMinParton[0];
   if( isQCD && deltaRmin_parton>0.4 ) return kFALSE; // stitching
 
-  if( gamma_mcMatchId[0]!=22 && isGJet ) return kFALSE; // fakes only from QCD (it's inclusive)
+  if( (gamma_mcMatchId[0]!=22 || deltaRmin_parton<0.4)  && isGJet ) return kFALSE; // fakes and frags only from QCD (it's inclusive)
 
   return kTRUE;
 

@@ -38,7 +38,6 @@ class MT2EstimateZinvGamma : public MT2Estimate {
   std::vector<RooDataSet*> iso_bins;
   std::vector<TH1D*> iso_bins_hist;
 
-
   float getIsoMax() const { return iso_max_; };
   int getNbinsIso() const { return nbins_iso_; };
 

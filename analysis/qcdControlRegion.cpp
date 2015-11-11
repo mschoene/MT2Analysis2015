@@ -15,6 +15,10 @@
 
 
 
+
+bool monojet=false;
+
+
 int round(float d) {
   return (int)(floor(d + 0.5));
 }
@@ -41,7 +45,7 @@ int main( int argc, char* argv[] ) {
 
 
   if( argc<2 ) {
-    std::cout << "USAGE: ./qcdControlRegion [configFileName] [data/MC]" << std::endl;
+    std::cout << "USAGE: ./qcdControlRegion [configFileName] [data/MC/all] [monojet=false]" << std::endl;
     std::cout << "Exiting." << std::endl;
     exit(11);
   }
@@ -57,8 +61,23 @@ int main( int argc, char* argv[] ) {
     std::string dataMC(argv[2]);
     if( dataMC=="data" ) onlyData = true;
     else if( dataMC=="MC" || dataMC=="mc" ) onlyMC = true;
-    else {
-      std::cout << "-> You passed a second argument that isn't 'data' or 'MC', so I don't know what to do about it." << std::endl;
+  }
+
+  if( onlyData ) {
+    std::cout << "-> Will run only on data." << std::endl;
+  } else if( onlyMC ) {
+    std::cout << "-> Will run only on MC." << std::endl;
+  } else {
+    std::cout << "-> Will run only on both data and MC." << std::endl;
+  }
+ 
+
+
+  if( argc > 3 ) {
+    std::string monojetstr(argv[3]);
+    if( monojetstr=="true" || monojetstr=="monojet" ) {
+      monojet=true;
+      std::cout << "-> Monojet analysis (so releasing the MT2>50. cut)" << std::endl;
     }
   }
 
@@ -97,7 +116,9 @@ int main( int argc, char* argv[] ) {
     
 
    
-    std::string mcFile = outputdir + "/mc.root";
+    std::string mcFile = outputdir + "/mc";
+    if( monojet ) mcFile = mcFile + "_forMonojet";
+    mcFile = mcFile + ".root";
     qcdCRtree->writeToFile( mcFile, "RECREATE" );
 
   }
@@ -123,7 +144,9 @@ int main( int argc, char* argv[] ) {
     for( unsigned i=0; i < samples_data.size(); ++i )
       computeYield( samples_data[i], cfg, data );
 
-    std::string dataFile = outputdir + "/data.root";
+    std::string dataFile = outputdir + "/data";
+    if( monojet ) dataFile = dataFile + "_forMonojet";
+    dataFile = dataFile + ".root";
     data->writeToFile( dataFile, "RECREATE" );
 
 
@@ -216,7 +239,11 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
     } // if is data
 
 
-    if( mt2<50. ) continue;
+    if( monojet ) {
+      if( !( (njets==2 && myTree.deltaPhiMin<0.3 && myTree.jet1_pt>200. && myTree.met_pt>200.) ) ) continue;
+    } else {
+      if( mt2<50. ) continue;
+    }
 
     Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb;//*cfg.lumi(); 
 
