@@ -37,18 +37,15 @@ int main( int argc, char* argv[] ) {
   std::string mcFile = cfg.getEventYieldDir() + "/gammaControlRegion/mc.root";
   std::string dataFile = cfg.getEventYieldDir() + "/gammaControlRegion/data.root";
 
-  MT2Analysis<MT2EstimateTree>* mc_   = MT2Analysis<MT2EstimateTree>::readFromFile(mcFile, "gammaCRtree_loose");
+  MT2Analysis<MT2EstimateTree>* mc   = MT2Analysis<MT2EstimateTree>::readFromFile(mcFile, "gammaCRtree_loose");
   MT2Analysis<MT2EstimateTree>* data = MT2Analysis<MT2EstimateTree>::readFromFile(dataFile, "gammaCRtree_loose");
 
   Double_t bins_ht[] = {200,450, 575, 1000, 1500,3000};
   int size_ht = sizeof(bins_ht)/sizeof(double)-1;
-  
-  Double_t bins_njets[] = {1,2,4,7,12};
+  Double_t bins_njets[] = {2,4,7,12};
   int size_njets = sizeof(bins_njets)/sizeof(double)-1;
-  
   Double_t bins_nbjets[] = { 0, 1, 2, 3, 6};
   int size_nbjets = sizeof(bins_nbjets)/sizeof(double)-1;
-
   Double_t bins_mono_nbjets[] = { 0, 1, 2};
   int size_mono_nbjets = sizeof(bins_mono_nbjets)/sizeof(double)-1;
 
@@ -80,69 +77,67 @@ int main( int argc, char* argv[] ) {
 
 
 
-
+  std::string multijet = "(nJets>1)";
+  std::string monojet = "(nJets==1)";
+  std::string iso = "(iso<2.5)";
+  std::string prompt = "(prompt==1 || prompt==2)";
+ 
 
   //need to also create the purity from MC binned in ht, njets & nbjets
-  //just so that it is binned correctly, could also just use mc_ otherwise
-  MT2Analysis<MT2EstimateTree>* all_ht =  MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( "all_ht", cfg.regionsSet(), mc_ , size_ht, bins_ht, "mt2>200 && nJets>1 ", "ht" ) ;
-
-  MT2Analysis<MT2EstimateTree>* prompt_ht =  MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( "prompt_ht", cfg.regionsSet(), mc_ , size_ht, bins_ht, "mt2>200 &&(prompt==2 || prompt==1)&& nJets>1" , "ht" ) ;
- 
+  //just so that it is binned correctly, could also just use mc otherwise
+  MT2Analysis<MT2EstimateTree>* all_ht =  MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( "all_ht", cfg.regionsSet(), mc , multijet, size_ht, bins_ht, "ht" ) ;
+  MT2Analysis<MT2EstimateTree>* prompt_ht =  MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( "prompt_ht", cfg.regionsSet(), mc , multijet +"&&"+ prompt, size_ht, bins_ht, "ht" ) ;
   MT2Analysis<MT2EstimateSyst>* purityLoose_ht = MT2EstimateSyst::makeEfficiencyAnalysis( "purityLoose", cfg.regionsSet(), (MT2Analysis<MT2Estimate>*)prompt_ht, (MT2Analysis<MT2Estimate>*)all_ht);
-  std::string outFile_purity_ht = cfg.getEventYieldDir() + "/gammaControlRegion/purityMC_ht.root";
-
-  MT2Analysis<MT2EstimateTree>* all_pass_ht =  MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( "all_pass_ht", cfg.regionsSet(), mc_ , size_ht, bins_ht, "mt2>200 &&iso<2.5 && nJets>1  ","ht");
  
- 
-  MT2Analysis<MT2EstimateTree>* prompt_tight_ht =  MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( "prompt_tight_ht", cfg.regionsSet(), mc_ , size_ht, bins_ht, "mt2>200 && (prompt==2 || prompt==1) && iso<2.5&& nJets>1" , "ht" ) ;
- 
-
+  MT2Analysis<MT2EstimateTree>* all_pass_ht =  MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( "all_pass_ht", cfg.regionsSet(), mc , multijet +"&&"+iso, size_ht, bins_ht,"ht");
+  MT2Analysis<MT2EstimateTree>* prompt_tight_ht =  MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( "prompt_tight_ht", cfg.regionsSet(), mc , multijet+"&&"+iso+"&&"+prompt , size_ht, bins_ht, "ht" ) ;
   MT2Analysis<MT2EstimateSyst>* purityTight_ht = MT2EstimateSyst::makeEfficiencyAnalysis( "purity", cfg.regionsSet(), (MT2Analysis<MT2Estimate>*)prompt_tight_ht, (MT2Analysis<MT2Estimate>*)all_pass_ht);
 
-  purityLoose_ht->writeToFile( outFile_purity_ht );
+  std::string outFile_purity_ht = cfg.getEventYieldDir() + "/gammaControlRegion/purityMC_ht.root";
+  purityLoose_ht->writeToFile( outFile_purity_ht,"recreate" );
   purityTight_ht->addToFile( outFile_purity_ht );
  
 
-  MT2Analysis<MT2EstimateTree>* all_njets =  MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree("all_njets", cfg.regionsSet(), mc_ , size_njets, bins_njets, "mt2>200&&(prompt>-1)&& nJets>1 " , "nJets");
-  MT2Analysis<MT2EstimateTree>* prompt_njets =  MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( "prompt_njets", cfg.regionsSet(), mc_ , size_njets, bins_njets, "mt2>200 &&(prompt==2 || prompt==1)&& nJets>1" , "nJets" ) ;
+  MT2Analysis<MT2EstimateTree>* all_njets =  MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree("all_njets", cfg.regionsSet(), mc , multijet, size_njets, bins_njets, "nJets");
+  MT2Analysis<MT2EstimateTree>* prompt_njets =  MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( "prompt_njets", cfg.regionsSet(), mc , multijet +"&&"+ prompt, size_njets, bins_njets, "nJets" ) ;
   MT2Analysis<MT2EstimateSyst>* purityLoose_njets = MT2EstimateSyst::makeEfficiencyAnalysis( "purityLoose", cfg.regionsSet(), (MT2Analysis<MT2Estimate>*)prompt_njets, (MT2Analysis<MT2Estimate>*)all_njets);
+ 
+  MT2Analysis<MT2EstimateTree>* all_pass_njets =  MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( "all_pass_njets", cfg.regionsSet(), mc ,  multijet+"&&"+iso, size_njets, bins_njets,"nJets");
+  MT2Analysis<MT2EstimateTree>* prompt_tight_njets =  MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( "prompt_tight_njets", cfg.regionsSet(), mc ,  multijet+"&&"+iso+"&&"+prompt, size_njets, bins_njets, "nJets" ) ;
+  MT2Analysis<MT2EstimateSyst>* purityTight_njets = MT2EstimateSyst::makeEfficiencyAnalysis( "purity", cfg.regionsSet(), (MT2Analysis<MT2Estimate>*)prompt_tight_njets, (MT2Analysis<MT2Estimate>*)all_pass_njets);
+
   std::string outFile_purity_njets = cfg.getEventYieldDir() + "/gammaControlRegion/purityMC_njets.root";
-
-  MT2Analysis<MT2EstimateTree>* all_pass_njets =  MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( "all_pass_njets", cfg.regionsSet(), mc_ , size_njets, bins_njets, "mt2>200 &&(iso<2.5)&&(prompt>-1)&& nJets>1 ","nJets");
-  MT2Analysis<MT2EstimateTree>* prompt_tight_njets =  MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( "prompt_tight_njets", cfg.regionsSet(), mc_ , size_njets, bins_njets, "mt2>200 &&((prompt==2 || prompt==1) && iso<2.5)&& nJets>1" , "nJets" ) ;
- MT2Analysis<MT2EstimateSyst>* purityTight_njets = MT2EstimateSyst::makeEfficiencyAnalysis( "purity", cfg.regionsSet(), (MT2Analysis<MT2Estimate>*)prompt_tight_njets, (MT2Analysis<MT2Estimate>*)all_pass_njets);
-
-  purityLoose_njets->writeToFile( outFile_purity_njets );
+  purityLoose_njets->writeToFile( outFile_purity_njets ,"recreate");
   purityTight_njets->addToFile( outFile_purity_njets );
 
 
 
-  MT2Analysis<MT2EstimateTree>* all_nbjets =  MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree("all_nbjets", cfg.regionsSet(), mc_ , size_nbjets, bins_nbjets, "mt2>200&&(prompt>-1)&& nJets>1 " , "nBJets");
-  MT2Analysis<MT2EstimateTree>* prompt_nbjets =  MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( "prompt_nbjets", cfg.regionsSet(), mc_ , size_nbjets, bins_nbjets, "mt2>200 &&(prompt==2 || prompt==1)&& nJets>1" , "nBJets" ) ;
+  MT2Analysis<MT2EstimateTree>* all_nbjets =  MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree("all_nbjets", cfg.regionsSet(), mc,  multijet , size_nbjets, bins_nbjets, "nBJets");
+  MT2Analysis<MT2EstimateTree>* prompt_nbjets =  MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( "prompt_nbjets", cfg.regionsSet(), mc , multijet+"&&"+prompt , size_nbjets, bins_nbjets, "nBJets" ) ;
   MT2Analysis<MT2EstimateSyst>* purityLoose_nbjets = MT2EstimateSyst::makeEfficiencyAnalysis( "purityLoose", cfg.regionsSet(), (MT2Analysis<MT2Estimate>*)prompt_nbjets, (MT2Analysis<MT2Estimate>*)all_nbjets);
+ 
+  MT2Analysis<MT2EstimateTree>* all_pass_nbjets =  MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( "all_pass_nbjets", cfg.regionsSet(), mc ,  multijet +"&&"+ iso , size_nbjets, bins_nbjets, "nBJets");
+  MT2Analysis<MT2EstimateTree>* prompt_tight_nbjets =  MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( "prompt_tight_nbjets", cfg.regionsSet(), mc ,  multijet+"&&"+iso+"&&"+ prompt , size_nbjets, bins_nbjets, "nBJets" ) ;
+  MT2Analysis<MT2EstimateSyst>* purityTight_nbjets = MT2EstimateSyst::makeEfficiencyAnalysis( "purity", cfg.regionsSet(), (MT2Analysis<MT2Estimate>*)prompt_tight_nbjets, (MT2Analysis<MT2Estimate>*)all_pass_nbjets);
+
   std::string outFile_purity_nbjets = cfg.getEventYieldDir() + "/gammaControlRegion/purityMC_nbjets.root";
-
-  MT2Analysis<MT2EstimateTree>* all_pass_nbjets =  MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( "all_pass_nbjets", cfg.regionsSet(), mc_ , size_nbjets, bins_nbjets, "mt2>200 &&(iso<2.5)&&(prompt>-1) && nJets>1","nBJets");
-  MT2Analysis<MT2EstimateTree>* prompt_tight_nbjets =  MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( "prompt_tight_nbjets", cfg.regionsSet(), mc_ , size_nbjets, bins_nbjets, "mt2>200 &&((prompt==2 || prompt==1) && iso<2.5)&& nJets>1" , "nBJets" ) ;
- MT2Analysis<MT2EstimateSyst>* purityTight_nbjets = MT2EstimateSyst::makeEfficiencyAnalysis( "purity", cfg.regionsSet(), (MT2Analysis<MT2Estimate>*)prompt_tight_nbjets, (MT2Analysis<MT2Estimate>*)all_pass_nbjets);
-
-  purityLoose_nbjets->writeToFile( outFile_purity_nbjets );
+  purityLoose_nbjets->writeToFile( outFile_purity_nbjets ,"recreate");
   purityTight_nbjets->addToFile( outFile_purity_nbjets );
 
 
 
   //MONOJET
-MT2Analysis<MT2EstimateTree>* all_mono_nbjets =  MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree("all_mono_nbjets", cfg.regionsSet(), mc_ , size_mono_nbjets, bins_mono_nbjets, " nJets==1 " , "nBJets");
-  MT2Analysis<MT2EstimateTree>* prompt_mono_nbjets =  MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( "prompt_mono_nbjets", cfg.regionsSet(), mc_ , size_mono_nbjets, bins_mono_nbjets, "(prompt==2 || prompt==1) && nJets==1" , "nBJets" ) ;
+  MT2Analysis<MT2EstimateTree>* all_mono_nbjets =  MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree("all_mono_nbjets", cfg.regionsSet(), mc ,  monojet , size_mono_nbjets, bins_mono_nbjets, "nBJets");
+  MT2Analysis<MT2EstimateTree>* prompt_mono_nbjets =  MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( "prompt_mono_nbjets", cfg.regionsSet(), mc , monojet+"&&"+prompt, size_mono_nbjets, bins_mono_nbjets, "nBJets" ) ;
   MT2Analysis<MT2EstimateSyst>* purityLoose_mono_nbjets = MT2EstimateSyst::makeEfficiencyAnalysis( "purityLoose", cfg.regionsSet(), (MT2Analysis<MT2Estimate>*)prompt_mono_nbjets, (MT2Analysis<MT2Estimate>*)all_mono_nbjets);
-  std::string outFile_purity_mono_nbjets = cfg.getEventYieldDir() + "/gammaControlRegion/purityMC_nbjets.root";
+ 
+  MT2Analysis<MT2EstimateTree>* all_pass_mono_nbjets =  MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( "all_pass_mono_nbjets", cfg.regionsSet(), mc , monojet+"&&"+iso, size_mono_nbjets, bins_mono_nbjets, "nBJets");
+  MT2Analysis<MT2EstimateTree>* prompt_tight_mono_nbjets =  MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( "prompt_tight_mono_nbjets", cfg.regionsSet(), mc ,  monojet+"&&"+prompt+"&&"+iso , size_mono_nbjets, bins_mono_nbjets, "nBJets" ) ;
 
-  MT2Analysis<MT2EstimateTree>* all_pass_mono_nbjets =  MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( "all_pass_mono_nbjets", cfg.regionsSet(), mc_ , size_mono_nbjets, bins_mono_nbjets, "(iso<2.5) && nJets==1 ","nBJets");
-  MT2Analysis<MT2EstimateTree>* prompt_tight_mono_nbjets =  MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( "prompt_tight_mono_nbjets", cfg.regionsSet(), mc_ , size_mono_nbjets, bins_mono_nbjets, "((prompt==2 || prompt==1) && iso<2.5) && nJets==1" , "nBJets" ) ;
+  MT2Analysis<MT2EstimateSyst>* purityTight_mono_nbjets = MT2EstimateSyst::makeEfficiencyAnalysis( "purity", cfg.regionsSet(), (MT2Analysis<MT2Estimate>*)prompt_tight_mono_nbjets, (MT2Analysis<MT2Estimate>*)all_pass_mono_nbjets);
 
- MT2Analysis<MT2EstimateSyst>* purityTight_mono_nbjets = MT2EstimateSyst::makeEfficiencyAnalysis( "purity", cfg.regionsSet(), (MT2Analysis<MT2Estimate>*)prompt_tight_mono_nbjets, (MT2Analysis<MT2Estimate>*)all_pass_mono_nbjets);
-
-  purityLoose_mono_nbjets->writeToFile( outFile_purity_mono_nbjets );
+  std::string outFile_purity_mono_nbjets = cfg.getEventYieldDir() + "/gammaControlRegion/purityMC_mono_nbjets.root";
+  purityLoose_mono_nbjets->writeToFile( outFile_purity_mono_nbjets ,"recreate");
   purityTight_mono_nbjets->addToFile( outFile_purity_mono_nbjets );
 
 

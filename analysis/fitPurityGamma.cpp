@@ -97,6 +97,13 @@ int main( int argc, char* argv[] ) {
   } 
   cfg.set_gammaTemplateType(templateType);
 
+  bool doAxes = 0;
+  if( argc>4 ) {
+    doAxes = true; 
+    std::cout << std::endl;
+    std::cout << "-> Will also draw the purity along the other binning axes == " << doAxes << std::endl;
+    std::cout << std::endl;
+  } 
 
   MT2DrawTools::setStyle();
   TH1::AddDirectory(kFALSE);
@@ -105,14 +112,7 @@ int main( int argc, char* argv[] ) {
   std::string gammaCRdir = cfg.getEventYieldDir() + "/gammaControlRegion"; 
   MT2Analysis<MT2EstimateZinvGamma>* gammaJet_data = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( gammaCRdir + "/data.root", "gammaCR_loose" );
   
-  MT2Analysis<MT2EstimateZinvGamma>* gammaJet_data_ht = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( gammaCRdir + "/iso_ht.root", "iso_ht" );
-
-  MT2Analysis<MT2EstimateZinvGamma>* gammaJet_data_njets = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( gammaCRdir + "/iso_nJets.root", "iso_njets" );
-
-  MT2Analysis<MT2EstimateZinvGamma>* gammaJet_data_nbjets = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( gammaCRdir + "/iso_nBJets.root", "iso_nbjets" );
-
-  MT2Analysis<MT2EstimateZinvGamma>* gammaJet_data_mono_nbjets = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( gammaCRdir + "/iso_mono_nBJets.root", "iso_mono_nbjets" );
-
+ 
   std::string templateFileName = gammaCRdir + "/gammaTemplates" + cfg.gammaTemplateType();
   if( useMC ) templateFileName = templateFileName + "_MC";
   else        templateFileName = templateFileName + "_data";
@@ -128,11 +128,22 @@ int main( int argc, char* argv[] ) {
 
 
   makePurity( cfg, outputdir,  gammaJet_data, templates_prompt, templates_fake, useMC, "");
-  makePurity( cfg, outputdir,  gammaJet_data_ht, templates_prompt, templates_fake, useMC, "ht_");
-  makePurity( cfg, outputdir,  gammaJet_data_njets, templates_prompt, templates_fake, useMC, "njets_");
-  makePurity( cfg, outputdir,  gammaJet_data_nbjets, templates_prompt, templates_fake, useMC, "nbjets_");
-  makePurity( cfg, outputdir,  gammaJet_data_mono_nbjets, templates_prompt, templates_fake, useMC, "mono_nbjets_");
 
+
+  if(doAxes){
+    MT2Analysis<MT2EstimateZinvGamma>* gammaJet_data_ht = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( gammaCRdir + "/iso_ht.root", "iso_ht" );
+
+    MT2Analysis<MT2EstimateZinvGamma>* gammaJet_data_njets = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( gammaCRdir + "/iso_nJets.root", "iso_njets" );
+
+    MT2Analysis<MT2EstimateZinvGamma>* gammaJet_data_nbjets = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( gammaCRdir + "/iso_nBJets.root", "iso_nbjets" );
+
+    MT2Analysis<MT2EstimateZinvGamma>* gammaJet_data_mono_nbjets = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( gammaCRdir + "/iso_mono_nBJets.root", "iso_mono_nbjets" );
+
+    makePurity( cfg, outputdir,  gammaJet_data_ht, templates_prompt, templates_fake, useMC, "ht_");
+    makePurity( cfg, outputdir,  gammaJet_data_njets, templates_prompt, templates_fake, useMC, "njets_");
+    makePurity( cfg, outputdir,  gammaJet_data_nbjets, templates_prompt, templates_fake, useMC, "nbjets_");
+    makePurity( cfg, outputdir,  gammaJet_data_mono_nbjets, templates_prompt, templates_fake, useMC, "mono_nbjets_");
+  }
 
   return 0;
 }

@@ -92,10 +92,9 @@ void MT2Estimate::rebinYields( MT2Analysis<MT2Estimate>* analysis, int nBins, fl
   double bins[nBins+1];
   double step = (xMax-xMin)/(double)nBins;
 
-  for(int i=0; i <= nBins; i++){
+  for(int i=0; i <= nBins; i++)
     bins[i] = xMin + ((double)i )* step;
-    std::cout <<  xMin + ((double)i )* step  << std::endl;
-  }
+  
 
   MT2Estimate::rebinYields( analysis, nBins, bins);
 

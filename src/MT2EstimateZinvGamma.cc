@@ -241,7 +241,7 @@ void MT2EstimateZinvGamma::fillIso( float iso, float weight, float var ) {
   this->iso->Fill( iso, weight );
 
 
-  if( var>=0. ) {
+  if( var > -1. ) {
     int foundBin = this->yield->FindBin(var);
     if( foundBin > this->yield->GetNbinsX() ) foundBin=this->yield->GetNbinsX(); // overflow will go in last bin
     foundBin-=1; // want first bin to be 0 (fuck you root)

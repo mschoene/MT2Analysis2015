@@ -118,8 +118,8 @@ void MT2EstimateTree::projectFromTree( const MT2EstimateTree* treeEst, const std
 
 
 
-
-MT2Analysis<MT2EstimateTree>* MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( const std::string& aname, const std::string& regionsSet, MT2Analysis<MT2EstimateTree>* estimate, const std::string& selection, int nBins, float xMin, float xMax, const std::string& variable ) {
+/*
+MT2Analysis<MT2EstimateTree>* MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( const std::string& aname, const std::string& regionsSet, MT2Analysis<MT2EstimateTree>* estimate, int nBins, float xMin, float xMax, const std::string& selection, const std::string& variable ) {
 
   std::set<MT2Region> regions = estimate->getRegions();
 
@@ -144,14 +144,13 @@ MT2Analysis<MT2EstimateTree>* MT2EstimateTree::makeRebinnedAnalysisFromInclusive
 
   } // for regions
 
-
   return analysis;
 
 }
+*/
 
 
-
-MT2Analysis<MT2EstimateTree>* MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( const std::string& aname, const std::string& regionsSet, MT2Analysis<MT2EstimateTree>* estimate, int nBins, double* bins, const std::string& selection , const std::string& variable ) {
+MT2Analysis<MT2EstimateTree>* MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( const std::string& aname, const std::string& regionsSet, MT2Analysis<MT2EstimateTree>* estimate, const std::string& selection, int nBins, double* bins, const std::string& variable ) {
 
   std::set<MT2Region> regions = estimate->getRegions();
 
