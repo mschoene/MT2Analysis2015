@@ -82,7 +82,7 @@ int main( int argc, char* argv[] ) {
 
   MT2Analysis<MT2EstimateTree>* data  ;
   MT2Analysis<MT2EstimateTree>* nonQCD;
-  if( closureTest ) {
+  if( closureTest ) { // in validation region we also use id==152
     mcTruth = MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( "mcTruth", cfg.regionsSet(), qcdTree_mc  , "id>=152 && id<200 && mt2>100 && mt2<200. && deltaPhiMin>0.3", 4, 100, 200 ); // signal region for mcTruth
     data    = MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( "data"   , cfg.regionsSet(), qcdTree_data, "id==1   && mt2>100. && mt2<200. && deltaPhiMin>0.3"         , 4, 100, 200 ); // signal region for data
     nonQCD  = MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( "nonQCD" , cfg.regionsSet(), qcdTree_mc  , "id>=300 && mt2>100. && mt2<200. && deltaPhiMin>0.3"         , 4, 100, 200 ); // signal region for nonQCD mcTruth
@@ -188,6 +188,7 @@ void compareFractions( const MT2Config& cfg, const std::string& outputdir, const
 
     c1->SaveAs( Form("%s/%s_%s%s.eps", outputdir.c_str(), analysisName.c_str(), iR->getName().c_str(), postfix.c_str()) );
     c1->SaveAs( Form("%s/%s_%s%s.pdf", outputdir.c_str(), analysisName.c_str(), iR->getName().c_str(), postfix.c_str()) );
+    c1->SaveAs( Form("%s/%s_%s%s.png", outputdir.c_str(), analysisName.c_str(), iR->getName().c_str(), postfix.c_str()) );
 
     delete c1;
     delete h2_axes;
@@ -207,6 +208,7 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
   if ( nonQCD != NULL ) doClosureTestData = true;
 
   system(Form("mkdir -p %s/pdf/" , outputdir.c_str()));
+  system(Form("mkdir -p %s/png/" , outputdir.c_str()));
   system(Form("mkdir -p %s/eps/" , outputdir.c_str()));
   system(Form("mkdir -p %s/C/"   , outputdir.c_str()));
   system(Form("mkdir -p %s/root/", outputdir.c_str()));
@@ -474,6 +476,7 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
       TString filename = Form("closure%s_%s_%s", closureTest==false ? "SR" : "VR", iMT2->getName().c_str(), scaleEst==1.0 ? "data" : "mc");
       c1->SaveAs( Form("%s/eps/%s.eps"  , outputdir.c_str(), filename.Data()) );
       c1->SaveAs( Form("%s/pdf/%s.pdf"  , outputdir.c_str(), filename.Data()) );
+      c1->SaveAs( Form("%s/png/%s.png"  , outputdir.c_str(), filename.Data()) );
       c1->SaveAs( Form("%s/C/%s.C"      , outputdir.c_str(), filename.Data()) );
       c1->SaveAs( Form("%s/root/%s.root", outputdir.c_str(), filename.Data()) );
 
@@ -655,6 +658,7 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
   TString filename = Form("closure%s_allRegions_pull_%s", closureTest==false ? "SR" : "VR", scaleEst==1.0 ? "data" : "mc");
   c2->SaveAs( Form("%s/eps/%s.eps"  , outputdir.c_str(), filename.Data()) );
   c2->SaveAs( Form("%s/pdf/%s.pdf"  , outputdir.c_str(), filename.Data()) );
+  c2->SaveAs( Form("%s/png/%s.png"  , outputdir.c_str(), filename.Data()) );
   c2->SaveAs( Form("%s/C/%s.C"      , outputdir.c_str(), filename.Data()) );
   c2->SaveAs( Form("%s/root/%s.root", outputdir.c_str(), filename.Data()) );
 
@@ -702,6 +706,7 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
   filename = Form("closure%s_allRegions_ratio_%s", closureTest==false ? "SR" : "VR", scaleEst==1.0 ? "data" : "mc");
   c2->SaveAs( Form("%s/eps/%s.eps"  , outputdir.c_str(), filename.Data()) );
   c2->SaveAs( Form("%s/pdf/%s.pdf"  , outputdir.c_str(), filename.Data()) );
+  c2->SaveAs( Form("%s/png/%s.png"  , outputdir.c_str(), filename.Data()) );
   c2->SaveAs( Form("%s/C/%s.C"      , outputdir.c_str(), filename.Data()) );
   c2->SaveAs( Form("%s/root/%s.root", outputdir.c_str(), filename.Data()) );
 
@@ -731,6 +736,7 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
   filename = Form("closure%s_pull_int_%s", closureTest==false ? "SR" : "VR", scaleEst==1.0 ? "data" : "mc");
   c3->SaveAs( Form("%s/eps/%s.eps"  , outputdir.c_str(), filename.Data()) );
   c3->SaveAs( Form("%s/pdf/%s.pdf"  , outputdir.c_str(), filename.Data()) );
+  c3->SaveAs( Form("%s/png/%s.png"  , outputdir.c_str(), filename.Data()) );
   c3->SaveAs( Form("%s/C/%s.C"      , outputdir.c_str(), filename.Data()) );
   c3->SaveAs( Form("%s/root/%s.root", outputdir.c_str(), filename.Data()) );
 
@@ -753,6 +759,7 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
   filename = Form("closure%s_pull_%s", closureTest==false ? "SR" : "VR", scaleEst==1.0 ? "data" : "mc");
   c4->SaveAs( Form("%s/eps/%s.eps"  , outputdir.c_str(), filename.Data()) );
   c4->SaveAs( Form("%s/pdf/%s.pdf"  , outputdir.c_str(), filename.Data()) );
+  c4->SaveAs( Form("%s/png/%s.png"  , outputdir.c_str(), filename.Data()) );
   c4->SaveAs( Form("%s/C/%s.C"      , outputdir.c_str(), filename.Data()) );
   c4->SaveAs( Form("%s/root/%s.root", outputdir.c_str(), filename.Data()) );
 

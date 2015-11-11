@@ -74,8 +74,8 @@ int main( int argc, char* argv[] ) {
 
     std::string samplesFile = "../samples/samples_" + cfg.mcSamples() + ".dat";
     
-    std::vector<MT2Sample> samples_zinv = MT2Sample::loadSamples(samplesFile, 602, 605);
-    std::vector<MT2Sample> samples_wjet = MT2Sample::loadSamples(samplesFile, 502, 505);
+    std::vector<MT2Sample> samples_zinv = MT2Sample::loadSamples(samplesFile, 602, 699);
+    std::vector<MT2Sample> samples_wjet = MT2Sample::loadSamples(samplesFile, 502, 599);
     std::vector<MT2Sample> samples_top  = MT2Sample::loadSamples(samplesFile, 300, 399); // ignore single top and rares: faster
     //std::vector<MT2Sample> samples_top  = MT2Sample::loadSamples(samplesFile, 300, 499);
     std::vector<MT2Sample> samples_qcd  = MT2Sample::loadSamples(samplesFile, 100, 199);
