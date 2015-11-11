@@ -94,7 +94,7 @@ int main( int argc, char* argv[] ) {
   int bMin=0, bMax=-1;
   std::string jetCutsLabel = getJetCutLabel(jetMin, jetMax, bMin, bMax);
   
-  std::string selection = "weight*(ht>200. && met>200  && nJets>1 && deltaPhiMin>0.3 && diffMetMht<0.5*met && mt2>200.)";
+  std::string selection = "ht>200. && met>200  && nJets>1 && deltaPhiMin>0.3 && diffMetMht<0.5*met && mt2>200.";
 
   dt.drawRegionYields_fromTree( "nVert"              , "nVert"                , selection, 100, -0.5    , 99.5  , "Number of Vertices", "" , cutsLabel, jetCutsLabel );
   dt.drawRegionYields_fromTree( "mt2"              , "mt2"                , selection, 12, 0.    , 600.  , "M_{T2}"          , "GeV" , cutsLabel, jetCutsLabel );
@@ -116,7 +116,7 @@ int main( int argc, char* argv[] ) {
   bMin=0, bMax=0;
   jetCutsLabel = getJetCutLabel(jetMin, jetMax, bMin, bMax);
 
-  selection = "weight*(ht>200 && met>200. && nJets>1 && nBJets==0 && deltaPhiMin>0.3 && diffMetMht<0.5*met && mt2>200.)";
+  selection = "ht>200 && met>200. && nJets>1 && nBJets==0 && deltaPhiMin>0.3 && diffMetMht<0.5*met && mt2>200.";
   
   dt.drawRegionYields_fromTree( "0b_mt2"              , "mt2"                , selection, 12, 0.    , 600.  , "M_{T2}"          , "GeV" , cutsLabel, jetCutsLabel );
   dt.drawRegionYields_fromTree( "0b_met"              , "met"                , selection, 18, 0.    , 900.  , "Missing E_{T}"                    , "GeV" , cutsLabel, jetCutsLabel );
@@ -137,7 +137,7 @@ int main( int argc, char* argv[] ) {
   bMin=2, bMax=-1;
   jetCutsLabel = getJetCutLabel(jetMin, jetMax, bMin, bMax);
 
-  selection = "weight*(ht>200 && met>200. && nJets>1 && nBJets>1 && deltaPhiMin>0.3 && diffMetMht<0.5*met &&  mt2>200.)";
+  selection = "ht>200 && met>200. && nJets>1 && nBJets>1 && deltaPhiMin>0.3 && diffMetMht<0.5*met &&  mt2>200.";
 
   dt.drawRegionYields_fromTree( "2b_mt2"              , "mt2"                , selection, 12, 0.    , 600.  , "M_{T2}"          , "GeV" , cutsLabel, jetCutsLabel );
   dt.drawRegionYields_fromTree( "2b_met"              , "met"                , selection, 18, 0.    , 900.  , "Missing E_{T}"                    , "GeV" , cutsLabel, jetCutsLabel );
@@ -159,7 +159,7 @@ int main( int argc, char* argv[] ) {
   bMin=0, bMax=-1;
   jetCutsLabel = getJetCutLabel(jetMin, jetMax, bMin, bMax);
 
-  selection = "weight*(ht>200. && met>200  && nJets==1 && deltaPhiMin>0.3 && diffMetMht<0.5*met && mt2>200.)";
+  selection = "ht>200. && met>200  && nJets==1 && deltaPhiMin>0.3 && diffMetMht<0.5*met && mt2>200.";
 
   //  dt.drawRegionYields_fromTree( "monojet_mt2"              , "mt2"                , selection, 12, 0.    , 600.  , "M_{T2}"          , "GeV" , cutsLabel, jetCutsLabel );
   dt.drawRegionYields_fromTree( "monojet_met"              , "met"                , selection, 18, 0.    , 900.  , "Missing E_{T}"                    , "GeV" , cutsLabel, jetCutsLabel );
@@ -180,7 +180,7 @@ int main( int argc, char* argv[] ) {
   bMin=0, bMax=0;
   jetCutsLabel = getJetCutLabel(jetMin, jetMax, bMin, bMax);
 
-  selection = "weight*(ht>200 && met>200. && nJets==1 && nBJets==0 && deltaPhiMin>0.3 && diffMetMht<0.5*met && mt2>200.)";
+  selection = "ht>200 && met>200. && nJets==1 && nBJets==0 && deltaPhiMin>0.3 && diffMetMht<0.5*met && mt2>200.";
   
   //  dt.drawRegionYields_fromTree( "monojet_0b_mt2"              , "mt2"                , selection, 12, 0.    , 600.  , "M_{T2}"          , "GeV" , cutsLabel, jetCutsLabel );
   dt.drawRegionYields_fromTree( "monojet_0b_met"              , "met"                , selection, 18, 0.    , 900.  , "Missing E_{T}"                    , "GeV" , cutsLabel, jetCutsLabel );
@@ -201,7 +201,7 @@ int main( int argc, char* argv[] ) {
   bMin=2, bMax=-1;
   jetCutsLabel = getJetCutLabel(jetMin, jetMax, bMin, bMax);
 
-  selection = "weight*(ht>200 && met>200. && nJets==1 && nBJets>1 && deltaPhiMin>0.3 && diffMetMht<0.5*met &&  mt2>200.)";
+  selection = "ht>200 && met>200. && nJets==1 && nBJets>1 && deltaPhiMin>0.3 && diffMetMht<0.5*met &&  mt2>200.";
 
   //dt.drawRegionYields_fromTree( "monojet_2b_mt2"              , "mt2"                , selection, 12, 0.    , 600.  , "M_{T2}"          , "GeV" , cutsLabel, jetCutsLabel );
   dt.drawRegionYields_fromTree( "monojet_2b_met"              , "met"                , selection, 18, 0.    , 900.  , "Missing E_{T}"                    , "GeV" , cutsLabel, jetCutsLabel );
@@ -223,7 +223,7 @@ int main( int argc, char* argv[] ) {
   bMin=0, bMax=-1;
   jetCutsLabel = getJetCutLabel(jetMin, jetMax, bMin, bMax);
 
-  selection = "weight*(ht>200. && ht<450. && met>200  && nJets>1 && deltaPhiMin>0.3 && diffMetMht<0.5*met && mt2>200.)";
+  selection = "ht>200. && ht<450. && met>200  && nJets>1 && deltaPhiMin>0.3 && diffMetMht<0.5*met && mt2>200.";
 
   dt.drawRegionYields_fromTree( "veryLowHT_mt2"              , "mt2"                , selection, 12, 0.    , 600.  , "M_{T2}"          , "GeV" , cutsLabel, jetCutsLabel );
   dt.drawRegionYields_fromTree( "veryLowHT_met"              , "met"                , selection, 18, 0.    , 900.  , "Missing E_{T}"                    , "GeV" , cutsLabel, jetCutsLabel );
@@ -244,7 +244,7 @@ int main( int argc, char* argv[] ) {
   bMin=0, bMax=0;
   jetCutsLabel = getJetCutLabel(jetMin, jetMax, bMin, bMax);
 
-  selection = "weight*(ht>200. && ht<450. && met>200  && nJets>1 && nBJets==0 && deltaPhiMin>0.3 && diffMetMht<0.5*met && mt2>200.)";
+  selection = "ht>200. && ht<450. && met>200  && nJets>1 && nBJets==0 && deltaPhiMin>0.3 && diffMetMht<0.5*met && mt2>200.";
   
   dt.drawRegionYields_fromTree( "veryLowHT_0b_mt2"              , "mt2"                , selection, 12, 0.    , 600.  , "M_{T2}"          , "GeV" , cutsLabel, jetCutsLabel );
   dt.drawRegionYields_fromTree( "veryLowHT_0b_met"              , "met"                , selection, 18, 0.    , 900.  , "Missing E_{T}"                    , "GeV" , cutsLabel, jetCutsLabel );
@@ -265,7 +265,7 @@ int main( int argc, char* argv[] ) {
   bMin=2, bMax=-1;
   jetCutsLabel = getJetCutLabel(jetMin, jetMax, bMin, bMax);
 
-  selection = "weight*(ht>200. && ht<450. && met>200  && nJets>1 && nBJets>1 && deltaPhiMin>0.3 && diffMetMht<0.5*met &&  mt2>200.)";
+  selection = "ht>200. && ht<450. && met>200  && nJets>1 && nBJets>1 && deltaPhiMin>0.3 && diffMetMht<0.5*met &&  mt2>200.";
 
   dt.drawRegionYields_fromTree( "veryLowHT_2b_mt2"              , "mt2"                , selection, 12, 0.    , 600.  , "M_{T2}"          , "GeV" , cutsLabel, jetCutsLabel );
   dt.drawRegionYields_fromTree( "veryLowHT_2b_met"              , "met"                , selection, 18, 0.    , 900.  , "Missing E_{T}"                    , "GeV" , cutsLabel, jetCutsLabel );
@@ -287,7 +287,7 @@ int main( int argc, char* argv[] ) {
   bMin=0, bMax=-1;
   jetCutsLabel = getJetCutLabel(jetMin, jetMax, bMin, bMax);
 
-  selection = "weight*(ht>450. && met>200  && nJets>1 && deltaPhiMin>0.3 && diffMetMht<0.5*met && mt2>200.)";
+  selection = "ht>450. && met>200  && nJets>1 && deltaPhiMin>0.3 && diffMetMht<0.5*met && mt2>200.";
 
   dt.drawRegionYields_fromTree( "LowHT_mt2"              , "mt2"                , selection, 12, 0.    , 600.  , "M_{T2}"          , "GeV" , cutsLabel, jetCutsLabel );
   dt.drawRegionYields_fromTree( "LowHT_met"              , "met"                , selection, 18, 0.    , 900.  , "Missing E_{T}"                    , "GeV" , cutsLabel, jetCutsLabel );
@@ -306,7 +306,7 @@ int main( int argc, char* argv[] ) {
   bMin=0, bMax=0;
   jetCutsLabel = getJetCutLabel(jetMin, jetMax, bMin, bMax);
 
-  selection = "weight*(ht>450. && met>200  && nJets>1 && nBJets==0 && deltaPhiMin>0.3 && diffMetMht<0.5*met && mt2>200.)";
+  selection = "ht>450. && met>200  && nJets>1 && nBJets==0 && deltaPhiMin>0.3 && diffMetMht<0.5*met && mt2>200.";
   
   dt.drawRegionYields_fromTree( "LowHT_0b_mt2"              , "mt2"                , selection, 12, 0.    , 600.  , "M_{T2}"          , "GeV" , cutsLabel, jetCutsLabel );
   dt.drawRegionYields_fromTree( "LowHT_0b_met"              , "met"                , selection, 18, 0.    , 900.  , "Missing E_{T}"                    , "GeV" , cutsLabel, jetCutsLabel );
@@ -324,7 +324,7 @@ int main( int argc, char* argv[] ) {
   bMin=2, bMax=-1;
   jetCutsLabel = getJetCutLabel(jetMin, jetMax, bMin, bMax);
 
-  selection = "weight*(ht>450. && met>200  && nJets>1 && nBJets>1 && deltaPhiMin>0.3 && diffMetMht<0.5*met &&  mt2>200.)";
+  selection = "ht>450. && met>200  && nJets>1 && nBJets>1 && deltaPhiMin>0.3 && diffMetMht<0.5*met &&  mt2>200.";
 
   dt.drawRegionYields_fromTree( "LowHT_2b_mt2"              , "mt2"                , selection, 12, 0.    , 600.  , "M_{T2}"          , "GeV" , cutsLabel, jetCutsLabel );
   dt.drawRegionYields_fromTree( "LowHT_2b_met"              , "met"                , selection, 18, 0.    , 900.  , "Missing E_{T}"                    , "GeV" , cutsLabel, jetCutsLabel );
@@ -346,7 +346,7 @@ int main( int argc, char* argv[] ) {
   bMin=0, bMax=-1;
   jetCutsLabel = getJetCutLabel(jetMin, jetMax, bMin, bMax);
 
-  selection = "weight*(ht>500. && met>250.  && nJets40>1)";
+  selection = "ht>500. && met>250.  && nJets40>1";
 
   dt.drawRegionYields_fromTree( "EAs_lepPt"              , "lep_pt"                , selection, 24, 0.    , 600.  , "Missing E_{T}"                    , "GeV" , cutsLabel, jetCutsLabel );
   dt.drawRegionYields_fromTree( "EAs_met"              , "met"                , selection, 27, 200.    , 1550.  , "Missing E_{T}"                    , "GeV" , cutsLabel, jetCutsLabel );

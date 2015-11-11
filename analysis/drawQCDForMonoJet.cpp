@@ -111,7 +111,7 @@ int main( int argc, char* argv[] ) {
   std::vector<TCanvas*> canvases;
 
 
-  std::string selection = "weight*( ((id<100 && nJets==2) || (id>=100 && nJets<=2)) && deltaPhiMin<0.3 && jet1_pt>200. && met>200. )";
+  std::string selection = "((id<100 && nJets==2) || (id>=100 && nJets<=2)) && deltaPhiMin<0.3 && jet1_pt>200. && met>200. ";
   canvases = dt.drawRegionYields_fromTree( "jet2_pt" , "jet2_pt" , selection, 20, 30., 330., "Subleading Jet p_{T}", "GeV" );
 
   float mcSF = MT2DrawTools::getDataMCSF( canvases[0] );
@@ -141,7 +141,7 @@ int main( int argc, char* argv[] ) {
 
       float ptMin = thisEst->yield->GetXaxis()->GetBinLowEdge(iBin);
       float ptMax = thisEst->yield->GetXaxis()->GetBinLowEdge(iBin+1);
-      std::string fullSelection(Form("weight*( %s && deltaPhiMin<0.3 && nJets==2 && jet1_pt>%f && jet1_pt<%f && met>200. )", iR->sigRegion()->getBJetCuts().c_str(), ptMin, ptMax ) );
+      std::string fullSelection(Form("%s && deltaPhiMin<0.3 && nJets==2 && jet1_pt>%f && jet1_pt<%f && met>200.", iR->sigRegion()->getBJetCuts().c_str(), ptMin, ptMax ) );
 
       std::string bJetsLabel = (nBJets==0) ? "b = 0" : "b #geq 1";
       canvases = dt.drawRegionYields_fromTree( Form("jet2_pt_bin%d_b%d", iBin, nBJets) , "jet2_pt" , fullSelection, 20, 0., 300., "Subleading Jet p_{T}", "GeV", "H_{T} > 200 GeV", bJetsLabel );
