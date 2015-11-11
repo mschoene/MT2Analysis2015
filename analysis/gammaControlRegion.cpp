@@ -381,6 +381,8 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
 
     myTree.GetEntry(iEntry);
 
+    if( myTree.ngamma!=1 ) continue;
+
     if( myTree.isData )
       if ( myTree.isGolden == 0 ) continue;
 
@@ -427,7 +429,7 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
     //if( myTree.gamma_ht>1000. && sample.id==204 ) continue; // remove high-weight spikes (remove GJet_400to600 leaking into HT>1000)
     
     if( cfg.additionalStuff()=="gammaNoSietaieta" ) {
-      if( myTree.gamma_hOverE[0]>0.1 ) continue;
+      //if( myTree.gamma_hOverE[0]>0.1 ) continue;
     } else {
       if( myTree.gamma_idCutBased[0]==0 ) continue;
     }
@@ -445,7 +447,11 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
 
     // absolute iso:
     float iso = myTree.gamma_chHadIso[0];
-    if( iso>10. ) continue; // preselection anyways in there
+    if( cfg.additionalStuff()=="gammaNoSietaieta" ) {
+      if( iso>20. ) continue; // loose preselection for plots
+    } else {
+      if( iso>10. ) continue; // preselection
+    }
 
     float minMTBmet = myTree.gamma_minMTBMet;
     float met       = myTree.gamma_met_pt;
