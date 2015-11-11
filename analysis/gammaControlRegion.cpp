@@ -432,18 +432,11 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
 
     if( myTree.isData ) {
 
-      if( !(myTree.HLT_Photon165_HE10) ) continue;
-      //if( !(myTree.HLT_Photon165_HE10) || myTree.run < 256843 ) continue;
-      if( !(myTree.Flag_HBHENoiseFilter && myTree.Flag_HBHEIsoNoiseFilter && myTree.Flag_eeBadScFilter) ) continue;
-      //if( !(myTree.Flag_CSCTightHaloFilter &&  myTree.Flag_eeBadScFilter) ) continue;
+      if( !( myTree.Flag_HBHENoiseFilter && myTree.Flag_HBHEIsoNoiseFilter && myTree.Flag_eeBadScFilter ) ) continue;
+      // if( ( myTree.Flag_HBHENoiseFilter==0 || myTree.Flag_CSCTightHaloFilter==0 || myTree.Flag_goodVertices==0 ||  myTree.Flag_eeBadScFilter==0 ) ) continue;
+      if( myTree.isGolden == 0) continue;    
 
-      if( myTree.isGolden == 0) continue;  
-      
     }
-
-    if( myTree.isData &&( myTree.Flag_HBHENoiseFilter==0 || myTree.Flag_CSCTightHaloFilter==0 || myTree.Flag_goodVertices==0 ||  myTree.Flag_eeBadScFilter==0 ) ) continue;
-    if(myTree.isData && myTree.isGolden == 0) continue;
-    
 
     TLorentzVector gamma;
     gamma.SetPtEtaPhiM( myTree.gamma_pt[0], myTree.gamma_eta[0], myTree.gamma_phi[0], myTree.gamma_mass[0] );
@@ -464,9 +457,9 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
     if( cfg.gamma2bMethod()=="2b1bRatio" && nbjets==2 )
       continue; // will take 2b from reweighted 1b so skip
 
-//    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi()*myTree.puWeight; 
+    //    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi()*myTree.puWeight; 
     Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb;//*cfg.lumi(); 
-//    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi(); 
+    //    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi(); 
 
 
 
@@ -485,15 +478,14 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
       int mcMatchId = myTree.gamma_mcMatchId[0];
       bool isMatched = (mcMatchId==22 || mcMatchId==7);
 
-      //bool isPrompt = isMatched && !isQCD;
+      // bool isPrompt = isMatched && !isQCD;
       //bool isNIP    = isMatched && isQCD;
       //bool isFake   = !isMatched;
       bool isPrompt = isMatched && !isQCD && myTree.gamma_drMinParton[0]>0.4;
       bool isNIP    = isMatched && isQCD && myTree.gamma_drMinParton[0]<0.4;
       bool isFake   = !isMatched && isQCD;
-      //bool isNIP    = isMatched && isQCD;
-      //bool isFake   = !isMatched;
 
+  
       int promptLevel = -1; 
       if( isPrompt ) promptLevel = 2;
       else if( isNIP ) promptLevel = 1;

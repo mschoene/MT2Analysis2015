@@ -19,6 +19,7 @@ class MT2EstimateSyst : public MT2Estimate {
   MT2EstimateSyst( const MT2EstimateSyst& rhs );
   MT2EstimateSyst( const std::string& aname, const MT2Region& aregion );
   MT2EstimateSyst( const std::string& aname, const MT2Region& aregion, const MT2Estimate& pass, const MT2Estimate& tot );
+
   virtual ~MT2EstimateSyst();
 
   virtual void setName( const std::string& newName );

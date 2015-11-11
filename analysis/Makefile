@@ -16,8 +16,8 @@ EXTRALIBS := -L$(ROOTSYS)/lib -L$(ROOFIT_LIBDIR)/ -L$(CMSSW_BASE)/lib/slc6_amd64
 all:  assembleQCDdata createDatacards regionEventYields gammaControlRegion makeZinvGammaTemplates computeZinvFromGamma fitPurityGamma zllControlRegion zllPurityTrees computeZllGammaRatio computeZllofBackground drawZllControlRegion
 
 
-makePurityAlongAxes: makePurityAlongAxes.cpp MT2Region.o MT2Sample.o MT2EstimateZinvGamma.o MT2EstimateSyst.o MT2Estimate.o MT2DrawTools.o MT2Config.o MT2EstimateTree.o
-	$(CC) -Wall $(INCLUDES) -o makePurityAlongAxes makePurityAlongAxes.cpp MT2Region.o MT2Sample.o MT2EstimateSyst.o MT2Estimate.o MT2DrawTools.o MT2Config.o MT2EstimateTree.o MT2EstimateZinvGamma.o $(ROOTFLAG) $(EXTRALIBS) -fpermissive
+binIsoAlongAxes: binIsoAlongAxes.cpp MT2Region.o MT2Sample.o MT2EstimateZinvGamma.o MT2EstimateSyst.o MT2Estimate.o MT2DrawTools.o MT2Config.o MT2EstimateTree.o
+	$(CC) -Wall $(INCLUDES) -o binIsoAlongAxes binIsoAlongAxes.cpp MT2Region.o MT2Sample.o MT2EstimateSyst.o MT2Estimate.o MT2DrawTools.o MT2Config.o MT2EstimateTree.o MT2EstimateZinvGamma.o $(ROOTFLAG) $(EXTRALIBS) -fpermissive
 
 computeZGratio: computeZGratio.cpp MT2Region.o MT2Sample.o MT2EstimateSyst.o MT2Estimate.o MT2DrawTools.o MT2Config.o MT2EstimateTree.o
 	$(CC) -Wall $(INCLUDES) -o computeZGratio computeZGratio.cpp MT2Region.o MT2Sample.o MT2EstimateSyst.o MT2Estimate.o MT2DrawTools.o MT2Config.o MT2EstimateTree.o $(ROOTFLAG) $(EXTRALIBS) -fpermissive
