@@ -42,6 +42,7 @@ class MT2Config {
   bool dummyAnalysis() const;
 
   std::string getEventYieldDir() const;
+  std::string getGammaCRdir() const;
 
   void saveAs( const std::string& filename ) const;
 
