@@ -316,9 +316,8 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
     if ( myTree.nJet30==1 && !myTree.passMonoJetId(0) ) continue;
 
     //FILTERS
-    if( myTree.isData && !( myTree.Flag_HBHENoiseFilter && myTree.Flag_HBHEIsoNoiseFilter && myTree.Flag_eeBadScFilter ) ) continue;
-    //if( myTree.isData &&( myTree.Flag_HBHENoiseFilter==0 || myTree.Flag_CSCTightHaloFilter==0 || myTree.Flag_goodVertices==0 ||  myTree.Flag_eeBadScFilter==0 ) ) continue;
-    if(myTree.isData && myTree.isGolden == 0) continue;
+    if( myTree.isData && !myTree.passFilters() ) continue;
+    if( myTree.isData &&  myTree.isGolden == 0 ) continue;
 
     if(myTree.lep_pt[0]<25) continue;
     if(myTree.lep_pt[1]<20) continue;

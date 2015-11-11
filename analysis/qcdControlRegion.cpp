@@ -93,8 +93,8 @@ int main( int argc, char* argv[] ) {
 
     std::string samplesFile = "../samples/samples_" + cfg.mcSamples() + ".dat";
     
-    std::vector<MT2Sample> samples_zinv = MT2Sample::loadSamples(samplesFile, 602, 605);
-    std::vector<MT2Sample> samples_wjet = MT2Sample::loadSamples(samplesFile, 502, 505);
+    std::vector<MT2Sample> samples_zinv = MT2Sample::loadSamples(samplesFile, 602, 699);
+    std::vector<MT2Sample> samples_wjet = MT2Sample::loadSamples(samplesFile, 502, 599);
     std::vector<MT2Sample> samples_top  = MT2Sample::loadSamples(samplesFile, 300, 399); // ignore single top and rares: faster
     //std::vector<MT2Sample> samples_top  = MT2Sample::loadSamples(samplesFile, 300, 499);
     std::vector<MT2Sample> samples_qcd  = MT2Sample::loadSamples(samplesFile, 100, 199);
@@ -191,8 +191,8 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
     myTree.GetEntry(iEntry);
 
     if( myTree.isData ) {
-      if ( myTree.isGolden == 0 ) continue;
-      if( !(myTree.Flag_HBHENoiseFilter && myTree.Flag_HBHEIsoNoiseFilter && myTree.Flag_eeBadScFilter) ) continue;
+      if (  myTree.isGolden == 0 ) continue;
+      if ( !myTree.passFilters() ) continue;
     }
     
 
@@ -218,20 +218,20 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
 
       if( njets==1 ) {
 
-        if( !( id==3 && myTree.HLT_PFMET90_PFMHT90) ) continue;
+        if( !( id==3 && myTree.HLT_PFMETNoMu90_PFMHTNoMu90) ) continue;
 
       } else { // njets>=2
 
         if( ht>1000. ) {
           if( !( id==1 && myTree.HLT_PFHT800) ) continue;
         } else if( ht>575. ) {
-          if( !( (id==2 && myTree.HLT_PFHT350_PFMET100 ) || (id==1 && myTree.HLT_ht475prescale))  ) continue;
+          if( !( (id==2 && myTree.HLT_PFHT350_PFMET100 ) || (id==1 && myTree.HLT_PFHT475_Prescale))  ) continue;
           //if( !( (id==2 && myTree.HLT_PFHT350_PFMET100 ) || (id==1 && myTree.HLT_PFHT475_Prescale))  ) continue; // gio's tree
         } else if( ht>450. ) {
-          if( !( (id==2 && myTree.HLT_PFHT350_PFMET100 ) || (id==1 && myTree.HLT_ht350prescale))  ) continue;
+          if( !( (id==2 && myTree.HLT_PFHT350_PFMET100 ) || (id==1 && myTree.HLT_PFHT350_Prescale))  ) continue;
           //if( !( (id==2 && myTree.HLT_PFHT350_PFMET100 ) || (id==1 && myTree.HLT_PFHT350_Prescale))  ) continue; // gio's tree
         } else if( ht>200. ) {
-          if( !( id==3 && myTree.HLT_PFMET90_PFMHT90) ) continue;
+          if( !( id==3 && myTree.HLT_PFMETNoMu90_PFMHTNoMu90) ) continue;
         }
 
       }
@@ -242,7 +242,7 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
     if( monojet ) {
       if( !( (njets==2 && myTree.deltaPhiMin<0.3 && myTree.jet1_pt>200. && myTree.met_pt>200.) ) ) continue;
     } else {
-      if( mt2<40. ) continue;
+      if( mt2<50. ) continue;
     }
 
     Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb;//*cfg.lumi(); 
