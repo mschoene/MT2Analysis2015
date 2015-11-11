@@ -389,8 +389,6 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
    
       if( !myTree.passSelection("gamma") ) continue;
 
-      if( !(myTree.HLT_Photon165_HE10) ) continue;
-   
       if( myTree.mt2>200. ) continue; // orthogonal to signal region
       if( myTree.gamma_pt[0]<180. ) continue;
       if( (myTree.gamma_nJet30>1 && myTree.gamma_mt2<200.) || (myTree.gamma_nJet30==1 && myTree.gamma_ht<200.) ) continue;
@@ -428,7 +426,11 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
     
     //if( myTree.gamma_ht>1000. && sample.id==204 ) continue; // remove high-weight spikes (remove GJet_400to600 leaking into HT>1000)
     
-    if( myTree.gamma_idCutBased[0]==0 ) continue;
+    if( cfg.additionalStuff()=="gammaNoSietaieta" ) {
+      if( myTree.gamma_hOverE[0]>0.1 ) continue;
+    } else {
+      if( myTree.gamma_idCutBased[0]==0 ) continue;
+    }
 
     if( myTree.isData ) {
 
