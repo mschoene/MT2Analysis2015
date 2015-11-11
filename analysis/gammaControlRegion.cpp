@@ -80,7 +80,7 @@ int main( int argc, char* argv[] ) {
 
   TH1::AddDirectory(kFALSE); // stupid ROOT memory allocation needs this
 
-  std::string outputdir = cfg.getEventYieldDir() + "/gammaControlRegion"; 
+  std::string outputdir = cfg.getGammaCRdir();
   system(Form("mkdir -p %s", outputdir.c_str()));
 
 

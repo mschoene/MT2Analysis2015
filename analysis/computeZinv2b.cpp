@@ -71,7 +71,7 @@ int main( int argc, char* argv[] ) {
 
   
   std::string mainDir  = cfg.getEventYieldDir();
-  std::string gammaDir = mainDir + "/gammaControlRegion";
+  std::string gammaDir = cfg.getGammaCRdir();
   std::string zllDir = mainDir + "/zllControlRegion";
 
   std::string mcFile = mainDir + "/analyses.root";

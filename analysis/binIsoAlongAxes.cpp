@@ -34,8 +34,8 @@ int main( int argc, char* argv[] ) {
   std::string configFileName(argv[1]);
   MT2Config cfg(configFileName);
 
-  std::string mcFile = cfg.getEventYieldDir() + "/gammaControlRegion/mc.root";
-  std::string dataFile = cfg.getEventYieldDir() + "/gammaControlRegion/data.root";
+  std::string mcFile = cfg.getGammaCRdir() + "/mc.root";
+  std::string dataFile = cfg.getGammaCRdir() + "/data.root";
 
   MT2Analysis<MT2EstimateTree>* mc   = MT2Analysis<MT2EstimateTree>::readFromFile(mcFile, "gammaCRtree_loose");
   MT2Analysis<MT2EstimateTree>* data = MT2Analysis<MT2EstimateTree>::readFromFile(dataFile, "gammaCRtree_loose");
@@ -59,16 +59,16 @@ int main( int argc, char* argv[] ) {
   MT2Analysis<MT2EstimateZinvGamma>* mc_mono_nbjets = MT2EstimateZinvGamma::makeInclusiveAnalysisFromInclusiveTree( "iso_mono_nbjets", data ,"nJets==1", "nBJets", size_mono_nbjets, bins_mono_nbjets );
  
 
-  std::string outFile = cfg.getEventYieldDir() + "/gammaControlRegion/iso_ht.root";
+  std::string outFile = cfg.getGammaCRdir() + "/iso_ht.root";
   mc_ht->writeToFile(outFile, "recreate");
 
-  std::string outFile_njets = cfg.getEventYieldDir() + "/gammaControlRegion/iso_nJets.root";
+  std::string outFile_njets = cfg.getGammaCRdir() + "/iso_nJets.root";
   mc_njets->writeToFile(outFile_njets, "recreate");
 
-  std::string outFile_nbjets = cfg.getEventYieldDir() + "/gammaControlRegion/iso_nBJets.root";
+  std::string outFile_nbjets = cfg.getGammaCRdir() + "/iso_nBJets.root";
   mc_nbjets->writeToFile(outFile_nbjets, "recreate");
 
-  std::string outFile_mono_nbjets = cfg.getEventYieldDir() + "/gammaControlRegion/iso_mono_nBJets.root";
+  std::string outFile_mono_nbjets = cfg.getGammaCRdir() + "/iso_mono_nBJets.root";
   mc_mono_nbjets->writeToFile(outFile_mono_nbjets, "recreate");
 
 
@@ -93,7 +93,7 @@ int main( int argc, char* argv[] ) {
   MT2Analysis<MT2EstimateTree>* prompt_tight_ht =  MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( "prompt_tight_ht", cfg.regionsSet(), mc , multijet+"&&"+iso+"&&"+prompt , size_ht, bins_ht, "ht" ) ;
   MT2Analysis<MT2EstimateSyst>* purityTight_ht = MT2EstimateSyst::makeEfficiencyAnalysis( "purity", cfg.regionsSet(), (MT2Analysis<MT2Estimate>*)prompt_tight_ht, (MT2Analysis<MT2Estimate>*)all_pass_ht);
 
-  std::string outFile_purity_ht = cfg.getEventYieldDir() + "/gammaControlRegion/purityMC_ht.root";
+  std::string outFile_purity_ht = cfg.getGammaCRdir() + "/purityMC_ht.root";
   purityLoose_ht->writeToFile( outFile_purity_ht,"recreate" );
   purityTight_ht->addToFile( outFile_purity_ht );
  
@@ -106,7 +106,7 @@ int main( int argc, char* argv[] ) {
   MT2Analysis<MT2EstimateTree>* prompt_tight_njets =  MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( "prompt_tight_njets", cfg.regionsSet(), mc ,  multijet+"&&"+iso+"&&"+prompt, size_njets, bins_njets, "nJets" ) ;
   MT2Analysis<MT2EstimateSyst>* purityTight_njets = MT2EstimateSyst::makeEfficiencyAnalysis( "purity", cfg.regionsSet(), (MT2Analysis<MT2Estimate>*)prompt_tight_njets, (MT2Analysis<MT2Estimate>*)all_pass_njets);
 
-  std::string outFile_purity_njets = cfg.getEventYieldDir() + "/gammaControlRegion/purityMC_njets.root";
+  std::string outFile_purity_njets = cfg.getGammaCRdir() + "/purityMC_njets.root";
   purityLoose_njets->writeToFile( outFile_purity_njets ,"recreate");
   purityTight_njets->addToFile( outFile_purity_njets );
 
@@ -120,7 +120,7 @@ int main( int argc, char* argv[] ) {
   MT2Analysis<MT2EstimateTree>* prompt_tight_nbjets =  MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( "prompt_tight_nbjets", cfg.regionsSet(), mc ,  multijet+"&&"+iso+"&&"+ prompt , size_nbjets, bins_nbjets, "nBJets" ) ;
   MT2Analysis<MT2EstimateSyst>* purityTight_nbjets = MT2EstimateSyst::makeEfficiencyAnalysis( "purity", cfg.regionsSet(), (MT2Analysis<MT2Estimate>*)prompt_tight_nbjets, (MT2Analysis<MT2Estimate>*)all_pass_nbjets);
 
-  std::string outFile_purity_nbjets = cfg.getEventYieldDir() + "/gammaControlRegion/purityMC_nbjets.root";
+  std::string outFile_purity_nbjets = cfg.getGammaCRdir() + "/purityMC_nbjets.root";
   purityLoose_nbjets->writeToFile( outFile_purity_nbjets ,"recreate");
   purityTight_nbjets->addToFile( outFile_purity_nbjets );
 
@@ -136,7 +136,7 @@ int main( int argc, char* argv[] ) {
 
   MT2Analysis<MT2EstimateSyst>* purityTight_mono_nbjets = MT2EstimateSyst::makeEfficiencyAnalysis( "purity", cfg.regionsSet(), (MT2Analysis<MT2Estimate>*)prompt_tight_mono_nbjets, (MT2Analysis<MT2Estimate>*)all_pass_mono_nbjets);
 
-  std::string outFile_purity_mono_nbjets = cfg.getEventYieldDir() + "/gammaControlRegion/purityMC_mono_nbjets.root";
+  std::string outFile_purity_mono_nbjets = cfg.getGammaCRdir() + "/purityMC_mono_nbjets.root";
   purityLoose_mono_nbjets->writeToFile( outFile_purity_mono_nbjets ,"recreate");
   purityTight_mono_nbjets->addToFile( outFile_purity_mono_nbjets );
 
