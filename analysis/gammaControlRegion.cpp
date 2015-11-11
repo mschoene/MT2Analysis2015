@@ -434,8 +434,10 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
 
       if( !(myTree.HLT_Photon165_HE10) ) continue;
       //if( !(myTree.HLT_Photon165_HE10) || myTree.run < 256843 ) continue;
-      if( !(myTree.Flag_HBHENoiseFilter && myTree.Flag_CSCTightHaloFilter && myTree.Flag_eeBadScFilter) ) continue;
+      if( !(myTree.Flag_HBHENoiseFilter && myTree.Flag_HBHEIsoNoiseFilter && myTree.Flag_eeBadScFilter) ) continue;
       //if( !(myTree.Flag_CSCTightHaloFilter &&  myTree.Flag_eeBadScFilter) ) continue;
+
+      if( myTree.isGolden == 0) continue;  
       
     }
 
@@ -496,6 +498,7 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
       if( isPrompt ) promptLevel = 2;
       else if( isNIP ) promptLevel = 1;
       else if( isFake ) promptLevel = 0;
+      else std::cout << "WARNING!!! This photon is neither prompt, nor fragmentation nor fake!" << std::endl;
 
       thisTree->assignVar( "prompt", promptLevel );
       if( passIso ) thisTree_pass->assignVar( "prompt", promptLevel );
