@@ -52,13 +52,15 @@ int main( int argc, char* argv[] ) {
   MT2Config cfg(configFileName);
 
 
-  bool useMC = true;
-  useMC=false;
+  bool useMC = false;
 
   if( argc>2 ) {
     std::string data_or_mc = std::string(argv[2]); 
-    if( data_or_mc=="data" || data_or_mc=="Data" || data_or_mc=="DATA" ) useMC=false;
-    else if( data_or_mc!="mc" && data_or_mc!="MC" ) {
+    if( data_or_mc=="data" || data_or_mc=="Data" || data_or_mc=="DATA" ) {
+      useMC=false;
+    } else if( data_or_mc=="mc" || data_or_mc=="MC" ) {
+      useMC=true;
+    } else {
       std::cout << std::endl;
       std::cout << "-> WARNING! Second argument should be 'data' or 'MC'." << std::endl;
       std::cout << "Exiting." << std::endl;
@@ -94,6 +96,10 @@ int main( int argc, char* argv[] ) {
   std::cout << "-> Starting to build templates with:" << std::endl;
   std::cout << "      type   : " << templateType << std::endl;
   std::cout << "      regions: " << cfg.gammaTemplateRegions() << std::endl;
+  if( useMC )
+    std::cout << "      using MC " << std::endl;
+  else
+    std::cout << "      using data " << std::endl;
   std::cout << std::endl << std::endl;
 
 
