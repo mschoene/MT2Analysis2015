@@ -59,10 +59,10 @@ int main( int argc, char* argv[] ) {
 
   std::string qcdCRdir = cfg.getEventYieldDir() + "/qcdControlRegion";
 
-  MT2Analysis<MT2EstimateTree>* data   = MT2Analysis<MT2EstimateTree>::readFromFile(qcdCRdir+"/data.root", "qcdCRtree");
+  MT2Analysis<MT2EstimateTree>* data   = MT2Analysis<MT2EstimateTree>::readFromFile(qcdCRdir+"/data_forMonojet.root", "qcdCRtree");
 
-  MT2Analysis<MT2EstimateTree>* mcTree = MT2Analysis<MT2EstimateTree>::readFromFile(qcdCRdir+"/mc.root"  , "qcdCRtree");
-  MT2Analysis<MT2EstimateTree>* mcTree2= MT2Analysis<MT2EstimateTree>::readFromFile(qcdCRdir+"/mc_zinv.root"  , "qcdCRtree");
+  MT2Analysis<MT2EstimateTree>* mcTree = MT2Analysis<MT2EstimateTree>::readFromFile(qcdCRdir+"/mc_forMonojet.root"  , "qcdCRtree");
+  //MT2Analysis<MT2EstimateTree>* mcTree2= MT2Analysis<MT2EstimateTree>::readFromFile(qcdCRdir+"/mc_zinv.root"  , "qcdCRtree");
 
   std::cout << "-> Making analyses from inclusive tree..." << std::endl;
   MT2Analysis<MT2EstimateTree>* qcd   = MT2EstimateTree::makeAnalysisFromInclusiveTree( "QCD"  , "13TeV_inclusive", mcTree, "id>=100 && id<200" ); 
@@ -71,7 +71,7 @@ int main( int argc, char* argv[] ) {
   std::cout << "    WJets done." << std::endl;
   //MT2Analysis<MT2EstimateTree>* top   = MT2EstimateTree::makeAnalysisFromInclusiveTree( "Top"  , "13TeV_inclusive", mcTree, "id>=300 && id<500" ); 
   //std::cout << "    Top done." << std::endl;
-  MT2Analysis<MT2EstimateTree>* zjets = MT2EstimateTree::makeAnalysisFromInclusiveTree( "ZJets", "13TeV_inclusive", mcTree2, "id>=600 && id<700" ); 
+  MT2Analysis<MT2EstimateTree>* zjets = MT2EstimateTree::makeAnalysisFromInclusiveTree( "ZJets", "13TeV_inclusive", mcTree, "id>=600 && id<700" ); 
   std::cout << "    ZJets done." << std::endl;
 
   wjets->setFullName("W+Jets");
@@ -112,7 +112,7 @@ int main( int argc, char* argv[] ) {
 
 
   std::string selection = "((id<100 && nJets==2) || (id>=100 && nJets<=2)) && deltaPhiMin<0.3 && jet1_pt>200. && met>200. ";
-  canvases = dt.drawRegionYields_fromTree( "jet2_pt" , "jet2_pt" , selection, 20, 30., 330., "Subleading Jet p_{T}", "GeV" );
+  canvases = dt.drawRegionYields_fromTree( "jet2_pt" , "jet2_pt" , selection, 20, 30., 330., "Subleading Jet p_{T}", "GeV", "p_{T}(jet1) > 200 GeV", "N(j) = 2" );
 
   float mcSF = MT2DrawTools::getDataMCSF( canvases[0] );
   dt.set_mcSF( mcSF );
@@ -144,7 +144,7 @@ int main( int argc, char* argv[] ) {
       std::string fullSelection(Form("%s && deltaPhiMin<0.3 && nJets==2 && jet1_pt>%f && jet1_pt<%f && met>200.", iR->sigRegion()->getBJetCuts().c_str(), ptMin, ptMax ) );
 
       std::string bJetsLabel = (nBJets==0) ? "b = 0" : "b #geq 1";
-      canvases = dt.drawRegionYields_fromTree( Form("jet2_pt_bin%d_b%d", iBin, nBJets) , "jet2_pt" , fullSelection, 20, 0., 300., "Subleading Jet p_{T}", "GeV", "H_{T} > 200 GeV", bJetsLabel );
+      canvases = dt.drawRegionYields_fromTree( Form("jet2_pt_bin%d_b%d", iBin, nBJets) , "jet2_pt" , fullSelection, 20, 0., 300., "Subleading Jet p_{T}", "GeV", "p_{T}(jet1) > 200 GeV", bJetsLabel );
 
       int nCR;
       float r;
