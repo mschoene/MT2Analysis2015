@@ -115,7 +115,7 @@ int main( int argc, char* argv[] ) {
   // +++++++++++++++++++++++++
 
 
-  selection = "ptGamma>180. && ht>200 && met>200. && iso<10. && nJets>1 && deltaPhiMin>0.3 && diffMetMht<0.5*met && mt2>200.";
+  selection = "ptGamma>180. && ht>200 && met>200. && nJets>1 && deltaPhiMin>0.3 && diffMetMht<0.5*met && mt2>200.";
   dt.set_addOverflow(false); // one sec
   dt.drawRegionYields_fromTree( "inclusive_sietaietaEB", "sietaieta"          , selection, 30, 0.0075, 0.015 , "Photon #sigma_{i#eta i#eta}"      , ""    , "Barrel", " "  );
   dt.drawRegionYields_fromTree( "inclusive_sietaietaEE", "sietaieta"          , selection, 30, 0.02  , 0.035 , "Photon #sigma_{i#eta i#eta}"      , ""    , "Endcap", " "  );
