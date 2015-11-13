@@ -304,23 +304,31 @@ TGraphAsymmErrors* MT2DrawTools::getPoissonGraph( TH1D* histo, bool drawZeros, c
 TGraphAsymmErrors* MT2DrawTools::getRatioGraph( TH1D* histo_data, TH1D* histo_mc ){
 
   if( !histo_data || !histo_mc ) return 0;
-  
-  TGraphAsymmErrors* graph_ = MT2DrawTools::getPoissonGraph(histo_data, false);
+
   TGraphAsymmErrors* graph  = new TGraphAsymmErrors();
   
-  for( int i=0; i < graph_->GetN(); ++i){
+  TGraphAsymmErrors* graph_data = MT2DrawTools::getPoissonGraph(histo_data, false);
+  
+  for( int i=0; i < graph_data->GetN(); ++i){
     
-    Double_t x_tmp, y_tmp, errUp, errDown;       
-    graph_->GetPoint( i, x_tmp, y_tmp );
+    Double_t x_tmp, data;
+    graph_data->GetPoint( i, x_tmp, data );
 
-    errUp   = graph_->GetErrorYhigh(i);
-    errDown = graph_->GetErrorYlow(i);
+    Double_t data_errUp = graph_data->GetErrorYhigh(i);
+    Double_t data_errDn = graph_data->GetErrorYlow(i);
     
     int iBin = histo_mc->FindBin(x_tmp);
     float mc = histo_mc->GetBinContent(iBin);
-    graph->SetPoint(i, x_tmp, y_tmp/mc);
-    graph->SetPointEYhigh(i, errUp/mc);
-    graph->SetPointEYlow(i, errDown/mc);
+    float mc_err = histo_mc->GetBinError(iBin);
+
+
+    float ratio = data/mc;
+    float ratio_errUp = sqrt( data_errUp*data_errUp/(mc*mc) + mc_err*mc_err*data*data/(mc*mc*mc*mc) );
+    float ratio_errDn = sqrt( data_errDn*data_errDn/(mc*mc) + mc_err*mc_err*data*data/(mc*mc*mc*mc) );
+
+    graph->SetPoint(i, x_tmp, ratio );
+    graph->SetPointEYhigh(i, ratio_errUp );
+    graph->SetPointEYlow(i, ratio_errDn );
     
 
   }
@@ -802,9 +810,12 @@ std::vector<TCanvas*> MT2DrawTools::drawRegionYields_fromTree( const std::string
       else histo_mc->Add(histos_mc[index]);
       bgStack->Add(histos_mc[index]);
     }
+
+
+    TH1D* mcBand = MT2DrawTools::getMCBandHisto( histo_mc, lumiErr_ );
     
     TGraphAsymmErrors* g_ratio = 0;
-    if( data_ ) g_ratio = MT2DrawTools::getRatioGraph(h1_data, histo_mc);
+    if( data_ ) g_ratio = MT2DrawTools::getRatioGraph(h1_data, mcBand);
     
     TLine* lineCentral = new TLine(xMin, 1.0, xMax, 1.0);
     lineCentral->SetLineColor(1);
@@ -821,7 +832,6 @@ std::vector<TCanvas*> MT2DrawTools::drawRegionYields_fromTree( const std::string
 //
 //    double error_datamc = MT2DrawTools::getSFError(integral_data, error_data, integral_mc, error_mc );
 
-    TH1D* mcBand = MT2DrawTools::getMCBandHisto( histo_mc, lumiErr_ );
 
 
     TCanvas* c1 = new TCanvas(Form("c1_%s", iMT2->getName().c_str()), "", 600, 600);
