@@ -21,6 +21,7 @@ MT2DrawTools::MT2DrawTools( const std::string& outDir, float lumi ) {
 
   mcSF_ = 1.;
 
+  addOverflow_ = true;
 
   std::cout << "[MT2DrawTools] Initiating: " << std::endl;
   std::cout << "     lumi: " << lumi_ << std::endl;
@@ -920,6 +921,7 @@ std::vector<TCanvas*> MT2DrawTools::drawRegionYields_fromTree( const std::string
  // 
  //   }
 
+
     
     for( unsigned i=0; i<niceNames.size(); ++i ) { 
       
@@ -964,22 +966,23 @@ std::vector<TCanvas*> MT2DrawTools::drawRegionYields_fromTree( const std::string
       
     }
 
-    TPaveText* normText = new TPaveText( 0.35, 0.78, 0.75, 0.9, "brNDC" );
+
+    TPaveText* normText = new TPaveText( 0.47, 0.78, 0.62, 0.9, "brNDC" );
     normText->SetFillColor(0);
     normText->SetTextSize(0.035);
     if( scaleFactor!=1. ) {
       normText->AddText( Form("#splitline{MC scaled}{by %.2f}", scaleFactor) );
+      if( this->twoPads() ) 
+        pad1->cd();
+      else
+        c1->cd();
+      normText->Draw("same");
+      if( this->twoPads() ) 
+        pad1_log->cd();
+      else
+        c1_log->cd();
+      normText->Draw("same");
     }
-    if( this->twoPads() ) 
-      pad1->cd();
-    else
-      c1->cd();
-    normText->Draw("same");
-    if( this->twoPads() ) 
-      pad1_log->cd();
-    else
-      c1_log->cd();
-    normText->Draw("same");
 
 
     int addLines = (data_) ? 2 : 0;
