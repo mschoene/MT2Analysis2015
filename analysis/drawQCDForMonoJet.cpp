@@ -106,16 +106,20 @@ int main( int argc, char* argv[] ) {
   dt.set_data( data );
   dt.set_mc( &mc );
 
+  //dt.set_addOverflow( false );
+  dt.set_mcSF( 1.3 );
+
 
 
   std::vector<TCanvas*> canvases;
 
 
-  std::string selection = "((id<100 && nJets==2) || (id>=100 && nJets<=2)) && deltaPhiMin<0.3 && jet1_pt>200. && met>200. ";
+  //std::string selection = "nJets==2 && deltaPhiMin<0.3 && jet1_pt>200. && met>200.";
+  std::string selection = "(id<100 || id>152) && nJets==2 && deltaPhiMin<0.3 && jet1_pt>200. && met>200.";
   canvases = dt.drawRegionYields_fromTree( "jet2_pt" , "jet2_pt" , selection, 20, 30., 330., "Subleading Jet p_{T}", "GeV", "p_{T}(jet1) > 200 GeV", "N(j) = 2" );
 
   float mcSF = MT2DrawTools::getDataMCSF( canvases[0] );
-  dt.set_mcSF( mcSF );
+  //dt.set_mcSF( mcSF );
 
 
 
@@ -141,7 +145,7 @@ int main( int argc, char* argv[] ) {
 
       float ptMin = thisEst->yield->GetXaxis()->GetBinLowEdge(iBin);
       float ptMax = thisEst->yield->GetXaxis()->GetBinLowEdge(iBin+1);
-      std::string fullSelection(Form("%s && deltaPhiMin<0.3 && nJets==2 && jet1_pt>%f && jet1_pt<%f && met>200.", iR->sigRegion()->getBJetCuts().c_str(), ptMin, ptMax ) );
+      std::string fullSelection(Form("%s && %s && jet1_pt>%f && jet1_pt<%f", selection.c_str(), iR->sigRegion()->getBJetCuts().c_str(), ptMin, ptMax ) );
 
       std::string bJetsLabel = (nBJets==0) ? "b = 0" : "b #geq 1";
       canvases = dt.drawRegionYields_fromTree( Form("jet2_pt_bin%d_b%d", iBin, nBJets) , "jet2_pt" , fullSelection, 20, 0., 300., "Subleading Jet p_{T}", "GeV", "p_{T}(jet1) > 200 GeV", bJetsLabel );
