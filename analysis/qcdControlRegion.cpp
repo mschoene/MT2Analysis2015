@@ -226,10 +226,8 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
           if( !( id==1 && myTree.HLT_PFHT800) ) continue;
         } else if( ht>575. ) {
           if( !( (id==2 && myTree.HLT_PFHT350_PFMET100 ) || (id==1 && myTree.HLT_PFHT475_Prescale))  ) continue;
-          //if( !( (id==2 && myTree.HLT_PFHT350_PFMET100 ) || (id==1 && myTree.HLT_PFHT475_Prescale))  ) continue; // gio's tree
         } else if( ht>450. ) {
           if( !( (id==2 && myTree.HLT_PFHT350_PFMET100 ) || (id==1 && myTree.HLT_PFHT350_Prescale))  ) continue;
-          //if( !( (id==2 && myTree.HLT_PFHT350_PFMET100 ) || (id==1 && myTree.HLT_PFHT350_Prescale))  ) continue; // gio's tree
         } else if( ht>200. ) {
           if( !( id==3 && myTree.HLT_PFMETNoMu90_PFMHTNoMu90) ) continue;
         }
