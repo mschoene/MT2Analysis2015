@@ -118,31 +118,30 @@ int main( int argc, char* argv[] ) {
   else        templateFileName = templateFileName + "_data";
   templateFileName = templateFileName + ".root";
 
+  MT2Analysis<MT2EstimateZinvGamma>* templates_prompt = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( templateFileName, "templatesPrompt" );
+  MT2Analysis<MT2EstimateZinvGamma>* templates_fake   = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( templateFileName, "templatesFake" );
 
   std::string outputdir = gammaCRdir + "/PurityFits" + cfg.gammaTemplateType();
   system( Form( "mkdir -p %s/singleFits", outputdir.c_str()) );
 
-
-  MT2Analysis<MT2EstimateZinvGamma>* templates_prompt = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( templateFileName, "templatesPrompt" );
-  MT2Analysis<MT2EstimateZinvGamma>* templates_fake   = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( templateFileName, "templatesFake" );
-
-
   makePurity( cfg, outputdir,  gammaJet_data, templates_prompt, templates_fake, useMC, "");
 
-
   if(doAxes){
+    MT2Analysis<MT2EstimateZinvGamma>* gammaJet_data_mt2 = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( gammaCRdir + "/iso_mt2.root", "iso_mt2" );
+
     MT2Analysis<MT2EstimateZinvGamma>* gammaJet_data_ht = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( gammaCRdir + "/iso_ht.root", "iso_ht" );
-
     MT2Analysis<MT2EstimateZinvGamma>* gammaJet_data_njets = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( gammaCRdir + "/iso_nJets.root", "iso_njets" );
-
     MT2Analysis<MT2EstimateZinvGamma>* gammaJet_data_nbjets = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( gammaCRdir + "/iso_nBJets.root", "iso_nbjets" );
-
     MT2Analysis<MT2EstimateZinvGamma>* gammaJet_data_mono_nbjets = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( gammaCRdir + "/iso_mono_nBJets.root", "iso_mono_nbjets" );
 
+    // makePurity( cfg, outputdir,  gammaJet_data_mt2, templates_prompt, templates_fake, useMC, "mt2_");
+
+    
     makePurity( cfg, outputdir,  gammaJet_data_ht, templates_prompt, templates_fake, useMC, "ht_");
     makePurity( cfg, outputdir,  gammaJet_data_njets, templates_prompt, templates_fake, useMC, "njets_");
     makePurity( cfg, outputdir,  gammaJet_data_nbjets, templates_prompt, templates_fake, useMC, "nbjets_");
     makePurity( cfg, outputdir,  gammaJet_data_mono_nbjets, templates_prompt, templates_fake, useMC, "mono_nbjets_");
+    
   }
 
   return 0;
@@ -171,41 +170,54 @@ void makePurity( const MT2Config& cfg, std::string outputdir,MT2Analysis<MT2Esti
     templateFake   = temp_fake  ->get( MT2Region("HT200toInf_j1toInf_b0toInf") );
   }
 
+ 
   MT2Analysis<MT2EstimateSyst>* purityLoose = new MT2Analysis<MT2EstimateSyst>( "purityLoose", cfg.regionsSet() );
   MT2Analysis<MT2EstimateSyst>* purityTight = new MT2Analysis<MT2EstimateSyst>( "purity"     , cfg.regionsSet() );
 
-
+  
   std::set<MT2Region> regions = data->getRegions();
 
+
+  int nBins;
+  double* bins;
+  MT2EstimateZinvGamma* tempEstimate = data->get( *regions.begin() );
+
+  tempEstimate->MT2Estimate::getYieldBins(nBins, bins);
+  std::cout << "FUCK before binning " << std::endl;
+  MT2Estimate::rebinYields( (MT2Analysis<MT2Estimate>*)purityLoose,nBins,bins);
+  MT2Estimate::rebinYields( (MT2Analysis<MT2Estimate>*)purityTight,nBins,bins);
+
+
+  
   for( std::set<MT2Region>::iterator iR=regions.begin(); iR!=regions.end(); ++iR ) {
 
-    if( iR->nBJetsMin()>2 ) continue;
+    // if( iR->nBJetsMin()>2 ) continue;
 
     MT2EstimateZinvGamma* thisEstimate = data->get( *iR );
-
+    
     if( cfg.gammaTemplateRegions()!="13TeV_inclusive" ) {
       templatePrompt = temp_prompt->get( *(temp_prompt->matchRegion( *iR )) );
       templateFake   = temp_fake  ->get( *(temp_fake  ->matchRegion( *iR )) );
     }
-
-  
+    
+ 
     MT2EstimateSyst* thisLoosePurity = purityLoose->get( *iR );
     std::string nameLoose = thisLoosePurity->yield->GetName();
 
     MT2EstimateSyst* thisTightPurity = purityTight->get( *iR );
     std::string nameTight = thisTightPurity->yield->GetName();
 
-    int nBins;
-    double* bins;
-    thisEstimate->MT2Estimate::getYieldBins(nBins, bins);
-    thisLoosePurity->rebinYields( (MT2Analysis<MT2Estimate>*)purityLoose,nBins,bins);
-    thisTightPurity->rebinYields( (MT2Analysis<MT2Estimate>*)purityTight,nBins,bins);
+
+ 
+
+
 
     fitPurity( cfg, thisLoosePurity, thisTightPurity, thisEstimate->x_, thisEstimate->iso_bins, templatePrompt->iso, templateFake->iso);
 
     thisLoosePurity->yield->SetName( nameLoose.c_str() );
     thisTightPurity->yield->SetName( nameTight.c_str() );
   }
+
 
   if(useMC) {
     purityLoose->writeToFile( outputdir + "/purityFit_"+var +"MC.root" );
@@ -214,6 +226,9 @@ void makePurity( const MT2Config& cfg, std::string outputdir,MT2Analysis<MT2Esti
     purityLoose->writeToFile( outputdir + "/purityFit_"+var +"data.root" );
     purityTight->addToFile( outputdir + "/purityFit_"+var +"data.root" );
   }
+
+
+   std::cout << "FUCK end function " << std::endl;
 
   return;
 }

@@ -10,6 +10,43 @@
 
 
 
+void MT2EstimateSyst::rebinYields( MT2Analysis<MT2EstimateSyst>* analysis, int nBins, double* bins) {
+
+  std::set<MT2Region> regions = analysis->getRegions();
+
+  for( std::set<MT2Region>::iterator iR = regions.begin(); iR!=regions.end(); ++iR ) {
+
+    MT2EstimateSyst* estimate = analysis->get(*iR);
+    TH1D* thisYield = estimate->yield;
+
+    std::string oldName(thisYield->GetName());
+    delete thisYield;
+    thisYield = new TH1D( oldName.c_str(), "", nBins, bins );
+  
+
+    TH1D* this_systUp = estimate->yield_systUp;
+    TH1D* this_systDown = estimate->yield_systDown;
+
+
+    std::string oldName_systUp(this_systUp->GetName());
+    std::string oldName_systDown(this_systDown->GetName());
+ 
+    delete this_systUp;
+    this_systUp = new TH1D( oldName_systUp.c_str(), "", nBins, bins );
+    this_systUp->Sumw2();
+
+    delete this_systDown;
+    this_systDown = new TH1D( oldName_systDown.c_str(), "", nBins, bins );
+    this_systDown->Sumw2();
+    
+  }
+  
+}
+
+
+
+
+
 MT2EstimateSyst::MT2EstimateSyst( const std::string& aname, const MT2Region& aregion ) : MT2Estimate( aname, aregion ) {
 
   int nBins;
