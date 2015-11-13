@@ -819,7 +819,7 @@ std::vector<TCanvas*> MT2DrawTools::drawRegionYields_fromTree( const std::string
     
     TLine* lineCentral = new TLine(xMin, 1.0, xMax, 1.0);
     lineCentral->SetLineColor(1);
-    TGraphErrors* systBand = MT2DrawTools::getSystBand(xMin, xMax, lumiErr_);
+    //TGraphErrors* systBand = MT2DrawTools::getSystBand(xMin, xMax, lumiErr_);
     
     TF1* fSF = (data_) ? MT2DrawTools::getSFFit(g_ratio, xMin, xMax) : 0;
     TGraphErrors* SFFitBand = (fSF) ? MT2DrawTools::getSFFitBand(fSF, xMin, xMax) : 0;
@@ -1082,7 +1082,7 @@ std::vector<TCanvas*> MT2DrawTools::drawRegionYields_fromTree( const std::string
       lineCentral->Draw("same");
       if( !shapeNorm_ ){
 
-        systBand->Draw("3,same");
+        //systBand->Draw("3,same");
         lineCentral->Draw("same");
 
         if( data_ ) {
@@ -1108,7 +1108,7 @@ std::vector<TCanvas*> MT2DrawTools::drawRegionYields_fromTree( const std::string
       lineCentral->Draw("same");
       if( !shapeNorm_ ){
 
-        systBand->Draw("3,same");
+        //systBand->Draw("3,same");
         lineCentral->Draw("same");
 
         if( data_ ) {
