@@ -99,7 +99,6 @@ int main( int argc, char* argv[] ) {
   MT2Analysis<MT2EstimateTree>* all_mt2 =  MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( "all_mt2", "zurichPlus", mc , "", size_mt2, bins_mt2, "mt2" ) ;
   MT2Analysis<MT2EstimateTree>* prompt_mt2 =  MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( "prompt_mt2", "zurichPlus", mc , prompt, size_mt2, bins_mt2, "mt2" ) ;
 
-  std::cout << "NO PROBLEM MAKING THE TREES" << std::endl;
   MT2Analysis<MT2EstimateSyst>* purityLoose_mt2 = MT2EstimateSyst::makeEfficiencyAnalysis( "purityLoose", "zurichPlus", (MT2Analysis<MT2Estimate>*)prompt_mt2, (MT2Analysis<MT2Estimate>*)all_mt2);
  
   MT2Analysis<MT2EstimateTree>* all_pass_mt2 =  MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( "all_pass_mt2", "zurichPlus", mc , iso, size_mt2, bins_mt2,"mt2");
