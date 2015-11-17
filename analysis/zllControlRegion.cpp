@@ -321,7 +321,7 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
     if(myTree.isData && myTree.isGolden == 0) continue;
 
     if(myTree.lep_pt[0]<25) continue;
-    if(myTree.lep_pt[1]<20) continue;
+    if(myTree.lep_pt[1]<15) continue; //old <20
 
     //Need the lorentz vectors of the leptons first
     TLorentzVector *LVec = new TLorentzVector[3];

@@ -29,7 +29,7 @@ bool HFveto = false;
 
 double lumiErr = 0.12;
 
-void drawRatios(std::string fullPath, double *binss, unsigned int size,  std::string zll_sel, MT2Analysis<MT2Estimate>*  zll_ratio,  MT2Analysis<MT2EstimateTree>*  gamma_mc, MT2Analysis<MT2EstimateTree>*  gamma_data, MT2Analysis<MT2EstimateSyst>*  purity, MT2Analysis<MT2EstimateTree>*  zll_mc,MT2Analysis<MT2EstimateTree>*  zll_data,   MT2Analysis<MT2EstimateTree>*  top, MT2Analysis<MT2Estimate>*  zll_yield, MT2Analysis<MT2Estimate>*  zllG_data,  MT2Analysis<MT2Estimate>*  zllG_mc, const MT2Region thisRegion, std::string cut,  std::string cut_gamma, std::string cut_data, std::string cut_gamma_data, float lumi, std::string saveName, bool onlyMC, std::string topoCuts="" );
+void drawRatios(std::string fullPath, double *binss, unsigned int size,  std::string zll_sel, MT2Analysis<MT2EstimateSyst>*  zll_ratio,  MT2Analysis<MT2EstimateTree>*  gamma_mc, MT2Analysis<MT2EstimateTree>*  gamma_data, MT2Analysis<MT2EstimateSyst>*  purity, MT2Analysis<MT2EstimateTree>*  zll_mc,MT2Analysis<MT2EstimateTree>*  zll_data,   MT2Analysis<MT2EstimateTree>*  top, MT2Analysis<MT2EstimateSyst>*  zll_yield, MT2Analysis<MT2EstimateSyst>*  zllG_data,  MT2Analysis<MT2EstimateSyst>*  zllG_mc, const MT2Region thisRegion, std::string cut,  std::string cut_gamma, std::string cut_data, std::string cut_gamma_data, float lumi, std::string saveName, bool onlyMC, std::string topoCuts="" );
 
 TH1D drawBGsubtraction(  MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, MT2Analysis<MT2EstimateTree>* zllMC, std::vector<MT2Analysis<MT2EstimateTree>* >  bgYields, const std::string& saveName, const std::string& varName, const std::string& selection, int nBins, float xMin, float xMax, std::string axisName, const std::string& units, float scaleFactor );
  
@@ -148,39 +148,39 @@ int main(int argc, char* argv[]){
   bgYields.push_back( top );
   
 
-  MT2Analysis<MT2Estimate>* zll_ratio = new MT2Analysis<MT2Estimate>( "zll_ratio", regionsSet.c_str() );
-  MT2Analysis<MT2Estimate>* zll_yield = new MT2Analysis<MT2Estimate>( "zll_yield", regionsSet.c_str() );
+  MT2Analysis<MT2EstimateSyst>* zll_ratio = new MT2Analysis<MT2EstimateSyst>( "zll_ratio", regionsSet.c_str() );
+  MT2Analysis<MT2EstimateSyst>* zll_yield = new MT2Analysis<MT2EstimateSyst>( "zll_yield", regionsSet.c_str() );
 
   //YIELDS
-  MT2Analysis<MT2Estimate>* zll_pt = new MT2Analysis<MT2Estimate>( "zll_pt", regionsSet.c_str() ); 
-  MT2Analysis<MT2Estimate>* zll_mt2 = new MT2Analysis<MT2Estimate>( "zll_mt2", regionsSet.c_str() ); 
-  MT2Analysis<MT2Estimate>* zll_ht = new MT2Analysis<MT2Estimate>( "zll_ht", regionsSet.c_str() ); 
-  MT2Analysis<MT2Estimate>* zll_nJets = new MT2Analysis<MT2Estimate>( "zll_nJets",regionsSet.c_str()); 
-  MT2Analysis<MT2Estimate>* zll_nBJets = new MT2Analysis<MT2Estimate>("zll_nBJets",regionsSet.c_str());
-  MT2Analysis<MT2Estimate>* zll_mono_nBJets = new MT2Analysis<MT2Estimate>("zll_mono_nBJets",regionsSet.c_str());
+  MT2Analysis<MT2EstimateSyst>* zll_pt = new MT2Analysis<MT2EstimateSyst>( "zll_pt", regionsSet.c_str() ); 
+  MT2Analysis<MT2EstimateSyst>* zll_mt2 = new MT2Analysis<MT2EstimateSyst>( "zll_mt2", regionsSet.c_str() ); 
+  MT2Analysis<MT2EstimateSyst>* zll_ht = new MT2Analysis<MT2EstimateSyst>( "zll_ht", regionsSet.c_str() ); 
+  MT2Analysis<MT2EstimateSyst>* zll_nJets = new MT2Analysis<MT2EstimateSyst>( "zll_nJets",regionsSet.c_str()); 
+  MT2Analysis<MT2EstimateSyst>* zll_nBJets = new MT2Analysis<MT2EstimateSyst>("zll_nBJets",regionsSet.c_str());
+  MT2Analysis<MT2EstimateSyst>* zll_mono_nBJets = new MT2Analysis<MT2EstimateSyst>("zll_mono_nBJets",regionsSet.c_str());
 
   //DATA RATIOS
-  MT2Analysis<MT2Estimate>* zllG_data_mt2 = new MT2Analysis<MT2Estimate>( "zllG_data_mt2", regionsSet.c_str() ); 
-  MT2Analysis<MT2Estimate>* zllG_data_ht = new MT2Analysis<MT2Estimate>( "zllG_data_ht", regionsSet.c_str()); 
-  MT2Analysis<MT2Estimate>* zllG_data_nJets = new MT2Analysis<MT2Estimate>( "zllG_data_nJets",regionsSet.c_str()); 
-  MT2Analysis<MT2Estimate>* zllG_data_nBJets = new MT2Analysis<MT2Estimate>("zllG_data_nBJets",regionsSet.c_str() );
-  MT2Analysis<MT2Estimate>* zllG_data_mono_nBJets = new MT2Analysis<MT2Estimate>("zllG_data_mono_nBJets",regionsSet.c_str() );
+  MT2Analysis<MT2EstimateSyst>* zllG_data_mt2 = new MT2Analysis<MT2EstimateSyst>( "zllG_data_mt2", regionsSet.c_str() ); 
+  MT2Analysis<MT2EstimateSyst>* zllG_data_ht = new MT2Analysis<MT2EstimateSyst>( "zllG_data_ht", regionsSet.c_str()); 
+  MT2Analysis<MT2EstimateSyst>* zllG_data_nJets = new MT2Analysis<MT2EstimateSyst>( "zllG_data_nJets",regionsSet.c_str()); 
+  MT2Analysis<MT2EstimateSyst>* zllG_data_nBJets = new MT2Analysis<MT2EstimateSyst>("zllG_data_nBJets",regionsSet.c_str() );
+  MT2Analysis<MT2EstimateSyst>* zllG_data_mono_nBJets = new MT2Analysis<MT2EstimateSyst>("zllG_data_mono_nBJets",regionsSet.c_str() );
 
   //MC RATIOS
-  MT2Analysis<MT2Estimate>* zllG_mc_mt2 = new MT2Analysis<MT2Estimate>( "zllG_mc_mt2", regionsSet.c_str() ); 
-  MT2Analysis<MT2Estimate>* zllG_mc_ht = new MT2Analysis<MT2Estimate>( "zllG_mc_ht", regionsSet.c_str()); 
-  MT2Analysis<MT2Estimate>* zllG_mc_nJets = new MT2Analysis<MT2Estimate>( "zllG_mc_nJets",regionsSet.c_str()); 
-  MT2Analysis<MT2Estimate>* zllG_mc_nBJets = new MT2Analysis<MT2Estimate>("zllG_mc_nBJets",regionsSet.c_str() );
-  MT2Analysis<MT2Estimate>* zllG_mc_mono_nBJets = new MT2Analysis<MT2Estimate>("zllG_mc_mono_nBJets",regionsSet.c_str() );
+  MT2Analysis<MT2EstimateSyst>* zllG_mc_mt2 = new MT2Analysis<MT2EstimateSyst>( "zllG_mc_mt2", regionsSet.c_str() ); 
+  MT2Analysis<MT2EstimateSyst>* zllG_mc_ht = new MT2Analysis<MT2EstimateSyst>( "zllG_mc_ht", regionsSet.c_str()); 
+  MT2Analysis<MT2EstimateSyst>* zllG_mc_nJets = new MT2Analysis<MT2EstimateSyst>( "zllG_mc_nJets",regionsSet.c_str()); 
+  MT2Analysis<MT2EstimateSyst>* zllG_mc_nBJets = new MT2Analysis<MT2EstimateSyst>("zllG_mc_nBJets",regionsSet.c_str() );
+  MT2Analysis<MT2EstimateSyst>* zllG_mc_mono_nBJets = new MT2Analysis<MT2EstimateSyst>("zllG_mc_mono_nBJets",regionsSet.c_str() );
 
 
   //RATIOS
-  MT2Analysis<MT2Estimate>* zllG_pt = new MT2Analysis<MT2Estimate>( "zllG_pt", regionsSet.c_str() ); 
-  MT2Analysis<MT2Estimate>* zllG_mt2 = new MT2Analysis<MT2Estimate>( "zllG_mt2", regionsSet.c_str() ); 
-  MT2Analysis<MT2Estimate>* zllG_ht = new MT2Analysis<MT2Estimate>( "zllG_ht", regionsSet.c_str()); 
-  MT2Analysis<MT2Estimate>* zllG_nJets = new MT2Analysis<MT2Estimate>( "zllG_nJets",regionsSet.c_str()); 
-  MT2Analysis<MT2Estimate>* zllG_nBJets = new MT2Analysis<MT2Estimate>("zllG_nBJets",regionsSet.c_str() );
-  MT2Analysis<MT2Estimate>* zllG_mono_nBJets = new MT2Analysis<MT2Estimate>("zllG_mono_nBJets",regionsSet.c_str() );
+  MT2Analysis<MT2EstimateSyst>* zllG_pt = new MT2Analysis<MT2EstimateSyst>( "zllG_pt", regionsSet.c_str() ); 
+  MT2Analysis<MT2EstimateSyst>* zllG_mt2 = new MT2Analysis<MT2EstimateSyst>( "zllG_mt2", regionsSet.c_str() ); 
+  MT2Analysis<MT2EstimateSyst>* zllG_ht = new MT2Analysis<MT2EstimateSyst>( "zllG_ht", regionsSet.c_str()); 
+  MT2Analysis<MT2EstimateSyst>* zllG_nJets = new MT2Analysis<MT2EstimateSyst>( "zllG_nJets",regionsSet.c_str()); 
+  MT2Analysis<MT2EstimateSyst>* zllG_nBJets = new MT2Analysis<MT2EstimateSyst>("zllG_nBJets",regionsSet.c_str() );
+  MT2Analysis<MT2EstimateSyst>* zllG_mono_nBJets = new MT2Analysis<MT2EstimateSyst>("zllG_mono_nBJets",regionsSet.c_str() );
   
 
   //std::set<MT2Region> MT2Regions = zll_ratio->getRegions();
@@ -193,28 +193,12 @@ int main(int argc, char* argv[]){
   c1->cd();
   TH1F::AddDirectory(kTRUE);
 
-  //THE TREES
-  TTree *gammaT =  gamma_mc->get( *MT2Regions.begin() )->tree;
-  TTree *zllT =  zll_mc->get( *MT2Regions.begin() )->tree;
-
- 
-
-
-  TPaveText* labelTop = MT2DrawTools::getLabelTop(cfg.lumi() );
- 
 
   for( std::set<MT2Region>::iterator iMT2 = MT2Regions.begin(); iMT2!=MT2Regions.end(); ++iMT2 ) {
 
     MT2Region thisRegion( (*iMT2) );
-    // std::set<MT2Region>::iterator iMT2 = MT2Regions.begin();  
     std::vector<std::string> niceNames = thisRegion.getNiceNames();
- 
-      float lumi = cfg.lumi();    
-  
-    /*      float bins_nJets[] = {2, 6, 12};
-	    float bins_nBJets[] = {0,3, 6}; 
-	    float bins_mt2[] = {200,600,  1500 };
-	    double bins_ht[] =  {450,1000, 2000};*/
+    float lumi = cfg.lumi();    
 
     double bins_nJets[] = {2,4,7,12};
     double bins_nBJets[] = {0,1,2,3,6}; 
@@ -233,25 +217,28 @@ int main(int argc, char* argv[]){
     int size_nBJets = sizeof(bins_nBJets)/sizeof(double)-1;
   
 
-    std::string cut = "weight*(abs(Z_mass-91.19)<20  &&  Z_pt>180 && mt2>200 && ht>200 && nJets>1 )";
-    std::string cut_el = "weight*(abs(Z_mass-91.19)<20 && ht>200 && mt2>200&&  Z_pt>180 && nJets>1 && Z_lepId==11 )";
-    std::string cut_mu = "weight*(abs(Z_mass-91.19)<20 && ht>200&& mt2>200 &&  Z_pt>180 && nJets>1 && Z_lepId==13 )";
-    std::string cut_mono = "weight*(abs(Z_mass-91.19)<20 && Z_pt>180 && mt2>200&& ht>200 && nJets==1 )";
+    std::string cut = "weight*(abs(Z_mass-91.19)<10 && met>200 && mt2>200 && ht>200 && nJets>1 )";
+    std::string cut_el = "weight*(abs(Z_mass-91.19)<10 && met>200 && ht>200 && mt2>200 && nJets>1 && Z_lepId==11 )";
+    std::string cut_mu = "weight*(abs(Z_mass-91.19)<10 && met>200 && ht>200&& mt2>200 && nJets>1 && Z_lepId==13 )";
+    std::string cut_mono = "weight*(abs(Z_mass-91.19)<10 && met>200 && ht>200 && nJets==1 )";
 
-    std::string cut_gamma = "weight*(prompt==2 && iso<2.5 &&  ptGamma>180 && nJets>1&& mt2>200 &&ht>200 )*1.23";
-    std::string cut_gamma_mono = "weight*( prompt==2 && ptGamma>180 && nJets==1&& mt2>200 && ht>200 )*1.23";
-    // std::string cut_gamma =  "weight*(prompt==2 && ptGamma>180 && nBJets<2 && nJets>1&& mt2>200 &&ht>200 )*1.23";
-    // std::string cut_gamma_mono =  "weight*( prompt==2 && nBJets<2 &&  ptGamma>180 && nJets==1&& mt2>200 &&ht>200 )*1.23";
+    std::string cut_mono_el = "weight*(abs(Z_mass-91.19)<10 && met>200 && ht>200 && nJets==1 && Z_lepId==11 )";
+    std::string cut_mono_mu = "weight*(abs(Z_mass-91.19)<10 && met>200 && ht>200 && nJets==1 && Z_lepId==13 )";
+
+    std::string cut_gamma = "weight*(prompt==2 && iso<2.5  && met>200&&  ptGamma>180 && nJets>1 && mt2>200 && ht>200 )*1.23";
+    std::string cut_gamma_mono = "weight*( prompt==2 && iso<2.5 && met>200 && ptGamma>180 && nJets==1 && ht>200 )*1.23";
  
-
     //f = 0.92, purity later in the function
-    std::string cut_data = "weight*(abs(Z_mass-91.19)<20 &&  Z_pt>180 && mt2>200 && ht>200 && nJets>1 )";
-    std::string cut_el_data = "weight*(abs(Z_mass-91.19)<20 && ht>200 && mt2>200 &&  Z_pt>180 && nJets>1&& Z_lepId==11 )";
-    std::string cut_mu_data = "weight*(abs(Z_mass-91.19)<20 && ht>200&& mt2>200 &&  Z_pt>180 && nJets>1&& Z_lepId==13 )";
-    std::string cut_mono_data = "weight*(abs(Z_mass-91.19)<20 && Z_pt>180 && mt2>200 && ht>200 && nJets==1 )";
+    std::string cut_data = "weight*(abs(Z_mass-91.19)<10 && met>200 &&  mt2>200 && ht>200 && nJets>1 )";
+    std::string cut_el_data = "weight*(abs(Z_mass-91.19)<10 && met>200 && ht>200 && mt2>200 && nJets>1&& Z_lepId==11 )";
+    std::string cut_mu_data = "weight*(abs(Z_mass-91.19)<10 && met>200 && ht>200&& mt2>200 && nJets>1&& Z_lepId==13 )";
+    std::string cut_mono_data = "weight*(abs(Z_mass-91.19)<10 && met>200 && ht>200 && nJets==1 )";
 
-    std::string cut_gamma_data = "weight*( iso<2.5 && ptGamma>180  && nJets>1 && mt2>200 && ht>200 )*0.92";
-    std::string cut_gamma_mono_data = "weight*( iso<2.5 &&  ptGamma>180 && nJets==1 && mt2>200 && ht>200 )*0.92";
+    std::string cut_mono_data_el = "weight*(abs(Z_mass-91.19)<10 && met>200 && ht>200 && nJets==1 && Z_lepId==11)";
+    std::string cut_mono_data_mu = "weight*(abs(Z_mass-91.19)<10 && met>200 && ht>200 && nJets==1 && Z_lepId==13)";
+
+    std::string cut_gamma_data = "weight*( iso<2.5 && ptGamma>180  && met>200 && nJets>1 && mt2>200 && ht>200 )";
+    std::string cut_gamma_mono_data = "weight*( iso<2.5 &&  ptGamma>180  && met>200&& nJets==1 && ht>200 )";
 
     /*
     if(onlyMC){
@@ -266,64 +253,63 @@ int main(int argc, char* argv[]){
     double bins_mono_nBJets[] = {0,1,2}; 
     int size_mono_nBJets = sizeof(bins_mono_nBJets)/sizeof(double)-1;
   
-     //float bins_ht_mono[] =  {200,450,575,1000,1500,2000};
-  
 
-
-    //  std::string cut_corr =  "weight*(abs(Z_mass-91.19)<10 )";
-    
-    MT2Estimate::rebinYields( zll_mt2,  size_mt2, bins_mt2);
-    MT2Estimate::rebinYields( zll_ht,  size_ht, bins_ht);
-    MT2Estimate::rebinYields( zll_nJets,  size_nJets, bins_nJets);
-    MT2Estimate::rebinYields( zll_nBJets,  size_nBJets, bins_nBJets);
-    MT2Estimate::rebinYields( zll_mono_nBJets,  size_mono_nBJets, bins_mono_nBJets);
+    MT2EstimateSyst::rebinYields( zll_mt2,  size_mt2, bins_mt2);
+    MT2EstimateSyst::rebinYields( zll_ht,  size_ht, bins_ht);
+    MT2EstimateSyst::rebinYields( zll_nJets,  size_nJets, bins_nJets);
+    MT2EstimateSyst::rebinYields( zll_nBJets,  size_nBJets, bins_nBJets);
+    MT2EstimateSyst::rebinYields( zll_mono_nBJets,  size_mono_nBJets, bins_mono_nBJets);
  
-    MT2Estimate::rebinYields( zllG_mt2,  size_mt2, bins_mt2);
-    MT2Estimate::rebinYields( zllG_ht,  size_ht, bins_ht);
-    MT2Estimate::rebinYields( zllG_nJets,  size_nJets, bins_nJets);
-    MT2Estimate::rebinYields( zllG_nBJets,  size_nBJets, bins_nBJets);
-    MT2Estimate::rebinYields( zllG_mono_nBJets,  size_mono_nBJets, bins_mono_nBJets);
+    MT2EstimateSyst::rebinYields( zllG_mt2,  size_mt2, bins_mt2);
+    MT2EstimateSyst::rebinYields( zllG_ht,  size_ht, bins_ht);
+    MT2EstimateSyst::rebinYields( zllG_nJets,  size_nJets, bins_nJets);
+    MT2EstimateSyst::rebinYields( zllG_nBJets,  size_nBJets, bins_nBJets);
+    MT2EstimateSyst::rebinYields( zllG_mono_nBJets,  size_mono_nBJets, bins_mono_nBJets);
   
-    MT2Estimate::rebinYields( zllG_data_mt2,  size_mt2, bins_mt2);
-    MT2Estimate::rebinYields( zllG_data_ht,  size_ht, bins_ht);
-    MT2Estimate::rebinYields( zllG_data_nJets,  size_nJets, bins_nJets);
-    MT2Estimate::rebinYields( zllG_data_nBJets,  size_nBJets, bins_nBJets);
-    MT2Estimate::rebinYields( zllG_data_mono_nBJets,  size_mono_nBJets, bins_mono_nBJets);
+    MT2EstimateSyst::rebinYields( zllG_data_mt2,  size_mt2, bins_mt2);
+    MT2EstimateSyst::rebinYields( zllG_data_ht,  size_ht, bins_ht);
+    MT2EstimateSyst::rebinYields( zllG_data_nJets,  size_nJets, bins_nJets);
+    MT2EstimateSyst::rebinYields( zllG_data_nBJets,  size_nBJets, bins_nBJets);
+    MT2EstimateSyst::rebinYields( zllG_data_mono_nBJets,  size_mono_nBJets, bins_mono_nBJets);
  
-    MT2Estimate::rebinYields( zllG_mc_mt2,  size_mt2, bins_mt2);
-    MT2Estimate::rebinYields( zllG_mc_ht,  size_ht, bins_ht);
-    MT2Estimate::rebinYields( zllG_mc_nJets,  size_nJets, bins_nJets);
-    MT2Estimate::rebinYields( zllG_mc_nBJets,  size_nBJets, bins_nBJets);
-    MT2Estimate::rebinYields( zllG_mc_mono_nBJets,  size_mono_nBJets, bins_mono_nBJets);
+    MT2EstimateSyst::rebinYields( zllG_mc_mt2,  size_mt2, bins_mt2);
+    MT2EstimateSyst::rebinYields( zllG_mc_ht,  size_ht, bins_ht);
+    MT2EstimateSyst::rebinYields( zllG_mc_nJets,  size_nJets, bins_nJets);
+    MT2EstimateSyst::rebinYields( zllG_mc_nBJets,  size_nBJets, bins_nBJets);
+    MT2EstimateSyst::rebinYields( zllG_mc_mono_nBJets,  size_mono_nBJets, bins_mono_nBJets);
  
 
     //draw ratio also fills the ratio and yield estimates
     //outputdir, bins, nbins, var to project, ratio estimate, gamma mc, gamma data, purity gamma, zll mc, zll data, yield estimate, region, cut zll, cut gamma, cut zll data, cut gamma data, lumi, name, flag , topo region);
     
     drawRatios( outputdir, bins_mt2, size_mt2 , "mt2",  zllG_mt2,   gamma_mc, gamma_data, purity,  zll_mc, zll_data, top, zll_mt2 , zllG_data_mt2, zllG_mc_mt2 , thisRegion, cut_el, cut_gamma, cut_el_data,  cut_gamma_data,  lumi , "mt2_el" , onlyMC ,"#geq2j, #geq0b" );
-   
     drawRatios( outputdir, bins_mt2, size_mt2 , "mt2",  zllG_mt2,   gamma_mc, gamma_data, purity,  zll_mc, zll_data, top, zll_mt2, zllG_data_mt2, zllG_mc_mt2 , thisRegion, cut_mu,  cut_gamma, cut_mu_data, cut_gamma_data, lumi , "mt2_mu" , onlyMC ,"#geq2j, #geq0b");
-   
     drawRatios( outputdir, bins_mt2, size_mt2 , "mt2",  zllG_mt2,   gamma_mc, gamma_data, purity,  zll_mc, zll_data, top, zll_mt2, zllG_data_mt2, zllG_mc_mt2 ,thisRegion, cut, cut_gamma, cut_data,cut_gamma_data, lumi , "mt2" , onlyMC ,"#geq2j, #geq0b");
    
+    drawRatios( outputdir, bins_ht, size_ht , "ht",   zllG_ht,   gamma_mc, gamma_data, purity_ht,  zll_mc, zll_data, top, zll_ht, zllG_data_ht, zllG_mc_ht , thisRegion, cut_el, cut_gamma, cut_el_data,  cut_gamma_data, lumi, "ht_el" , onlyMC ,"#geq2j, #geq0b");
+    drawRatios( outputdir, bins_ht, size_ht , "ht",   zllG_ht,   gamma_mc, gamma_data, purity_ht,  zll_mc, zll_data, top, zll_ht, zllG_data_ht, zllG_mc_ht , thisRegion, cut_mu, cut_gamma, cut_mu_data,  cut_gamma_data, lumi,"ht_mu" , onlyMC ,"#geq2j, #geq0b"); 
     drawRatios( outputdir, bins_ht, size_ht , "ht",   zllG_ht,   gamma_mc, gamma_data, purity_ht,  zll_mc, zll_data, top, zll_ht, zllG_data_ht, zllG_mc_ht , thisRegion, cut, cut_gamma, cut_data,  cut_gamma_data, lumi,"ht" , onlyMC ,"#geq2j, #geq0b");
     
-    drawRatios( outputdir, bins_nJets, size_nJets , "nJets",   zllG_nJets,   gamma_mc, gamma_data, purity_njets,  zll_mc, zll_data,top,  zll_nJets, zllG_data_nJets, zllG_mc_nJets ,  thisRegion,cut, cut_gamma, cut_data,  cut_gamma_data, lumi, "nJets" , onlyMC ,"#geq2j, #geq0b");
+    drawRatios( outputdir, bins_nJets, size_nJets , "nJets",   zllG_nJets,   gamma_mc, gamma_data, purity_njets,  zll_mc, zll_data,top,  zll_nJets, zllG_data_nJets, zllG_mc_nJets ,  thisRegion, cut_el, cut_gamma, cut_el_data,  cut_gamma_data, lumi, "nJets_el" , onlyMC ,"#geq2j, #geq0b");
+   drawRatios( outputdir, bins_nJets, size_nJets , "nJets",   zllG_nJets,   gamma_mc, gamma_data, purity_njets,  zll_mc, zll_data,top,  zll_nJets, zllG_data_nJets, zllG_mc_nJets ,  thisRegion, cut_mu, cut_gamma, cut_mu_data,  cut_gamma_data, lumi, "nJets_mu" , onlyMC ,"#geq2j, #geq0b");
+   drawRatios( outputdir, bins_nJets, size_nJets , "nJets",   zllG_nJets,   gamma_mc, gamma_data, purity_njets,  zll_mc, zll_data,top,  zll_nJets, zllG_data_nJets, zllG_mc_nJets ,  thisRegion,cut, cut_gamma, cut_data,  cut_gamma_data, lumi, "nJets" , onlyMC ,"#geq2j, #geq0b");
 
-    drawRatios( outputdir, bins_nBJets, size_nBJets , "nBJets",  zllG_nBJets,   gamma_mc, gamma_data, purity_nbjets,  zll_mc, zll_data, top, zll_nBJets,zllG_data_nBJets, zllG_mc_nBJets ,   thisRegion, cut, cut_gamma ,  cut_data,  cut_gamma_data, lumi, "nBJets" , onlyMC ,"#geq2j, #geq0b");
+   drawRatios( outputdir, bins_nBJets, size_nBJets , "nBJets",  zllG_nBJets,   gamma_mc, gamma_data, purity_nbjets,  zll_mc, zll_data, top, zll_nBJets,zllG_data_nBJets, zllG_mc_nBJets ,   thisRegion, cut_el, cut_gamma ,  cut_el_data,  cut_gamma_data, lumi, "nBJets_el" , onlyMC ,"#geq2j, #geq0b");
+   drawRatios( outputdir, bins_nBJets, size_nBJets , "nBJets",  zllG_nBJets,   gamma_mc, gamma_data, purity_nbjets,  zll_mc, zll_data, top, zll_nBJets,zllG_data_nBJets, zllG_mc_nBJets ,   thisRegion, cut_mu, cut_gamma ,  cut_mu_data,  cut_gamma_data, lumi, "nBJets_mu" , onlyMC ,"#geq2j, #geq0b");
+   drawRatios( outputdir, bins_nBJets, size_nBJets , "nBJets",  zllG_nBJets,   gamma_mc, gamma_data, purity_nbjets,  zll_mc, zll_data, top, zll_nBJets,zllG_data_nBJets, zllG_mc_nBJets ,   thisRegion, cut, cut_gamma ,  cut_data,  cut_gamma_data, lumi, "nBJets" , onlyMC ,"#geq2j, #geq0b");
 
 
-    //MONOJET
+   //MONOJET
+   drawRatios( outputdir, bins_mono_nBJets, size_mono_nBJets , "nBJets",  zllG_mono_nBJets,   gamma_mc, gamma_data, purity_mono_nbjets,  zll_mc, zll_data, top, zll_mono_nBJets, zllG_data_mono_nBJets, zllG_mc_mono_nBJets , thisRegion, cut_mono_el, cut_gamma_mono ,  cut_mono_data_el,  cut_gamma_mono_data, lumi, "mono_nBJets_el" , onlyMC ,"#geq1j, #geq0b");
+   drawRatios( outputdir, bins_mono_nBJets, size_mono_nBJets , "nBJets",  zllG_mono_nBJets,   gamma_mc, gamma_data, purity_mono_nbjets,  zll_mc, zll_data, top, zll_mono_nBJets, zllG_data_mono_nBJets, zllG_mc_mono_nBJets , thisRegion, cut_mono_mu, cut_gamma_mono ,  cut_mono_data_mu,  cut_gamma_mono_data, lumi, "mono_nBJets_mu" , onlyMC ,"#geq1j, #geq0b");
+
     drawRatios( outputdir, bins_mono_nBJets, size_mono_nBJets , "nBJets",  zllG_mono_nBJets,   gamma_mc, gamma_data, purity_mono_nbjets,  zll_mc, zll_data, top, zll_mono_nBJets, zllG_data_mono_nBJets, zllG_mc_mono_nBJets , thisRegion, cut_mono, cut_gamma_mono ,  cut_mono_data,  cut_gamma_mono_data, lumi, "mono_nBJets" , onlyMC ,"#geq1j, #geq0b");
 
     
 
 
     //  TH1D data_bgSub =  drawBGsubtraction(  cfg, zll_data, zll_mc,  bgYields , "mt2", "mt2", cut, 20, 200, 800, "M_{T2}", "GeV", scaleFactor );
-
     //  TH1D data_bgSub_nBJets =  drawBGsubtraction(  cfg, zll_data, zll_mc,  bgYields , "nBJets", "nBJets", cut, 8, 0, 8, "nBJets", "", scaleFactor );
-
-
     /*
     drawCorrelation( outputdir , bins_mt22, size_mt2 ,  bins_ht2, size_ht,  "mt2", "ht",  Zll, thisRegion,  cut_corr, lumi );
     drawCorrelation( outputdir , bins_mt22, size_mt2 ,  bins_nJets2, size_nJets,  "mt2", "nJets",  Zll, thisRegion,  cut_corr , lumi);
@@ -337,24 +323,13 @@ int main(int argc, char* argv[]){
   
  
   std::string outFile = outputdir + "/zll_ratio.root";
-   std::string outFile_yield = outputdir + "/zll_yield.root";
-  // std::string outFile_ht = outputdir + "/zll_ht.root";
-  // std::string outFile_nJets = outputdir + "/zll_nJets.root";
-  //  std::string outFile_nBJets = outputdir + "/zll_nBJets.root";
-  /*
-    zll_ratio->writeToFile( outFile );
-    zll_ht->addToFile( outFile );
-    zll_nJets->addToFile( outFile );
-    zll_nBJets->addToFile( outFile );
-    zll_yield->addToFile( outFile );
-  */
- 
   zllG_mt2->writeToFile(outFile);
   zllG_ht->addToFile( outFile );
   zllG_nJets->addToFile( outFile );
   zllG_nBJets->addToFile( outFile );
+  zllG_mono_nBJets->addToFile( outFile );
 
-
+  std::string outFile_yield = outputdir + "/zll_yield.root";
   zll_mt2->writeToFile(outFile_yield);
   zll_ht->addToFile( outFile_yield );
   zll_nJets->addToFile( outFile_yield );
@@ -376,28 +351,14 @@ int main(int argc, char* argv[]){
   zllG_mc_nBJets->addToFile( outFile_mc );
   zllG_mc_mono_nBJets->addToFile( outFile_mc );
 
- 
-  //  zll_ratio->writeToFile( outFile );
-
-  /*
-  zll_ht->writeToFile( outFile_ht );
-  zll_nJets->writeToFile( outFile_nJets );
-  zll_nBJets->writeToFile( outFile_nBJets );
-  */
 
   return 0;
 
 }
 
 
-void drawRatios(std::string fullPath, double *binss, unsigned int size,  std::string zll_sel, MT2Analysis<MT2Estimate>*  zll_ratio,  MT2Analysis<MT2EstimateTree>*  gamma_mc, MT2Analysis<MT2EstimateTree>*  gamma_data, MT2Analysis<MT2EstimateSyst>*  purity, MT2Analysis<MT2EstimateTree>*  zll_mc,MT2Analysis<MT2EstimateTree>*  zll_data, MT2Analysis<MT2EstimateTree>*  top, MT2Analysis<MT2Estimate>*  zll_yield, MT2Analysis<MT2Estimate>*  zllG_data,  MT2Analysis<MT2Estimate>*  zllG_mc, const MT2Region thisRegion, std::string cut, std::string cut_gamma, std::string cut_data, std::string cut_gamma_data, float lumi, std::string saveName, bool onlyMC, std::string topoCuts ){
+void drawRatios(std::string fullPath, double *binss, unsigned int size,  std::string zll_sel, MT2Analysis<MT2EstimateSyst>*  zll_ratio,  MT2Analysis<MT2EstimateTree>*  gamma_mc, MT2Analysis<MT2EstimateTree>*  gamma_data, MT2Analysis<MT2EstimateSyst>*  purity, MT2Analysis<MT2EstimateTree>*  zll_mc,MT2Analysis<MT2EstimateTree>*  zll_data, MT2Analysis<MT2EstimateTree>*  top, MT2Analysis<MT2EstimateSyst>*  zll_yield, MT2Analysis<MT2EstimateSyst>*  zllG_data,  MT2Analysis<MT2EstimateSyst>*  zllG_mc, const MT2Region thisRegion, std::string cut, std::string cut_gamma, std::string cut_data, std::string cut_gamma_data, float lumi, std::string saveName, bool onlyMC, std::string topoCuts ){
  
-  std::vector<int> colors;
-  colors.push_back(430); // other = zll 
-  colors.push_back(401); // qcd
-  colors.push_back(417); // w+jets
-  colors.push_back(419); // z+jets
-  colors.push_back(855); // top
   TPaveText* labelTop = MT2DrawTools::getLabelTop(lumi);
   if(onlyMC)
     labelTop = MT2DrawTools::getLabelTopSimulation(lumi);
@@ -405,14 +366,10 @@ void drawRatios(std::string fullPath, double *binss, unsigned int size,  std::st
 
   double bins[size+1]; 
   for(unsigned int i=0; i<= size ; ++i)  
-    {    bins[i]=binss[i];
-      std::cout << binss[i] << std::endl;
-    }
+    bins[i]=binss[i];
   float xMin = binss[0];   float xMax = binss[size];
 
   std::string gamma_sel = zll_sel;
-
- 
  
   //THE TREES
   TTree *zll_data_tree =  zll_data->get(thisRegion)->tree;
@@ -445,25 +402,16 @@ void drawRatios(std::string fullPath, double *binss, unsigned int size,  std::st
     pad1->Draw();
     pad1->cd();
   }
-  /*
-  TPad *pad1 = new TPad("pad1","pad1",0,0.3-0.1,1,1);
-  pad1->SetBottomMargin(0.15);
-  pad1->Draw();
-  pad1->cd();
-  */
 
-  TH1D* h_top = new TH1D("h_top","", size , bins);
-  TH1D* h_mt2 = new TH1D("h_mt2","", size , bins);
-  TH1D* g_mt2 = new TH1D("g_mt2","", size , bins);
-  h_top->Sumw2(); h_mt2->Sumw2(); g_mt2->Sumw2();
+  TH1D* h_top = new TH1D("h_top","", size , bins); h_top->Sumw2();
+  TH1D* h_mt2 = new TH1D("h_mt2","", size , bins); h_mt2->Sumw2();
+  TH1D* g_mt2 = new TH1D("g_mt2","", size , bins); g_mt2->Sumw2();
   
   top_tree ->Project( "h_top" , zll_sel.c_str(), cut_data.c_str() );
   zll_data_tree ->Project( "h_mt2" , zll_sel.c_str(), cut_data.c_str() );
   gamma_data_tree->Project( "g_mt2", gamma_sel.c_str(), cut_gamma_data.c_str() );
   h_top->Scale( lumi );
-
-  std::cout <<  h_mt2->GetMean() << std::endl;
-  std::cout <<  g_mt2->GetMean() << std::endl;
+  //h_top->Scale( scaleFactor ); //to come soon, hopefully
 
   h_top->SetBinContent(size, h_top->GetBinContent(size) + h_top->GetBinContent(size+1));//adding overflow
   h_mt2->SetBinContent(size, h_mt2->GetBinContent(size) + h_mt2->GetBinContent(size+1));//adding overflow
@@ -472,224 +420,233 @@ void drawRatios(std::string fullPath, double *binss, unsigned int size,  std::st
   h_top->SetBinContent(size+1,0);
   g_mt2->SetBinContent(size+1,0);
 
- 
+
+  //GET THE UNCERTAINTIES
+  float f = 0.92;
+  float f_uncert = 0.1; // 0.08 from the fragmentation and then o+ ~5% for the mc closure
+  TH1D* g_Up = new TH1D("g_Up","", size , bins);
+  TH1D* g_Down = new TH1D("g_Down","", size , bins);
+
   int nBinss =  h_mt2->GetNbinsX();
   for(int binnie = 1; binnie <= nBinss; binnie++){
-
-    Double_t x_tmp, p, p_errUp, p_errDown;	       
-    this_zinv_purity->GetPoint( binnie-1, x_tmp, p);
-    std::cout <<  "Purity = " << p << std::endl;
-
+    //Zll//////////////
     double value = h_mt2->GetBinContent(binnie);
-
     double top = h_top->GetBinContent(binnie);
-    double top_uncert = top * 0.5;
-
+ 
     h_mt2->SetBinContent(binnie, value - top);
     //add 50% of the top bg as uncertainty to the estimate
-    h_mt2->SetBinError(binnie,sqrt(value + top*top*0.25));
-    double value_g = g_mt2->GetBinContent(binnie) * p;
-    g_mt2->SetBinContent(binnie, value_g);
-    g_mt2->SetBinError(binnie,sqrt(value_g));
+    h_mt2->SetBinError(binnie,  sqrt(value + top*top*0.25)  );
+
+    //Photons//////////
+    Double_t x_tmp, p, p_errUp, p_errDown;	       
+    this_zinv_purity->GetPoint( binnie-1, x_tmp, p);
+    p_errUp   = this_zinv_purity->GetErrorYhigh(binnie-1);
+    p_errDown = this_zinv_purity->GetErrorYlow(binnie-1);
+ 
+    std::cout << "Purity = " << p << std::endl;
+
+    double value_g = g_mt2->GetBinContent(binnie);
+
+    g_mt2->SetBinContent(binnie, value_g  * p * f);
+
+    float uncertUp = sqrt ( value_g*f*f*p*p + ( value_g*value_g*f*f *p_errUp*p_errUp) + (p*p*value_g*value_g* f_uncert*f_uncert) );
+    float uncertDown = sqrt ( value_g*f*f*p*p + ( value_g*value_g*f*f *p_errDown*p_errDown) + (p*p*value_g*value_g* f_uncert*f_uncert) );
+    g_Up->SetBinContent(binnie, uncertUp);
+    g_Down->SetBinContent(binnie, uncertDown);
 
   }
+
   h_mt2->SetMarkerStyle(20);   h_mt2->SetMarkerSize(1.6); h_mt2->SetLineColor(kBlack);
   
  
 
-  //Filling the YIELDS
+  //Filling the YIELD
   zll_yield->get(thisRegion);
   int yieldBins = h_mt2->GetNbinsX();
 
   for(int bi = 1; bi <= yieldBins ; bi++){
     double value = h_mt2->GetBinContent(bi);
+    if( value < 0.) value = 0.;
     double err = h_mt2->GetBinError(bi);
     zll_yield->get(thisRegion)->yield->SetBinContent( bi,   value);
-    zll_yield->get(thisRegion)->yield->SetBinError( bi,   err);
+    zll_yield->get(thisRegion)->yield_systUp->SetBinContent( bi,   value + err);
+    zll_yield->get(thisRegion)->yield_systDown->SetBinContent( bi,   value - err);
+
+    double value_g = g_mt2->GetBinContent(bi);
+    double errUp = g_Up->GetBinContent(bi);
+    double errDown = g_Down->GetBinContent(bi);
+ 
+    //store the gamma's temporarily in zllG_data
+    zllG_data->get(thisRegion)->yield->SetBinContent( bi,   value_g);
+    zllG_data->get(thisRegion)->yield_systUp->SetBinContent( bi,   value_g + errUp);
+    zllG_data->get(thisRegion)->yield_systDown->SetBinContent( bi,   value_g - errDown );
+
+  }
+
+  *(zllG_data) = *(zll_yield) / *(zllG_data);
+
+ 
+
+
+  TH1D* h_mt2_mc = new TH1D("h_mt2_mc","", size  , bins);
+  TH1D* g_mt2_mc = new TH1D("g_mt2_mc","", size  , bins);
+  h_mt2_mc->Sumw2(); g_mt2_mc->Sumw2();
+
+  zll_mc_tree ->Project( "h_mt2_mc" , zll_sel.c_str(), Form("(%s)*%f",cut.c_str(), lumi) );
+  gamma_mc_tree->Project( "g_mt2_mc", gamma_sel.c_str(),  Form("(%s)*%f",cut_gamma.c_str(), lumi)  );
+  // h_mt2_mc->Scale( lumi );
+  //  g_mt2_mc->Scale( lumi );
+ 
+  h_mt2_mc->SetBinContent(size, h_mt2_mc->GetBinContent(size) +h_mt2_mc->GetBinContent(size+1));
+  g_mt2_mc->SetBinContent(size, g_mt2_mc->GetBinContent(size) +g_mt2_mc->GetBinContent(size+1));
+  h_mt2_mc->SetBinContent(size+1, 0);
+  g_mt2_mc->SetBinContent(size+1, 0);
+
+
+  TH1D* h_clone = (TH1D*)h_mt2->Clone("h_clone");
+  h_clone->Divide(h_mt2_mc);
+  TH1D* g_clone = (TH1D*)g_mt2->Clone("g_clone");
+  g_clone->Divide(g_mt2_mc);
+
+  TH2D* h2_axes_yield = new TH2D("axes_yield", "", 10, 0, 1500, 10, 0.1, 3);
+  h2_axes_yield->SetXTitle("M_{T2} [GeV]"); h2_axes_yield->SetYTitle("Zll Data/MC ratio");h2_axes_yield->Draw();  
+  h_clone->Draw("p same");    labelTop->Draw("same");   gPad->RedrawAxis();    //  gPad->SetLogy();
+  canny->SaveAs( Form("%s/yield_zll_%s_%s.eps", fullPath.c_str(), saveName.c_str(), thisRegion.getName().c_str() ) );
+  h2_axes_yield->SetYTitle("#gamma Data/MC ratio"); h2_axes_yield->Draw();  
+  g_clone->Draw("p same");    labelTop->Draw("same");   gPad->RedrawAxis();    //  gPad->SetLogy();
+  canny->SaveAs( Form("%s/yield_gamma_%s_%s.eps",  fullPath.c_str(), saveName.c_str(),thisRegion.getName().c_str() ) );
+  
+  delete    h2_axes_yield;
+
+
+  for(int bi = 1; bi <= yieldBins ; bi++){
+    std::cout << "MC Zll / Gamma = " << h_mt2_mc->GetBinContent(bi) << " / " << g_mt2_mc->GetBinContent(bi)/1.23 << std::endl;
+  }
+ 
+  h_mt2_mc->Divide(g_mt2_mc);
+
+  //Filling the single ratios
+  for(int bi = 1; bi <= yieldBins ; bi++){
+    double value_mc = h_mt2_mc->GetBinContent(bi);
+    double err_mc = h_mt2_mc->GetBinError(bi);
+    zllG_mc->get(thisRegion)->yield->SetBinContent( bi,   value_mc);
+    zllG_mc->get(thisRegion)->yield_systUp->SetBinContent( bi,   value_mc + err_mc);
+    zllG_mc->get(thisRegion)->yield_systDown->SetBinContent( bi,   value_mc - err_mc);
   }
 
 
-    TH1D* h_mt2_mc = new TH1D("h_mt2_mc","", size  , bins);
-    TH1D* g_mt2_mc = new TH1D("g_mt2_mc","", size  , bins);
-    h_mt2_mc->Sumw2(); g_mt2_mc->Sumw2();
+  TGraphAsymmErrors* gr_data = zllG_data->get(thisRegion)->getGraph();
+  gr_data->SetMarkerSize(1.4);
+  gr_data->SetMarkerStyle(20);
+  gr_data->SetLineColor(kBlack);
+  gr_data->SetLineWidth(2);
+  gr_data->SetMarkerColor(kBlack);
 
-    zll_mc_tree ->Project( "h_mt2_mc" , zll_sel.c_str(), Form("(%s)*%f",cut.c_str(), lumi) );
-    gamma_mc_tree->Project( "g_mt2_mc", gamma_sel.c_str(),  Form("(%s)*%f",cut_gamma.c_str(), lumi)  );
+  *(zll_ratio) = *(zllG_data) / *(zllG_mc);
+  TGraphAsymmErrors* gr_ratio = zll_ratio->get(thisRegion)->getGraph();
+  gr_ratio->SetMarkerSize(1.4);
+  gr_ratio->SetMarkerStyle(20);
+  gr_ratio->SetLineColor(kBlack);
+  gr_ratio->SetLineWidth(2);
+  gr_ratio->SetMarkerColor(kBlack);
+
+  for(int bi = 1; bi <= yieldBins ; bi++){
+    Double_t x_tmp, p, p_errUp, p_errDown;	       
+    gr_data->GetPoint( bi-1, x_tmp, p);
+    if(p<0.01){
+      gr_data->RemovePoint(bi-1);
+      gr_ratio->RemovePoint(bi-1);
+    }
+  }
+
+
+  h_mt2_mc->SetLineColor( 38 ); h_mt2_mc->SetLineWidth(2);
+ 
+  //  TH2D* h2_axes = new TH2D("axes", "", 10, xMin, xMax, 10, 0., 0.125 );
+  TH2D* h2_axes = new TH2D("axes", "", 10, xMin, xMax, 10, 0.0, 0.2 );
+  if(zll_sel == "mt2"){
+    h2_axes->SetXTitle("M_{T2} [GeV]");
+  }else    if(zll_sel == "ht"){
+    h2_axes->SetXTitle("H_{T} [GeV]");
+  }else    if(zll_sel == "nJets"){
+    h2_axes->SetXTitle("Jet Multiplicity");
+  }else{
+    h2_axes->SetXTitle("b Jet Multiplicity" );
+  }
+  h2_axes->SetYTitle("Z(ll) / #gamma Ratio");
+  h2_axes->Draw();
+
+  std::vector<std::string> niceNames2 = thisRegion.getNiceNames();
+
+  for( unsigned i=0+1; i< niceNames2.size(); ++i ) {
+    float yMaxText = 0.9-(float)i*0.05 +0.05;
+    float yMinText = yMaxText - 0.05;
+    TPaveText* regionText = new TPaveText( 0.18, yMinText, 0.55, yMaxText, "brNDC" );
+    regionText->SetTextSize(0.04);
+    //   regionText->SetTextFont(42);
+    regionText->SetFillColor(0);
+    regionText->SetTextAlign(11);
+    regionText->AddText( niceNames2[i].c_str() );
+    // regionText->Draw("same");
+  }
+
+  h_mt2_mc->SetFillColor(18);
+  h_mt2_mc->SetFillStyle(3001);
+
+  h_mt2_mc->Draw("E2 same");
+  h_mt2_mc->Draw("line same");
   
-    h_mt2_mc->SetBinContent(size, h_mt2_mc->GetBinContent(size) +h_mt2_mc->GetBinContent(size+1));
-    g_mt2_mc->SetBinContent(size, g_mt2_mc->GetBinContent(size) +g_mt2_mc->GetBinContent(size+1));
-    h_mt2_mc->SetBinContent(size+1, 0);
-    g_mt2_mc->SetBinContent(size+1, 0);
 
-
-    TH1D* h_clone = (TH1D*)h_mt2->Clone("h_clone");
-    h_clone->Divide(h_mt2_mc);
-    TH1D* g_clone = (TH1D*)g_mt2->Clone("g_clone");
-    g_clone->Divide(g_mt2_mc);
-
-    TH2D* h2_axes_yield = new TH2D("axes_yield", "", 10, 0, 1500, 10, 0.1, 3);
-    h2_axes_yield->SetXTitle("M_{T2} [GeV]"); h2_axes_yield->SetYTitle("Zll Data/MC ratio");h2_axes_yield->Draw();  
-    h_clone->Draw("p same");    labelTop->Draw("same");   gPad->RedrawAxis();    //  gPad->SetLogy();
-    canny->SaveAs( Form("%s/yield_zll_%s_%s.eps", fullPath.c_str(), saveName.c_str(), thisRegion.getName().c_str() ) );
-    //   canny->SaveAs( Form("%s/yield_mt2_%s.png", fullPath.c_str() , thisRegion.getName().c_str() ) );
-      
-    h2_axes_yield->SetYTitle("#gamma Data/MC ratio"); h2_axes_yield->Draw();  
-    g_clone->Draw("p same");    labelTop->Draw("same");   gPad->RedrawAxis();    //  gPad->SetLogy();
-    canny->SaveAs( Form("%s/yield_gamma_%s_%s.eps",  fullPath.c_str(), saveName.c_str(),thisRegion.getName().c_str() ) );
+  gr_data->Draw("p same");
   
-    delete    h2_axes_yield;
+  //    h_mt2->DrawClone("p same");
+  // if(!onlyMC)
+  //   gr_ratio->Draw("same P");
 
+  labelTop->Draw("same");
+  gPad->RedrawAxis();
 
-
-    h_mt2->Divide(g_mt2);  
-    h_mt2_mc->Divide(g_mt2_mc);
-
-    //Filling the single ratios
-    for(int bi = 1; bi <= yieldBins ; bi++){
-      double value = h_mt2->GetBinContent(bi);
-      double err = h_mt2->GetBinError(bi);
-      zllG_data->get(thisRegion)->yield->SetBinContent( bi,   value);
-      zllG_data->get(thisRegion)->yield->SetBinError( bi,   err);
-
-      double value_mc = h_mt2_mc->GetBinContent(bi);
-      double err_mc = h_mt2_mc->GetBinError(bi);
-      zllG_mc->get(thisRegion)->yield->SetBinContent( bi,   value_mc);
-      zllG_mc->get(thisRegion)->yield->SetBinError( bi,   err_mc);
-    }
-
-    TGraphErrors *gr_ratio = new TGraphErrors(0);
-    for( unsigned int k=0; k< size; ++k){
-      if(h_mt2->GetBinContent(k+1)<0.01){
-	gr_ratio->SetPoint(k, 9000 , 900);
-      }else{  
-	gr_ratio->SetPoint(k, h_mt2->GetBinCenter(k+1), h_mt2->GetBinContent(k+1)); 
-	//gr_ratio->SetPoint(k, meanX[k], h_mt2->GetBinContent(k+1));
-
-	gr_ratio->SetPointError(k, h_mt2->GetBinWidth(k+1)/2. ,  h_mt2->GetBinError(k+1) );
-      }
-    }
-    gr_ratio->SetMarkerSize(1.4);
-    gr_ratio->SetMarkerStyle(20);
-    gr_ratio->SetLineColor(kBlack);
-    gr_ratio->SetLineWidth(2);
-    gr_ratio->SetMarkerColor(kBlack);
-
-
-    TH1D* mc_rat_clone = (TH1D*)h_mt2->Clone("mc_rat_clone");
- 
-    h_mt2->Divide(h_mt2_mc); //the ratio is now in h_mt2
-    if( onlyMC){
-      for( unsigned int k=1; k<= size; ++k){
-	h_mt2_mc->SetBinError(k, mc_rat_clone->GetBinError(k) );
-      }
-    }
-
-    //   h_mt2_mc->SetMarkerStyle(20); h_mt2_mc->SetMarkerSize(1.6);
-    //   h_mt2_mc->SetMarkerColor(46); h_mt2_mc->SetLineColor(46);
-    h_mt2_mc->SetLineColor(kBlue+1); h_mt2_mc->SetLineWidth(2);
-
-    //  TH2D* h2_axes = new TH2D("axes", "", 10, xMin, xMax, 10, 0., 1.2 );
-     TH2D* h2_axes = new TH2D("axes", "", 10, xMin, xMax, 10, 0., 0.2 );
-    if(zll_sel == "mt2"){
-      h2_axes->SetXTitle("M_{T2} [GeV]");
-    }else    if(zll_sel == "ht"){
-      h2_axes->SetXTitle("H_{T} [GeV]");
-    }else    if(zll_sel == "nJets"){
-      h2_axes->SetXTitle("Jet Multiplicity");
-    }else{
-      h2_axes->SetXTitle("b Jet Multiplicity" );
-    }
-
-    h2_axes->SetYTitle("Z(ll) / #gamma Ratio");
-    h2_axes->Draw();
-
-   std::vector<std::string> niceNames2 = thisRegion.getNiceNames();
-
-    for( unsigned i=0+1; i< niceNames2.size(); ++i ) {
-      float yMaxText = 0.9-(float)i*0.05 +0.05;
-      float yMinText = yMaxText - 0.05;
-      TPaveText* regionText = new TPaveText( 0.18, yMinText, 0.55, yMaxText, "brNDC" );
-      regionText->SetTextSize(0.04);
-      //   regionText->SetTextFont(42);
-      regionText->SetFillColor(0);
-      regionText->SetTextAlign(11);
-      //   if(i==0)
-      //	regionText->AddText( "H_{T} > 180 GeV" );
-      //  else
-	regionText->AddText( niceNames2[i].c_str() );
-	// regionText->Draw("same");
-    }
-
-    h_mt2_mc->SetFillColor(18);
-    h_mt2_mc->SetFillStyle(3001);
-
-    h_mt2_mc->Draw("E2 same");
-    h_mt2_mc->Draw("line same");
- 
-    //    h_mt2->DrawClone("p same");
-    if(!onlyMC)
-      gr_ratio->Draw("same P");
- 
-    labelTop->Draw("same");
-    gPad->RedrawAxis();
-
-    int i= 2 - int(onlyMC);
-    TLegend* legend = new TLegend( 0.2, 0.92-(i)*0.06, 0.4, 0.92 );
-    legend->SetTextSize(0.04);
-    // legend->SetTextFont(42);
-    legend->SetFillColor(0);
-    if(!onlyMC)
-      legend->AddEntry( h_mt2 ,"Data BG Subtracted", "P" );
-    legend->AddEntry( h_mt2_mc ,"Simulation", "L" );
-    legend->Draw("same");
+  int i= 2 - int(onlyMC);
+  TLegend* legend = new TLegend( 0.2, 0.92-(i)*0.06, 0.4, 0.92 );
+  legend->SetTextSize(0.04);
+  // legend->SetTextFont(42);
+  legend->SetFillColor(0);
+  if(!onlyMC){ 
+    legend->AddEntry( gr_data ,"Data", "P" );
+  }
+  legend->AddEntry( h_mt2_mc ,"Simulation", "L" );
+  legend->Draw("same");
 
 
 
  
-    gPad->RedrawAxis();
+  gPad->RedrawAxis();
 
-    canny->cd();
+  canny->cd();
 
-   TH2D* h2_axes_rat = new TH2D("axes_rat", "", 10, xMin, xMax, 5 , 0., 2.0 );
+  TH2D* h2_axes_rat = new TH2D("axes_rat", "", 10, xMin, xMax, 5 , 0., 2.0 );
  
 
-    if( !onlyMC){
+  if( !onlyMC){
     TPad *pad2 = new TPad("pad2","pad2",0,0,1,0.21);
     pad2->SetTopMargin(0.10);
     pad2->SetBottomMargin(0.1);
     pad2->Draw();
     pad2->cd();
-      
-    
-    TGraphAsymmErrors *gr_ratioD = new TGraphAsymmErrors(0);
-    for( unsigned int k=0; k< size; ++k){  
-      gr_ratioD->SetPoint(k, h_mt2->GetBinCenter(k+1), h_mt2->GetBinContent(k+1));
-      // gr_ratioD->SetPoint(k, meanX[k], h_mt2->GetBinContent(k+1));
-      gr_ratioD->SetPointError(k, 0,0,  h_mt2->GetBinError(k+1),h_mt2->GetBinError(k+1));
-      // gr_ratioD->SetPointError(k, h_mt2->GetBinWidth(k+1)/2., h_mt2->GetBinError(k+1));
-    }
-    
-    gr_ratioD->SetMarkerSize(1.4);
-    gr_ratioD->SetMarkerStyle(20);
-    gr_ratioD->SetLineColor(kBlack);
-    gr_ratioD->SetLineWidth(2);
-    gr_ratioD->SetMarkerColor(kBlack);
-
+ 
     float grMax = h_mt2->GetBinLowEdge(size+1);
     float grMin = h_mt2->GetBinLowEdge(1);
-    TF1* fSF = MT2DrawTools::getSFFit(gr_ratioD, grMin, grMax  );
+    TF1* fSF = MT2DrawTools::getSFFit(gr_ratio, grMin, grMax  );
   
     TPaveText* fitText = MT2DrawTools::getFitText( fSF );
     TGraphErrors* SFFitBand =  MT2DrawTools::getSFFitBand(fSF, xMin, xMax);
     
 
     h2_axes_rat->SetYTitle("Data / MC");
- 
     h2_axes_rat->GetXaxis()->SetTitleSize(0.2);
     h2_axes_rat->GetXaxis()->SetTitleOffset(5);
     h2_axes_rat->GetXaxis()->SetLabelSize(0.00);
     h2_axes_rat->GetXaxis()->SetTickLength(0.09);
-    // h2_axes_rat->GetYaxis()->SetTitle("ratio");
     h2_axes_rat->GetYaxis()->SetNdivisions(5,5,0);
     h2_axes_rat->GetYaxis()->SetTitleSize(0.2);
     h2_axes_rat->GetYaxis()->SetTitleOffset(0.34);
@@ -697,8 +654,8 @@ void drawRatios(std::string fullPath, double *binss, unsigned int size,  std::st
   
   
     h2_axes_rat->Draw();
-    // h_mt2->Draw("p same");
-    gr_ratioD->Draw("same P");
+    gr_ratio->Draw("same P");
+
 
     TLine* line = new TLine(xMin,1 , xMax, 1);
     line->SetLineColor(kBlack);
@@ -719,21 +676,14 @@ void drawRatios(std::string fullPath, double *binss, unsigned int size,  std::st
     canny->SaveAs( Form("%s/%s_ratios_%s.eps", fullPath.c_str(), saveName.c_str(),  thisRegion.getName().c_str() ) );
     canny->SaveAs( Form("%s/%s_ratios_%s.png", fullPath.c_str(), saveName.c_str(),thisRegion.getName().c_str() ) );
     canny->SaveAs( Form("%s/%s_ratios_%s.pdf", fullPath.c_str(), saveName.c_str(),thisRegion.getName().c_str() ) );
-    
-    //Filling the YIELDS
-    int yieldBins_mt2 = h_mt2->GetNbinsX();
-    for(int bi = 1; bi <= yieldBins_mt2 ; bi++){
-      double value = h_mt2->GetBinContent(bi);
-      double err = h_mt2->GetBinError(bi);
-      zll_ratio->get(thisRegion)->yield->SetBinContent( bi,   value);
-      zll_ratio->get(thisRegion)->yield->SetBinError( bi,   err);
-    }
- 
+
     delete h_mt2;   delete h_mt2_mc;    delete g_mt2; delete g_mt2_mc;
     delete h2_axes; delete h2_axes_rat;
     delete gr_ratio;
     delete canny;
 
+    delete h_top;
+    delete g_Up; delete g_Down;
 
 }
 
@@ -1134,7 +1084,7 @@ void drawCorrelation(std::string fullPath, float *binss, unsigned int size,  flo
   //THE TREES
   TTree *zllT =  Zll->get(thisRegion)->tree;
 
-  TPaveText* labelTop = MT2DrawTools::getLabelTop(lumi);
+  //  TPaveText* labelTop = MT2DrawTools::getLabelTop(lumi);
  
   TCanvas* canny = new TCanvas( "canny", "", 600, 600 );
   canny->cd();
