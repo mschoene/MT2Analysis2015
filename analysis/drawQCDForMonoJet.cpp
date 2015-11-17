@@ -18,7 +18,7 @@
 
 
 
-void getQCDMonojet( TCanvas* c1, const std::string& regionName, int &nCR, float &qcdFraction );
+void getQCDMonojet( TCanvas* c1, const std::string& regionName, int &nCR, float &qcdFraction, float &qcdFractionError );
 
 
 
@@ -151,11 +151,12 @@ int main( int argc, char* argv[] ) {
       canvases = dt.drawRegionYields_fromTree( Form("jet2_pt_bin%d_b%d", iBin, nBJets) , "jet2_pt" , fullSelection, 20, 0., 300., "Subleading Jet p_{T}", "GeV", "p_{T}(jet1) > 200 GeV", bJetsLabel );
 
       int nCR;
-      float r;
-      getQCDMonojet( canvases[0], iR->getName(), nCR, r );
+      float r, r_err;
+      getQCDMonojet( canvases[0], iR->getName(), nCR, r, r_err );
 
       thisNCR->yield->SetBinContent( iBin, nCR   );
       thisR  ->yield->SetBinContent( iBin, r     );
+      thisR  ->yield->SetBinError  ( iBin, r_err );
       thisEst->yield->SetBinContent( iBin, r*nCR );
 
     }
@@ -178,30 +179,43 @@ int main( int argc, char* argv[] ) {
 
 
 
-void getQCDMonojet( TCanvas* c1, const std::string& regionName, int &nCR, float &qcdFraction ) {
+void getQCDMonojet( TCanvas* c1, const std::string& regionName, int &nCR, float &qcdFraction, float &qcdFractionError ) {
 
   TList* list = MT2DrawTools::getCorrectList( c1 );
   TGraphAsymmErrors* gr_data  = (TGraphAsymmErrors*)list->FindObject("Graph");
 
   nCR = MT2DrawTools::graphIntegral( gr_data, 30., 60. );
 
-  THStack* bgStack = (THStack*)list->FindObject( "bgStack" );
 
-  TList* mcHists = bgStack->GetHists();
+  // decided to take flat conservative QCD purity values
+  TString regionName_tstr(regionName);
+  if( regionName_tstr.Contains("b0") ) {
+    qcdFraction = 0.3;
+  } else {
+    qcdFraction = 0.4;
+  }
+  qcdFractionError = qcdFraction*0.5;
 
-  TH1D* h1_qcd   = (TH1D*)mcHists->FindObject( "h1_QCD_HT200toInf_j1toInf_b0toInf" );
-  TH1D* h1_wjets = (TH1D*)mcHists->FindObject( "h1_WJets_HT200toInf_j1toInf_b0toInf" );
-  TH1D* h1_zjets = (TH1D*)mcHists->FindObject( "h1_ZJets_HT200toInf_j1toInf_b0toInf" );
+//THStack* bgStack = (THStack*)list->FindObject( "bgStack" );
+
+//TList* mcHists = bgStack->GetHists();
+
+//TH1D* h1_qcd   = (TH1D*)mcHists->FindObject( "h1_QCD_HT200toInf_j1toInf_b0toInf" );
+//TH1D* h1_wjets = (TH1D*)mcHists->FindObject( "h1_WJets_HT200toInf_j1toInf_b0toInf" );
+//TH1D* h1_zjets = (TH1D*)mcHists->FindObject( "h1_ZJets_HT200toInf_j1toInf_b0toInf" );
 
 
-  int bin30 = h1_qcd->FindBin(30);
-  int bin60 = h1_qcd->FindBin(60);
+//int bin30 = h1_qcd->FindBin(30);
+//int bin60 = h1_qcd->FindBin(60);
 
-  float qcd3060   = h1_qcd  ->Integral( bin30, bin60 );
-  float wjets3060 = h1_wjets->Integral( bin30, bin60 );
-  float zjets3060 = h1_zjets->Integral( bin30, bin60 );
-  float mcTot = qcd3060 + wjets3060 + zjets3060;
+//double qcd3060_err;
+//double qcd3060 = h1_qcd->IntegralAndError( bin30, bin60, qcd3060_err );
+//double wjets3060 = h1_wjets->Integral( bin30, bin60 );
+//double zjets3060 = h1_zjets->Integral( bin30, bin60 );
 
-  qcdFraction = qcd3060 / mcTot;
+//double mcTot = qcd3060 + wjets3060 + zjets3060;
+
+//qcdFraction = qcd3060 / mcTot;
+//qcdFractionError = qcd3060_err / mcTot;
 
 }
