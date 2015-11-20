@@ -133,7 +133,7 @@ void doAllPurityPlots( const MT2Config& cfg, const std::string& mc_or_data, cons
     variable = score + var;
 
 
-  std::string gammaCRdir = cfg.getEventYieldDir() + "/gammaControlRegion";
+  std::string gammaCRdir = cfg.getGammaControlRegion();
 
   MT2Analysis<MT2EstimateSyst>* purityMC = MT2Analysis<MT2EstimateSyst>::readFromFile( gammaCRdir + "/purityMC"+variable+".root", purityName );
 

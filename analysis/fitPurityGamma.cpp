@@ -109,7 +109,7 @@ int main( int argc, char* argv[] ) {
   TH1::AddDirectory(kFALSE);
 
 
-  std::string gammaCRdir = cfg.getEventYieldDir() + "/gammaControlRegion"; 
+  std::string gammaCRdir = cfg.getGammaControlRegion();
   MT2Analysis<MT2EstimateZinvGamma>* gammaJet_data = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( gammaCRdir + "/data.root", "gammaCR_loose" );
   
  
@@ -376,7 +376,7 @@ void fitSinglePurity( const MT2Config& cfg, Purity& loose, Purity& tight, RooRea
   TPaveText* labelTop = MT2DrawTools::getLabelTop(cfg.lumi());
   labelTop->Draw("same");
 
-  std::string outputdir = cfg.getEventYieldDir() + "/gammaControlRegion/PurityFits" + cfg.gammaTemplateType();
+  std::string outputdir = cfg.getGammaControlRegion() + "/PurityFits" + cfg.gammaTemplateType();
   c1->SaveAs(Form("%s/singleFits/purityFit_%s.eps", outputdir.c_str(), data->GetName()));
   c1->SaveAs(Form("%s/singleFits/purityFit_%s.png", outputdir.c_str(), data->GetName()));
   c1->SaveAs(Form("%s/singleFits/purityFit_%s.pdf", outputdir.c_str(), data->GetName()));

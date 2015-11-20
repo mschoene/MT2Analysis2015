@@ -196,6 +196,16 @@ std::string MT2Config::getEventYieldDir() const {
 }
 
 
+std::string MT2Config::getGammaCRdir() const {
+
+  std::string outputdir = this->getEventYieldDir() + "/gammaControlRegion/";
+
+  return outputdir;
+
+}
+
+
+
 void MT2Config::saveAs( const std::string& filename ) const {
 
 

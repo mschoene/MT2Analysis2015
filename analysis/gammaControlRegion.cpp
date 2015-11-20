@@ -80,7 +80,7 @@ int main( int argc, char* argv[] ) {
 
   TH1::AddDirectory(kFALSE); // stupid ROOT memory allocation needs this
 
-  std::string outputdir = cfg.getEventYieldDir() + "/gammaControlRegion"; 
+  std::string outputdir = cfg.getGammaCRdir();
   system(Form("mkdir -p %s", outputdir.c_str()));
 
 
@@ -432,8 +432,7 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
 
     if( myTree.isData ) {
 
-      if( !( myTree.Flag_HBHENoiseFilter && myTree.Flag_HBHEIsoNoiseFilter && myTree.Flag_eeBadScFilter ) ) continue;
-      // if( ( myTree.Flag_HBHENoiseFilter==0 || myTree.Flag_CSCTightHaloFilter==0 || myTree.Flag_goodVertices==0 ||  myTree.Flag_eeBadScFilter==0 ) ) continue;
+      if( !myTree.passFilters() ) continue;
       if( myTree.isGolden == 0) continue;    
 
     }

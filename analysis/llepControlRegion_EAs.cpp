@@ -186,8 +186,7 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
     if( myTree.isData && !myTree.isGolden ) continue;
     if( myTree.isData ) {
 
-      if( !( myTree.Flag_HBHENoiseFilter && myTree.Flag_CSCTightHaloFilter &&  myTree.Flag_eeBadScFilter ) ) continue;
-
+      if( !myTree.passFilters() ) continue;
     }
 
     if( myTree.nVert<1 ) continue;

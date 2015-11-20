@@ -335,7 +335,7 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg ) {
 
     if( myTree.isData ) {
 
-           if( !( myTree.Flag_HBHENoiseFilter && myTree.Flag_CSCTightHaloFilter &&  myTree.Flag_eeBadScFilter ) ) continue; 
+           if( !myTree.passFilters() ) continue;
 
 	   if( myTree.run < 254231 || myTree.run > 257599 ) continue; //Unblinded data (149/pb)
 
