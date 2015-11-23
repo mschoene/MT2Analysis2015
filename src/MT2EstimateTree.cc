@@ -165,13 +165,15 @@ MT2Analysis<MT2EstimateTree>* MT2EstimateTree::makeRebinnedAnalysisFromInclusive
   MT2Analysis<MT2EstimateTree>* analysis = new MT2Analysis<MT2EstimateTree>( aname, regionsSet );
   std::set<MT2Region> newRegions = analysis->getRegions();
 
+
   if ( nBins!=0 )
     MT2Estimate::rebinYields( (MT2Analysis<MT2Estimate>*)analysis, nBins, bins );
 
   for( std::set<MT2Region>::iterator iR=newRegions.begin(); iR!=newRegions.end(); ++iR ) {
     MT2EstimateTree* thisEstimateTree = analysis->get( *iR );
     thisEstimateTree->projectFromTree( treeInclusive, selection, variable );
- } // for regions
+  } // for regions
+
 
   return analysis;
 
