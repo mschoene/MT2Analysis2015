@@ -476,7 +476,7 @@ MT2EstimateSyst MT2EstimateSyst::operator/( const MT2EstimateSyst& rhs ) const{
     float otherErrDown = otherBin - otherBinDown;
 
     float newBin = thisBin/otherBin;
-    //Undertainty down influences the new uncertainty up and vice versa
+    //Uncertainty down influences the new uncertainty up and vice versa
     float newErrUp = sqrt( thisErrUp*thisErrUp/(otherBin*otherBin) + otherErrDown*otherErrDown*thisBin*thisBin/(otherBin*otherBin*otherBin*otherBin) );
     float newErrDown = sqrt( thisErrDown*thisErrDown/(otherBin*otherBin) + otherErrUp*otherErrUp*thisBin*thisBin/(otherBin*otherBin*otherBin*otherBin) );
     //float newErrUp = sqrt( thisErrUp*thisErrUp/(otherBin*otherBin) + otherErrUp*otherErrUp*thisBin*thisBin/(otherBin*otherBin*otherBin*otherBin) );
@@ -780,7 +780,7 @@ const MT2EstimateSyst& MT2EstimateSyst::operator/=( const MT2EstimateSyst& rhs )
     float otherErrDown = otherBin - otherBinDown;
 
     float newBin = thisBin/otherBin;    
-    //Undertainty down influences the new uncertainty up and vice versa
+    //Uncertainty down influences the new uncertainty up and vice versa
     float newErrUp = sqrt( thisErrUp*thisErrUp/(otherBin*otherBin) + otherErrDown*otherErrDown*thisBin*thisBin/(otherBin*otherBin*otherBin*otherBin) );
     float newErrDown = sqrt( thisErrDown*thisErrDown/(otherBin*otherBin) + otherErrUp*otherErrUp*thisBin*thisBin/(otherBin*otherBin*otherBin*otherBin) );
 
