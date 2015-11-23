@@ -65,8 +65,8 @@ int main( int argc, char* argv[] ) {
   MT2Analysis<MT2EstimateTree>* mc_nip    = MT2EstimateTree::makeAnalysisFromInclusiveTree( "Fragm." , cfg.crRegionsSet(), mc_, "prompt==1" ); 
   MT2Analysis<MT2EstimateTree>* mc_fake   = MT2EstimateTree::makeAnalysisFromInclusiveTree( "Fakes"  , cfg.crRegionsSet(), mc_, "prompt==0" ); 
   mc_prompt->setColor(18);
-  mc_nip   ->setColor(46);
-  mc_fake  ->setColor(38);
+  mc_nip   ->setColor(38);
+  mc_fake  ->setColor(46);
 
   std::vector< MT2Analysis<MT2EstimateTree>* > mc;
   mc.push_back(mc_prompt);
@@ -84,20 +84,20 @@ int main( int argc, char* argv[] ) {
   dt.set_mc( &mc );
 
   // +++++++++++++++++++++++++
-  // +++      low+high-HT      +++
+  // +++     multijet      +++
   // +++++++++++++++++++++++++
 
   dt.set_lumi( cfg.lumi_SinglePhoton() );
 
-  float htMin=450, htMax=-1;
+  float htMin=200, htMax=-1;
   std::string cutsLabel = getCutLabel(htMin, htMax, "H_{T}", "GeV");
 
-  std::string selection = "weight*(ptGamma>180. && ht>450. && nJets>1 && iso<2.5 && deltaPhiMin>0.3 && diffMetMht<0.5*met && mt2>200. && met>200)";
+  std::string selection = "weight*(ptGamma>180. && ht>200. && nJets>1 && iso<2.5 && deltaPhiMin>0.3 && diffMetMht<0.5*met && mt2>200. && met>200)";
 
   dt.drawRegionYields_fromTree( "nVert"      , "nVert"              , selection, 25, 0.5   , 50.5  , "Number of Vertices"               , ""    , cutsLabel, "#geq 2 j" );
   dt.drawRegionYields_fromTree( "mt2"        , "mt2"                , selection, 40, 0.    , 1000. , "M_{T2} (Photon Removed)"          , "GeV" , cutsLabel, "#geq 2 j" );
   dt.drawRegionYields_fromTree( "met"        , "met"                , selection, 36, 0.    , 900.  , "Missing E_{T}"                    , "GeV" , cutsLabel, "#geq 2 j" );
-  dt.drawRegionYields_fromTree( "ht"         , "ht"                 , selection, 64, 450.  , 2050. , "H_{T}"                            , "GeV" , cutsLabel, "#geq 2 j" );
+  dt.drawRegionYields_fromTree( "ht"         , "ht"                 , selection, 64, 200.  , 2050. , "H_{T}"                            , "GeV" , cutsLabel, "#geq 2 j" );
   dt.drawRegionYields_fromTree( "nJets"      , "nJets"              , selection, 10, 1.5   , 11.5  , "Number of Jets (p_{T} > 30 GeV)"  , ""    , cutsLabel, "#geq 2 j" );
   dt.drawRegionYields_fromTree( "nBJets"     , "nBJets"             , selection, 6 , -0.5  , 5.5   , "Number of b-Jets (p_{T} > 20 GeV)", ""    , cutsLabel, "#geq 2 j" );
   dt.drawRegionYields_fromTree( "ptGamma"    , "ptGamma"            , selection, 36, 180.  , 1080  , "Photon p_{T}"                     , "GeV" , cutsLabel, "#geq 2 j" );
@@ -105,8 +105,8 @@ int main( int argc, char* argv[] ) {
   dt.drawRegionYields_fromTree( "sietaieta"  , "sietaieta"          , selection, 12, 0.0075, 0.0111, "Photon #sigma_{i#eta i#eta}"      , ""    , cutsLabel, "#geq 2 j" );
   dt.drawRegionYields_fromTree( "isoRC"      , "gamma_chHadIsoRC[0]", selection, 40, 0.    , 10.   , "Random Cone Isolation"            , "GeV" , cutsLabel, "#geq 2 j" );
 
-  selection = "weight*(ptGamma>180. && ht>450. && nJets>1 && deltaPhiMin>0.3 && diffMetMht<0.5*met && mt2>200.)";
-  dt.drawRegionYields_fromTree("loose_iso"         , "iso"                , selection, 40, 0.    , 10.   , "Photon Charged Isolation"         , "GeV" , cutsLabel, "#ge 2 j" );
+  selection = "weight*(ptGamma>180. && ht>200. && nJets>1 && deltaPhiMin>0.3 && diffMetMht<0.5*met && mt2>200.)";
+  dt.drawRegionYields_fromTree("loose_iso"         , "iso"                , selection, 40, 0.    , 10.   , "Photon Charged Isolation"         , "GeV" , cutsLabel, "#geq 2 j" );
 
 
 
