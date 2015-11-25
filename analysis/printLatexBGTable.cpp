@@ -4,7 +4,7 @@
 
 #include "interface/MT2Analysis.h"
 #include "interface/MT2Estimate.h"
-
+#include "TMath.h"
 
 
 struct BGTable {
@@ -27,14 +27,16 @@ struct BGTable {
   float qcd_systUp;
   float qcd_systDn;
 
+  int data;
+
 };
 
 
 
 BGTable getTable( const std::string& tableFileName );
 std::string makeSingleLine( float yield, float statUp, float statDn, float systUp, float systDn );
+std::string makeSingleLineData( int yield );
 std::string getSingleErrPart( float up, float dn );
-
 
 int round(float d) {
   return (int)(floor(d + 0.5));
@@ -52,6 +54,8 @@ int main( int argc, char* argv[] ) {
   std::string dir(argv[1]);
 
   MT2Analysis<MT2Estimate>* analysis = MT2Analysis<MT2Estimate>::readFromFile( dir + "/analyses.root", "ZJets" ); // any one is good, just need to know the regions
+
+  //  MT2Analysis<MT2Estimate>* analysisData = MT2Analysis<MT2Estimate>::readFromFile( dir + "/analyses.root", "data" ); // any one is good, just need to know the regions
   
   std::vector < MT2Analysis<MT2Estimate>* > analysesSignal;
   analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( dir + "/analyses.root", "SMS_T1tttt_mGluino1500_mLSP100") );
@@ -86,7 +90,7 @@ int main( int argc, char* argv[] ) {
     MT2Region* thisRegion = new MT2Region( *(iR) );
 
     ofs << "\\begin{table}[htbp]" << std::endl; 
-    ofs << "\\caption{Background estimate and signal yields in bins of \\mttwo for " << names[0].c_str() << ", " << names[1].c_str() << ". The yields are normalized to \\lumival.}" << std::endl;
+    ofs << "\\caption{Background estimate, observation, and signal yields in bins of \\mttwo for " << names[0].c_str() << ", " << names[1].c_str() << ". The yields are normalized to $1.26~\\mathrm{fb}^{-1}$.}" << std::endl;
     ofs << "\\scriptsize" << std::endl;
     ofs << "\\centering" << std::endl;
     ofs << "\\makebox[\\textwidth][c]{" << std::endl;
@@ -115,6 +119,8 @@ int main( int argc, char* argv[] ) {
     std::string zinvLine = "Invisible Z ";
     std::string llepLine = "Lost Lepton ";
     std::string qcdLine = "QCD ";
+    std::string totLine = "Total ";
+    std::string dataLine = "Observation ";
 
     for( int iBin=0; iBin<nBins; ++iBin ) {
       
@@ -129,23 +135,44 @@ int main( int argc, char* argv[] ) {
       std::string thisZinvLine = makeSingleLine( thisTable.zinv, thisTable.zinv_statUp, thisTable.zinv_statDn, thisTable.zinv_systUp, thisTable.zinv_systDn );
       std::string thisllepLine = makeSingleLine( thisTable.llep, thisTable.llep_statUp, thisTable.llep_statDn, thisTable.llep_systUp, thisTable.llep_systDn );
       std::string thisqcdLine = makeSingleLine( thisTable.qcd, thisTable.qcd_statUp, thisTable.qcd_statDn, thisTable.qcd_systUp, thisTable.qcd_systDn );
+      std::string thistotLine =  makeSingleLine( thisTable.qcd+thisTable.llep+thisTable.zinv, TMath::Sqrt(thisTable.qcd_statUp*thisTable.qcd_statUp + thisTable.llep_statUp*thisTable.llep_statUp + thisTable.zinv_statUp*thisTable.zinv_statUp), TMath::Sqrt(thisTable.qcd_statDn*thisTable.qcd_statDn + thisTable.llep_statDn*thisTable.llep_statDn + thisTable.zinv_statDn*thisTable.zinv_statDn), TMath::Sqrt(thisTable.qcd_systUp*thisTable.qcd_systUp + thisTable.llep_systUp*thisTable.llep_systUp + thisTable.zinv_systUp*thisTable.zinv_systUp), TMath::Sqrt(thisTable.qcd_systDn*thisTable.qcd_systDn + thisTable.llep_systDn*thisTable.llep_systDn + thisTable.zinv_systDn*thisTable.zinv_systDn) );
+      
+      std::string thisDataLine =  makeSingleLineData( thisTable.data );
       
       zinvLine = zinvLine + " & " + thisZinvLine;
       llepLine = llepLine + " & " + thisllepLine;
       qcdLine = qcdLine + " & " + thisqcdLine;
+      totLine = totLine + " & " + thistotLine;
+
+      dataLine = dataLine + " & " + thisDataLine;
+      
       
     } // for mt2 bins
     
     zinvLine = zinvLine + " \\\\";
     llepLine = llepLine + " \\\\";
     qcdLine  = qcdLine  + " \\\\";
+    totLine  = totLine  + " \\\\";
+    dataLine  = dataLine  + " \\\\";
     
     ofs << zinvLine << std::endl;
     ofs << llepLine << std::endl;
     ofs << qcdLine << std::endl;
 
     ofs << "\\hline" << std::endl;
+
+    ofs << totLine << std::endl;
+
+    ofs << "\\hline" << std::endl;
+
+    ofs << dataLine << std::endl;
     
+//    ofs << analysisData->getName().c_str();
+//    analysisData->print( ofs, thisRegion );
+
+    ofs << "\\hline" << std::endl;
+    ofs << "\\hline" << std::endl;
+
     for(unsigned a =0;  a < analysesSignal.size(); ++a) {
       ofs << analysesSignal[a]->getName().c_str();
       analysesSignal[a]->print(ofs, thisRegion );
@@ -203,6 +230,8 @@ BGTable getTable( const std::string& tableFileName ) {
       table.qcd_statDn = statDn;
       table.qcd_systUp = systUp;
       table.qcd_systDn = systDn;
+    } else if( name=="data" ){
+      table.data = yield;
     } else {
       continue;
     }
@@ -222,11 +251,22 @@ std::string makeSingleLine( float yield, float statUp, float statDn, float systU
 
   std::string returnLine;
   if(yield<0.05 && statUp<0.05 && statDn<0.05 && systUp<0.05 && systDn<0.05)
-    returnLine="---";
+    returnLine=Form("%.2f $%s$(stat.) $%s$(syst.)", yield, statPart.c_str(), systPart.c_str());
+  //    returnLine="---";
   else if(round(statUp) > 9 && round(statDn) > 9 && round(systUp) > 9 && round(systDn) > 9)
     returnLine=Form("%.0f $%s$(stat.) $%s$(syst.)", yield, statPart.c_str(), systPart.c_str());
   else
     returnLine=Form("%.1f $%s$(stat.) $%s$(syst.)", yield, statPart.c_str(), systPart.c_str());
+
+  return returnLine;
+
+}
+
+
+std::string makeSingleLineData( int yield ) {
+
+  std::string returnLine;
+  returnLine=Form("%d", yield);
 
   return returnLine;
 
@@ -250,6 +290,14 @@ std::string getSingleErrPart( float up, float dn ) {
     else
       thisPart = std::string(Form("^{+%.0f}_{-%.0f}", up, dn) );
   
+  }
+  else if( up<0.05 || dn < 0.05){
+    
+    if( UP==DN )
+      thisPart = std::string(Form("\\pm %.2f", up) );
+    else
+      thisPart = std::string(Form("^{+%.2f}_{-%.2f}", up, dn) );
+
   }
   else{
     

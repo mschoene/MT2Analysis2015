@@ -51,7 +51,7 @@ int main( int argc, char* argv[] ) {
   
   lumi=cfg.lumi();
   
-  std::string outputdir = cfg.getEventYieldDir() + "/scaleVariations";
+  std::string outputdir = cfg.getEventYieldDir() + "/ScalesVariation_Top_xsec";
   system(Form("mkdir -p %s", outputdir.c_str()));
 
 
@@ -83,7 +83,7 @@ void drawHisto( const std::string& outputdir, MT2Analysis<MT2EstimateTree>* data
 
   std::vector<int> colors; //mc
   colors.push_back(855); // top
-  //colors.push_back(417); // w+jets
+  //colors.push_back(419); // w+jets
     
   std::set<MT2Region> MT2Regions = data->getRegions();
 
@@ -166,7 +166,7 @@ void drawHisto( const std::string& outputdir, MT2Analysis<MT2EstimateTree>* data
 	
 	integral0 = h_bg_v[index][0]->Integral();
 	sigma2 += (thisIntegral-integral0)*(thisIntegral-integral0);	
-	h_bg_v[index][v]->Scale(normalization);
+	//	h_bg_v[index][v]->Scale(normalization);
 	
 	h_bg_v[index][v]->SetLineColor(colors_v[v]);
 	h_bg_v[index][v]->SetLineWidth(2);
@@ -207,13 +207,13 @@ void drawHisto( const std::string& outputdir, MT2Analysis<MT2EstimateTree>* data
     
     if(logY) {
       gPad->SetLogy();
-      yMin=1e-1;
+      yMin=1e-3;
       yMax*=50.;
     }
 
     label="M_{T2} [GeV]";
     if(thisRegion.nJetsMax()==1)
-      label="H_{T} [GeV]";
+      label="p_{T}(jet_{1}) [GeV]";
 
     std::string labelY = "Events";
     TH2D* h_axes = new TH2D("axes", "", 10, 200, 1500, 10, yMin, yMax );
@@ -281,7 +281,7 @@ void drawHisto( const std::string& outputdir, MT2Analysis<MT2EstimateTree>* data
 	h_bg_r[i][v]->GetXaxis()->SetLabelSize(0.00);
 	h_bg_r[i][v]->GetXaxis()->SetTickLength(0.09);
 	h_bg_r[i][v]->GetYaxis()->SetNdivisions(5,5,0);
-	h_bg_r[i][v]->GetYaxis()->SetRangeUser(0.75,1.25);
+	h_bg_r[i][v]->GetYaxis()->SetRangeUser(0.,2.0);
 	h_bg_r[i][v]->GetYaxis()->SetTitleSize(0.17);
 	h_bg_r[i][v]->GetYaxis()->SetTitleOffset(0.4);
 	h_bg_r[i][v]->GetYaxis()->SetLabelSize(0.17);
