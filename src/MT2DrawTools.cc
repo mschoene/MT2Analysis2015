@@ -23,6 +23,8 @@ MT2DrawTools::MT2DrawTools( const std::string& outDir, float lumi ) {
 
   addOverflow_ = true;
 
+  displaySF_ = true;
+
   std::cout << "[MT2DrawTools] Initiating: " << std::endl;
   std::cout << "     lumi: " << lumi_ << std::endl;
   std::cout << "     lumiErr: " << lumiErr_ << std::endl;
@@ -90,6 +92,18 @@ void MT2DrawTools::set_addOverflow( bool addOver ) {
   else
     std::cout << "[MT2DrawTools] Disabled adding overflow bins." << std::endl;
   addOverflow_ = addOver;
+
+}
+
+
+
+void MT2DrawTools::set_displaySF( bool displaySF ) { 
+
+  if( displaySF )
+    std::cout << "[MT2DrawTools] Setting display SF: ON" << std::endl;
+  else
+    std::cout << "[MT2DrawTools] Setting display SF: OFF" << std::endl;
+  displaySF_ = displaySF;
 
 }
 
@@ -981,7 +995,10 @@ std::vector<TCanvas*> MT2DrawTools::drawRegionYields_fromTree( const std::string
     normText->SetFillColor(0);
     normText->SetTextSize(0.035);
     if( scaleFactor!=1. ) {
-      normText->AddText( Form("#splitline{MC scaled}{by %.2f}", scaleFactor) );
+      if( displaySF_ )
+        normText->AddText( Form("#splitline{MC scaled}{by %.2f}", scaleFactor) );
+      else
+        normText->AddText( "#splitline{Shape}{Norm.}" );
       if( this->twoPads() ) 
         pad1->cd();
       else
