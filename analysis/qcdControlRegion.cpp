@@ -68,7 +68,7 @@ int main( int argc, char* argv[] ) {
   } else if( onlyMC ) {
     std::cout << "-> Will run only on MC." << std::endl;
   } else {
-    std::cout << "-> Will run only on both data and MC." << std::endl;
+    std::cout << "-> Will run on both data and MC." << std::endl;
   }
  
 
@@ -239,6 +239,7 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
 
     if( monojet ) {
       if( !( (njets==2 && myTree.deltaPhiMin<0.3 && myTree.jet1_pt>200. && myTree.met_pt>200.) ) ) continue;
+      if( !myTree.passMonoJetId(0) ) continue;
     } else {
       if( mt2<50. ) continue;
     }
