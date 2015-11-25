@@ -197,7 +197,6 @@ void makePurity( const MT2Config& cfg, std::string outputdir,MT2Analysis<MT2Esti
 
 
   
->>>>>>> ana-mt2/MT2Analysis2015_RandD
   for( std::set<MT2Region>::iterator iR=regions.begin(); iR!=regions.end(); ++iR ) {
 
     // if( iR->nBJetsMin()>2 ) continue;
@@ -212,13 +211,9 @@ void makePurity( const MT2Config& cfg, std::string outputdir,MT2Analysis<MT2Esti
  
     MT2EstimateSyst* thisLoosePurity = purityLoose->get( *iR );
     std::string nameLoose = thisLoosePurity->yield->GetName();
-    std::string nameLooseUp = thisLoosePurity->yield_systUp->GetName();
-    std::string nameLooseDn = thisLoosePurity->yield_systDown->GetName();
 
     MT2EstimateSyst* thisTightPurity = purityTight->get( *iR );
     std::string nameTight = thisTightPurity->yield->GetName();
-    std::string nameTightUp = thisTightPurity->yield_systUp->GetName();
-    std::string nameTightDn = thisTightPurity->yield_systDown->GetName();
 
 
 
