@@ -106,8 +106,9 @@ int main( int argc, char* argv[] ) {
   dt.set_data( data );
   dt.set_mc( &mc );
 
-  //dt.set_addOverflow( false );
-  dt.set_mcSF( 1.3 );
+  dt.set_addOverflow( false );
+  dt.set_displaySF( false );
+  //dt.set_mcSF( 1.3 );
 
 
 
@@ -115,7 +116,8 @@ int main( int argc, char* argv[] ) {
 
 
   //std::string selection = "nJets==2 && deltaPhiMin<0.3 && jet1_pt>200. && met>200.";
-  std::string selection = "(id<100 || id>152) && nJets==2 && deltaPhiMin<0.3 && jet1_pt>200. && met>200.";
+  std::string selection = "(id<100 || id>=152) && nJets==2 && deltaPhiMin<0.3 && jet1_pt>200. && met>200.";
+  //std::string selection = "(id<100 || id>152) && nJets==2 && deltaPhiMin<0.3 && jet1_pt>200. && met>200.";
   canvases = dt.drawRegionYields_fromTree( "jet2_pt" , "jet2_pt" , selection, 20, 30., 330., "Subleading Jet p_{T}", "GeV", "p_{T}(jet1) > 200 GeV", "N(j) = 2" );
 
   float mcSF = MT2DrawTools::getDataMCSF( canvases[0] );
