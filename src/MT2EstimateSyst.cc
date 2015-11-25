@@ -9,6 +9,44 @@
 
 
 
+
+void MT2EstimateSyst::rebinYields( MT2Analysis<MT2EstimateSyst>* analysis, int nBins, double* bins) {
+
+  std::set<MT2Region> regions = analysis->getRegions();
+
+  for( std::set<MT2Region>::iterator iR = regions.begin(); iR!=regions.end(); ++iR ) {
+
+    MT2EstimateSyst* estimate = analysis->get(*iR);
+    TH1D* thisYield = estimate->yield;
+
+    std::string oldName(thisYield->GetName());
+    delete thisYield;
+    thisYield = new TH1D( oldName.c_str(), "", nBins, bins );
+  
+
+    TH1D* this_systUp = estimate->yield_systUp;
+    TH1D* this_systDown = estimate->yield_systDown;
+
+
+    std::string oldName_systUp(this_systUp->GetName());
+    std::string oldName_systDown(this_systDown->GetName());
+ 
+    delete this_systUp;
+    this_systUp = new TH1D( oldName_systUp.c_str(), "", nBins, bins );
+    this_systUp->Sumw2();
+
+    delete this_systDown;
+    this_systDown = new TH1D( oldName_systDown.c_str(), "", nBins, bins );
+    this_systDown->Sumw2();
+    
+  }
+  
+}
+
+
+
+
+
 MT2EstimateSyst::MT2EstimateSyst( const std::string& aname, const MT2Region& aregion ) : MT2Estimate( aname, aregion ) {
 
   int nBins;
@@ -27,17 +65,19 @@ MT2EstimateSyst::MT2EstimateSyst( const std::string& aname, const MT2Region& are
 
 MT2EstimateSyst::MT2EstimateSyst( const std::string& aname, const MT2Region& aregion, const MT2Estimate& pass, const MT2Estimate& tot ) : MT2Estimate( aname, aregion ) {
 
+  //get the right bins from the input files
+  MT2Estimate* estimate = new MT2Estimate(pass);
   int nBins;
   double* bins;
+  estimate->MT2Estimate::getYieldBins(nBins, bins);
 
-  pass.getYieldBins(nBins, bins);
-  //  region->getBins(nBins, bins);
-
-  delete yield;
-
-  yield = new TH1D( this->getHistoName("yield").c_str(), "", nBins, bins);
-  yield->Sumw2();
-
+  //Rebinning the yield
+  TH1D* thisYield = this->yield;
+  std::string oldName(thisYield->GetName());
+  delete thisYield;
+  thisYield = new TH1D( oldName.c_str(), "", nBins, bins );
+  
+ 
   yield_systUp = new TH1D( this->getHistoName("yield_systUp").c_str(), "", nBins, bins);
   yield_systUp->Sumw2();
   yield_systDown = new TH1D( this->getHistoName("yield_systDown").c_str(), "", nBins, bins);
@@ -56,6 +96,7 @@ MT2EstimateSyst::MT2EstimateSyst( const std::string& aname, const MT2Region& are
 
 
 }
+
 
 
 
@@ -265,6 +306,7 @@ TGraphAsymmErrors* MT2EstimateSyst::getGraph() const {
     
     int iPoint = iBin-1;
     graph->SetPoint( iPoint, x, y );
+
     graph->SetPointError( iPoint, x-x_minus, x_plus-x, y-y_minus, y_plus-y );
 
   }
@@ -502,8 +544,11 @@ MT2EstimateSyst MT2EstimateSyst::operator/( const MT2EstimateSyst& rhs ) const{
     float otherErrDown = otherBin - otherBinDown;
 
     float newBin = thisBin/otherBin;
-    float newErrUp = sqrt( thisErrUp*thisErrUp/(otherBin*otherBin) + otherErrUp*otherErrUp*thisBin*thisBin/(otherBin*otherBin*otherBin*otherBin) );
-    float newErrDown = sqrt( thisErrDown*thisErrDown/(otherBin*otherBin) + otherErrDown*otherErrDown*thisBin*thisBin/(otherBin*otherBin*otherBin*otherBin) );
+    //Uncertainty down influences the new uncertainty up and vice versa
+    float newErrUp = sqrt( thisErrUp*thisErrUp/(otherBin*otherBin) + otherErrDown*otherErrDown*thisBin*thisBin/(otherBin*otherBin*otherBin*otherBin) );
+    float newErrDown = sqrt( thisErrDown*thisErrDown/(otherBin*otherBin) + otherErrUp*otherErrUp*thisBin*thisBin/(otherBin*otherBin*otherBin*otherBin) );
+    //float newErrUp = sqrt( thisErrUp*thisErrUp/(otherBin*otherBin) + otherErrUp*otherErrUp*thisBin*thisBin/(otherBin*otherBin*otherBin*otherBin) );
+    //float newErrDown = sqrt( thisErrDown*thisErrDown/(otherBin*otherBin) + otherErrDown*otherErrDown*thisBin*thisBin/(otherBin*otherBin*otherBin*otherBin) );
 
     result.yield         ->SetBinContent( iBin, newBin );
     result.yield_systUp  ->SetBinContent( iBin, newBin + newErrUp );
@@ -802,9 +847,13 @@ const MT2EstimateSyst& MT2EstimateSyst::operator/=( const MT2EstimateSyst& rhs )
     float otherErrUp = otherBinUp - otherBin;
     float otherErrDown = otherBin - otherBinDown;
 
-    float newBin = thisBin/otherBin;
-    float newErrUp = sqrt( thisErrUp*thisErrUp/(otherBin*otherBin) + otherErrUp*otherErrUp*thisBin*thisBin/(otherBin*otherBin*otherBin*otherBin) );
-    float newErrDown = sqrt( thisErrDown*thisErrDown/(otherBin*otherBin) + otherErrDown*otherErrDown*thisBin*thisBin/(otherBin*otherBin*otherBin*otherBin) );
+    float newBin = thisBin/otherBin;    
+    //Uncertainty down influences the new uncertainty up and vice versa
+    float newErrUp = sqrt( thisErrUp*thisErrUp/(otherBin*otherBin) + otherErrDown*otherErrDown*thisBin*thisBin/(otherBin*otherBin*otherBin*otherBin) );
+    float newErrDown = sqrt( thisErrDown*thisErrDown/(otherBin*otherBin) + otherErrUp*otherErrUp*thisBin*thisBin/(otherBin*otherBin*otherBin*otherBin) );
+
+    // float newErrUp = sqrt( thisErrUp*thisErrUp/(otherBin*otherBin) + otherErrUp*otherErrUp*thisBin*thisBin/(otherBin*otherBin*otherBin*otherBin) );
+    // float newErrDown = sqrt( thisErrDown*thisErrDown/(otherBin*otherBin) + otherErrDown*otherErrDown*thisBin*thisBin/(otherBin*otherBin*otherBin*otherBin) );
 
     this->yield         ->SetBinContent( iBin, newBin );
     this->yield_systUp  ->SetBinContent( iBin, newBin + newErrUp );

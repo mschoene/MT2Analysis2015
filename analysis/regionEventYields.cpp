@@ -341,10 +341,10 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg ) {
     float mt2  = (njets>1) ? myTree.mt2 : ht;
     //float mt2  = myTree.mt2;
     
-//    float GenSusyMScan1 = myTree.GenSusyMGluino;
-//    float GenSusyMScan2 = myTree.GenSusyMNeutralino;
-    float GenSusyMScan1 = myTree.GenSusyMScan1;
-    float GenSusyMScan2 = myTree.GenSusyMScan2;
+    float GenSusyMScan1 = myTree.GenSusyMGluino;
+    float GenSusyMScan2 = myTree.GenSusyMNeutralino;
+//    float GenSusyMScan1 = myTree.GenSusyMScan1;
+//    float GenSusyMScan2 = myTree.GenSusyMScan2;
     
     //Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi()*myTree.puWeight;
     //Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb;//*cfg.lumi();
@@ -362,10 +362,9 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg ) {
 //      
 //    }
 
-
     if( myTree.isData ) {
       
-      if( !( myTree.Flag_HBHENoiseFilter && myTree.Flag_HBHEIsoNoiseFilter && myTree.Flag_eeBadScFilter ) ) continue;
+      if( !myTree.passFilters() ) continue;
 
     }
 

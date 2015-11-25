@@ -1,4 +1,4 @@
-#### With Phys14 JEC
+		#### With Phys14 JEC
 #### POST-PROCESSED only
 ####dcap://t3se01.psi.ch:22125/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/MT2production/74X/Spring15_50ns/PostProcessed/05Aug2015_noMT2skim/QCD_Pt1000to1400_50ns_post.root
 #####dcap://t3se01.psi.ch:22125/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/MT2production/74X/Spring15_50ns/PostProcessed/05Aug2015_noMT2skim/QCD_Pt120to170_50ns_post.root
@@ -87,7 +87,11 @@ dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/mmasciov/MT2produ
 dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/mmasciov/MT2production/Phys14/PostProcessed/16Aug2015_noSkim/skimAndPrune/ZJetsToNuNu_HT400to600_post_skim_prune.root
 dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/mmasciov/MT2production/Phys14/PostProcessed/16Aug2015_noSkim/skimAndPrune/ZJetsToNuNu_HT600toInf_post_skim_prune.root
 #
-dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/mmasciov/MT2production/Phys14/PostProcessed/16Aug2015_noSkim/DYJetsToLL_M50_50ns_post.root
+#dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/mmasciov/MT2production/Phys14/PostProcessed/16Aug2015_noSkim/DYJetsToLL_M50_50ns_post.root
+#dcap://t3se01.psi.ch:22125/pnfs/psi.ch/cms/trivcat/store/user/pandolf/MT2production/PostProcessed/Aug26/DYJetsToLL_M50_HT100to200_post_skim.root
+dcap://t3se01.psi.ch:22125/pnfs/psi.ch/cms/trivcat/store/user/casal/MT2production/74X/PostProcessed/26Aug2015_DYJetsM50HT_lowHT_fullMET_v2/DYJetsToLL_M50_HT200to400_post.root
+dcap://t3se01.psi.ch:22125/pnfs/psi.ch/cms/trivcat/store/user/casal/MT2production/74X/PostProcessed/26Aug2015_DYJetsM50HT_fullMET_v2/DYJetsToLL_M50_HT400to600_post.root
+dcap://t3se01.psi.ch:22125/pnfs/psi.ch/cms/trivcat/store/user/casal/MT2production/74X/PostProcessed/26Aug2015_DYJetsM50HT_fullMET_v2/DYJetsToLL_M50_HT600toInf_post.root
 #
 dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/mmasciov/MT2production/Phys14/PostProcessed/16Aug2015_noSkim/skimAndPrune/TTJets_LO_50ns_post_skim_prune.root
 #

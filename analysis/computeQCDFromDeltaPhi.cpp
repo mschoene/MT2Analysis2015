@@ -120,9 +120,6 @@ int main( int argc, char* argv[] ) {
     rest_4fJets      = MT2EstimateTree::makeAnalysisFromInclusiveTree( "rest_4fJets"     , regionsSet_fJets , qcdTree_mc  , "id>=300 &&              mt2>100. && mt2<200. && nJets>1 && deltaPhiMin<0.3" ); // invert deltaPhi 
   }
 
-  //MT2Analysis<MT2EstimateTree>* mc_4rHat    = MT2EstimateTree::makeAnalysisFromInclusiveTree( "mc_4rHat"   , regionsSet_rHat  , qcdTree_mc, "id>=153 && id<200 && mt2>100. && mt2<200. && deltaPhiMin<0.3" ); // invert deltaPhi
-  //MT2Analysis<MT2EstimateTree>* mc_4fJets   = MT2EstimateTree::makeAnalysisFromInclusiveTree( "mc_4fJets"  , regionsSet_fJets , qcdTree_mc, "id>=153 && id<200 && mt2>100. && mt2<200. && deltaPhiMin<0.3" ); // invert deltaPhi 
-
   std::cout << " Done." << std::endl;
 
 
@@ -177,7 +174,7 @@ int main( int argc, char* argv[] ) {
   std::cout << "-> Making MT2EstimateQCD from inclusive tree...";
   MT2Analysis<MT2EstimateQCD>* est_all;
   if( useMC ) {
-    est_all  = MT2EstimateQCD::makeAnalysisFromInclusiveTree( "est", cfg.qcdRegionsSet(), qcdTree_mc  , "" );
+    est_all  = MT2EstimateQCD::makeAnalysisFromInclusiveTree( "est", cfg.qcdRegionsSet(), qcdTree_mc , "(id>153||mt2<200||ht<1000)", "(id>153||mt2<200||ht<1000)" ); // remove id>153 for high HT and high mt2
   } else {
     if ( closureTest ) // fill tree with ht-only triggers
       est_all  = MT2EstimateQCD::makeAnalysisFromInclusiveTree( "est", cfg.qcdRegionsSet(), qcdTree_data, "id==1", "id==1" ); //use HT-only triggers for dphi-ratio
@@ -623,7 +620,9 @@ void drawSingleFit( const MT2Config& cfg, bool useMC, const std::string& outdir,
   
   //float xMin = thisRatioAll->GetXaxis()->GetXmin();
   float xMin = 50;
-  float xMax = useMC ? thisRatioAll->GetXaxis()->GetXmax() : 200;  // we are blind to MT2>200 in data
+  //float xMax = useMC ? thisRatioAll->GetXaxis()->GetXmax() : 200;  // we are blind to MT2>200 in data
+  //float xMax = useMC ? thisRatioAll->GetXaxis()->GetXmax() : 450;
+  float xMax = useMC ? 800 : 450;
 
   float yMax    = thisRatioAll->GetMaximum()*5.;
   float yMinAll = thisRatioQCD->GetMinimum()/2.;

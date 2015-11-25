@@ -80,7 +80,7 @@ int main( int argc, char* argv[] ) {
 
   TH1::AddDirectory(kFALSE); // stupid ROOT memory allocation needs this
 
-  std::string outputdir = cfg.getEventYieldDir() + "/gammaControlRegion"; 
+  std::string outputdir = cfg.getGammaCRdir();
   system(Form("mkdir -p %s", outputdir.c_str()));
 
 
@@ -432,10 +432,9 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
       
       if( !( myTree.HLT_Photon165_HE10 ) ) continue;
 
-      if( !( myTree.Flag_HBHENoiseFilter && myTree.Flag_HBHEIsoNoiseFilter && myTree.Flag_eeBadScFilter ) ) continue;
-      
-    }
+      if( !myTree.passFilters() ) continue;
 
+    }
 
     TLorentzVector gamma;
     gamma.SetPtEtaPhiM( myTree.gamma_pt[0], myTree.gamma_eta[0], myTree.gamma_phi[0], myTree.gamma_mass[0] );
@@ -456,9 +455,9 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
     if( cfg.gamma2bMethod()=="2b1bRatio" && nbjets==2 )
       continue; // will take 2b from reweighted 1b so skip
 
-//    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi()*myTree.puWeight; 
-//    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb;//*cfg.lumi(); 
-    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi(); 
+    //    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi()*myTree.puWeight; 
+    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb;//*cfg.lumi(); 
+    //    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi(); 
 
 
 
@@ -477,19 +476,19 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
       int mcMatchId = myTree.gamma_mcMatchId[0];
       bool isMatched = (mcMatchId==22 || mcMatchId==7);
 
-      //bool isPrompt = isMatched && !isQCD;
+      // bool isPrompt = isMatched && !isQCD;
       //bool isNIP    = isMatched && isQCD;
       //bool isFake   = !isMatched;
       bool isPrompt = isMatched && !isQCD && myTree.gamma_drMinParton[0]>0.4;
       bool isNIP    = isMatched && isQCD && myTree.gamma_drMinParton[0]<0.4;
       bool isFake   = !isMatched && isQCD;
-      //bool isNIP    = isMatched && isQCD;
-      //bool isFake   = !isMatched;
 
+  
       int promptLevel = -1; 
       if( isPrompt ) promptLevel = 2;
       else if( isNIP ) promptLevel = 1;
       else if( isFake ) promptLevel = 0;
+      else std::cout << "WARNING!!! This photon is neither prompt, nor fragmentation nor fake!" << std::endl;
 
       thisTree->assignVar( "prompt", promptLevel );
       if( passIso ) thisTree_pass->assignVar( "prompt", promptLevel );
