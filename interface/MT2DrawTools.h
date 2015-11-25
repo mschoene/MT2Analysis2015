@@ -106,7 +106,7 @@ class MT2DrawTools {
   float lumiErr_;
   bool shapeNorm_;
   bool addOverflow_;
-  bool displaySF_;;
+  bool displaySF_;
 
   MT2Analysis<MT2EstimateTree>* data_;
   std::vector< MT2Analysis<MT2EstimateTree>* >* mc_;
