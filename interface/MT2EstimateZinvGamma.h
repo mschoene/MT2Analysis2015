@@ -45,7 +45,8 @@ class MT2EstimateZinvGamma : public MT2Estimate {
   void   setIsoMax( float isomax ) { iso_max_ = isomax; };
   void setNbinsIso( int nbinsiso ) { nbins_iso_ = nbinsiso; };
 
-  static MT2Analysis<MT2EstimateZinvGamma>*  makeInclusiveAnalysisFromInclusiveTree( const std::string& aname, MT2Analysis<MT2EstimateTree>* analysis, const std::string& selectionTree="", const std::string& var="mt2", int nBins=-1, Double_t* bins=0  );
+  static MT2Analysis<MT2EstimateZinvGamma>*  makeInclusiveAnalysisFromInclusiveTree( const std::string& aname, MT2Analysis<MT2EstimateTree>* analysis, const std::string& regionsSet, const std::string& selectionTree="", const std::string& var="mt2", int nBins=-1, Double_t* bins=0  );
+  //  static MT2Analysis<MT2EstimateZinvGamma>*  makeInclusiveAnalysisFromInclusiveTree( const std::string& aname, MT2Analysis<MT2EstimateTree>* analysis, const std::string& selectionTree="", const std::string& var="mt2", int nBins=-1, Double_t* bins=0  );
 
   static void rebinYields( MT2Analysis<MT2EstimateZinvGamma>* analysis, int nBins=-1, Double_t* bins=0 );
 

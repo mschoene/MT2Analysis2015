@@ -83,11 +83,10 @@ int main(int argc, char* argv[]) {
 
   std::string regionsSet;// = "13TeV_inclusive";
   regionsSet=cfg.crRegionsSet();
-  //  regionsSet=cfg.zllRegions();
+  // regionsSet=cfg.zllRegions();
   // std::string regionsSet = cfg.zllRegions();
 
   std::cout << "-> Using regions: " << regionsSet << std::endl;
-
 
   if( cfg.useMC() && !onlyData ) { // run on MC  
   
@@ -316,11 +315,16 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
     if ( myTree.nJet30==1 && !myTree.passMonoJetId(0) ) continue;
 
     //FILTERS
-    if( myTree.isData &&( myTree.Flag_HBHENoiseFilter==0 || myTree.Flag_CSCTightHaloFilter==0 || myTree.Flag_goodVertices==0 ||  myTree.Flag_eeBadScFilter==0 ) ) continue;
-    if(myTree.isData && myTree.isGolden == 0) continue;
+    //    if( myTree.isData && !(myTree.isGolden) ) continue;
+    
+    if( myTree.isData ){
+
+      if( !( myTree.Flag_HBHENoiseFilter && myTree.Flag_HBHEIsoNoiseFilter && myTree.Flag_eeBadScFilter ) ) continue;
+    
+    }
 
     if(myTree.lep_pt[0]<25) continue;
-    if(myTree.lep_pt[1]<20) continue;
+    if(myTree.lep_pt[1]<15) continue;
 
     //Need the lorentz vectors of the leptons first
     TLorentzVector *LVec = new TLorentzVector[3];
@@ -331,8 +335,8 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
     TLorentzVector z = LVec[0] + LVec[1]; //leptons invariant mass
 
     
-    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb;//*cfg.lumi(); 
-    //Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi(); 
+    //Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb;//*cfg.lumi(); 
+    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi(); 
 
     bool isSF = false;
     bool isOF = false;
@@ -343,6 +347,9 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
     
     if(isSF){ //////////SAME FLAVOR//////////////////////////////////////////
       if(  !(myTree.HLT_DoubleMu || myTree.HLT_DoubleEl || myTree.HLT_Photon165_HE10 ) ) continue;
+    
+      if(  !( ( sample.id==5  && myTree.HLT_DoubleMu ) || ( myTree.HLT_DoubleEl && sample.id==4  )   ||  ( sample.id==7 && !myTree.HLT_DoubleEl && !myTree.HLT_DoubleMu && myTree.HLT_Photon165_HE10 ) )  ) continue;
+      
       MT2EstimateTree* thisTree = anaTree->get( myTree.zll_ht, njets, nbjets, minMTBmet, myTree.zll_mt2 );
       if (thisTree==0) continue;
 

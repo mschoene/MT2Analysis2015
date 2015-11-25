@@ -29,86 +29,86 @@ public :
    Int_t           isData;
    Int_t           isGolden;
    Float_t         xsec;
-//   //
-//   Float_t         HLT_PFMET170;
-//   Float_t         HLT_Photon90_R9Id90_HE10_IsoM;
-//   Float_t         HLT_Photon75_R9Id90_HE10_IsoM;
-//   Float_t         HLT_Photon120;
-//   Float_t         HLT_Photon75;
-//   Float_t         HLT_Photon165_HE10;
-//   Float_t         HLT_Photon120_R9Id90_HE10_IsoM;
-//   Float_t         HLT_Photon90;
-//   Float_t         HLT_PFHT350_PFMET100;
-//   Float_t         HLT_PFMET90_PFMHT90;
-//   Float_t         HLT_PFMETNoMu90_PFMHTNoMu90;
-//   Float_t         HLT_ht475prescale;
-//   Float_t         HLT_SingleMu;
-//   Float_t         HLT_MuX_Ele12;
-//   Float_t         HLT_Mu8_EleX;
-//   Float_t         HLT_SingleEl;
-//   Float_t         HLT_PFHT800;
-//   Float_t         HLT_ht350prescale;
-//   Float_t         HLT_Photon155;
-//   Float_t         HLT_PFHT900;
-//   Float_t         HLT_Photon175;
-//   Float_t         HLT_MuEG;
-//   Float_t         HLT_DiJet;
-//   Float_t         HLT_DoubleEl;
-//   Float_t         HLT_DoubleMu;
-//   Float_t         Flag_EcalDeadCellTriggerPrimitiveFilter;
-//   Float_t         Flag_trkPOG_manystripclus53X;
-//   Float_t         Flag_ecalLaserCorrFilter;
-//   Float_t         Flag_trkPOG_toomanystripclus53X;
-//   Float_t         Flag_hcalLaserEventFilter;
-//   Float_t         Flag_trkPOG_logErrorTooManyClusters;
-//   Float_t         Flag_trkPOGFilters;
-//   Float_t         Flag_trackingFailureFilter;
-//   Float_t         Flag_CSCTightHaloFilter;
-//   Float_t         Flag_HBHENoiseFilter;
-//   Float_t         Flag_HBHEIsoNoiseFilter;
-//   Float_t         Flag_goodVertices;
-//   Float_t         Flag_METFilters;
-//   Float_t         Flag_eeBadScFilter;
-//   // 
-   Int_t         HLT_PFMET170;
-   Int_t         HLT_Photon90_R9Id90_HE10_IsoM;
-   Int_t         HLT_Photon75_R9Id90_HE10_IsoM;
-   Int_t         HLT_Photon120;
-   Int_t         HLT_Photon75;
-   Int_t         HLT_Photon165_HE10;
-   Int_t         HLT_Photon120_R9Id90_HE10_IsoM;
-   Int_t         HLT_Photon90;
-   Int_t         HLT_PFHT350_PFMET100;
-   Int_t         HLT_PFMET90_PFMHT90;
-   Int_t         HLT_PFMETNoMu90_PFMHTNoMu90;
-   Int_t         HLT_ht475prescale;
-   Int_t         HLT_SingleMu;
-   Int_t         HLT_MuX_Ele12;
-   Int_t         HLT_Mu8_EleX;
-   Int_t         HLT_SingleEl;
-   Int_t         HLT_PFHT800;
-   Int_t         HLT_ht350prescale;
-   Int_t         HLT_Photon155;
-   Int_t         HLT_PFHT900;
-   Int_t         HLT_Photon175;
-   Int_t         HLT_MuEG;
-   Int_t         HLT_DiJet;
-   Int_t         HLT_DoubleEl;
-   Int_t         HLT_DoubleMu;
-   Int_t         Flag_EcalDeadCellTriggerPrimitiveFilter;
-   Int_t         Flag_trkPOG_manystripclus53X;
-   Int_t         Flag_ecalLaserCorrFilter;
-   Int_t         Flag_trkPOG_toomanystripclus53X;
-   Int_t         Flag_hcalLaserEventFilter;
-   Int_t         Flag_trkPOG_logErrorTooManyClusters;
-   Int_t         Flag_trkPOGFilters;
-   Int_t         Flag_trackingFailureFilter;
-   Int_t         Flag_CSCTightHaloFilter;
-   Int_t         Flag_HBHENoiseFilter;
-   Int_t         Flag_HBHEIsoNoiseFilter;
-   Int_t         Flag_goodVertices;
-   Int_t         Flag_METFilters;
-   Int_t         Flag_eeBadScFilter;
+   //
+   Float_t         HLT_PFMET170;
+   Float_t         HLT_Photon90_R9Id90_HE10_IsoM;
+   Float_t         HLT_Photon75_R9Id90_HE10_IsoM;
+   Float_t         HLT_Photon120;
+   Float_t         HLT_Photon75;
+   Float_t         HLT_Photon165_HE10;
+   Float_t         HLT_Photon120_R9Id90_HE10_IsoM;
+   Float_t         HLT_Photon90;
+   Float_t         HLT_PFHT350_PFMET100;
+   Float_t         HLT_PFMET90_PFMHT90;
+   Float_t         HLT_PFMETNoMu90_PFMHTNoMu90;
+   Float_t         HLT_ht475prescale;
+   Float_t         HLT_SingleMu;
+   Float_t         HLT_MuX_Ele12;
+   Float_t         HLT_Mu8_EleX;
+   Float_t         HLT_SingleEl;
+   Float_t         HLT_PFHT800;
+   Float_t         HLT_ht350prescale;
+   Float_t         HLT_Photon155;
+   Float_t         HLT_PFHT900;
+   Float_t         HLT_Photon175;
+   Float_t         HLT_MuEG;
+   Float_t         HLT_DiJet;
+   Float_t         HLT_DoubleEl;
+   Float_t         HLT_DoubleMu;
+   Float_t         Flag_EcalDeadCellTriggerPrimitiveFilter;
+   Float_t         Flag_trkPOG_manystripclus53X;
+   Float_t         Flag_ecalLaserCorrFilter;
+   Float_t         Flag_trkPOG_toomanystripclus53X;
+   Float_t         Flag_hcalLaserEventFilter;
+   Float_t         Flag_trkPOG_logErrorTooManyClusters;
+   Float_t         Flag_trkPOGFilters;
+   Float_t         Flag_trackingFailureFilter;
+   Float_t         Flag_CSCTightHaloFilter;
+   Float_t         Flag_HBHENoiseFilter;
+   Float_t         Flag_HBHEIsoNoiseFilter;
+   Float_t         Flag_goodVertices;
+   Float_t         Flag_METFilters;
+   Float_t         Flag_eeBadScFilter;
+   // 
+//   Int_t         HLT_PFMET170;
+//   Int_t         HLT_Photon90_R9Id90_HE10_IsoM;
+//   Int_t         HLT_Photon75_R9Id90_HE10_IsoM;
+//   Int_t         HLT_Photon120;
+//   Int_t         HLT_Photon75;
+//   Int_t         HLT_Photon165_HE10;
+//   Int_t         HLT_Photon120_R9Id90_HE10_IsoM;
+//   Int_t         HLT_Photon90;
+//   Int_t         HLT_PFHT350_PFMET100;
+//   Int_t         HLT_PFMET90_PFMHT90;
+//   Int_t         HLT_PFMETNoMu90_PFMHTNoMu90;
+//   Int_t         HLT_ht475prescale;
+//   Int_t         HLT_SingleMu;
+//   Int_t         HLT_MuX_Ele12;
+//   Int_t         HLT_Mu8_EleX;
+//   Int_t         HLT_SingleEl;
+//   Int_t         HLT_PFHT800;
+//   Int_t         HLT_ht350prescale;
+//   Int_t         HLT_Photon155;
+//   Int_t         HLT_PFHT900;
+//   Int_t         HLT_Photon175;
+//   Int_t         HLT_MuEG;
+//   Int_t         HLT_DiJet;
+//   Int_t         HLT_DoubleEl;
+//   Int_t         HLT_DoubleMu;
+//   Int_t         Flag_EcalDeadCellTriggerPrimitiveFilter;
+//   Int_t         Flag_trkPOG_manystripclus53X;
+//   Int_t         Flag_ecalLaserCorrFilter;
+//   Int_t         Flag_trkPOG_toomanystripclus53X;
+//   Int_t         Flag_hcalLaserEventFilter;
+//   Int_t         Flag_trkPOG_logErrorTooManyClusters;
+//   Int_t         Flag_trkPOGFilters;
+//   Int_t         Flag_trackingFailureFilter;
+//   Int_t         Flag_CSCTightHaloFilter;
+//   Int_t         Flag_HBHENoiseFilter;
+//   Int_t         Flag_HBHEIsoNoiseFilter;
+//   Int_t         Flag_goodVertices;
+//   Int_t         Flag_METFilters;
+//   Int_t         Flag_eeBadScFilter;
    //
    Float_t         puWeight;
    Int_t           nTrueInt;
@@ -1468,7 +1468,8 @@ Bool_t MT2Tree::passIsoTrackVeto() const {
 
 
 Bool_t MT2Tree::passMonoJetId( int j ) const {
-  return jet_id[j]>=3 && jet_chHEF[j]>0.05 && jet_neHEF[j]<0.8 && jet_phEF[j]<0.7;
+  //  return jet_id[j]>=3 && jet_chHEF[j]>0.05 && jet_neHEF[j]<0.8 && jet_phEF[j]<0.7;
+  return jet_id[j]>=4;
 }
 
 Bool_t MT2Tree::passBaseline(TString sel) const 
@@ -1525,7 +1526,7 @@ Bool_t MT2Tree::passGammaAdditionalSelection(int sampleId) const
   float deltaRmin_parton = gamma_drMinParton[0];
   if( isQCD && deltaRmin_parton>0.4 ) return kFALSE; // stitching
 
-  if( gamma_mcMatchId[0]!=22 && isGJet ) return kFALSE; // fakes only from QCD (it's inclusive)
+  if( (gamma_mcMatchId[0]!=22 || deltaRmin_parton<0.4) && isGJet ) return kFALSE; // fakes only from QCD (it's inclusive)
 
   return kTRUE;
 

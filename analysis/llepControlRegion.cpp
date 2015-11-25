@@ -76,14 +76,6 @@ int main( int argc, char* argv[] ) {
   std::string outputdir = cfg.getEventYieldDir() + "/llepControlRegion";
   system(Form("mkdir -p %s", outputdir.c_str()));
 
-//  std::string regionsSet;
-//  if( cfg.regionsSet()=="zurich" )
-//    regionsSet="zurich_llep";
-//  else if( cfg.regionsSet()=="zurichPlus" )
-//    regionsSet="zurichPlus_llep";
-//  else
-//    regionsSet=cfg.regionsSet();
-  
   std::string regionsSet = cfg.regionsSet();
   std::cout << "Using region set: " << regionsSet << std::endl;
 
@@ -94,7 +86,6 @@ int main( int argc, char* argv[] ) {
     std::cout << "-> Loading samples from file: " << samplesFileName << std::endl;
     
     std::vector<MT2Sample> fSamples = MT2Sample::loadSamples(samplesFileName, 300, 599); // only top (tt, t, ttW, ttZ) and W+jets
-    //    std::vector<MT2Sample> fSamples = MT2Sample::loadSamples(samplesFileName, 300, 499); // only top (tt, t, ttW, ttZ)
     if( fSamples.size()==0 ) {
       std::cout << "There must be an error: samples is empty!" << std::endl;
       exit(1209);
@@ -127,7 +118,8 @@ int main( int argc, char* argv[] ) {
     std::cout << std::endl << std::endl;
     std::cout << "-> Loading data from file: " << samplesFile_data << std::endl;
 
-    std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, 1, 3 );
+    //    std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, 1, 3 );
+    std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, -1, 0 );
     if( samples_data.size()==0 ) {
       std::cout << "There must be an error: samples_data is empty!" << std::endl;
       exit(1209);
@@ -162,14 +154,6 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
   MT2Tree myTree;
   myTree.Init(tree);
 
-//  std::string regionsSet;
-//  if( cfg.regionsSet()=="zurich" )
-//    regionsSet="zurich_llep";
-//  else if( cfg.regionsSet()=="zurichPlus" )
-//    regionsSet="zurichPlus_llep";
-//  else
-//    regionsSet=cfg.regionsSet();
-
   std::string regionsSet = cfg.regionsSet();
   std::cout << "Using region set: " << regionsSet << std::endl;
   
@@ -181,10 +165,10 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
 
     myTree.GetEntry(iEntry);
 
-    if( myTree.isData && !myTree.isGolden ) continue;
+    //    if( myTree.isData && !myTree.isGolden ) continue;
     if( myTree.isData ) {
 
-      if( !( myTree.Flag_HBHENoiseFilter && myTree.Flag_CSCTightHaloFilter &&  myTree.Flag_eeBadScFilter ) ) continue;
+      if( !( myTree.Flag_HBHENoiseFilter && myTree.Flag_HBHEIsoNoiseFilter && myTree.Flag_eeBadScFilter ) ) continue;
 
     }
 
@@ -206,8 +190,8 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
     int nPFLep5LowMT = myTree.nPFLep5LowMT;
     int nPFHad10LowMT = myTree.nPFHad10LowMT;
     
-    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb;//*cfg.lumi();
-    //Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi();
+    //Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb;//*cfg.lumi();
+    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi();
 
 
     if (myTree.isData) {
@@ -218,23 +202,25 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
       // HTMHT = 2
       // MET   = 3
 
-      if( njets==1 ) {
+//      if( njets==1 ) {
+//
+//        if( !( id==3 && myTree.HLT_PFMETNoMu90_PFMHTNoMu90) ) continue;
+//
+//      } else { // njets>=2
+//
+//	if( ht>1000. ) {
+//          if( !( id==1 && myTree.HLT_PFHT800) ) continue;
+//	} else if( ht>575. ) {
+//          if( !( id==2 && myTree.HLT_PFHT350_PFMET100 )  ) continue;
+//        } else if( ht>450. ) {
+//          if( !( id==2 && myTree.HLT_PFHT350_PFMET100 )  ) continue;
+//	} else if( ht>200. ) {
+//          if( !( id==3 && myTree.HLT_PFMETNoMu90_PFMHTNoMu90  )  ) continue;
+//	}
+//
+//      }
 
-        if( !( id==3 && myTree.HLT_PFMET90_PFMHT90) ) continue;
-
-      } else { // njets>=2
-
-	if( ht>1000. ) {
-          if( !( id==1 && myTree.HLT_PFHT800) ) continue;
-	} else if( ht>575. ) {
-          if( !( id==2 && myTree.HLT_PFHT350_PFMET100 )  ) continue;
-        } else if( ht>450. ) {
-          if( !( id==2 && myTree.HLT_PFHT350_PFMET100 )  ) continue;
-	} else if( ht>200. ) {
-          if( !( id==3 && myTree.HLT_PFMET90_PFMHT90  )  ) continue;
-	}
-
-      }
+      if( !(myTree.HLT_PFMETNoMu90_PFMHTNoMu90 || myTree.HLT_PFHT350_PFMET100 || myTree.HLT_PFHT800) ) continue;
 
     } // if is data
 

@@ -381,8 +381,8 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
 
     myTree.GetEntry(iEntry);
 
-    if( myTree.isData )
-      if ( myTree.isGolden == 0 ) continue;
+//    if( myTree.isData )
+//      if ( myTree.isGolden == 0 ) continue;
 
 
     if(cfg.analysisType() == "mt2"){
@@ -395,27 +395,25 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
       if( myTree.gamma_pt[0]<180. ) continue;
       if( (myTree.gamma_nJet30>1 && myTree.gamma_mt2<200.) || (myTree.gamma_nJet30==1 && myTree.gamma_ht<200.) ) continue;
     
-      //////if( myTree.gamma_nJet30==1 && (myTree.gamma_jet_id[0]<3 || myTree.gamma_jet_chHEF[0]<0.05 || myTree.gamma_jet_neHEF[0]>0.8 || myTree.gamma_jet_phEF[0]>0.7) ) continue;
-
     }
  
-    if( myTree.gamma_nJet30==1 ){
-      
-      float maxDR=0;
-      int J=0;
-      for( int j=0; j<myTree.njet; ++j ){
-
-	if( fabs( myTree.jet_eta[j] ) > 2.5 || myTree.jet_pt[j] < 30. ) continue;
-	
-	float thisDR = DeltaR( myTree.gamma_eta[0], myTree.jet_eta[j], myTree.gamma_phi[0], myTree.jet_phi[j] );
-	maxDR = ( thisDR > maxDR ) ? thisDR : maxDR; 
-	J = ( thisDR > maxDR ) ? j : J;
-
-      }
-      
-      if ( !myTree.passMonoJetId(J) ) continue;
-    
-    }
+//    if( myTree.gamma_nJet30==1 ){
+//      
+//      float maxDR=0;
+//      int J=0;
+//      for( int j=0; j<myTree.njet; ++j ){
+//
+//	if( fabs( myTree.jet_eta[j] ) > 2.5 || myTree.jet_pt[j] < 30. || j>1) continue;
+//	
+//	float thisDR = DeltaR( myTree.gamma_eta[0], myTree.jet_eta[j], myTree.gamma_phi[0], myTree.jet_phi[j] );
+//	maxDR = ( thisDR > maxDR ) ? thisDR : maxDR; 
+//	J = ( thisDR > maxDR ) ? j : J;
+//
+//      }
+//      
+//      if(!(myTree.passMonoJetId(J)));
+//    
+//    }
    
     if( myTree.isData ) {
       if( !myTree.passGammaAdditionalSelection(1) ) continue;
@@ -426,22 +424,18 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
     
     if( !(myTree.HLT_Photon165_HE10) ) continue;
     
-    //if( myTree.gamma_ht>1000. && sample.id==204 ) continue; // remove high-weight spikes (remove GJet_400to600 leaking into HT>1000)
-    
     if( myTree.gamma_idCutBased[0]==0 ) continue;
 
     if( myTree.isData ) {
+      
+      //      if( !( myTree.isGolden ) ) continue;
+      
+      if( !( myTree.HLT_Photon165_HE10 ) ) continue;
 
-      if( !(myTree.HLT_Photon165_HE10) ) continue;
-      //if( !(myTree.HLT_Photon165_HE10) || myTree.run < 256843 ) continue;
-      if( !(myTree.Flag_HBHENoiseFilter && myTree.Flag_CSCTightHaloFilter && myTree.Flag_eeBadScFilter) ) continue;
-      //if( !(myTree.Flag_CSCTightHaloFilter &&  myTree.Flag_eeBadScFilter) ) continue;
+      if( !( myTree.Flag_HBHENoiseFilter && myTree.Flag_HBHEIsoNoiseFilter && myTree.Flag_eeBadScFilter ) ) continue;
       
     }
 
-    if( myTree.isData &&( myTree.Flag_HBHENoiseFilter==0 || myTree.Flag_CSCTightHaloFilter==0 || myTree.Flag_goodVertices==0 ||  myTree.Flag_eeBadScFilter==0 ) ) continue;
-    if(myTree.isData && myTree.isGolden == 0) continue;
-    
 
     TLorentzVector gamma;
     gamma.SetPtEtaPhiM( myTree.gamma_pt[0], myTree.gamma_eta[0], myTree.gamma_phi[0], myTree.gamma_mass[0] );
@@ -463,8 +457,8 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
       continue; // will take 2b from reweighted 1b so skip
 
 //    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi()*myTree.puWeight; 
-    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb;//*cfg.lumi(); 
-//    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi(); 
+//    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb;//*cfg.lumi(); 
+    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi(); 
 
 
 
