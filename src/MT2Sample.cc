@@ -106,17 +106,22 @@ std::vector<MT2Sample> MT2Sample::loadSamples(const std::string& filename, const
     
     tree->GetEntry(0);
 
-    //    s.id       = evt_id;
- 
-    if( rootFileName.Contains("JetHT") ) s.id = 1;
-    else if( rootFileName.Contains("HTMHT") ) s.id = 2;
-    else if( rootFileName.Contains("MET") ) s.id = 3;
-    else if( rootFileName.Contains("DoubleEG") ) s.id = 4;
-    else if( rootFileName.Contains("DoubleMuon") ) s.id = 5;
-    else if( rootFileName.Contains("MuonEG") ) s.id = 6;
-    else if( rootFileName.Contains("SinglePhoton") ) s.id = 7;
-    else if( rootFileName.Contains("SingleMuon") ) s.id = 8;
-    else if( rootFileName.Contains("SingleElectron") ) s.id = 9;
+    s.id       = evt_id;
+    
+    if(s.id<0){
+
+      if( rootFileName.Contains("JetHT") ) s.id = 1;
+      else if( rootFileName.Contains("HTMHT") ) s.id = 2;
+      else if( rootFileName.Contains("MET") ) s.id = 3;
+      else if( rootFileName.Contains("DoubleEG") ) s.id = 4;
+      else if( rootFileName.Contains("DoubleMuon") ) s.id = 5;
+      else if( rootFileName.Contains("MuonEG") ) s.id = 6;
+      else if( rootFileName.Contains("SinglePhoton") ) s.id = 7;
+      else if( rootFileName.Contains("SingleMuon") ) s.id = 8;
+      else if( rootFileName.Contains("SingleElectron") ) s.id = 9;
+      
+    }
+
     s.nevents  = evt_nEvts;
     s.xsection = evt_xsec;
     s.filter   = evt_filter;

@@ -153,7 +153,7 @@ int main( int argc, char* argv[] ) {
     zllG_ht     = MT2Analysis<MT2EstimateSyst>::readFromFile( dir + "/zllGammaRatio/zllG_data_ratio.root", "zllG_data_ht");
     zllG_nJets  = MT2Analysis<MT2EstimateSyst>::readFromFile( dir + "/zllGammaRatio/zllG_data_ratio.root", "zllG_data_nJets");
     zllG_nBJets = MT2Analysis<MT2EstimateSyst>::readFromFile( dir + "/zllGammaRatio/zllG_data_ratio.root", "zllG_data_nBJets");
-    zllG_nBJets_monojet = MT2Analysis<MT2EstimateSyst>::readFromFile( dir + "/zllGammaRatio/zllG_data_ratio.root", "zllG_data_mono_nBJets");
+    //    zllG_nBJets_monojet = MT2Analysis<MT2EstimateSyst>::readFromFile( dir + "/zllGammaRatio/zllG_data_ratio.root", "zllG_data_mono_nBJets");
     
   }
   zinv->setName("zinv");
@@ -192,17 +192,17 @@ int main( int argc, char* argv[] ) {
   TH1D* thisUp_zllG_ht     = zllG_ht    ->get(inclusiveRegion)->yield_systUp;
   TH1D* thisUp_zllG_nJets  = zllG_nJets ->get(inclusiveRegion)->yield_systUp;
   TH1D* thisUp_zllG_nBJets = zllG_nBJets->get(inclusiveRegion)->yield_systUp;
-  TH1D* thisUp_zllG_nBJets_monojet = zllG_nBJets_monojet->get(inclusiveRegion)->yield_systUp;
+  //  TH1D* thisUp_zllG_nBJets_monojet = zllG_nBJets_monojet->get(inclusiveRegion)->yield_systUp;
 
   TH1D* thisDn_zllG_ht     = zllG_ht    ->get(inclusiveRegion)->yield_systDown;
   TH1D* thisDn_zllG_nJets  = zllG_nJets ->get(inclusiveRegion)->yield_systDown;
   TH1D* thisDn_zllG_nBJets = zllG_nBJets->get(inclusiveRegion)->yield_systDown;
-  TH1D* thisDn_zllG_nBJets_monojet = zllG_nBJets_monojet->get(inclusiveRegion)->yield_systDown;
+  //  TH1D* thisDn_zllG_nBJets_monojet = zllG_nBJets_monojet->get(inclusiveRegion)->yield_systDown;
 
   TH1D* this_zllG_ht     = zllG_ht    ->get(inclusiveRegion)->yield;
   TH1D* this_zllG_nJets  = zllG_nJets ->get(inclusiveRegion)->yield;
   TH1D* this_zllG_nBJets = zllG_nBJets->get(inclusiveRegion)->yield;
-  TH1D* this_zllG_nBJets_monojet = zllG_nBJets_monojet->get(inclusiveRegion)->yield;
+  //  TH1D* this_zllG_nBJets_monojet = zllG_nBJets_monojet->get(inclusiveRegion)->yield;
 
   
   // first create template datacards
@@ -453,18 +453,19 @@ int main( int argc, char* argv[] ) {
 	      
 	   }
 	   else{
-	     
-	     thisBinNB = this_zllG_nBJets_monojet->FindBin(iR->nBJetsMin());
 
-	     thisErrNJUp = 0.;
+	     thisBinNJ = this_zllG_nJets->FindBin(iR->nJetsMin());
+	     thisBinNB = this_zllG_nBJets->FindBin(iR->nBJetsMin());
+	     
+	     thisErrNJUp = ( this_zllG_nJets->GetBinContent(thisBinNJ) > 0 )  ? ( thisUp_zllG_nJets->GetBinContent(thisBinNJ) - this_zllG_nJets->GetBinContent(thisBinNJ) )  / this_zllG_nJets->GetBinContent(thisBinNJ)  : 1.0;
+	     thisErrNBUp = ( this_zllG_nBJets->GetBinContent(thisBinNB) > 0 ) ? ( thisUp_zllG_nBJets->GetBinContent(thisBinNB) - this_zllG_nBJets->GetBinContent(thisBinNB) )/ this_zllG_nBJets->GetBinContent(thisBinNB) : 1.0;
+
+	     thisErrNJDn = ( this_zllG_nJets->GetBinContent(thisBinNJ) > 0 )  ? ( this_zllG_nJets->GetBinContent(thisBinNJ)  - thisDn_zllG_nJets->GetBinContent(thisBinNJ) ) / this_zllG_nJets->GetBinContent(thisBinNJ)  : 1.0;
+	     thisErrNBDn = ( this_zllG_nBJets->GetBinContent(thisBinNB) > 0 ) ? ( this_zllG_nBJets->GetBinContent(thisBinNB) - thisDn_zllG_nBJets->GetBinContent(thisBinNB) )/ this_zllG_nBJets->GetBinContent(thisBinNB) : 1.0;
+	     
 	     thisErrHTUp = 0.;
-	     thisErrNJDn = 0.;
 	     thisErrHTDn = 0.;
 	     
-	     thisErrNBUp = ( this_zllG_nBJets_monojet->GetBinContent(thisBinNB) > 0 ) ? ( thisUp_zllG_nBJets_monojet->GetBinContent(thisBinNB) - this_zllG_nBJets_monojet->GetBinContent(thisBinNB) ) / this_zllG_nBJets_monojet->GetBinContent(thisBinNB) : 1.0;
-
-	     thisErrNBDn = ( this_zllG_nBJets_monojet->GetBinContent(thisBinNB) > 0 ) ? ( this_zllG_nBJets_monojet->GetBinContent(thisBinNB) - thisDn_zllG_nBJets_monojet->GetBinContent(thisBinNB) ) / this_zllG_nBJets_monojet->GetBinContent(thisBinNB) : 1.0;
-
 	   }
 
 
@@ -749,8 +750,9 @@ int main( int argc, char* argv[] ) {
 	   qcd_statUp = yield_qcd_up-yield_qcd;
 	   qcd_statDn = yield_qcd-yield_qcd_dn;
 
+	   thisRtotErr = (thisRtotErr<10) ? thisRtotErr : 10.;
 	   
-	   datacard << "qcd_alphaErr_" << binName << " lnN - - - " << 1.+thisRtotErr << std::endl;
+	   datacard << "qcd_alphaErr_" << binName << " lnN - - - " <<  1.+thisRtotErr  << std::endl;
 	   qcd_systUp += thisRtotErr*thisRtotErr;
            qcd_systDn += thisRtotErr*thisRtotErr;
 
@@ -781,7 +783,7 @@ int main( int argc, char* argv[] ) {
        table << "zinv " << yield_zinv << " " << zinv_statUp << " " << zinv_statDn << "  " << zinv_systUp << " " << zinv_systDn << std::endl;
        table << "llep " << yield_llep << " " << llep_statUp << " " << llep_statDn << "  " << llep_systUp << " " << llep_systDn << std::endl;
        table << "qcd  " << yield_qcd << " " << qcd_statUp << " " << qcd_statDn << "  " << qcd_systUp << " " << qcd_systDn << std::endl;
-       table << "data " << round(this_data->GetBinContent(iBin)) << " 0 0 0 0" <<std::endl;
+       table << "data " << std::setprecision(6) << this_data->GetBinContent(iBin) << std::setprecision(6) << " 0 0 0 0" <<std::endl;
        table.close();
 
        std::cout << "-> Created BG table: " << tableName << std::endl;
@@ -798,7 +800,7 @@ int main( int argc, char* argv[] ) {
   //std::vector<MT2Analysis<MT2Estimate>*> signals = MT2Analysis<MT2Estimate>::readAllFromFile( mc_fileName, "Zprime" );
   std::vector<MT2Analysis<MT2Estimate>*> signals = MT2Analysis<MT2Estimate>::readAllFromFile( mc_fileName, "SMS" );
   //std::vector<MT2Analysis<MT2Estimate>*> signals = MT2Analysis<MT2Estimate>::readAllFromFile( mc_fileName, "SMS_T1bbbb_fullScan" );
-  //std::vector<MT2Analysis<MT2Estimate>*> signals = MT2Analysis<MT2Estimate>::readAllFromFile( mc_fileName, "DarkMatter" );
+  //std::vector<MT2Analysis<MT2Estimate>*> signals = MT2Analysis<MT2Estimate>::readAllFromFile( mc_fileName, "DM" );
   
   //for( unsigned  isig=0; isig<signals.size(); ++isig ) { 
   for( unsigned  isig=1; isig<signals.size(); ++isig ) { 
@@ -806,7 +808,7 @@ int main( int argc, char* argv[] ) {
     std::string sigName;
     if( signals[isig]->getName().find("fullScan") != std::string::npos )
       sigName = signals[isig]->getName();
-    else if( signals[isig]->getName().find("DarkMatter") != std::string::npos || signals[isig]->getName().find("prime") != std::string::npos )
+    else if( signals[isig]->getName().find("DarkMatter") != std::string::npos || signals[isig]->getName().find("prime") != std::string::npos || signals[isig]->getName().find("DM") != std::string::npos)
       sigName = signals[isig]->getName();
     else
       sigName = getSimpleSignalName( signals[isig]->getName() );
