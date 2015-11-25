@@ -108,6 +108,9 @@ int main(int argc, char* argv[]){
  
 
 
+  MT2Analysis<MT2EstimateSyst>* purity_mono_ht = MT2Analysis<MT2EstimateSyst>::readFromFile( gammaControlRegionDir + "/PurityFitsRC/purityFit_mono_ht_data.root", "purity");
+ 
+
   MT2Analysis<MT2EstimateSyst>* purity_incl_ht = MT2Analysis<MT2EstimateSyst>::readFromFile( gammaControlRegionDir + "/PurityFitsRC/purityFit_incl_ht_data.root", "purity");
   MT2Analysis<MT2EstimateSyst>* purity_incl_njets = MT2Analysis<MT2EstimateSyst>::readFromFile( gammaControlRegionDir + "/PurityFitsRC/purityFit_incl_njets_data.root", "purity");
   MT2Analysis<MT2EstimateSyst>* purity_incl_nbjets = MT2Analysis<MT2EstimateSyst>::readFromFile( gammaControlRegionDir + "/PurityFitsRC/purityFit_incl_nbjets_data.root", "purity");
@@ -159,6 +162,8 @@ int main(int argc, char* argv[]){
   MT2Analysis<MT2EstimateSyst>* zll_nBJets = new MT2Analysis<MT2EstimateSyst>("zll_nBJets",regionsSet.c_str());
   MT2Analysis<MT2EstimateSyst>* zll_mono_nBJets = new MT2Analysis<MT2EstimateSyst>("zll_mono_nBJets",regionsSet.c_str());
 
+  MT2Analysis<MT2EstimateSyst>* zll_mono_ht = new MT2Analysis<MT2EstimateSyst>("zll_mono_ht",regionsSet.c_str());
+
   MT2Analysis<MT2EstimateSyst>* zll_incl_nJets = new MT2Analysis<MT2EstimateSyst>("zll_incl_nJets",regionsSet.c_str());
 
   //DATA RATIOS
@@ -167,6 +172,8 @@ int main(int argc, char* argv[]){
   MT2Analysis<MT2EstimateSyst>* zllG_data_nJets = new MT2Analysis<MT2EstimateSyst>( "zllG_data_nJets",regionsSet.c_str()); 
   MT2Analysis<MT2EstimateSyst>* zllG_data_nBJets = new MT2Analysis<MT2EstimateSyst>("zllG_data_nBJets",regionsSet.c_str() );
   MT2Analysis<MT2EstimateSyst>* zllG_data_mono_nBJets = new MT2Analysis<MT2EstimateSyst>("zllG_data_mono_nBJets",regionsSet.c_str() );
+
+ MT2Analysis<MT2EstimateSyst>* zllG_data_mono_ht = new MT2Analysis<MT2EstimateSyst>("zllG_data_mono_ht",regionsSet.c_str() );
 
   MT2Analysis<MT2EstimateSyst>* zllG_data_incl_nJets = new MT2Analysis<MT2EstimateSyst>( "zllG_data_incl_nJets",regionsSet.c_str()); 
 
@@ -177,6 +184,8 @@ int main(int argc, char* argv[]){
   MT2Analysis<MT2EstimateSyst>* zllG_mc_nBJets = new MT2Analysis<MT2EstimateSyst>("zllG_mc_nBJets",regionsSet.c_str() );
   MT2Analysis<MT2EstimateSyst>* zllG_mc_mono_nBJets = new MT2Analysis<MT2EstimateSyst>("zllG_mc_mono_nBJets",regionsSet.c_str() );
 
+  MT2Analysis<MT2EstimateSyst>* zllG_mc_mono_ht = new MT2Analysis<MT2EstimateSyst>("zllG_mc_mono_ht",regionsSet.c_str() );
+
   MT2Analysis<MT2EstimateSyst>* zllG_mc_incl_nJets = new MT2Analysis<MT2EstimateSyst>( "zllG_mc_incl_nJets",regionsSet.c_str()); 
 
   //RATIOS
@@ -186,6 +195,8 @@ int main(int argc, char* argv[]){
   MT2Analysis<MT2EstimateSyst>* zllG_nJets = new MT2Analysis<MT2EstimateSyst>( "zllG_nJets",regionsSet.c_str()); 
   MT2Analysis<MT2EstimateSyst>* zllG_nBJets = new MT2Analysis<MT2EstimateSyst>("zllG_nBJets",regionsSet.c_str() );
   MT2Analysis<MT2EstimateSyst>* zllG_mono_nBJets = new MT2Analysis<MT2EstimateSyst>("zllG_mono_nBJets",regionsSet.c_str() );
+  
+ MT2Analysis<MT2EstimateSyst>* zllG_mono_ht = new MT2Analysis<MT2EstimateSyst>("zllG_mono_ht",regionsSet.c_str() );
   
  MT2Analysis<MT2EstimateSyst>* zllG_incl_nJets = new MT2Analysis<MT2EstimateSyst>( "zllG_incl_nJets",regionsSet.c_str());
 
@@ -222,6 +233,11 @@ int main(int argc, char* argv[]){
     double bins_incl_nJets[] = {1,2,4,7,12};
     int size_incl_nJets = sizeof(bins_incl_nJets)/sizeof(double)-1;
  
+    double bins_mono_nBJets[] = {0,1,2}; 
+    int size_mono_nBJets = sizeof(bins_mono_nBJets)/sizeof(double)-1;
+
+    double bins_mono_ht[] = {200, 250, 350,450, 575, 1000, 1500, 3000}; 
+    int size_mono_ht = sizeof(bins_mono_ht)/sizeof(double)-1;
 
     std::string cut_incl = "weight*(abs(Z_mass-91.19)<10 && met>200 && mt2>200 && ht>200 && nJets>0 )";
     std::string cut_incl_gamma = "weight*(prompt==2 && iso<2.5  && met>200&&  ptGamma>180 && nJets>0 && mt2>200 && ht>200 )*1.23";
@@ -262,8 +278,7 @@ int main(int argc, char* argv[]){
       cut_gamma_mono_data =  Form("  weight*( prompt==2 && nBJets<2 && ptGamma>180 && nJets==1 && mt2>200&&ht>200 )*1.23*%f", lumi);
     }
     */
-    double bins_mono_nBJets[] = {0,1,2}; 
-    int size_mono_nBJets = sizeof(bins_mono_nBJets)/sizeof(double)-1;
+
     MT2EstimateSyst::rebinYields( zll_incl_nJets,  size_incl_nJets, bins_incl_nJets);
     MT2EstimateSyst::rebinYields( zllG_incl_nJets,  size_incl_nJets, bins_incl_nJets);
     MT2EstimateSyst::rebinYields( zllG_data_incl_nJets,  size_incl_nJets, bins_incl_nJets);
@@ -272,24 +287,28 @@ int main(int argc, char* argv[]){
 
     MT2EstimateSyst::rebinYields( zll_mt2,  size_mt2, bins_mt2);
     MT2EstimateSyst::rebinYields( zll_ht,  size_ht, bins_ht);
+    MT2EstimateSyst::rebinYields( zll_mono_ht,  size_mono_ht, bins_mono_ht);
     MT2EstimateSyst::rebinYields( zll_nJets,  size_nJets, bins_nJets);
     MT2EstimateSyst::rebinYields( zll_nBJets,  size_nBJets, bins_nBJets);
     MT2EstimateSyst::rebinYields( zll_mono_nBJets,  size_mono_nBJets, bins_mono_nBJets);
  
     MT2EstimateSyst::rebinYields( zllG_mt2,  size_mt2, bins_mt2);
     MT2EstimateSyst::rebinYields( zllG_ht,  size_ht, bins_ht);
+    MT2EstimateSyst::rebinYields( zllG_mono_ht,  size_mono_ht, bins_mono_ht);
     MT2EstimateSyst::rebinYields( zllG_nJets,  size_nJets, bins_nJets);
     MT2EstimateSyst::rebinYields( zllG_nBJets,  size_nBJets, bins_nBJets);
     MT2EstimateSyst::rebinYields( zllG_mono_nBJets,  size_mono_nBJets, bins_mono_nBJets);
   
     MT2EstimateSyst::rebinYields( zllG_data_mt2,  size_mt2, bins_mt2);
     MT2EstimateSyst::rebinYields( zllG_data_ht,  size_ht, bins_ht);
+    MT2EstimateSyst::rebinYields( zllG_data_mono_ht,  size_mono_ht, bins_mono_ht);
     MT2EstimateSyst::rebinYields( zllG_data_nJets,  size_nJets, bins_nJets);
     MT2EstimateSyst::rebinYields( zllG_data_nBJets,  size_nBJets, bins_nBJets);
     MT2EstimateSyst::rebinYields( zllG_data_mono_nBJets,  size_mono_nBJets, bins_mono_nBJets);
  
     MT2EstimateSyst::rebinYields( zllG_mc_mt2,  size_mt2, bins_mt2);
     MT2EstimateSyst::rebinYields( zllG_mc_ht,  size_ht, bins_ht);
+    MT2EstimateSyst::rebinYields( zllG_mc_mono_ht,  size_mono_ht, bins_mono_ht);
     MT2EstimateSyst::rebinYields( zllG_mc_nJets,  size_nJets, bins_nJets);
     MT2EstimateSyst::rebinYields( zllG_mc_nBJets,  size_nBJets, bins_nBJets);
     MT2EstimateSyst::rebinYields( zllG_mc_mono_nBJets,  size_mono_nBJets, bins_mono_nBJets);
@@ -308,6 +327,11 @@ int main(int argc, char* argv[]){
     //incl_//////////////////////
     drawRatios( outputdir, bins_ht, size_ht , "ht",   zllG_ht,   gamma_mc, gamma_data, purity_incl_ht,  zll_mc, zll_data, top, zll_ht, zllG_data_ht, zllG_mc_ht , thisRegion, cut_incl, cut_incl_gamma, cut_incl_data,  cut_incl_gamma_data, lumi,"ht_incl" , onlyMC, scaleFactor, 1 ,"#geq1j, #geq0b");
     drawRatios( outputdir, bins_ht, size_ht , "ht",   zllG_ht,   gamma_mc, gamma_data, purity_incl_ht,  zll_mc, zll_data, top, zll_ht, zllG_data_ht, zllG_mc_ht , thisRegion, cut_incl, cut_incl_gamma, cut_incl_data,  cut_incl_gamma_data, lumi,"ht_incl_noPFU" , onlyMC, scaleFactor, 0 ,"#geq1j, #geq0b");
+    
+
+   //incl_//////////////////////
+    drawRatios( outputdir, bins_mono_ht, size_mono_ht , "ht",   zllG_mono_ht,   gamma_mc, gamma_data, purity_mono_ht,  zll_mc, zll_data, top, zll_mono_ht, zllG_data_mono_ht, zllG_mc_mono_ht , thisRegion, cut_incl, cut_incl_gamma, cut_incl_data,  cut_incl_gamma_data, lumi,"ht_mono" , onlyMC, scaleFactor, 1 ,"#geq1j, #geq0b");
+    drawRatios( outputdir, bins_mono_ht, size_mono_ht , "ht",   zllG_mono_ht,   gamma_mc, gamma_data, purity_mono_ht,  zll_mc, zll_data, top, zll_mono_ht, zllG_data_mono_ht, zllG_mc_mono_ht , thisRegion, cut_incl, cut_incl_gamma, cut_incl_data,  cut_incl_gamma_data, lumi,"ht_mono_noPFU" , onlyMC, scaleFactor, 0 ,"#geq1j, #geq0b");
     
 
     //  drawRatios( outputdir, bins_ht, size_ht , "ht",   zllG_ht,   gamma_mc, gamma_data, purity_ht,  zll_mc, zll_data, top, zll_ht, zllG_data_ht, zllG_mc_ht , thisRegion, cut, cut_gamma, cut_data,  cut_gamma_data, lumi,"ht" , onlyMC , scaleFactor,"#geq2j, #geq0b");

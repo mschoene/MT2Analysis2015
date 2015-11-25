@@ -49,11 +49,20 @@ int main( int argc, char* argv[] ) {
   Double_t bins_mono_nbjets[] = { 0, 1, 2};
   int size_mono_nbjets = sizeof(bins_mono_nbjets)/sizeof(double)-1;
 
+  Double_t bins_mono_ht[] = {200,250,350,450, 575, 1000, 1500,3000};
+  int size_mono_ht = sizeof(bins_mono_ht)/sizeof(double)-1;
+
   Double_t bins_mt2[] = { 200, 1500};
   int size_mt2 = sizeof(bins_mt2)/sizeof(double)-1;
   
   Double_t bins_incl_njets[] = {1,2,4,7,12};
   int size_incl_njets = sizeof(bins_incl_njets)/sizeof(double)-1;
+
+
+ MT2Analysis<MT2EstimateZinvGamma>* mc_mono_ht = MT2EstimateZinvGamma::makeInclusiveAnalysisFromInclusiveTree( "iso_mono_ht", data, cfg.regionsSet() , "nJets>1" , "ht" , size_mono_ht, bins_mono_ht ); 
+  std::string outFile_mono_ht = cfg.getGammaCRdir() + "/iso_mono_ht.root";
+  mc_mono_ht->writeToFile(outFile_mono_ht, "recreate");
+
 
   MT2Analysis<MT2EstimateZinvGamma>* mc_mt2 = MT2EstimateZinvGamma::makeInclusiveAnalysisFromInclusiveTree( "iso_mt2", data, "zurichPlus" ,"nJets>0", "mt2" , size_mt2, bins_mt2 ); 
   std::string outFile_mt2 = cfg.getGammaCRdir() + "/iso_mt2.root";
@@ -117,7 +126,29 @@ int main( int argc, char* argv[] ) {
   */
 
    
+  //NEW HT BINNING FOR THE BINNED MONO JET
+  MT2Analysis<MT2EstimateTree>* all_mono_ht =  MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( "all_mono_ht", cfg.regionsSet(), mc , "(id>152.)", size_mono_ht, bins_mono_ht, "ht" ) ;
 
+  MT2Analysis<MT2EstimateTree>* prompt_mono_ht =  MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( "prompt_mono_ht", cfg.regionsSet(), mc ,  prompt+"&& (id>152.)", size_mono_ht, bins_mono_ht, "ht" ) ;
+  MT2Analysis<MT2EstimateSyst>* purityLoose_mono_ht = MT2EstimateSyst::makeEfficiencyAnalysis( "purityLoose", cfg.regionsSet(), (MT2Analysis<MT2Estimate>*)prompt_mono_ht, (MT2Analysis<MT2Estimate>*)all_mono_ht);
+ 
+  MT2Analysis<MT2EstimateTree>* all_pass_mono_ht =  MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( "all_pass_mono_ht", cfg.regionsSet(), mc , iso+"&& (id>152.)", size_mono_ht, bins_mono_ht,"ht");
+  MT2Analysis<MT2EstimateTree>* prompt_tight_mono_ht =  MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( "prompt_tight_mono_ht", cfg.regionsSet(), mc , iso+"&&"+prompt+"&& (id>152.)" , size_mono_ht, bins_mono_ht, "ht" ) ;
+
+  std::string outFile_yield_mono_ht = cfg.getEventYieldDir() + "/gammaControlRegion/yieldMC_mono_ht.root";
+  all_pass_mono_ht->writeToFile( outFile_yield_mono_ht,"RECREATE" );
+  prompt_tight_mono_ht->addToFile( outFile_yield_mono_ht );
+ 
+
+  MT2Analysis<MT2EstimateSyst>* purityTight_mono_ht = MT2EstimateSyst::makeEfficiencyAnalysis( "purity", cfg.regionsSet(), (MT2Analysis<MT2Estimate>*)prompt_tight_mono_ht, (MT2Analysis<MT2Estimate>*)all_pass_mono_ht);
+
+  std::string outFile_purity_mono_ht = cfg.getGammaCRdir() + "/purityMC_mono_ht.root";
+  purityLoose_mono_ht->writeToFile( outFile_purity_mono_ht,"recreate" );
+  purityTight_mono_ht->addToFile( outFile_purity_mono_ht );
+  
+
+
+  //MULTIJET HT
   MT2Analysis<MT2EstimateTree>* all_ht =  MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( "all_ht", cfg.regionsSet(), mc , multijet+"&& (id>152.)", size_ht, bins_ht, "ht" ) ;
 
   MT2Analysis<MT2EstimateTree>* prompt_ht =  MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( "prompt_ht", cfg.regionsSet(), mc , multijet +"&&"+ prompt+"&& (id>152.)", size_ht, bins_ht, "ht" ) ;
