@@ -691,6 +691,94 @@ void MT2Region::getBins( int &nBins, double*& bins) const {
     nBins = nBins_tmp;
     
   }
+
+  else if( regionName == "HT200to250_j1_b0" ){ // monojet inclusive
+    
+    const int nBins_tmp                        = 1;
+    bins = new double[nBins_tmp+1]{200., 250.};
+    nBins = nBins_tmp;
+    
+  }
+  else if( regionName == "HT250to350_j1_b0" ){ // monojet inclusive
+    
+    const int nBins_tmp                        = 1;
+    bins = new double[nBins_tmp+1]{250., 350.};
+    nBins = nBins_tmp;
+    
+  }
+  else if( regionName == "HT350to450_j1_b0" ){ // monojet inclusive
+    
+    const int nBins_tmp                        = 1;
+    bins = new double[nBins_tmp+1]{350., 450.};
+    nBins = nBins_tmp;
+    
+  }
+  else if( regionName == "HT450to575_j1_b0" ){ // monojet inclusive
+    
+    const int nBins_tmp                        = 1;
+    bins = new double[nBins_tmp+1]{450., 575.};
+    nBins = nBins_tmp;
+    
+  }
+  else if( regionName == "HT575to700_j1_b0" ){ // monojet inclusive
+    
+    const int nBins_tmp                        = 1;
+    bins = new double[nBins_tmp+1]{575., 700.};
+    nBins = nBins_tmp;
+    
+  }
+  else if( regionName == "HT700to1000_j1_b0" ){ // monojet inclusive
+    
+    const int nBins_tmp                        = 1;
+    bins = new double[nBins_tmp+1]{700., 1000.};
+    nBins = nBins_tmp;
+    
+  }
+  else if( regionName == "HT1000toInf_j1_b0" ){ // monojet inclusive
+    
+    const int nBins_tmp                        = 1;
+    bins = new double[nBins_tmp+1]{1000., 1500.};
+    nBins = nBins_tmp;
+    
+  }
+
+  else if( regionName == "HT200to250_j1_b1toInf" ){ // monojet inclusive
+    
+    const int nBins_tmp                        = 1;
+    bins = new double[nBins_tmp+1]{200., 250.};
+    nBins = nBins_tmp;
+    
+  }
+  else if( regionName == "HT250to350_j1_b1toInf" ){ // monojet inclusive
+    
+    const int nBins_tmp                        = 1;
+    bins = new double[nBins_tmp+1]{250., 350.};
+    nBins = nBins_tmp;
+    
+  }
+  else if( regionName == "HT350to450_j1_b1toInf" ){ // monojet inclusive
+    
+    const int nBins_tmp                        = 1;
+    bins = new double[nBins_tmp+1]{350., 450.};
+    nBins = nBins_tmp;
+    
+  }
+  else if( regionName == "HT450to575_j1_b1toInf" ){ // monojet inclusive
+    
+    const int nBins_tmp                        = 1;
+    bins = new double[nBins_tmp+1]{450., 575.};
+    nBins = nBins_tmp;
+    
+  }
+  else if( regionName == "HT575toInf_j1_b1toInf" ){ // monojet inclusive
+    
+    const int nBins_tmp                        = 1;
+    bins = new double[nBins_tmp+1]{575., 1500.};
+    nBins = nBins_tmp;
+    
+  }
+
+  
   else if( regionName == "HT200to450_j2to3_b0" ){ // new MT2 binning
     
     const int nBins_tmp                        = 3;
