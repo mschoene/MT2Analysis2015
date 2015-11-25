@@ -347,8 +347,8 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg ) {
 //    float GenSusyMScan2 = myTree.GenSusyMScan2;
     
     //Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi()*myTree.puWeight;
-    //Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb;//*cfg.lumi();
-    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi();
+    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb;//*cfg.lumi();
+    //    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi();
 
 //    float sig_scale1fb=0;
 //    if( myTree.evt_id >= 1020 ){ // T1bbbb full scan
