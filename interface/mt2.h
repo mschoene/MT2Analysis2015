@@ -485,7 +485,7 @@ public :
    Float_t weight_phottrigsf;
    Float_t weight_pu;
    Float_t weight_isr;
-   Float_t weight_scales[111];
+   Float_t weight_scales[500];
    Float_t weight_scales_UP;
    Float_t weight_scales_DN;
    Float_t weight_pdfs_UP;

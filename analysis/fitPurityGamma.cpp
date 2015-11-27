@@ -269,7 +269,7 @@ void fitPurity( const MT2Config& cfg, MT2EstimateSyst* purityLoose, MT2EstimateS
 
       purityLoose->yield         ->SetBinContent( ibin, 1.0 );
       purityLoose->yield_systUp  ->SetBinContent( ibin, 1.0 );
-      purityLoose->yield_systDown->SetBinContent( ibin, 0.1 );
+      purityLoose->yield_systDown->SetBinContent( ibin, 0.01 );
 
     }
 
@@ -284,7 +284,7 @@ void fitPurity( const MT2Config& cfg, MT2EstimateSyst* purityLoose, MT2EstimateS
       
       purityTight->yield         ->SetBinContent( ibin, 1.0 );
       purityTight->yield_systUp  ->SetBinContent( ibin, 1.0 );
-      purityTight->yield_systDown->SetBinContent( ibin, 0.1 );  
+      purityTight->yield_systDown->SetBinContent( ibin, 0.01 );  
 
     }
 
