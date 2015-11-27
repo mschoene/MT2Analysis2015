@@ -1143,7 +1143,7 @@ std::vector<TCanvas*> MT2DrawTools::drawRegionYields_fromTree( const std::string
     } // if twoPads
 
 
-    std::string regionSaveName = (MT2Regions.size()==1) ? "_" + thisRegion.getName() : "";
+    std::string regionSaveName = (MT2Regions.size()!=1) ? "_" + thisRegion.getName() : "";
 
     c1->SaveAs( Form("%s/%s%s.eps", outdir_.c_str(), saveName.c_str(), regionSaveName.c_str()) );
     c1->SaveAs( Form("%s/%s%s.png", outdir_.c_str(), saveName.c_str(), regionSaveName.c_str()) );
