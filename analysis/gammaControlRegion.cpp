@@ -381,7 +381,6 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
 
     myTree.GetEntry(iEntry);
 
-    if( myTree.ngamma!=1 ) continue;
 
 //    if( myTree.isData )
 //      if ( myTree.isGolden == 0 ) continue;
