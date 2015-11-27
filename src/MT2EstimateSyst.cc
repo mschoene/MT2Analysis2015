@@ -53,7 +53,7 @@ MT2EstimateSyst::MT2EstimateSyst( const std::string& aname, const MT2Region& are
 
   TEfficiency eff( *(pass.yield), *(tot.yield) );
 
-  for( int i=1; i<yield->GetNbinsX()+1; ++i ) {
+  for( int i=1; i<this->yield->GetNbinsX()+1; ++i ) {
 
     yield         ->SetBinContent( i, eff.GetEfficiency(i) );
     yield_systDown->SetBinContent( i, eff.GetEfficiency(i) - eff.GetEfficiencyErrorLow(i) );
@@ -99,7 +99,7 @@ MT2EstimateSyst::~MT2EstimateSyst() {
 
 
 
-MT2Analysis<MT2EstimateSyst>* MT2EstimateSyst::makeEfficiencyAnalysis( const std::string& aname, const std::string& regionsSet, MT2Analysis<MT2Estimate>* pass, MT2Analysis<MT2Estimate>* all ) {
+MT2Analysis<MT2EstimateSyst>* MT2EstimateSyst::makeEfficiencyAnalysis( const std::string& aname, MT2Analysis<MT2Estimate>* pass, MT2Analysis<MT2Estimate>* all ) {
 
   std::set<MT2Region> regions = pass->getRegions();
 
