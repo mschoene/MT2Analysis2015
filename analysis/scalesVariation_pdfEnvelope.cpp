@@ -54,20 +54,20 @@ int main( int argc, char* argv[] ) {
 
   lumi=cfg.lumi();
 
-  std::string outputdir = cfg.getEventYieldDir() + "/scaleVariations_pdfEnvelope";
+  std::string outputdir = cfg.getEventYieldDir() + "/pdfVariation_Top";
   system(Form("mkdir -p %s", outputdir.c_str()));
 
   std::string mcFile = cfg.getEventYieldDir() + "/analyses.root";
   std::string dataFile = cfg.getEventYieldDir() + "/analyses.root";
 
   MT2Analysis<MT2EstimateTree>* data  = MT2Analysis<MT2EstimateTree>::readFromFile( dataFile, "data" );
-  //MT2Analysis<MT2EstimateTree>* top   = MT2Analysis<MT2EstimateTree>::readFromFile( mcFile, "Top");
-  MT2Analysis<MT2EstimateTree>* wjets   = MT2Analysis<MT2EstimateTree>::readFromFile( mcFile, "WJets");
-  wjets->setName("W+jets");
+  MT2Analysis<MT2EstimateTree>* top   = MT2Analysis<MT2EstimateTree>::readFromFile( mcFile, "Top");
+  //MT2Analysis<MT2EstimateTree>* wjets   = MT2Analysis<MT2EstimateTree>::readFromFile( mcFile, "WJets");
+  //wjets->setName("W+jets");
 
   std::vector<MT2Analysis<MT2EstimateTree>* > bgYields;
-  //bgYields.push_back(top);
-  bgYields.push_back(wjets);
+  bgYields.push_back(top);
+  //bgYields.push_back(wjets);
   
   drawHisto( outputdir, data, bgYields,  "mt2", "M_{T2} [GeV]", "", kTRUE );
 
@@ -83,7 +83,7 @@ void drawHisto( const std::string& outputdir, MT2Analysis<MT2EstimateTree>* data
 
   std::vector<int> colors; //mc
   //colors.push_back(855); // top
-  colors.push_back(417); // wjets
+  colors.push_back(419); // wjets
     
   std::string fullPath = outputdir;
   system( Form("mkdir -p %s", fullPath.c_str()) );
@@ -96,9 +96,9 @@ void drawHisto( const std::string& outputdir, MT2Analysis<MT2EstimateTree>* data
 //  TFile* fout2= new TFile(Form("%s/allHistos.root", outputdir.c_str()), "recreate");
     
   for( std::set<MT2Region>::iterator iMT2 = MT2Regions.begin(); iMT2!=MT2Regions.end(); ++iMT2 ) {
-
+    
     MT2Region thisRegion( (*iMT2) );
-   
+
     TH1F::AddDirectory(kTRUE);
     
     int nBins;
@@ -373,7 +373,7 @@ void drawHisto( const std::string& outputdir, MT2Analysis<MT2EstimateTree>* data
 
     label="M_{T2} [GeV]";
     if(thisRegion.nJetsMax()==1)
-      label="H_{T} [GeV]";
+      label="p_{T}(jet_{1}) [GeV]";
     
     std::string labelY = "Events";
     TH2D* h_axes = new TH2D("axes", "", 10, 200, 1500, 10, yMin, yMax );
@@ -406,8 +406,8 @@ void drawHisto( const std::string& outputdir, MT2Analysis<MT2EstimateTree>* data
     h_bg[0]->SetLineColor(1);
     h_bg[0]->SetFillColor(0);
       
-    legend->AddEntry( h_bg[0], "W+jets", "L");
-    //    legend->AddEntry( h_bg[0], "Top", "L");
+    //legend->AddEntry( h_bg[0], "W+jets", "L");
+    legend->AddEntry( h_bg[0], "Top", "L");
     legend->AddEntry( h_bg_v[0][0], variations[0].c_str(), "L");
 
     legend->Draw("same");

@@ -24,6 +24,10 @@ int main( int argc, char* argv[] ) {
   std::string firstInputFile  = dir + "/analyses.root";
   //  std::string firstInputFile  = dir + "/llepEstimate.root";
 
+  std::vector< MT2Analysis<MT2Estimate>* > analyses_data;
+  analyses_data.push_back( MT2Analysis<MT2Estimate>::readFromFile(firstInputFile.c_str(), "data") );
+  analyses_data[0]->setName("Data");
+
   std::vector< MT2Analysis<MT2Estimate>* > analyses_bg;
   analyses_bg.push_back( MT2Analysis<MT2Estimate>::readFromFile(firstInputFile.c_str(), "Top") );
   analyses_bg[0]->setName("Top");
@@ -55,23 +59,23 @@ int main( int argc, char* argv[] ) {
 
   //std::vector < MT2Analysis<MT2Estimate>* > analysesSignal = MT2Analysis<MT2Estimate>::readAllFromFile(firstInputFile.c_str(), "SMS");
   std::vector < MT2Analysis<MT2Estimate>* > analysesSignal;
-  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile(firstInputFile.c_str(), "SMS_T1tttt_mGluino1500_mLSP100") );
-  analysesSignal[0]->setName("T1tttt 1500,100");
-  
-  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile(firstInputFile.c_str(), "SMS_T1tttt_mGluino1200_mLSP800") );
-  analysesSignal[1]->setName("T1tttt 1200,800");
-
-  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile(firstInputFile.c_str(), "SMS_T1bbbb_mGluino1500_mLSP100") );
-  analysesSignal[2]->setName("T1bbbb 1500,100");
-  
-  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile(firstInputFile.c_str(), "SMS_T1bbbb_mGluino1000_mLSP900") );
-  analysesSignal[3]->setName("T1bbbb 1000,900");
-
-  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile(firstInputFile.c_str(), "SMS_T1qqqq_mGluino1400_mLSP100") );
-  analysesSignal[4]->setName("T1qqqq 1400,100");
-
-  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile(firstInputFile.c_str(), "SMS_T1qqqq_mGluino1000_mLSP800") );
-  analysesSignal[5]->setName("T1qqqq 1000,800");
+//  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile(firstInputFile.c_str(), "SMS_T1tttt_mGluino1500_mLSP100") );
+//  analysesSignal[0]->setName("T1tttt 1500,100");
+//  
+//  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile(firstInputFile.c_str(), "SMS_T1tttt_mGluino1200_mLSP800") );
+//  analysesSignal[1]->setName("T1tttt 1200,800");
+//
+//  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile(firstInputFile.c_str(), "SMS_T1bbbb_mGluino1500_mLSP100") );
+//  analysesSignal[2]->setName("T1bbbb 1500,100");
+//  
+//  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile(firstInputFile.c_str(), "SMS_T1bbbb_mGluino1000_mLSP900") );
+//  analysesSignal[3]->setName("T1bbbb 1000,900");
+//
+//  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile(firstInputFile.c_str(), "SMS_T1qqqq_mGluino1400_mLSP100") );
+//  analysesSignal[4]->setName("T1qqqq 1400,100");
+//
+//  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile(firstInputFile.c_str(), "SMS_T1qqqq_mGluino1000_mLSP800") );
+//  analysesSignal[5]->setName("T1qqqq 1000,800");
 
 ////  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile(firstInputFile.c_str(), "SMS_T2tt_2J_mStop850_mLSP100") );
 ////  analysesSignal[6]->setName("T2tt 850,100");
@@ -204,8 +208,9 @@ int main( int argc, char* argv[] ) {
 
     ofs_file_tr << std::endl;
     ofs_file_tr << "\\begin{table}[htbp]" << std::endl;
-    //    ofs_file_tr << "\\caption{Background estimate yields for " << names[0].c_str() << ", " << names[1].c_str() << ".}" << std::endl;
-    ofs_file_tr << "\\caption{Background and signal yields in bins of \\mttwo for " << names[0].c_str() << ", " << names[1].c_str() << ". The yields are normalized to \\lumival.}" << std::endl;
+    //////    ofs_file_tr << "\\caption{Background estimate yields for " << names[0].c_str() << ", " << names[1].c_str() << ".}" << std::endl;
+    //ofs_file_tr << "\\caption{Background and signal yields in bins of \\mttwo for " << names[0].c_str() << ", " << names[1].c_str() << ". The yields are normalized to \\lumival.}" << std::endl;
+    ofs_file_tr << "\\caption{Background and data yields for " << names[0].c_str() << ", " << names[1].c_str() << ".}" << std::endl;
     ofs_file_tr << "\\scriptsize" << std::endl;
     ofs_file_tr << "\\centering" << std::endl;
     ofs_file_tr << "\\makebox[\\textwidth][c]{" << std::endl;
@@ -248,9 +253,13 @@ int main( int argc, char* argv[] ) {
   
     
     ofs_file_tr <<"\\hline" << std::endl;
-    for(unsigned a =0;  a < analysesSignal.size(); ++a) {
-      ofs_file_tr << analysesSignal[a]->getName().c_str();
-      analysesSignal[a]->print(ofs_file_tr, thisRegion );
+//    for(unsigned a =0;  a < analysesSignal.size(); ++a) {
+//      ofs_file_tr << analysesSignal[a]->getName().c_str();
+//      analysesSignal[a]->print(ofs_file_tr, thisRegion );
+//    }
+    for(unsigned a =0;  a < analyses_data.size(); ++a) {
+      ofs_file_tr << analyses_data[a]->getName().c_str();
+      analyses_data[a]->print(ofs_file_tr, thisRegion );
     }
     ofs_file_tr <<"\\hline" << std::endl;
     ofs_file_tr << "\\end{tabular}}" << std::endl;

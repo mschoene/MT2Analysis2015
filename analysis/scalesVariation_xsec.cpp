@@ -51,7 +51,7 @@ int main( int argc, char* argv[] ) {
   
   lumi=cfg.lumi();
   
-  std::string outputdir = cfg.getEventYieldDir() + "/scaleVariations_xsec05";
+  std::string outputdir = cfg.getEventYieldDir() + "/XSVariation_50_wFrac";
   system(Form("mkdir -p %s", outputdir.c_str()));
 
 
@@ -258,10 +258,10 @@ void drawHisto( const std::string& outputdir, MT2Analysis<MT2EstimateTree>* data
     h_bg_r[0]->Divide(h_bg_sum);
     h_bg_r[1]->Divide(h_bg_sum);
     
-//    for(int b=1; b<=nBins; ++b){
-//      h_bg_r[0]->SetBinError(b, 1e-3);
-//      h_bg_r[1]->SetBinError(b, 1e-3);
-//    }    
+    for(int b=1; b<=nBins; ++b){
+      h_bg_r[0]->SetBinError(b, 1e-3);
+      h_bg_r[1]->SetBinError(b, 1e-3);
+    }    
 
     TCanvas* c1 = new TCanvas( "c1", "", 600, 700 );
     c1->cd();
@@ -279,13 +279,13 @@ void drawHisto( const std::string& outputdir, MT2Analysis<MT2EstimateTree>* data
     
     if(logY) {
       gPad->SetLogy();
-      yMin=1e-1;
+      yMin=1e-3;
       yMax*=50.;
     }
 
     label="M_{T2} [GeV]";
     if(thisRegion.nJetsMax()==1)
-      label="H_{T} [GeV]";
+      label="p_{T}(jet_{1}) [GeV]";
 
     std::string labelY = "Events";
     TH2D* h_axes = new TH2D("axes", "", 10, 200, 1500, 10, yMin, yMax );
@@ -322,6 +322,20 @@ void drawHisto( const std::string& outputdir, MT2Analysis<MT2EstimateTree>* data
     legend->AddEntry( h_bg_v_sum[1], "Variation DN", "L");
 
     legend->Draw("same");
+    
+    std::string topFrac = Form("Top: %.2f", relativeF[0]);
+    std::string WJetsFrac = Form("W+jets: %.2f", relativeF[1]);
+    
+    std::cout << "Fractions: " << topFrac << WJetsFrac << std::endl;
+
+    TPaveText* relativeFrac = new TPaveText( 0.6, 0.55, 0.93, 0.65, "brNDC" );
+    relativeFrac->SetTextFont(42);
+    relativeFrac->SetFillColor(0);
+    relativeFrac->SetTextAlign(11);
+    relativeFrac->AddText( topFrac.c_str() );
+    relativeFrac->AddText( WJetsFrac.c_str() );
+    relativeFrac->Draw("same");
+
     bgStack.Draw("histo same");
     bgStack.SetMinimum(yMin);
     bgStack.Draw("histo same");
@@ -349,7 +363,7 @@ void drawHisto( const std::string& outputdir, MT2Analysis<MT2EstimateTree>* data
       h_bg_r[v]->GetXaxis()->SetLabelSize(0.00);
       h_bg_r[v]->GetXaxis()->SetTickLength(0.09);
       h_bg_r[v]->GetYaxis()->SetNdivisions(5,5,0);
-      h_bg_r[v]->GetYaxis()->SetRangeUser(0.75,1.25);
+      h_bg_r[v]->GetYaxis()->SetRangeUser(0.5,1.5);
       h_bg_r[v]->GetYaxis()->SetTitleSize(0.17);
       h_bg_r[v]->GetYaxis()->SetTitleOffset(0.4);
       h_bg_r[v]->GetYaxis()->SetLabelSize(0.17);

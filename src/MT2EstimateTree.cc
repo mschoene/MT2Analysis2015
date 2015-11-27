@@ -96,6 +96,61 @@ void MT2EstimateTree::setName( const std::string& newName ) {
 
 
 
+//void MT2EstimateTree::projectFromTree( const MT2EstimateTree* treeEst, const std::string& selection ) {
+//
+//  TDirectory* dir = TDirectory::CurrentDirectory();
+//
+//  std::string fullSelection = region->getRegionCuts();
+//  if( selection!="" ) fullSelection = fullSelection + " && " + selection;
+//
+//  treeEst->tree->Project( yield->GetName(), "mt2", Form("weight*(%s)", fullSelection.c_str()) );
+//
+//  gROOT->cd();
+//
+//  this->tree = treeEst->tree->CopyTree( Form("%s", fullSelection.c_str()) );
+//  this->tree->SetDirectory(0);
+//  this->tree->SetName( this->getHistoName("tree").c_str() );
+//
+//  dir->cd();
+//
+//}
+
+
+
+//MT2Analysis<MT2EstimateTree>* MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( const std::string& aname, const std::string& regionsSet, MT2Analysis<MT2EstimateTree>* estimate, const std::string& selection, int nBins, float xMin, float xMax ) {
+//
+//
+//  std::set<MT2Region> regions = estimate->getRegions();
+//
+//  //  MT2EstimateTree* treeInclusive = estimate->get( MT2Region("HT450toInf_j2toInf_b0toInf") );
+//  if( regions.size()!=1 ) {
+//  //if( treeInclusive==0 ) {
+//    std::cout << "[MT2EstimateTree::makeAnalysisFromEstimateTreeInclusive] ERROR!! You need to pass an inclusive MT2EstimateTree Analysis to use this function!" << std::endl;
+//    exit(19191);
+//  }
+//
+//  MT2EstimateTree* treeInclusive = estimate->get( *(regions.begin()) );
+//
+//  // will create a new analysis with custom regions from inclusive tree:
+//  MT2Analysis<MT2EstimateTree>* analysis = new MT2Analysis<MT2EstimateTree>( aname, regionsSet );
+//  std::set<MT2Region> newRegions = analysis->getRegions();
+//
+//  if ( nBins!=0 )
+//    MT2Estimate::rebinYields( (MT2Analysis<MT2Estimate>*)analysis, nBins, xMin, xMax );
+//
+//  for( std::set<MT2Region>::iterator iR=newRegions.begin(); iR!=newRegions.end(); ++iR ) {
+//
+//    MT2EstimateTree* thisEstimateTree = analysis->get( *iR );
+//    thisEstimateTree->projectFromTree( treeInclusive, selection );
+//
+//  } // for regions
+//
+//
+//  return analysis;
+//
+//}
+
+
 
 void MT2EstimateTree::projectFromTree( const MT2EstimateTree* treeEst, const std::string& selection, const std::string& variable ) {
 
@@ -113,7 +168,7 @@ void MT2EstimateTree::projectFromTree( const MT2EstimateTree* treeEst, const std
   this->tree->SetName( this->getHistoName("tree").c_str() );
 
   dir->cd();
-
+  
 }
 
 
@@ -133,12 +188,12 @@ MT2Analysis<MT2EstimateTree>* MT2EstimateTree::makeRebinnedAnalysisFromInclusive
   // will create a new analysis with custom regions from inclusive tree:
   MT2Analysis<MT2EstimateTree>* analysis = new MT2Analysis<MT2EstimateTree>( aname, regionsSet );
   std::set<MT2Region> newRegions = analysis->getRegions();
-
-  if ( nBins!=0 )
-    MT2Estimate::rebinYields( (MT2Analysis<MT2Estimate>*)analysis, nBins, xMin, xMax );
-
+  
+  if ( nBins > 0 )
+    MT2Estimate::rebinYields( (MT2Analysis<MT2Estimate>*) analysis, nBins, bins );
+  
   for( std::set<MT2Region>::iterator iR=newRegions.begin(); iR!=newRegions.end(); ++iR ) {
-
+   
     MT2EstimateTree* thisEstimateTree = analysis->get( *iR );
     thisEstimateTree->projectFromTree( treeInclusive, selection, variable );
 
@@ -174,11 +229,9 @@ MT2Analysis<MT2EstimateTree>* MT2EstimateTree::makeRebinnedAnalysisFromInclusive
     thisEstimateTree->projectFromTree( treeInclusive, selection, variable );
   } // for regions
 
-
   return analysis;
 
 }
-
 
 
 void MT2EstimateTree::addVar( MT2Analysis<MT2EstimateTree>* analysis, const std::string& name ) {
@@ -300,8 +353,8 @@ void MT2EstimateTree::assignTree( const MT2Tree& mt2tree, float w  ) {
 
   nJetHF = mt2tree.get_nJetHF();
     
-  GenSusyMScan1 = mt2tree.GenSusyMScan1;
-  GenSusyMScan2 = mt2tree.GenSusyMScan2;
+  GenSusyMScan1 = mt2tree.GenSusyMGluino;
+  GenSusyMScan2 = mt2tree.GenSusyMNeutralino;
  
 //  LHEweight_original = mt2tree.LHEweight_original;
 //  for (int i=0; i < 446; ++i){
@@ -346,8 +399,8 @@ void MT2EstimateTree::assignTree_zll( const MT2Tree& mt2tree, float w ) {
 
   nJetHF = mt2tree.get_nJetHF();
 
-  GenSusyMScan1 = mt2tree.GenSusyMScan1;
-  GenSusyMScan2 = mt2tree.GenSusyMScan2;
+  GenSusyMScan1 = mt2tree.GenSusyMGluino;
+  GenSusyMScan2 = mt2tree.GenSusyMNeutralino;
 
 //  LHEweight_original = mt2tree.LHEweight_original;
 //  for (int i=0; i < 446; ++i){
@@ -387,8 +440,8 @@ void MT2EstimateTree::assignTree_gamma( const MT2Tree& mt2tree, float w ) {
 
   nJetHF = mt2tree.get_nJetHF();
 
-  GenSusyMScan1 = mt2tree.GenSusyMScan1;
-  GenSusyMScan2 = mt2tree.GenSusyMScan2;
+  GenSusyMScan1 = mt2tree.GenSusyMGluino;
+  GenSusyMScan2 = mt2tree.GenSusyMNeutralino;
 
 //  LHEweight_original = mt2tree.LHEweight_original;
 //  for (int i=0; i < 446; ++i){
