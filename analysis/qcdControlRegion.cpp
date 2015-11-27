@@ -68,7 +68,7 @@ int main( int argc, char* argv[] ) {
   } else if( onlyMC ) {
     std::cout << "-> Will run only on MC." << std::endl;
   } else {
-    std::cout << "-> Will run only on both data and MC." << std::endl;
+    std::cout << "-> Will run on both data and MC." << std::endl;
   }
  
 
@@ -226,10 +226,8 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
           if( !( id==1 && myTree.HLT_PFHT800) ) continue;
         } else if( ht>575. ) {
           if( !( (id==2 && myTree.HLT_PFHT350_PFMET100 ) || (id==1 && myTree.HLT_PFHT475_Prescale))  ) continue;
-          //if( !( (id==2 && myTree.HLT_PFHT350_PFMET100 ) || (id==1 && myTree.HLT_PFHT475_Prescale))  ) continue; // gio's tree
         } else if( ht>450. ) {
           if( !( (id==2 && myTree.HLT_PFHT350_PFMET100 ) || (id==1 && myTree.HLT_PFHT350_Prescale))  ) continue;
-          //if( !( (id==2 && myTree.HLT_PFHT350_PFMET100 ) || (id==1 && myTree.HLT_PFHT350_Prescale))  ) continue; // gio's tree
         } else if( ht>200. ) {
           if( !( id==3 && myTree.HLT_PFMETNoMu90_PFMHTNoMu90) ) continue;
         }
@@ -241,6 +239,7 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
 
     if( monojet ) {
       if( !( (njets==2 && myTree.deltaPhiMin<0.3 && myTree.jet1_pt>200. && myTree.met_pt>200.) ) ) continue;
+      if( !myTree.passMonoJetId(0) ) continue;
     } else {
       if( mt2<50. ) continue;
     }

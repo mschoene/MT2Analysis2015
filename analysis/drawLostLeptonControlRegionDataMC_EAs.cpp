@@ -105,7 +105,7 @@ int main( int argc, char* argv[] ) {
   bMin=0; bMax=-1;
   std::string jetCutsLabel = getJetCutLabel(jetMin, jetMax, bMin, bMax);
 
-  std::string selection = "weight*(ht>500. && met>250.  && nJets40>1)";
+  std::string selection = "ht>500. && met>250.  && nJets40>1";
 
   dt.drawRegionYields_fromTree( "EAs_lepPt"              , "lep_pt"                , selection, 24, 0.    , 600.  , "Lepton p_{T}"                    , "GeV" , cutsLabel, jetCutsLabel );
   dt.drawRegionYields_fromTree( "EAs_met"              , "met"                , selection, 27, 200.    , 1550.  , "Missing E_{T}"                    , "GeV" , cutsLabel, jetCutsLabel );

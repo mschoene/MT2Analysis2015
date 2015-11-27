@@ -381,6 +381,7 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
 
     myTree.GetEntry(iEntry);
 
+
 //    if( myTree.isData )
 //      if ( myTree.isGolden == 0 ) continue;
 
@@ -389,8 +390,6 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
    
       if( !myTree.passSelection("gamma") ) continue;
 
-      if( !(myTree.HLT_Photon165_HE10) ) continue;
-   
       if( myTree.mt2>200. ) continue; // orthogonal to signal region
       if( myTree.gamma_pt[0]<180. ) continue;
       if( (myTree.gamma_nJet30>1 && myTree.gamma_mt2<200.) || (myTree.gamma_nJet30==1 && myTree.gamma_ht<200.) ) continue;
@@ -424,7 +423,12 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
     
     if( !(myTree.HLT_Photon165_HE10) ) continue;
     
-    if( myTree.gamma_idCutBased[0]==0 ) continue;
+    
+    if( cfg.additionalStuff()=="gammaNoSietaieta" ) {
+      //if( myTree.gamma_hOverE[0]>0.1 ) continue;
+    } else {
+      if( myTree.gamma_idCutBased[0]==0 ) continue;
+    }
 
     if( myTree.isData ) {
       
@@ -442,7 +446,11 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
 
     // absolute iso:
     float iso = myTree.gamma_chHadIso[0];
-    if( iso>10. ) continue; // preselection anyways in there
+    if( cfg.additionalStuff()=="gammaNoSietaieta" ) {
+      if( iso>20. ) continue; // loose preselection for plots
+    } else {
+      if( iso>10. ) continue; // preselection
+    }
 
     float minMTBmet = myTree.gamma_minMTBMet;
     float met       = myTree.gamma_met_pt;

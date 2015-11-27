@@ -48,6 +48,8 @@ class MT2DrawTools {
   void set_lumiErr( float lumiErr );
   void set_shapeNorm( bool shapeNorm );
   void set_mcSF( float mcsf );
+  void set_addOverflow( bool addOver );
+  void set_displaySF( bool displaySF );
 
 
   bool twoPads() const;
@@ -103,6 +105,8 @@ class MT2DrawTools {
   float lumi_;
   float lumiErr_;
   bool shapeNorm_;
+  bool addOverflow_;
+  bool displaySF_;
 
   MT2Analysis<MT2EstimateTree>* data_;
   std::vector< MT2Analysis<MT2EstimateTree>* >* mc_;
