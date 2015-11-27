@@ -511,45 +511,62 @@ bool MT2SignalRegion::operator<( const MT2SignalRegion& rhs ) const {
   int  rhsNJmax = (rhs.nJetsMax>=0) ? rhs.nJetsMax : 99999;
 
   bool returnBool;
+  
+  if( nJetsMax == 1 && (rhs.nJetsMax > 1 || rhs.nJetsMax < 0) ){
+    
+    returnBool = true;
 
-  if( (nBJetsMax >= 0 && rhs.nBJetsMax >= 0) || (rhs.nBJetsMax < 0 && nBJetsMax < 0) ) {
+  }
+  else if ( rhs.nJetsMax == 1 && (nJetsMax > 1 || nJetsMax < 0) ){
 
-    if( thisNJmax == rhsNJmax ) {
-      
-      if( nBJetsMin!=rhs.nBJetsMin ) {
+    returnBool = false;
+    
+  } 
+  else if ( nJetsMax == 1 && rhs.nJetsMax == 1 ){
+    
+    returnBool = ( nBJetsMin < rhs.nBJetsMin );
+
+  }
+  else{
+    if( (nBJetsMax >= 0 && rhs.nBJetsMax >= 0) || (rhs.nBJetsMax < 0 && nBJetsMax < 0) ) {
+
+      if( thisNJmax == rhsNJmax ) {
 	
-	returnBool = ( nBJetsMin<rhs.nBJetsMin );
+	if( nBJetsMin!=rhs.nBJetsMin ) {
+	  
+	  returnBool = ( nBJetsMin<rhs.nBJetsMin );
+	  
+	} else {
+	  
+	  if( mtCut!=rhs.mtCut ) {
+	    
+	    if( mtCut=="loMT" ) {
+	      returnBool = true;
+	    } else {
+	      returnBool = false;
+	    }
+	    
+	  } else { // everything is the same
+	    
+	    returnBool = false;
+	    
+	  }
+	  
+	} //if nbjetsmin
 	
       } else {
 	
-	if( mtCut!=rhs.mtCut ) {
-	  
-	  if( mtCut=="loMT" ) {
-	    returnBool = true;
-	  } else {
-	    returnBool = false;
-	  }
-	  
-	} else { // everything is the same
-	  
-	  returnBool = false;
-	  
-	}
+	returnBool = thisNJmax<rhsNJmax;
 	
-      } //if nbjetsmin
+      } // if njetsmax
       
-    } else {
+    } // if nbjetsmax
+    else {
+      if( nBJetsMax < 0 )
+	returnBool = false;
+      else returnBool = true;
       
-      returnBool = thisNJmax<rhsNJmax;
-      
-    } // if njetsmax
-    
-  } // if nbjetsmax
-  else {
-    if( nBJetsMax < 0 )
-      returnBool = false;
-    else returnBool = true;
-    
+    }
   }
   
   return returnBool;
@@ -1636,10 +1653,21 @@ bool MT2Region::operator!=( const MT2Region& rhs ) const {
 
 bool MT2Region::operator<( const MT2Region& rhs ) const {
 
-  if( (*htRegion_)!=(*(rhs.htRegion())) ) {
-    return (*htRegion_)<(*(rhs.htRegion()));
-  } else {
-    return (*sigRegion_)<(*(rhs.sigRegion()));
+  if( (sigRegion_->nJetsMax > 1 || sigRegion_->nJetsMax < 0) && (rhs.sigRegion()->nJetsMax > 1 || rhs.sigRegion()->nJetsMax < 0)){ 
+    if( (*htRegion_)!=(*(rhs.htRegion())) ) {
+      return (*htRegion_)<(*(rhs.htRegion()));
+    } else {
+      return (*sigRegion_)<(*(rhs.sigRegion()));
+    }
+  }
+  else{
+    
+    if( (*sigRegion_)!=(*(rhs.sigRegion())) ) {
+      return (*sigRegion_)<(*(rhs.sigRegion()));
+    } else {
+      return (*htRegion_)<(*(rhs.htRegion()));
+    }
+
   }
 
   return true;
