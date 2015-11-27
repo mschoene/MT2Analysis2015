@@ -139,29 +139,47 @@ int main( int argc, char* argv[] ) {
 
     int nBJets = iR->nBJetsMin();
 
+    float ptMin = iR->htMin();
+    float ptMax = iR->htMax();
+
     MT2Estimate* thisEst = qcdMonojet->get( *iR );
     MT2Estimate* thisNCR = nCRMonojet->get( *iR );
     MT2Estimate* thisR   = rMonojet  ->get( *iR );
 
-    for( int iBin=1; iBin<thisEst->yield->GetXaxis()->GetNbins(); ++iBin ) {
+    std::string fullSelection(Form("%s && %s && jet1_pt>%f && jet1_pt<%f", selection.c_str(), iR->sigRegion()->getBJetCuts().c_str(), ptMin, ptMax ) );
 
-      float ptMin = thisEst->yield->GetXaxis()->GetBinLowEdge(iBin);
-      float ptMax = thisEst->yield->GetXaxis()->GetBinLowEdge(iBin+1);
-      std::string fullSelection(Form("%s && %s && jet1_pt>%f && jet1_pt<%f", selection.c_str(), iR->sigRegion()->getBJetCuts().c_str(), ptMin, ptMax ) );
+    std::string bJetsLabel = (nBJets==0) ? "b = 0" : "b #geq 1";
+    canvases = dt.drawRegionYields_fromTree( Form("jet2_pt_%s", iR->getName().c_str()), "jet2_pt", fullSelection, 20, 0., 300., "Subleading Jet p_{T}", "GeV", "p_{T}(jet1) > 200 GeV", bJetsLabel );
 
-      std::string bJetsLabel = (nBJets==0) ? "b = 0" : "b #geq 1";
-      canvases = dt.drawRegionYields_fromTree( Form("jet2_pt_bin%d_b%d", iBin, nBJets) , "jet2_pt" , fullSelection, 20, 0., 300., "Subleading Jet p_{T}", "GeV", "p_{T}(jet1) > 200 GeV", bJetsLabel );
+    int nCR;
+    float r, r_err;
+    getQCDMonojet( canvases[0], iR->getName(), nCR, r, r_err );
 
-      int nCR;
-      float r, r_err;
-      getQCDMonojet( canvases[0], iR->getName(), nCR, r, r_err );
+    // should be one bin in "mt2" anyways:
+    thisNCR->yield->SetBinContent( 1, nCR   );
+    thisR  ->yield->SetBinContent( 1, r     );
+    thisR  ->yield->SetBinError  ( 1, r_err );
+    thisEst->yield->SetBinContent( 1, r*nCR );
 
-      thisNCR->yield->SetBinContent( iBin, nCR   );
-      thisR  ->yield->SetBinContent( iBin, r     );
-      thisR  ->yield->SetBinError  ( iBin, r_err );
-      thisEst->yield->SetBinContent( iBin, r*nCR );
+    //for( int iBin=1; iBin<thisEst->yield->GetXaxis()->GetNbins(); ++iBin ) {
 
-    }
+    //  float ptMin = thisEst->yield->GetXaxis()->GetBinLowEdge(iBin);
+    //  float ptMax = thisEst->yield->GetXaxis()->GetBinLowEdge(iBin+1);
+    //  std::string fullSelection(Form("%s && %s && jet1_pt>%f && jet1_pt<%f", selection.c_str(), iR->sigRegion()->getBJetCuts().c_str(), ptMin, ptMax ) );
+
+    //  std::string bJetsLabel = (nBJets==0) ? "b = 0" : "b #geq 1";
+    //  canvases = dt.drawRegionYields_fromTree( Form("jet2_pt_bin%d_b%d", iBin, nBJets) , "jet2_pt" , fullSelection, 20, 0., 300., "Subleading Jet p_{T}", "GeV", "p_{T}(jet1) > 200 GeV", bJetsLabel );
+
+    //  int nCR;
+    //  float r, r_err;
+    //  getQCDMonojet( canvases[0], iR->getName(), nCR, r, r_err );
+
+    //  thisNCR->yield->SetBinContent( iBin, nCR   );
+    //  thisR  ->yield->SetBinContent( iBin, r     );
+    //  thisR  ->yield->SetBinError  ( iBin, r_err );
+    //  thisEst->yield->SetBinContent( iBin, r*nCR );
+
+    //}
 
   }
     
