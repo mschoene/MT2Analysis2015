@@ -16,7 +16,7 @@
 #include "../interface/MT2EstimateTree.h"
 #include "../interface/MT2DrawTools.h"
 
-double lumi=3.0; //fb-1
+double lumi=1.26; //fb-1
 bool doNminusOne=false;
 
 void drawHisto( const std::string& outputdir, MT2Analysis<MT2EstimateTree>* data, std::vector<MT2Analysis<MT2EstimateTree>* > bgYields, std::vector<MT2Analysis<MT2EstimateTree>* > sigYields, std::string var, int nBins, float xmin, float xmax, std::string label, std::string selection, bool logY );
@@ -77,7 +77,22 @@ int main( int argc, char* argv[] ) {
   bgYields.push_back(zjets);
   bgYields.push_back(top);
 
-  std::vector<MT2Analysis<MT2EstimateTree>*> sigYields = MT2Analysis<MT2EstimateTree>::readAllFromFile( mc_fileName, "SMS" );
+  MT2Analysis<MT2EstimateTree>* sig0   = MT2Analysis<MT2EstimateTree>::readFromFile( mc_fileName, "SMS_T1bbbb_mGluino1000_mLSP900" );
+  MT2Analysis<MT2EstimateTree>* sig1   = MT2Analysis<MT2EstimateTree>::readFromFile( mc_fileName, "SMS_T1bbbb_mGluino1500_mLSP100" );
+  MT2Analysis<MT2EstimateTree>* sig2   = MT2Analysis<MT2EstimateTree>::readFromFile( mc_fileName, "SMS_T1qqqq_mGluino1000_mLSP800");
+  MT2Analysis<MT2EstimateTree>* sig3   = MT2Analysis<MT2EstimateTree>::readFromFile( mc_fileName, "SMS_T1qqqq_mGluino1400_mLSP100");
+  MT2Analysis<MT2EstimateTree>* sig4   = MT2Analysis<MT2EstimateTree>::readFromFile( mc_fileName, "SMS_T1tttt_mGluino1200_mLSP800");
+  MT2Analysis<MT2EstimateTree>* sig5   = MT2Analysis<MT2EstimateTree>::readFromFile( mc_fileName, "SMS_T1tttt_mGluino1500_mLSP100");
+  
+  std::vector<MT2Analysis<MT2EstimateTree>*> sigYields;
+  sigYields.push_back(sig0);
+  sigYields.push_back(sig1);
+  sigYields.push_back(sig2);
+  sigYields.push_back(sig3);
+  sigYields.push_back(sig4);
+  sigYields.push_back(sig5);
+
+  //  std::vector<MT2Analysis<MT2EstimateTree>*> sigYields = MT2Analysis<MT2EstimateTree>::readAllFromFile( mc_fileName, "SMS" );
 //  //std::vector<MT2Analysis<MT2EstimateTree>*> sigYields = MT2Analysis<MT2EstimateTree>::readAllFromFile( mc_fileName, "DarkMatter" );
 //////std::vector<MT2Analysis<MT2EstimateTree>*> sigYields;
 
@@ -298,7 +313,7 @@ void drawHisto( const std::string& outputdir, MT2Analysis<MT2EstimateTree>* data
     
     label="M_{T2} [GeV]";
     if( thisRegion.nJetsMax()==1 )
-      label="H_{T} [GeV]";
+      label="p_{T}^{jet1} [GeV]";
     
     if(logY) {
       gPad->SetLogy();

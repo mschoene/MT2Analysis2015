@@ -60,6 +60,9 @@ class MT2EstimateTree : public MT2Estimate {
   int GenSusyMScan1;
   int GenSusyMScan2;
 
+//  float GenSusyMScan1;
+//  float GenSusyMScan2;
+
 //  float LHEweight_original;
 //  int LHEweight_id[446];
 //  float LHEweight_wgt[446];
@@ -87,12 +90,9 @@ class MT2EstimateTree : public MT2Estimate {
 
   void projectFromTree( const MT2EstimateTree* treeEst, const std::string& selection, const std::string& variable="mt2" );
 
-  // static MT2Analysis<MT2EstimateTree>* makeRebinnedAnalysisFromInclusiveTree( const std::string& aname, const std::string& regionsSet, MT2Analysis<MT2EstimateTree>* analysis,  int nBins=0, float xMin=0., float xMax=0., const std::string& selection="", const std::string& variable="mt2" );
-
-  static MT2Analysis<MT2EstimateTree>* makeRebinnedAnalysisFromInclusiveTree( const std::string& aname, const std::string& regionsSet, MT2Analysis<MT2EstimateTree>* analysis, const std::string& selection="", int nBins=0, double* bins=0,  const std::string& variable="mt2" );
-
   static MT2Analysis<MT2EstimateTree>* makeAnalysisFromInclusiveTree( const std::string& aname, const std::string& regionsSet, MT2Analysis<MT2EstimateTree>* analysis, const std::string& selection="" ) { return makeRebinnedAnalysisFromInclusiveTree( aname, regionsSet, analysis, selection ); };
 
+  static MT2Analysis<MT2EstimateTree>* makeRebinnedAnalysisFromInclusiveTree( const std::string& aname, const std::string& regionsSet, MT2Analysis<MT2EstimateTree>* analysis, const std::string& selection="", int nBins=0, double* bins=0,  const std::string& variable="mt2" );
 
   virtual void getShit( TFile* file, const std::string& path );
 

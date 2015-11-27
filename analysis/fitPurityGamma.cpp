@@ -220,6 +220,7 @@ void makePurity( const MT2Config& cfg, std::string outputdir,MT2Analysis<MT2Esti
     std::string nameTight = thisTightPurity->yield->GetName();
 
 
+
  
 
 
@@ -238,7 +239,6 @@ void makePurity( const MT2Config& cfg, std::string outputdir,MT2Analysis<MT2Esti
     purityLoose->writeToFile( outputdir + "/purityFit_"+var +"data.root" );
     purityTight->addToFile( outputdir + "/purityFit_"+var +"data.root" );
   }
-
 
   return;
 }
@@ -269,7 +269,7 @@ void fitPurity( const MT2Config& cfg, MT2EstimateSyst* purityLoose, MT2EstimateS
 
       purityLoose->yield         ->SetBinContent( ibin, 1.0 );
       purityLoose->yield_systUp  ->SetBinContent( ibin, 1.0 );
-      purityLoose->yield_systDown->SetBinContent( ibin, 0.0 );
+      purityLoose->yield_systDown->SetBinContent( ibin, 0.01 );
 
     }
 
@@ -284,7 +284,7 @@ void fitPurity( const MT2Config& cfg, MT2EstimateSyst* purityLoose, MT2EstimateS
       
       purityTight->yield         ->SetBinContent( ibin, 1.0 );
       purityTight->yield_systUp  ->SetBinContent( ibin, 1.0 );
-      purityTight->yield_systDown->SetBinContent( ibin, 0.0 );  
+      purityTight->yield_systDown->SetBinContent( ibin, 0.01 );  
 
     }
 
