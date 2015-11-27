@@ -94,8 +94,7 @@ int main( int argc, char* argv[] ) {
 
 
 
-  MT2Analysis<MT2EstimateTree>* qcdTree_mc   = MT2Analysis<MT2EstimateTree>::readFromFile( "/shome/casal/CMSSW_7_4_12_patch4_MT2/src/analysisCode/analysis/EventYields_data_Run2015D_25nsGolden_qcd/qcdControlRegion/mc.root",   "qcdCRtree" );
-  //MT2Analysis<MT2EstimateTree>* qcdTree_mc   = MT2Analysis<MT2EstimateTree>::readFromFile( qcdCRdir + "/mc.root",   "qcdCRtree" );
+  MT2Analysis<MT2EstimateTree>* qcdTree_mc   = MT2Analysis<MT2EstimateTree>::readFromFile( qcdCRdir + "/mc.root",   "qcdCRtree" );
   MT2Analysis<MT2EstimateTree>* qcdTree_data = MT2Analysis<MT2EstimateTree>::readFromFile( qcdCRdir + "/data.root", "qcdCRtree" );
   
 
@@ -622,13 +621,13 @@ void drawSingleFit( const MT2Config& cfg, bool useMC, const std::string& outdir,
   //float xMin = thisRatioAll->GetXaxis()->GetXmin();
   float xMin = 50;
   //float xMax = useMC ? thisRatioAll->GetXaxis()->GetXmax() : 200;  // we are blind to MT2>200 in data
-  float xMax = useMC ? thisRatioAll->GetXaxis()->GetXmax() : 450;
-  //float xMax = useMC ? 800 : 450;
+  //float xMax = useMC ? thisRatioAll->GetXaxis()->GetXmax() : 450;
+  float xMax = useMC ? 800 : 450;
 
   float yMax    = thisRatioAll->GetMaximum()*5.;
   float yMinAll = thisRatioQCD->GetMinimum()/2.;
   float yMin    = thisRatioQCD->GetMinimum()/2.;
-  if( yMin < 0.0003 ) yMin = 0.0003;
+  if( yMin < 0.03 ) yMin = 0.03;
   if( yMin > yMinAll && yMinAll>0.001 ) yMin = yMinAll;
 
   TH2D* h2_axes = new TH2D("axes", "", 10, xMin, xMax, 10, yMin, yMax );
