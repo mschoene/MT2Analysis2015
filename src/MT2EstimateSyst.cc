@@ -33,15 +33,15 @@ MT2EstimateSyst::MT2EstimateSyst( const std::string& aname, const MT2Region& are
 MT2EstimateSyst::MT2EstimateSyst( const std::string& aname, const MT2Region& aregion, const MT2Estimate& pass, const MT2Estimate& tot ) : MT2Estimate( aname, aregion ) {
 
   //get the right bins from the input files
-  MT2Estimate* estimate = new MT2Estimate(pass);
   int nBins;
   double* bins;
-  estimate->MT2Estimate::getYieldBins(nBins, bins);
+  pass.getYieldBins(nBins, bins);
 
   //Rebinning the yield
   TH1D* thisYield = this->yield;
   std::string oldName(thisYield->GetName());
-  delete thisYield;
+  if( thisYield!=0 )
+    delete thisYield;
   thisYield = new TH1D( oldName.c_str(), "", nBins, bins );
   
  
@@ -233,7 +233,8 @@ void MT2EstimateSyst::rebinYields( MT2Analysis<MT2EstimateSyst>* analysis, int n
     TH1D* thisYield = estimate->yield;
 
     std::string oldName(thisYield->GetName());
-    delete thisYield;
+    if( thisYield!=0 )
+      delete thisYield;
     thisYield = new TH1D( oldName.c_str(), "", nBins, bins );
   
 
@@ -244,11 +245,13 @@ void MT2EstimateSyst::rebinYields( MT2Analysis<MT2EstimateSyst>* analysis, int n
     std::string oldName_systUp(this_systUp->GetName());
     std::string oldName_systDown(this_systDown->GetName());
  
-    delete this_systUp;
+    if( this_systUp!=0 )
+      delete this_systUp;
     this_systUp = new TH1D( oldName_systUp.c_str(), "", nBins, bins );
     this_systUp->Sumw2();
 
-    delete this_systDown;
+    if( this_systDown!=0 )
+      delete this_systDown;
     this_systDown = new TH1D( oldName_systDown.c_str(), "", nBins, bins );
     this_systDown->Sumw2();
     
