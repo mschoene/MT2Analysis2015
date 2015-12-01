@@ -10,6 +10,39 @@
 
 
 
+void MT2EstimateSyst::rebinYields( MT2Analysis<MT2EstimateSyst>* analysis, int nBins, double* bins) {
+
+  std::set<MT2Region> regions = analysis->getRegions();
+
+  for( std::set<MT2Region>::iterator iR = regions.begin(); iR!=regions.end(); ++iR ) {
+
+    MT2EstimateSyst* estimate = analysis->get(*iR);
+    TH1D* thisYield = estimate->yield;
+
+    std::string oldName(thisYield->GetName());
+    delete thisYield;
+    thisYield = new TH1D( oldName.c_str(), "", nBins, bins );
+  
+
+    TH1D* this_systUp = estimate->yield_systUp;
+    TH1D* this_systDown = estimate->yield_systDown;
+
+
+    std::string oldName_systUp(this_systUp->GetName());
+    std::string oldName_systDown(this_systDown->GetName());
+ 
+    delete this_systUp;
+    this_systUp = new TH1D( oldName_systUp.c_str(), "", nBins, bins );
+    this_systUp->Sumw2();
+
+    delete this_systDown;
+    this_systDown = new TH1D( oldName_systDown.c_str(), "", nBins, bins );
+    this_systDown->Sumw2();
+    
+  }
+  
+}
+
 
 
 
@@ -38,11 +71,11 @@ MT2EstimateSyst::MT2EstimateSyst( const std::string& aname, const MT2Region& are
   double* bins;
   estimate->MT2Estimate::getYieldBins(nBins, bins);
 
-  //Rebinning the yield
-  TH1D* thisYield = this->yield;
-  std::string oldName(thisYield->GetName());
-  delete thisYield;
-  thisYield = new TH1D( oldName.c_str(), "", nBins, bins );
+//  //Rebinning the yield
+//  TH1D* thisYield = this->yield;
+//  std::string oldName(thisYield->GetName());
+//  delete thisYield;
+//  thisYield = new TH1D( oldName.c_str(), "", nBins, bins );
   
  
   yield_systUp = new TH1D( this->getHistoName("yield_systUp").c_str(), "", nBins, bins);
@@ -99,6 +132,10 @@ MT2EstimateSyst::~MT2EstimateSyst() {
 
 
 
+
+
+
+
 MT2Analysis<MT2EstimateSyst>* MT2EstimateSyst::makeEfficiencyAnalysis( const std::string& aname, const std::string& regionsSet, MT2Analysis<MT2Estimate>* pass, MT2Analysis<MT2Estimate>* all ) {
 
   std::set<MT2Region> regions = pass->getRegions();
@@ -146,43 +183,6 @@ MT2Analysis<MT2EstimateSyst>* MT2EstimateSyst::makeAnalysisFromEstimate( const s
 }
 
 
-//MT2Analysis<MT2EstimateSyst>* MT2EstimateSyst::makeIntegralAnalysisFromEstimate( const std::string& aname, const std::string& regionsSet, MT2Analysis<MT2EstimateSyst>* estimate ) {
-//
-//  std::set<MT2Region> regions = estimate->getRegions();
-//
-//  std::set<MT2EstimateSyst*> data;
-//
-//  for( std::set<MT2Region>::iterator iR=regions.begin(); iR!=regions.end(); ++iR ) {
-//
-//    MT2EstimateSyst*  thisEstimate = estimate->get( *iR );
-//
-//    double error;
-//    double integral = thisEstimate->yield->IntegralAndError(1, thisEstimate->yield->GetNbinsX()+1, error);
-//    double integralUp = thisEstimate->yield_systUp->Integral(1, thisEstimate->yield->GetNbinsX()+1);
-//    double integralDown = thisEstimate->yield_systDown->Integral(1, thisEstimate->yield->GetNbinsX()+1);
-//    
-//    for( int iBin = 1; iBin < thisEstimate->yield->GetNbinsX()+1; ++iBin ){
-//      thisEstimate->yield->SetBinContent(iBin, integral);
-//      thisEstimate->yield_systUp->SetBinContent(iBin, integralUp);
-//      thisEstimate->yield_systDown->SetBinContent(iBin, integralDown);
-//
-//      for( int jBin = 1; jBin < thisEstimate->yield3d->GetNbinsY()+1; ++jBin )
-//        for( int kBin = 1; kBin < thisEstimate->yield3d->GetNbinsZ()+1; ++kBin ){
-//          thisEstimate->yield3d->SetBinContent(iBin, jBin, kBin, integral);
-//          thisEstimate->yield3d->SetBinError(iBin, jBin, kBin, error);
-//        }
-//    }
-//
-//    data.insert( thisEstimate );
-//
-//  } // for regions                                                                                                                                                                                                               
-//
-//  MT2Analysis<MT2EstimateSyst>* analysis = new MT2Analysis<MT2EstimateSyst>( aname, data );
-//
-//  return analysis;
-//
-//}
-
 MT2Analysis<MT2EstimateSyst>* MT2EstimateSyst::makeIntegralAnalysisFromEstimate( const std::string& aname, const std::string& regionsSet, MT2Analysis<MT2EstimateSyst>* estimate ) {
 
   std::set<MT2Region> regions = estimate->getRegions();
@@ -191,15 +191,16 @@ MT2Analysis<MT2EstimateSyst>* MT2EstimateSyst::makeIntegralAnalysisFromEstimate(
 
   for( std::set<MT2Region>::iterator iR=regions.begin(); iR!=regions.end(); ++iR ) {
 
-    MT2EstimateSyst*  thisEstimate = new MT2EstimateSyst( estimate->get( *iR )->getName(), *iR );
-    MT2EstimateSyst*  tempEstimate = estimate->get( *iR ); 
-
-    double error;
-    double integral = tempEstimate->yield->IntegralAndError(1, tempEstimate->yield->GetNbinsX()+1, error);
-    double integralUp = tempEstimate->yield_systUp->Integral(1, tempEstimate->yield->GetNbinsX()+1);
-    double integralDown = tempEstimate->yield_systDown->Integral(1, tempEstimate->yield->GetNbinsX()+1);
+    MT2EstimateSyst*  thisEstimate = estimate->get( *iR );
     
-    for( int iBin = 1; iBin < thisEstimate->yield->GetNbinsX()+1; ++iBin ){
+    int nBins = thisEstimate->yield_systUp->GetNbinsX();
+    
+    double error;
+    double integral = thisEstimate->yield->IntegralAndError(1, nBins+1, error);
+    double integralUp = thisEstimate->yield_systUp->Integral(1, nBins+1);
+    double integralDown = thisEstimate->yield_systDown->Integral(1, nBins+1);
+    
+    for( int iBin = 1; iBin < nBins+1; ++iBin ){
       thisEstimate->yield->SetBinContent(iBin, integral);
       thisEstimate->yield_systUp->SetBinContent(iBin, integralUp);
       thisEstimate->yield_systDown->SetBinContent(iBin, integralDown);
@@ -219,41 +220,6 @@ MT2Analysis<MT2EstimateSyst>* MT2EstimateSyst::makeIntegralAnalysisFromEstimate(
 
   return analysis;
 
-}
-
-
-
-void MT2EstimateSyst::rebinYields( MT2Analysis<MT2EstimateSyst>* analysis, int nBins, double* bins) {
-
-  std::set<MT2Region> regions = analysis->getRegions();
-
-  for( std::set<MT2Region>::iterator iR = regions.begin(); iR!=regions.end(); ++iR ) {
-
-    MT2EstimateSyst* estimate = analysis->get(*iR);
-    TH1D* thisYield = estimate->yield;
-
-    std::string oldName(thisYield->GetName());
-    delete thisYield;
-    thisYield = new TH1D( oldName.c_str(), "", nBins, bins );
-  
-
-    TH1D* this_systUp = estimate->yield_systUp;
-    TH1D* this_systDown = estimate->yield_systDown;
-
-
-    std::string oldName_systUp(this_systUp->GetName());
-    std::string oldName_systDown(this_systDown->GetName());
- 
-    delete this_systUp;
-    this_systUp = new TH1D( oldName_systUp.c_str(), "", nBins, bins );
-    this_systUp->Sumw2();
-
-    delete this_systDown;
-    this_systDown = new TH1D( oldName_systDown.c_str(), "", nBins, bins );
-    this_systDown->Sumw2();
-    
-  }
-  
 }
 
 
