@@ -112,7 +112,8 @@ void MT2Estimate::rebinYields( MT2Analysis<MT2Estimate>* analysis, int nBins, do
 
     std::string oldName(thisYield->GetName());
 
-    // delete thisYield; //leaves memory leak, fix it somehow
+    if( thisYield!=0 )
+      delete thisYield; 
 
     estimate->yield = new TH1D( oldName.c_str(), "", nBins, bins );
 

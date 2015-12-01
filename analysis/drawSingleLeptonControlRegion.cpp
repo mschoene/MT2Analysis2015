@@ -71,7 +71,7 @@ int main( int argc, char* argv[] ) {
   qcd->setColor(kQCD);
 
 
-  std::string selection = "weight*(nJets>=0)"; // for now
+  std::string selection = "nJets>=0"; // for now
 
 
   MT2Analysis<MT2EstimateTree>* data = 0; //MT2Analysis<MT2EstimateTree>::readFromFile(dataFile, "data");
@@ -93,7 +93,7 @@ int main( int argc, char* argv[] ) {
   dt.drawRegionYields_fromTree( "nBJets", "nBJets", selection, 7, -0.5, 6.5, "Number of b-Jets (p_{T} > 20 GeV)", "" );
   dt.drawRegionYields_fromTree( "leptMt", "leptMt", selection, 50, 0., 300., "Lepton+ME_{T} M_{T}", "GeV" );
 
-  selection = "weight*(nBJets==1)";
+  selection = "nBJets==1";
   dt.drawRegionYields_fromTree( "leptMt_nB1", "leptMt", selection, 50, 0., 300., "M_{T}", "GeV", "", "#geq2j, b=1" );
   dt.drawRegionYields_fromTree( "topMt", "topMt"  , selection, 50, 0., 300., "Lepton+ME_{T}+b-Jet M_{T}", "GeV", "", "#geq2j, b=1" );
   dt.drawRegionYields_fromTree( "massLeptB", "massLeptB"  , selection, 50, 0., 300., "Lepton+b-Jet Mass", "GeV", "", "#geq2j, b=1" );

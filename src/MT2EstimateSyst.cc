@@ -66,16 +66,16 @@ MT2EstimateSyst::MT2EstimateSyst( const std::string& aname, const MT2Region& are
 MT2EstimateSyst::MT2EstimateSyst( const std::string& aname, const MT2Region& aregion, const MT2Estimate& pass, const MT2Estimate& tot ) : MT2Estimate( aname, aregion ) {
 
   //get the right bins from the input files
-  MT2Estimate* estimate = new MT2Estimate(pass);
   int nBins;
   double* bins;
-  estimate->MT2Estimate::getYieldBins(nBins, bins);
+  pass.getYieldBins(nBins, bins);
 
-//  //Rebinning the yield
-//  TH1D* thisYield = this->yield;
-//  std::string oldName(thisYield->GetName());
-//  delete thisYield;
-//  thisYield = new TH1D( oldName.c_str(), "", nBins, bins );
+  //Rebinning the yield
+  TH1D* thisYield = this->yield;
+  std::string oldName(thisYield->GetName());
+  if( thisYield!=0 )
+    delete thisYield;
+  thisYield = new TH1D( oldName.c_str(), "", nBins, bins );
   
  
   yield_systUp = new TH1D( this->getHistoName("yield_systUp").c_str(), "", nBins, bins);
@@ -86,7 +86,7 @@ MT2EstimateSyst::MT2EstimateSyst( const std::string& aname, const MT2Region& are
 
   TEfficiency eff( *(pass.yield), *(tot.yield) );
 
-  for( int i=1; i<yield->GetNbinsX()+1; ++i ) {
+  for( int i=1; i<this->yield->GetNbinsX()+1; ++i ) {
 
     yield         ->SetBinContent( i, eff.GetEfficiency(i) );
     yield_systDown->SetBinContent( i, eff.GetEfficiency(i) - eff.GetEfficiencyErrorLow(i) );
@@ -132,11 +132,7 @@ MT2EstimateSyst::~MT2EstimateSyst() {
 
 
 
-
-
-
-
-MT2Analysis<MT2EstimateSyst>* MT2EstimateSyst::makeEfficiencyAnalysis( const std::string& aname, const std::string& regionsSet, MT2Analysis<MT2Estimate>* pass, MT2Analysis<MT2Estimate>* all ) {
+MT2Analysis<MT2EstimateSyst>* MT2EstimateSyst::makeEfficiencyAnalysis( const std::string& aname, MT2Analysis<MT2Estimate>* pass, MT2Analysis<MT2Estimate>* all ) {
 
   std::set<MT2Region> regions = pass->getRegions();
 
@@ -220,6 +216,44 @@ MT2Analysis<MT2EstimateSyst>* MT2EstimateSyst::makeIntegralAnalysisFromEstimate(
 
   return analysis;
 
+}
+
+
+
+void MT2EstimateSyst::rebinYields( MT2Analysis<MT2EstimateSyst>* analysis, int nBins, double* bins) {
+
+  std::set<MT2Region> regions = analysis->getRegions();
+
+  for( std::set<MT2Region>::iterator iR = regions.begin(); iR!=regions.end(); ++iR ) {
+
+    MT2EstimateSyst* estimate = analysis->get(*iR);
+    TH1D* thisYield = estimate->yield;
+
+    std::string oldName(thisYield->GetName());
+    if( thisYield!=0 )
+      delete thisYield;
+    thisYield = new TH1D( oldName.c_str(), "", nBins, bins );
+  
+
+    TH1D* this_systUp = estimate->yield_systUp;
+    TH1D* this_systDown = estimate->yield_systDown;
+
+
+    std::string oldName_systUp(this_systUp->GetName());
+    std::string oldName_systDown(this_systDown->GetName());
+ 
+    if( this_systUp!=0 )
+      delete this_systUp;
+    this_systUp = new TH1D( oldName_systUp.c_str(), "", nBins, bins );
+    this_systUp->Sumw2();
+
+    if( this_systDown!=0 )
+      delete this_systDown;
+    this_systDown = new TH1D( oldName_systDown.c_str(), "", nBins, bins );
+    this_systDown->Sumw2();
+    
+  }
+  
 }
 
 

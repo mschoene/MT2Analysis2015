@@ -18,7 +18,7 @@
 
 
 
-void getQCDMonojet( TCanvas* c1, const std::string& regionName, int &nCR, float &qcdFraction );
+void getQCDMonojet( TCanvas* c1, const std::string& regionName, int &nCR, float &qcdFraction, float &qcdFractionError );
 
 
 
@@ -59,10 +59,10 @@ int main( int argc, char* argv[] ) {
 
   std::string qcdCRdir = cfg.getEventYieldDir() + "/qcdControlRegion";
 
-  MT2Analysis<MT2EstimateTree>* data   = MT2Analysis<MT2EstimateTree>::readFromFile(qcdCRdir+"/data.root", "qcdCRtree");
+  MT2Analysis<MT2EstimateTree>* data   = MT2Analysis<MT2EstimateTree>::readFromFile(qcdCRdir+"/data_forMonojet.root", "qcdCRtree");
 
-  MT2Analysis<MT2EstimateTree>* mcTree = MT2Analysis<MT2EstimateTree>::readFromFile(qcdCRdir+"/mc.root"  , "qcdCRtree");
-  MT2Analysis<MT2EstimateTree>* mcTree2= MT2Analysis<MT2EstimateTree>::readFromFile(qcdCRdir+"/mc_zinv.root"  , "qcdCRtree");
+  MT2Analysis<MT2EstimateTree>* mcTree = MT2Analysis<MT2EstimateTree>::readFromFile(qcdCRdir+"/mc_forMonojet.root"  , "qcdCRtree");
+  //MT2Analysis<MT2EstimateTree>* mcTree2= MT2Analysis<MT2EstimateTree>::readFromFile(qcdCRdir+"/mc_zinv.root"  , "qcdCRtree");
 
   std::cout << "-> Making analyses from inclusive tree..." << std::endl;
   MT2Analysis<MT2EstimateTree>* qcd   = MT2EstimateTree::makeAnalysisFromInclusiveTree( "QCD"  , "13TeV_inclusive", mcTree, "id>=100 && id<200" ); 
@@ -71,7 +71,7 @@ int main( int argc, char* argv[] ) {
   std::cout << "    WJets done." << std::endl;
   //MT2Analysis<MT2EstimateTree>* top   = MT2EstimateTree::makeAnalysisFromInclusiveTree( "Top"  , "13TeV_inclusive", mcTree, "id>=300 && id<500" ); 
   //std::cout << "    Top done." << std::endl;
-  MT2Analysis<MT2EstimateTree>* zjets = MT2EstimateTree::makeAnalysisFromInclusiveTree( "ZJets", "13TeV_inclusive", mcTree2, "id>=600 && id<700" ); 
+  MT2Analysis<MT2EstimateTree>* zjets = MT2EstimateTree::makeAnalysisFromInclusiveTree( "ZJets", "13TeV_inclusive", mcTree, "id>=600 && id<700" ); 
   std::cout << "    ZJets done." << std::endl;
 
   wjets->setFullName("W+Jets");
@@ -106,16 +106,22 @@ int main( int argc, char* argv[] ) {
   dt.set_data( data );
   dt.set_mc( &mc );
 
+  dt.set_addOverflow( false );
+  dt.set_displaySF( false );
+  //dt.set_mcSF( 1.3 );
+
 
 
   std::vector<TCanvas*> canvases;
 
 
-  std::string selection = "weight*( ((id<100 && nJets==2) || (id>=100 && nJets<=2)) && deltaPhiMin<0.3 && jet1_pt>200. && met>200. )";
-  canvases = dt.drawRegionYields_fromTree( "jet2_pt" , "jet2_pt" , selection, 20, 30., 330., "Subleading Jet p_{T}", "GeV" );
+  //std::string selection = "nJets==2 && deltaPhiMin<0.3 && jet1_pt>200. && met>200.";
+  std::string selection = "(id<100 || id>=152) && nJets==2 && deltaPhiMin<0.3 && jet1_pt>200. && met>200.";
+  //std::string selection = "(id<100 || id>152) && nJets==2 && deltaPhiMin<0.3 && jet1_pt>200. && met>200.";
+  canvases = dt.drawRegionYields_fromTree( "jet2_pt" , "jet2_pt" , selection, 20, 30., 330., "Subleading Jet p_{T}", "GeV", "p_{T}(jet1) > 200 GeV", "N(j) = 2" );
 
   float mcSF = MT2DrawTools::getDataMCSF( canvases[0] );
-  dt.set_mcSF( mcSF );
+  //dt.set_mcSF( mcSF );
 
 
 
@@ -133,28 +139,47 @@ int main( int argc, char* argv[] ) {
 
     int nBJets = iR->nBJetsMin();
 
+    float ptMin = iR->htMin();
+    float ptMax = iR->htMax();
+
     MT2Estimate* thisEst = qcdMonojet->get( *iR );
     MT2Estimate* thisNCR = nCRMonojet->get( *iR );
     MT2Estimate* thisR   = rMonojet  ->get( *iR );
 
-    for( int iBin=1; iBin<thisEst->yield->GetXaxis()->GetNbins(); ++iBin ) {
+    std::string fullSelection(Form("%s && %s && jet1_pt>%f && jet1_pt<%f", selection.c_str(), iR->sigRegion()->getBJetCuts().c_str(), ptMin, ptMax ) );
 
-      float ptMin = thisEst->yield->GetXaxis()->GetBinLowEdge(iBin);
-      float ptMax = thisEst->yield->GetXaxis()->GetBinLowEdge(iBin+1);
-      std::string fullSelection(Form("weight*( %s && deltaPhiMin<0.3 && nJets==2 && jet1_pt>%f && jet1_pt<%f && met>200. )", iR->sigRegion()->getBJetCuts().c_str(), ptMin, ptMax ) );
+    std::string bJetsLabel = (nBJets==0) ? "b = 0" : "b #geq 1";
+    canvases = dt.drawRegionYields_fromTree( Form("jet2_pt_%s", iR->getName().c_str()), "jet2_pt", fullSelection, 20, 0., 300., "Subleading Jet p_{T}", "GeV", "p_{T}(jet1) > 200 GeV", bJetsLabel );
 
-      std::string bJetsLabel = (nBJets==0) ? "b = 0" : "b #geq 1";
-      canvases = dt.drawRegionYields_fromTree( Form("jet2_pt_bin%d_b%d", iBin, nBJets) , "jet2_pt" , fullSelection, 20, 0., 300., "Subleading Jet p_{T}", "GeV", "H_{T} > 200 GeV", bJetsLabel );
+    int nCR;
+    float r, r_err;
+    getQCDMonojet( canvases[0], iR->getName(), nCR, r, r_err );
 
-      int nCR;
-      float r;
-      getQCDMonojet( canvases[0], iR->getName(), nCR, r );
+    // should be one bin in "mt2" anyways:
+    thisNCR->yield->SetBinContent( 1, nCR   );
+    thisR  ->yield->SetBinContent( 1, r     );
+    thisR  ->yield->SetBinError  ( 1, r_err );
+    thisEst->yield->SetBinContent( 1, r*nCR );
 
-      thisNCR->yield->SetBinContent( iBin, nCR   );
-      thisR  ->yield->SetBinContent( iBin, r     );
-      thisEst->yield->SetBinContent( iBin, r*nCR );
+    //for( int iBin=1; iBin<thisEst->yield->GetXaxis()->GetNbins(); ++iBin ) {
 
-    }
+    //  float ptMin = thisEst->yield->GetXaxis()->GetBinLowEdge(iBin);
+    //  float ptMax = thisEst->yield->GetXaxis()->GetBinLowEdge(iBin+1);
+    //  std::string fullSelection(Form("%s && %s && jet1_pt>%f && jet1_pt<%f", selection.c_str(), iR->sigRegion()->getBJetCuts().c_str(), ptMin, ptMax ) );
+
+    //  std::string bJetsLabel = (nBJets==0) ? "b = 0" : "b #geq 1";
+    //  canvases = dt.drawRegionYields_fromTree( Form("jet2_pt_bin%d_b%d", iBin, nBJets) , "jet2_pt" , fullSelection, 20, 0., 300., "Subleading Jet p_{T}", "GeV", "p_{T}(jet1) > 200 GeV", bJetsLabel );
+
+    //  int nCR;
+    //  float r, r_err;
+    //  getQCDMonojet( canvases[0], iR->getName(), nCR, r, r_err );
+
+    //  thisNCR->yield->SetBinContent( iBin, nCR   );
+    //  thisR  ->yield->SetBinContent( iBin, r     );
+    //  thisR  ->yield->SetBinError  ( iBin, r_err );
+    //  thisEst->yield->SetBinContent( iBin, r*nCR );
+
+    //}
 
   }
     
@@ -174,30 +199,43 @@ int main( int argc, char* argv[] ) {
 
 
 
-void getQCDMonojet( TCanvas* c1, const std::string& regionName, int &nCR, float &qcdFraction ) {
+void getQCDMonojet( TCanvas* c1, const std::string& regionName, int &nCR, float &qcdFraction, float &qcdFractionError ) {
 
   TList* list = MT2DrawTools::getCorrectList( c1 );
   TGraphAsymmErrors* gr_data  = (TGraphAsymmErrors*)list->FindObject("Graph");
 
   nCR = MT2DrawTools::graphIntegral( gr_data, 30., 60. );
 
-  THStack* bgStack = (THStack*)list->FindObject( "bgStack" );
 
-  TList* mcHists = bgStack->GetHists();
+  // decided to take flat conservative QCD purity values
+  TString regionName_tstr(regionName);
+  if( regionName_tstr.Contains("b0") ) {
+    qcdFraction = 0.3;
+  } else {
+    qcdFraction = 0.4;
+  }
+  qcdFractionError = qcdFraction*0.5;
 
-  TH1D* h1_qcd   = (TH1D*)mcHists->FindObject( "h1_QCD_HT200toInf_j1toInf_b0toInf" );
-  TH1D* h1_wjets = (TH1D*)mcHists->FindObject( "h1_WJets_HT200toInf_j1toInf_b0toInf" );
-  TH1D* h1_zjets = (TH1D*)mcHists->FindObject( "h1_ZJets_HT200toInf_j1toInf_b0toInf" );
+//THStack* bgStack = (THStack*)list->FindObject( "bgStack" );
+
+//TList* mcHists = bgStack->GetHists();
+
+//TH1D* h1_qcd   = (TH1D*)mcHists->FindObject( "h1_QCD_HT200toInf_j1toInf_b0toInf" );
+//TH1D* h1_wjets = (TH1D*)mcHists->FindObject( "h1_WJets_HT200toInf_j1toInf_b0toInf" );
+//TH1D* h1_zjets = (TH1D*)mcHists->FindObject( "h1_ZJets_HT200toInf_j1toInf_b0toInf" );
 
 
-  int bin30 = h1_qcd->FindBin(30);
-  int bin60 = h1_qcd->FindBin(60);
+//int bin30 = h1_qcd->FindBin(30);
+//int bin60 = h1_qcd->FindBin(60);
 
-  float qcd3060   = h1_qcd  ->Integral( bin30, bin60 );
-  float wjets3060 = h1_wjets->Integral( bin30, bin60 );
-  float zjets3060 = h1_zjets->Integral( bin30, bin60 );
-  float mcTot = qcd3060 + wjets3060 + zjets3060;
+//double qcd3060_err;
+//double qcd3060 = h1_qcd->IntegralAndError( bin30, bin60, qcd3060_err );
+//double wjets3060 = h1_wjets->Integral( bin30, bin60 );
+//double zjets3060 = h1_zjets->Integral( bin30, bin60 );
 
-  qcdFraction = qcd3060 / mcTot;
+//double mcTot = qcd3060 + wjets3060 + zjets3060;
+
+//qcdFraction = qcd3060 / mcTot;
+//qcdFractionError = qcd3060_err / mcTot;
 
 }
