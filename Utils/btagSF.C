@@ -215,11 +215,11 @@ int btagSF(string inputString,
   clone->SetBranchAddress((objectName+"_btagCSV").c_str(), obj_btagCSV);
   
   
-  TBranch* b1 = clone->Branch("weight_btagsff"         , &weight_btagsf         , "weight_btagsff/F"         );
-  TBranch* b2 = clone->Branch("weight_btagsff_heavy_UP", &weight_btagsf_heavy_UP, "weight_btagsff_heavy_UP/F");
-  TBranch* b3 = clone->Branch("weight_btagsff_heavy_DN", &weight_btagsf_heavy_DN, "weight_btagsff_heavy_DN/F");
-  TBranch* b4 = clone->Branch("weight_btagsff_light_UP", &weight_btagsf_light_UP, "weight_btagsff_light_UP/F");
-  TBranch* b5 = clone->Branch("weight_btagsff_light_DN", &weight_btagsf_light_DN, "weight_btagsff_light_DN/F");
+  TBranch* b1 = clone->Branch("weight_btagsf"         , &weight_btagsf         , "weight_btagsf/F"         );
+  TBranch* b2 = clone->Branch("weight_btagsf_heavy_UP", &weight_btagsf_heavy_UP, "weight_btagsf_heavy_UP/F");
+  TBranch* b3 = clone->Branch("weight_btagsf_heavy_DN", &weight_btagsf_heavy_DN, "weight_btagsf_heavy_DN/F");
+  TBranch* b4 = clone->Branch("weight_btagsf_light_UP", &weight_btagsf_light_UP, "weight_btagsf_light_UP/F");
+  TBranch* b5 = clone->Branch("weight_btagsf_light_DN", &weight_btagsf_light_DN, "weight_btagsf_light_DN/F");
   
   int nEntries = clone->GetEntries();
   std::cout << "Starting loop over " << nEntries << " entries..." << std::endl;
