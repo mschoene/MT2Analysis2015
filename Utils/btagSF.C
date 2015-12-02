@@ -26,102 +26,151 @@ btagSF(inputString, inputFolder, outputFile, treeName, objectName)
 #include "TH2F.h"
 #include "TLorentzVector.h"
 
+#include "BTagCalibrationStandalone.h"   // https://twiki.cern.ch/twiki/bin/view/CMS/BTagCalibration
+
 using namespace std;
 
-void get_SF_btag(float obj_pt, float obj_eta, int obj_mcFlavour, float obj_btagCSV, float &SF, float &SFerr){
-  float x = obj_pt; ///the pt of the jet
-  float eta = fabs(obj_eta); ///abs(eta)
 
-  if(eta > 2.5){
-    std::cout << "warning SF_btag_eta>2.5? " << eta << std::endl;
-    exit(1);
+// setup calibration readers 
+// https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation74X  --  official SFs
+// https://twiki.cern.ch/twiki/bin/view/CMS/BTagCalibration  --  calibration reader documentations
+BTagCalibration *calib = new BTagCalibration("csvv2", "/shome/casal/btagsf/CSVv2.csv"); // 25 ns official version of SFs
+BTagCalibrationReader *reader_heavy    = new BTagCalibrationReader(calib, BTagEntry::OP_MEDIUM, "mujets", "central");  // central
+BTagCalibrationReader *reader_heavy_UP = new BTagCalibrationReader(calib, BTagEntry::OP_MEDIUM, "mujets", "up");       // sys up
+BTagCalibrationReader *reader_heavy_DN = new BTagCalibrationReader(calib, BTagEntry::OP_MEDIUM, "mujets", "down");     // sys down
+BTagCalibrationReader *reader_light    = new BTagCalibrationReader(calib, BTagEntry::OP_MEDIUM, "comb"  , "central");  // central
+BTagCalibrationReader *reader_light_UP = new BTagCalibrationReader(calib, BTagEntry::OP_MEDIUM, "comb"  , "up");       // sys up
+BTagCalibrationReader *reader_light_DN = new BTagCalibrationReader(calib, BTagEntry::OP_MEDIUM, "comb"  , "down");     // sys down
+
+TFile *f_btag_eff = new TFile("/shome/casal/btagsf/btageff__ttbar_powheg_pythia8_25ns.root"); // Dominick's b-tagging efficiencies
+TH2D* h_btag_eff_b    = (TH2D*) f_btag_eff->Get("h2_BTaggingEff_csv_med_Eff_b"   );
+TH2D* h_btag_eff_c    = (TH2D*) f_btag_eff->Get("h2_BTaggingEff_csv_med_Eff_c"   );
+TH2D* h_btag_eff_udsg = (TH2D*) f_btag_eff->Get("h2_BTaggingEff_csv_med_Eff_udsg");
+
+
+void get_SF_btag(float pt, float eta, int mcFlavour, float &SF, float &SFup, float &SFdown){
+
+  BTagEntry::JetFlavor flavour = BTagEntry::FLAV_UDSG;
+  if      ( abs(mcFlavour)==5 ) flavour = BTagEntry::FLAV_B;
+  else if ( abs(mcFlavour)==4 ) flavour = BTagEntry::FLAV_C;
+  
+  float pt_cutoff  = std::max(30. ,std::min(669., double(pt)));
+  float eta_cutoff = std::min(2.39,fabs(double(eta)));
+
+  if ( flavour==BTagEntry::FLAV_UDSG ){
+    SF     = reader_light   ->eval(flavour,eta_cutoff, pt_cutoff);
+    SFup   = reader_light_UP->eval(flavour,eta_cutoff, pt_cutoff);
+    SFdown = reader_light_DN->eval(flavour,eta_cutoff, pt_cutoff);
   }
-
-  if(abs(obj_mcFlavour)==5 || abs(obj_mcFlavour) == 4){ //for b or c. jet_mcFlavour[indj] refers to the MC-true flavor of the jet
-
-    SF = 0.95;
-    if(x < 30. || x > 250.)
-      SFerr = 0.05;
-    else
-      SFerr = 0.02;
-
-    if( abs(obj_mcFlavour) == 4 ) SFerr *= 2;
-
-  }
-  else{ ///SFlight
-
-    SF = 1.05;
-    SFerr = 0.10;
-
+  else {
+    SF     = reader_heavy   ->eval(flavour,eta_cutoff, pt_cutoff);
+    SFup   = reader_heavy_UP->eval(flavour,eta_cutoff, pt_cutoff);
+    SFdown = reader_heavy_DN->eval(flavour,eta_cutoff, pt_cutoff);
   }
 
 }
 
-void get_weight_btag(int nobj, float* obj_pt, float* obj_eta, int* obj_mcFlavour, float* obj_btagCSV, float &wtbtag, float &wtbtagErr){
+float getBtagEffFromFile(float pt, float eta, int mcFlavour){
+  if(!h_btag_eff_b || !h_btag_eff_c || !h_btag_eff_udsg) {
+    std::cout << "ERROR: missing input hists" << std::endl;
+    return 1.;
+  }
+  
+  // only use pt bins up to 400 GeV for charm and udsg
+  float pt_cutoff = std::max(20.,std::min(399.,double(pt)));
+  TH2D* h(0);
+  if (abs(mcFlavour) == 5) {
+    h = h_btag_eff_b;
+    // use pt bins up to 600 GeV for b
+    pt_cutoff = std::max(20.,std::min(599.,double(pt)));
+  }
+  else if (abs(mcFlavour) == 4) {
+    h = h_btag_eff_c;
+  }
+  else {
+    h = h_btag_eff_udsg;
+  }
+  
+  int binx = h->GetXaxis()->FindBin(pt_cutoff);
+  int biny = h->GetYaxis()->FindBin(fabs(eta));
+  return h->GetBinContent(binx,biny);
+}
+
+void get_weight_btag(int nobj, float* obj_pt, float* obj_eta, int* obj_mcFlavour, float* obj_btagCSV, float &wtbtag, float &wtbtagUp_heavy, float &wtbtagDown_heavy, float &wtbtagUp_light, float &wtbtagDown_light){
 
   float mcTag = 1.;
   float mcNoTag = 1.;
   float dataTag = 1.;
   float dataNoTag = 1.;
-  float errTag = 0.;
-  float errNoTag = 0.;
 
-  float err1 = 0;
-  float err2 = 0;
-  float err3 = 0;
-  float err4 = 0;
+  float errHup   = 0;
+  float errHdown = 0;
+  float errLup   = 0;
+  float errLdown = 0;
 
   for(int indj=0; indj < nobj; ++indj){ //Here we loop over all selected jets ( for our case, pt>30, PF loose ID, etc )
     
     float csv = obj_btagCSV[indj]; ////here we get the CSV btag value
-    int partonFlavor = abs(obj_mcFlavour[indj]);
+    int   mcFlavour = abs(obj_mcFlavour[indj]);
     float eta = fabs(obj_eta[indj]);
+    float pt  = obj_pt[indj];
 
     if(eta > 2.5) continue;
-    if(partonFlavor==0) continue; //for jets with flavor 0, we ignore.
+    if(pt  < 20 ) continue;
+    //if(mcFlavour==0) continue; //for jets with flavour 0, we ignore.
 
-    float eff;
-    if( partonFlavor==5 ) {
-      ///here one need to provide the pt/eta dependent efficiency for b-tag for "b jet"
-      eff = 0.70;
-    }
-    else if( partonFlavor==4){
-      ///here one need to provide the pt/eta dependent efficiency for b-tag for "c jet"
-      eff = 0.17;
-    }
-    else{
-      ///here one need to provide the pt/eta dependent efficiency for b-tag for "light jet"
-      eff = 0.015;
-    }
+    
+    // get efficiency
+    float eff = getBtagEffFromFile(pt, eta, mcFlavour);
 
-    bool istag = csv > 0.814 && eta < 2.5 ;
+
+    bool istag = csv > 0.890 && eta < 2.5 && pt>20;
     float SF = 0.;
-    float SFerr = 0.;
-    get_SF_btag(obj_pt[indj], obj_eta[indj], obj_mcFlavour[indj], obj_btagCSV[indj], SF, SFerr);
+    float SFup = 0.;
+    float SFdown = 0.;
+
+    // get SF
+    get_SF_btag(pt, eta, mcFlavour, SF, SFup, SFdown);
  
     if(istag){
-      mcTag *= eff;
+      mcTag   *= eff;
       dataTag *= eff*SF;
 
-      if(partonFlavor==5 || partonFlavor ==4)  err1 += SFerr/SF; ///correlated for b/c
-      else err3 += SFerr/SF; //correlated for light
+      if(mcFlavour==5 || mcFlavour ==4) {
+	errHup   += (SFup - SF  )/SF;
+	errHdown += (SF - SFdown)/SF;
+      }
+      else {
+	errLup   += (SFup - SF  )/SF;
+	errLdown += (SF - SFdown)/SF;
+      }
 
     }
     else{
-      mcNoTag *= (1 - eff);
+      mcNoTag   *= (1 - eff);
       dataNoTag *= (1 - eff*SF);
 
-      if( partonFlavor==5 || partonFlavor==4 ) err2 += (-eff*SFerr)/(1-eff*SF); /// /correlated for b/c
-      else err4 +=  (-eff*SFerr)/(1-eff*SF);  ////correlated for light
-
+      if( mcFlavour==5 || mcFlavour==4 ) {
+	errHup   += -eff*(SFup - SF  )/(1-eff*SF);
+	errHdown += -eff*(SF - SFdown)/(1-eff*SF);	
+      }
+      else {
+	errLup   += -eff*(SFup - SF  )/(1-eff*SF);
+	errLdown += -eff*(SF - SFdown)/(1-eff*SF);	
+      }
     }
 
   }
 
   wtbtag = (dataNoTag * dataTag ) / ( mcNoTag * mcTag );
-  wtbtagErr = sqrt( pow(err1+err2,2) + pow( err3 + err4,2)) * wtbtag;  ///un-correlated for b/c and light
+
+  wtbtagUp_heavy   = wtbtag*( 1 + errHup   );
+  wtbtagUp_light   = wtbtag*( 1 + errLup   );
+  wtbtagDown_heavy = wtbtag*( 1 - errHdown );
+  wtbtagDown_light = wtbtag*( 1 - errLdown );
 
 }
+
 
 int btagSF(string inputString,
 	   string inputFolder,
@@ -143,9 +192,10 @@ int btagSF(string inputString,
   clone->SetName("mt2");
 
   Float_t weight_btagsf;
-  Float_t weight_btagsf_err;
-  Float_t weight_btagsf_UP;
-  Float_t weight_btagsf_DN;
+  Float_t weight_btagsf_heavy_UP;
+  Float_t weight_btagsf_heavy_DN;
+  Float_t weight_btagsf_light_UP;
+  Float_t weight_btagsf_light_DN;
 
   int isData; 
   clone->SetBranchAddress("isData",&isData);
@@ -159,19 +209,21 @@ int btagSF(string inputString,
   Float_t obj_eta[100];
   clone->SetBranchAddress((objectName+"_eta").c_str(), obj_eta);
   Int_t obj_mcFlavour[100];
-  clone->SetBranchAddress((objectName+"_mcFlavour").c_str(), obj_mcFlavour);
+  clone->SetBranchAddress((objectName+"_hadronFlavour").c_str(), obj_mcFlavour);
+  //clone->SetBranchAddress((objectName+"_mcFlavour").c_str(), obj_mcFlavour);
   Float_t obj_btagCSV[100];
   clone->SetBranchAddress((objectName+"_btagCSV").c_str(), obj_btagCSV);
   
-  Int_t evt;
-  clone->SetBranchAddress("evt", &evt);
   
-  TBranch* b1 = clone->Branch("weight_btagsf", &weight_btagsf, "weight_btagsf/F");
-  TBranch* b2 = clone->Branch("weight_btagsf_UP", &weight_btagsf_UP, "weight_btagsf_UP/F");
-  TBranch* b3 = clone->Branch("weight_btagsf_DN", &weight_btagsf_DN, "weight_btagsf_DN/F");
+  TBranch* b1 = clone->Branch("weight_btagsf"         , &weight_btagsf         , "weight_btagsf/F"         );
+  TBranch* b2 = clone->Branch("weight_btagsf_heavy_UP", &weight_btagsf_heavy_UP, "weight_btagsf_heavy_UP/F");
+  TBranch* b3 = clone->Branch("weight_btagsf_heavy_DN", &weight_btagsf_heavy_DN, "weight_btagsf_heavy_DN/F");
+  TBranch* b4 = clone->Branch("weight_btagsf_light_UP", &weight_btagsf_light_UP, "weight_btagsf_light_UP/F");
+  TBranch* b5 = clone->Branch("weight_btagsf_light_DN", &weight_btagsf_light_DN, "weight_btagsf_light_DN/F");
   
   int nEntries = clone->GetEntries();
   std::cout << "Starting loop over " << nEntries << " entries..." << std::endl;
+
 
   for(int i = 0; i < nEntries; ++i) {
     
@@ -181,23 +233,24 @@ int btagSF(string inputString,
     clone->GetEntry(i);
     
     weight_btagsf = 1.;
-    weight_btagsf_err = 0.;
-    weight_btagsf_UP = 1.;
-    weight_btagsf_DN = 1.;
+    weight_btagsf_heavy_UP = 1.;
+    weight_btagsf_heavy_DN = 1.;
+    weight_btagsf_light_UP = 1.;
+    weight_btagsf_light_DN = 1.;
     
     
     if( objectName != "jet" || isData == 1 ) ;
     else{
       
-      get_weight_btag(nobj, obj_pt, obj_eta, obj_mcFlavour, obj_btagCSV, weight_btagsf, weight_btagsf_err);
-      weight_btagsf_UP = weight_btagsf + weight_btagsf_err;
-      weight_btagsf_DN = weight_btagsf - weight_btagsf_err;  
-	
+      get_weight_btag(nobj, obj_pt, obj_eta, obj_mcFlavour, obj_btagCSV, weight_btagsf, weight_btagsf_heavy_UP, weight_btagsf_heavy_DN, weight_btagsf_light_UP, weight_btagsf_light_DN);
+      
     }
 
     b1->Fill();
     b2->Fill();
     b3->Fill();
+    b4->Fill();
+    b5->Fill();
     
   }
   //-------------------------------------------------------------

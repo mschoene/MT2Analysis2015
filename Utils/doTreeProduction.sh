@@ -2,8 +2,9 @@
 
 # --- configuration (consider to move this into a separate file) ---
 treeName="mt2"
-inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/babies/MT2_CMGTools-from-CMSSW_7_4_12/fullData_miniAODv2_04Nov2015/"
-productionName="05Nov2015_dataRunD_goldenJSON_1p25ifb_dataSkim"
+inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/babies/MT2_CMGTools-from-CMSSW_7_4_12/fullData_miniAODv2_18Nov2015/"
+#/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/babies/MT2_CMGTools-from-CMSSW_7_4_12/fullData_miniAODv2_15Nov2015_jecV6/"
+productionName="18Nov2015_jecV6_dataRunD_goldenJSON_2p1ifb"
 fileExt="_post.root"
 isCrab=1
 inputPU="/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/MT2production/74X/Spring15/PostProcessed/23Oct2015_data_noSkim/JetHT_Run2015D_post.root"
@@ -11,7 +12,9 @@ PUvar="nVert"
 #GoldenJSON="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-255031_13TeV_PromptReco_Collisions15_25ns_JSON_v2.txt"
 #GoldenJSON="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-257599_13TeV_PromptReco_Collisions15_25ns_JSON.txt"
 #GoldenJSON="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-258159_13TeV_PromptReco_Collisions15_25ns_JSON.txt"
-GoldenJSON="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-258750_13TeV_PromptReco_Collisions15_25ns_JSON.txt"
+#GoldenJSON="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-258750_13TeV_PromptReco_Collisions15_25ns_JSON.txt"
+#GoldenJSON="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-260426_13TeV_PromptReco_Collisions15_25ns_JSON.txt"
+GoldenJSON="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt"
 #GoldenJSON="/afs/cern.ch/user/g/gzevi/public/Cert_246908-256869_13TeV_PromptReco_Collisions15_25ns_JSON_Photon.txt"
 applyJSON=1
 doFilterTxt=1
@@ -26,9 +29,11 @@ workingFolder="/scratch/`whoami`/"$productionName
 
 if [[ "$#" -eq 0 ]]; then
     echo "Relunch the script with one of the following options: "
-    echo "./doTreeProduction.sh post"
-    echo "./doTreeProduction.sh postCheck"
-    echo "./doTreeProduction.sh clean"
+    echo "./doTreeProduction.sh post      # post-processing"
+    echo "./doTreeProduction.sh postCheck # check post-processing"
+    echo "./doTreeProduction.sh mergeData # merge data and remove duplicates (not implemented yet)"
+    echo "./doTreeProduction.sh addBtag   # add b-tagg weights variables (not implemented yet)"
+    echo "./doTreeProduction.sh clean     # clean (not implemented yet)"
     exit;
 fi;
 
@@ -92,8 +97,9 @@ do
 	doPruning="false"
     fi;
 
-    if [[ $id -lt 10 && $doFilterTxt == 1 ]]; then	
-	filterTxt=/shome/casal/eventlist_csc2015/eventlist_`echo $name | cut -d _ -f 1`_csc2015.txt
+    if [[ $id -lt 10 && $doFilterTxt == 1 ]]; then
+	# this is the merged (and duplicate removed) file including Nov15 txts and Oct 15 txts for all datasets
+	filterTxt=/shome/casal/eventlist_Nov14/filter_cscNov15_ecalscnNov15_cscOct15_sortu.txt
 	outputFilteredFile=${workingFolder}/${name}_filtered$fileExt;
     fi;
     
@@ -192,7 +198,13 @@ if [[ "$1" = "postCheck" ]]; then
 
 fi
 
+if [[ "$1" = "mergeData" ]]; then
+    echo "need to implement the data merging + duplicate removal"
+fi
 
+if [[ "$1" = "addBtag" ]]; then
+    echo "need to implement addition of b-tagging weights"
+fi
 
 if [[ "$1" = "clean" ]]; then
     echo "INFO: option 'clean' is not implemented yet."
