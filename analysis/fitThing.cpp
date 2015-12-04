@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 
 #include "TFile.h"
 #include "TTree.h"
@@ -49,14 +50,25 @@ int main() {
   TFile* fileMM = new TFile("selEventsMM.root");
   TFile* fileEEMM = new TFile("selEventsEEMM.root");
 
-  RooDataSet* dataEE = getDataset(fileEE, "ee");
-  RooDataSet* dataMM = getDataset(fileMM, "mm");
-  RooDataSet* dataEEMM = getDataset(fileEEMM, "eemm");
+  RooDataSet* dataEE_j23  = getDataset(fileEE  , "ee_j23"  , 2, 3);
+  RooDataSet* dataMM_j23  = getDataset(fileMM  , "mm_j23"  , 2, 3);
+  RooDataSet* dataEEMM_j23= getDataset(fileEEMM, "eemm_j23", 2, 3);
 
-  fitDataset( dataEE );
-  fitDataset( dataMM );
-  fitDataset( dataEEMM );
+  RooDataSet* dataEE_j2   = getDataset(fileEE  , "ee_j2"  , 2, 2);
+  RooDataSet* dataMM_j2   = getDataset(fileMM  , "mm_j2"  , 2, 2);
+  RooDataSet* dataEEMM_j2 = getDataset(fileEEMM, "eemm_j2", 2, 2);
 
+  ofstream ofs("logThing.log");
+
+  fitDataset( ofs, dataEE_j23  );
+  fitDataset( ofs, dataMM_j23  );
+  fitDataset( ofs, dataEEMM_j23);
+
+  fitDataset( ofs, dataEE_j2  );
+  fitDataset( ofs, dataMM_j2  );
+  fitDataset( ofs, dataEEMM_j2);
+
+  ofs.close();
 
   return 0;
 
@@ -64,7 +76,7 @@ int main() {
 
 
 
-RooDataSet* getDataset( TFile* file, const std::string& name ) {
+RooDataSet* getDataset( TFile* file, const std::string& name, int nJetMin, int nJetMax ) {
 
 
 
@@ -119,8 +131,9 @@ RooDataSet* getDataset( TFile* file, const std::string& name ) {
     int nJets = jets.size();
     int nBJets = bjets.size();
 
+    bool jetsOK = nJets>=nJetMin && nJets<=nJetMax;
 
-    if( nJets!=2 ) continue;
+    if( !jetsOK ) continue;
     if( nBJets!=0 ) continue;
     if( myTree.met_pt>60. ) continue;
     
@@ -136,14 +149,15 @@ RooDataSet* getDataset( TFile* file, const std::string& name ) {
 
 
 
-void fitDataset( RooDataSet* data ) {
+void fitDataset( ofstream ofs, RooDataSet* data ) {
 
 
+  ofs << "fit: " << data->GetName() << std::endl;
   std::string name(data->GetName());
 
 
-  RooRealVar sigmean ("sigmean","Mthing", 760., 700., 800.);
-  RooRealVar sigwidth("sigwidth","Wthing", 20., 10., 100.); 
+  RooRealVar sigmean ("sigmean","Mthing", 770., 750., 800.);
+  RooRealVar sigwidth("sigwidth","Wthing", 15., 5., 40.); 
   RooGaussian gauss("gauss","gaussian PDF", *x, sigmean, sigwidth);
 
   RooRealVar expoSlope("expoSlope","exponential slope parameter", -0.01, -0.1, 0.) ; 
@@ -158,15 +172,21 @@ void fitDataset( RooDataSet* data ) {
   sum.fitTo(*data,Extended()) ;
 
 
+  int nBins = 60;
+  float xMin = 400.;
+  float xMax = 1000.;
+  float binWidth = (xMax-xMin)/((float)nBins);
+
   RooPlot* xframe = x->frame();
-  data->plotOn(xframe, Binning(60, 400, 1000));
+  data->plotOn(xframe, Binning(nBins, xMin, xMax));
   sum.plotOn(xframe);
+  sum.plotOn(xframe,Components(expo),LineStyle(kDashed)) ;
 
   TCanvas* c1 = new TCanvas("c1", "", 600, 600);
   gPad->SetLeftMargin(0.15);
-  TH2D* h2_axes = new TH2D("axes", "", 10, 400., 1000, 10, 0., xframe->GetMaximum()*1.1 );
+  TH2D* h2_axes = new TH2D("axes", "", 10, 400., 1000, 10, 0., xframe->GetMaximum() );
   h2_axes->SetXTitle("Dilepton Invariant Mass [GeV]");
-  h2_axes->SetYTitle("Events");
+  h2_axes->SetYTitle(Form("Events / %.0f GeV", binWidth));
   h2_axes->Draw();
   xframe->GetYaxis()->SetTitleOffset(1.4); 
   xframe->Draw("same");
@@ -177,8 +197,25 @@ void fitDataset( RooDataSet* data ) {
   c1->SaveAs(Form("thingFit_%s.eps", data->GetName()));
   c1->SaveAs(Form("thingFit_%s.pdf", data->GetName()));
 
+
+
+  float xMin_int = 750.;
+  float xMax_int = 790.;
+  x->setRange("sigregion", xMin_int, xMax_int);
+  //x->setRange("sigregion", sigmean.getVal()-2.*sigwidth.getVal(), sigmean.getVal()+2.*sigwidth.getVal());
+  
+  RooAbsReal* intSig = gauss.createIntegral(*x,NormSet(*x),Range("sigregion")) ;
+  RooAbsReal* intBkg = expo .createIntegral(*x,NormSet(*x),Range("sigregion")) ;
+  ofs << "  signal  = " << intSig->getVal()*nsig.getVal() << std::endl; // " (+" << intSig->getErrorHi()*nsig.getVal() << ")(-" << intSig->getErrorLo()*nsig.getVal() << std::endl ;
+  ofs << "  bkg     = " << intBkg->getVal()*nbkg.getVal() << std::endl; // " (+" << intBkg->getErrorHi()*nbkg.getVal() << ")(-" << intBkg->getErrorLo()*nbkg.getVal() << std::endl ;
+  ofs << "  sigmean = " << sigmean->getVal() << " +- " << sigmean.getError()  << std::endl
+  ofs << "  sigwidth = " << sigwidth->getVal() << " +- " << sigwidth.getError()  << std::endl
+
+
+
   delete c1;
   delete xframe;
+  delete h2_axes;
 
 
 }
