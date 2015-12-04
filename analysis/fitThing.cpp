@@ -223,12 +223,14 @@ void fitDataset( const std::string& outdir, ofstream& ofs, RooDataSet* data ) {
 
 
 
-  float xMin_int = 750.;
-  float xMax_int = 790.;
+  float xMin_int = sigmean.getVal()-sigwidth.getVal();
+  float xMax_int = sigmean.getVal()+sigwidth.getVal();
+  //float xMin_int = 750.;
+  //float xMax_int = 790.;
   x->setRange("sigregion", xMin_int, xMax_int);
-  //x->setRange("sigregion", sigmean.getVal()-2.*sigwidth.getVal(), sigmean.getVal()+2.*sigwidth.getVal());
+  ofs << "  range  : " << xMin_int << "-" << xMax_int << " GeV" << std::endl;
   
-  Double_t obs    = data->sumEntries(Form("x<%f && x>%f", xMin_int, xMax_int));
+  Double_t obs    = data->sumEntries(Form("x>%f && x<%f", xMin_int, xMax_int));
   RooAbsReal* intSig = gauss.createIntegral(*x,NormSet(*x),Range("sigregion")) ;
   RooAbsReal* intBkg = expo .createIntegral(*x,NormSet(*x),Range("sigregion")) ;
   ofs << "  signal  = " << intSig->getVal()*nsig.getVal() << std::endl; // " (+" << intSig->getErrorHi()*nsig.getVal() << ")(-" << intSig->getErrorLo()*nsig.getVal() << std::endl ;
@@ -236,6 +238,8 @@ void fitDataset( const std::string& outdir, ofstream& ofs, RooDataSet* data ) {
   double bgMean = intBkg->getVal()*nbkg.getVal();
   double bgErr = intBkg->getVal()*nbkg.getError();
   ofs << "  bkg     = " << bgMean << " +- " << bgErr << std::endl;
+  ofs << "  obs     = " << obs << std::endl;
+
   ofs << "  sigmean = " << sigmean.getVal() << " +- " << sigmean.getError()  << std::endl;
   ofs << "  sigwidth = " << sigwidth.getVal() << " +- " << sigwidth.getError()  << std::endl;
 
