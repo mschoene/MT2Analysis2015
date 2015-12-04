@@ -19,7 +19,7 @@ using namespace std;
 
 class EventKey {
 public:
-  EventKey(unsigned int input_run, unsigned int input_lumi, unsigned long long input_evt) : 
+  EventKey(unsigned int input_run=0, unsigned int input_lumi=0, unsigned long long input_evt=0) : 
     run_(input_run), lumi_(input_lumi), evt_(input_evt){;}
 
   unsigned int run() const {return run_;}
@@ -48,7 +48,7 @@ private:
 void removeDuplicates(string inputFile="duplicates.root",
 		      bool fillNewTree=false,
 		      string outputFile="output.root",
-		      string treeName="treeProducerSusyFullHad"){
+		      string treeName="mt2"){
 
   int start_s=clock();
 
@@ -59,7 +59,8 @@ void removeDuplicates(string inputFile="duplicates.root",
   
   cout << "In input tree, nentries = " << nentries << endl;
 
-  unsigned int run,lumi;
+  unsigned int run,lumi;  //CMG
+  //int run,lumi;         // americans
   unsigned long long evt;
   oldtree->SetBranchAddress("run",&run);
   oldtree->SetBranchAddress("lumi",&lumi);
@@ -73,6 +74,7 @@ void removeDuplicates(string inputFile="duplicates.root",
   //Create set where we store list of event keys
   std::set<EventKey> previousEvents;
 
+  int nDuplicates = 0;
 
   for (Long64_t i=0;i<nentries; i++) {
     //for (Long64_t i=0;i<1000; i++) {
@@ -94,12 +96,14 @@ void removeDuplicates(string inputFile="duplicates.root",
     if(!isDuplicate) {
       if(fillNewTree) newtree->Fill();
     }else{
-      cout << "Found duplicate! run,lumi,evt: " 
-	   << run << " , " << lumi << " , " << evt <<endl;
+      nDuplicates++;
+      //cout << "Found duplicate! run,lumi,evt: " 
+      //     << run << " , " << lumi << " , " << evt <<endl;
     }
 
   }
 
+  cout << "Number of duplicates found: " << nDuplicates << endl;
 
 
   //newtree->Print();

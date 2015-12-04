@@ -34,7 +34,9 @@ void roundLikeData( MT2Analysis<MT2EstimateZinvGamma>* data );
 void fillYields( MT2Analysis<MT2EstimateZinvGamma>* est, float weight, float ht, int njets, int nbjets, float met, float minMTBmet, float mt2, float iso );
 void fillOneTree( MT2EstimateTree* thisTree, const MT2Tree& myTree, float weight, float ht, int njets, int nbjets, float met, float minMTBmet, float mt2, float iso, int nTrueB, int nTrueC );
 
+float DeltaR(float eta1, float eta2, float phi1, float phi2);
 
+float DeltaPhi(float phi1, float phi2);
 
 
 int main( int argc, char* argv[] ) {
@@ -78,7 +80,7 @@ int main( int argc, char* argv[] ) {
 
   TH1::AddDirectory(kFALSE); // stupid ROOT memory allocation needs this
 
-  std::string outputdir = cfg.getEventYieldDir() + "/gammaControlRegion"; 
+  std::string outputdir = cfg.getGammaCRdir();
   system(Form("mkdir -p %s", outputdir.c_str()));
 
 
@@ -166,16 +168,16 @@ int main( int argc, char* argv[] ) {
     (*matched_pass) = (*prompt_pass) + (*nip_pass);
 
 
-    MT2Analysis<MT2EstimateSyst>* f = MT2EstimateSyst::makeEfficiencyAnalysis( "f", cfg.regionsSet(), (MT2Analysis<MT2Estimate>*)prompt, (MT2Analysis<MT2Estimate>*)matched );
-    MT2Analysis<MT2EstimateSyst>* f_pass = MT2EstimateSyst::makeEfficiencyAnalysis( "f_pass", cfg.regionsSet(), (MT2Analysis<MT2Estimate>*)prompt_pass, (MT2Analysis<MT2Estimate>*)matched_pass );
+    MT2Analysis<MT2EstimateSyst>* f = MT2EstimateSyst::makeEfficiencyAnalysis( "f", (MT2Analysis<MT2Estimate>*)prompt, (MT2Analysis<MT2Estimate>*)matched );
+    MT2Analysis<MT2EstimateSyst>* f_pass = MT2EstimateSyst::makeEfficiencyAnalysis( "f_pass", (MT2Analysis<MT2Estimate>*)prompt_pass, (MT2Analysis<MT2Estimate>*)matched_pass );
 
 
 
-    MT2Analysis<MT2EstimateSyst>* eff = MT2EstimateSyst::makeEfficiencyAnalysis( "eff", cfg.regionsSet(), (MT2Analysis<MT2Estimate>*)prompt_pass, (MT2Analysis<MT2Estimate>*)prompt );
+    MT2Analysis<MT2EstimateSyst>* eff = MT2EstimateSyst::makeEfficiencyAnalysis( "eff", (MT2Analysis<MT2Estimate>*)prompt_pass, (MT2Analysis<MT2Estimate>*)prompt );
 
-    MT2Analysis<MT2EstimateSyst>* purityTight = MT2EstimateSyst::makeEfficiencyAnalysis( "purity", cfg.regionsSet(), (MT2Analysis<MT2Estimate>*)matched_pass, (MT2Analysis<MT2Estimate>*)gammaCR);
+    MT2Analysis<MT2EstimateSyst>* purityTight = MT2EstimateSyst::makeEfficiencyAnalysis( "purity", (MT2Analysis<MT2Estimate>*)matched_pass, (MT2Analysis<MT2Estimate>*)gammaCR);
 
-    MT2Analysis<MT2EstimateSyst>* purityLoose = MT2EstimateSyst::makeEfficiencyAnalysis( "purityLoose", cfg.regionsSet(), (MT2Analysis<MT2Estimate>*)matched, (MT2Analysis<MT2Estimate>*)gammaCR_loose );
+    MT2Analysis<MT2EstimateSyst>* purityLoose = MT2EstimateSyst::makeEfficiencyAnalysis( "purityLoose", (MT2Analysis<MT2Estimate>*)matched, (MT2Analysis<MT2Estimate>*)gammaCR_loose );
 
 
     std::string mcFile = outputdir + "/mc.root";
@@ -379,20 +381,39 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
 
     myTree.GetEntry(iEntry);
 
-    if( myTree.isData )
-      if ( myTree.isGolden == 0 ) continue;
+
+//    if( myTree.isData )
+//      if ( myTree.isGolden == 0 ) continue;
 
 
     if(cfg.analysisType() == "mt2"){
    
       if( !myTree.passSelection("gamma") ) continue;
-   
+
       if( myTree.mt2>200. ) continue; // orthogonal to signal region
       if( myTree.gamma_pt[0]<180. ) continue;
       if( (myTree.gamma_nJet30>1 && myTree.gamma_mt2<200.) || (myTree.gamma_nJet30==1 && myTree.gamma_ht<200.) ) continue;
+    
     }
-    
-    
+ 
+//    if( myTree.gamma_nJet30==1 ){
+//      
+//      float maxDR=0;
+//      int J=0;
+//      for( int j=0; j<myTree.njet; ++j ){
+//
+//	if( fabs( myTree.jet_eta[j] ) > 2.5 || myTree.jet_pt[j] < 30. || j>1) continue;
+//	
+//	float thisDR = DeltaR( myTree.gamma_eta[0], myTree.jet_eta[j], myTree.gamma_phi[0], myTree.jet_phi[j] );
+//	maxDR = ( thisDR > maxDR ) ? thisDR : maxDR; 
+//	J = ( thisDR > maxDR ) ? j : J;
+//
+//      }
+//      
+//      if(!(myTree.passMonoJetId(J)));
+//    
+//    }
+   
     if( myTree.isData ) {
       if( !myTree.passGammaAdditionalSelection(1) ) continue;
     } else {
@@ -400,20 +421,24 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
     }
     
     
+    if( !(myTree.HLT_Photon165_HE10) ) continue;
     
-    //if( myTree.gamma_ht>1000. && sample.id==204 ) continue; // remove high-weight spikes (remove GJet_400to600 leaking into HT>1000)
     
-    if( myTree.gamma_idCutBased[0]==0 ) continue;
-
-    if( myTree.isData ) {
-
-      if( !(myTree.HLT_Photon165_HE10) ) continue;
-      //if( !(myTree.HLT_Photon165_HE10) || myTree.run < 256843 ) continue;
-      if( !(myTree.Flag_HBHENoiseFilter && myTree.Flag_CSCTightHaloFilter && myTree.Flag_eeBadScFilter) ) continue;
-      //if( !(myTree.Flag_CSCTightHaloFilter &&  myTree.Flag_eeBadScFilter) ) continue;
-      
+    if( cfg.additionalStuff()=="gammaNoSietaieta" ) {
+      //if( myTree.gamma_hOverE[0]>0.1 ) continue;
+    } else {
+      if( myTree.gamma_idCutBased[0]==0 ) continue;
     }
 
+    if( myTree.isData ) {
+      
+      //      if( !( myTree.isGolden ) ) continue;
+      
+      if( !( myTree.HLT_Photon165_HE10 ) ) continue;
+
+      if( !myTree.passFilters() ) continue;
+
+    }
 
     TLorentzVector gamma;
     gamma.SetPtEtaPhiM( myTree.gamma_pt[0], myTree.gamma_eta[0], myTree.gamma_phi[0], myTree.gamma_mass[0] );
@@ -421,7 +446,11 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
 
     // absolute iso:
     float iso = myTree.gamma_chHadIso[0];
-    if( iso>10. ) continue; // preselection anyways in there
+    if( cfg.additionalStuff()=="gammaNoSietaieta" ) {
+      if( iso>20. ) continue; // loose preselection for plots
+    } else {
+      if( iso>10. ) continue; // preselection
+    }
 
     float minMTBmet = myTree.gamma_minMTBMet;
     float met       = myTree.gamma_met_pt;
@@ -434,9 +463,9 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
     if( cfg.gamma2bMethod()=="2b1bRatio" && nbjets==2 )
       continue; // will take 2b from reweighted 1b so skip
 
-//    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi()*myTree.puWeight; 
+    //    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi()*myTree.puWeight; 
     Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb;//*cfg.lumi(); 
-//    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi(); 
+    //    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi(); 
 
 
 
@@ -455,19 +484,19 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
       int mcMatchId = myTree.gamma_mcMatchId[0];
       bool isMatched = (mcMatchId==22 || mcMatchId==7);
 
-      //bool isPrompt = isMatched && !isQCD;
+      // bool isPrompt = isMatched && !isQCD;
       //bool isNIP    = isMatched && isQCD;
       //bool isFake   = !isMatched;
       bool isPrompt = isMatched && !isQCD && myTree.gamma_drMinParton[0]>0.4;
       bool isNIP    = isMatched && isQCD && myTree.gamma_drMinParton[0]<0.4;
       bool isFake   = !isMatched && isQCD;
-      //bool isNIP    = isMatched && isQCD;
-      //bool isFake   = !isMatched;
 
+  
       int promptLevel = -1; 
       if( isPrompt ) promptLevel = 2;
       else if( isNIP ) promptLevel = 1;
       else if( isFake ) promptLevel = 0;
+      else std::cout << "WARNING!!! This photon is neither prompt, nor fragmentation nor fake!" << std::endl;
 
       thisTree->assignVar( "prompt", promptLevel );
       if( passIso ) thisTree_pass->assignVar( "prompt", promptLevel );
@@ -665,4 +694,17 @@ void fillYields( MT2Analysis<MT2EstimateZinvGamma>* est, float weight, float ht,
 
   }
 
+}
+
+float DeltaR(float eta1, float eta2, float phi1, float phi2){
+  float dEta = eta1 - eta2;
+  float dPhi = DeltaPhi(phi1, phi2);
+  return TMath::Sqrt(dEta*dEta + dPhi*dPhi);
+}
+
+float DeltaPhi(float phi1, float phi2){
+  float dPhi = phi1 - phi2;
+  while (dPhi  >  TMath::Pi()) dPhi -= 2*TMath::Pi();
+  while (dPhi <= -TMath::Pi()) dPhi += 2*TMath::Pi();
+  return dPhi;
 }

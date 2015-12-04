@@ -10,66 +10,70 @@
 #include "../interface/MT2Region.h"
 #include "../interface/MT2EstimateZinvGamma.h"
 #include "../interface/MT2DrawTools.h"
+#include "../interface/MT2Config.h"
 
 
 
 
 
-void drawSinglePlot( const std::string& outputdir, const std::string& name, const MT2Region& region, std::vector<TH1D*> histosData, TH1D* histoMC );
+void drawSinglePlot( const MT2Config& cfg, const std::string& name, const MT2Region& region, std::vector<TH1D*> histosData, TH1D* histoMC );
 void setHistoTitle( MT2Analysis<MT2EstimateZinvGamma>* analysis, const std::string& title );
 
 
 int main( int argc, char* argv[] ) {
 
 
-  std::string samples = "PHYS14_v5_skimprune";
-  if( argc>1 ) {
-    std::string samples_tmp(argv[1]); 
-    samples = samples_tmp;
-  }
-
-
   std::string regionsSet = "13TeV_inclusive";
-  //std::string regionsSet = "13TeV_CSA14";
 
   MT2DrawTools::setStyle();
 
 
-  std::string outputdir = "Plots_GammaTemplatesFromData_" + samples + "_" + regionsSet;
-  system( Form("mkdir -p %s", outputdir.c_str()) );
-
-  MT2Analysis<MT2EstimateZinvGamma>* templatesPromptMC  = MT2Analysis<MT2EstimateZinvGamma>::readFromFile("gammaTemplatesMC_" + samples + "_" + regionsSet + ".root", "templatesPrompt");
-  MT2Analysis<MT2EstimateZinvGamma>* templatesFakeMC    = MT2Analysis<MT2EstimateZinvGamma>::readFromFile("gammaTemplatesMC_" + samples + "_" + regionsSet + ".root", "templatesFake");
-
-  MT2Analysis<MT2EstimateZinvGamma>* templatesPrompt    = MT2Analysis<MT2EstimateZinvGamma>::readFromFile("gammaTemplatesDataFR_" + samples + "_" + regionsSet + ".root", "templatesPrompt");
-  MT2Analysis<MT2EstimateZinvGamma>* templatesPromptRaw = MT2Analysis<MT2EstimateZinvGamma>::readFromFile("gammaTemplatesDataFR_" + samples + "_" + regionsSet + ".root", "templatesPromptRaw");
-  MT2Analysis<MT2EstimateZinvGamma>* templatesFake      = MT2Analysis<MT2EstimateZinvGamma>::readFromFile("gammaTemplatesDataFR_" + samples + "_" + regionsSet + ".root", "templatesFake");
-
-  MT2Analysis<MT2EstimateZinvGamma>* templatesPromptRC  = MT2Analysis<MT2EstimateZinvGamma>::readFromFile("gammaTemplatesDataRC_" + samples + "_" + regionsSet + ".root", "templatesPrompt");
+  std::string configFileName(argv[1]);
+  MT2Config cfg(configFileName);
 
 
-  setHistoTitle( templatesFake, "#sigma_{i#eta i#eta} Sidebands" );
+  MT2Analysis<MT2EstimateZinvGamma>* templatesFakeMC         = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( cfg.getGammaCRdir() + "gammaTemplatesMC_MC.root"  , "templatesFake");
+  MT2Analysis<MT2EstimateZinvGamma>* templatesPromptMC       = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( cfg.getGammaCRdir() + "gammaTemplatesMC_MC.root"  , "templatesPrompt");
+
+  MT2Analysis<MT2EstimateZinvGamma>* templatesFakeRC_MC      = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( cfg.getGammaCRdir() + "gammaTemplatesRC_MC.root"  , "templatesFake");
+  MT2Analysis<MT2EstimateZinvGamma>* templatesPromptRC_MC    = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( cfg.getGammaCRdir() + "gammaTemplatesRC_MC.root"  , "templatesPrompt");
+
+  MT2Analysis<MT2EstimateZinvGamma>* templatesFakeRC_data    = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( cfg.getGammaCRdir() + "gammaTemplatesRC_data.root", "templatesFake");
+  MT2Analysis<MT2EstimateZinvGamma>* templatesPromptRC_data  = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( cfg.getGammaCRdir() + "gammaTemplatesRC_data.root", "templatesPrompt");
+
+
+  // setHistoTitle( templatesFake, "#sigma_{i#eta i#eta} Sidebands" );
   setHistoTitle( templatesFakeMC, "MC Fakes" );
-  setHistoTitle( templatesPromptRaw, "Data (all)" );
-  setHistoTitle( templatesPrompt, "Data (fake removal)" );
-  setHistoTitle( templatesPromptRC, "Data (random cone)" );
+
+  setHistoTitle( templatesFakeRC_data, "#sigma_{i#etai#eta} Sideband Data" );
+  setHistoTitle( templatesFakeRC_MC, "#sigma_{i#etai#eta} Sideband MC" );
+  //  setHistoTitle( templatesFakeFR_MC, "MC Fakes" );
+  // setHistoTitle( templatesPromptRaw, "Data (all)" );
+  // setHistoTitle( templatesPrompt, "Data (fake removal)" );
+  setHistoTitle( templatesPromptRC_data, "Data (random cone)" );
+  setHistoTitle( templatesPromptRC_MC, "MC (random cone)" );
   setHistoTitle( templatesPromptMC, "MC Prompts" );
 
 
-  std::set<MT2Region> regions = templatesPrompt->getRegions();
+  std::set<MT2Region> regions = templatesPromptRC_MC->getRegions();
 
   for( std::set<MT2Region>::iterator iR = regions.begin(); iR!=regions.end(); ++iR ) {
 
     std::vector<TH1D*> v_fakes;
-    v_fakes.push_back( templatesFake->get(*iR)->iso );
-    drawSinglePlot( outputdir, "Fake", *iR, v_fakes, templatesFakeMC->get(*iR)->iso );
+    //  v_fakes.push_back( templatesFakeMC->get(*iR)->iso );
+    v_fakes.push_back( templatesFakeRC_data->get(*iR)->iso );
+    v_fakes.push_back( templatesFakeRC_MC->get(*iR)->iso );
+    //  v_fakes.push_back( templatesFakeFR_MC->get(*iR)->iso );
+    drawSinglePlot( cfg, "Fake", *iR, v_fakes, templatesFakeMC->get(*iR)->iso );
 
-
+    
     std::vector<TH1D*> v_prompts;
-    v_prompts.push_back( templatesPromptRaw->get(*iR)->iso );
-    v_prompts.push_back( templatesPrompt->get(*iR)->iso );
-    v_prompts.push_back( templatesPromptRC->get(*iR)->iso );
-    drawSinglePlot( outputdir, "Prompt", *iR, v_prompts, templatesPromptMC->get(*iR)->iso );
+    //   v_prompts.push_back( templatesPromptRaw->get(*iR)->iso );
+    // v_prompts.push_back( templatesPrompt->get(*iR)->iso );
+    v_prompts.push_back( templatesPromptRC_data->get(*iR)->iso );
+    v_prompts.push_back( templatesPromptRC_MC->get(*iR)->iso );
+    //  v_prompts.push_back( templatesPromptMC->get(*iR)->iso );
+    drawSinglePlot( cfg, "Prompt", *iR, v_prompts, templatesPromptMC->get(*iR)->iso );
 
   } 
 
@@ -80,15 +84,13 @@ int main( int argc, char* argv[] ) {
 
 
 
-void drawSinglePlot( const std::string& outputdir, const std::string& name, const MT2Region& region, std::vector<TH1D*> histosData, TH1D* histoMC ) {
+void drawSinglePlot( const MT2Config& cfg, const std::string& name, const MT2Region& region, std::vector<TH1D*> histosData, TH1D* histoMC ) {
 
 
-  //if( name=="Fake" ) {
 
-  //  histoMC->Rebin(2);
-  //  for( unsigned i=0; i<histosData.size(); ++i ) histosData[i]->Rebin(2);
+  std::string outputdir = cfg.getGammaCRdir() + "/plotsTemplatesData/";
+  system( Form("mkdir -p %s", outputdir.c_str()) );
 
-  //}
 
 
   TCanvas* c1 = new TCanvas( "c1", "", 600, 600 );
@@ -160,7 +162,7 @@ void drawSinglePlot( const std::string& outputdir, const std::string& name, cons
   c1_log->cd();
   histoMC->Draw("L E same");
 
-  TLegend* legend = new TLegend( 0.56, yMinLegend, 0.9, 0.9 );
+  TLegend* legend = new TLegend( 0.5, yMinLegend, 0.9, 0.9 );
   //TLegend* legend = new TLegend( 0.46, yMinLegend, 0.9, 0.9 );
   legend->SetFillColor(0);
   legend->SetTextSize(0.035);
@@ -194,7 +196,7 @@ void drawSinglePlot( const std::string& outputdir, const std::string& name, cons
   legend->AddEntry( histoMC, histoMC->GetTitle(), "L" );
 
 
-  TPaveText* labelTop = MT2DrawTools::getLabelTop(4.);
+  TPaveText* labelTop = MT2DrawTools::getLabelTop(cfg.lumi());
 
   c1->cd();
   legend->Draw("same");

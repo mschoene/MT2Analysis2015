@@ -88,75 +88,59 @@ int main(int argc, char* argv[]){
   std::string outputdir = cfg.getEventYieldDir() + "/zllPurity";
   std::string outputdir_of = cfg.getEventYieldDir() + "/zllPurity_of";
 
-  // std::string outputdir( Form("ZllData_%s", configFileName.c_str() ) );
-  // std::string outputdir_of( Form("ZllData_OF_%s", configFileName.c_str()  ) );
-
-
   std::cout << "-> Using regions: " << regionsSet << std::endl;
 
   TH1::AddDirectory(kFALSE); // stupid ROOT memory allocation needs this
 
-  double intpart;
-  double fracpart = modf(cfg.lumi(), &intpart);
-  std::string suffix;
-  if( fracpart>0. )
-    suffix = std::string( Form("_%.0fp%.0ffb", intpart, 10.*fracpart ) );
-  else
-    suffix = std::string( Form("_%.0ffb", intpart ) );
-  //outputdir += suffix;
-  // outputdir_of += suffix;
-  
   system(Form("mkdir -p %s", outputdir.c_str()));
 
 
 
 
   std::string ZllDir = cfg.getEventYieldDir() + "/zllControlRegion";
-  std::string ZllDir_of = cfg.getEventYieldDir() + "/zllControlRegion";
-
-  //  std::string ZllDir = "ZllPurity_" + configFileName;
-  //  std::string ZllDir_of = "ZllPurity_OF_" + configFileName;
-
 
   MT2Analysis<MT2EstimateTree>* Zll = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s/ZllPurityTrees.root", ZllDir.c_str() ), "DYJets");
   if( Zll==0 ) {
     std::cout << "-> Please run zllPurityTrees first. I need to get the yields from there." << std::endl;    std::cout << "-> Thank you for your cooperation." << std::endl;    exit(197);
   }
-
-
-
-  
   MT2Analysis<MT2EstimateTree>* qcd = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s/ZllPurityTrees.root", ZllDir.c_str()  ), "QCD");
   MT2Analysis<MT2EstimateTree>* top = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s/ZllPurityTrees.root", ZllDir.c_str() ), "Top");
   MT2Analysis<MT2EstimateTree>* wjets = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s/ZllPurityTrees.root", ZllDir.c_str() ), "WJets");
   // MT2Analysis<MT2EstimateTree>* zjets = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s/ZllPurityTrees.root", ZllDir.c_str() ), "ZJets");
 
-  
+  MT2Analysis<MT2EstimateTree>* data = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s/data.root", ZllDir.c_str() ) , "data");
+ 
+  data->setFullName("Data");
+  Zll->setFullName("Z+jets");
+  wjets->setFullName("W+jets");
+  // zjets->setFullName("Z#nu#nu+jets");
+
+  Zll->setColor(kZJets);
+  qcd->setColor(kQCD);
+  top->setColor(kTop);
+  wjets->setColor(kWJets);
  
  //OPPOSITE FLAVOR TREES
-  MT2Analysis<MT2EstimateTree>* Zll_of = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s/ZllPurityTrees_of.root", ZllDir_of.c_str() ), "DYJets");
+  MT2Analysis<MT2EstimateTree>* Zll_of = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s/ZllPurityTrees_of.root", ZllDir.c_str() ), "DYJets");
 
-  MT2Analysis<MT2EstimateTree>* qcd_of = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s/ZllPurityTrees_of.root", ZllDir_of.c_str()  ), "QCD");
-  MT2Analysis<MT2EstimateTree>* top_of = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s/ZllPurityTrees_of.root", ZllDir_of.c_str() ), "Top");
-  MT2Analysis<MT2EstimateTree>* wjets_of = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s/ZllPurityTrees_of.root", ZllDir_of.c_str() ), "WJets");
-  //  MT2Analysis<MT2EstimateTree>* zjets_of = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s/ZllPurityTrees_of.root", ZllDir_of.c_str() ), "ZJets");
+  MT2Analysis<MT2EstimateTree>* qcd_of = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s/ZllPurityTrees_of.root", ZllDir.c_str()  ), "QCD");
+  MT2Analysis<MT2EstimateTree>* top_of = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s/ZllPurityTrees_of.root", ZllDir.c_str() ), "Top");
+  MT2Analysis<MT2EstimateTree>* wjets_of = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s/ZllPurityTrees_of.root", ZllDir.c_str() ), "WJets");
+  //  MT2Analysis<MT2EstimateTree>* zjets_of = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s/ZllPurityTrees_of.root", ZllDir.c_str() ), "ZJets");
   
-  MT2Analysis<MT2EstimateTree>* data_of = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s/data_of.root", ZllDir_of.c_str() ) , "data_of");
+  MT2Analysis<MT2EstimateTree>* data_of = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s/data_of.root", ZllDir.c_str() ) , "data_of");
 
   Zll_of->setFullName("Z+jets");
   wjets_of->setFullName("W+jets");
   // zjets_of->setFullName("Z#nu#nu+jets");
   data_of->setFullName("Data");
  
-
-  MT2Analysis<MT2EstimateTree>* data = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s/data.root", ZllDir.c_str() ) , "data");
+  Zll_of->setColor(kZJets);
+  qcd_of->setColor(kQCD);
+  top_of->setColor(kTop);
+  wjets_of->setColor(kWJets);
  
 
-  data->setFullName("Data");
-
-  Zll->setFullName("Z+jets");
-  wjets->setFullName("W+jets");
-  // zjets->setFullName("Z#nu#nu+jets");
 
 
 
@@ -201,13 +185,13 @@ int main(int argc, char* argv[]){
   float htMin=200, htMax=-1;
   std::string cutsLabel = getCutLabel(htMin, htMax, "H_{T}", "GeV");
 
-  std::string    selection_of = "weight*(abs(Z_mass)>20 && Z_pt>180 && ht>200 && nJets>1 && mt2>10 && deltaPhiMin>0.3 && diffMetMht<0.5*met )";
+  std::string    selection_of = "weight*(abs(Z_mass)>20 && Z_pt>180 && ht>200 && nJets>1 && mt2>200 )";
 
 
   //std::string selection = "weight*(ht>200. && Z_pt>180 && nJets==1 && met>200 && mt2>10. && deltaPhiMin>0.3 && diffMetMht<0.5*met && abs(Z_mass-91.19)<20  )";
   //savename, var, sel, nbins, xmin, xmax, axis label, units, cutslabel
   
-  float scaleFactor =  dt.getScaleFactor_fromTree( "mll"   , "Z_mass"   , selection_of, 40, 10., 810., "M_{ll}", "GeV", cutsLabel, "#geq2j, #geq0b"  );
+  float scaleFactor =  dt.getScaleFactor_fromTree( "mll"   , "Z_mass"   , selection_of, 10, 20., 420., "M_{ll}", "GeV", cutsLabel, "#geq2j, #geq0b"  );
 
 
 
@@ -246,7 +230,7 @@ int main(int argc, char* argv[]){
   drawYieldsScaled( cfg, data, bgYields, "Z_mass_scaled" , "Z_mass" , selection_mass, 50, 50, 150, "M_{ll}", "GeV" , scaleFactor);
   */
 
-  std::ofstream ofs ("scaleFactorOF.txt", std::ofstream::out);
+  std::ofstream ofs (Form("%s/scaleFactorOF.txt",outputdir.c_str()), std::ofstream::out);
   ofs<< scaleFactor;
   ofs.close();
 

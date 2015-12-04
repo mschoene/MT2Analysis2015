@@ -19,13 +19,17 @@ class MT2EstimateSyst : public MT2Estimate {
   MT2EstimateSyst( const MT2EstimateSyst& rhs );
   MT2EstimateSyst( const std::string& aname, const MT2Region& aregion );
   MT2EstimateSyst( const std::string& aname, const MT2Region& aregion, const MT2Estimate& pass, const MT2Estimate& tot );
+
   virtual ~MT2EstimateSyst();
 
   virtual void setName( const std::string& newName );
 
-  static MT2Analysis<MT2EstimateSyst>* makeEfficiencyAnalysis( const std::string& aname, const std::string& regionsSet, MT2Analysis<MT2Estimate>* pass, MT2Analysis<MT2Estimate>* all );
+  static MT2Analysis<MT2EstimateSyst>* makeEfficiencyAnalysis( const std::string& aname, MT2Analysis<MT2Estimate>* pass, MT2Analysis<MT2Estimate>* all );
   static MT2Analysis<MT2EstimateSyst>* makeAnalysisFromEstimate( const std::string& aname, const std::string& regionsSet, MT2Analysis<MT2Estimate>* analysis );
   static MT2Analysis<MT2EstimateSyst>* makeIntegralAnalysisFromEstimate( const std::string& aname, const std::string& regionsSet, MT2Analysis<MT2EstimateSyst>* analysis );
+
+  static void rebinYields( MT2Analysis<MT2EstimateSyst>* analysis, int nBins, double* bins);
+
 
   TGraphAsymmErrors* getGraph() const;
  
@@ -72,6 +76,7 @@ class MT2EstimateSyst : public MT2Estimate {
 
   virtual void print(const std::string& ofs);
 
+ 
  private:
 
 };

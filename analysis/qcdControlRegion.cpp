@@ -15,6 +15,10 @@
 
 
 
+
+bool monojet=false;
+
+
 int round(float d) {
   return (int)(floor(d + 0.5));
 }
@@ -41,7 +45,7 @@ int main( int argc, char* argv[] ) {
 
 
   if( argc<2 ) {
-    std::cout << "USAGE: ./qcdControlRegion [configFileName] [data/MC]" << std::endl;
+    std::cout << "USAGE: ./qcdControlRegion [configFileName] [data/MC/all] [monojet=false]" << std::endl;
     std::cout << "Exiting." << std::endl;
     exit(11);
   }
@@ -57,8 +61,23 @@ int main( int argc, char* argv[] ) {
     std::string dataMC(argv[2]);
     if( dataMC=="data" ) onlyData = true;
     else if( dataMC=="MC" || dataMC=="mc" ) onlyMC = true;
-    else {
-      std::cout << "-> You passed a second argument that isn't 'data' or 'MC', so I don't know what to do about it." << std::endl;
+  }
+
+  if( onlyData ) {
+    std::cout << "-> Will run only on data." << std::endl;
+  } else if( onlyMC ) {
+    std::cout << "-> Will run only on MC." << std::endl;
+  } else {
+    std::cout << "-> Will run on both data and MC." << std::endl;
+  }
+ 
+
+
+  if( argc > 3 ) {
+    std::string monojetstr(argv[3]);
+    if( monojetstr=="true" || monojetstr=="monojet" ) {
+      monojet=true;
+      std::cout << "-> Monojet analysis (so releasing the MT2>50. cut)" << std::endl;
     }
   }
 
@@ -74,8 +93,8 @@ int main( int argc, char* argv[] ) {
 
     std::string samplesFile = "../samples/samples_" + cfg.mcSamples() + ".dat";
     
-    std::vector<MT2Sample> samples_zinv = MT2Sample::loadSamples(samplesFile, 602, 605);
-    std::vector<MT2Sample> samples_wjet = MT2Sample::loadSamples(samplesFile, 502, 505);
+    std::vector<MT2Sample> samples_zinv = MT2Sample::loadSamples(samplesFile, 602, 699);
+    std::vector<MT2Sample> samples_wjet = MT2Sample::loadSamples(samplesFile, 502, 599);
     std::vector<MT2Sample> samples_top  = MT2Sample::loadSamples(samplesFile, 300, 399); // ignore single top and rares: faster
     //std::vector<MT2Sample> samples_top  = MT2Sample::loadSamples(samplesFile, 300, 499);
     std::vector<MT2Sample> samples_qcd  = MT2Sample::loadSamples(samplesFile, 100, 199);
@@ -97,7 +116,9 @@ int main( int argc, char* argv[] ) {
     
 
    
-    std::string mcFile = outputdir + "/mc.root";
+    std::string mcFile = outputdir + "/mc";
+    if( monojet ) mcFile = mcFile + "_forMonojet";
+    mcFile = mcFile + ".root";
     qcdCRtree->writeToFile( mcFile, "RECREATE" );
 
   }
@@ -123,7 +144,9 @@ int main( int argc, char* argv[] ) {
     for( unsigned i=0; i < samples_data.size(); ++i )
       computeYield( samples_data[i], cfg, data );
 
-    std::string dataFile = outputdir + "/data.root";
+    std::string dataFile = outputdir + "/data";
+    if( monojet ) dataFile = dataFile + "_forMonojet";
+    dataFile = dataFile + ".root";
     data->writeToFile( dataFile, "RECREATE" );
 
 
@@ -168,8 +191,8 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
     myTree.GetEntry(iEntry);
 
     if( myTree.isData ) {
-      if ( myTree.isGolden == 0 ) continue;
-      if( !(myTree.Flag_HBHENoiseFilter && myTree.Flag_CSCTightHaloFilter && myTree.Flag_eeBadScFilter) ) continue;
+      if (  myTree.isGolden == 0 ) continue;
+      if ( !myTree.passFilters() ) continue;
     }
     
 
@@ -195,20 +218,18 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
 
       if( njets==1 ) {
 
-        if( !( id==3 && myTree.HLT_PFMET90_PFMHT90) ) continue;
+        if( !( id==3 && myTree.HLT_PFMETNoMu90_PFMHTNoMu90) ) continue;
 
       } else { // njets>=2
 
         if( ht>1000. ) {
           if( !( id==1 && myTree.HLT_PFHT800) ) continue;
         } else if( ht>575. ) {
-          if( !( (id==2 && myTree.HLT_PFHT350_PFMET100 ) || (id==1 && myTree.HLT_ht475prescale))  ) continue;
-          //if( !( (id==2 && myTree.HLT_PFHT350_PFMET100 ) || (id==1 && myTree.HLT_PFHT475_Prescale))  ) continue; // gio's tree
+          if( !( (id==2 && myTree.HLT_PFHT350_PFMET100 ) || (id==1 && myTree.HLT_PFHT475_Prescale))  ) continue;
         } else if( ht>450. ) {
-          if( !( (id==2 && myTree.HLT_PFHT350_PFMET100 ) || (id==1 && myTree.HLT_ht350prescale))  ) continue;
-          //if( !( (id==2 && myTree.HLT_PFHT350_PFMET100 ) || (id==1 && myTree.HLT_PFHT350_Prescale))  ) continue; // gio's tree
+          if( !( (id==2 && myTree.HLT_PFHT350_PFMET100 ) || (id==1 && myTree.HLT_PFHT350_Prescale))  ) continue;
         } else if( ht>200. ) {
-          if( !( id==3 && myTree.HLT_PFMET90_PFMHT90) ) continue;
+          if( !( id==3 && myTree.HLT_PFMETNoMu90_PFMHTNoMu90) ) continue;
         }
 
       }
@@ -216,7 +237,12 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
     } // if is data
 
 
-    if( mt2<40. ) continue;
+    if( monojet ) {
+      if( !( (njets==2 && myTree.deltaPhiMin<0.3 && myTree.jet1_pt>200. && myTree.met_pt>200.) ) ) continue;
+      if( !myTree.passMonoJetId(0) ) continue;
+    } else {
+      if( mt2<50. ) continue;
+    }
 
     Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb;//*cfg.lumi(); 
 

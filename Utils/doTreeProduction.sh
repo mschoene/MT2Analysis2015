@@ -15,8 +15,9 @@ PUvar="nVert"
 #GoldenJSON="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-255031_13TeV_PromptReco_Collisions15_25ns_JSON_v2.txt"
 #GoldenJSON="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-257599_13TeV_PromptReco_Collisions15_25ns_JSON.txt"
 #GoldenJSON="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-258159_13TeV_PromptReco_Collisions15_25ns_JSON.txt"
-#GoldenJSON="/afs/cern.ch/user/g/gzevi/public/Cert_246908-256869_13TeV_PromptReco_Collisions15_25ns_JSON_Photon.txt"
-GoldenJSON="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-258750_13TeV_PromptReco_Collisions15_25ns_JSON.txt"
+#GoldenJSON="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-258750_13TeV_PromptReco_Collisions15_25ns_JSON.txt"
+#GoldenJSON="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-260426_13TeV_PromptReco_Collisions15_25ns_JSON.txt"
+GoldenJSON="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt"
 applyJSON=0
 doFilterTxt=0
 # --------------------------
@@ -30,9 +31,11 @@ workingFolder="/scratch/`whoami`/"$productionName
 
 if [[ "$#" -eq 0 ]]; then
     echo "Relunch the script with one of the following options: "
-    echo "./doTreeProduction.sh post"
-    echo "./doTreeProduction.sh postCheck"
-    echo "./doTreeProduction.sh clean"
+    echo "./doTreeProduction.sh post      # post-processing"
+    echo "./doTreeProduction.sh postCheck # check post-processing"
+    echo "./doTreeProduction.sh mergeData # merge data and remove duplicates (not implemented yet)"
+    echo "./doTreeProduction.sh addBtag   # add b-tagg weights variables (not implemented yet)"
+    echo "./doTreeProduction.sh clean     # clean (not implemented yet)"
     exit;
 fi;
 
@@ -91,8 +94,14 @@ do
     filter=`echo $line |awk '{print $4}'`
     kfactor=`echo $line |awk '{print $5}'`
 
-    if [[ $id -lt 10 && $doFilterTxt == 1 ]]; then	
-	filterTxt=/shome/casal/eventlist_csc2015/eventlist_`echo $name | cut -d _ -f 1`_csc2015.txt
+    doPruning="true"
+    if [ $id -lt 10 ]; then
+	doPruning="false"
+    fi;
+
+    if [[ $id -lt 10 && $doFilterTxt == 1 ]]; then
+	# this is the merged (and duplicate removed) file including Nov15 txts and Oct 15 txts for all datasets
+	filterTxt=/shome/casal/eventlist_Nov14/filter_cscNov15_ecalscnNov15_cscOct15_sortu.txt
 	outputFilteredFile=${workingFolder}/${name}_filtered$fileExt;
     fi;
     
@@ -141,6 +150,7 @@ echo "postProcessing(\"$name\",\"$inputFolder\",\"$outputFile\",\"$treeName\",$f
 echo "gROOT->LoadMacro(\"postProcessing.C\"); postProcessing(\"$name\",\"$inputFolder\",\"$outputFile\",\"$treeName\",$filter,$kfactor,$xsec,$id,\"$crabExt\",\"$inputPU\",\"$PUvar\",$applyJSON); gSystem->Exit(0);" |root.exe -b -l ;
 
 if [[ $id -lt 10 && $doFilterTxt == 1 ]]; then 
+   echo "filterFromTxt(\"$filterTxt\",\"$outputFile\",1,\"$outputFilteredFile\",\"mt2\",\"\")"
    echo "gROOT->LoadMacro(\"filterFromTxt.C\"); filterFromTxt(\"$filterTxt\",\"$outputFile\",1,\"$outputFilteredFile\",\"mt2\",\"\"); gSystem->Exit(0);" |root.exe -b -l ;
 
    mv $outputFilteredFile $outputFile;
@@ -152,7 +162,7 @@ rm $outputFile
 
 skimmingPruningCfg="${workingFolder}/skimmingPruning_${name}.cfg"
     cat skimmingPruning.cfg |grep -v \# | sed  "s#INPUTDIR#${outputFolder}#" |sed "s#INPUTFILTER#${name}#" \
-	| sed "s#OUTPUTDIR#${outputFolder}/skimAndPrune#" > \$skimmingPruningCfg
+	| sed "s#OUTPUTDIR#${outputFolder}/skimAndPrune#" | sed "s#DOPRUNING#${doPruning}#" > \$skimmingPruningCfg
 
 ./runSkimmingPruning.sh \$skimmingPruningCfg
 rm \$skimmingPruningCfg
@@ -190,7 +200,13 @@ if [[ "$1" = "postCheck" ]]; then
 
 fi
 
+if [[ "$1" = "mergeData" ]]; then
+    echo "need to implement the data merging + duplicate removal"
+fi
 
+if [[ "$1" = "addBtag" ]]; then
+    echo "need to implement addition of b-tagging weights"
+fi
 
 if [[ "$1" = "clean" ]]; then
     echo "INFO: option 'clean' is not implemented yet."

@@ -83,11 +83,10 @@ int main(int argc, char* argv[]) {
 
   std::string regionsSet;// = "13TeV_inclusive";
   regionsSet=cfg.crRegionsSet();
-  //  regionsSet=cfg.zllRegions();
+  // regionsSet=cfg.zllRegions();
   // std::string regionsSet = cfg.zllRegions();
 
   std::cout << "-> Using regions: " << regionsSet << std::endl;
-
 
   if( cfg.useMC() && !onlyData ) { // run on MC  
   
@@ -178,6 +177,13 @@ int main(int argc, char* argv[]) {
     std::cout << std::endl << std::endl;
     std::cout << "-> Loading data from file: " << samplesFile_data << std::endl;
     std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, "Double");  
+
+    std::vector<MT2Sample> samples_data_photon = MT2Sample::loadSamples(samplesFile_data, "SinglePhoton");  
+    samples_data.insert(samples_data.end(), samples_data_photon.begin(), samples_data_photon.end());
+
+
+
+  
     std::vector<MT2Sample> samples_data_of = MT2Sample::loadSamples(samplesFile_data, "MuonEG");
   
     MT2Analysis<MT2EstimateTree>* dataTree = new MT2Analysis<MT2EstimateTree>( "data", cfg.crRegionsSet() );
@@ -210,6 +216,7 @@ int main(int argc, char* argv[]) {
   return 0;
   
 }
+
 
 
 
@@ -304,7 +311,6 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
 
     //Minimal selection for the standard model Z/Gamma ratio
     if(myTree.nVert < 1) continue;
-    if(myTree.nJet30 < 1) continue;
 
     if( cfg.analysisType() == "mt2"){
       if( regionsSet!="13TeV_noCut" )
@@ -312,13 +318,16 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
     }
 
     if(( myTree.lep_pdgId[0]*myTree.lep_pdgId[1])>0 )   continue;
+    
+    if(  myTree.nJet30==1 && !(myTree.jet_id[0]>=4)) continue;    
+
 
     //FILTERS
-    if( myTree.isData &&( myTree.Flag_HBHENoiseFilter==0 || myTree.Flag_CSCTightHaloFilter==0 || myTree.Flag_goodVertices==0 ||  myTree.Flag_eeBadScFilter==0 ) ) continue;
-    if(myTree.isData && myTree.isGolden == 0) continue;
+    if( myTree.isData && !myTree.passFilters() ) continue;
+    if( myTree.isData &&  myTree.isGolden == 0 ) continue;
 
     if(myTree.lep_pt[0]<25) continue;
-    if(myTree.lep_pt[1]<20) continue;
+    if(myTree.lep_pt[1]<15) continue; //old <20
 
     //Need the lorentz vectors of the leptons first
     TLorentzVector *LVec = new TLorentzVector[3];
@@ -327,7 +336,6 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
     }
 
     TLorentzVector z = LVec[0] + LVec[1]; //leptons invariant mass
-
     
     Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb;//*cfg.lumi(); 
     //Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi(); 
@@ -340,7 +348,9 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
     if( !(myTree.lep_pdgId[0] == -myTree.lep_pdgId[1]) ) isOF = true;
     
     if(isSF){ //////////SAME FLAVOR//////////////////////////////////////////
-      if(  !(myTree.HLT_DoubleMu || myTree.HLT_DoubleEl || myTree.HLT_Photon165_HE10 ) ) continue;
+      if(  myTree.isData && !( ( sample.id==5  && myTree.HLT_DoubleMu ) || ( myTree.HLT_DoubleEl && sample.id==4  )   ||  ( sample.id==7 && !myTree.HLT_DoubleEl && !myTree.HLT_DoubleMu && myTree.HLT_Photon165_HE10 ) )  ) continue;
+      if( !myTree.isData && !( myTree.HLT_DoubleEl || myTree.HLT_DoubleMu || myTree.HLT_Photon165_HE10)) continue;
+
       MT2EstimateTree* thisTree = anaTree->get( myTree.zll_ht, njets, nbjets, minMTBmet, myTree.zll_mt2 );
       if (thisTree==0) continue;
 
@@ -364,15 +374,13 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
       thisTree->assignVar("raw_mt2", myTree.mt2 );
 
       thisTree->assignVar( "nJetHF30",  nJetHF30_ );
-
       thisTree->assignVar( "jet1_pt",  myTree.jet1_pt );
-
 
       thisTree->fillTree_zll(myTree, weight );
       thisTree->yield->Fill(myTree.zll_mt2, weight );
 
     }else if(isOF){ //////////Opposite FLAVOR//////////////////////////////////////////
-      if(  myTree.isData && !(myTree.HLT_MuX_Ele12 || myTree.HLT_Mu8_EleX) ) continue;
+      if(  myTree.isData && !( sample.id==6  && (myTree.HLT_MuX_Ele12 || myTree.HLT_Mu8_EleX)) ) continue;
       MT2EstimateTree* thisTree_of = anaTree_of->get( myTree.zll_ht, njets, nbjets, minMTBmet, myTree.zll_mt2 );
       if(thisTree_of==0) continue;
 

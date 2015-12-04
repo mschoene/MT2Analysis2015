@@ -71,7 +71,7 @@ int main( int argc, char* argv[] ) {
 
   
   std::string mainDir  = cfg.getEventYieldDir();
-  std::string gammaDir = mainDir + "/gammaControlRegion";
+  std::string gammaDir = cfg.getGammaCRdir();
   std::string zllDir = mainDir + "/zllControlRegion";
 
   std::string mcFile = mainDir + "/analyses.root";
@@ -88,7 +88,8 @@ int main( int argc, char* argv[] ) {
 
 
   TFile* file_mc_zinv = TFile::Open( mcFile.c_str() );
-  TTree* tree_mc_zinv = (TTree*)file_mc_zinv->Get("ZJets/HT450toInf_j2toInf_b0toInf/tree_ZJets_HT450toInf_j2toInf_b0toInf");
+  //  TTree* tree_mc_zinv = (TTree*)file_mc_zinv->Get("ZJets/HT450toInf_j2toInf_b0toInf/tree_ZJets_HT450toInf_j2toInf_b0toInf");
+  TTree* tree_mc_zinv = (TTree*)file_mc_zinv->Get("ZJets/HT200toInf_j1toInf_b0toInf/tree_ZJets_HT200toInf_j1toInf_b0toInf");
 
   if( tree_mc_zinv ) {
     histo_mc_zinv = getRatioHisto( cfg, tree_mc_zinv, "zinv", "Z #rightarrow #nu#nu MC", "nJets", 1, 1.5, 6.5, "Number of Jets" );
@@ -108,7 +109,8 @@ int main( int argc, char* argv[] ) {
 
 
   TFile* file_mc_gjet  = TFile::Open( Form("%s/mc.root"  , gammaDir.c_str()) );
-  TTree* tree_mc_gjet = (file_mc_gjet) ? (TTree*)file_mc_gjet->Get("gammaCRtree/HT450toInf_j2toInf_b0toInf/tree_gammaCRtree_HT450toInf_j2toInf_b0toInf") : 0;
+  //  TTree* tree_mc_gjet = (file_mc_gjet) ? (TTree*)file_mc_gjet->Get("gammaCRtree/HT450toInf_j2toInf_b0toInf/tree_gammaCRtree_HT450toInf_j2toInf_b0toInf") : 0;
+  TTree* tree_mc_gjet = (file_mc_gjet) ? (TTree*)file_mc_gjet->Get("gammaCRtree/HT200toInf_j1toInf_b0toInf/tree_gammaCRtree_HT200toInf_j1toInf_b0toInf") : 0;
   if( tree_mc_gjet ) {
     histo_mc_gjet = getRatioHisto( cfg, tree_mc_gjet, "gjetMC", "#gamma + Jets MC", "nJets", 11, 1.5, 12.5, "Number of Jets", "prompt>1.5" );
     getRatioHisto( cfg, tree_mc_gjet, "gjetMC", "#gamma + Jets MC", "mt2", 25, 200., 750., "M_{T2} [GeV]" );
@@ -122,7 +124,8 @@ int main( int argc, char* argv[] ) {
   TFile* file_data_gjet = TFile::Open( Form("%s/data.root", gammaDir.c_str()) );
   TH1D* histo_data_gjet = 0;
   if( file_data_gjet && cfg.dataSamples()!="datatest" && cfg.lumi()>0.15 ) {
-    TTree* tree_data_gjet = (TTree*)file_data_gjet->Get("gammaCRtree/HT450toInf_j2toInf_b0toInf/tree_gammaCRtree_HT450toInf_j2toInf_b0toInf");
+    //    TTree* tree_data_gjet = (TTree*)file_data_gjet->Get("gammaCRtree/HT450toInf_j2toInf_b0toInf/tree_gammaCRtree_HT450toInf_j2toInf_b0toInf");
+    TTree* tree_data_gjet = (TTree*)file_data_gjet->Get("gammaCRtree/HT200toInf_j1toInf_b0toInf/tree_gammaCRtree_HT200toInf_j1toInf_b0toInf");
     histo_data_gjet = getRatioHisto( cfg, tree_data_gjet, "gjetData", "#gamma + Jets Data" );
   }
 
@@ -133,6 +136,7 @@ int main( int argc, char* argv[] ) {
     std::cout << "-> You need to run at least the Zll control region! Please do so with zllControlRegion before running this program" << std::endl;
     exit(19871);
   }
+
   TTree* tree_mc_zll = (TTree*)file_mc_zll->Get("zllCR/HT450toInf_j2toInf_b0toInf/tree_zllCR_HT450toInf_j2toInf_b0toInf");
   //if( cfg.additionalStuff()=="hfContent" ) {
   //  TH1D* histo_mc_zll_fake = getRatioHisto( cfg, tree_mc_zll, "zll_fake", "Z + fakes", "nJets", 11, 1.5, 12.5, "Number of Jets", "nTrueB+nTrueC==0" );

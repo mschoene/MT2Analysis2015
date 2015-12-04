@@ -14,20 +14,18 @@
 
 MT2EstimateZinvGamma::MT2EstimateZinvGamma( const std::string& aname, const MT2Region& aregion ) : MT2Estimate( aname, aregion ) {
 
-
   sietaieta = new TH1D( this->getHistoName("sietaieta").c_str(), "", 200, 0., 0.035 );
   sietaieta->Sumw2();
 
-
-  int nbins = 8;
-  int xmax = 10.;
+  nbins_iso_ = 8;
+  iso_max_   = 10.;
 
   // this histo will be used to create histogram templates:
   //iso = new TH1D( this->getHistoName("iso").c_str(), "", nbins-1, bins );
-  iso = new TH1D( this->getHistoName("iso").c_str(), "", nbins, 0., xmax );
+  iso = new TH1D( this->getHistoName("iso").c_str(), "", nbins_iso_, 0., iso_max_ );
   iso->Sumw2();
 
-  x_ = new RooRealVar( "x", "", 0., xmax );
+  x_ = new RooRealVar( "x", "", 0., iso_max_ );
   w_ = new RooRealVar( "w", "", 0., 1000. );
 
   int nbins_mt2;
@@ -41,7 +39,7 @@ MT2EstimateZinvGamma::MT2EstimateZinvGamma( const std::string& aname, const MT2R
     iso_bins.push_back(isoDataset);
 
     //TH1D* this_iso_hist = new TH1D( this->getHistoName(Form("iso_bin%d_hist", i)).c_str() , "", nbins-1, bins );
-    TH1D* this_iso_hist = new TH1D( this->getHistoName(Form("iso_bin%d_hist", i)).c_str() , "", nbins, 0., xmax );
+    TH1D* this_iso_hist = new TH1D( this->getHistoName(Form("iso_bin%d_hist", i)).c_str() , "", nbins_iso_, 0., iso_max_ );
     this_iso_hist->Sumw2();
     iso_bins_hist.push_back(this_iso_hist);
 
@@ -73,6 +71,7 @@ MT2EstimateZinvGamma::MT2EstimateZinvGamma( const MT2EstimateZinvGamma& rhs ) : 
 
 
 
+
 // destructor
 
 MT2EstimateZinvGamma::~MT2EstimateZinvGamma() {
@@ -87,6 +86,153 @@ MT2EstimateZinvGamma::~MT2EstimateZinvGamma() {
 
 
 }
+
+
+
+
+void MT2EstimateZinvGamma::clearBins() {
+
+  std::vector<TH1D*>* this_iso_bins_hist  = &(this->iso_bins_hist);
+  std::vector<RooDataSet*>* this_iso_bins = &(this->iso_bins);
+
+  for( unsigned i=0; i<this_iso_bins_hist->size(); ++i ) { 
+    delete this_iso_bins_hist->at(i);
+    delete this_iso_bins->at(i);
+  }
+  this_iso_bins_hist->clear();
+  this_iso_bins->clear();
+
+}
+
+
+
+
+
+
+
+MT2Analysis<MT2EstimateZinvGamma>*  MT2EstimateZinvGamma::makeInclusiveAnalysisFromInclusiveTree( const std::string& aname, MT2Analysis<MT2EstimateTree>* analysis, const std::string& regionsSet, const std::string& selectionTree, const std::string& var, int nBins, Double_t* bins ){
+
+
+  std::set<MT2Region> regions = analysis->getRegions();
+
+  if( regions.size()!=1 ) {
+    std::cout << "[MT2EstimateTree::makeInclusiveAnalysisFromInclusiveTree] ERROR!! You need to pass an inclusive MT2EstimateTree Analysis to use this function!" << std::endl;
+    exit(19191);
+  }
+
+  MT2EstimateTree* treeInclusive = analysis->get( *(regions.begin()) );
+
+  // will create a new analysis with same region as original one
+  // BUT different binning for the yield and iso histogram
+
+  MT2Analysis<MT2EstimateZinvGamma>* newanalysis  = new MT2Analysis<MT2EstimateZinvGamma>( aname, regionsSet );
+  if ( nBins>0 ){
+    MT2EstimateZinvGamma::rebinYields( newanalysis, nBins, bins );
+  }
+
+  gROOT->cd();
+  TTree* tree = treeInclusive->tree->CopyTree( Form("%s", selectionTree.c_str()) );
+
+
+  std::set<MT2Region> newRegions = newanalysis->getRegions();
+
+  //fill the new iso with the tree
+  int nentries = tree->GetEntries();
+
+  Float_t var_float;
+  Int_t var_int;
+  if(var == "nJets" || var == "nBJets" )
+    tree->SetBranchAddress(var.c_str(), &var_int);
+  else
+    tree->SetBranchAddress(var.c_str(), &var_float);
+//  tree->SetBranchAddress(var.c_str(), &var_int);
+//  tree->SetBranchAddress(var.c_str(), &var_float);
+
+  Float_t weight;
+  tree->SetBranchAddress("weight", &weight);
+  Float_t iso;
+  tree->SetBranchAddress("iso", &iso);
+
+  Float_t ht_;
+  tree->SetBranchAddress("ht", &ht_);
+  Int_t njets_;
+  tree->SetBranchAddress("nJets", &njets_);
+  Int_t nbjets_;
+  tree->SetBranchAddress("nBJets", &nbjets_);
+  
+  for( int iEntry=0; iEntry<nentries; ++iEntry ) {
+
+    if( iEntry % 10000 == 0 ) std::cout << "    Entry: " << iEntry << " / " << nentries << std::endl;
+    
+    tree->GetEntry(iEntry);
+    MT2EstimateZinvGamma* theEst = newanalysis->get( ht_, njets_, nbjets_  );
+    if(theEst == 0) continue;
+      
+    if(var=="ht") var_float = ht_;
+    else if(var =="nJets") var_int = njets_;
+    else if(var =="nBJets") var_int = nbjets_;
+ 
+    if(var == "nJets" || var == "nBJets"){
+      theEst->yield->Fill(var_int, weight);
+      theEst->fillIso( iso, weight, var_int );
+    } else {
+      theEst->yield->Fill(var_float, weight);
+      theEst->fillIso( iso, weight, var_float );
+    }
+    
+  }
+  
+  newanalysis->finalize();
+
+  //done and over
+  return newanalysis;
+  
+}
+
+
+
+//some function to create a newly binned MT2EstimateZinGamma
+void MT2EstimateZinvGamma::rebinYields( MT2Analysis<MT2EstimateZinvGamma>* analysis, int nBins, Double_t* bins ){
+
+  std::set<MT2Region> regions = analysis->getRegions();
+
+  for( std::set<MT2Region>::iterator iR = regions.begin(); iR!=regions.end(); ++iR ) {
+
+    MT2EstimateZinvGamma* estimate = analysis->get(*iR);
+    TH1D* thisYield = estimate->yield;
+    std::string oldName(thisYield->GetName());
+    delete thisYield;
+    thisYield = new TH1D( oldName.c_str(), "", nBins, bins );
+
+    estimate->clearBins();
+
+    int nbins_iso = estimate->getNbinsIso();
+    int xmax  = estimate->getIsoMax();
+
+    std::vector<TH1D*>* this_iso_bins_hist  = &(estimate->iso_bins_hist);
+    std::vector<RooDataSet*>* this_iso_bins = &(estimate->iso_bins);
+ 
+
+    for( int i=0; i<nBins; ++i ) {
+
+      RooDataSet* this_isoDataset = new RooDataSet( estimate->getHistoName(Form("iso_bin%d", i)).c_str() , "", RooArgSet(*(estimate->x_),*(estimate->w_)), estimate->w_->GetName() );
+      this_iso_bins->push_back(this_isoDataset);
+
+      TH1D* this_iso_hist = new TH1D( estimate->getHistoName(Form("iso_bin%d_hist", i)).c_str() , "", nbins_iso, 0., xmax );
+      this_iso_hist->Sumw2();
+      this_iso_bins_hist->push_back(this_iso_hist);
+
+    }
+  
+   
+  }//end regions
+
+
+}
+
+
+
+
 
 
 
@@ -106,13 +252,12 @@ void MT2EstimateZinvGamma::setName( const std::string& newName ) {
 
 
 
-void MT2EstimateZinvGamma::fillIso( float iso, float weight, float mt2 ) {
+void MT2EstimateZinvGamma::fillIso( float iso, float weight, float var ) {
 
   this->iso->Fill( iso, weight );
 
-
-  if( mt2>0. ) {
-    int foundBin = this->yield->FindBin(mt2);
+  if( var > -1. ) {
+    int foundBin = this->yield->FindBin(var);
     if( foundBin > this->yield->GetNbinsX() ) foundBin=this->yield->GetNbinsX(); // overflow will go in last bin
     foundBin-=1; // want first bin to be 0 (fuck you root)
     if( foundBin>=0 ) {
@@ -193,12 +338,15 @@ void MT2EstimateZinvGamma::finalize() {
 void MT2EstimateZinvGamma::getShit( TFile* file, const std::string& path ) {
 
   MT2Estimate::getShit(file, path);
+
   iso = (TH1D*)file->Get(Form("%s/%s", path.c_str(), iso->GetName()));
   sietaieta = (TH1D*)file->Get(Form("%s/%s", path.c_str(), sietaieta->GetName()));
 
-  for( unsigned i=0; i<iso_bins.size(); ++i ) {
-    iso_bins[i] = (RooDataSet*)file->Get(Form("%s/%s", path.c_str(), iso_bins[i]->GetName()));
-    iso_bins_hist[i] = (TH1D*)file->Get(Form("%s/%s", path.c_str(), iso_bins_hist[i]->GetName()));
+  this->clearBins();
+
+  for( int i=0; i<this->yield->GetNbinsX(); ++i ) {
+    iso_bins.push_back( (RooDataSet*)file->Get(Form("%s/%s", path.c_str(), this->getHistoName(Form("iso_bin%d", i)).c_str())) );
+    iso_bins_hist.push_back( (TH1D*)file->Get(Form("%s/%s", path.c_str(), this->getHistoName(Form("iso_bin%d_hist", i)).c_str())) );
   }
 
 
