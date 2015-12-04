@@ -27,7 +27,7 @@ run()
 #include "TROOT.h"
 #include "TSystem.h"
 
-#include "goodrun.cc"
+#include "goodrunClass.cc"
 
 using namespace std;
 
@@ -39,7 +39,8 @@ int postProcessing(string inputString="input",
 		   string crabExt="",
 		   string inputPU="",
 		   string PUvar="nVert",
-		   bool applyJSON=true);
+		   bool applyJSON=true,
+		   bool doSilver=false);
 
 
 int run(string cfg="postProcessing.cfg",
@@ -110,17 +111,26 @@ int postProcessing(string inputString,
 		   string crabExt,
 		   string inputPU,
 		   string PUvar,
-		   bool applyJSON)
+		   bool applyJSON,
+		   bool doSilver)
 {
   
   //bool applyJSON=true;
-  const char* json_file = "goodruns.txt";
+  const char* goldenjson_file = "goodruns_golden.txt";
+  const char* silverjson_file = "goodruns_silver.txt";
+
+  GoodRun golden;
+  GoodRun silver;
 
   if (applyJSON) {
     //cout << gSystem->pwd() << endl;
     //gSystem->Load("goodrun_cc");
-    cout << "Loading json file: " << json_file << endl;
-    set_goodrun_file(json_file);
+    cout << "Loading golden json file: " << goldenjson_file << endl;
+    golden.set_goodrun_file(goldenjson_file);
+    if (doSilver) {
+      cout << "Loading silver json file: " << silverjson_file << endl;
+      silver.set_goodrun_file(silverjson_file);
+    }
   }
 
   TChain* chain = new TChain(treeName.c_str());
@@ -301,6 +311,7 @@ int postProcessing(string inputString,
   float scale1fb;
   float puWeight;
   int isGolden;
+  int isSilver;
 
   if( isData ){
     
@@ -342,6 +353,7 @@ int postProcessing(string inputString,
   TBranch* b10 = clone->Branch("evt_id", &id, "evt_id/I");
   TBranch* b11 = clone->Branch("puWeight", &puWeight, "puWeight/F");
   TBranch* b12 = clone->Branch("isGolden", &isGolden, "isGolden/I");
+  TBranch* b13 = clone->Branch("isSilver", &isSilver, "isSilver/I");
   
   for(Long64_t i = 0; i < (Long64_t) nEventsTree; i++) {
     
@@ -362,8 +374,10 @@ int postProcessing(string inputString,
 
     }
 
-    if( applyJSON && isData && !goodrun(run, lumi) ) isGolden=0;
+    if( applyJSON && isData && !golden.goodrun(run, lumi) ) isGolden=0;
     else isGolden=1;
+    if( applyJSON && doSilver && isData && !silver.goodrun(run, lumi) ) isSilver=0;
+    else isSilver=1;
 
     b1->Fill();
     b2->Fill();
@@ -377,6 +391,7 @@ int postProcessing(string inputString,
     b10->Fill();
     b11->Fill();
     b12->Fill();
+    b13->Fill();
     
   }
   //-------------------------------------------------------------
