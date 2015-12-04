@@ -15,8 +15,9 @@ PUvar="nVert"
 #GoldenJSON="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-258750_13TeV_PromptReco_Collisions15_25ns_JSON.txt"
 #GoldenJSON="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-260426_13TeV_PromptReco_Collisions15_25ns_JSON.txt"
 GoldenJSON="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt"
-#GoldenJSON="/afs/cern.ch/user/g/gzevi/public/Cert_246908-256869_13TeV_PromptReco_Collisions15_25ns_JSON_Photon.txt"
+SilverJSON="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON_Silver.txt"
 applyJSON=1
+doSilver=1
 doFilterTxt=1
 # --------------------------
 
@@ -69,9 +70,11 @@ else
     mkdir  $jobsLogsFolder
 fi
 
-python $PWD/convertGoodRunsList_JSON.py $GoldenJSON >& goodruns.txt
+python $PWD/convertGoodRunsList_JSON.py $GoldenJSON >& goodruns_golden.txt
+python $PWD/convertGoodRunsList_JSON.py $SilverJSON >& goodruns_silver.txt
 gfal-mkdir -p srm://t3se01.psi.ch/$outputFolder 
 gfal-copy file://$GoldenJSON srm://t3se01.psi.ch/$outputFolder/ 
+gfal-copy file://$SilverJSON srm://t3se01.psi.ch/$outputFolder/ 
 
 echo "Location of log files is: " $jobsLogsFolder
 echo "Location of final files on SE is: " $outputFolder
@@ -99,7 +102,9 @@ do
 
     if [[ $id -lt 10 && $doFilterTxt == 1 ]]; then
 	# this is the merged (and duplicate removed) file including Nov15 txts and Oct 15 txts for all datasets
-	filterTxt=/shome/casal/eventlist_Nov14/filter_cscNov15_ecalscnNov15_cscOct15_sortu.txt
+	#filterTxt=/shome/casal/eventlist_Nov14/filter_cscNov15_ecalscnNov15_cscOct15_sortu.txt
+	# latest one from december
+	filterTxt=/shome/casal/eventlist_Dec4/allfilters_Dec01.txt
 	outputFilteredFile=${workingFolder}/${name}_filtered$fileExt;
     fi;
     
@@ -145,7 +150,7 @@ echo "postProcessing(\"$name\",\"$inputFolder\",\"$outputFile\",\"$treeName\",$f
 ### Uncomment for ROOT v5
 #echo "gSystem->Load(\"goodrun_cc\"); gROOT->LoadMacro(\"postProcessing.C\"); postProcessing(\"$name\",\"$inputFolder\",\"$outputFile\",\"$treeName\",$filter,$kfactor,$xsec,$id,\"$crabExt\",\"$inputPU\",\"$PUvar\",$applyJSON); gSystem->Exit(0);" |root.exe -b -l ;
 ### Comment for ROOT v5
-echo "gROOT->LoadMacro(\"postProcessing.C\"); postProcessing(\"$name\",\"$inputFolder\",\"$outputFile\",\"$treeName\",$filter,$kfactor,$xsec,$id,\"$crabExt\",\"$inputPU\",\"$PUvar\",$applyJSON); gSystem->Exit(0);" |root.exe -b -l ;
+echo "gROOT->LoadMacro(\"postProcessing.C\"); postProcessing(\"$name\",\"$inputFolder\",\"$outputFile\",\"$treeName\",$filter,$kfactor,$xsec,$id,\"$crabExt\",\"$inputPU\",\"$PUvar\",$applyJSON,$doSilver); gSystem->Exit(0);" |root.exe -b -l ;
 
 if [[ $id -lt 10 && $doFilterTxt == 1 ]]; then 
    echo "filterFromTxt(\"$filterTxt\",\"$outputFile\",1,\"$outputFilteredFile\",\"mt2\",\"\")"
