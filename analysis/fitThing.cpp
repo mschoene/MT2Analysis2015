@@ -20,7 +20,7 @@
 #include "RooPlot.h"
 
 #include "TCanvas.h"
-#include "TAxis.h"
+#include "TRandom3.h"
 #include "TH2D.h"
 #include "TH1D.h"
 #include "TGraphAsymmErrors.h"
@@ -38,11 +38,26 @@ using namespace RooFit;
 RooRealVar* x = new RooRealVar( "x", "", 400., 1000. ); //global var - fuck it
 
 
-void fitDataset( RooDataSet* data );
-RooDataSet* getDataset( TFile* file, const std::string& name );
+RooDataSet* getDataset( TTree* tree, const std::string& name, int nJetMin, int nJetMax );
+void fitDataset( const std::string& outdir, ofstream& ofs, RooDataSet* data );
 
 
-int main() {
+
+int main( int argc, char* argv[] ) {
+
+
+  int nJetMin=2;
+  int nJetMax=100;
+  if( argc>1 ) {
+    std::string nJetMin_str(argv[1]);
+    nJetMin = atoi(nJetMin_str.c_str());
+  }
+  if( argc>2 ) {
+    std::string nJetMax_str(argv[2]);
+    nJetMax = atoi(nJetMax_str.c_str());
+  }
+
+
 
   MT2DrawTools::setStyle();
 
@@ -50,25 +65,32 @@ int main() {
   TFile* fileMM = new TFile("selEventsMM.root");
   TFile* fileEEMM = new TFile("selEventsEEMM.root");
 
-  RooDataSet* dataEE_j23  = getDataset(fileEE  , "ee_j23"  , 2, 3);
-  RooDataSet* dataMM_j23  = getDataset(fileMM  , "mm_j23"  , 2, 3);
-  RooDataSet* dataEEMM_j23= getDataset(fileEEMM, "eemm_j23", 2, 3);
+  TTree* treeEE   = (TTree*)fileEE  ->Get("mt2");
+  TTree* treeMM   = (TTree*)fileMM  ->Get("mt2");
+  TTree* treeEEMM = (TTree*)fileEEMM->Get("mt2");
 
-  RooDataSet* dataEE_j2   = getDataset(fileEE  , "ee_j2"  , 2, 2);
-  RooDataSet* dataMM_j2   = getDataset(fileMM  , "mm_j2"  , 2, 2);
-  RooDataSet* dataEEMM_j2 = getDataset(fileEEMM, "eemm_j2", 2, 2);
+  RooDataSet* dataEE  = getDataset(treeEE  , "ee"  , nJetMin, nJetMax);
+  RooDataSet* dataMM  = getDataset(treeMM  , "mm"  , nJetMin, nJetMax);
+  RooDataSet* dataEEMM= getDataset(treeEEMM, "eemm", nJetMin, nJetMax);
 
-  ofstream ofs("logThing.log");
 
-  fitDataset( ofs, dataEE_j23  );
-  fitDataset( ofs, dataMM_j23  );
-  fitDataset( ofs, dataEEMM_j23);
+  std::string outdir;
+  if( nJetMax>=0 ) 
+    outdir = std::string(Form("thing_nJ%d%d", nJetMin, nJetMax));
+  else
+    outdir = std::string(Form("thing_nJ%dInf", nJetMin));
+  system( Form("mkdir -p %s", outdir.c_str()) );
 
-  fitDataset( ofs, dataEE_j2  );
-  fitDataset( ofs, dataMM_j2  );
-  fitDataset( ofs, dataEEMM_j2);
+  std::ofstream ofs(Form("%s/log.log", outdir.c_str()) );
 
-  ofs.close();
+  fitDataset( outdir, ofs, dataEE  );
+  fitDataset( outdir, ofs, dataMM  );
+  fitDataset( outdir, ofs, dataEEMM);
+
+  //fitDataset( dataEE_j2  );
+  //fitDataset( dataMM_j2  );
+  //fitDataset( dataEEMM_j2);
+
 
   return 0;
 
@@ -76,11 +98,10 @@ int main() {
 
 
 
-RooDataSet* getDataset( TFile* file, const std::string& name, int nJetMin, int nJetMax ) {
+RooDataSet* getDataset( TTree* tree, const std::string& name, int nJetMin, int nJetMax ) {
 
 
-
-  TTree* tree = (TTree*)file->Get("mt2");
+  //TTree* tree = (TTree*)file->Get("mt2");
 
   MT2Tree myTree;
   myTree.Init(tree);
@@ -109,6 +130,8 @@ RooDataSet* getDataset( TFile* file, const std::string& name, int nJetMin, int n
     if( abs(myTree.lep_pdgId[1])==11 ) 
       if( !(myTree.lep_tightId[1]>0) ) continue;
 
+    //if( myTree.lep_pdgId[0]!=myTree.lep_pdgId[1] ) continue;
+
     TLorentzVector dilep = lep0 + lep1;
     float mll = dilep.M();
 
@@ -131,7 +154,8 @@ RooDataSet* getDataset( TFile* file, const std::string& name, int nJetMin, int n
     int nJets = jets.size();
     int nBJets = bjets.size();
 
-    bool jetsOK = nJets>=nJetMin && nJets<=nJetMax;
+    bool jetsOK = nJets>=nJetMin;
+    if( nJetMax>=nJetMin ) jetsOK = jetsOK && nJets<=nJetMax;
 
     if( !jetsOK ) continue;
     if( nBJets!=0 ) continue;
@@ -149,7 +173,7 @@ RooDataSet* getDataset( TFile* file, const std::string& name, int nJetMin, int n
 
 
 
-void fitDataset( ofstream ofs, RooDataSet* data ) {
+void fitDataset( const std::string& outdir, ofstream& ofs, RooDataSet* data ) {
 
 
   ofs << "fit: " << data->GetName() << std::endl;
@@ -194,8 +218,8 @@ void fitDataset( ofstream ofs, RooDataSet* data ) {
   TPaveText* labelTop = MT2DrawTools::getLabelTop(2.1);
   labelTop->Draw("same");
 
-  c1->SaveAs(Form("thingFit_%s.eps", data->GetName()));
-  c1->SaveAs(Form("thingFit_%s.pdf", data->GetName()));
+  c1->SaveAs(Form("%s/fit_%s.eps", outdir.c_str(), data->GetName()));
+  c1->SaveAs(Form("%s/fit_%s.pdf", outdir.c_str(), data->GetName()));
 
 
 
@@ -204,13 +228,46 @@ void fitDataset( ofstream ofs, RooDataSet* data ) {
   x->setRange("sigregion", xMin_int, xMax_int);
   //x->setRange("sigregion", sigmean.getVal()-2.*sigwidth.getVal(), sigmean.getVal()+2.*sigwidth.getVal());
   
+  Double_t obs    = data->sumEntries(Form("x<%f && x>%f", xMin_int, xMax_int));
   RooAbsReal* intSig = gauss.createIntegral(*x,NormSet(*x),Range("sigregion")) ;
   RooAbsReal* intBkg = expo .createIntegral(*x,NormSet(*x),Range("sigregion")) ;
   ofs << "  signal  = " << intSig->getVal()*nsig.getVal() << std::endl; // " (+" << intSig->getErrorHi()*nsig.getVal() << ")(-" << intSig->getErrorLo()*nsig.getVal() << std::endl ;
-  ofs << "  bkg     = " << intBkg->getVal()*nbkg.getVal() << std::endl; // " (+" << intBkg->getErrorHi()*nbkg.getVal() << ")(-" << intBkg->getErrorLo()*nbkg.getVal() << std::endl ;
-  ofs << "  sigmean = " << sigmean->getVal() << " +- " << sigmean.getError()  << std::endl
-  ofs << "  sigwidth = " << sigwidth->getVal() << " +- " << sigwidth.getError()  << std::endl
 
+  double bgMean = intBkg->getVal()*nbkg.getVal();
+  double bgErr = intBkg->getVal()*nbkg.getError();
+  ofs << "  bkg     = " << bgMean << " +- " << bgErr << std::endl;
+  ofs << "  sigmean = " << sigmean.getVal() << " +- " << sigmean.getError()  << std::endl;
+  ofs << "  sigwidth = " << sigwidth.getVal() << " +- " << sigwidth.getError()  << std::endl;
+
+  
+  TRandom3 randGen;//(int(obs));
+
+  unsigned int counterN(0);
+  unsigned int counterD(0);
+
+
+  bool doLeft = obs<=bgMean;
+
+  for(int i=0; i<1e6; i++){
+    double meanShift = randGen.Gaus(0.,bgErr);
+    //cout << "meanShift: " << meanShift << endl;
+    double rand = randGen.Poisson(bgMean+meanShift); counterD++;
+
+    if(doLeft) 
+      {if(rand<=obs) counterN++;}
+    else{
+      if(rand>=obs) counterN++;
+    }
+
+    //cout << "rand " << i << " : " << rand.Poisson(bgMean) << endl;
+
+  }
+  
+  double prob=1.0*counterN/counterD;
+  double significance  = TMath::NormQuantile(1-prob);
+
+  ofs << "  probability: " << prob  << std::endl;
+  ofs << "  significance: " << significance << std::endl;
 
 
   delete c1;
