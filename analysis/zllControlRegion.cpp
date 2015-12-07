@@ -380,7 +380,11 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
     Double_t weight_lep1 = 1.;
     Double_t weight_lep_err = 1.;
 
+
+
     if( !myTree.isData ){ //temporarily scaling by hand the cross sections
+      weight *= myTree.weight_btagsf;
+
       if( myTree.evt_id == 702) weight = weight * 1.0573;
       if( myTree.evt_id == 703) weight = weight * 0.9588;
       if( myTree.evt_id == 704) weight = weight * 1.0329;
