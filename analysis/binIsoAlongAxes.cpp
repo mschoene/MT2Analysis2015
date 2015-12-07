@@ -40,6 +40,15 @@ int main( int argc, char* argv[] ) {
   MT2Analysis<MT2EstimateTree>* mc   = MT2Analysis<MT2EstimateTree>::readFromFile(mcFile, "gammaCRtree_loose");
   MT2Analysis<MT2EstimateTree>* data = MT2Analysis<MT2EstimateTree>::readFromFile(dataFile, "gammaCRtree_loose");
 
+  Double_t bins_central[] = {200,3000};
+  int size_central = sizeof(bins_central)/sizeof(double)-1;
+
+  MT2Analysis<MT2EstimateZinvGamma>* mc_central = MT2EstimateZinvGamma::makeInclusiveAnalysisFromInclusiveTree( "iso_central", data, cfg.regionsSet() , "nJets>1" , "ht" , size_central, bins_central ); 
+  std::string outFile_central = cfg.getGammaCRdir() + "/iso_central.root";
+  mc_central->writeToFile(outFile_central, "recreate");
+
+
+
   Double_t bins_ht[] = {200,450, 575, 1000, 1500,3000};
   int size_ht = sizeof(bins_ht)/sizeof(double)-1;
   Double_t bins_njets[] = {2,4,7,12};
@@ -49,7 +58,7 @@ int main( int argc, char* argv[] ) {
   Double_t bins_mono_nbjets[] = { 0, 1, 2};
   int size_mono_nbjets = sizeof(bins_mono_nbjets)/sizeof(double)-1;
 
-  Double_t bins_mono_ht[] = {200,250,350,450, 575, 1000, 1500,3000};
+  Double_t bins_mono_ht[] = {200,250,350,450, 575, 700, 1000, 1500};
   int size_mono_ht = sizeof(bins_mono_ht)/sizeof(double)-1;
 
   Double_t bins_mt2[] = { 200, 1500};
