@@ -118,6 +118,9 @@ int main( int argc, char* argv[] ) {
     */
 
     //INCLUSIVE
+    doAllPurityPlots( cfg, mc_or_data, "purityLoose", "mono_ht","H_{T} (Photon Removed) [GeV]", "#geq1j, #geq0b" ); 
+    doAllPurityPlots( cfg, mc_or_data, "purity", "mono_ht", "H_{T} (Photon Removed) [GeV]", "#geq1j, #geq0b" ); 
+
     doAllPurityPlots( cfg, mc_or_data, "purityLoose", "incl_ht","H_{T} (Photon Removed) [GeV]", "#geq1j, #geq0b" ); 
     doAllPurityPlots( cfg, mc_or_data, "purity", "incl_ht", "H_{T} (Photon Removed) [GeV]", "#geq1j, #geq0b" ); 
 
@@ -201,6 +204,9 @@ void doAllPurityPlots( const MT2Config& cfg, const std::string& mc_or_data, cons
 
     TPaveText* labelTop = MT2DrawTools::getLabelTop(cfg.lumi());
     labelTop->Draw("same");
+
+    TPaveText* labelCMS = MT2DrawTools::getLabelCMS();
+    labelCMS->Draw("same");
 
 
     gr_purityMC->Draw("p same");
@@ -446,6 +452,9 @@ void compareRegions( const std::string& outputdir, std::vector<MT2Region> region
 
   TPaveText* labelTop = MT2DrawTools::getLabelTop();
   labelTop->Draw("same");
+
+  TPaveText* labelCMS = MT2DrawTools::getLabelCMS();
+  labelCMS->Draw("same");
 
   gPad->RedrawAxis();
 

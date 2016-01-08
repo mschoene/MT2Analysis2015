@@ -55,6 +55,7 @@ class MT2DrawTools {
   static TStyle* setStyle();
 
   static TPaveText* getLabelTop( float lumi );
+  static TPaveText* getLabelCMS( const std::string& text="CMS" );
   static TPaveText* getLabelTopSimulation( float lumi );
   static TPaveText* getLabelTop( const std::string& text="CMS Preliminary, #sqrt{s} = 13 TeV" );
   static TPaveText* getLabelTopSimulation( const std::string& text="CMS Simulation, #sqrt{s} = 13 TeV" );
