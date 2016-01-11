@@ -63,11 +63,13 @@ class MT2EstimateTree : public MT2Estimate {
 //  float GenSusyMScan1;
 //  float GenSusyMScan2;
 
-//  float LHEweight_original;
-//  int LHEweight_id[446];
-//  float LHEweight_wgt[446];
-  
+//  float weight_isr;
+//  float weight_scales[111];
 
+//  float LHEweight_original;
+//  int LHEweight_id[111];
+//  float LHEweight_wgt[111];
+  
   //std::map< std::string, size_t > extraVars;
   std::map< std::string, float* > extraVars;
  

@@ -71,8 +71,8 @@ computeZinvFromGamma: computeZinvFromGamma.cpp MT2Region.o MT2Sample.o MT2Estima
 computeZinv2b: computeZinv2b.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateTree.o MT2EstimateSyst.o MT2Config.o MT2DrawTools.o
 	$(CC) -Wall $(INCLUDES) -o computeZinv2b computeZinv2b.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateTree.o MT2EstimateSyst.o MT2Config.o MT2DrawTools.o $(ROOTFLAG) $(EXTRALIBS)
 
-regionEventYields: regionEventYields.cpp MT2Region.o MT2Sample.o MT2EstimateTree.o MT2Estimate.o MT2DrawTools.o MT2Config.o
-	$(CC) -Wall $(INCLUDES) -o regionEventYields regionEventYields.cpp MT2Region.o MT2Sample.o MT2EstimateTree.o MT2Estimate.o MT2DrawTools.o MT2Config.o $(ROOTFLAG) $(EXTRALIBS) -fpermissive
+regionEventYields: regionEventYields.cpp MT2Region.o MT2Sample.o MT2EstimateSigSyst.o MT2EstimateTree.o MT2Estimate.o MT2DrawTools.o MT2Config.o
+	$(CC) -Wall $(INCLUDES) -o regionEventYields regionEventYields.cpp MT2Region.o MT2Sample.o MT2EstimateSigSyst.o MT2EstimateTree.o MT2Estimate.o MT2DrawTools.o MT2Config.o $(ROOTFLAG) $(EXTRALIBS) -fpermissive
 
 regionEventYields_scales: regionEventYields_scales.cpp MT2Region.o MT2Sample.o MT2EstimateTree.o MT2Estimate.o MT2DrawTools.o MT2Config.o
 	$(CC) -Wall $(INCLUDES) -o regionEventYields_scales regionEventYields_scales.cpp MT2Region.o MT2Sample.o MT2EstimateTree.o MT2Estimate.o MT2DrawTools.o MT2Config.o $(ROOTFLAG) $(EXTRALIBS) -fpermissive
@@ -80,8 +80,14 @@ regionEventYields_scales: regionEventYields_scales.cpp MT2Region.o MT2Sample.o M
 scalesVariation_xsec: scalesVariation_xsec.cpp MT2Region.o MT2Sample.o MT2EstimateTree.o MT2Estimate.o MT2DrawTools.o MT2Config.o
 	$(CC) -Wall $(INCLUDES) -o scalesVariation_xsec scalesVariation_xsec.cpp MT2Region.o MT2Sample.o MT2EstimateTree.o MT2Estimate.o MT2DrawTools.o MT2Config.o $(ROOTFLAG) $(EXTRALIBS) -fpermissive
 
+scalesVariation_isr: scalesVariation_isr.cpp MT2Region.o MT2Sample.o MT2EstimateTree.o MT2Estimate.o MT2DrawTools.o MT2Config.o
+	$(CC) -Wall $(INCLUDES) -o scalesVariation_isr scalesVariation_isr.cpp MT2Region.o MT2Sample.o MT2EstimateTree.o MT2Estimate.o MT2DrawTools.o MT2Config.o $(ROOTFLAG) $(EXTRALIBS) -fpermissive
+
 scalesVariation_muFmuR: scalesVariation_muFmuR.cpp MT2Region.o MT2Sample.o MT2EstimateTree.o MT2Estimate.o MT2DrawTools.o MT2Config.o
 	$(CC) -Wall $(INCLUDES) -o scalesVariation_muFmuR scalesVariation_muFmuR.cpp MT2Region.o MT2Sample.o MT2EstimateTree.o MT2Estimate.o MT2DrawTools.o MT2Config.o $(ROOTFLAG) $(EXTRALIBS) -fpermissive
+
+scalesVariation_muFmuR_signal: scalesVariation_muFmuR_signal.cpp MT2Region.o MT2Sample.o MT2EstimateTree.o MT2Estimate.o MT2DrawTools.o MT2Config.o
+	$(CC) -Wall $(INCLUDES) -o scalesVariation_muFmuR_signal scalesVariation_muFmuR_signal.cpp MT2Region.o MT2Sample.o MT2EstimateTree.o MT2Estimate.o MT2DrawTools.o MT2Config.o $(ROOTFLAG) $(EXTRALIBS) -fpermissive
 
 scalesVariation_muFmuR_relativeF: scalesVariation_muFmuR_relativeF.cpp MT2Region.o MT2Sample.o MT2EstimateTree.o MT2Estimate.o MT2DrawTools.o MT2Config.o
 	$(CC) -Wall $(INCLUDES) -o scalesVariation_muFmuR_relativeF scalesVariation_muFmuR_relativeF.cpp MT2Region.o MT2Sample.o MT2EstimateTree.o MT2Estimate.o MT2DrawTools.o MT2Config.o $(ROOTFLAG) $(EXTRALIBS) -fpermissive
@@ -91,6 +97,9 @@ scalesVariation_muFmuR_TF: scalesVariation_muFmuR_TF.cpp MT2Region.o MT2Sample.o
 
 scalesVariation_pdfEnvelope: scalesVariation_pdfEnvelope.cpp MT2Region.o MT2Sample.o MT2EstimateTree.o MT2Estimate.o MT2DrawTools.o MT2Config.o
 	$(CC) -Wall $(INCLUDES) -o scalesVariation_pdfEnvelope scalesVariation_pdfEnvelope.cpp MT2Region.o MT2Sample.o MT2EstimateTree.o MT2Estimate.o MT2DrawTools.o MT2Config.o $(ROOTFLAG) $(EXTRALIBS) -fpermissive
+
+scalesVariation_pdfEnvelope_signal: scalesVariation_pdfEnvelope_signal.cpp MT2Region.o MT2Sample.o MT2EstimateTree.o MT2Estimate.o MT2DrawTools.o MT2Config.o
+	$(CC) -Wall $(INCLUDES) -o scalesVariation_pdfEnvelope_signal scalesVariation_pdfEnvelope_signal.cpp MT2Region.o MT2Sample.o MT2EstimateTree.o MT2Estimate.o MT2DrawTools.o MT2Config.o $(ROOTFLAG) $(EXTRALIBS) -fpermissive
 
 scalesVariation_pdfEnvelope_TF: scalesVariation_pdfEnvelope_TF.cpp MT2Region.o MT2Sample.o MT2EstimateTree.o MT2Estimate.o MT2DrawTools.o MT2Config.o
 	$(CC) -Wall $(INCLUDES) -o scalesVariation_pdfEnvelope_TF scalesVariation_pdfEnvelope_TF.cpp MT2Region.o MT2Sample.o MT2EstimateTree.o MT2Estimate.o MT2DrawTools.o MT2Config.o $(ROOTFLAG) $(EXTRALIBS) -fpermissive
