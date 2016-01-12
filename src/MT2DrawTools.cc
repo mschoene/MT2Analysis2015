@@ -217,15 +217,16 @@ std::string MT2DrawTools::getLumiText( float lumi ) {
 }
 
 
-
 TPaveText* MT2DrawTools::getLabelTop( float lumi ) {
 
   char text[300];
-  sprintf( text, "CMS Preliminary, %s at #sqrt{s} = 13 TeV", getLumiText(lumi).c_str() );
+  sprintf( text, "%s (13 TeV)", getLumiText(lumi).c_str() );
+  //  sprintf( text, "CMS Preliminary, %s at #sqrt{s} = 13 TeV", getLumiText(lumi).c_str() );
   std::string text_str(text);
   return getLabelTop(text_str);
 
 }
+
 
 TPaveText* MT2DrawTools::getLabelTopSimulation( float lumi ) {
 
@@ -236,21 +237,21 @@ TPaveText* MT2DrawTools::getLabelTopSimulation( float lumi ) {
 
 }
 
-
-
 TPaveText* MT2DrawTools::getLabelTop( const std::string& text ) {
 
-  TPaveText* label_top = new TPaveText(0.4,0.953,0.975,0.975, "brNDC");
+  TPaveText* label_top = new TPaveText(0.4,0.959,0.975,0.963, "brNDC");
+  //  TPaveText* label_top = new TPaveText(0.4,0.953,0.975,0.975, "brNDC");
   label_top->SetBorderSize(0);
   label_top->SetFillColor(kWhite);
   label_top->SetTextSize(0.038);
   label_top->SetTextAlign(31); // align right
-  label_top->SetTextFont(62);
+  label_top->SetTextFont(42);  // label_top->SetTextFont(62);
   label_top->AddText(text.c_str());
 
   return label_top;
 
 }
+
 
 TPaveText* MT2DrawTools::getLabelTopSimulation( const std::string& text ) {
 
@@ -263,6 +264,21 @@ TPaveText* MT2DrawTools::getLabelTopSimulation( const std::string& text ) {
   label_top->AddText(text.c_str());
 
   return label_top;
+
+}
+
+
+TPaveText* MT2DrawTools::getLabelCMS( const std::string& text ) {
+
+  TPaveText* label_cms = new TPaveText(0.143,0.96,0.27,0.965, "brNDC");
+  label_cms->SetBorderSize(0);
+  label_cms->SetFillColor(kWhite);
+  label_cms->SetTextSize(0.042);
+  label_cms->SetTextAlign(11); // align left
+  label_cms->SetTextFont(61);
+  label_cms->AddText( text.c_str() );
+
+  return label_cms;
 
 }
 
