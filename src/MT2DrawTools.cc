@@ -283,6 +283,25 @@ TPaveText* MT2DrawTools::getLabelCMS( const std::string& text ) {
 }
 
 
+
+void MT2DrawTools::addLabels( TCanvas* c1, float lumi, bool doPaper, const std::string& specialText  ) {
+
+  c1->cd();
+  TPaveText* labelTop = MT2DrawTools::getLabelTop( lumi );
+  labelTop->Draw("same");
+  std::string text = "CMS Preliminary";
+  if( doPaper==1 ) 
+    text = "CMS";
+  else text = specialText;
+  TPaveText* labelCMS = MT2DrawTools::getLabelCMS( text.c_str() );
+  labelCMS->Draw("same");
+
+}
+
+
+
+
+
 TGraphAsymmErrors* MT2DrawTools::getPoissonGraph( TH1D* histo, bool drawZeros, const std::string& xerrType, float nSigma ) {
 
 
