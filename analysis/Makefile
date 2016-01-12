@@ -107,8 +107,8 @@ inclusivePlots: inclusivePlots.cpp MT2Region.o MT2Estimate.o MT2DrawTools.o MT2E
 prova: prova.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateSyst.o
 	$(CC) -Wall $(INCLUDES) -o prova prova.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateSyst.o $(ROOTFLAG) $(EXTRALIBS)
 
-provaRead: provaRead.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateSyst.o
-	$(CC) -Wall $(INCLUDES) -o provaRead provaRead.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateSyst.o $(ROOTFLAG) $(EXTRALIBS)
+provaRead: provaRead.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateSigSyst.o 
+	$(CC) -Wall $(INCLUDES) -o provaRead provaRead.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateSigSyst.o $(ROOTFLAG) $(EXTRALIBS)
 
 
 printYield: printYield.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateSyst.o MT2DrawTools.o
@@ -245,6 +245,10 @@ printPurity: printPurity.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateZi
 
 printLatexBGTable: printLatexBGTable.cpp MT2Region.o MT2Estimate.o MT2DrawTools.o
 	$(CC) -Wall $(INCLUDES) -o printLatexBGTable printLatexBGTable.cpp MT2Region.o MT2Estimate.o MT2DrawTools.o $(ROOTFLAG) $(EXTRALIBS)
+
+printBinning: printBinning.cpp MT2Region.o MT2Estimate.o 
+	$(CC) -Wall $(INCLUDES) -o printBinning printBinning.cpp MT2Region.o MT2Estimate.o $(ROOTFLAG) $(EXTRALIBS)
+
 
 
 computeTemplateSyst: computeTemplateSyst.cpp MT2Region.o MT2Estimate.o MT2DrawTools.o
