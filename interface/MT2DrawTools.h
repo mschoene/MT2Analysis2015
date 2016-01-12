@@ -56,7 +56,7 @@ class MT2DrawTools {
 
   static TStyle* setStyle();
 
-  static void addLabels( TCanvas* c1, float lumi, bool doPaper=false, const std::string& specialText="CMS Preliminary");
+  static void addLabels( TCanvas* c1, float lumi, const std::string& text="CMS Preliminary");
 
   static TPaveText* getLabelTop( float lumi );
   static TPaveText* getLabelTopSimulation( float lumi );
