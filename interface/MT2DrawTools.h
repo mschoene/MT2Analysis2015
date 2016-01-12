@@ -50,7 +50,7 @@ class MT2DrawTools {
   void set_mcSF( float mcsf );
   void set_addOverflow( bool addOver );
   void set_displaySF( bool displaySF );
-
+  void set_doPaperPlots( bool doPaperPlots );
 
   bool twoPads() const;
 
@@ -99,7 +99,7 @@ class MT2DrawTools {
   static TH1D* getBand(TF1 *f, TMatrixD const& m, std::string name, bool getRelativeBand=false, int npx=100); 
 
 
-  std::vector<TCanvas*> drawRegionYields_fromTree( const std::string& saveName, const std::string& varName, const std::string& selection, int nBins, float xMin, float xMax, std::string axisName="", const std::string& units="", const std::string& kinCuts="", const std::string& topoCuts="", const std::string topLabelText="CMS Preliminary" );
+  std::vector<TCanvas*> drawRegionYields_fromTree( const std::string& saveName, const std::string& varName, const std::string& selection, int nBins, float xMin, float xMax, std::string axisName="", const std::string& units="", const std::string& kinCuts="", const std::string& topoCuts="" );
   //void drawRegionYields_fromTree( MT2Analysis<MT2EstimateTree>* data, std::vector<MT2Analysis<MT2EstimateTree>* >  bgYields, const std::string& saveName, const std::string& varName, const std::string& selection, int nBins, float xMin, float xMax, std::string axisName="", const std::string& units="", const std::string& cutsLabel="" );
 
  private:
@@ -110,6 +110,7 @@ class MT2DrawTools {
   bool shapeNorm_;
   bool addOverflow_;
   bool displaySF_;
+  bool doPaperPlots_;
 
   MT2Analysis<MT2EstimateTree>* data_;
   std::vector< MT2Analysis<MT2EstimateTree>* >* mc_;

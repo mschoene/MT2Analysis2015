@@ -25,12 +25,15 @@ MT2DrawTools::MT2DrawTools( const std::string& outDir, float lumi ) {
 
   displaySF_ = true;
 
+  doPaperPlots_ = false;
+
   std::cout << "[MT2DrawTools] Initiating: " << std::endl;
   std::cout << "     lumi: " << lumi_ << std::endl;
   std::cout << "     lumiErr: " << lumiErr_ << std::endl;
   std::cout << "     shapeNorm: " << shapeNorm_ << std::endl;
   std::cout << "     mcSF: " << mcSF_ << std::endl;
   std::cout << "     outDir: " << outdir_ << std::endl;
+  std::cout << "     doPaperPlots: " << doPaperPlots_ << std::endl;
 
 }
 
@@ -748,7 +751,7 @@ TH1D* MT2DrawTools::getBand(TF1 *f, TMatrixD const& m, std::string name, bool ge
 
 
 
-std::vector<TCanvas*> MT2DrawTools::drawRegionYields_fromTree( const std::string& saveName, const std::string& varName, const std::string& selection, int nBins, float xMin, float xMax, std::string axisName, const std::string& units, const std::string& kinCuts, const std::string& topoCuts, const std::string topLabelText ) {
+std::vector<TCanvas*> MT2DrawTools::drawRegionYields_fromTree( const std::string& saveName, const std::string& varName, const std::string& selection, int nBins, float xMin, float xMax, std::string axisName, const std::string& units, const std::string& kinCuts, const std::string& topoCuts ) {
 //void MT2DrawTools::drawRegionYields_fromTree( MT2Analysis<MT2EstimateTree>* data, std::vector<MT2Analysis<MT2EstimateTree>* >  bgYields, const std::string& saveName, const std::string& varName, const std::string& selection, int nBins, float xMin, float xMax, std::string axisName, const std::string& units, const std::string& kinCuts ) {
 
 
@@ -1086,6 +1089,8 @@ std::vector<TCanvas*> MT2DrawTools::drawRegionYields_fromTree( const std::string
     
     TH2D* h2_axes_ratio = MT2DrawTools::getRatioAxes( xMin, xMax, yMinR, yMaxR );
 
+    std::string CMStext = doPaperPlots_ ? "CMS" : "CMS Preliminary";
+
     c1->cd();
     if( this->twoPads() )
       pad1->cd();
@@ -1098,7 +1103,9 @@ std::vector<TCanvas*> MT2DrawTools::drawRegionYields_fromTree( const std::string
     if( !shapeNorm_ && fitText )
       fitText->Draw("same");
     //    ratioText->Draw("same");
-    (data_) ? MT2DrawTools::addLabels( (TCanvas*)pad1, lumi_, topLabelText.c_str() ) : MT2DrawTools::addLabels( (TCanvas*)pad1, lumi_, "CMS Simulation"); 
+
+
+    (data_) ? MT2DrawTools::addLabels( (TCanvas*)pad1, lumi_, CMStext.c_str() ) : MT2DrawTools::addLabels( (TCanvas*)pad1, lumi_, "CMS Simulation"); 
 
     gPad->RedrawAxis();
 
@@ -1114,7 +1121,7 @@ std::vector<TCanvas*> MT2DrawTools::drawRegionYields_fromTree( const std::string
     if( !shapeNorm_ && fitText )
       fitText->Draw("same");
     //    ratioText->Draw("same");
-    (data_) ? MT2DrawTools::addLabels( (TCanvas*)pad1, lumi_, topLabelText.c_str() ) : MT2DrawTools::addLabels( (TCanvas*)pad1, lumi_, "CMS Simulation"); 
+    (data_) ? MT2DrawTools::addLabels( (TCanvas*)pad1, lumi_, CMStext.c_str() ) : MT2DrawTools::addLabels( (TCanvas*)pad1, lumi_, "CMS Simulation"); 
 
     gPad->RedrawAxis();
     
