@@ -748,7 +748,7 @@ TH1D* MT2DrawTools::getBand(TF1 *f, TMatrixD const& m, std::string name, bool ge
 
 
 
-std::vector<TCanvas*> MT2DrawTools::drawRegionYields_fromTree( const std::string& saveName, const std::string& varName, const std::string& selection, int nBins, float xMin, float xMax, std::string axisName, const std::string& units, const std::string& kinCuts, const std::string& topoCuts ) {
+std::vector<TCanvas*> MT2DrawTools::drawRegionYields_fromTree( const std::string& saveName, const std::string& varName, const std::string& selection, int nBins, float xMin, float xMax, std::string axisName, const std::string& units, const std::string& kinCuts, const std::string& topoCuts, const std::string topLabelText ) {
 //void MT2DrawTools::drawRegionYields_fromTree( MT2Analysis<MT2EstimateTree>* data, std::vector<MT2Analysis<MT2EstimateTree>* >  bgYields, const std::string& saveName, const std::string& varName, const std::string& selection, int nBins, float xMin, float xMax, std::string axisName, const std::string& units, const std::string& kinCuts ) {
 
 
@@ -1072,7 +1072,7 @@ std::vector<TCanvas*> MT2DrawTools::drawRegionYields_fromTree( const std::string
     if( data_ ) 
       legend->AddEntry( mcBand, "MC Uncert.", "F" );
 
-    TPaveText* labelTop = (data_) ? MT2DrawTools::getLabelTop(lumi_) : MT2DrawTools::getLabelTopSimulation(lumi_);
+   
     
     
     TPaveText* fitText = (fSF) ? MT2DrawTools::getFitText( fSF ) : 0;
@@ -1085,7 +1085,6 @@ std::vector<TCanvas*> MT2DrawTools::drawRegionYields_fromTree( const std::string
     float yMaxR=2.0;
     
     TH2D* h2_axes_ratio = MT2DrawTools::getRatioAxes( xMin, xMax, yMinR, yMaxR );
-    
 
     c1->cd();
     if( this->twoPads() )
@@ -1096,10 +1095,10 @@ std::vector<TCanvas*> MT2DrawTools::drawRegionYields_fromTree( const std::string
       mcBand->Draw("E2 same");
       gr_data->Draw("p same");
     }
-    labelTop->Draw("same");
     if( !shapeNorm_ && fitText )
       fitText->Draw("same");
     //    ratioText->Draw("same");
+    (data_) ? MT2DrawTools::addLabels( (TCanvas*)pad1, lumi_, topLabelText.c_str() ) : MT2DrawTools::addLabels( (TCanvas*)pad1, lumi_, "CMS Simulation"); 
 
     gPad->RedrawAxis();
 
@@ -1112,10 +1111,10 @@ std::vector<TCanvas*> MT2DrawTools::drawRegionYields_fromTree( const std::string
       mcBand->Draw("E2 same");
       gr_data->Draw("p same");
     }
-    labelTop->Draw("same");
     if( !shapeNorm_ && fitText )
       fitText->Draw("same");
     //    ratioText->Draw("same");
+    (data_) ? MT2DrawTools::addLabels( (TCanvas*)pad1, lumi_, topLabelText.c_str() ) : MT2DrawTools::addLabels( (TCanvas*)pad1, lumi_, "CMS Simulation"); 
 
     gPad->RedrawAxis();
     
