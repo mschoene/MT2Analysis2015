@@ -267,6 +267,9 @@ computeTemplateSyst: computeTemplateSyst.cpp MT2Region.o MT2Estimate.o MT2DrawTo
 translate8TeV: translate8TeV.cpp
 	$(CC) -Wall $(INCLUDES) -o translate8TeV translate8TeV.cpp $(ROOTFLAG) $(EXTRALIBS) 
 
+convertSNTtrees: convertSNTtrees.cpp
+	$(CC) -Wall $(INCLUDES) -o convertSNTtrees convertSNTtrees.cpp $(ROOTFLAG) $(EXTRALIBS) 
+
 
 checkGammaSignalContamination: checkGammaSignalContamination.cpp MT2Region.o MT2Estimate.o 
 	$(CC) -Wall $(INCLUDES) -o checkGammaSignalContamination checkGammaSignalContamination.cpp MT2Region.o MT2Estimate.o $(ROOTFLAG) $(EXTRALIBS)
