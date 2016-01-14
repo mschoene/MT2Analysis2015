@@ -4,6 +4,7 @@
 #include "TFile.h"
 #include "TTree.h"
 #include "TChain.h"
+#include "TLorentzVector.h"
 
 
 void convertFiles( const std::string& samplesFile, const std::string& expr, int id, const std::string& outdir="." );
@@ -15,8 +16,15 @@ int main() {
 
   std::string samplesFile = "../samples/samples_Run2015_25nsGolden_fromSnT.dat";
 
-  convertFiles(samplesFile, "DoubleEG"  , 4 );
-  convertFiles(samplesFile, "DoubleMuon", 5 );
+  convertFiles(samplesFile, "JetHT"         , 1);
+  convertFiles(samplesFile, "HTMHT"         , 2);
+  convertFiles(samplesFile, "MET"           , 3);
+  convertFiles(samplesFile, "DoubleEG"      , 4);
+  convertFiles(samplesFile, "DoubleMuon"    , 5);
+  convertFiles(samplesFile, "MuonEG"        , 6);
+  convertFiles(samplesFile, "SinglePhoton"  , 7);
+  convertFiles(samplesFile, "SingleMuon"    , 8);
+  convertFiles(samplesFile, "SingleElectron", 9);
 
   return 0;
 
@@ -27,10 +35,12 @@ void convertFiles( const std::string& samplesFile, const std::string& expr, int 
 
   system( Form("mkdir -p %s", outdir.c_str()) );
 
-  TChain* tree = new TChain("mt2");
+  TChain* tree  = new TChain("mt2"); // this has all branches active: will get HLT/Flag info from this one
+  TChain* tree2 = new TChain("mt2"); // this one has the branches deactivated: this will be cloned (so as to define new float branches)
 
   ifstream ifs(samplesFile);
   char buffer[500];
+  bool foundTrees = false;
 
   while( ifs.getline(buffer, 500, '\n') ) {
 
@@ -44,15 +54,21 @@ void convertFiles( const std::string& samplesFile, const std::string& expr, int 
 
     if( !(sampleFilePath_tstr.Contains(expr)) ) continue;
 
-    tree->Add(sampleFilePath.c_str());
+    tree ->Add(sampleFilePath.c_str());
+    tree2->Add(sampleFilePath.c_str());
     std::cout << "-> Added " << sampleFilePath << std::endl;
+    foundTrees = true;
 
   }
 
-  // disable Flag and HLT as i want to convert to float
-  tree->SetBranchStatus("Flag_*",0);
-  tree->SetBranchStatus("HLT_*",0);
-  tree->SetBranchStatus("evt_id",0);
+  if( !foundTrees ) {
+    std::cout << "-> WARNING!! Didn't find any trees matching: '" << expr << "'! Skipping." << std::endl;
+    return;
+  }
+
+  tree ->SetBranchStatus("evt_id",0);
+  tree2->SetBranchStatus("evt_id",0);
+
 
   Int_t         snt_HLT_PFMET170;
   Int_t         snt_HLT_Photon90_R9Id90_HE10_IsoM;
@@ -171,12 +187,53 @@ void convertFiles( const std::string& samplesFile, const std::string& expr, int 
   tree->SetBranchAddress("Flag_METFilters", &snt_Flag_METFilters, &b_snt_Flag_METFilters);
   tree->SetBranchAddress("Flag_eeBadScFilter", &snt_Flag_eeBadScFilter, &b_snt_Flag_eeBadScFilter);
 
+  tree2->SetBranchStatus("HLT_PFMET170", 0 );
+  tree2->SetBranchStatus("HLT_Photon90_R9Id90_HE10_IsoM", 0 );
+  tree2->SetBranchStatus("HLT_Photon75_R9Id90_HE10_IsoM", 0 );
+  tree2->SetBranchStatus("HLT_Photon120", 0 );
+  tree2->SetBranchStatus("HLT_Photon75", 0 );
+  tree2->SetBranchStatus("HLT_Photon165_HE10", 0 );
+  tree2->SetBranchStatus("HLT_Photon120_R9Id90_HE10_IsoM", 0 );
+  tree2->SetBranchStatus("HLT_Photon90", 0 );
+  tree2->SetBranchStatus("HLT_PFHT350_PFMET100", 0 );
+  tree2->SetBranchStatus("HLT_PFMETNoMu90_PFMHTNoMu90", 0 );
+  tree2->SetBranchStatus("HLT_PFMET90_PFMHT90", 0 );
+  tree2->SetBranchStatus("HLT_PFHT475_Prescale", 0 );
+  tree2->SetBranchStatus("HLT_PFHT350_Prescale", 0 );
+  tree2->SetBranchStatus("HLT_SingleMu", 0 );
+  tree2->SetBranchStatus("HLT_SingleEl", 0 );
+  tree2->SetBranchStatus("HLT_Mu8_EleX", 0 );
+  tree2->SetBranchStatus("HLT_MuX_Ele12", 0 );
+  tree2->SetBranchStatus("HLT_PFHT800", 0 );
+  tree2->SetBranchStatus("HLT_Photon155", 0 );
+  tree2->SetBranchStatus("HLT_PFHT900", 0 );
+  tree2->SetBranchStatus("HLT_Photon175", 0 );
+  tree2->SetBranchStatus("HLT_DiJet", 0 );
+  tree2->SetBranchStatus("HLT_DoubleEl", 0 );
+  tree2->SetBranchStatus("HLT_DoubleMu", 0 );
+  tree2->SetBranchStatus("Flag_EcalDeadCellTriggerPrimitiveFilter", 0 );
+  tree2->SetBranchStatus("Flag_trkPOG_manystripclus53X", 0 );
+  tree2->SetBranchStatus("Flag_ecalLaserCorrFilter", 0 );
+  tree2->SetBranchStatus("Flag_trkPOG_toomanystripclus53X", 0 );
+  tree2->SetBranchStatus("Flag_hcalLaserEventFilter", 0 );
+  tree2->SetBranchStatus("Flag_trkPOG_logErrorTooManyClusters", 0 );
+  tree2->SetBranchStatus("Flag_trkPOGFilters", 0 );
+  tree2->SetBranchStatus("Flag_trackingFailureFilter", 0 );
+  tree2->SetBranchStatus("Flag_CSCTightHaloFilter", 0 );
+  tree2->SetBranchStatus("Flag_HBHENoiseFilter", 0 );
+  tree2->SetBranchStatus("Flag_HBHEIsoNoiseFilter", 0 );
+  tree2->SetBranchStatus("Flag_goodVertices", 0 );
+  tree2->SetBranchStatus("Flag_METFilters", 0 );
+  tree2->SetBranchStatus("Flag_eeBadScFilter", 0 );
 
 
-  TFile* outFile = TFile::Open( Form("%s/%s.root", outdir.c_str(), expr.c_str()), "recreate" );
+
+  std::string outFileName = outdir + "/" + expr;
+  outFileName = outFileName + ".root";
+  TFile* outFile = TFile::Open( outFileName.c_str(), "recreate" );
   outFile->cd();
 
-  TTree* outTree = tree->CloneTree(0);
+  TTree* outTree = tree2->CloneTree(0);
 
 
   Float_t         HLT_PFMET170;
@@ -261,55 +318,57 @@ void convertFiles( const std::string& samplesFile, const std::string& expr, int 
   outTree->Branch("evt_id", &id_branch );
 
 
-  std::cout << " -> Converting..." << std::endl;
+
 
   int nentries = tree->GetEntries();
 
   for( int iEntry=0; iEntry<nentries; ++iEntry ) {
 
     if( iEntry % 100000 == 0 ) std::cout << " Entry: " << iEntry << " / " << nentries << std::endl;
-    tree->GetEntry(iEntry);
+
+    tree ->GetEntry(iEntry);
+    tree2->GetEntry(iEntry);
 
     id_branch = id;
 
-    HLT_PFMET170                            = snt_HLT_PFMET170;
-    HLT_Photon90_R9Id90_HE10_IsoM           = snt_HLT_Photon90_R9Id90_HE10_IsoM;
-    HLT_Photon75_R9Id90_HE10_IsoM           = snt_HLT_Photon75_R9Id90_HE10_IsoM;
-    HLT_Photon120                           = snt_HLT_Photon120;
-    HLT_Photon75                            = snt_HLT_Photon75;
-    HLT_Photon165_HE10                      = snt_HLT_Photon165_HE10;
-    HLT_Photon120_R9Id90_HE10_IsoM          = snt_HLT_Photon120_R9Id90_HE10_IsoM;
-    HLT_Photon90                            = snt_HLT_Photon90;
-    HLT_PFHT350_PFMET100                    = snt_HLT_PFHT350_PFMET100;
-    HLT_PFMETNoMu90_PFMHTNoMu90             = snt_HLT_PFMETNoMu90_PFMHTNoMu90;
-    HLT_PFMET90_PFMHT90                     = snt_HLT_PFMET90_PFMHT90;
-    HLT_PFHT475_Prescale                    = snt_HLT_PFHT475_Prescale;
-    HLT_PFHT350_Prescale                    = snt_HLT_PFHT350_Prescale;
-    HLT_SingleMu                            = snt_HLT_SingleMu;
-    HLT_MuX_Ele12                           = snt_HLT_MuX_Ele12;
-    HLT_Mu8_EleX                            = snt_HLT_Mu8_EleX;
-    HLT_SingleEl                            = snt_HLT_SingleEl;
-    HLT_PFHT800                             = snt_HLT_PFHT800;
-    HLT_Photon155                           = snt_HLT_Photon155;
-    HLT_PFHT900                             = snt_HLT_PFHT900;
-    HLT_Photon175                           = snt_HLT_Photon175;
-    HLT_DiJet                               = snt_HLT_DiJet;
-    HLT_DoubleEl                            = snt_HLT_DoubleEl;
-    HLT_DoubleMu                            = snt_HLT_DoubleMu;
-    Flag_EcalDeadCellTriggerPrimitiveFilter = snt_Flag_EcalDeadCellTriggerPrimitiveFilter;
-    Flag_trkPOG_manystripclus53X            = snt_Flag_trkPOG_manystripclus53X;
-    Flag_ecalLaserCorrFilter                = snt_Flag_ecalLaserCorrFilter;
-    Flag_trkPOG_toomanystripclus53X         = snt_Flag_trkPOG_toomanystripclus53X;
-    Flag_hcalLaserEventFilter               = snt_Flag_hcalLaserEventFilter;
-    Flag_trkPOG_logErrorTooManyClusters     = snt_Flag_trkPOG_logErrorTooManyClusters;
-    Flag_trkPOGFilters                      = snt_Flag_trkPOGFilters;
-    Flag_trackingFailureFilter              = snt_Flag_trackingFailureFilter;
-    Flag_CSCTightHaloFilter                 = snt_Flag_CSCTightHaloFilter;
-    Flag_HBHENoiseFilter                    = snt_Flag_HBHENoiseFilter;
-    Flag_HBHEIsoNoiseFilter                 = snt_Flag_HBHEIsoNoiseFilter;
-    Flag_goodVertices                       = snt_Flag_goodVertices;
-    Flag_METFilters                         = snt_Flag_METFilters;
-    Flag_eeBadScFilter                      = snt_Flag_eeBadScFilter;
+    HLT_PFMET170                            = (float)snt_HLT_PFMET170;
+    HLT_Photon90_R9Id90_HE10_IsoM           = (float)snt_HLT_Photon90_R9Id90_HE10_IsoM;
+    HLT_Photon75_R9Id90_HE10_IsoM           = (float)snt_HLT_Photon75_R9Id90_HE10_IsoM;
+    HLT_Photon120                           = (float)snt_HLT_Photon120;
+    HLT_Photon75                            = (float)snt_HLT_Photon75;
+    HLT_Photon165_HE10                      = (float)snt_HLT_Photon165_HE10;
+    HLT_Photon120_R9Id90_HE10_IsoM          = (float)snt_HLT_Photon120_R9Id90_HE10_IsoM;
+    HLT_Photon90                            = (float)snt_HLT_Photon90;
+    HLT_PFHT350_PFMET100                    = (float)snt_HLT_PFHT350_PFMET100;
+    HLT_PFMETNoMu90_PFMHTNoMu90             = (float)snt_HLT_PFMETNoMu90_PFMHTNoMu90;
+    HLT_PFMET90_PFMHT90                     = (float)snt_HLT_PFMET90_PFMHT90;
+    HLT_PFHT475_Prescale                    = (float)snt_HLT_PFHT475_Prescale;
+    HLT_PFHT350_Prescale                    = (float)snt_HLT_PFHT350_Prescale;
+    HLT_SingleMu                            = (float)snt_HLT_SingleMu;
+    HLT_MuX_Ele12                           = (float)snt_HLT_MuX_Ele12;
+    HLT_Mu8_EleX                            = (float)snt_HLT_Mu8_EleX;
+    HLT_SingleEl                            = (float)snt_HLT_SingleEl;
+    HLT_PFHT800                             = (float)snt_HLT_PFHT800;
+    HLT_Photon155                           = (float)snt_HLT_Photon155;
+    HLT_PFHT900                             = (float)snt_HLT_PFHT900;
+    HLT_Photon175                           = (float)snt_HLT_Photon175;
+    HLT_DiJet                               = (float)snt_HLT_DiJet;
+    HLT_DoubleEl                            = (float)snt_HLT_DoubleEl;
+    HLT_DoubleMu                            = (float)snt_HLT_DoubleMu;
+    Flag_EcalDeadCellTriggerPrimitiveFilter = (float)snt_Flag_EcalDeadCellTriggerPrimitiveFilter;
+    Flag_trkPOG_manystripclus53X            = (float)snt_Flag_trkPOG_manystripclus53X;
+    Flag_ecalLaserCorrFilter                = (float)snt_Flag_ecalLaserCorrFilter;
+    Flag_trkPOG_toomanystripclus53X         = (float)snt_Flag_trkPOG_toomanystripclus53X;
+    Flag_hcalLaserEventFilter               = (float)snt_Flag_hcalLaserEventFilter;
+    Flag_trkPOG_logErrorTooManyClusters     = (float)snt_Flag_trkPOG_logErrorTooManyClusters;
+    Flag_trkPOGFilters                      = (float)snt_Flag_trkPOGFilters;
+    Flag_trackingFailureFilter              = (float)snt_Flag_trackingFailureFilter;
+    Flag_CSCTightHaloFilter                 = (float)snt_Flag_CSCTightHaloFilter;
+    Flag_HBHENoiseFilter                    = (float)snt_Flag_HBHENoiseFilter;
+    Flag_HBHEIsoNoiseFilter                 = (float)snt_Flag_HBHEIsoNoiseFilter;
+    Flag_goodVertices                       = (float)snt_Flag_goodVertices;
+    Flag_METFilters                         = (float)snt_Flag_METFilters;
+    Flag_eeBadScFilter                      = (float)snt_Flag_eeBadScFilter;
 
          
     outTree->Fill();
@@ -319,7 +378,5 @@ void convertFiles( const std::string& samplesFile, const std::string& expr, int 
   outTree->Write();
 
   outFile->Close();
-
-  std::cout << "-> Wrote to file: " << outFile->GetName() << std::endl;
 
 }
