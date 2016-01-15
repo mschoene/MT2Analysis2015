@@ -92,7 +92,7 @@ int main( int argc, char* argv[] ) {
   if( argc>3 ) {
     templateType = std::string(argv[3]); 
     std::cout << std::endl;
-    std::cout << "-> Will disobey the cfg and use templateType = " << argv[2] << std::endl;
+    std::cout << "-> Will disobey the cfg and use templateType = " << argv[3] << std::endl;
     std::cout << std::endl;
   } 
   cfg.set_gammaTemplateType(templateType);
@@ -313,7 +313,6 @@ void fitSinglePurity( const MT2Config& cfg, Purity& loose, Purity& tight, RooRea
     tight.purityErrDown=0.;
     return;
   }
-
 
 
   RooDataHist templPrompt("templPrompt", "", *x, h1_templPrompt);
