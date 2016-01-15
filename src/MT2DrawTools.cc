@@ -1121,7 +1121,7 @@ std::vector<TCanvas*> MT2DrawTools::drawRegionYields_fromTree( const std::string
     if( !shapeNorm_ && fitText )
       fitText->Draw("same");
     //    ratioText->Draw("same");
-    (data_) ? MT2DrawTools::addLabels( (TCanvas*)pad1, lumi_, CMStext.c_str() ) : MT2DrawTools::addLabels( (TCanvas*)pad1, lumi_, "CMS Simulation"); 
+    (data_) ? MT2DrawTools::addLabels( (TCanvas*)pad1_log, lumi_, CMStext.c_str() ) : MT2DrawTools::addLabels( (TCanvas*)pad1_log, lumi_, "CMS Simulation"); 
 
     gPad->RedrawAxis();
     
