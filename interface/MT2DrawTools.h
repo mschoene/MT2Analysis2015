@@ -48,15 +48,20 @@ class MT2DrawTools {
   void set_lumiErr( float lumiErr );
   void set_shapeNorm( bool shapeNorm );
   void set_mcSF( float mcsf );
-
+  void set_addOverflow( bool addOver );
+  void set_displaySF( bool displaySF );
+  void set_doPaperPlots( bool doPaperPlots );
 
   bool twoPads() const;
 
   static TStyle* setStyle();
 
+  static void addLabels( TCanvas* c1, float lumi, const std::string& text="CMS Preliminary");
+
   static TPaveText* getLabelTop( float lumi );
   static TPaveText* getLabelCMS( const std::string& text="CMS" );
   static TPaveText* getLabelTopSimulation( float lumi );
+  static TPaveText* getLabelCMS( const std::string& text="CMS" );
   static TPaveText* getLabelTop( const std::string& text="CMS Preliminary, #sqrt{s} = 13 TeV" );
   static TPaveText* getLabelTopSimulation( const std::string& text="CMS Simulation, #sqrt{s} = 13 TeV" );
 
@@ -104,6 +109,9 @@ class MT2DrawTools {
   float lumi_;
   float lumiErr_;
   bool shapeNorm_;
+  bool addOverflow_;
+  bool displaySF_;
+  bool doPaperPlots_;
 
   MT2Analysis<MT2EstimateTree>* data_;
   std::vector< MT2Analysis<MT2EstimateTree>* >* mc_;

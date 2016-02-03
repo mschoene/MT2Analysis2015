@@ -92,7 +92,7 @@ int main( int argc, char* argv[] ) {
   if( argc>3 ) {
     templateType = std::string(argv[3]); 
     std::cout << std::endl;
-    std::cout << "-> Will disobey the cfg and use templateType = " << argv[2] << std::endl;
+    std::cout << "-> Will disobey the cfg and use templateType = " << argv[3] << std::endl;
     std::cout << std::endl;
   } 
   cfg.set_gammaTemplateType(templateType);
@@ -228,6 +228,7 @@ void makePurity( const MT2Config& cfg, std::string outputdir,MT2Analysis<MT2Esti
     std::string nameTight = thisTightPurity->yield->GetName();
 
 
+
  
 
 
@@ -246,7 +247,6 @@ void makePurity( const MT2Config& cfg, std::string outputdir,MT2Analysis<MT2Esti
     purityLoose->writeToFile( outputdir + "/purityFit_"+var +"data.root" );
     purityTight->addToFile( outputdir + "/purityFit_"+var +"data.root" );
   }
-
 
   return;
 }
@@ -277,7 +277,7 @@ void fitPurity( const MT2Config& cfg, MT2EstimateSyst* purityLoose, MT2EstimateS
 
       purityLoose->yield         ->SetBinContent( ibin, 1.0 );
       purityLoose->yield_systUp  ->SetBinContent( ibin, 1.0 );
-      purityLoose->yield_systDown->SetBinContent( ibin, 0.0 );
+      purityLoose->yield_systDown->SetBinContent( ibin, 0.01 );
 
     }
 
@@ -292,7 +292,7 @@ void fitPurity( const MT2Config& cfg, MT2EstimateSyst* purityLoose, MT2EstimateS
       
       purityTight->yield         ->SetBinContent( ibin, 1.0 );
       purityTight->yield_systUp  ->SetBinContent( ibin, 1.0 );
-      purityTight->yield_systDown->SetBinContent( ibin, 0.0 );  
+      purityTight->yield_systDown->SetBinContent( ibin, 0.01 );  
 
     }
 
@@ -321,7 +321,6 @@ void fitSinglePurity( const MT2Config& cfg, Purity& loose, Purity& tight, RooRea
     tight.purityErrDown=0.;
     return;
   }
-
 
 
   RooDataHist templPrompt("templPrompt", "", *x, h1_templPrompt);

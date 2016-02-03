@@ -22,6 +22,7 @@
 #include "interface/MT2Region.h"
 #include "interface/MT2Analysis.h"
 #include "interface/MT2EstimateTree.h"
+#include "interface/MT2EstimateSigSyst.h"
 #include "interface/MT2DrawTools.h"
 #include "interface/MT2Config.h"
 
@@ -38,7 +39,10 @@
 void randomizePoisson( MT2Analysis<MT2EstimateTree>* data );
 template <class T>
 MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg );
-MT2Analysis<MT2EstimateTree>* mergeYields( std::vector< MT2Analysis<MT2EstimateTree> *> EventYield, const std::string& regionsSet, const std::string& name, int id_min, int id_max=-1, const std::string& legendName="" );
+template <class T>
+MT2Analysis<T>* computeSigYield( const MT2Sample& sample, const MT2Config& cfg );
+template <class T>
+MT2Analysis<T>* mergeYields( std::vector< MT2Analysis<T> *> EventYield, const std::string& regionsSet, const std::string& name, int id_min, int id_max=-1, const std::string& legendName="" );
 int matchPartonToJet( int index, MT2Tree* myTree );
 
 
@@ -99,7 +103,7 @@ int main( int argc, char* argv[] ) {
     std::cout << std::endl << std::endl;
     std::cout << "-> Loading samples from file: " << samplesFileName << std::endl;
 
-    std::vector<MT2Sample> fSamples = MT2Sample::loadSamples(samplesFileName, 100, 999); // not interested in signal here (see later)
+    std::vector<MT2Sample> fSamples = MT2Sample::loadSamples(samplesFileName, 101, 999); // not interested in signal here (see later)
     if( fSamples.size()==0 ) {
       std::cout << "There must be an error: samples is empty!" << std::endl;
       exit(120);
@@ -112,7 +116,6 @@ int main( int argc, char* argv[] ) {
       int this_id = fSamples[i].id;
       if( this_id>=200 && this_id<300 ) continue; // skip GJets
       if( this_id>=700 && this_id<800 ) continue; // skip DY
-      //if( !(this_id>=600 && this_id<700) ) continue; // only Zinv
       EventYield.push_back( computeYield<MT2EstimateTree>( fSamples[i], cfg ));
     }
 
@@ -120,24 +123,25 @@ int main( int argc, char* argv[] ) {
     std::cout << "-> Done looping on samples. Start merging." << std::endl;
 
     std::cout << "     merging Top..." << std::endl;
-    MT2Analysis<MT2EstimateTree>* EventYield_top   = mergeYields( EventYield, cfg.regionsSet(), "Top", 300, 499 ); // ttbar, single top, ttW, ttZ...
+    MT2Analysis<MT2EstimateTree>* EventYield_top   = mergeYields<MT2EstimateTree>( EventYield, cfg.regionsSet(), "Top", 300, 499 ); // ttbar, single top, ttW, ttZ...
     std::cout << "     merging QCD..." << std::endl;
-    MT2Analysis<MT2EstimateTree>* EventYield_qcd   = mergeYields( EventYield, cfg.regionsSet(), "QCD", 100, 199 );
+    MT2Analysis<MT2EstimateTree>* EventYield_qcd   = mergeYields<MT2EstimateTree>( EventYield, cfg.regionsSet(), "QCD", 101, 199 );
     std::cout << "     merging WJets..." << std::endl;
-    MT2Analysis<MT2EstimateTree>* EventYield_wjets = mergeYields( EventYield, cfg.regionsSet(), "WJets", 500, 599, "W+jets" );
+    MT2Analysis<MT2EstimateTree>* EventYield_wjets = mergeYields<MT2EstimateTree>( EventYield, cfg.regionsSet(), "WJets", 500, 599, "W+jets" );
     std::cout << "     merging ZJets..." << std::endl;
-    MT2Analysis<MT2EstimateTree>* EventYield_zjets = mergeYields( EventYield, cfg.regionsSet(), "ZJets", 600, 699, "Z+jets" );
-    //MT2Analysis<MT2EstimateTree>* EventYield_other = mergeYields( EventYield, cfg.regionsSet(), "Diboson", 700, 899, "Other" );
+    MT2Analysis<MT2EstimateTree>* EventYield_zjets = mergeYields<MT2EstimateTree>( EventYield, cfg.regionsSet(), "ZJets", 600, 699, "Z+jets" );
+    
+    //    MT2Analysis<MT2EstimateTree>* EventYield_other = mergeYields<MT2EstimateTree>( EventYield, cfg.regionsSet(), "Other", 700, 999, "Other" );
     std::cout << "-> Done merging." << std::endl;
 
     yields.push_back( EventYield_qcd );
     yields.push_back( EventYield_wjets );
     yields.push_back( EventYield_zjets );
     yields.push_back( EventYield_top );
-    //yields.push_back( EventYield_other );
+    //    yields.push_back( EventYield_other );
 
     if( cfg.dummyAnalysis() ) {
-      MT2Analysis<MT2EstimateTree>* dataYield   = mergeYields( EventYield, cfg.regionsSet(), "data", 100, 699 );
+      MT2Analysis<MT2EstimateTree>* dataYield   = mergeYields<MT2EstimateTree>( EventYield, cfg.regionsSet(), "data", 100, 699 );
       yields.push_back( dataYield );
     } //else {
       //dataYield = new MT2Analysis<MT2EstimateTree>( "data", cfg.regionsSet(), 1 );
@@ -148,7 +152,7 @@ int main( int argc, char* argv[] ) {
 
 
   // load signal samples, if any
-  std::vector< MT2Analysis< MT2EstimateTree>* > signals;
+  std::vector< MT2Analysis< MT2EstimateSigSyst>* > signals;
   if( cfg.mcSamples()!="" && cfg.additionalStuff()!="noSignals" && !onlyData ) {
 
     std::string samplesFileName = "../samples/samples_" + cfg.mcSamples() + ".dat";
@@ -165,8 +169,14 @@ int main( int argc, char* argv[] ) {
     } else {
     
       for( unsigned i=0; i<fSamples.size(); ++i ) 
-        signals.push_back( computeYield<MT2EstimateTree>( fSamples[i], cfg ) );
+        signals.push_back( computeSigYield<MT2EstimateSigSyst>( fSamples[i], cfg ) );
     
+      std::cout << "     merging T1bbbb full scan..." << std::endl;
+      MT2Analysis<MT2EstimateSigSyst>* EventYield_T1bbbb   = mergeYields<MT2EstimateSigSyst>( signals, cfg.regionsSet(), "SMS_T1bbbb_fullScan", 1020, 1020 );
+      std::cout << "-> Done merging." << std::endl;
+
+      signals.push_back( EventYield_T1bbbb );
+
     } // if samples != 0
 
   } // if mc samples
@@ -186,7 +196,13 @@ int main( int argc, char* argv[] ) {
     } else {
 
       for( unsigned i=0; i<fSamples.size(); ++i )
-        signals.push_back( computeYield<MT2EstimateTree>( fSamples[i], cfg ) );
+        signals.push_back( computeSigYield<MT2EstimateSigSyst>( fSamples[i], cfg ) );
+
+      std::cout << "     merging T1bbbb full scan..." << std::endl;
+      MT2Analysis<MT2EstimateSigSyst>* EventYield_T1bbbb   = mergeYields<MT2EstimateSigSyst>( signals, cfg.regionsSet(), "SMS_T1bbbb_fullScan", 1020, 1020 );
+      std::cout << "-> Done merging." << std::endl;
+
+      signals.push_back( EventYield_T1bbbb );
 
     } // if samples != 0
     
@@ -201,7 +217,8 @@ int main( int argc, char* argv[] ) {
     std::cout << "-> Loading data from file: " << samplesFile_data << std::endl;
 
     //    std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, "JetHTMHT"); //, 1, 99 );
-    std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, 1, 3 );
+    //    std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, 1, 3 );
+    std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, -1, 0 );
     if( samples_data.size()==0 ) {
       std::cout << "There must be an error: samples_data is empty!" << std::endl;
       exit(1209);
@@ -214,7 +231,8 @@ int main( int argc, char* argv[] ) {
     MT2Analysis<MT2EstimateTree>* dataYield;
     //dataYield = EventYield_data[0];
     //dataYield->setName("data");
-    dataYield   = mergeYields( EventYield_data, cfg.regionsSet(), "data", 1, 3 );
+    //dataYield   = mergeYields<MT2EstimateTree>( EventYield_data, cfg.regionsSet(), "data", 1, 3 );
+    dataYield   = mergeYields<MT2EstimateTree>( EventYield_data, cfg.regionsSet(), "data", -1, -1 );
 
     yields.push_back( dataYield );
 
@@ -252,6 +270,8 @@ int main( int argc, char* argv[] ) {
 template <class T>
 MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg ) {
 
+  TFile* sigWgtFile = TFile::Open("/scratch/mmasciov/analysisCode_forMerge/analysis/SMS_T1bbbb_scale1fb.root");
+  TH2F* sigWgt = (TH2F*) sigWgtFile->Get("wgt");
 
   std::string regionsSet = cfg.regionsSet();
 
@@ -278,38 +298,43 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg ) {
   MT2Analysis<T>* analysis = new MT2Analysis<T>( sample.sname, regionsSet, sample.id );
   
  
-  if( cfg.additionalStuff()=="qgVars" ) {
-    T::addVar( analysis, "partId0" );
-    T::addVar( analysis, "partId1" );
-    T::addVar( analysis, "partId2" );
-    T::addVar( analysis, "partId3" );
-    T::addVar( analysis, "qgl0" );
-    T::addVar( analysis, "qgl1" );
-    T::addVar( analysis, "qgl2" );
-    T::addVar( analysis, "qgl3" );
-    T::addVar( analysis, "qglProd" );
-    T::addVar( analysis, "qglAve" );
+  if( sample.id < 1000){
+    
+    if( cfg.additionalStuff()=="qgVars" ) {
+      
+      T::addVar( analysis, "partId0" );
+      T::addVar( analysis, "partId1" );
+      T::addVar( analysis, "partId2" );
+      T::addVar( analysis, "partId3" );
+      T::addVar( analysis, "qgl0" );
+      T::addVar( analysis, "qgl1" );
+      T::addVar( analysis, "qgl2" );
+      T::addVar( analysis, "qgl3" );
+      T::addVar( analysis, "qglProd" );
+      T::addVar( analysis, "qglAve" );
+    }
+    
+    if( cfg.additionalStuff()=="hfContent" ) {
+      T::addVar( analysis, "nTrueB" );
+      T::addVar( analysis, "nTrueBJ" );
+      T::addVar( analysis, "nTrueC" );
+    }
+    
+    T::addVar( analysis, "jet1_pt" );
+    T::addVar( analysis, "jet2_pt" );
+    T::addVar( analysis, "mht" );
+    
   }
   
-  if( cfg.additionalStuff()=="hfContent" ) {
-    T::addVar( analysis, "nTrueB" );
-    T::addVar( analysis, "nTrueBJ" );
-    T::addVar( analysis, "nTrueC" );
-  }
-  
-  T::addVar( analysis, "jet1_pt" );
-  T::addVar( analysis, "jet2_pt" );
-  T::addVar( analysis, "mht" );
-
   int nentries = tree->GetEntries();
-
+  
   for( int iEntry=0; iEntry<nentries; ++iEntry ) {
-
+    
     if( iEntry % 50000 == 0 ) std::cout << "    Entry: " << iEntry << " / " << nentries << std::endl;
-
+    
     myTree.GetEntry(iEntry);
     
-    if( myTree.isData && !myTree.isGolden ) continue;
+    //////    if( myTree.isData && !myTree.isGolden ) continue;
 
     if( regionsSet!="13TeV_noCut" )
       if( !myTree.passSelection(cfg.additionalStuff()) ) continue;
@@ -318,26 +343,39 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg ) {
       
 
     float ht   = myTree.ht;
-    //float met  = myTree.met_pt;
+    float met  = myTree.met_pt;
     float minMTBmet = myTree.minMTBMet;
     int njets  = myTree.nJet30;
     int nbjets = myTree.nBJet20;    
     float mt2  = (njets>1) ? myTree.mt2 : ht;
     //float mt2  = myTree.mt2;
     
-    float GenSusyMScan1 = myTree.GenSusyMScan1;
-    float GenSusyMScan2 = myTree.GenSusyMScan2;
+    int GenSusyMScan1 = myTree.GenSusyMGluino;
+    int GenSusyMScan2 = myTree.GenSusyMNeutralino;
     
-    //    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi()*myTree.puWeight;
-    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb;//*cfg.lumi();
-    //    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi();
-    //weight *= myTree.weight_lepsf;
+    //Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi()*myTree.puWeight;
+    //Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb;//*cfg.lumi();
+    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi();
+    Double_t weight_syst = 1.;
+
+    if( myTree.evt_id > 1000 )
+      weight_syst = myTree.weight_isr;
+    
+    float sig_scale1fb=0;
+    if( myTree.evt_id >= 1020  && myTree.evt_id < 2000){ // T1bbbb full scan
+      
+      int thisBinX = sigWgt->GetXaxis()->FindBin( GenSusyMScan1 );
+      int thisBinY = sigWgt->GetYaxis()->FindBin( GenSusyMScan2 );
+      
+      sig_scale1fb = sigWgt->GetBinContent( thisBinX, thisBinY );
+
+      weight = sig_scale1fb*cfg.lumi();
+  
+    }
 
     if( myTree.isData ) {
-
-           if( !myTree.passFilters() ) continue;
-
-	   if( myTree.run < 254231 || myTree.run > 257599 ) continue; //Unblinded data (149/pb)
+      
+      if( !myTree.passFilters() ) continue;
 
     }
 
@@ -349,23 +387,25 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg ) {
       // HTMHT = 2
       // MET   = 3
 
-      if( njets==1 ) {
+    //  if( njets==1 ) {
+    //
+    //    if( !( id==3 && myTree.HLT_PFMETNoMu90_PFMHTNoMu90) ) continue;
+    //
+    //  } else { // njets>=2
+    //
+    //    if( ht>1000. ) {
+    //      if( !( id==1 && myTree.HLT_PFHT800) ) continue;
+    //    } else if( ht>575. ) {
+    //      if( !( id==2 && myTree.HLT_PFHT350_PFMET100 )  ) continue;
+    //    } else if( ht>450. ) {
+    //      if( !( id==2 && myTree.HLT_PFHT350_PFMET100 )  ) continue;
+    //    } else if( ht>200. ) {
+    //      if( !( id==3 && myTree.HLT_PFMETNoMu90_PFMHTNoMu90  )  ) continue;
+    //    }
+    //
+    //  }
 
-        if( !( id==3 && myTree.HLT_PFMET90_PFMHT90) ) continue;
-
-      } else { // njets>=2
-
-        if( ht>1000. ) {
-          if( !( id==1 && myTree.HLT_PFHT800) ) continue;
-        } else if( ht>575. ) {
-          if( !( id==2 && myTree.HLT_PFHT350_PFMET100 )  ) continue;
-        } else if( ht>450. ) {
-          if( !( id==2 && myTree.HLT_PFHT350_PFMET100 )  ) continue;
-        } else if( ht>200. ) {
-          if( !( id==3 && myTree.HLT_PFMET90_PFMHT90  )  ) continue;
-        }
-
-      }
+      if ( !(myTree.HLT_PFMETNoMu90_PFMHTNoMu90 || myTree.HLT_PFHT800 || myTree.HLT_PFHT350_PFMET100) ) continue;
 
     } // if is data
 
@@ -374,138 +414,273 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg ) {
     //T* thisEstimate = analysis->get( ht, njets, nbjets, met, minMTBmet, mt2 );
     if( thisEstimate==0 ) continue;
 
+    if( sample.id < 1000 ){
 
-//    //////QCD
-//    if( ht > 575. && ht < 1000. && mt2 < 300. ) continue;
-//    else if( ht > 1000 && ht < 1500. && mt2 < 300. ) continue;
-//    else if( ht > 1500. && mt2 < 400. ) continue;
-//    //////
+      thisEstimate->assignVar( "jet1_pt",  myTree.jet1_pt );
+      thisEstimate->assignVar( "jet2_pt",  myTree.jet2_pt );
+      thisEstimate->assignVar( "mht",  myTree.mht_pt );
+      
+      if( cfg.additionalStuff()=="qgVars" ) {
+	
+	// initialize
+	thisEstimate->assignVar( "qgl0", -1. );
+	thisEstimate->assignVar( "qgl1", -1. );
+	thisEstimate->assignVar( "qgl2", -1. );
+	thisEstimate->assignVar( "qgl3", -1. );
+	thisEstimate->assignVar( "partId0", 0 );
+	thisEstimate->assignVar( "partId1", 0 );
+	thisEstimate->assignVar( "partId2", 0 );
+	thisEstimate->assignVar( "partId3", 0 );
+	
+	float qglProd = 1.;
+	float qglAve = 0.;
+	int denom = 0;
+	
+	
+	if( njets>0 && fabs(myTree.jet_eta[0])<2.5 ) {
+	  
+	  float qgl0 = myTree.jet_qgl[0];
+	  thisEstimate->assignVar( "qgl0", qgl0 );
+	  qglProd *= qgl0;
+	  qglAve += qgl0;
+	  denom++;
+	  thisEstimate->assignVar( "partId0", matchPartonToJet( 0, &myTree ) );
+	  //thisEstimate->assignVar( "partId0", myTree.jet_mcFlavour[0] );
+	  
+	}
+	
+	
+	if( njets>1 && fabs(myTree.jet_eta[1])<2.5 ) {
+	  
+	  float qgl1 = myTree.jet_qgl[1];
+	  thisEstimate->assignVar( "qgl1", qgl1 );
+	  qglProd *= qgl1;
+	  qglAve += qgl1;
+	  denom++;
+	  
+	  thisEstimate->assignVar( "partId1", matchPartonToJet( 1, &myTree ) );
+	  //thisEstimate->assignVar( "partId1", myTree.jet_mcFlavour[1] );
+	  
+	}
+        
+	if( njets>2 && fabs(myTree.jet_eta[2])<2.5 ) {
+	  
+	  float qgl2 = myTree.jet_qgl[2];
+	  thisEstimate->assignVar( "qgl2", qgl2 );
+	  qglProd *= qgl2;
+	  qglAve += qgl2;
+	  denom++;
+	  
+	  thisEstimate->assignVar( "partId2", matchPartonToJet( 2, &myTree ) );
+	  //thisEstimate->assignVar( "partId2", myTree.jet_mcFlavour[2] );
+	  
+	}
+        
+	
+	if( njets>3 && fabs(myTree.jet_eta[3])<2.5 ) {
+	  
+	  float qgl3 = myTree.jet_qgl[3];
+	  thisEstimate->assignVar( "qgl3", qgl3 );
+	  qglProd *= qgl3;
+	  qglAve += qgl3;
+	  denom++;
+	  
+	  thisEstimate->assignVar( "partId3", matchPartonToJet( 3, &myTree ) );
+	  //thisEstimate->assignVar( "partId3", myTree.jet_mcFlavour[3] );
+	  
+	}
+	
+	qglAve /= (float)denom;
+        
+	thisEstimate->assignVar( "qglProd", qglProd );
+	thisEstimate->assignVar( "qglAve", qglAve );
+	
+	
+      } 
+      
+      if( cfg.additionalStuff()=="hfContent" ) {
+	
+	float nTrueB=0.;
+	float nTrueC=0.;
+	
+	for( unsigned ipart=0; ipart<myTree.ngenPart; ++ipart ) {
+	  
+	  if( myTree.genPart_pt[ipart] < 20. ) continue;
+	  if( abs(myTree.genPart_eta[ipart])>2.5 ) continue;
+	  if( myTree.genPart_status[ipart] != 23 ) continue;
+	  
+	  if( abs(myTree.genPart_pdgId[ipart])==5 )
+	    nTrueB+=1.;
+	  if( abs(myTree.genPart_pdgId[ipart])==4 )
+	    nTrueC+=1.;
+	  
+	}
+	
+	
+	float nTrueBJ=0.;
+	
+	for( unsigned ijet=0; ijet<myTree.njet; ++ijet ) {
+	  
+	  if( myTree.jet_pt[ijet] <20. ) continue;
+	  if( abs(myTree.jet_eta[ijet])>2.5 ) continue;
+	  
+	  if( abs(myTree.jet_mcFlavour[ijet])==5 )
+	    nTrueBJ+=1.;
+	  
+	}
+	
+	thisEstimate->assignVar( "nTrueB", nTrueB );
+	thisEstimate->assignVar( "nTrueC", nTrueC );
+	thisEstimate->assignVar( "nTrueBJ", nTrueBJ );
+	
+      }
+    }
     
+    if( sample.id < 1000 ){
+     
+      thisEstimate->assignTree( myTree, weight );
+      thisEstimate->tree->Fill();
+    
+    }
+    
+    thisEstimate->yield->Fill( mt2, weight );
+    thisEstimate->yield3d->Fill( mt2, GenSusyMScan1, GenSusyMScan2, weight );
+    
+  } // for entries
+    
+  //ofs.close();
 
-    thisEstimate->assignVar( "jet1_pt",  myTree.jet1_pt );
-    thisEstimate->assignVar( "jet2_pt",  myTree.jet2_pt );
-    thisEstimate->assignVar( "mht",  myTree.mht_pt );
+  analysis->finalize();
+  
+  delete tree;
 
-    if( cfg.additionalStuff()=="qgVars" ) {
+  file->Close();
+  delete file;
+  
+  return analysis;
 
-      // initialize
-      thisEstimate->assignVar( "qgl0", -1. );
-      thisEstimate->assignVar( "qgl1", -1. );
-      thisEstimate->assignVar( "qgl2", -1. );
-      thisEstimate->assignVar( "qgl3", -1. );
-      thisEstimate->assignVar( "partId0", 0 );
-      thisEstimate->assignVar( "partId1", 0 );
-      thisEstimate->assignVar( "partId2", 0 );
-      thisEstimate->assignVar( "partId3", 0 );
+}
 
-      float qglProd = 1.;
-      float qglAve = 0.;
-      int denom = 0;
+template <class T>
+MT2Analysis<T>* computeSigYield( const MT2Sample& sample, const MT2Config& cfg ) {
 
+  TFile* sigWgtFile = TFile::Open("/scratch/mmasciov/analysisCode_forMerge/analysis/SMS_T1bbbb_scale1fb.root");
+  TH2F* sigWgt = (TH2F*) sigWgtFile->Get("wgt");
 
-      if( njets>0 && fabs(myTree.jet_eta[0])<2.5 ) {
+  std::string regionsSet = cfg.regionsSet();
 
-        float qgl0 = myTree.jet_qgl[0];
-        thisEstimate->assignVar( "qgl0", qgl0 );
-        qglProd *= qgl0;
-        qglAve += qgl0;
-        denom++;
-        thisEstimate->assignVar( "partId0", matchPartonToJet( 0, &myTree ) );
-        //thisEstimate->assignVar( "partId0", myTree.jet_mcFlavour[0] );
+  std::cout << std::endl << std::endl;
+  std::cout << "-> Starting computation for sample: " << sample.name << std::endl;
 
-      }
+  TFile* file = TFile::Open(sample.file.c_str());
+  std::cout << "-> Getting mt2 tree from file: " << sample.file << std::endl;
 
+  TTree* tree = (TTree*)file->Get("mt2");
+  
 
-      if( njets>1 && fabs(myTree.jet_eta[1])<2.5 ) {
-
-        float qgl1 = myTree.jet_qgl[1];
-        thisEstimate->assignVar( "qgl1", qgl1 );
-        qglProd *= qgl1;
-        qglAve += qgl1;
-        denom++;
-
-        thisEstimate->assignVar( "partId1", matchPartonToJet( 1, &myTree ) );
-        //thisEstimate->assignVar( "partId1", myTree.jet_mcFlavour[1] );
-
-      }
-        
-      if( njets>2 && fabs(myTree.jet_eta[2])<2.5 ) {
-
-        float qgl2 = myTree.jet_qgl[2];
-        thisEstimate->assignVar( "qgl2", qgl2 );
-        qglProd *= qgl2;
-        qglAve += qgl2;
-        denom++;
-
-        thisEstimate->assignVar( "partId2", matchPartonToJet( 2, &myTree ) );
-        //thisEstimate->assignVar( "partId2", myTree.jet_mcFlavour[2] );
-
-      }
-        
-
-      if( njets>3 && fabs(myTree.jet_eta[3])<2.5 ) {
-
-        float qgl3 = myTree.jet_qgl[3];
-        thisEstimate->assignVar( "qgl3", qgl3 );
-        qglProd *= qgl3;
-        qglAve += qgl3;
-        denom++;
-
-        thisEstimate->assignVar( "partId3", matchPartonToJet( 3, &myTree ) );
-        //thisEstimate->assignVar( "partId3", myTree.jet_mcFlavour[3] );
-
-      }
-
-      qglAve /= (float)denom;
-        
-      thisEstimate->assignVar( "qglProd", qglProd );
-      thisEstimate->assignVar( "qglAve", qglAve );
+  MT2Tree myTree;
+  myTree.Init(tree);
 
 
-    } 
 
-    if( cfg.additionalStuff()=="hfContent" ) {
+  std::cout << "-> Setting up MT2Analysis with name: " << sample.sname << std::endl;
+  MT2Analysis<T>* analysis = new MT2Analysis<T>( sample.sname, regionsSet, sample.id );
+  
+ 
+  
+  int nentries = tree->GetEntries();
+  
+  for( int iEntry=0; iEntry<nentries; ++iEntry ) {
+    
+    if( iEntry % 50000 == 0 ) std::cout << "    Entry: " << iEntry << " / " << nentries << std::endl;
+    
+    myTree.GetEntry(iEntry);
+    
+    //////    if( myTree.isData && !myTree.isGolden ) continue;
 
-      float nTrueB=0.;
-      float nTrueC=0.;
+    if( regionsSet!="13TeV_noCut" )
+      if( !myTree.passSelection(cfg.additionalStuff()) ) continue;
 
-      for( unsigned ipart=0; ipart<myTree.ngenPart; ++ipart ) {
+    if ( myTree.nJet30==1 && !myTree.passMonoJetId(0) ) continue;
+      
 
-        if( myTree.genPart_pt[ipart] < 20. ) continue;
-        if( abs(myTree.genPart_eta[ipart])>2.5 ) continue;
-        if( myTree.genPart_status[ipart] != 23 ) continue;
+    float ht   = myTree.ht;
+    float met  = myTree.met_pt;
+    float minMTBmet = myTree.minMTBMet;
+    int njets  = myTree.nJet30;
+    int nbjets = myTree.nBJet20;    
+    float mt2  = (njets>1) ? myTree.mt2 : ht;
+    //float mt2  = myTree.mt2;
+    
+    int GenSusyMScan1 = myTree.GenSusyMGluino;
+    int GenSusyMScan2 = myTree.GenSusyMNeutralino;
+    
+    //Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi()*myTree.puWeight;
+    //Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb;//*cfg.lumi();
+    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi();
+    Double_t weight_syst = 1.;
 
-        if( abs(myTree.genPart_pdgId[ipart])==5 )
-          nTrueB+=1.;
-        if( abs(myTree.genPart_pdgId[ipart])==4 )
-          nTrueC+=1.;
+    if( myTree.evt_id > 1000 )
+      weight_syst = myTree.weight_isr;
+    
+    float sig_scale1fb=0;
+    if( myTree.evt_id >= 1020  && myTree.evt_id < 2000){ // T1bbbb full scan
+      
+      int thisBinX = sigWgt->GetXaxis()->FindBin( GenSusyMScan1 );
+      int thisBinY = sigWgt->GetYaxis()->FindBin( GenSusyMScan2 );
+      
+      sig_scale1fb = sigWgt->GetBinContent( thisBinX, thisBinY );
 
-      }
+      weight = sig_scale1fb*cfg.lumi();
+  
+    }
 
-
-      float nTrueBJ=0.;
-
-      for( unsigned ijet=0; ijet<myTree.njet; ++ijet ) {
-
-        if( myTree.jet_pt[ijet] <20. ) continue;
-        if( abs(myTree.jet_eta[ijet])>2.5 ) continue;
-
-        if( abs(myTree.jet_mcFlavour[ijet])==5 )
-          nTrueBJ+=1.;
-
-      }
-
-      thisEstimate->assignVar( "nTrueB", nTrueB );
-      thisEstimate->assignVar( "nTrueC", nTrueC );
-      thisEstimate->assignVar( "nTrueBJ", nTrueBJ );
+    if( myTree.isData ) {
+      
+      if( !myTree.passFilters() ) continue;
 
     }
 
-    thisEstimate->assignTree( myTree, weight );
-    thisEstimate->tree->Fill();
+    if (myTree.isData) {
 
+      int id = sample.id;
+      // sample IDs for data:
+      // JetHT = 1
+      // HTMHT = 2
+      // MET   = 3
+
+    //  if( njets==1 ) {
+    //
+    //    if( !( id==3 && myTree.HLT_PFMETNoMu90_PFMHTNoMu90) ) continue;
+    //
+    //  } else { // njets>=2
+    //
+    //    if( ht>1000. ) {
+    //      if( !( id==1 && myTree.HLT_PFHT800) ) continue;
+    //    } else if( ht>575. ) {
+    //      if( !( id==2 && myTree.HLT_PFHT350_PFMET100 )  ) continue;
+    //    } else if( ht>450. ) {
+    //      if( !( id==2 && myTree.HLT_PFHT350_PFMET100 )  ) continue;
+    //    } else if( ht>200. ) {
+    //      if( !( id==3 && myTree.HLT_PFMETNoMu90_PFMHTNoMu90  )  ) continue;
+    //    }
+    //
+    //  }
+
+      if ( !(myTree.HLT_PFMETNoMu90_PFMHTNoMu90 || myTree.HLT_PFHT800 || myTree.HLT_PFHT350_PFMET100) ) continue;
+
+    } // if is data
+
+   
+    T* thisEstimate = analysis->get( ht, njets, nbjets, minMTBmet, mt2 );
+    //T* thisEstimate = analysis->get( ht, njets, nbjets, met, minMTBmet, mt2 );
+    if( thisEstimate==0 ) continue;
+    
     thisEstimate->yield->Fill( mt2, weight );
     thisEstimate->yield3d->Fill( mt2, GenSusyMScan1, GenSusyMScan2, weight );
+    
+    thisEstimate->yield3d_systUp->Fill( mt2, GenSusyMScan1, GenSusyMScan2, weight*(1.+(weight_syst-1.)));
+    thisEstimate->yield3d_systDown->Fill( mt2, GenSusyMScan1, GenSusyMScan2, weight*(1.-(weight_syst-1.)));
 
   } // for entries
     
@@ -523,12 +698,12 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg ) {
 }
 
 
-
-MT2Analysis<MT2EstimateTree>* mergeYields( std::vector<MT2Analysis<MT2EstimateTree> *> EventYield, const std::string& regionsSet, const std::string& name, int id_min, int id_max, const std::string& legendName ) {
+template <class T>
+MT2Analysis<T>* mergeYields( std::vector<MT2Analysis<T> *> EventYield, const std::string& regionsSet, const std::string& name, int id_min, int id_max, const std::string& legendName ) {
 
   if( id_max<0 ) id_max=id_min;
 
-  MT2Analysis<MT2EstimateTree>* return_EventYield = new MT2Analysis<MT2EstimateTree>(name, regionsSet, id_min, legendName);
+  MT2Analysis<T>* return_EventYield = new MT2Analysis<T>(name, regionsSet, id_min, legendName);
 
   for( unsigned i=0; i<EventYield.size(); ++i ) {
 

@@ -143,9 +143,14 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   hdata->SetLineColor( 1 );
   hdata->SetMarkerColor( 1 );
   
-  TH1D* hestimate_all;
+  TH1D* hestimate_all = new TH1D(Form("hestimate_all"), "", 173, 0, 173);
+  hestimate_all->Sumw2();
+
   TH1D* hestimate[bgSize];
-  TH1D* hestimate_all_forRatio;
+
+  TH1D* hestimate_all_forRatio = new TH1D(Form("hestimate_all_forRatio"), "", 173, 0, 173);
+  hestimate_all_forRatio->Sumw2();
+
   TH1D* hestimate_forRatio[bgSize];
   
   for(unsigned int b=0; b<bgSize; ++b){
@@ -172,6 +177,13 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   hPull->GetYaxis()->SetTitle("Entries");
   
   std::string fullPath = outputdir;
+
+  TFile* fmono=TFile::Open("mlfit_monojet.root");
+  TFile* fvlht=TFile::Open("mlfit_veryLowHT.root");
+  TFile* flht =TFile::Open("mlfit_LowHT.root");
+  TFile* fmht =TFile::Open("mlfit_MediumHT.root");
+  TFile* fhht =TFile::Open("mlfit_HighHT.root");
+  TFile* feht =TFile::Open("mlfit_ExtremeHT.root");
   
   int iRegion = 1;
   for( std::set<MT2Region>::iterator iMT2 = MT2Regions.begin(); iMT2!=MT2Regions.end(); ++iMT2 ) {
@@ -187,7 +199,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
       
       TFile* histoFile = TFile::Open( Form("%s/histograms_%s.root", fullPath.c_str(), iMT2->getName().c_str()), "recreate" );
       histoFile->cd();
-      h_first->Write();
+      //      h_first->Write();
       
       g_first->SetMarkerStyle(20);
       g_first->SetMarkerSize(1.6);
@@ -211,6 +223,12 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
 	h_second[b]->SetLineColor( 1 );
 	
       }
+
+      h_second_all = new TH1D(Form("h_second_all"), "", nBins, bins);
+      h_second_all->Sumw2();
+
+      h_second_forRatio_all = new TH1D(Form("h_second_forRatio_all"), "", nBins, bins);
+      h_second_forRatio_all->Sumw2();
       
       for( int iBin=0; iBin<nBins; ++iBin ) {
 
@@ -222,52 +240,230 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
 
 	BGTable thisTable = getTable(tableName);
 	
-	float totalErr=0.;
-	float statErr=0.;
-	float systErr=0.;
 
-	//QCD
-	statErr = (thisTable.qcd_statUp > thisTable.qcd_statDn) ? thisTable.qcd_statUp : thisTable.qcd_statDn;
-	systErr = (thisTable.qcd_systUp > thisTable.qcd_systDn) ? thisTable.qcd_systUp : thisTable.qcd_systDn;
-	totalErr = TMath::Sqrt( statErr*statErr + systErr*systErr );
-	h_second[0]->SetBinContent(iBin+1, thisTable.qcd);
-	h_second[0]->SetBinError(iBin+1, totalErr);
+	float totalPost_llep;
+	float totalPost_zinv;
+	float totalPost_qcd;
+	float totalPost_Err_llep;
+	float totalPost_Err_zinv;
+	float totalPost_Err_qcd;
+
+	float totalPost;
+	float totalPost_Err;
+
+	if(iRegion <=24){
+
+	  int ch=iRegion+iBin;
+	  fvlht->cd();
+	  gDirectory->cd("shapes_fit_b");
+	  
+	  std::string thisCh = Form("ch%d", ch);
+	  gDirectory->cd(thisCh.c_str());
+	  
+	  TH1F* thisBG=(TH1F*)gDirectory->Get("total_background");
+	  TH1F* thisllep=(TH1F*)gDirectory->Get("llep");
+	  TH1F* thiszinv=(TH1F*)gDirectory->Get("zinv");
+	  TH1F* thisqcd=(TH1F*)gDirectory->Get("qcd");
+	  
+	  
+	  totalPost_llep = (gDirectory->GetListOfKeys()->Contains("llep")) ? thisllep->GetBinContent(1) : 0;
+	  totalPost_zinv = (gDirectory->GetListOfKeys()->Contains("zinv")) ? thiszinv->GetBinContent(1) : 0;
+	  totalPost_qcd  = (gDirectory->GetListOfKeys()->Contains("qcd")) ? thisqcd ->GetBinContent(1) : 0;
+
+	  totalPost_Err_llep = (gDirectory->GetListOfKeys()->Contains("llep")) ? thisllep->GetBinError(1) : 0;
+	  totalPost_Err_zinv = (gDirectory->GetListOfKeys()->Contains("zinv")) ? thiszinv->GetBinError(1) : 0;
+	  totalPost_Err_qcd  = (gDirectory->GetListOfKeys()->Contains("qcd"))  ? thisqcd ->GetBinError(1) : 0;
+	  
+	  totalPost = thisBG->GetBinContent(1);
+	  totalPost_Err = thisBG->GetBinError(1);
+//	  totalPost = totalPost_llep+totalPost_zinv+totalPost_qcd;
+//	  totalPost_Err = TMath::Sqrt(totalPost_Err_llep*totalPost_Err_llep + totalPost_Err_zinv*totalPost_Err_zinv + totalPost_Err_qcd*totalPost_Err_qcd);
+//	  totalPost_Err = (totalPost_Err > thisBG->GetBinError(1)) ? totalPost_Err : thisBG->GetBinError(1);
+
+	  gDirectory->cd("..");
+	      
+	}
+	else if(iRegion >=25 && iRegion <= 37){
+
+	  int ch=iRegion-24+iBin;
+	  
+	  fmono->cd();
+	  gDirectory->cd("shapes_fit_b");
+	    
+	  std::string thisCh = Form("ch%d", ch);
+	  gDirectory->cd(thisCh.c_str());
+	  
+	  TH1F* thisBG=(TH1F*)gDirectory->Get("total_background");
+	  TH1F* thisllep=(TH1F*)gDirectory->Get("llep");
+	  TH1F* thiszinv=(TH1F*)gDirectory->Get("zinv");
+	  TH1F* thisqcd=(TH1F*)gDirectory->Get("qcd");
+	  
+	  
+	  totalPost_llep = (gDirectory->GetListOfKeys()->Contains("llep")) ? thisllep->GetBinContent(1) : 0;
+	  totalPost_zinv = (gDirectory->GetListOfKeys()->Contains("zinv")) ? thiszinv->GetBinContent(1) : 0;
+	  totalPost_qcd  = (gDirectory->GetListOfKeys()->Contains("qcd")) ? thisqcd ->GetBinContent(1) : 0;
+	  
+	  totalPost = thisBG->GetBinContent(1);
+	  totalPost_Err = thisBG->GetBinError(1);
+//	  totalPost = totalPost_llep+totalPost_zinv+totalPost_qcd;
+//	  totalPost_Err = TMath::Sqrt(totalPost_Err_llep*totalPost_Err_llep + totalPost_Err_zinv*totalPost_Err_zinv + totalPost_Err_qcd*totalPost_Err_qcd);
+//	  totalPost_Err = (totalPost_Err > thisBG->GetBinError(1)) ? totalPost_Err : thisBG->GetBinError(1);
+	  
+	  gDirectory->cd("..");
+
+	}
+	else if(iRegion >=38 && iRegion <= 68){
+	  
+	  int ch=iRegion-37+iBin;
+	  
+	  flht->cd();
+	  gDirectory->cd("shapes_fit_b");
+	  
+	  std::string thisCh = Form("ch%d", ch);
+	  gDirectory->cd(thisCh.c_str());
+	  
+	  TH1F* thisBG=(TH1F*)gDirectory->Get("total_background");
+	  TH1F* thisllep=(TH1F*)gDirectory->Get("llep");
+	  TH1F* thiszinv=(TH1F*)gDirectory->Get("zinv");
+	  TH1F* thisqcd=(TH1F*)gDirectory->Get("qcd");
+	  
+	  
+	  totalPost_llep = (gDirectory->GetListOfKeys()->Contains("llep")) ? thisllep->GetBinContent(1) : 0;
+	  totalPost_zinv = (gDirectory->GetListOfKeys()->Contains("zinv")) ? thiszinv->GetBinContent(1) : 0;
+	  totalPost_qcd  = (gDirectory->GetListOfKeys()->Contains("qcd")) ? thisqcd ->GetBinContent(1) : 0;
+	  
+	  
+	  totalPost = thisBG->GetBinContent(1);
+	  totalPost_Err = thisBG->GetBinError(1);
+//	  totalPost = totalPost_llep+totalPost_zinv+totalPost_qcd;
+//	  totalPost_Err = TMath::Sqrt(totalPost_Err_llep*totalPost_Err_llep + totalPost_Err_zinv*totalPost_Err_zinv + totalPost_Err_qcd*totalPost_Err_qcd);
+//	  totalPost_Err = (totalPost_Err > thisBG->GetBinError(1)) ? totalPost_Err : thisBG->GetBinError(1);
+	  
+	  gDirectory->cd("..");
 	
-	h_second_forRatio[0]->SetBinContent(iBin+1, thisTable.qcd);
+	}
+	else if(iRegion >=69 && iRegion <= 110){
+
+	  int ch=iRegion-68+iBin;
+
+	  fmht->cd();
+	  gDirectory->cd("shapes_fit_b");
+	  
+	  std::string thisCh = Form("ch%d", ch);
+	  gDirectory->cd(thisCh.c_str());
+	  
+	  TH1F* thisBG=(TH1F*)gDirectory->Get("total_background");
+	  TH1F* thisllep=(TH1F*)gDirectory->Get("llep");
+	  TH1F* thiszinv=(TH1F*)gDirectory->Get("zinv");
+	  TH1F* thisqcd=(TH1F*)gDirectory->Get("qcd");
+
+	  totalPost_llep = (gDirectory->GetListOfKeys()->Contains("llep")) ? thisllep->GetBinContent(1) : 0;
+	  totalPost_zinv = (gDirectory->GetListOfKeys()->Contains("zinv")) ? thiszinv->GetBinContent(1) : 0;
+	  totalPost_qcd  = (gDirectory->GetListOfKeys()->Contains("qcd")) ? thisqcd ->GetBinContent(1) : 0;
+	  
+	  totalPost = thisBG->GetBinContent(1);
+	  totalPost_Err = thisBG->GetBinError(1);
+//	  totalPost = totalPost_llep+totalPost_zinv+totalPost_qcd;
+//	  totalPost_Err = TMath::Sqrt(totalPost_Err_llep*totalPost_Err_llep + totalPost_Err_zinv*totalPost_Err_zinv + totalPost_Err_qcd*totalPost_Err_qcd);
+//	  totalPost_Err = (totalPost_Err > thisBG->GetBinError(1)) ? totalPost_Err : thisBG->GetBinError(1);
+	  
+	  gDirectory->cd("..");
+	  
+	}
+	else if(iRegion >=111 && iRegion <= 145){
+
+	  int ch=iRegion-110+iBin;
+	  
+	  fhht->cd();
+	  gDirectory->cd("shapes_fit_b");
+	  
+	  std::string thisCh = Form("ch%d", ch);
+	  gDirectory->cd(thisCh.c_str());
+	  
+	  TH1F* thisBG=(TH1F*)gDirectory->Get("total_background");
+	  TH1F* thisllep=(TH1F*)gDirectory->Get("llep");
+	  TH1F* thiszinv=(TH1F*)gDirectory->Get("zinv");
+	  TH1F* thisqcd=(TH1F*)gDirectory->Get("qcd");
+
+	  totalPost_llep = (gDirectory->GetListOfKeys()->Contains("llep")) ? thisllep->GetBinContent(1) : 0;
+	  totalPost_zinv = (gDirectory->GetListOfKeys()->Contains("zinv")) ? thiszinv->GetBinContent(1) : 0;
+	  totalPost_qcd  = (gDirectory->GetListOfKeys()->Contains("qcd")) ? thisqcd ->GetBinContent(1) : 0;
+	  
+	  totalPost = thisBG->GetBinContent(1);
+	  totalPost_Err = thisBG->GetBinError(1);	
+//	  totalPost = totalPost_llep+totalPost_zinv+totalPost_qcd;
+//  	  totalPost_Err = TMath::Sqrt(totalPost_Err_llep*totalPost_Err_llep + totalPost_Err_zinv*totalPost_Err_zinv + totalPost_Err_qcd*totalPost_Err_qcd);
+//	  totalPost_Err = (totalPost_Err > thisBG->GetBinError(1)) ? totalPost_Err : thisBG->GetBinError(1);
+
+	  gDirectory->cd("..");
+
+	}
+	else if(iRegion >=146){
+
+	  int ch=iRegion-145+iBin;
+
+	  feht->cd();
+	  gDirectory->cd("shapes_fit_b");
+	  
+	  std::string thisCh = Form("ch%d", ch);
+	  gDirectory->cd(thisCh.c_str());
+	  
+	  TH1F* thisBG=(TH1F*)gDirectory->Get("total_background");
+	  TH1F* thisllep=(TH1F*)gDirectory->Get("llep");
+	  TH1F* thiszinv=(TH1F*)gDirectory->Get("zinv");
+	  TH1F* thisqcd=(TH1F*)gDirectory->Get("qcd");
+	  
+	  totalPost_llep = (gDirectory->GetListOfKeys()->Contains("llep")) ? thisllep->GetBinContent(1) : 0;
+	  totalPost_zinv = (gDirectory->GetListOfKeys()->Contains("zinv")) ? thiszinv->GetBinContent(1) : 0;
+	  totalPost_qcd  = (gDirectory->GetListOfKeys()->Contains("qcd")) ? thisqcd ->GetBinContent(1) : 0;
+	  
+	  totalPost = thisBG->GetBinContent(1);
+	  totalPost_Err = thisBG->GetBinError(1);
+//	  totalPost = totalPost_llep+totalPost_zinv+totalPost_qcd;
+//  	  totalPost_Err = TMath::Sqrt(totalPost_Err_llep*totalPost_Err_llep + totalPost_Err_zinv*totalPost_Err_zinv + totalPost_Err_qcd*totalPost_Err_qcd);
+//	  totalPost_Err = (totalPost_Err > thisBG->GetBinError(1)) ? totalPost_Err : thisBG->GetBinError(1);
+	  
+	  gDirectory->cd("..");
+
+	}
+	
+	gDirectory->cd();
+	
+	std::cout << "Filling histograms" << std::endl;
+	
+	//QCD
+	h_second[0]->SetBinContent(iBin+1, totalPost_qcd);
+	h_second[0]->SetBinError(iBin+1, 0.);
+	
+	h_second_forRatio[0]->SetBinContent(iBin+1, totalPost_qcd);
 	h_second_forRatio[0]->SetBinError(iBin+1, 0);
 	
 	//Lost Lepton
-	statErr = (thisTable.llep_statUp > thisTable.llep_statDn) ? thisTable.llep_statUp : thisTable.llep_statDn;
-	systErr = (thisTable.llep_systUp > thisTable.llep_systDn) ? thisTable.llep_systUp : thisTable.llep_systDn;
-	totalErr = TMath::Sqrt( statErr*statErr + systErr*systErr );
-	h_second[1]->SetBinContent(iBin+1, thisTable.llep);
-	h_second[1]->SetBinError(iBin+1, totalErr);
+	h_second[1]->SetBinContent(iBin+1, totalPost_llep);
+	h_second[1]->SetBinError(iBin+1, 0.);
 
-	h_second_forRatio[1]->SetBinContent(iBin+1, thisTable.llep);
-	h_second_forRatio[1]->SetBinError(iBin+1, 0);
+	h_second_forRatio[1]->SetBinContent(iBin+1, totalPost_llep);
+	h_second_forRatio[1]->SetBinError(iBin+1, 0.);
 
 	//Invisible Z
-	statErr = (thisTable.zinv_statUp > thisTable.zinv_statDn) ? thisTable.zinv_statUp : thisTable.zinv_statDn;
-	systErr = (thisTable.zinv_systUp > thisTable.zinv_systDn) ? thisTable.zinv_systUp : thisTable.zinv_systDn;
-	totalErr = TMath::Sqrt( statErr*statErr + systErr*systErr );
-	h_second[2]->SetBinContent(iBin+1, thisTable.zinv);
-	h_second[2]->SetBinError(iBin+1, totalErr);
+	h_second[2]->SetBinContent(iBin+1, totalPost_zinv);
+	h_second[2]->SetBinError(iBin+1, 0.);
 
-	h_second_forRatio[2]->SetBinContent(iBin+1, thisTable.zinv);
+	h_second_forRatio[2]->SetBinContent(iBin+1, totalPost_zinv);
 	h_second_forRatio[2]->SetBinError(iBin+1, 0);
+
+	h_second_all->SetBinContent(iBin+1, totalPost);
+	h_second_all->SetBinError(iBin+1, totalPost_Err);
+
+	h_second_forRatio_all->SetBinContent(iBin+1, totalPost);
+	h_second_forRatio_all->SetBinError(iBin+1, 0);
 
       }	
 	
       for(unsigned int b=0; b<bgSize; ++b){
       
 	bgStack_region.Add(h_second[b]);
-	
-	if(b==0) h_second_all = (TH1D*) h_second[b]->Clone("h_second_all");
-	else h_second_all->Add(h_second[b]);
-	
-	if(b==0) h_second_forRatio_all = (TH1D*) h_second_forRatio[b]->Clone("h_second_forRatio_all");
-	else h_second_forRatio_all->Add(h_second_forRatio[b]);
-      
+	      
       }
       
       for(int iBin=1; iBin<=nBins; ++iBin){
@@ -311,6 +507,15 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
 	  hestimate[b]->GetXaxis()->SetBinLabel( iRegion, thisLabel.c_str() );
 	  
 	}
+
+	hestimate_all->SetBinContent(iRegion, h_second_all->GetBinContent(iBin));
+	hestimate_all->SetBinError(iRegion, h_second_all->GetBinError(iBin));
+	std::string thisLabel=Form("%s,%d", niceNames[1].c_str(), iBin); 
+	hestimate_all->GetXaxis()->SetBinLabel( iRegion, thisLabel.c_str() );
+		
+	hestimate_all_forRatio->SetBinContent(iRegion, h_second_all->GetBinContent(iBin));
+	hestimate_all_forRatio->SetBinError(iRegion, 0);
+	hestimate_all_forRatio->GetXaxis()->SetBinLabel( iRegion, thisLabel.c_str() );
 		
 	std::cout <<"iRegion " << iRegion << std::endl;
 	++iRegion;
@@ -386,7 +591,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
       std::string thisName = Form("%s_ratio", h_first->GetName());
       TH1D* h_ratio = (TH1D*) h_first->Clone(thisName.c_str());
       h_ratio->Divide(h_second_all);
-      h_ratio->Write();
+      //      h_ratio->Write();
       h_ratio->SetStats(0);	    
       h_ratio->SetMarkerStyle(20);
       h_ratio->SetMarkerColor(1);
@@ -443,11 +648,11 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
     bgStack.Add(hestimate[b]);
     //bgStack.Add(hestimate_forRatio[b]);
     
-    if(b==0) hestimate_all = (TH1D*) hestimate[b]->Clone("hestimate_all");
-    else hestimate_all->Add(hestimate[b]);
-
-    if(b==0) hestimate_all_forRatio = (TH1D*) hestimate_forRatio[b]->Clone("hestimate_all_forRatio");
-    else hestimate_all_forRatio->Add(hestimate_forRatio[b]);
+//    if(b==0) hestimate_all = (TH1D*) hestimate[b]->Clone("hestimate_all");
+//    else hestimate_all->Add(hestimate[b]);
+//
+//    if(b==0) hestimate_all_forRatio = (TH1D*) hestimate_forRatio[b]->Clone("hestimate_all_forRatio");
+//    else hestimate_all_forRatio->Add(hestimate_forRatio[b]);
 
   }
 
@@ -459,7 +664,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   std::string thisName = Form("%s_ratio", hdata->GetName());
   TH1D* h_Ratio = (TH1D*) hdata->Clone(thisName.c_str());
   h_Ratio->Divide(hestimate_all_forRatio);
-  h_Ratio->Write();
+  //  h_Ratio->Write();
   h_Ratio->SetStats(0);
   h_Ratio->SetMarkerStyle(20);
   h_Ratio->SetLineColor(1);

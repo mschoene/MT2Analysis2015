@@ -76,7 +76,8 @@ void filterFromTxt(string filterList="eventlist_JetHT_csc2015.txt",
   
   cout << "In input tree, nentries = " << nentries << endl;
 
-  unsigned int run,lumi;
+  unsigned int run,lumi;  // CMG
+  //int run,lumi;             // americans
   unsigned long long evt;
   oldtree->SetBranchAddress("run" ,&run );
   oldtree->SetBranchAddress("lumi",&lumi);

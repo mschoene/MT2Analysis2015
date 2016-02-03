@@ -1,7 +1,9 @@
 #include "interface/MT2Analysis.h"
 #include "interface/MT2EstimateSyst.h"
+#include "interface/MT2EstimateTree.h"
 #include "interface/MT2Estimate.h"
 #include "interface/MT2DrawTools.h"
+#include "interface/MT2Config.h"
 
 #include <iostream>
 #include <sstream>
@@ -11,7 +13,9 @@
 
 
 #include "TMath.h"
+#include "TRandom3.h"
 #include "TTreeFormula.h"
+#include "TF1.h"
 #include "TH1D.h"
 #include "TH2D.h"
 #include "THStack.h"
@@ -23,78 +27,116 @@
 
 #include "RooHistError.h"
 
-float lumi =0.134; //fb-1 
 
-void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, std::vector<MT2Analysis<MT2Estimate>* > bgYields );
+struct BGTable {
 
-int main() {
+  float zinv;
+  float zinv_statUp;
+  float zinv_statDn;
+  float zinv_systUp;
+  float zinv_systDn;
 
-  TH1::AddDirectory(kFALSE); // stupid ROOT memory allocation needs this
+  float llep;
+  float llep_statUp;
+  float llep_statDn;
+  float llep_systUp;
+  float llep_systDn;
 
-  std::string outputdir = "./YieldComparison_dataMC_binned/";
+  float qcd;
+  float qcd_statUp;
+  float qcd_statDn;
+  float qcd_systUp;
+  float qcd_systDn;
 
+};
+
+
+float lumi; //fb-1 
+
+BGTable getTable( const std::string& tableFileName );
+void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, std::string dir );
+
+
+int main( int argc, char* argv[] ) {
   
-  std::string llepInputFile = "./EventYields_data_Run2015D_25nsGolden_zurichPlus/llepEstimate.root";
-  std::string zinvInputFile = "./EventYields_data_Run2015D_25nsGolden_zurichPlus/zinvFromGamma.root";
-  std::string qcdInputFile  = "./EventYields_data_Run2015D_25nsGolden_zurichPlus/qcdEstimateData.root";
-
-  std::string mcInputFile = "./EventYields_data_Run2015D_25nsGolden_zurichPlus/analyses.root";
-
-  std::string dataInputFile = "./EventYields_data_Run2015D_25nsGolden_zurichPlus_149ipb/analyses.root";
   
-  MT2Analysis<MT2Estimate>* data = MT2Analysis<MT2Estimate>::readFromFile( dataInputFile.c_str(), "data" );
+  std::cout << std::endl << std::endl;
+  std::cout << "------------------------------------------------------" << std::endl;
+  std::cout << "|                                                    |" << std::endl;
+  std::cout << "|                                                    |" << std::endl;
+  std::cout << "|           Running computeLostLepton                |" << std::endl;
+  std::cout << "|                                                    |" << std::endl;
+  std::cout << "|                                                    |" << std::endl;
+  std::cout << "------------------------------------------------------" << std::endl;
+  std::cout << std::endl << std::endl;
   
-  MT2Analysis<MT2Estimate>* llep = MT2Analysis<MT2Estimate>::readFromFile( llepInputFile.c_str(), "llepEstimate" );
-  llep->setName("Lost Lepton");
   
-  MT2Analysis<MT2Estimate>* zinv = MT2Analysis<MT2Estimate>::readFromFile( zinvInputFile.c_str(), "ZinvEstimate" );
-  zinv->setName("Invisible Z");
-
-  MT2Analysis<MT2Estimate>* qcd  = MT2Analysis<MT2Estimate>::readFromFile( qcdInputFile.c_str(), "qcdEstimate"  );
-  qcd->setName("Multijet");
-
-  MT2Analysis<MT2Estimate>* qcd_mc  = MT2Analysis<MT2Estimate>::readFromFile( mcInputFile.c_str(), "QCD"  );
-
-//  MT2Analysis<MT2Estimate>* top = MT2Analysis<MT2Estimate>::readFromFile( dataInputFile.c_str(), "Top" );
-//  MT2Analysis<MT2Estimate>* wjets = MT2Analysis<MT2Estimate>::readFromFile( dataInputFile.c_str(), "WJets" );
-//  MT2Analysis<MT2Estimate>* zinv = MT2Analysis<MT2Estimate>::readFromFile( dataInputFile.c_str(), "ZJets" );
-//  MT2Analysis<MT2Estimate>* qcd  = MT2Analysis<MT2Estimate>::readFromFile( dataInputFile.c_str(), "QCD"  );
+  if( argc!=2 ) {
+    std::cout << "USAGE: ./computeLostLepton [configFileName]" << std::endl;
+    std::cout << "Exiting." << std::endl;
+    exit(11);
+  }
   
-  std::vector< MT2Analysis<MT2Estimate> *> bgEstimate;
-//  bgEstimate.push_back( qcd  );
-//  bgEstimate.push_back( top );
-//  bgEstimate.push_back( wjets );
-//  bgEstimate.push_back( zinv );
-  bgEstimate.push_back( qcd  );
-  bgEstimate.push_back( llep );
-  bgEstimate.push_back( zinv );
-  bgEstimate.push_back( qcd_mc );
+  
+  std::string configFileName(argv[1]);
+  MT2Config cfg(configFileName);
 
-  drawYields(outputdir.c_str(), data, bgEstimate );
+  lumi = cfg.lumi();
+  
+  TH1::AddDirectory(kTRUE);
+  
+  std::string dir = cfg.getEventYieldDir();
+  std::string outputdir = cfg.getEventYieldDir() + "/YieldComparison_dataMC";
+ 
+ 
+  MT2Analysis<MT2Estimate>* analysis = MT2Analysis<MT2Estimate>::readFromFile( dir + "/analyses.root", "data" ); // any one is good, just need to know the regions                                                                    
+
+  std::vector < MT2Analysis<MT2Estimate>* > analysesSignal;
+  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( dir + "/analyses.root", "SMS_T1tttt_mGluino1500_mLSP100") );
+  analysesSignal[0]->setName("T1tttt 1500,100");
+
+  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( dir + "/analyses.root", "SMS_T1tttt_mGluino1200_mLSP800") );
+  analysesSignal[1]->setName("T1tttt 1200,800");
+
+  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( dir + "/analyses.root", "SMS_T1bbbb_mGluino1500_mLSP100") );
+  analysesSignal[2]->setName("T1bbbb 1500,100");
+
+  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( dir + "/analyses.root", "SMS_T1bbbb_mGluino1000_mLSP900") );
+  analysesSignal[3]->setName("T1bbbb 1000,900");
+
+  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( dir + "/analyses.root", "SMS_T1qqqq_mGluino1400_mLSP100") );
+  analysesSignal[4]->setName("T1qqqq 1400,100");
+
+  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( dir + "/analyses.root", "SMS_T1qqqq_mGluino1000_mLSP800") );
+  analysesSignal[5]->setName("T1qqqq 1000,800");
+
+  std::set<MT2Region> regions = analysis->getRegions();
+
+  MT2Analysis<MT2Estimate>* data = MT2Analysis<MT2Estimate>::readFromFile( dir + "/analyses.root", "data" );
+  
+  drawYields( outputdir.c_str(), data, dir );
 
   return 0;
 
 }
 
-void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, std::vector< MT2Analysis<MT2Estimate> *> bgYields ) {
+void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, std::string dir ) {
 
+  
   MT2DrawTools::setStyle();
 
   system(Form("mkdir -p %s", outputdir.c_str()));
 
   std::vector<int> colors;
-//  colors.push_back( 401 );
-//  colors.push_back( 855 );
-//  colors.push_back( 417 );
-//  colors.push_back( 419 );
   colors.push_back( 402 );
   colors.push_back( 430 );
   colors.push_back( 418 );
   
+  unsigned int bgSize = 3;
+  
   std::set<MT2Region> MT2Regions = data->getRegions();
   
-  TH1D* hdata = new TH1D("hdata", "", 185, 0, 185);
-  //  TH1D* hdata = new TH1D("hdata", "", (int) MT2Regions.size(), 0, (int) MT2Regions.size());
+  TH1D* hdata = new TH1D("hdata", "", 68, 0, 68);
   hdata->Sumw2();
   hdata->GetYaxis()->SetTitle("Entries");
   hdata->SetMarkerStyle(20);
@@ -103,28 +145,37 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   hdata->SetMarkerColor( 1 );
   
   TH1D* hestimate_all;
-  TH1D* hestimate[bgYields.size()];
-  for(unsigned int b=0; b<bgYields.size(); ++b){
+  TH1D* hestimate[bgSize];
+  TH1D* hestimate_all_forRatio;
+  TH1D* hestimate_forRatio[bgSize];
   
-    hestimate[b]= new TH1D(Form("hestimate_%d", b), "", 185, 0, 185);
+  for(unsigned int b=0; b<bgSize; ++b){
+  
+    hestimate[b]= new TH1D(Form("hestimate_%d", b), "", 68, 0, 68);
     hestimate[b]->Sumw2();
     hestimate[b]->GetYaxis()->SetTitle("Entries");
     hestimate[b]->SetFillColor(colors[b]);
     hestimate[b]->SetLineColor(1);
+
+    hestimate_forRatio[b]= new TH1D(Form("hestimate_forRatio%d", b), "", 68, 0, 68);
+    hestimate_forRatio[b]->Sumw2();
+    hestimate_forRatio[b]->GetYaxis()->SetTitle("Entries");
+    hestimate_forRatio[b]->SetFillColor(colors[b]);
+    hestimate_forRatio[b]->SetLineColor(1);
     
   }
 
   THStack bgStack("bgStack", "");
 
-//  TH1D* hPull = new TH1D("hPull", "", 20, -5, 5);
-//  hPull->Sumw2();
-//  hPull->GetXaxis()->SetTitle("(Est. - Obs.)/#sigma");
-//  hPull->GetYaxis()->SetTitle("Entries");
-  
-  //std::string thisName = Form("%s_ratio", hdata->GetName());
-  //TH1D* h_Ratio = (TH1D*) hdata->Clone(thisName.c_str());
-  //h_Ratio->Sumw2();
-  //h_Ratio->GetYaxis()->SetTitle("(Data Driven - MC)/#sigma");
+  TH1D* hPull = new TH1D("hPull", "", 21, -5.25, 5.25);
+  hPull->Sumw2();
+  hPull->GetXaxis()->SetTitle("(Est. - Obs.)/#sigma");
+  hPull->GetYaxis()->SetTitle("Entries");
+
+  TH1D* hPvalue = new TH1D("hPvalue", "", 14, 0, 1.05);
+  hPvalue->Sumw2();
+  hPvalue->GetXaxis()->SetTitle("p-value");
+  hPvalue->GetYaxis()->SetTitle("Entries");
   
   std::string fullPath = outputdir;
   
@@ -133,11 +184,12 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
 
       std::vector<std::string> niceNames = iMT2->getNiceNames();
       
-      TH1D* h_first = data->get(*iMT2)->yield;
-      //TGraphAsymmErrors* g_first = new TGraphAsymmErrors(0); // = new TGraphAsymmErrors(h_first);
-      TGraphAsymmErrors* g_first = MT2DrawTools::getPoissonGraph(h_first);      
+      int nBins;
+      double *bins;
+      iMT2->getBins(nBins, bins);
       
-      int nBins = h_first->GetXaxis()->GetNbins()+1;
+      TH1D* h_first = data->get(*iMT2)->yield;
+      TGraphAsymmErrors* g_first = MT2DrawTools::getPoissonGraph(h_first);      
       
       TFile* histoFile = TFile::Open( Form("%s/histograms_%s.root", fullPath.c_str(), iMT2->getName().c_str()), "recreate" );
       histoFile->cd();
@@ -151,77 +203,102 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
       THStack bgStack_region("bgStack_region", "");
       
       TH1D* h_second_all;
-      TH1D* h_second[bgYields.size()-1];
+      TH1D* h_second_forRatio_all;
+      TH1D* h_second[bgSize];
+      TH1D* h_second_forRatio[bgSize];
 
-      for(unsigned int b=0; b<bgYields.size()-1; ++b){
-
-	if(b==0 && iMT2->nJetsMin()==1 )
-	  h_second[b] = bgYields[bgYields.size()-1]->get(*iMT2)->yield;
-	else
-	  h_second[b] = bgYields[b]->get(*iMT2)->yield;
+      for(unsigned int b=0; b< bgSize; ++b){
+	
+	h_second[b] = new TH1D(Form("h_second_%d", b), "", nBins, bins);
+	
+	h_second_forRatio[b] = new TH1D(Form("h_second_%d", b), "", nBins, bins);
+	
 	h_second[b]->SetFillColor( colors[b] );
 	h_second[b]->SetLineColor( 1 );
-
-	h_second[b]->Scale(lumi/1.25);
 	
-	std::cout << "Read yield for background " << b << ", with integral: " << h_second[b]->Integral() << std::endl;
+      }
+      
+      for( int iBin=0; iBin<nBins; ++iBin ) {
+
+	std::string tableName;
+	if( iBin < nBins-1 )
+	  tableName = std::string(Form("%s/datacard_templates/table_%s_m%.0lfto%.0lf.txt", dir.c_str(), iMT2->getName().c_str(), bins[iBin], bins[iBin+1]) );
+	else
+	  tableName = std::string(Form("%s/datacard_templates/table_%s_m%.0lftoInf.txt", dir.c_str(), iMT2->getName().c_str(), bins[iBin] ));
+
+	BGTable thisTable = getTable(tableName);
 	
-      	for( int iBin=1; iBin<(h_second[b]->GetXaxis()->GetNbins()+1); ++iBin ) {
-	  
-	  double y;                                                                                                                                                                                                            
-	  double x, xerr, yerrplus, yerrminus;
-	  
-	  x = h_second[b]->GetBinCenter(iBin);
-	  xerr = h_second[b]->GetBinWidth(iBin)/2.;
-	  
-	  y = fabs(h_second[b]->GetBinContent(iBin));
-	  float yerr = h_second[b]->GetBinError(iBin);
-	  float yerr2=1.0;
-	  if(y>0) yerr2 = yerr*yerr/(y*y);
-	  
-	  if(b==0 && iMT2->nJetsMin()==1){
+	float totalErr=0.;
+	float statErr=0.;
+	float systErr=0.;
 
-	    yerr=y;
-
-	  } else if(b==1){
-
-	    yerr2+=0.05*0.05;
-	    if( h_second[b]->GetXaxis()->GetNbins()>1 )
-	      yerr2+=0.15*0.15;
- 	    yerr2+=0.05*0.05;
-	    yerr2+=0.15*0.15;
-	   
-	  } else if(b==2){
-
-	    yerr2+=0.21*0.21;
-	    if( h_second[b]->GetXaxis()->GetNbins()>1 )
-	      yerr2+=0.15*0.15;
-	    yerr2+=0.05*0.05;
-	   
-	  }
-
-	  yerr = TMath::Sqrt(yerr2)*y;
-	  h_second[b]->SetBinContent(iBin, y);
-	  h_second[b]->SetBinError(iBin, yerr);
-	  
-	}
+	//QCD
+	statErr = (thisTable.qcd_statUp > thisTable.qcd_statDn) ? thisTable.qcd_statUp : thisTable.qcd_statDn;
+	systErr = (thisTable.qcd_systUp > thisTable.qcd_systDn) ? thisTable.qcd_systUp : thisTable.qcd_systDn;
+	totalErr = TMath::Sqrt( statErr*statErr + systErr*systErr );
+	h_second[0]->SetBinContent(iBin+1, thisTable.qcd);
+	h_second[0]->SetBinError(iBin+1, totalErr);
 	
-	std::cout << "Adding to stack histogram for background " << b << " with integral: " << h_second[b]->Integral() << std::endl;
+	h_second_forRatio[0]->SetBinContent(iBin+1, thisTable.qcd);
+	h_second_forRatio[0]->SetBinError(iBin+1, 0);
+	
+	//Lost Lepton
+	statErr = (thisTable.llep_statUp > thisTable.llep_statDn) ? thisTable.llep_statUp : thisTable.llep_statDn;
+	systErr = (thisTable.llep_systUp > thisTable.llep_systDn) ? thisTable.llep_systUp : thisTable.llep_systDn;
+	totalErr = TMath::Sqrt( statErr*statErr + systErr*systErr );
+	h_second[1]->SetBinContent(iBin+1, thisTable.llep);
+	h_second[1]->SetBinError(iBin+1, totalErr);
+
+	h_second_forRatio[1]->SetBinContent(iBin+1, thisTable.llep);
+	h_second_forRatio[1]->SetBinError(iBin+1, 0);
+
+	//Invisible Z
+	statErr = (thisTable.zinv_statUp > thisTable.zinv_statDn) ? thisTable.zinv_statUp : thisTable.zinv_statDn;
+	systErr = (thisTable.zinv_systUp > thisTable.zinv_systDn) ? thisTable.zinv_systUp : thisTable.zinv_systDn;
+	totalErr = TMath::Sqrt( statErr*statErr + systErr*systErr );
+	h_second[2]->SetBinContent(iBin+1, thisTable.zinv);
+	h_second[2]->SetBinError(iBin+1, totalErr);
+
+	h_second_forRatio[2]->SetBinContent(iBin+1, thisTable.zinv);
+	h_second_forRatio[2]->SetBinError(iBin+1, 0);
+
+      }	
+	
+      for(unsigned int b=0; b<bgSize; ++b){
+      
 	bgStack_region.Add(h_second[b]);
 	
 	if(b==0) h_second_all = (TH1D*) h_second[b]->Clone("h_second_all");
 	else h_second_all->Add(h_second[b]);
-
-	std::cout << "Summed histogram for background " << b << ", with intermediate integral: "  << h_second_all->Integral() << std::endl;
-
+	
+	if(b==0) h_second_forRatio_all = (TH1D*) h_second_forRatio[b]->Clone("h_second_forRatio_all");
+	else h_second_forRatio_all->Add(h_second_forRatio[b]);
+      
       }
       
+      h_second_all->Write();
+
+      for(int iBin=1; iBin<=nBins; ++iBin){
+
+	float thisData    = h_first->GetBinContent(iBin);
+	float thisDataErr = h_first->GetBinError(iBin);
+
+	float thisEst     = h_second_all->GetBinContent(iBin);
+	float thisEstErr  = h_second_all->GetBinError(iBin);
+	
+
+	//	hPull->Fill( (thisEst-thisData)/( TMath::Sqrt( thisDataErr*thisDataErr + thisEstErr*thisEstErr ) ) );
+	
+      }
+
       int firstBin=1;
       double err_data;
       double int_data;
+      
       if( iMT2->nJetsMax()==1 ){
-	iRegion=iRegion-24;
-	for (int iBin=1; iBin<nBins; ++iBin){
+        iRegion=iRegion-24;
+      
+	for (int iBin=1; iBin<=nBins; ++iBin){
 	  
 	  int_data = h_first->GetBinContent(iBin);
 	  err_data = h_first->GetBinError(iBin);
@@ -229,18 +306,18 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
 	  hdata->SetBinContent(iRegion, int_data);
 	  hdata->SetBinError(iRegion, err_data);
 	  
-	  std::cout<<"Filled data  with: " << int_data << std::endl;
-	  
 	  hdata->GetXaxis()->SetBinLabel( iRegion, niceNames[1].c_str() );
 	  
-	  for(unsigned int b=0; b<bgYields.size()-1; ++b){
+	  for(unsigned int b=0; b<bgSize; ++b){
 	    
-	    double err_int = h_second[b]->GetBinError(iBin);
-	    double integral = h_second[b]->GetBinContent(iBin);
+	    double err_int = fabs(h_second[b]->GetBinError(iBin));
+	    double integral = fabs(h_second[b]->GetBinContent(iBin));
 	    hestimate[b]->SetBinContent(iRegion, integral);
 	    hestimate[b]->SetBinError(iRegion, err_int);
 	    
-	    std::cout<<"Filled estimate for background " << b << " with: " << integral << std::endl;
+	    double integral_forRatio = fabs(h_second_forRatio[b]->GetBinContent(iBin));
+	    hestimate_forRatio[b]->SetBinContent(iRegion, integral_forRatio);
+	    hestimate_forRatio[b]->SetBinError(iRegion, 0);
 	    
 	    std::string thisLabel=Form("%s,%d", niceNames[1].c_str(), iBin); 
 	    hestimate[b]->GetXaxis()->SetBinLabel( iRegion, thisLabel.c_str() );
@@ -248,42 +325,46 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
 	  }
 	  
 	  std::cout <<"iRegion " << iRegion << std::endl;
-	  
-	  if(iBin<nBins-1)
+	  if(iBin<nBins)
 	    ++iRegion;
+	  
 	  
 	}
 	if(iMT2->nBJetsMax()==0)
-          iRegion=iRegion+24;
-        else
-          iRegion=iRegion+11;
+	  iRegion=iRegion+24;
+	else
+	  iRegion=iRegion+11;
       }
       else{
-	
-	int_data = h_first->IntegralAndError(firstBin, nBins, err_data);
 
-	hdata->SetBinContent(iRegion, int_data);
-	hdata->SetBinError(iRegion, err_data);
+        int_data = h_first->IntegralAndError(firstBin, nBins+1, err_data);
+
+        hdata->SetBinContent(iRegion, int_data);
+        hdata->SetBinError(iRegion, err_data);
 
 	std::cout<<"Filled data  with: " << int_data << std::endl;
 
-	hdata->GetXaxis()->SetBinLabel( iRegion, niceNames[1].c_str() );
+        hdata->GetXaxis()->SetBinLabel( iRegion, niceNames[1].c_str() );
 
-	for(unsigned int b=0; b<bgYields.size()-1; ++b){
+        for(unsigned int b=0; b<bgSize; ++b){
 
-	  double err_int;
-	  double integral = h_second[b]->IntegralAndError(firstBin, nBins, err_int);
-	  hestimate[b]->SetBinContent(iRegion, integral);
-	  hestimate[b]->SetBinError(iRegion, err_int);
+          double err_int;
+          double integral = h_second[b]->IntegralAndError(firstBin, nBins+1, err_int);
+          hestimate[b]->SetBinContent(iRegion, integral);
+          hestimate[b]->SetBinError(iRegion, err_int);
 
+	  double err_int_forRatio;
+	  double integral_forRatio = h_second[b]->IntegralAndError(firstBin, nBins+1, err_int_forRatio);;
+	  hestimate_forRatio[b]->SetBinContent(iRegion, integral_forRatio);
+	  hestimate_forRatio[b]->SetBinError(iRegion, 0);
+	  
 	  std::cout<<"Filled estimate for background " << b << " with: " << integral << std::endl;
 
 	  std::string thisLabel=Form("%s", niceNames[1].c_str());
-	  hestimate[b]->GetXaxis()->SetBinLabel( iRegion, thisLabel.c_str() );
+          hestimate[b]->GetXaxis()->SetBinLabel( iRegion, thisLabel.c_str() );
 
-	}
-	
-	
+        }
+
       }
 
       TCanvas* c1 = new TCanvas( "c1", "", 600, 700 );
@@ -300,15 +381,10 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
       float yMax_2 = 1.2*(h_first->GetMaximum() + h_first->GetBinError(h_first->GetMaximumBin()));
       float yMax1 = (yMax_1>yMax_2) ? yMax_1 : yMax_2;
       
-      std::cout << "yMax = " << yMax1 << std::endl;	
-      
       float yMax_3 = h_second_all->GetMaximum()*1.5;
       float yMax_4 = 1.2*(h_second_all->GetMaximum() + h_second_all->GetBinError(h_second_all->GetMaximumBin()));
       float yMax2 = (yMax_3>yMax_4) ? yMax_3 : yMax_4;
       float yMax = (yMax1>yMax2) ? yMax1 : yMax2;
-
-      std::cout << "yMax = " << yMax << std::endl;
-      std::cout << h_second_all->GetMaximum() << "\t" << h_second_all->GetBinError(h_second_all->GetMaximumBin()) << std::endl;
       
       TH2D* h2_axes = new TH2D("axes", "", 10, xMin, xMax, 10, 0., yMax );
       h2_axes->SetXTitle("M_{T2} [GeV]");
@@ -334,7 +410,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
       }
 
 
-      TLegend* legend = new TLegend( 0.6, 0.9-(bgYields.size()+1-1)*0.06, 0.93, 0.9 );
+      TLegend* legend = new TLegend( 0.6, 0.9-(bgSize)*0.06, 0.93, 0.9 );
       legend->SetTextSize(0.038);
       legend->SetTextFont(42);
       legend->SetFillColor(0);
@@ -343,7 +419,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
       legend->Draw("same");
 
       bgStack_region.Draw("histo, same");
-      h_first->Draw("pe,same");
+      g_first->Draw("pe,same");
       
       TPaveText* labelTop = MT2DrawTools::getLabelTop(lumi);
       labelTop->Draw("same");
@@ -403,22 +479,83 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
 
       delete h_second_all;
 
-      for(unsigned int b=0; b<bgYields.size()-1; ++b)
+      for(unsigned int b=0; b<bgSize; ++b)
 	delete h_second[b];
+
+      for(unsigned int b=0; b<bgSize; ++b)
+	delete h_second_forRatio[b];
       
       ++iRegion;
 
   } // for MT2 regions
 
 
-  for(unsigned int b=0; b<bgYields.size()-1; ++b){
+  for(unsigned int b=0; b<bgSize; ++b){
 
+    hestimate[b]->SetLineWidth(0);
     bgStack.Add(hestimate[b]);
+    //bgStack.Add(hestimate_forRatio[b]);
     
     if(b==0) hestimate_all = (TH1D*) hestimate[b]->Clone("hestimate_all");
     else hestimate_all->Add(hestimate[b]);
 
+    if(b==0) hestimate_all_forRatio = (TH1D*) hestimate_forRatio[b]->Clone("hestimate_all_forRatio");
+    else hestimate_all_forRatio->Add(hestimate_forRatio[b]);
+
   }
+
+  for(int iBin=1; iBin<=hestimate_all->GetNbinsX(); ++iBin){
+    
+    float thisData    = hdata->GetBinContent(iBin);
+    float thisDataErr = hdata->GetBinError(iBin);
+    
+    float thisEst     = hestimate_all->GetBinContent(iBin);
+    float thisEstErr  = hestimate_all->GetBinError(iBin);
+    
+    hPull->Fill( (thisEst-thisData)/( TMath::Sqrt( thisDataErr*thisDataErr + thisEstErr*thisEstErr ) ) );
+
+    int obs = thisData;
+    float meanExp = thisEst;
+    float meanUnc = thisEstErr;    
+    int N=100000;
+    
+    TRandom3 randGen;
+
+    unsigned int counterN(0);
+    unsigned int counterD(0);
+
+    bool doLeft = obs<=meanExp;
+
+    for(int i=0; i<N; i++){
+      double meanShift = randGen.Gaus(0.,(double)meanUnc);
+      //cout << "meanShift: " << meanShift << endl;                                                                                                                                    
+      double rand = randGen.Poisson(double(meanExp)+meanShift); counterD++;
+
+      if(doLeft)
+	{
+	  if(rand<=obs) counterN++;
+	}
+      else{
+	if(rand>=obs) counterN++;
+      }
+
+      //cout << "rand " << i << " : " << rand.Poisson(meanExp) << endl;                                                                                                                
+    }
+
+    double prob=1.0*counterN/counterD;
+    double significance  = TMath::NormQuantile(1-prob);
+
+    std::cout << "probability: " << prob  << std::endl;
+    std::cout << "significance: " << significance << std::endl;
+    
+    std::cout << "Bin: " << iBin << std::endl;
+    std::cout << "Obs: " << obs << std::endl;
+    std::cout << "exp: " << meanExp << "\t" << meanUnc << std::endl;
+    
+    hPvalue->Fill(prob);
+
+  }
+
 
   
   TCanvas* c2 = new TCanvas("c2", "", 1200, 600);
@@ -427,7 +564,8 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
 
   std::string thisName = Form("%s_ratio", hdata->GetName());
   TH1D* h_Ratio = (TH1D*) hdata->Clone(thisName.c_str());
-  h_Ratio->Divide(hestimate_all);
+  h_Ratio->Divide(hestimate_all_forRatio);
+  //h_Ratio->Divide(hestimate_all);
   h_Ratio->Write();
   h_Ratio->SetStats(0);
   h_Ratio->SetMarkerStyle(20);
@@ -456,26 +594,26 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   float yMax2 = (yMax_3>yMax_4) ? yMax_3 : yMax_4;
   float yMax = (yMax1>yMax2) ? yMax1 : yMax2;
   
-  float yMin = 1e-2;
+  float yMin = 1e-3;
+  //  yMin=0;
   yMax*=20.;
   
-  hestimate_all->GetXaxis()->SetRangeUser(0, 68);
-  hdata->GetXaxis()->SetRangeUser(0, 68);
-  //  hestimate_all->GetXaxis()->SetRangeUser(0, (int) MT2Regions.size());  
+  int thisBin=68;
+  
+  hestimate_all->GetXaxis()->SetRangeUser(0, thisBin);
+  hdata->GetXaxis()->SetRangeUser(0, thisBin);
   hestimate_all->GetYaxis()->SetRangeUser(yMin, yMax);
-  hestimate_all->GetXaxis()->LabelsOption("v");
   hdata->GetYaxis()->SetRangeUser(yMin, yMax);
-  hdata->GetXaxis()->LabelsOption("v");
-  //hestimate_all->GetXaxis()->SetLabelSize(0.035);
+  hestimate_all->GetXaxis()->LabelsOption("v");
+  hestimate_all->GetXaxis()->SetLabelSize(0.035);
   hestimate_all->SetFillStyle(3244);
   hestimate_all->SetFillColor(kGray+2);
-  //  hestimate_all->Draw("PE");
 
   TGraphAsymmErrors* g_data = new TGraphAsymmErrors(0);
   for( int iBin=1; iBin<(hdata->GetXaxis()->GetNbins()+1); ++iBin ) {
 
     double y;
-    double x, xerr, yerrplus, yerrminus;
+    double x, xerr;
 
     x = hdata->GetBinCenter(iBin);
     xerr = hdata->GetBinWidth(iBin)/2.;
@@ -495,20 +633,20 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   hestimate_all->Draw("E2,same");
   hdata->Draw("pe,same");
   
-  TLegend* legend = new TLegend( 0.8, 0.85-(bgYields.size()+1-1)*0.06-0.06, 0.93, 0.85-0.06 );
+  TLegend* legend = new TLegend( 0.8, 0.9-(bgSize+1-1)*0.06-0.06, 0.93, 0.9-0.06 );
   legend->SetTextSize(0.038);
   legend->SetTextFont(42);
   legend->SetFillColor(0);
   legend->AddEntry( hdata, "Data", "PL" );
-  for(unsigned int b=0; b<bgYields.size()-1; ++b)
-    legend->AddEntry( hestimate[b], bgYields[b]->getName().c_str(), "F" );
+  legend->AddEntry( hestimate[0], "Multijet", "F");
+  legend->AddEntry( hestimate[1], "Lost Lepton", "F");
+  legend->AddEntry( hestimate[2], "Invisible Z", "F");
 
   legend->Draw("same");
 
   //  TPaveText* labelTop = MT2DrawTools::getLabelTopSimulation(lumi);
   TPaveText* labelTop = MT2DrawTools::getLabelTop(lumi);
   labelTop->Draw("same");
-  
 
   TLine* lHT[5];
   for( int iHT=0; iHT < 5; iHT++ ){
@@ -539,7 +677,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
     htBox[iHT]->SetBorderSize(0);
     htBox[iHT]->SetFillColor(kWhite);
     htBox[iHT]->SetTextSize(0.038);
-    htBox[iHT]->SetTextAlign(21); // align centered                                                                                                                                                                
+    htBox[iHT]->SetTextAlign(21); // align centered
     htBox[iHT]->SetTextFont(62);
     htBox[iHT]->Draw("same");
 
@@ -554,7 +692,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   pad2->Draw();
   pad2->cd();  
 
-  TH2D* h2_axes_ratio = new TH2D("axes_ratio", "", 10, 0, 68, 10, 0., 2.0 );
+  TH2D* h2_axes_ratio = new TH2D("axes_ratio", "", 10, 0, thisBin, 10, 0., 3.0 );
   h2_axes_ratio->SetStats(0);
   h2_axes_ratio->GetXaxis()->SetLabelSize(0.00);
   h2_axes_ratio->GetXaxis()->SetTickLength(0.09);
@@ -564,9 +702,10 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   h2_axes_ratio->GetYaxis()->SetLabelSize(0.17);
   h2_axes_ratio->GetYaxis()->SetTitle("Ratio");
   
-  TLine* LineCentral = new TLine(0, 1.0, 68, 1.0);
+  TLine* LineCentral = new TLine(0, 1.0, thisBin, 1.0);
   LineCentral->SetLineColor(1);
 
+  
   std::string thisName_Band =  Form("%s_band", hestimate_all->GetName());
   TH1D* h_band = (TH1D*)hestimate_all->Clone(thisName_Band.c_str());
   h_band->SetMarkerSize(0);
@@ -575,8 +714,13 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   for ( int iBin=1; iBin <= hestimate_all->GetNbinsX(); iBin++){
     
     h_band->SetBinContent(iBin,1);
-    double error;
-    error = hestimate_all->GetBinError(iBin)/hestimate_all->GetBinContent(iBin);
+
+    double error=0;
+
+    if(hestimate_all->GetBinContent(iBin)>0)
+      error = hestimate_all->GetBinError(iBin)/hestimate_all->GetBinContent(iBin);
+    else error = hestimate_all->GetBinError(iBin);
+
     h_band->SetBinError(iBin, error);
 
   }
@@ -590,7 +734,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
 
   TLine* lHT_b[6];
   for( int iHT=1; iHT < 6; iHT++ ){
-    lHT_b[iHT-1] = new TLine(13+11*(iHT-1), 0, 13+11*(iHT-1), 2.0 );
+    lHT_b[iHT-1] = new TLine(13+11*(iHT-1), 0, 13+11*(iHT-1), 3.0 );
 
     lHT_b[iHT-1]->SetLineColor(kBlack);
     lHT_b[iHT-1]->SetLineStyle(3);
@@ -598,11 +742,84 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
 
     lHT_b[iHT-1]->Draw("same");
   }
-  
+
   gPad->RedrawAxis();
 
   c2->cd();
-  c2->SaveAs( Form("%s/mt2_fullEstimate.pdf", fullPath.c_str()) );
-  c2->SaveAs( Form("%s/mt2_fullEstimate.png", fullPath.c_str()) );
+  c2->SaveAs( Form("%s/mt2_ALL_fullEstimate.pdf", fullPath.c_str()) );
+  c2->SaveAs( Form("%s/mt2_ALL_fullEstimate.png", fullPath.c_str()) );
+
+
+  gStyle->SetOptStat(1110);
+  gStyle->SetOptFit(1);
   
+  TF1* fgauss= new TF1("fgauss", "gaus", -5, 5);
+  fgauss->SetLineColor(2);
+
+  TCanvas* c3 = new TCanvas("c3", "", 600, 600);
+  c3->cd();
+  hPull->SetStats(1110);
+  //  hPull->GetYaxis()->SetRangeUser(0, 15);
+  hPull->Draw("hist");
+  hPull->Fit("fgauss");
+  fgauss->Draw("same");
+  c3->SaveAs( Form("%s/PullDistribution.pdf", fullPath.c_str()) );
+  c3->SaveAs( Form("%s/PullDistribution.png", fullPath.c_str()) );
+
+  TCanvas* c4 = new TCanvas("c4", "", 600, 600);
+  c4->cd();
+  hPvalue->SetStats(1110);
+  hPvalue->Draw("hist");
+  c4->SaveAs( Form("%s/PvalueDistribution.pdf", fullPath.c_str()) );
+  c4->SaveAs( Form("%s/PvalueDistribution.png", fullPath.c_str()) );
+  
+}
+
+
+
+BGTable getTable( const std::string& tableFileName ) {
+
+  std::ifstream ifs( tableFileName.c_str() );
+
+  BGTable table;
+
+  while( ifs.good() ) {
+
+
+    char thisLine[256];
+    ifs.getline( thisLine, 256 );
+    if( thisLine[0]=='#' ) continue;
+
+    std::istringstream thisLine_iss(thisLine);
+
+    std::string name;
+    float yield, statUp, statDn, systUp, systDn;
+    thisLine_iss >> name >> yield >> statUp >> statDn >> systUp >> systDn;
+
+    if( name=="zinv" ) {
+      table.zinv = yield;
+      table.zinv_statUp = statUp;
+      table.zinv_statDn = statDn;
+      table.zinv_systUp = systUp;
+      table.zinv_systDn = systDn;
+    } else if( name=="llep" ) {
+      table.llep = yield;
+      table.llep_statUp = statUp;
+      table.llep_statDn = statDn;
+      table.llep_systUp = systUp;
+      table.llep_systDn = systDn;
+    } else if( name=="qcd" ) {
+      table.qcd = yield;
+      table.qcd_statUp = statUp;
+      table.qcd_statDn = statDn;
+      table.qcd_systUp = systUp;
+      table.qcd_systDn = systDn;
+    } else {
+      continue;
+    }
+
+  }
+
+  return table;
+
 }

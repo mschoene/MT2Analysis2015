@@ -84,11 +84,10 @@ int main(int argc, char* argv[]) {
 
   std::string regionsSet;// = "13TeV_inclusive";
   regionsSet=cfg.crRegionsSet();
-  //  regionsSet=cfg.zllRegions();
+  // regionsSet=cfg.zllRegions();
   // std::string regionsSet = cfg.zllRegions();
 
   std::cout << "-> Using regions: " << regionsSet << std::endl;
-
 
   //Getting the scale factor histogram/////////////////
   //Electrons//
@@ -116,7 +115,6 @@ int main(int argc, char* argv[]) {
   TH2D* h_muSF = (TH2D*) h_id_mu->Clone("h_muSF");
   h_muSF->SetDirectory(0);
   h_muSF->Multiply(h_iso_mu);
-
 
 
 
@@ -370,6 +368,7 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
     TLorentzVector z = LVec[0] + LVec[1]; //leptons invariant mass
     
     Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb;//*cfg.lumi(); 
+    //Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi(); 
 
 
     //get the lepton scale factors

@@ -141,8 +141,12 @@ MT2Analysis<MT2EstimateZinvGamma>*  MT2EstimateZinvGamma::makeInclusiveAnalysisF
 
   Float_t var_float;
   Int_t var_int;
-  tree->SetBranchAddress(var.c_str(), &var_int);
-  tree->SetBranchAddress(var.c_str(), &var_float);
+  if(var == "nJets" || var == "nBJets" )
+    tree->SetBranchAddress(var.c_str(), &var_int);
+  else
+    tree->SetBranchAddress(var.c_str(), &var_float);
+//  tree->SetBranchAddress(var.c_str(), &var_int);
+//  tree->SetBranchAddress(var.c_str(), &var_float);
 
   Float_t weight;
   tree->SetBranchAddress("weight", &weight);

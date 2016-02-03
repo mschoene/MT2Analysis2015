@@ -85,13 +85,13 @@ class MT2SignalRegion {
   bool operator>=( const MT2SignalRegion& rhs ) const;
 
   bool isIncluded( const MT2SignalRegion* sigRegion ) const;
-  
+
+  std::string getSingleJetString( const std::string& prefix, int n_min , int n_max=-1 ) const;
 
  private:
 
   std::string getNiceJetName( const std::string& pedix, int nmin, int nmax ) const;
   std::string getNiceJetNameLatex( const std::string& pedix, int nmin, int nmax ) const;
-  std::string getSingleJetString( const std::string& prefix, int n_min , int n_max=-1 ) const;
 
 };
 
