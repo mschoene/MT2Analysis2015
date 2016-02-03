@@ -200,13 +200,15 @@ void drawSinglePlot( const MT2Config& cfg, const std::string& name, const MT2Reg
 
   c1->cd();
   legend->Draw("same");
-  labelTop->Draw("same");
+  MT2DrawTools::addLabels( c1, cfg.lumi(), "CMS Preliminary" );
+  //  labelTop->Draw("same");
   gPad->RedrawAxis();
 
 
   c1_log->cd();
   legend->Draw("same");
-  labelTop->Draw("same");
+  MT2DrawTools::addLabels( c1_log, cfg.lumi(), "CMS Preliminary" );
+  //  labelTop->Draw("same");
   gPad->RedrawAxis();
 
 

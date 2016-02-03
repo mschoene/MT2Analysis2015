@@ -201,13 +201,14 @@ void doAllPurityPlots( const MT2Config& cfg, const std::string& mc_or_data, cons
     axes->SetXTitle( label.c_str());
     axes->SetYTitle( "Photon Purity" );
     axes->Draw("");
-
+    /*
     TPaveText* labelTop = MT2DrawTools::getLabelTop(cfg.lumi());
     labelTop->Draw("same");
 
     TPaveText* labelCMS = MT2DrawTools::getLabelCMS();
     labelCMS->Draw("same");
-
+    */
+    MT2DrawTools::addLabels( c1, cfg.lumi(), "CMS Preliminary" );
 
     gr_purityMC->Draw("p same");
 
@@ -449,13 +450,13 @@ void compareRegions( const std::string& outputdir, std::vector<MT2Region> region
 
 
   legend->Draw("same");
-
+  
   TPaveText* labelTop = MT2DrawTools::getLabelTop();
   labelTop->Draw("same");
 
   TPaveText* labelCMS = MT2DrawTools::getLabelCMS();
   labelCMS->Draw("same");
-
+  
   gPad->RedrawAxis();
 
   std::string saveName = (loopOnHT) ? regions[0].sigRegion()->getName() : regions[0].htRegion()->getName();

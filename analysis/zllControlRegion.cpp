@@ -186,7 +186,6 @@ int main(int argc, char* argv[]) {
       mc_qcd->addToFile( outFile );
       mc_wjets->addToFile( outFile );
 
-
       //For the OPPOSITE FLAVOR EVENTS:
       MT2Analysis<MT2EstimateTree>* mc_zll_of   = mcTree_of;
       mc_zll_of->setName("DYJets");
@@ -213,9 +212,6 @@ int main(int argc, char* argv[]) {
     std::vector<MT2Sample> samples_data_photon = MT2Sample::loadSamples(samplesFile_data, "SinglePhoton");  
     samples_data.insert(samples_data.end(), samples_data_photon.begin(), samples_data_photon.end());
 
-
-
-  
     std::vector<MT2Sample> samples_data_of = MT2Sample::loadSamples(samplesFile_data, "MuonEG");
   
     MT2Analysis<MT2EstimateTree>* dataTree = new MT2Analysis<MT2EstimateTree>( "data", cfg.crRegionsSet() );
@@ -225,7 +221,6 @@ int main(int argc, char* argv[]) {
     MT2Analysis<MT2EstimateTree>* dataTree_filler = new MT2Analysis<MT2EstimateTree>( "data_filler", cfg.crRegionsSet() );
 
     addVariables(dataTree);      addVariables(dataTree_of);  addVariables(dataTree_filler);
-
 
     if( samples_data.size()==0 ) {
       std::cout << std::endl;
@@ -275,6 +270,8 @@ void roundLikeData( MT2Analysis<MT2EstimateTree>* data ) {
 
  
 void addVariables(MT2Analysis<MT2EstimateTree>* anaTree){
+
+  MT2EstimateTree::addVar( anaTree, "ID" );
 
   MT2EstimateTree::addVar( anaTree, "Z_pt" );
   MT2EstimateTree::addVar( anaTree, "Z_phi" );
@@ -384,6 +381,8 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
 
     if( !myTree.isData ){ //temporarily scaling by hand the cross sections
       weight *= myTree.weight_btagsf;
+      weight *= myTree.weight_toppt;
+
 
       if( myTree.evt_id == 702) weight = weight * 1.0573;
       if( myTree.evt_id == 703) weight = weight * 0.9588;
@@ -434,7 +433,6 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
     }//end of if data
 
 
-
     bool isSF = false;
     bool isOF = false;
 
@@ -463,11 +461,13 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
 	  HLT_weight = 0.94;
       }
       
+      thisTree->assignVar("ID", sample.id );
+
       thisTree->assignVar("Z_pt", z.Perp() );
       thisTree->assignVar("Z_phi", z.Phi() );
       thisTree->assignVar("Z_eta", z.Eta() );
       thisTree->assignVar("Z_mass", z.M() );
-      thisTree->assignVar("Z_lepId", abs(myTree.lep_pdgId[0])  );
+      thisTree->assignVar("Z_lepId", abs(myTree.lep_pdgId[0]) );
 
       thisTree->assignVar("nLep", myTree.nlep );
       thisTree->assignVar("lep_pt0", myTree.lep_pt[0] );
@@ -482,8 +482,8 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
 
       thisTree->assignVar("HLT_weight", HLT_weight );
   
-      thisTree->assignVar( "nJetHF30",  nJetHF30_ );
-      thisTree->assignVar( "jet1_pt",  myTree.jet1_pt );
+      thisTree->assignVar( "nJetHF30", nJetHF30_ );
+      thisTree->assignVar( "jet1_pt", myTree.jet1_pt );
 
       thisTree->assignVar("lep_tightId0", myTree.lep_tightId[0] );
       thisTree->assignVar("lep_tightId1", myTree.lep_tightId[1] );
@@ -492,7 +492,7 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
       thisTree->fillTree_zll(myTree, weight );
       thisTree->yield->Fill(myTree.zll_mt2, weight );
 
-    }else if(isOF){ //////////Opposite FLAVOR//////////////////////////////////////////
+    } else if(isOF){ //////////Opposite FLAVOR//////////////////////////////////////////
       if(  myTree.isData && !( sample.id==6  && (myTree.HLT_MuX_Ele12 || myTree.HLT_Mu8_EleX)) ) continue;
       if( !myTree.isData && !( (myTree.HLT_MuX_Ele12 || myTree.HLT_Mu8_EleX)) ) continue;
       MT2EstimateTree* thisTree_of = anaTree_of->get( myTree.zll_ht, njets, nbjets, minMTBmet, myTree.zll_mt2 );
@@ -503,6 +503,8 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
 	if( myTree.jet_pt[j] < 30. || fabs(myTree.jet_eta[j]) < 3.0 ) continue;
 	else ++nJetHF30_;
       }
+
+      thisTree_of->assignVar("ID", sample.id );
 
       thisTree_of->assignVar("Z_pt", z.Perp() );
       thisTree_of->assignVar("Z_phi", z.Phi() );
