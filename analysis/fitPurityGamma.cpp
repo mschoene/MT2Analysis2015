@@ -208,7 +208,6 @@ void makePurity( const MT2Config& cfg, std::string outputdir,MT2Analysis<MT2Esti
 
  
   for( std::set<MT2Region>::iterator iR=regions.begin(); iR!=regions.end(); ++iR ) {
-  std::cout << "GET HERE" << std::endl;
  
     // if( iR->nBJetsMin()>2 ) continue;
 
@@ -219,14 +218,11 @@ void makePurity( const MT2Config& cfg, std::string outputdir,MT2Analysis<MT2Esti
       templateFake   = temp_fake  ->get( *(temp_fake  ->matchRegion( *iR )) );
     }
     
-  std::cout << " or here " << std::endl;
-  
     MT2EstimateSyst* thisLoosePurity = purityLoose->get( *iR );
     std::string nameLoose = thisLoosePurity->yield->GetName();
 
     MT2EstimateSyst* thisTightPurity = purityTight->get( *iR );
     std::string nameTight = thisTightPurity->yield->GetName();
-
 
 
  

@@ -833,8 +833,10 @@ std::vector<TCanvas*> MT2DrawTools::drawRegionYields_fromTree( const std::string
 
     float scaleFactor = mcSF_;
     if( data_ ) {
-      std::cout << "Integrals: " << h1_data->Integral(0, nBins) << "\t" << mc_sum->Integral(0, nBins) << std::endl;
-      float sf  = h1_data->Integral(0, nBins)/mc_sum->Integral(0, nBins);
+      std::cout << "Integrals: " << h1_data->Integral(1, nBins+1) << "\t" << mc_sum->Integral(1, nBins+1) << std::endl;
+      float sf  = h1_data->Integral(1, nBins+1)/mc_sum->Integral(1, nBins+1);
+      //      std::cout << "Integrals: " << h1_data->Integral(0, nBins) << "\t" << mc_sum->Integral(0, nBins) << std::endl;
+      //float sf  = h1_data->Integral(0, nBins)/mc_sum->Integral(0, nBins);
       //std::cout << "Integrals: " << h1_data->Integral(0, nBins+1) << "\t" << mc_sum->Integral(0, nBins+1) << std::endl;
       //float sf  = h1_data->Integral(0, nBins+1)/mc_sum->Integral(0, nBins+1);
       std::cout << "SF: " << sf << std::endl;
