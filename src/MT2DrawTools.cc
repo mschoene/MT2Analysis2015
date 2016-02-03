@@ -833,12 +833,17 @@ std::vector<TCanvas*> MT2DrawTools::drawRegionYields_fromTree( const std::string
 
     float scaleFactor = mcSF_;
     if( data_ ) {
-      std::cout << "Integrals: " << h1_data->Integral(1, nBins+1) << "\t" << mc_sum->Integral(1, nBins+1) << std::endl;
-      float sf  = h1_data->Integral(1, nBins+1)/mc_sum->Integral(1, nBins+1);
-      //      std::cout << "Integrals: " << h1_data->Integral(0, nBins) << "\t" << mc_sum->Integral(0, nBins) << std::endl;
-      //float sf  = h1_data->Integral(0, nBins)/mc_sum->Integral(0, nBins);
-      //std::cout << "Integrals: " << h1_data->Integral(0, nBins+1) << "\t" << mc_sum->Integral(0, nBins+1) << std::endl;
-      //float sf  = h1_data->Integral(0, nBins+1)/mc_sum->Integral(0, nBins+1);
+      float sf;
+      if( addOverflow_ ){
+	//adding the overflow bin to the SF calculation
+	std::cout << "Integrals: " << h1_data->Integral(1, nBins+1) << "\t" << mc_sum->Integral(1, nBins+1) << std::endl;
+	sf  = h1_data->Integral(1, nBins+1)/mc_sum->Integral(1, nBins+1);
+
+      }else{ 
+	//not adding the overflow bin
+	std::cout << "Integrals: " << h1_data->Integral(1, nBins) << "\t" << mc_sum->Integral(1, nBins) << std::endl;
+	sf  = h1_data->Integral(1, nBins)/mc_sum->Integral(1, nBins);
+      }
       std::cout << "SF: " << sf << std::endl;
       if( shapeNorm_ ) scaleFactor *= sf;
     }
