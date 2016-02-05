@@ -2,8 +2,9 @@
 
 # --- configuration (consider to move this into a separate file) ---
 treeName="mt2"
-inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/babies/MT2_CMGTools-from-CMSSW_7_4_12/fullData_miniAODv2_15Nov2015_jecV6/"
-productionName="05Feb2016_ZGTo2LG_withLooseSF"
+inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/babies/MT2_CMGTools-from-CMSSW_7_4_12/ZG_20Dec2015/"
+#"/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/babies/MT2_CMGTools-from-CMSSW_7_4_12/fullData_miniAODv2_15Nov2015_jecV6/"
+productionName="05Feb2016_LooseEle"
 fileExt="_post.root"
 isCrab=1
 inputPU="/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/MT2production/74X/Spring15/PostProcessed/23Oct2015_data_noSkim/JetHT_Run2015D_post.root"
@@ -83,6 +84,14 @@ echo "Location of log files is: " $jobsLogsFolder
 echo "Location of final files on SE is: " $outputFolder
 echo "Working folder on working-node is: " $workingFolder
 
+
+if [ $CMSSW_BASE ]; then
+    myCMSSW=$CMSSW_BASE  
+else
+    myCMSSW=/cvmfs/cms.cern.ch/slc6_amd64_gcc491/cms/cmssw-patch/CMSSW_7_4_12_patch4
+fi
+
+
 ### here I compile the root macro only once
 ### Uncomment for ROOT v5
 #echo "gROOT->LoadMacro(\"goodrun.cc+\"); gSystem->Exit(0);" |root.exe -b -l ;
@@ -157,8 +166,9 @@ source $VO_CMS_SW_DIR/cmsset_default.sh
 source /swshare/glite/external/etc/profile.d/grid-env.sh
 export SCRAM_ARCH=slc6_amd64_gcc491
 export LD_LIBRARY_PATH=/swshare/glite/d-cache/dcap/lib/:$LD_LIBRARY_PATH
-echo "Loading CMSSW_7_4_12/"
-cd /shome/mschoene/CMSSW_7_4_12_patch4/src/
+echo "Loading your CMSSW release or CMSSW_7_4_12/"
+echo "from $myCMSSW"
+cd $myCMSSW
 eval `scramv1 runtime -sh`
 cd -
 

@@ -469,18 +469,11 @@ int postProcessing(string inputString,
   TBranch* b22 = clone->Branch("weight_toppt", &weight_toppt, "weight_toppt/F");
   TBranch* b23 = clone->Branch("weight_isr", &weight_isr, "weight_isr/F");
 
-  Float_t weight_isr_av;
-  TBranch* b23b = clone->Branch("weight_isr_av", &weight_isr_av, "weight_isr_av/F");
 
-
-  clone->AddFriend(chain, "ft1");
-  Float_t weight_isr_ph;
-  Int_t GenSusyMNeutralino_ph;
-  Int_t GenSusyMGluino_ph;
 
   //ISR /// bins of size 5GeV for T2cc
+  Float_t weight_isr_av;
   TH2D* h_isr = new TH2D("h_isr", "", 120*5, 12.5, 3012.5, 120*5, -12.5, 2987.5); h_isr->Sumw2();
-
   TH2D* h_counter = new TH2D("h_counter", "", 120*5, 12.5, 3012.5, 120*5, -12.5, 2987.5); h_counter->Sumw2();
   Int_t GenSusyMNeutralino;
   Int_t GenSusyMGluino;
@@ -512,21 +505,25 @@ int postProcessing(string inputString,
 	else if( pt_hard >= 600. ) weight_isr_av = 1.30;
       }
 
-      b23b->Fill();
+      h_isr->Fill((float)GenSusyMGluino , (float)GenSusyMNeutralino,  weight_isr_av);
+      h_counter->Fill((float)GenSusyMGluino,(float)GenSusyMNeutralino,  1.0);
 
     }//end or first loop for calculating the average ISR
-    
-    clone->Project("h_isr", "GenSusyMNeutralino:GenSusyMGluino","weight_isr_av");
-    clone->Project("h_counter", "GenSusyMNeutralino:GenSusyMGluino");
- 
+
     h_isr->Divide(h_counter);
- 
+    /*
+    for(int l = 0; l<120*5; l++){
+      for(int m = 0; m<120*5; m++){
+	if( h_isr->GetBinContent(l,m) > 0.0)
+	  cout << l<< ", " << m << " has content " <<h_isr->GetBinContent(l,m)  << endl;
+      }
+    }
+    */ 
+
     cout << "Finished first loop over the events to get the average weight of ISR" << endl;
 
   }//end of ISR norm histo calculation
 
-  //Remove the branch as we don't need it anymore
-  clone->GetListOfBranches()->Remove( b23b );
 
   //Top pt reweighting 
   //Values from Run1 still valid for now, see here: https://twiki.cern.ch/twiki/bin/viewauth/CMS/TopPtReweighting
@@ -703,9 +700,6 @@ int postProcessing(string inputString,
   //-------------------------------------------------------------
 
   delete chain; 
-
-
-  out->cd();
 
   hPU->Write();
   hPU_data->Write();
