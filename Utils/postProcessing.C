@@ -26,8 +26,14 @@ run()
 #include "TH1D.h"
 #include "TROOT.h"
 #include "TSystem.h"
+#include "TH2F.h"
+#include "TLorentzVector.h"
+
+#include "BTagCalibrationStandalone.cc"
 
 #include "goodrunClass.cc"
+
+#include "btagSF.C"
 
 using namespace std;
 
@@ -40,12 +46,13 @@ int postProcessing(string inputString="input",
 		   string inputPU="",
 		   string PUvar="nVert",
 		   bool applyJSON=true,
+		   bool applySF=true,
 		   bool doSilver=false);
 
 
 int run(string cfg="postProcessing.cfg",
 	string treeName="tree", 
-	string inputFolder = "/pnfs/psi.ch/cms/trivcat/store/user/casal/babies/PHYS14_Production_QCDpt_noSietaieta/", 
+	string inputFolder = "pnfs/psi.ch/cms/trivcat/store/user/casal/babies/PHYS14_Production_QCDpt_noSietaieta/", 
 	string outputFolder = "./test/",  
 	string fileExtension = "_post.root",
         string crabExt = "",
@@ -65,7 +72,6 @@ int run(string cfg="postProcessing.cfg",
     istringstream ss(line);
     if((ss.str()[0])==(string)"#") continue;
     if(ss.str().empty()) continue;
-
 
     string idS,name,xsecS,filterS,kfactorS;
     ss >> idS;
@@ -112,6 +118,7 @@ int postProcessing(string inputString,
 		   string inputPU,
 		   string PUvar,
 		   bool applyJSON,
+		   bool applySF,
 		   bool doSilver)
 {
   
@@ -132,6 +139,42 @@ int postProcessing(string inputString,
       silver.set_goodrun_file(silverjson_file);
     }
   }
+  //Getting the lepton scale factor histograms/////////////////
+  //Electrons//
+  std::string filename = "kinematicBinSFele.root";
+  TFile * f = new TFile(filename.c_str() );
+  if (!f->IsOpen()) std::cout << " ERROR: Could not find scale factor file " << filename << std::endl; 
+  //Uncomment for loose Id
+  //TH2D* h_id = (TH2D*) f->Get("CutBasedLoose");
+  TH2D* h_id = (TH2D*) f->Get("CutBasedVeto");
+  TH2D* h_iso = (TH2D*) f->Get("MiniIso0p1_vs_AbsEta");
+  if (!h_id || !h_iso) std::cout << "ERROR: Could not find scale factor histogram"<< std::endl;
+  TH2D* h_elSF = (TH2D*) h_id->Clone("h_elSF");
+  h_elSF->SetDirectory(0);
+  h_elSF->Multiply(h_iso);
+
+  //Muons//
+  std::string filenameID = "TnP_MuonID_NUM_LooseID_DENOM_generalTracks_VAR_map_pt_eta.root";
+  std::string filenameISO = "TnP_MuonID_NUM_MiniIsoTight_DENOM_LooseID_VAR_map_pt_eta.root";
+  TFile * f1 = new TFile(filenameID.c_str() );
+  TFile * f2 = new TFile(filenameISO.c_str() );
+  if (!f1->IsOpen()) { std::cout<<" ERROR: Could not find ID scale factor file "<<filenameID<<std::endl; return 0;}
+  if (!f2->IsOpen()) { std::cout<<"ERROR: Could not find ISO scale factor file "<<filenameISO<<std::endl; return 0;}
+  TH2D* h_id_mu = (TH2D*) f1->Get("pt_abseta_PLOT_pair_probeMultiplicity_bin0_&_tag_combRelIsoPF04dBeta_bin0_&_tag_pt_bin0_&_tag_IsoMu20_pass");
+  TH2D* h_iso_mu = (TH2D*) f2->Get("pt_abseta_PLOT_pair_probeMultiplicity_bin0_&_tag_combRelIsoPF04dBeta_bin0_&_tag_pt_bin0_&_PF_pass_&_tag_IsoMu20_pass");
+  if (!h_id_mu || !h_iso_mu) { std::cout<<"ERROR: Could not find scale factor histogram"<<std::endl; return 0;}
+  TH2D* h_muSF = (TH2D*) h_id_mu->Clone("h_muSF");
+  h_muSF->SetDirectory(0);
+  h_muSF->Multiply(h_iso_mu);
+
+  f->Close();  f1->Close(); f2->Close();
+
+  std::cout << std::endl;
+  std::cout << "Using Loose Muon ID, MiniIso 0.2 lepton scale factors" << std::endl;
+  std::cout << "Using Veto Electrons ID, MiniIso 0.1 lepton scale factors" << std::endl;
+  std::cout << "Be aware that Veto Electrons are not suited for selecting Electrons." << std::endl;
+  std::cout << std::endl;
+
 
   TChain* chain = new TChain(treeName.c_str());
   // Add all files in the input folder
@@ -191,15 +234,14 @@ int postProcessing(string inputString,
     TFile *f; f = TFile::Open(elem->GetTitle(),"READ");
     TH1D *countH = (TH1D*)f->Get("Count");
     
-//    ++nFiles;
-//    std::cout << elem->GetTitle() << std::endl;
-//
-//    std::cout << "Read Count histogram for file "<< nFiles <<": " << countH->GetEntries() << std::endl;
+    // ++nFiles;
+    // std::cout << elem->GetTitle() << std::endl;
+    // std::cout << "Read Count histogram for file "<< nFiles <<": " << countH->GetEntries() << std::endl;
 
     TH1D *sumW = (TH1D*)f->Get("SumGenWeights");
-//
-//    std::cout << "Read SumGenWeights histogram for file "<< nFiles <<": " << sumW->GetEntries() << std::endl;
-//
+    //
+    // std::cout << "Read SumGenWeights histogram for file "<< nFiles <<": " << sumW->GetEntries() << std::endl;
+    //
 
     if(isFirst){
       newH = (TH1D*) countH->Clone();
@@ -230,7 +272,7 @@ int postProcessing(string inputString,
   // This line should be uncommented for all the branches that we want to overwrite.
   // If the branch is not in the input tree, we don't need this.
   //
-  //t->SetBranchStatus("scale1fb", 0);
+  // t->SetBranchStatus("scale1fb", 0);
 
 
   TFile *out = TFile::Open(outputFile.c_str(), "RECREATE");
@@ -245,7 +287,7 @@ int postProcessing(string inputString,
   clone->SetName("mt2");
   
   std::cout << "Cloned tree." << std::endl;
-  
+ 
   //if(SortBasketsByEntry)
   // clone = t->CloneTree(-1, "fastSortBasketsByEntry");
   //else 
@@ -256,8 +298,8 @@ int postProcessing(string inputString,
   //Calculate scaling factor and put variables into tree 
   ULong64_t nEventsTree = clone->GetEntries();
   ULong64_t nEventsHisto = (ULong64_t) newH->GetBinContent(1); 					 
-//  Int_t nEventsTree = clone->GetEntries();
-//  Int_t nEventsHisto = (Int_t) newH->GetBinContent(1); 					 
+  //  Int_t nEventsTree = clone->GetEntries();
+  //  Int_t nEventsHisto = (Int_t) newH->GetBinContent(1); 					 
 
   float genWeight_=1.0;
   float genWeight=0.;
@@ -274,21 +316,23 @@ int postProcessing(string inputString,
 
   int nVert=0;
   chain->SetBranchAddress("nVert", &nVert);
-  
+
+
+
   int nTrueInt=0;
   TBranch* thisNTrueInt = (TBranch*) chain->GetListOfBranches()->FindObject("nTrueInt");
   if (thisNTrueInt) chain->SetBranchAddress("nTrueInt", &nTrueInt);
   
   if( nEventsTree > 0 ){
-
     chain->GetEntry(0);
-
-    if(isData)
+    if(isData){
       genWeight_ = 1.;
+      applySF = false; //to make absolutely sure no plonker tries to fill them for data
+    }
     else
       genWeight_ = fabs(genWeight);
-
   }
+
 
   TH1D* hPU = (TH1D*) hPU_data->Clone("hPU");
   hPU->Reset();
@@ -312,6 +356,61 @@ int postProcessing(string inputString,
   float puWeight;
   int isGolden;
   int isSilver;
+
+  Float_t weight_btagsf;
+  Float_t weight_btagsf_heavy_UP;
+  Float_t weight_btagsf_heavy_DN;
+  Float_t weight_btagsf_light_UP;
+  Float_t weight_btagsf_light_DN;
+  Float_t weight_lepsf;
+  Float_t weight_lepsf_UP;
+  Float_t weight_lepsf_DN;
+  Float_t weight_toppt;
+  Float_t weight_isr;
+
+
+  ////// Lepton Efficiency SF
+  Int_t nlep;
+  chain->SetBranchAddress("nlep", &nlep);
+  Float_t lep_pt[100];
+  chain->SetBranchAddress("lep_pt", lep_pt);
+  Float_t lep_eta[100];
+  chain->SetBranchAddress("lep_eta", lep_eta);
+  Int_t lep_pdgId[100];
+  chain->SetBranchAddress("lep_pdgId", lep_pdgId);
+  
+  ////// b-tag SF
+  Int_t njet;
+  chain->SetBranchAddress("njet", &njet);
+  Float_t jet_pt[100];
+  chain->SetBranchAddress("jet_pt", jet_pt);
+  Float_t jet_eta[100];
+  chain->SetBranchAddress("jet_eta", jet_eta);
+  Int_t jet_mcFlavour[100];
+  chain->SetBranchAddress("jet_mcFlavour", jet_mcFlavour);
+  Float_t jet_btagCSV[100];
+  chain->SetBranchAddress("jet_btagCSV", jet_btagCSV);
+  
+  ////// isr re-weight
+  Int_t nGenPart;
+  Float_t GenPart_pt[100];
+  Float_t GenPart_eta[100];
+  Float_t GenPart_phi[100];
+  Float_t GenPart_mass[100];
+  Int_t GenPart_status[100];
+  Int_t GenPart_pdgId[100];
+
+  if (!isData) {
+    std::cout << "Loading the generator parts " << std::endl;
+    chain->SetBranchAddress("nGenPart", &nGenPart);
+    chain->SetBranchAddress("GenPart_pt", GenPart_pt);
+    chain->SetBranchAddress("GenPart_eta", GenPart_eta);
+    chain->SetBranchAddress("GenPart_phi", GenPart_phi);
+    chain->SetBranchAddress("GenPart_mass", GenPart_mass);
+    chain->SetBranchAddress("GenPart_status", GenPart_status);
+    chain->SetBranchAddress("GenPart_pdgId", GenPart_pdgId);
+  }
+
 
   if( isData ){
     
@@ -341,6 +440,10 @@ int postProcessing(string inputString,
 	 << "#events histo: "  << nEventsHisto << endl
 	 << "#events tree: "  << nEventsTree << endl;
     
+
+
+
+
   TBranch* b1 = clone->Branch("evt_scale1fb", &scale1fb, "evt_scale1fb/F");
   TBranch* b2 = clone->Branch("evt_scale1fb_noGenWeight", &scale1fb_noGenWeight, "evt_scale1fb_noGenWeights/F");
   TBranch* b3 = clone->Branch("evt_scale1fb_sumGenWeights", &scale1fb_sumGenWeights, "evt_scale1fb_sumGenWeights/F");
@@ -355,9 +458,120 @@ int postProcessing(string inputString,
   TBranch* b12 = clone->Branch("isGolden", &isGolden, "isGolden/I");
   TBranch* b13 = clone->Branch("isSilver", &isSilver, "isSilver/I");
   
+  TBranch* b14 = clone->Branch("weight_btagsf"         , &weight_btagsf         , "weight_btagsf/F"         );
+  TBranch* b15 = clone->Branch("weight_btagsf_heavy_UP", &weight_btagsf_heavy_UP, "weight_btagsf_heavy_UP/F");
+  TBranch* b16 = clone->Branch("weight_btagsf_heavy_DN", &weight_btagsf_heavy_DN, "weight_btagsf_heavy_DN/F");
+  TBranch* b17 = clone->Branch("weight_btagsf_light_UP", &weight_btagsf_light_UP, "weight_btagsf_light_UP/F");
+  TBranch* b18 = clone->Branch("weight_btagsf_light_DN", &weight_btagsf_light_DN, "weight_btagsf_light_DN/F");
+  TBranch* b19 = clone->Branch("weight_lepsf", &weight_lepsf, "weight_lepsf/F");
+  TBranch* b20 = clone->Branch("weight_lepsf_UP", &weight_lepsf_UP, "weight_lepsf_UP/F");
+  TBranch* b21 = clone->Branch("weight_lepsf_DN", &weight_lepsf_DN, "weight_lepsf_DN/F");
+  TBranch* b22 = clone->Branch("weight_toppt", &weight_toppt, "weight_toppt/F");
+  TBranch* b23 = clone->Branch("weight_isr", &weight_isr, "weight_isr/F");
+
+  Float_t weight_isr_av;
+  TBranch* b23b = clone->Branch("weight_isr_av", &weight_isr_av, "weight_isr_av/F");
+
+
+  clone->AddFriend(chain, "ft1");
+  Float_t weight_isr_ph;
+  Int_t GenSusyMNeutralino_ph;
+  Int_t GenSusyMGluino_ph;
+
+  //ISR /// bins of size 5GeV for T2cc
+  TH2D* h_isr = new TH2D("h_isr", "", 120*5, 12.5, 3012.5, 120*5, -12.5, 2987.5); h_isr->Sumw2();
+
+  TH2D* h_counter = new TH2D("h_counter", "", 120*5, 12.5, 3012.5, 120*5, -12.5, 2987.5); h_counter->Sumw2();
+  Int_t GenSusyMNeutralino;
+  Int_t GenSusyMGluino;
+
+  if( id>1000 ){
+
+    cout << "Entering first loop to determine the average ISR weights" << endl;
+
+    chain->SetBranchAddress("GenSusyMNeutralino", &GenSusyMNeutralino);
+    chain->SetBranchAddress("GenSusyMGluino", &GenSusyMGluino);
+
+    for(Long64_t i = 0; i < (Long64_t) nEventsTree; i++) {
+    
+      chain->GetEntry(i);
+      weight_isr_av = 1.0;
+
+      TLorentzVector s;
+      if(nGenPart>0){
+ 	for(int o=0; o<nGenPart; ++o){
+	  if(GenPart_status[o] != 62)   continue;
+	  TLorentzVector s_;
+	  s_.SetPtEtaPhiM(GenPart_pt[o], GenPart_eta[o], GenPart_phi[o], GenPart_mass[o]);
+	  s+=s_;
+	}  
+	double pt_hard = s.Pt();
+	if( pt_hard < 0. || pt_hard > 99999 )         continue;
+	else if( pt_hard < 400. )  weight_isr_av = 1.0;
+	else if( pt_hard < 600. )  weight_isr_av = 1.15;
+	else if( pt_hard >= 600. ) weight_isr_av = 1.30;
+      }
+
+      b23b->Fill();
+
+    }//end or first loop for calculating the average ISR
+    
+    clone->Project("h_isr", "GenSusyMNeutralino:GenSusyMGluino","weight_isr_av");
+    clone->Project("h_counter", "GenSusyMNeutralino:GenSusyMGluino");
+ 
+    h_isr->Divide(h_counter);
+ 
+    cout << "Finished first loop over the events to get the average weight of ISR" << endl;
+
+  }//end of ISR norm histo calculation
+
+  //Remove the branch as we don't need it anymore
+  clone->GetListOfBranches()->Remove( b23b );
+
+  //Top pt reweighting 
+  //Values from Run1 still valid for now, see here: https://twiki.cern.ch/twiki/bin/viewauth/CMS/TopPtReweighting
+  float a = 0.156;
+  float b = -0.00137;
+  //First loop over events for the normalization of the toppt reweighting///////
+  double average = 0;
+  if( applySF && id>300 && id<400 ){
+    for(Long64_t i = 0; i < (Long64_t) nEventsTree; i++) {
+    
+      chain->GetEntry(i);
+
+      if(nGenPart>0)
+	for(int o=0; o<nGenPart; ++o){
+	  if(GenPart_status[o] != 62) continue;
+	  //Only apply weight to top or antitop
+	  if( abs(GenPart_pdgId[o])==6 ){
+	    weight_toppt *= exp( a + b * GenPart_pt[o] );
+	  }
+	  else continue;
+
+
+	}//end loop over objects
+  
+      average += weight_toppt;  
+    }
+    average /= (double) nEventsTree;
+  }//end or first loop for toppt average
+
+
   for(Long64_t i = 0; i < (Long64_t) nEventsTree; i++) {
     
+    weight_btagsf = 1.;
+    weight_btagsf_heavy_UP = 1.;
+    weight_btagsf_heavy_DN = 1.;
+    weight_btagsf_light_UP = 1.;
+    weight_btagsf_light_DN = 1.;
+    weight_lepsf = 1.;
+    weight_lepsf_UP = 1.;
+    weight_lepsf_DN = 1.;
+    weight_toppt = 1.;
+    weight_isr=1.;
+
     chain->GetEntry(i);
+
     if(isData){
       //data should never be rescaled with scale1fb when making plots
       //set scaler to zero so that user cannot miss the mistake
@@ -379,6 +593,88 @@ int postProcessing(string inputString,
     if( applyJSON && doSilver && isData && !silver.goodrun(run, lumi) ) isSilver=0;
     else isSilver=1;
 
+
+
+    if( applySF ){
+      /////////Add ISR scale factor//////////
+      if( id < 1000 ) ;
+      else{
+	TLorentzVector s;
+	if(nGenPart>0)
+	  for(int o=0; o<nGenPart; ++o){
+	    if(GenPart_status[o] != 62) continue;
+	    TLorentzVector s_;
+	    s_.SetPtEtaPhiM(GenPart_pt[o], GenPart_eta[o], GenPart_phi[o], GenPart_mass[o]);
+	    s+=s_;	  
+	  }
+	float pt_hard = s.Pt();
+	if( pt_hard < 0. )         continue;
+	else if( pt_hard < 400. )  weight_isr = 1.0;
+	else if( pt_hard < 600. )  weight_isr = 1.15;
+	else if( pt_hard >= 600. ) weight_isr = 1.30;
+
+	Int_t binx = h_isr->GetXaxis()->FindBin( (float)GenSusyMGluino );
+	Int_t biny = h_isr->GetYaxis()->FindBin( (float)GenSusyMNeutralino );
+	double central = h_isr->GetBinContent(binx,biny);
+
+	weight_isr /= central;
+      }
+
+      /////////Add Top pt scale factor//////////
+      if( id >399 || id < 300 ) ;
+      else if(nGenPart>0){
+	for(int o=0; o<nGenPart; ++o){
+	  if(GenPart_status[o] != 62) continue;
+	  //Only apply weight to top or antitop
+	  if( abs(GenPart_pdgId[o])==6 )
+	    weight_toppt *= exp( a + b * GenPart_pt[o] );
+	  else continue;
+	}//end loop over objects
+	weight_toppt /= average;
+      }
+
+
+      /////////Add b-tagging scale factor//////////     
+      get_weight_btag(njet, jet_pt, jet_eta, jet_mcFlavour, jet_btagCSV, weight_btagsf, weight_btagsf_heavy_UP, weight_btagsf_heavy_DN, weight_btagsf_light_UP, weight_btagsf_light_DN);
+
+      /////////Add lepton scale factor//////////
+      if(nlep>0){
+	Float_t uncert = 0; //Place holder for total uncertainty
+	Float_t central = 1; 
+	Float_t err = 0;
+
+	for(int o=0; o<nlep; ++o){
+	  //Electrons
+	  if (abs( lep_pdgId[o]) == 11) {
+	    Int_t binx = h_elSF->GetXaxis()->FindBin(lep_pt[o]);
+	    Int_t biny = h_elSF->GetYaxis()->FindBin(fabs(lep_eta[o]));
+	    central = h_elSF->GetBinContent(binx,biny);
+	    err  = h_elSF->GetBinError(binx,biny);
+	    if (central > 1.2 || central < 0.8) 
+	      std::cout<<"STRANGE: Electron with pT/eta of "<<lep_pt[o]<<"/"<<lep_eta[o]<<". SF is "<< central <<std::endl;
+	  } //else Muons
+	  else if (abs( lep_pdgId[o]) == 13) {
+	    Int_t binx = h_muSF->GetXaxis()->FindBin(lep_pt[o]);
+	    Int_t biny = h_muSF->GetYaxis()->FindBin(fabs(lep_eta[o]));
+	    if ( binx >7 ) binx = 7; //overflow bin empty for the muons...
+	    central = h_muSF->GetBinContent(binx,biny);
+	    err  = 0.014; // adding in quadrature 1% unc. on ID and 1% unc. on ISO
+	    if (central > 1.2 || central < 0.8) 
+	      std::cout<<"STRANGE: Muon with pT/eta of "<<lep_pt[o]<<"/"<< fabs(lep_eta[o]) <<". SF is "<< central <<std::endl;
+	  } 
+	  weight_lepsf *= central;
+	  //uncertainties are supposed to be summed up linearly for the lepton SF
+	  uncert += err; 	
+	}//end of loop over objects
+    
+	weight_lepsf_UP = central + uncert; 
+	weight_lepsf_DN = central - uncert;
+	 
+      }//end of lepton sf
+
+    }//end of if applySF
+
+
     b1->Fill();
     b2->Fill();
     b3->Fill();
@@ -392,11 +688,24 @@ int postProcessing(string inputString,
     b11->Fill();
     b12->Fill();
     b13->Fill();
+    b14->Fill();
+    b15->Fill();
+    b16->Fill();
+    b17->Fill();
+    b18->Fill();
+    b19->Fill();
+    b20->Fill();
+    b21->Fill();
+    b22->Fill();
+    b23->Fill();
     
   }
   //-------------------------------------------------------------
 
   delete chain; 
+
+
+  out->cd();
 
   hPU->Write();
   hPU_data->Write();

@@ -2,9 +2,8 @@
 
 # --- configuration (consider to move this into a separate file) ---
 treeName="mt2"
-inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/babies/MT2_CMGTools-from-CMSSW_7_4_12/fullData_miniAODv2_18Nov2015/"
-#/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/babies/MT2_CMGTools-from-CMSSW_7_4_12/fullData_miniAODv2_15Nov2015_jecV6/"
-productionName="18Nov2015_jecV6_dataRunD_goldenJSON_2p1ifb"
+inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/babies/MT2_CMGTools-from-CMSSW_7_4_12/fullData_miniAODv2_15Nov2015_jecV6/"
+productionName="05Feb2016_ZGTo2LG_withLooseSF"
 fileExt="_post.root"
 isCrab=1
 inputPU="/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/MT2production/74X/Spring15/PostProcessed/23Oct2015_data_noSkim/JetHT_Run2015D_post.root"
@@ -16,9 +15,10 @@ PUvar="nVert"
 #GoldenJSON="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-260426_13TeV_PromptReco_Collisions15_25ns_JSON.txt"
 GoldenJSON="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt"
 SilverJSON="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON_Silver.txt"
-applyJSON=1
-doSilver=1
-doFilterTxt=1
+applyJSON=0
+doSilver=0
+doFilterTxt=0
+doAllSF=1
 # --------------------------
 
 
@@ -33,7 +33,10 @@ if [[ "$#" -eq 0 ]]; then
     echo "./doTreeProduction.sh post      # post-processing"
     echo "./doTreeProduction.sh postCheck # check post-processing"
     echo "./doTreeProduction.sh mergeData # merge data and remove duplicates (not implemented yet)"
-    echo "./doTreeProduction.sh addBtag   # add b-tagg weights variables (not implemented yet)"
+    echo "./doTreeProduction.sh addAllSF  # add all scale factor weights"
+    echo "./doTreeProduction.sh addISR    # add isr weights variables(not fully implemented yet for the standalone version)"
+    echo "./doTreeProduction.sh addBtag   # add b-tagg weights variables"
+    echo "./doTreeProduction.sh addLepSF  # add lepton weights variables"
     echo "./doTreeProduction.sh clean     # clean (not implemented yet)"
     exit;
 fi;
@@ -100,6 +103,11 @@ do
 	doPruning="false"
     fi;
 
+    if [ $id -lt 10 ]; then
+	doAllSF="false"
+    fi;
+
+
     if [[ $id -lt 10 && $doFilterTxt == 1 ]]; then
 	# this is the merged (and duplicate removed) file including Nov15 txts and Oct 15 txts for all datasets
 	#filterTxt=/shome/casal/eventlist_Nov14/filter_cscNov15_ecalscnNov15_cscOct15_sortu.txt
@@ -138,19 +146,33 @@ do
 #$ -o $jobsLogsFolder/${name}.out
 #$ -e $jobsLogsFolder/${name}.err
 
-source /swshare/psit3/etc/profile.d/cms_ui_env.sh
+#source /swshare/psit3/etc/profile.d/cms_ui_env.sh
+#source $VO_CMS_SW_DIR/cmsset_default.sh
+#source /swshare/ROOT/thisroot.sh 
+#eval \`scramv1 runtime -sh\`
+
+
+
 source $VO_CMS_SW_DIR/cmsset_default.sh
-source /swshare/ROOT/thisroot.sh 
-eval \`scramv1 runtime -sh\`
+source /swshare/glite/external/etc/profile.d/grid-env.sh
+export SCRAM_ARCH=slc6_amd64_gcc491
+export LD_LIBRARY_PATH=/swshare/glite/d-cache/dcap/lib/:$LD_LIBRARY_PATH
+echo "Loading CMSSW_7_4_12/"
+cd /shome/mschoene/CMSSW_7_4_12_patch4/src/
+eval `scramv1 runtime -sh`
+cd -
+
 
 mkdir -p $workingFolder
 gfal-mkdir -p srm://t3se01.psi.ch/$outputFolder
 
 echo "postProcessing(\"$name\",\"$inputFolder\",\"$outputFile\",\"$treeName\",$filter,$kfactor,$xsec,$id,\"$crabExt\", \"$inputPU\", \"$PUvar\", $applyJSON);"
+
 ### Uncomment for ROOT v5
 #echo "gSystem->Load(\"goodrun_cc\"); gROOT->LoadMacro(\"postProcessing.C\"); postProcessing(\"$name\",\"$inputFolder\",\"$outputFile\",\"$treeName\",$filter,$kfactor,$xsec,$id,\"$crabExt\",\"$inputPU\",\"$PUvar\",$applyJSON); gSystem->Exit(0);" |root.exe -b -l ;
 ### Comment for ROOT v5
-echo "gROOT->LoadMacro(\"postProcessing.C\"); postProcessing(\"$name\",\"$inputFolder\",\"$outputFile\",\"$treeName\",$filter,$kfactor,$xsec,$id,\"$crabExt\",\"$inputPU\",\"$PUvar\",$applyJSON,$doSilver); gSystem->Exit(0);" |root.exe -b -l ;
+
+echo "gROOT->LoadMacro(\"postProcessing.C+\"); postProcessing(\"$name\",\"$inputFolder\",\"$outputFile\",\"$treeName\",$filter,$kfactor,$xsec,$id,\"$crabExt\",\"$inputPU\",\"$PUvar\",$applyJSON,$doAllSF,$doSilver); gSystem->Exit(0);" |root.exe -b -l ;
 
 if [[ $id -lt 10 && $doFilterTxt == 1 ]]; then 
    echo "filterFromTxt(\"$filterTxt\",\"$outputFile\",1,\"$outputFilteredFile\",\"mt2\",\"\")"
@@ -158,6 +180,8 @@ if [[ $id -lt 10 && $doFilterTxt == 1 ]]; then
 
    mv $outputFilteredFile $outputFile;
 fi;
+
+
 
 #mv $outputFile $outputFolder
 gfal-copy file://$outputFile srm://t3se01.psi.ch/$outputFolder
@@ -207,8 +231,22 @@ if [[ "$1" = "mergeData" ]]; then
     echo "need to implement the data merging + duplicate removal"
 fi
 
+if [[ "$1" = "addLepSF" ]]; then
+#the outputfolder of postprocessing is the input file for the adding of the scale factors
+    ./doLepSF.sh $outputFolder 
+fi
+
+if [[ "$1" = "addAllSF" ]]; then
+#the outputfolder of postprocessing is the input file for the adding of the scale factors
+    ./doAllSF.sh $outputFolder 
+fi
+
 if [[ "$1" = "addBtag" ]]; then
-    echo "need to implement addition of b-tagging weights"
+    ./doBTagSF.sh
+fi
+
+if [[ "$1" = "addISR" ]]; then
+    ./doISRSF.sh
 fi
 
 if [[ "$1" = "clean" ]]; then

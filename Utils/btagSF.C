@@ -209,8 +209,8 @@ int btagSF(string inputString,
   Float_t obj_eta[100];
   clone->SetBranchAddress((objectName+"_eta").c_str(), obj_eta);
   Int_t obj_mcFlavour[100];
-  clone->SetBranchAddress((objectName+"_hadronFlavour").c_str(), obj_mcFlavour);
-  //clone->SetBranchAddress((objectName+"_mcFlavour").c_str(), obj_mcFlavour);
+  //clone->SetBranchAddress((objectName+"_hadronFlavour").c_str(), obj_mcFlavour);
+  clone->SetBranchAddress((objectName+"_mcFlavour").c_str(), obj_mcFlavour);
   Float_t obj_btagCSV[100];
   clone->SetBranchAddress((objectName+"_btagCSV").c_str(), obj_btagCSV);
   
