@@ -14,15 +14,26 @@
 
 
 
-MT2EstimateSigSyst::MT2EstimateSigSyst( const std::string& aname, const std::string& asystName, const MT2Region& aregion ) : MT2Estimate( aname, aregion ) {
+MT2EstimateSigSyst::MT2EstimateSigSyst( const std::string& aname, const MT2Region& aregion, const std::string& asystName ) : MT2Estimate( aname, aregion ) {
 
   int nBins;
   double* bins;
   region->getBins(nBins, bins);
 
-  yield3d_systUp = new TH3D( this->getHistoName("yield3d_"+this->systName+"_UP").c_str(), "", nBins, bins);
+  int nBinsM=81;
+  double binWidthM=25.;
+  double binsM[nBinsM+1];
+  for (int b=0; b<=nBinsM; ++b)
+    binsM[b]=b*binWidthM;
+
+//  yield3d_systUp = new TH3D( this->getHistoName("yield3d_"+this->systName+"_UP").c_str(), "", nBins, bins, nBinsM, binsM, nBinsM, binsM);
+//  yield3d_systUp->Sumw2();
+//  yield3d_systDown = new TH3D( this->getHistoName("yield3d_"+this->systName+"_DN").c_str(), "", nBins, bins, nBinsM, binsM, nBinsM, binsM);
+//  yield3d_systDown->Sumw2();
+
+  yield3d_systUp = new TH3D( this->getHistoName("yield3d_"+asystName+"_UP").c_str(), "", nBins, bins, nBinsM, binsM, nBinsM, binsM);
   yield3d_systUp->Sumw2();
-  yield3d_systDown = new TH3D( this->getHistoName("yield3d_"+this->systName+"_DN").c_str(), "", nBins, bins);
+  yield3d_systDown = new TH3D( this->getHistoName("yield3d_"+asystName+"_DN").c_str(), "", nBins, bins, nBinsM, binsM, nBinsM, binsM);
   yield3d_systDown->Sumw2();
 
 }
@@ -64,6 +75,14 @@ void MT2EstimateSigSyst::setName( const std::string& newName ) {
 }
 
 
+void MT2EstimateSigSyst::setSystName( const std::string& newSystName ) {
+
+  yield3d_systUp  ->SetName( this->getHistoName("yield3d_"+newSystName+"_UP").c_str() );
+  yield3d_systDown->SetName( this->getHistoName("yield3d_"+newSystName+"_DN").c_str() );
+
+}
+
+
 
 void MT2EstimateSigSyst::finalize( ) {
 
@@ -76,8 +95,11 @@ void MT2EstimateSigSyst::finalize( ) {
 void MT2EstimateSigSyst::getShit( TFile* file, const std::string& path ) {
 
   MT2Estimate::getShit(file, path);
-  yield3d_systUp   = (TH1D*)file->Get(Form("%s/%s", path.c_str(), yield3d_systUp->GetName()));
-  yield3d_systDown = (TH1D*)file->Get(Form("%s/%s", path.c_str(), yield3d_systDown->GetName()));
+  
+  std::cout << yield3d_systUp->GetName() << std::endl;
+
+  yield3d_systUp   = (TH3D*)file->Get(Form("%s/%s", path.c_str(), yield3d_systUp->GetName()));
+  yield3d_systDown = (TH3D*)file->Get(Form("%s/%s", path.c_str(), yield3d_systDown->GetName()));
 
 
 }
@@ -105,7 +127,7 @@ const MT2EstimateSigSyst& MT2EstimateSigSyst::operator=( const MT2EstimateSigSys
   this->yield3d = new TH3D(*(rhs.yield3d));
   this->yield3d_systUp   = new TH3D(*(rhs.yield3d_systUp));
   this->yield3d_systDown = new TH3D(*(rhs.yield3d_systDown));
- 
+
   this->systName = rhs.systName;
 
   this->setName( this->getName() );
@@ -128,7 +150,7 @@ const MT2EstimateSigSyst& MT2EstimateSigSyst::operator=( const MT2Estimate& rhs 
   this->yield3d_systUp   = new TH3D(*(rhs.yield3d));
   this->yield3d_systDown = new TH3D(*(rhs.yield3d));
 
-  this->systName = rhs.systName;
+  this->systName = "syst";
 
   this->setName( this->getName() );
 
@@ -146,7 +168,7 @@ const MT2EstimateSigSyst& MT2EstimateSigSyst::operator=( const MT2Estimate& rhs 
 
 MT2EstimateSigSyst MT2EstimateSigSyst::operator*( float k ) const{
 
-  MT2EstimateSigSyst result(this->getName(), *(this->region) );
+  MT2EstimateSigSyst result(this->getName(), *(this->region), this->systName );
   result.yield = new TH1D(*(this->yield));
   result.yield->Scale(k);
   
@@ -167,7 +189,7 @@ MT2EstimateSigSyst MT2EstimateSigSyst::operator*( float k ) const{
 
 MT2EstimateSigSyst MT2EstimateSigSyst::operator/( float k ) const{
 
-  MT2EstimateSigSyst result(this->getName(), *(this->region) );
+  MT2EstimateSigSyst result(this->getName(), *(this->region), this->systName );
   result.yield = new TH1D(*(this->yield));
   result.yield->Scale(1./k);
 
