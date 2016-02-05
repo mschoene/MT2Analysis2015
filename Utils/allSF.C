@@ -314,15 +314,61 @@ int allSF(string inputString,
   TBranch* b10 = clone->Branch("weight_isr", &weight_isr, "weight_isr/F");
 
 
-
   
   int nEntries = clone->GetEntries();
-  std::cout << "Starting first loop over " << nEntries << " entries for average weight for top SF..." << std::endl;
+ 
+
+  //ISR /// bins of size 5GeV for T2cc
+  Float_t weight_isr_av;
+  TH2D* h_isr = new TH2D("h_isr", "", 120*5, 12.5, 3012.5, 120*5, -12.5, 2987.5); h_isr->Sumw2();
+  TH2D* h_counter = new TH2D("h_counter", "", 120*5, 12.5, 3012.5, 120*5, -12.5, 2987.5); h_counter->Sumw2();
+  Int_t GenSusyMNeutralino;
+  Int_t GenSusyMGluino;
+
+  if( evt_id>1000 ){
+
+    cout << "Entering first loop to determine the average ISR weights" << endl;
+
+    clone->SetBranchAddress("GenSusyMNeutralino", &GenSusyMNeutralino);
+    clone->SetBranchAddress("GenSusyMGluino", &GenSusyMGluino);
+
+    for(int i = 0; i < nEntries; ++i) { 
+
+      clone->GetEntry(i);
+      weight_isr_av = 1.0;
+
+      TLorentzVector s;
+      if(nGenPart>0){
+ 	for(int o=0; o<nGenPart; ++o){
+	  if(GenPart_status[o] != 62)   continue;
+	  TLorentzVector s_;
+	  s_.SetPtEtaPhiM(GenPart_pt[o], GenPart_eta[o], GenPart_phi[o], GenPart_mass[o]);
+	  s+=s_;
+	}  
+	double pt_hard = s.Pt();
+	if( pt_hard < 0. || pt_hard > 99999 )         continue;
+	else if( pt_hard < 400. )  weight_isr_av = 1.0;
+	else if( pt_hard < 600. )  weight_isr_av = 1.15;
+	else if( pt_hard >= 600. ) weight_isr_av = 1.30;
+      }
+
+      h_isr->Fill((float)GenSusyMGluino , (float)GenSusyMNeutralino,  weight_isr_av);
+      h_counter->Fill((float)GenSusyMGluino,(float)GenSusyMNeutralino,  1.0);
+
+    }//end or first loop for calculating the average ISR
+
+    h_isr->Divide(h_counter);
+
+
+    }
+
+
 
   //top pt scale factors should not change the overall normalization
   //first loop to get the average of the scale factors
   double average = 0;
   for(int i = 0; i < nEntries; ++i) { 
+    std::cout << "Starting first loop over " << nEntries << " entries for average weight for top SF..." << std::endl;
     if(i%50000 == 0)
       std::cout << "Entry "<< i << "/" << nEntries << std::endl;
     clone->GetEntry(i);
@@ -393,6 +439,11 @@ int allSF(string inputString,
       else if( pt_hard < 600. )  weight_isr = 1.15;
       else if( pt_hard >= 600. ) weight_isr = 1.30;
 
+      Int_t binx = h_isr->GetXaxis()->FindBin( (float)GenSusyMGluino );
+      Int_t biny = h_isr->GetYaxis()->FindBin( (float)GenSusyMNeutralino );
+      double central = h_isr->GetBinContent(binx,biny);
+
+      weight_isr /= central;
     }
 
     /////////Add Top pt scale factor//////////

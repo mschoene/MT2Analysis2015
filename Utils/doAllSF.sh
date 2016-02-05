@@ -29,7 +29,7 @@ do
     mkdir -p $outputFolder
     
     echo "allSF(\"$name\",\"$inputFolder\",\"$outputFile\",\"$treeName\",\"$objectName\")"
-    echo "gROOT->LoadMacro(\"allSF.C\"); allSF(\"$name\",\"$inputFolder\",\"$outputFile\",\"$treeName\",\"$objectName\"); gSystem->Exit(0);" |root.exe -b -l ;
+    echo "gROOT->LoadMacro(\"allSF.C+\"); allSF(\"$name\",\"$inputFolder\",\"$outputFile\",\"$treeName\",\"$objectName\"); gSystem->Exit(0);" |root.exe -b -l ;
     
 done < postProcessing.cfg
 
