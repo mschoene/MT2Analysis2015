@@ -10,11 +10,10 @@ run()
 #include <cmath>
 #include <cstdlib>
 #include <ctime>
+#include <vector>
 
 #include <string>
 #include <iostream>
-#include <fstream>
-#include <cstdlib>
 #include "TFile.h"
 #include "TFileMerger.h"
 #include "TFileCollection.h"
@@ -23,57 +22,56 @@ run()
 #include "TChainElement.h"
 #include "TBranch.h"
 #include "TString.h"
-#include "TH1D.h"
+#include "TH1.h"
 #include "TROOT.h"
 #include "TSystem.h"
-#include "TH2F.h"
+#include "TH2.h"
 #include "TLorentzVector.h"
 
 #include "BTagCalibrationStandalone.cc"
-
 #include "goodrunClass.cc"
 
 #include "btagSF.C"
 
 using namespace std;
 
-int postProcessing(string inputString="input",
-		   string inputFolder="./",
-		   string outputFile="output.root",
-		   string treeName="tree",
+int postProcessing(std::string inputString="input",
+		   std::string inputFolder="./",
+		   std::string outputFile="output.root",
+		   std::string treeName="tree",
 		   float filter=1.0, float kfactor=1.0, float xsec=-1.0, int id=1,
-		   string crabExt="",
-		   string inputPU="",
-		   string PUvar="nVert",
+		   std::string crabExt="",
+		   std::string inputPU="",
+		   std::string PUvar="nVert",
 		   bool applyJSON=true,
 		   bool applySF=true,
 		   bool doSilver=false);
 
 
-int run(string cfg="postProcessing.cfg",
-	string treeName="tree", 
-	string inputFolder = "pnfs/psi.ch/cms/trivcat/store/user/casal/babies/PHYS14_Production_QCDpt_noSietaieta/", 
-	string outputFolder = "./test/",  
-	string fileExtension = "_post.root",
-        string crabExt = "",
-	string inputPU = "",
-	string PUvar = "nVert",
+int run(std::string cfg="postProcessing.cfg",
+	std::string treeName="tree", 
+	std::string inputFolder = "pnfs/psi.ch/cms/trivcat/store/user/casal/babies/PHYS14_Production_QCDpt_noSietaieta/", 
+	std::string outputFolder = "./test/",  
+	std::string fileExtension = "_post.root",
+        std::string crabExt = "",
+	std::string inputPU = "",
+	std::string PUvar = "nVert",
 	bool applyJSON=true){
   
   // for measuring timing
   time_t start = time(0);
 
-  cout<<"Configuration file is: "<<cfg.c_str()<<endl;
+  cout<<"Configuration file is: "<<cfg.c_str()<<std::endl;
   
   ifstream configuration(cfg.c_str());
-  string line;
+  std::string line;
   
   while(std::getline(configuration,line)){
     istringstream ss(line);
-    if((ss.str()[0])==(string)"#") continue;
+    if((ss.str()[0])==(std::string)"#") continue;
     if(ss.str().empty()) continue;
 
-    string idS,name,xsecS,filterS,kfactorS;
+    std::string idS,name,xsecS,filterS,kfactorS;
     ss >> idS;
     ss >> name;
     ss >> xsecS;
@@ -89,38 +87,37 @@ int run(string cfg="postProcessing.cfg",
 
     int debug=0;
     if(debug){
-      cout << "id,name,x,f,k: " 
+      std::cout << "id,name,x,f,k: " 
 	   << id << " , " 
 	   << name << " , "
 	   << xsec << " , " 
 	   << filter << " , " 
-	   << kfactor << endl;
+	   << kfactor << std::endl;
     }  
 
-    string outputFile = outputFolder + "/" + name + fileExtension;
+    std::string outputFile = outputFolder + "/" + name + fileExtension;
     postProcessing(name, inputFolder, outputFile, treeName, filter, kfactor, xsec, id, crabExt);
   }
   
   // for printing measured timing
   time_t stop = time(0);
   double time = difftime(stop, start);
-  cout << "real time in seconds: " << time << endl;
+  std::cout << "real time in seconds: " << time << std::endl;
   
   return 0;
 }
 
-int postProcessing(string inputString,
-		   string inputFolder,
-		   string outputFile,
-		   string treeName,
+int postProcessing(std::string inputString,
+		   std::string inputFolder,
+		   std::string outputFile,
+		   std::string treeName,
 		   float filter, float kfactor, float xsec, int id,
-		   string crabExt,
-		   string inputPU,
-		   string PUvar,
+		   std::string crabExt,
+		   std::string inputPU,
+		   std::string PUvar,
 		   bool applyJSON,
 		   bool applySF,
-		   bool doSilver)
-{
+		   bool doSilver){
   
   //bool applyJSON=true;
   const char* goldenjson_file = "goodruns_golden.txt";
@@ -130,24 +127,24 @@ int postProcessing(string inputString,
   GoodRun silver;
 
   if (applyJSON) {
-    //cout << gSystem->pwd() << endl;
+    //std::cout << gSystem->pwd() << std::endl;
     //gSystem->Load("goodrun_cc");
-    cout << "Loading golden json file: " << goldenjson_file << endl;
+    std::cout << "Loading golden json file: " << goldenjson_file << std::endl;
     golden.set_goodrun_file(goldenjson_file);
     if (doSilver) {
-      cout << "Loading silver json file: " << silverjson_file << endl;
+      std::cout << "Loading silver json file: " << silverjson_file << std::endl;
       silver.set_goodrun_file(silverjson_file);
     }
   }
   //Getting the lepton scale factor histograms/////////////////
   //Electrons//
   std::string filename = "kinematicBinSFele.root";
-  TFile * f = new TFile(filename.c_str() );
-  if (!f->IsOpen()) std::cout << " ERROR: Could not find scale factor file " << filename << std::endl; 
+  TFile * f_el = new TFile(filename.c_str() );
+  if (!f_el->IsOpen()) std::cout << " ERROR: Could not find scale factor file " << filename << std::endl; 
   //Uncomment for loose Id
   //TH2D* h_id = (TH2D*) f->Get("CutBasedLoose");
-  TH2D* h_id = (TH2D*) f->Get("CutBasedVeto");
-  TH2D* h_iso = (TH2D*) f->Get("MiniIso0p1_vs_AbsEta");
+  TH2D* h_id = (TH2D*) f_el->Get("CutBasedVeto");
+  TH2D* h_iso = (TH2D*) f_el->Get("MiniIso0p1_vs_AbsEta");
   if (!h_id || !h_iso) std::cout << "ERROR: Could not find scale factor histogram"<< std::endl;
   TH2D* h_elSF = (TH2D*) h_id->Clone("h_elSF");
   h_elSF->SetDirectory(0);
@@ -167,7 +164,8 @@ int postProcessing(string inputString,
   h_muSF->SetDirectory(0);
   h_muSF->Multiply(h_iso_mu);
 
-  f->Close();  f1->Close(); f2->Close();
+  f_el->Close();  f1->Close(); f2->Close();
+  delete f_el; delete f1; delete f2;
 
   std::cout << std::endl;
   std::cout << "Using Loose Muon ID, MiniIso 0.2 lepton scale factors" << std::endl;
@@ -178,10 +176,10 @@ int postProcessing(string inputString,
 
   TChain* chain = new TChain(treeName.c_str());
   // Add all files in the input folder
-  string dcap = inputFolder.find("pnfs")!=std::string::npos ? "dcap://t3se01.psi.ch:22125/" : "";
-  string fullInputString;
+  std::string dcap = inputFolder.find("pnfs")!=std::string::npos ? "dcap://t3se01.psi.ch:22125/" : "";
+  std::string fullInputString;
   if(crabExt!="")
-    fullInputString = dcap + inputFolder + "/" + inputString + "/"+ crabExt +"/0000/mt2*.root";
+    fullInputString = dcap + inputFolder + "/" + inputString + "/"+ crabExt +"/0000/mt2_*.root";
   else
     fullInputString = dcap + inputFolder + "/" + inputString + "/mt2*.root";
 
@@ -194,23 +192,28 @@ int postProcessing(string inputString,
   
   std::cout << "Adding files to chain... " << std::endl;  
   int chainReturn = chain->AddFileInfoList((TCollection*) filelist->GetList());
-
+ 
   //  int chainReturn = chain->Add( fullInputString.c_str() );
   if (chainReturn < 1) {
-    cout << "ERROR: input folder/fileName is not well defined. Exit!" << endl;
-    cout << "fullInputString: " << fullInputString << endl;
+    std::cout << "ERROR: input folder/fileName is not well defined. Exit!" << std::endl;
+    std::cout << "fullInputString: " << fullInputString << std::endl;
     return 1;
   }
   
-  string inputPU_ = inputPU.find("pnfs")!=std::string::npos ? "dcap://t3se01.psi.ch:22125/" + inputPU : "" + inputPU;
+  //std::string inputPU_ = inputPU.find("pnfs")!=std::string::npos ? "dcap://t3se01.psi.ch:22125/" + inputPU : "" + inputPU;
 
-  TChain* chain_pu = new TChain(treeName.c_str());
-  chain_pu->Add(inputPU_.c_str());
+  //TChain* chain_pu = new TChain(treeName.c_str());
+  //chain_pu->Add(inputPU_.c_str());
   
-  TH1D* hPU_data = new TH1D("hPU_data", "", 100, 0, 100);
-  hPU_data->Sumw2();
+  TFile * f_puData = new TFile("MyDataPileupHistogram.root");
+  if (!f_puData->IsOpen()) { std::cout<<"ERROR: Could not find data pile up histogram"<<std::endl; return 0;}
+  TH2D* hPU_data = (TH2D*) f_puData->Get("pileup");
 
-  chain_pu->Project("hPU_data", "nVert", "(HLT_PFHT800 || HLT_ht475prescale)");
+  // TH1D* hPU_data = new TH1D("hPU_data", "", 100, 0, 100);
+  //read in histo
+  // hPU_data->Sumw2();
+
+  //  chain_pu->Project("hPU_data", "nVert", "(HLT_PFHT800 || HLT_ht475prescale)");
   
   ULong64_t nData = hPU_data->Integral();
   hPU_data->Scale(1.0/nData);
@@ -240,7 +243,7 @@ int postProcessing(string inputString,
 
     TH1D *sumW = (TH1D*)f->Get("SumGenWeights");
     //
-    // std::cout << "Read SumGenWeights histogram for file "<< nFiles <<": " << sumW->GetEntries() << std::endl;
+    //std::cout << "Read SumGenWeights histogram for file "<< nFiles <<": " << sumW->GetEntries() << std::endl;
     //
 
     if(isFirst){
@@ -297,9 +300,9 @@ int postProcessing(string inputString,
 
   //Calculate scaling factor and put variables into tree 
   ULong64_t nEventsTree = clone->GetEntries();
-  ULong64_t nEventsHisto = (ULong64_t) newH->GetBinContent(1); 					 
+  ULong64_t nEventsHisto = (ULong64_t)newH->GetBinContent(1);		 
   //  Int_t nEventsTree = clone->GetEntries();
-  //  Int_t nEventsHisto = (Int_t) newH->GetBinContent(1); 					 
+  //  Int_t nEventsHisto = (Int_t) newH->GetBinContent(1); 
 
   float genWeight_=1.0;
   float genWeight=0.;
@@ -335,17 +338,21 @@ int postProcessing(string inputString,
 
 
   TH1D* hPU = (TH1D*) hPU_data->Clone("hPU");
-  hPU->Reset();
+ 
   
-  if(PUvar == "nVert")
-    chain->Project("hPU", "nVert");
-  else if(!isData)
+  // if(PUvar == "nVert")
+  //   chain->Project("hPU", "nVert");
+  // else 
+  if(!isData){
+    hPU->Reset();
     chain->Project("hPU", "nTrueInt");
+  }
 
   hPU->Scale(1.0/nEventsTree);
   
   TH1D* hPU_r = (TH1D*) hPU_data->Clone("hPU_r");
   hPU_r->Divide(hPU);
+  //  std::cout << hPU_r->GetBinContent(1)<< std::endl;
 
   //  float scale1fb = xsec*kfactor*1000*filter/(Float_t)nEventsHisto;
   ULong64_t sumGenWeightsHisto; 
@@ -367,6 +374,8 @@ int postProcessing(string inputString,
   Float_t weight_lepsf_DN;
   Float_t weight_toppt;
   Float_t weight_isr;
+  Float_t weight_scales[110];
+  Float_t weight_scales_av[110];
 
 
   ////// Lepton Efficiency SF
@@ -411,34 +420,40 @@ int postProcessing(string inputString,
     chain->SetBranchAddress("GenPart_pdgId", GenPart_pdgId);
   }
 
+ 
+  Float_t LHEweight_original;
+  Float_t LHEweight_wgt[510];
+  if (id>1000 && id <2000) {
+    chain->SetBranchAddress("LHEweight_original", &LHEweight_original);
+    chain->SetBranchAddress("LHEweight_wgt", LHEweight_wgt);
+  }
+
+  //  Int_t LHEweight_id[110];
+  //  chain->SetBranchAddress("LHEweight_id", LHEweight_id);
+
 
   if( isData ){
-    
     sumGenWeightsHisto = (ULong64_t) 0.0;
     nEffEventsHisto    = (ULong64_t) nEventsHisto;
     
     scale1fb_noGenWeight   = (Float_t) 0.0;
     scale1fb_sumGenWeights = (Float_t) 0.0;
-
-  }
-  else{
-    
+  }else{ 
     sumGenWeightsHisto = (ULong64_t) newSumW->GetBinContent(1);
     nEffEventsHisto = ( (double) 1.0*sumGenWeightsHisto/genWeight_  > (ULong64_t) (1.0*sumGenWeightsHisto/genWeight_ + 0.5) ) ? (ULong64_t) (1.0*sumGenWeightsHisto/genWeight_ + 1.0) : (ULong64_t) (1.0*sumGenWeightsHisto/genWeight_);
   
     scale1fb_noGenWeight = xsec*kfactor*1000*filter/(Float_t)nEffEventsHisto;
     scale1fb_sumGenWeights = xsec*kfactor*1000*filter/(Float_t)sumGenWeightsHisto;
-
   }
     
   if (nEventsHisto < nEventsTree) // this should not happen
-    cout << "ERROR: histogram count has less events than tree. This indicates something went wrong" << endl
-	 << "#events histo: "  << nEventsHisto << endl
-	 << "#events tree: "  << nEventsTree << endl;
-  else if (nEventsHisto < nEventsTree) // this can happen
-    cout << "WARNING: histogram count has more events than tree. This should only happen if tree was skimmed" << endl
-	 << "#events histo: "  << nEventsHisto << endl
-	 << "#events tree: "  << nEventsTree << endl;
+    std::cout << "ERROR: histogram count has less events than tree. This indicates something went wrong" << std::endl
+	 << "#events histo: "  << nEventsHisto << std::endl
+	 << "#events tree: "  << nEventsTree << std::endl;
+  else if (nEventsHisto > nEventsTree) // this can happen
+    std::cout << "WARNING: histogram count has more events than tree. This should only happen if tree was skimmed" << std::endl
+	 << "#events histo: "  << nEventsHisto << std::endl
+	 << "#events tree: "  << nEventsTree << std::endl;
     
 
 
@@ -468,7 +483,22 @@ int postProcessing(string inputString,
   TBranch* b21 = clone->Branch("weight_lepsf_DN", &weight_lepsf_DN, "weight_lepsf_DN/F");
   TBranch* b22 = clone->Branch("weight_toppt", &weight_toppt, "weight_toppt/F");
   TBranch* b23 = clone->Branch("weight_isr", &weight_isr, "weight_isr/F");
+ 
+  TBranch* b24 = clone->Branch("weight_scales", &weight_scales, "weight_scales[110]/F");
+  TBranch* b25 = clone->Branch("weight_scales_av", &weight_scales_av, "weight_scales_av[110]/F");
 
+ 
+  vector<TH2D*> h_scales;
+  vector<TH2D*> h_evt;
+  for(int k=0;k<110;k++){
+    std::string name = "var"+  std::to_string(k);
+    TH2D* h_scales_temp = new TH2D(name.c_str(), "", 120*5, 12.5, 3012.5, 120*5, -12.5, 2987.5); h_scales_temp->Sumw2();
+    h_scales.push_back(h_scales_temp);
+ 
+    std::string name_evt = "evt"+  std::to_string(k); 
+    TH2D* h_evt_temp = new TH2D(name_evt.c_str(), "", 120*5, 12.5, 3012.5, 120*5, -12.5, 2987.5); h_evt_temp->Sumw2();
+    h_evt.push_back(h_evt_temp);
+  }
 
 
   //ISR /// bins of size 5GeV for T2cc
@@ -478,16 +508,19 @@ int postProcessing(string inputString,
   Int_t GenSusyMNeutralino;
   Int_t GenSusyMGluino;
 
-  if( id>1000 ){
+  if( id>1000 && applySF ){
 
-    cout << "Entering first loop to determine the average ISR weights" << endl;
+    std::cout << "Entering first loop to determine the average ISR weights" << std::endl;
 
     chain->SetBranchAddress("GenSusyMNeutralino", &GenSusyMNeutralino);
     chain->SetBranchAddress("GenSusyMGluino", &GenSusyMGluino);
-
-    for(Long64_t i = 0; i < (Long64_t) nEventsTree; i++) {
+ 
     
-      chain->GetEntry(i);
+   
+    
+    for(Long64_t j = 0; j < (Long64_t) nEventsTree; j++) {
+    
+      chain->GetEntry(j);
       weight_isr_av = 1.0;
 
       TLorentzVector s;
@@ -508,20 +541,38 @@ int postProcessing(string inputString,
       h_isr->Fill((float)GenSusyMGluino , (float)GenSusyMNeutralino,  weight_isr_av);
       h_counter->Fill((float)GenSusyMGluino,(float)GenSusyMNeutralino,  1.0);
 
-    }//end or first loop for calculating the average ISR
+      
+      if( id < 2000. ){
+	for(int v=0; v<110; ++v){
+	  weight_scales[v] = 1.;
+	  weight_scales[v] = LHEweight_wgt[v]/LHEweight_original;
+
+	  h_scales[v]->Fill((float)GenSusyMGluino , (float)GenSusyMNeutralino,  weight_scales[v]);
+	  h_evt[v]->Fill((float)GenSusyMGluino,(float)GenSusyMNeutralino,  1.0);
+	}
+      }
+    
+    }//end or first loop over events for calculating the average ISR
+
 
     h_isr->Divide(h_counter);
-    /*
-    for(int l = 0; l<120*5; l++){
-      for(int m = 0; m<120*5; m++){
-	if( h_isr->GetBinContent(l,m) > 0.0)
-	  cout << l<< ", " << m << " has content " <<h_isr->GetBinContent(l,m)  << endl;
+
+    
+    if( id<2000 ){
+      for(int v=0; v<110; ++v){
+	h_scales[v]->Divide(h_evt[v]);
       }
     }
-    */ 
-
-    cout << "Finished first loop over the events to get the average weight of ISR" << endl;
-
+    
+    /* 
+    for(int l = 0; l<120*5; l++){
+      for(int m = 0; m<120*5; m++){
+	if( h_scales[5]->GetBinContent(l,m) > 0.5)
+	  std::cout << l<< ", " << m << " has content " <<h_scales[5]->GetBinContent(l,m)  << std::endl;
+      }
+    }    
+    */
+    std::cout << "Finished first loop over the events to get the average weight of ISR" << std::endl;
   }//end of ISR norm histo calculation
 
 
@@ -532,10 +583,8 @@ int postProcessing(string inputString,
   //First loop over events for the normalization of the toppt reweighting///////
   double average = 0;
   if( applySF && id>300 && id<400 ){
-    for(Long64_t i = 0; i < (Long64_t) nEventsTree; i++) {
-    
-      chain->GetEntry(i);
-
+    for(Long64_t k = 0; k < (Long64_t) nEventsTree; k++) {
+      chain->GetEntry(k);
       if(nGenPart>0)
 	for(int o=0; o<nGenPart; ++o){
 	  if(GenPart_status[o] != 62) continue;
@@ -545,13 +594,12 @@ int postProcessing(string inputString,
 	  }
 	  else continue;
 
-
-	}//end loop over objects
-  
+	}//end loop over objects  
       average += weight_toppt;  
     }
     average /= (double) nEventsTree;
   }//end or first loop for toppt average
+
 
 
   for(Long64_t i = 0; i < (Long64_t) nEventsTree; i++) {
@@ -566,31 +614,31 @@ int postProcessing(string inputString,
     weight_lepsf_DN = 1.;
     weight_toppt = 1.;
     weight_isr=1.;
+    
+    for(int v=0; v<110; ++v){
+      weight_scales[v]=1.;
+      weight_scales_av[v]=1.;
+    }
+    
 
     chain->GetEntry(i);
 
-    if(isData){
+    if(isData){ 
       //data should never be rescaled with scale1fb when making plots
       //set scaler to zero so that user cannot miss the mistake
       scale1fb = 0.0; 
       puWeight = 1.0;
-    }
-    else{
-      scale1fb= xsec*kfactor*1000*filter*genWeight/(Float_t)sumGenWeightsHisto;
-      
+    }else{
+      scale1fb= xsec*kfactor*1000.*filter*genWeight/(Float_t)sumGenWeightsHisto;
       int nPU = ( PUvar == "nVert") ? nVert : nTrueInt;
-      
       int puBin = (int) hPU_r->GetXaxis()->FindBin(nPU);
       puWeight = hPU_r->GetBinContent(puBin);
-
     }
 
     if( applyJSON && isData && !golden.goodrun(run, lumi) ) isGolden=0;
     else isGolden=1;
     if( applyJSON && doSilver && isData && !silver.goodrun(run, lumi) ) isSilver=0;
     else isSilver=1;
-
-
 
     if( applySF ){
       /////////Add ISR scale factor//////////
@@ -615,7 +663,23 @@ int postProcessing(string inputString,
 	double central = h_isr->GetBinContent(binx,biny);
 
 	weight_isr /= central;
-      }
+	
+	//Scale variations
+	if( id<2000 ){
+
+	  for(int v=0; v<110; ++v){
+	    weight_scales[v] = 1.;
+	    weight_scales_av[v] = 1.;
+	    weight_scales[v] = LHEweight_wgt[v]/LHEweight_original;
+	  
+	    //bins & binning are the same as for isr
+	    double scale_av = h_scales[v]->GetBinContent(binx,biny);
+	    weight_scales_av[v] = weight_scales[v] / scale_av;
+
+	  }
+	}
+	
+      }//finished isr (and scale) weights
 
       /////////Add Top pt scale factor//////////
       if( id >399 || id < 300 ) ;
@@ -668,7 +732,6 @@ int postProcessing(string inputString,
 	weight_lepsf_DN = central - uncert;
 	 
       }//end of lepton sf
-
     }//end of if applySF
 
 
@@ -685,6 +748,7 @@ int postProcessing(string inputString,
     b11->Fill();
     b12->Fill();
     b13->Fill();
+    
     b14->Fill();
     b15->Fill();
     b16->Fill();
@@ -695,12 +759,21 @@ int postProcessing(string inputString,
     b21->Fill();
     b22->Fill();
     b23->Fill();
+    b24->Fill();
+    b25->Fill();
     
-  }
+  }//end loop over events
   //-------------------------------------------------------------
+  
+  for(int k=0;k<110;k++){
+    delete h_scales[k];
+    delete h_evt[k];
+  }
+  
+
+  delete h_isr; delete h_counter;
 
   delete chain; 
-
   hPU->Write();
   hPU_data->Write();
   hPU_r->Write();
@@ -714,6 +787,9 @@ int postProcessing(string inputString,
   clone->Write();
   delete clone;
   out->Close();
+  delete out;
   return 0;
   
 }
+
+

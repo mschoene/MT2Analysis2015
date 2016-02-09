@@ -91,6 +91,9 @@ else
     myCMSSW=/cvmfs/cms.cern.ch/slc6_amd64_gcc491/cms/cmssw-patch/CMSSW_7_4_12_patch4
 fi
 
+#get the pileUp histogram
+pileupCalc.py -i $GoldenJSON --inputLumiJSON /afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/PileUp/pileup_latest.txt --calcMode true --minBiasXsec 80000 --maxPileupBin 50 --numPileupBins 50  MyDataPileupHistogram.root
+
 
 ### here I compile the root macro only once
 ### Uncomment for ROOT v5
