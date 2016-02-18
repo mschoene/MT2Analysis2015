@@ -42,10 +42,11 @@ int postProcessing(std::string inputString="input",
 		   float filter=1.0, float kfactor=1.0, float xsec=-1.0, int id=1,
 		   std::string crabExt="",
 		   std::string inputPU="",
-		   std::string PUvar="nVert",
+		   std::string PUvar="nTrueInt",
 		   bool applyJSON=true,
 		   bool applySF=true,
-		   bool doSilver=false);
+		   bool doSilver=false,
+		   int looper=-1);
 
 
 int run(std::string cfg="postProcessing.cfg",
@@ -55,13 +56,13 @@ int run(std::string cfg="postProcessing.cfg",
 	std::string fileExtension = "_post.root",
         std::string crabExt = "",
 	std::string inputPU = "",
-	std::string PUvar = "nVert",
+	std::string PUvar = "nTrueInt",
 	bool applyJSON=true){
   
   // for measuring timing
   time_t start = time(0);
 
-  cout<<"Configuration file is: "<<cfg.c_str()<<std::endl;
+  std::cout<<"Configuration file is: "<<cfg.c_str()<<std::endl;
   
   ifstream configuration(cfg.c_str());
   std::string line;
@@ -117,7 +118,8 @@ int postProcessing(std::string inputString,
 		   std::string PUvar,
 		   bool applyJSON,
 		   bool applySF,
-		   bool doSilver){
+		   bool doSilver,
+		   int looper){
   
   //bool applyJSON=true;
   const char* goldenjson_file = "goodruns_golden.txt";
@@ -142,8 +144,8 @@ int postProcessing(std::string inputString,
   TFile * f_el = new TFile(filename.c_str() );
   if (!f_el->IsOpen()) std::cout << " ERROR: Could not find scale factor file " << filename << std::endl; 
   //Uncomment for loose Id
-  //TH2D* h_id = (TH2D*) f->Get("CutBasedLoose");
-  TH2D* h_id = (TH2D*) f_el->Get("CutBasedVeto");
+  TH2D* h_id = (TH2D*) f_el->Get("CutBasedLoose");
+  //TH2D* h_id = (TH2D*) f_el->Get("CutBasedVeto");
   TH2D* h_iso = (TH2D*) f_el->Get("MiniIso0p1_vs_AbsEta");
   if (!h_id || !h_iso) std::cout << "ERROR: Could not find scale factor histogram"<< std::endl;
   TH2D* h_elSF = (TH2D*) h_id->Clone("h_elSF");
@@ -182,6 +184,14 @@ int postProcessing(std::string inputString,
     fullInputString = dcap + inputFolder + "/" + inputString + "/"+ crabExt +"/0000/mt2_*.root";
   else
     fullInputString = dcap + inputFolder + "/" + inputString + "/mt2*.root";
+
+  if(looper>=0){
+    std::string lop = Form("%d",looper);
+    if(crabExt!="")
+      fullInputString = dcap + inputFolder + "/" + inputString + "/"+ crabExt +"/0000/mt2_*" + lop + ".root";
+    else
+      fullInputString = dcap + inputFolder + "/" + inputString + "/mt2_*" + lop + ".root";
+  } 
 
   std::cout << fullInputString << std::endl;
 
@@ -269,7 +279,7 @@ int postProcessing(std::string inputString,
   }
   newH->SetBinContent(1,allHistoEntries);
   newSumW->SetBinContent(1,allSumGenWeight);
-
+  
   std::cout << "Read gen weights and count histogram..." << std::endl;
 
   // This line should be uncommented for all the branches that we want to overwrite.
@@ -308,10 +318,12 @@ int postProcessing(std::string inputString,
   float genWeight=0.;
   TBranch* thisGenWeight = (TBranch*) chain->GetListOfBranches()->FindObject("genWeight");
   if (thisGenWeight) chain->SetBranchAddress("genWeight", &genWeight);
-  
+
+
   int isData=0; 
   chain->SetBranchAddress("isData",&isData);
-  
+  chain->GetEntry(0);
+
   UInt_t run=0;
   chain->SetBranchAddress("run", &run);
   UInt_t lumi=0;
@@ -337,6 +349,7 @@ int postProcessing(std::string inputString,
   }
 
 
+
   TH1D* hPU = (TH1D*) hPU_data->Clone("hPU");
  
   
@@ -348,7 +361,8 @@ int postProcessing(std::string inputString,
     chain->Project("hPU", "nTrueInt");
   }
 
-  hPU->Scale(1.0/nEventsTree);
+  if( hPU->Integral() >0.0 )
+    hPU->Scale(1.0/hPU->Integral() );
   
   TH1D* hPU_r = (TH1D*) hPU_data->Clone("hPU_r");
   hPU_r->Divide(hPU);
@@ -396,7 +410,8 @@ int postProcessing(std::string inputString,
   Float_t jet_eta[100];
   chain->SetBranchAddress("jet_eta", jet_eta);
   Int_t jet_mcFlavour[100];
-  chain->SetBranchAddress("jet_mcFlavour", jet_mcFlavour);
+  if(!isData)
+    chain->SetBranchAddress("jet_mcFlavour", jet_mcFlavour);
   Float_t jet_btagCSV[100];
   chain->SetBranchAddress("jet_btagCSV", jet_btagCSV);
   
@@ -428,9 +443,6 @@ int postProcessing(std::string inputString,
     chain->SetBranchAddress("LHEweight_wgt", LHEweight_wgt);
   }
 
-  //  Int_t LHEweight_id[110];
-  //  chain->SetBranchAddress("LHEweight_id", LHEweight_id);
-
 
   if( isData ){
     sumGenWeightsHisto = (ULong64_t) 0.0;
@@ -438,14 +450,15 @@ int postProcessing(std::string inputString,
     
     scale1fb_noGenWeight   = (Float_t) 0.0;
     scale1fb_sumGenWeights = (Float_t) 0.0;
-  }else{ 
+  }else{
+ 
     sumGenWeightsHisto = (ULong64_t) newSumW->GetBinContent(1);
     nEffEventsHisto = ( (double) 1.0*sumGenWeightsHisto/genWeight_  > (ULong64_t) (1.0*sumGenWeightsHisto/genWeight_ + 0.5) ) ? (ULong64_t) (1.0*sumGenWeightsHisto/genWeight_ + 1.0) : (ULong64_t) (1.0*sumGenWeightsHisto/genWeight_);
   
     scale1fb_noGenWeight = xsec*kfactor*1000*filter/(Float_t)nEffEventsHisto;
     scale1fb_sumGenWeights = xsec*kfactor*1000*filter/(Float_t)sumGenWeightsHisto;
   }
-    
+  
   if (nEventsHisto < nEventsTree) // this should not happen
     std::cout << "ERROR: histogram count has less events than tree. This indicates something went wrong" << std::endl
 	 << "#events histo: "  << nEventsHisto << std::endl
@@ -458,11 +471,10 @@ int postProcessing(std::string inputString,
 
 
 
-
   TBranch* b1 = clone->Branch("evt_scale1fb", &scale1fb, "evt_scale1fb/F");
   TBranch* b2 = clone->Branch("evt_scale1fb_noGenWeight", &scale1fb_noGenWeight, "evt_scale1fb_noGenWeights/F");
   TBranch* b3 = clone->Branch("evt_scale1fb_sumGenWeights", &scale1fb_sumGenWeights, "evt_scale1fb_sumGenWeights/F");
-  TBranch* b4 = clone->Branch("evt_xsec", &xsec, "evt_xsec/F");
+  TBranch* b4 = clone->Branch("evt_xsec", &xsec, "evt_xsec/F");  
   TBranch* b5 = clone->Branch("evt_kfactor", &kfactor, "evt_kfactor/F");
   TBranch* b6 = clone->Branch("evt_filter", &filter, "evt_filter/F");
   TBranch* b7 = clone->Branch("evt_nEvts", &nEventsHisto, "evt_nEvts/l");
@@ -472,53 +484,69 @@ int postProcessing(std::string inputString,
   TBranch* b11 = clone->Branch("puWeight", &puWeight, "puWeight/F");
   TBranch* b12 = clone->Branch("isGolden", &isGolden, "isGolden/I");
   TBranch* b13 = clone->Branch("isSilver", &isSilver, "isSilver/I");
+ 
+  TBranch* b14;
+  TBranch* b15; 
+  TBranch* b16;
+  TBranch* b17;
+  TBranch* b18;
+  TBranch* b19; 
+  TBranch* b20; 
+  TBranch* b21; 
+  TBranch* b22;
+  TBranch* b23; 
+  TBranch* b24; 
+  TBranch* b25; 
   
-  TBranch* b14 = clone->Branch("weight_btagsf"         , &weight_btagsf         , "weight_btagsf/F"         );
-  TBranch* b15 = clone->Branch("weight_btagsf_heavy_UP", &weight_btagsf_heavy_UP, "weight_btagsf_heavy_UP/F");
-  TBranch* b16 = clone->Branch("weight_btagsf_heavy_DN", &weight_btagsf_heavy_DN, "weight_btagsf_heavy_DN/F");
-  TBranch* b17 = clone->Branch("weight_btagsf_light_UP", &weight_btagsf_light_UP, "weight_btagsf_light_UP/F");
-  TBranch* b18 = clone->Branch("weight_btagsf_light_DN", &weight_btagsf_light_DN, "weight_btagsf_light_DN/F");
-  TBranch* b19 = clone->Branch("weight_lepsf", &weight_lepsf, "weight_lepsf/F");
-  TBranch* b20 = clone->Branch("weight_lepsf_UP", &weight_lepsf_UP, "weight_lepsf_UP/F");
-  TBranch* b21 = clone->Branch("weight_lepsf_DN", &weight_lepsf_DN, "weight_lepsf_DN/F");
-  TBranch* b22 = clone->Branch("weight_toppt", &weight_toppt, "weight_toppt/F");
-  TBranch* b23 = clone->Branch("weight_isr", &weight_isr, "weight_isr/F");
- 
-  TBranch* b24 = clone->Branch("weight_scales", &weight_scales, "weight_scales[110]/F");
-  TBranch* b25 = clone->Branch("weight_scales_av", &weight_scales_av, "weight_scales_av[110]/F");
-
- 
-  vector<TH2D*> h_scales;
-  vector<TH2D*> h_evt;
-  for(int k=0;k<110;k++){
-    std::string name = "var"+  std::to_string(k);
-    TH2D* h_scales_temp = new TH2D(name.c_str(), "", 120*5, 12.5, 3012.5, 120*5, -12.5, 2987.5); h_scales_temp->Sumw2();
-    h_scales.push_back(h_scales_temp);
- 
-    std::string name_evt = "evt"+  std::to_string(k); 
-    TH2D* h_evt_temp = new TH2D(name_evt.c_str(), "", 120*5, 12.5, 3012.5, 120*5, -12.5, 2987.5); h_evt_temp->Sumw2();
-    h_evt.push_back(h_evt_temp);
+  if( applySF ){
+    b14 = clone->Branch("weight_btagsf"         , &weight_btagsf         , "weight_btagsf/F"         );
+    b15 = clone->Branch("weight_btagsf_heavy_UP", &weight_btagsf_heavy_UP, "weight_btagsf_heavy_UP/F");
+    b16 = clone->Branch("weight_btagsf_heavy_DN", &weight_btagsf_heavy_DN, "weight_btagsf_heavy_DN/F");
+    b17 = clone->Branch("weight_btagsf_light_UP", &weight_btagsf_light_UP, "weight_btagsf_light_UP/F");
+    b18 = clone->Branch("weight_btagsf_light_DN", &weight_btagsf_light_DN, "weight_btagsf_light_DN/F");
+    b19 = clone->Branch("weight_lepsf", &weight_lepsf, "weight_lepsf/F");
+    b20 = clone->Branch("weight_lepsf_UP", &weight_lepsf_UP, "weight_lepsf_UP/F");
+    b21 = clone->Branch("weight_lepsf_DN", &weight_lepsf_DN, "weight_lepsf_DN/F");
+    b22 = clone->Branch("weight_toppt", &weight_toppt, "weight_toppt/F");
+    b23 = clone->Branch("weight_isr", &weight_isr, "weight_isr/F");
+    b24 = clone->Branch("weight_scales", &weight_scales, "weight_scales[110]/F");
+    b25 = clone->Branch("weight_scales_av", &weight_scales_av, "weight_scales_av[110]/F");
   }
+
+
+
+
+  vector<TH2F*> h_scales;
+  vector<TH2F*> h_evt;
+
 
 
   //ISR /// bins of size 5GeV for T2cc
   Float_t weight_isr_av;
-  TH2D* h_isr = new TH2D("h_isr", "", 120*5, 12.5, 3012.5, 120*5, -12.5, 2987.5); h_isr->Sumw2();
-  TH2D* h_counter = new TH2D("h_counter", "", 120*5, 12.5, 3012.5, 120*5, -12.5, 2987.5); h_counter->Sumw2();
+  TH2F* h_isr = new TH2F("h_isr", "", 120*5, 12.5, 3012.5, 120*5, -12.5, 2987.5); h_isr->Sumw2();
+  TH2F* h_counter = new TH2F("h_counter", "", 120*5, 12.5, 3012.5, 120*5, -12.5, 2987.5); h_counter->Sumw2();
   Int_t GenSusyMNeutralino;
   Int_t GenSusyMGluino;
 
   if( id>1000 && applySF ){
 
+    for(int k=0;k<110;k++){
+      std::string name = "var"+  std::to_string(k);
+      TH2F* h_scales_temp = new TH2F(name.c_str(), "", 120*5, 12.5, 3012.5, 120*5, -12.5, 2987.5); h_scales_temp->Sumw2();
+      h_scales.push_back(h_scales_temp);
+ 
+      std::string name_evt = "evt"+  std::to_string(k); 
+      TH2F* h_evt_temp = new TH2F(name_evt.c_str(), "", 120*5, 12.5, 3012.5, 120*5, -12.5, 2987.5); h_evt_temp->Sumw2();
+      h_evt.push_back(h_evt_temp);
+    }
+
     std::cout << "Entering first loop to determine the average ISR weights" << std::endl;
 
     chain->SetBranchAddress("GenSusyMNeutralino", &GenSusyMNeutralino);
     chain->SetBranchAddress("GenSusyMGluino", &GenSusyMGluino);
- 
-    
    
     
-    for(Long64_t j = 0; j < (Long64_t) nEventsTree; j++) {
+    for(  ULong64_t j = 0; j < nEventsTree; j++) {
     
       chain->GetEntry(j);
       weight_isr_av = 1.0;
@@ -583,7 +611,7 @@ int postProcessing(std::string inputString,
   //First loop over events for the normalization of the toppt reweighting///////
   double average = 0;
   if( applySF && id>300 && id<400 ){
-    for(Long64_t k = 0; k < (Long64_t) nEventsTree; k++) {
+    for( ULong64_t k = 0; k < nEventsTree; k++) {
       chain->GetEntry(k);
       if(nGenPart>0)
 	for(int o=0; o<nGenPart; ++o){
@@ -602,8 +630,14 @@ int postProcessing(std::string inputString,
 
 
 
-  for(Long64_t i = 0; i < (Long64_t) nEventsTree; i++) {
-    
+  std::cout << "Entering the final loop over the events" << std::endl;
+
+  for( Long64_t i = 0; i < (Long64_t)nEventsTree; i++) {
+  
+    if( i==0)
+      std::cout << "Start of loop over tree entries" << std::endl;
+
+
     weight_btagsf = 1.;
     weight_btagsf_heavy_UP = 1.;
     weight_btagsf_heavy_DN = 1.;
@@ -639,6 +673,8 @@ int postProcessing(std::string inputString,
     else isGolden=1;
     if( applyJSON && doSilver && isData && !silver.goodrun(run, lumi) ) isSilver=0;
     else isSilver=1;
+
+
 
     if( applySF ){
       /////////Add ISR scale factor//////////
@@ -734,6 +770,8 @@ int postProcessing(std::string inputString,
       }//end of lepton sf
     }//end of if applySF
 
+    if( i==(nEventsTree-1))
+      std::cout << "End of loop over tree entries" << std::endl;
 
     b1->Fill();
     b2->Fill();
@@ -748,30 +786,34 @@ int postProcessing(std::string inputString,
     b11->Fill();
     b12->Fill();
     b13->Fill();
-    
-    b14->Fill();
-    b15->Fill();
-    b16->Fill();
-    b17->Fill();
-    b18->Fill();
-    b19->Fill();
-    b20->Fill();
-    b21->Fill();
-    b22->Fill();
-    b23->Fill();
-    b24->Fill();
-    b25->Fill();
+
+    if( applySF ){   
+      b14->Fill();
+      b15->Fill();
+      b16->Fill();
+      b17->Fill();
+      b18->Fill();
+      b19->Fill();
+      b20->Fill();
+      b21->Fill();
+      b22->Fill();
+      b23->Fill();
+      b24->Fill();
+      b25->Fill();
+    }
     
   }//end loop over events
   //-------------------------------------------------------------
-  
-  for(int k=0;k<110;k++){
-    delete h_scales[k];
-    delete h_evt[k];
-  }
-  
 
-  delete h_isr; delete h_counter;
+  if(applySF){  
+    for(int k=0;k<110;k++){
+      delete h_scales[k];
+      delete h_evt[k];
+    }
+    delete h_isr; delete h_counter;
+  }
+
+ 
 
   delete chain; 
   hPU->Write();
@@ -790,6 +832,6 @@ int postProcessing(std::string inputString,
   delete out;
   return 0;
   
-}
+  }
 
 

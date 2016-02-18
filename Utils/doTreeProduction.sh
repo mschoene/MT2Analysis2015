@@ -2,29 +2,41 @@
 
 # --- configuration (consider to move this into a separate file) ---
 treeName="mt2"
-inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/babies/MT2_CMGTools-from-CMSSW_7_4_12/fullMC_Spring15_miniAODv2_03Nov2015/"
-#"/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/babies/MT2_CMGTools-from-CMSSW_7_4_12/fullMC_miniAODv2_06Nov2015/"
-#"/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/babies/MT2_CMGTools-from-CMSSW_7_4_12/fullMC_miniAODv2_09Nov2015/"
+inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/babies/MT2_CMGTools-from-CMSSW_7_4_12/ZGData_12Feb/"
+#"/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/EGMuonData_76X/myCMGTools-from-CMSSW_7_6_3/EGMuonDataRunC/"
+#"/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/EGMuonData_76X/myCMGTools-from-CMSSW_7_6_3/EGMuonData/"
 
+#74"/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/babies/MT2_CMGTools-from-CMSSW_7_4_12/ZGMC_Private_12Feb/"
+#74"/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/babies/MT2_CMGTools-from-CMSSW_7_4_12/ZGMC_12Feb/"
+#data74"/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/babies/MT2_CMGTools-from-CMSSW_7_4_12/ZGData_12Feb/"
+#data76"/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/EGMuonData_76X/myCMGTools-from-CMSSW_7_6_3/EGMuonData/"
+#"/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/ZGammaMC_76X/myCMGTools-from-CMSSW_7_6_3/ZGammaMC/"
+#"/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/babies/MT2_CMGTools-from-CMSSW_7_4_12/fullMC_miniAODv2_09Nov2015/"
+#"/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/babies/MT2_CMGTools-from-CMSSW_7_4_12/fullMC_Spring15_miniAODv2_03Nov2015/"
+#"/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/babies/MT2_CMGTools-from-CMSSW_7_4_12/fullMC_miniAODv2_06Nov2015/"
 
 #"/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/babies/MT2_CMGTools-from-CMSSW_7_4_12/ZG_20Dec2015/"
 #"/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/babies/MT2_CMGTools-from-CMSSW_7_4_12/fullData_miniAODv2_15Nov2015_jecV6/"
-productionName="09Feb2016_fullMC_mAODv2_WithSF"
+productionName="16Feb2016_74X_EGMuonDataRunD_LooperTest"
+
 fileExt="_post.root"
 isCrab=1
 inputPU="/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/MT2production/74X/Spring15/PostProcessed/23Oct2015_data_noSkim/JetHT_Run2015D_post.root"
-PUvar="nVert"
+PUvar="nTrueInt"
 #GoldenJSON="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-255031_13TeV_PromptReco_Collisions15_25ns_JSON_v2.txt"
 #GoldenJSON="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-257599_13TeV_PromptReco_Collisions15_25ns_JSON.txt"
 #GoldenJSON="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-258159_13TeV_PromptReco_Collisions15_25ns_JSON.txt"
 #GoldenJSON="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-258750_13TeV_PromptReco_Collisions15_25ns_JSON.txt"
 #GoldenJSON="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-260426_13TeV_PromptReco_Collisions15_25ns_JSON.txt"
-GoldenJSON="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt"
-SilverJSON="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON_Silver.txt"
-applyJSON=0
-doSilver=0
-doFilterTxt=0
-doAllSF=1
+#"/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt"
+#"/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON_Silver.txt"
+GoldenJSON="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Reprocessing/Cert_13TeV_16Dec2015ReReco_Collisions15_25ns_JSON.txt"
+SilverJSON="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Reprocessing/Cert_13TeV_16Dec2015ReReco_Collisions15_25ns_JSON_Silver.txt"
+applyJSON=1 #0 for MC
+doSilver=1 #0 for MC
+doFilterTxt=1 #0 for MC
+doAllSF=0 #1 for MC
+splitFactor=5
 # --------------------------
 
 
@@ -128,13 +140,13 @@ do
 
     if [[ $id -lt 10 && $doFilterTxt == 1 ]]; then
 	# this is the merged (and duplicate removed) file including Nov15 txts and Oct 15 txts for all datasets
-	#filterTxt=/shome/casal/eventlist_Nov14/filter_cscNov15_ecalscnNov15_cscOct15_sortu.txt
+	# filterTxt=/shome/casal/eventlist_Nov14/filter_cscNov15_ecalscnNov15_cscOct15_sortu.txt
 	# latest one from december
-	filterTxt=/shome/casal/eventlist_Dec4/allfilters_Dec01.txt
+	filterTxt=/shome/mmasciov/CMSSW_7_4_7_MT2PostProcessing/src/analysisCode/Utils/allFilters_19Jan.txt
 	outputFilteredFile=${workingFolder}/${name}_filtered$fileExt;
     fi;
     
-    outputFile=${workingFolder}/${name}$fileExt;
+    # outputFile=${workingFolder}/${name}$fileExt;
 
     if [ ${isCrab} = 1 ]; then
 	crabExt=$(ls $inputFolder/$name/)
@@ -142,27 +154,65 @@ do
 	crabExt=""
     fi;
 
-    cat <<EOF > batchScript_${name}.sh
+
+    #default is to not do the splitting into 10 files
+    #also this should NEVER be done for MC as some scale factors need normalization
+    looper=-1
+
+    #will split into 10 jobs if the amount of chunks is >300 && it is data
+    if [[ $id -lt 10 ]]; then
+	if [[ $(find $inputFolder/$name/$crabExt/ -iname "mt2*.root" -type f |wc -l ) -gt 300  ]]; then
+	    echo "File will be split into 10 files for speed and memory limit purposes"
+	    looper=7
+	fi;
+    fi;
+
+    while [ $looper -lt 8 ] || [ $looper -eq -1 ]; do  
+	echo "Submitting the job for part" $looper; 
+
+	looperName=${name}_${looper};
+
+	if [[ $looper == -1 ]]; then
+	    outputFile=${workingFolder}/${name}$fileExt;
+	else
+	    outputFile=${workingFolder}/${looperName}$fileExt;
+	    if [[ $doFilterTxt == 1 ]]; then
+		outputFilteredFile=${workingFolder}/${looperName}_filtered$fileExt;
+	    fi;
+	fi;
+
+
+
+	if [[ $looper == -1 ]]; then
+	    scriptName=batchScript_${name}.sh
+	else
+	    scriptName=batchScript_${looper}_${name}.sh;
+	fi;
+
+
+	cat <<EOF > $scriptName
 #!/bin/bash
 
 
 #### The following configurations you should not need to change
 # Job name (defines name seen in monitoring by qstat and the
 #     job script's stderr/stdout names)
-#$ -N postProcessing_${name}_`whoami`
+#$ -N pP_${name}_`whoami`
 
 ### Specify the queue on which to run
 #$ -q short.q
 
-# Change to the current working directory from which the job got
+# Change to the current working directory from which the job go
 # submitted . This will also result in the job report stdout/stderr being
 # written to this directory, if you do not override it (below).
 #$ -cwd
 
 # here you could change location of the job report stdout/stderr files
 #  if you did not want them in the submission directory
-#$ -o $jobsLogsFolder/${name}.out
-#$ -e $jobsLogsFolder/${name}.err
+####v$ -o $jobsLogsFolder/${name}.out
+####c$ -e $jobsLogsFolder/${name}.err
+#$ -o $jobsLogsFolder/${looperName}.out
+#$ -e $jobsLogsFolder/${looperName}.err
 
 #source /swshare/psit3/etc/profile.d/cms_ui_env.sh
 #source $VO_CMS_SW_DIR/cmsset_default.sh
@@ -191,26 +241,28 @@ echo "postProcessing(\"$name\",\"$inputFolder\",\"$outputFile\",\"$treeName\",$f
 #echo "gSystem->Load(\"goodrun_cc\"); gROOT->LoadMacro(\"postProcessing.C\"); postProcessing(\"$name\",\"$inputFolder\",\"$outputFile\",\"$treeName\",$filter,$kfactor,$xsec,$id,\"$crabExt\",\"$inputPU\",\"$PUvar\",$applyJSON); gSystem->Exit(0);" |root.exe -b -l ;
 ### Comment for ROOT v5
 
-echo "gROOT->LoadMacro(\"postProcessing.C+\"); postProcessing(\"$name\",\"$inputFolder\",\"$outputFile\",\"$treeName\",$filter,$kfactor,$xsec,$id,\"$crabExt\",\"$inputPU\",\"$PUvar\",$applyJSON,$doAllSF,$doSilver); gSystem->Exit(0);" |root.exe -b -l ;
+echo "gROOT->LoadMacro(\"postProcessing.C+\"); postProcessing(\"$name\",\"$inputFolder\",\"$outputFile\",\"$treeName\",$filter,$kfactor,$xsec,$id,\"$crabExt\",\"$inputPU\",\"$PUvar\",$applyJSON,$doAllSF,$doSilver,$looper); gSystem->Exit(0);" |root.exe -b -l ;
+
+#gfal-copy file://$outputFile srm://t3se01.psi.ch/$outputFolder
 
 if [[ $id -lt 10 && $doFilterTxt == 1 ]]; then 
    echo "filterFromTxt(\"$filterTxt\",\"$outputFile\",1,\"$outputFilteredFile\",\"mt2\",\"\")"
    echo "gROOT->LoadMacro(\"filterFromTxt.C\"); filterFromTxt(\"$filterTxt\",\"$outputFile\",1,\"$outputFilteredFile\",\"mt2\",\"\"); gSystem->Exit(0);" |root.exe -b -l ;
-
    mv $outputFilteredFile $outputFile;
 fi;
-
 
 #mv $outputFile $outputFolder
 gfal-copy file://$outputFile srm://t3se01.psi.ch/$outputFolder
 rm $outputFile
-
-skimmingPruningCfg="${workingFolder}/skimmingPruning_${name}.cfg"
-    cat skimmingPruning.cfg |grep -v \# | sed  "s#INPUTDIR#${outputFolder}#" |sed "s#INPUTFILTER#${name}#" \
+skimmingPruningCfg="${workingFolder}/skimmingPruning_${looperName}.cfg"
+    cat skimmingPruning.cfg |grep -v \# | sed  "s#INPUTDIR#${outputFolder}#" |sed "s#INPUTFILTER#${looperName}#" \
 	| sed "s#OUTPUTDIR#${outputFolder}/skimAndPrune#" | sed "s#DOPRUNING#${doPruning}#" > \$skimmingPruningCfg
-
 ./runSkimmingPruning.sh \$skimmingPruningCfg
 rm \$skimmingPruningCfg
+#echo "is anything left in working folder? workingFolder: " 
+#ls $workingFolder
+
+
 
 #echo "is anything left in working folder? workingFolder: " 
 #ls $workingFolder
@@ -218,10 +270,32 @@ rm \$skimmingPruningCfg
 
 EOF
 
-qsub -q long.q batchScript_${name}.sh;
-rm batchScript_${name}.sh;
+#if you have a big file and no time to change the code: qsub  -q long.q -l h_vmem=5g batchScript_${name}.sh;
+
+
+	qsub -q long.q -l h_vmem=6g $scriptName;
+	rm $scriptName;
+
+	# if [[ $looper == -1 ]]; then
+	#     qsub  -q long.q batchScript_${name}.sh;
+	#     rm batchScript_${name}.sh;
+	# else
+	#     qsub  -q long.q batchScript_${looper}_${name}.sh;
+	#     rm batchScript_${looper}_${name}.sh;
+	# fi;
+
+
+	if [[ $looper -eq -1 ]]; then
+	    looper=$[looper+11]; 
+	else
+	    looper=$[$looper+1]; 
+	fi;
+    done;
 
 done < postProcessing.cfg
+
+
+
 
 ###rm -f postProcessing_C.d postProcessing_C.so;
 
@@ -271,3 +345,33 @@ if [[ "$1" = "clean" ]]; then
     echo "INFO: option 'clean' is not implemented yet."
 
 fi
+
+
+
+
+
+
+
+# skimmingPruningCfg="${workingFolder}/skimmingPruning_${name}.cfg"
+# cat skimmingPruning.cfg |grep -v \# | sed  "s#INPUTDIR#${outputFolder}#" |sed "s#INPUTFILTER#${name}#" \
+#     | sed "s#OUTPUTDIR#${outputFolder}/skimAndPrune#" | sed "s#DOPRUNING#${doPruning}#" > \$skimmingPruningCfg
+
+# ./runSkimmingPruning.sh \$skimmingPruningCfg
+# rm \$skimmingPruningCfg
+# gfal-copy skimmingPruning.cfg srm://t3se01.psi.ch/$outputFolder/skimAndPrune 
+
+# if [[ $id -lt 10 ]]; then
+#     crabExt=""
+#     ##Second round
+#     echo "gROOT->LoadMacro(\"postProcessing.C+\"); postProcessing(\"$name\",\"$secondInputFolder\",\"$outputFileFinal\",\"$treeName\",$filter,$kfactor,$xsec,$id,\"$crabExt\",\"$inputPU\",\"$PUvar\",$applyJSON,$doAllSF,$doSilver, 1); gSystem->Exit(0);" |root.exe -b -l ;
+# fi;
+
+# #gfal-copy file://$outputFileFinal srm://t3se01.psi.ch/$outputFolder
+# if [[ $id -lt 10 && $doFilterTxt == 1 ]]; then 
+#     echo "filterFromTxt(\"$filterTxt\",\"$outputFileFinal\",1,\"$outputFilteredFile\",\"mt2\",\"\")"
+#     echo "gROOT->LoadMacro(\"filterFromTxt.C\"); filterFromTxt(\"$filterTxt\",\"$outputFileFinal\",1,\"$outputFilteredFile\",\"mt2\",\"\"); gSystem->Exit(0);" |root.exe -b -l ;
+#    mv $outputFilteredFile $outputFileFinal;
+# fi;
+#mv $outputFile $outputFolder
+#gfal-copy file://$outputFileFinal srm://t3se01.psi.ch/$outputFolder
+#rm $outputFile

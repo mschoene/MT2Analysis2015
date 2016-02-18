@@ -50,12 +50,12 @@ private:
 // overload >> operator
 std::ifstream& operator>>(std::ifstream& is, EventKey& event) {
   
-    std::string run, lumi, evt;
-    std::getline(is, run , ':');
-    std::getline(is, lumi, ':');
-    std::getline(is, evt , '\n');
-    if (!run.empty() && !lumi.empty() && !evt.empty())
-      event = EventKey(stoi(run),stoi(lumi),stol(evt));
+  std::string run, lumi, evt;
+  std::getline(is, run , ':');
+  std::getline(is, lumi, ':');
+  std::getline(is, evt , '\n');
+  if (!run.empty() && !lumi.empty() && !evt.empty())
+    event = EventKey(stoi(run),stoi(lumi),stol(evt));
   return is;
   
 };
@@ -72,9 +72,9 @@ void filterFromTxt(string filterList="eventlist_JetHT_csc2015.txt",
   //Get input tree
   TFile *oldfile = new TFile(inputFile.c_str());
   TTree *oldtree = (TTree*)oldfile->Get(treeName.c_str());
-  Long64_t nentries = oldtree->GetEntries();
+  ULong64_t nentries = oldtree->GetEntries();
   
-  cout << "In input tree, nentries = " << nentries << endl;
+  std::cout << "In input tree, nentries = " << nentries << std::endl;
 
   unsigned int run,lumi;  // CMG
   //int run,lumi;             // americans
@@ -97,20 +97,20 @@ void filterFromTxt(string filterList="eventlist_JetHT_csc2015.txt",
   //Create set where we store list of event keys
   std::set<EventKey> listFromTxt;
 
-  cout << "filling set with filter list" << filterList << endl;
+  std::cout << "filling set with filter list" << filterList << std::endl;
   ifstream infile(filterList.c_str());
   while (!infile.eof()) {
     EventKey aEvent;
     infile >> aEvent;
     listFromTxt.insert( aEvent );
   }
-  cout << "size of filterList set: " << filterList.size() << endl;
+  std::cout << "size of filterList set: " << filterList.size() << std::endl;
 
   int nRemoved=0;
 
-  cout << "starting loop over tree events" << endl;
+  std::cout << "starting loop over tree events" << std::endl;
   
-  for (Long64_t i=0;i<nentries; i++) {
+  for (ULong64_t i=0;i<nentries; i++) {
     //for (Long64_t i=0;i<1000; i++) {
     oldtree->GetEntry(i);
 
@@ -120,11 +120,11 @@ void filterFromTxt(string filterList="eventlist_JetHT_csc2015.txt",
     if(i%100000==0) {
       time_t t = time(0);   // get time now
       tm * now = localtime( & t );
-      cout << "Processing event: " << i << " at time " 
-	   << now->tm_hour << ":"
-	   << now->tm_min << ":"
-	   << now->tm_sec 
-	   << endl;
+      std::cout << "Processing event: " << i << " at time " 
+		<< now->tm_hour << ":"
+		<< now->tm_min << ":"
+		<< now->tm_sec 
+		<< std::endl;
     }
     
 
@@ -136,16 +136,16 @@ void filterFromTxt(string filterList="eventlist_JetHT_csc2015.txt",
       if(fillNewTree) newtree->Fill();
     }
 
-    if ( inList ){
+    if ( inList ){  
       nRemoved++;
-      // cout << "Found event to filter! run,lumi,evt: " 
-      // 	   << run << " , " << lumi << " , " << evt <<endl;
+      //std::cout << "Found event to filter! run,lumi,evt: " 
+      //		<< run << " , " << lumi << " , " << evt <<std::endl;
     }
 
   }
 
 
-  cout << "Number of events found to be contained in the list = " << nRemoved << endl;
+  std::cout << "Number of events found to be contained in the list = " << nRemoved << std::endl;
 
   //newtree->Print();
   if(fillNewTree) {
@@ -155,7 +155,7 @@ void filterFromTxt(string filterList="eventlist_JetHT_csc2015.txt",
   delete oldfile;
 
   int stop_s=clock();
-  cout << "time: " << (stop_s-start_s)/double(CLOCKS_PER_SEC)*1000 << endl;
+  std::cout << "time: " << (stop_s-start_s)/double(CLOCKS_PER_SEC)*1000 << std::endl;
 
 }
 
