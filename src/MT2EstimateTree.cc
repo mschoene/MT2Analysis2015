@@ -252,6 +252,20 @@ void MT2EstimateTree::addVar( MT2Analysis<MT2EstimateTree>* analysis, const std:
 
 }
 
+void MT2EstimateTree::addVector( MT2Analysis<MT2EstimateTree>* analysis, const std::string& name ) {
+
+
+  for( std::set<MT2EstimateTree*>::iterator iD=analysis->data.begin(); iD!=analysis->data.end(); ++iD ) {
+
+    std::vector<float> *x = new std::vector<float>();
+    (*iD)->extraVectors[name] = x;
+
+    (*iD)->tree->Branch( name.c_str(), x );
+
+  }
+
+}
+
 
 //void MT2EstimateTree::addVarFloat( MT2Analysis<MT2EstimateTree>* analysis, const std::string& name ) {
 //
@@ -290,6 +304,13 @@ void MT2EstimateTree::assignVar( const std::string& name, float value ) {
   //&(extraVars[name]) = value;
   float* x = (float*)extraVars[name];
   *x = value;
+
+}
+
+void MT2EstimateTree::assignVector( const std::string& name, std::vector<float> vec ) {
+
+  std::vector<float>* x = (std::vector<float>*)extraVectors[name];
+  *x = vec;
 
 }
 

@@ -41,6 +41,9 @@ singleLeptonControlRegion: singleLeptonControlRegion.cpp MT2Region.o MT2Sample.o
 qcdControlRegion: qcdControlRegion.cpp MT2Region.o MT2Sample.o MT2EstimateSyst.o MT2Estimate.o MT2Config.o MT2EstimateTree.o MT2DrawTools.o
 	$(CC) -Wall $(INCLUDES) -o qcdControlRegion qcdControlRegion.cpp MT2Region.o MT2Sample.o MT2EstimateSyst.o MT2Estimate.o MT2Config.o MT2EstimateTree.o MT2DrawTools.o $(ROOTFLAG) $(EXTRALIBS) -fpermissive
 
+doRebalancing: doRebalancing.cpp MT2Region.o MT2Sample.o MT2EstimateSyst.o MT2Estimate.o MT2Config.o MT2EstimateTree.o MT2DrawTools.o
+	$(CC) -Wall $(INCLUDES) -o doRebalancing doRebalancing.cpp MT2Region.o MT2Sample.o MT2EstimateSyst.o MT2Estimate.o MT2Config.o MT2EstimateTree.o MT2DrawTools.o $(ROOTFLAG) $(EXTRALIBS) -fpermissive
+
 computeLostLepton: computeLostLepton.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateTree.o MT2EstimateSyst.o MT2Config.o MT2DrawTools.o
 	$(CC) -Wall $(INCLUDES) -o computeLostLepton computeLostLepton.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateTree.o MT2EstimateSyst.o MT2Config.o MT2DrawTools.o $(ROOTFLAG) $(EXTRALIBS)
 
