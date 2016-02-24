@@ -6,7 +6,7 @@
 #include "TMinuit.h"
 #include "RooWorkspace.h"
 #include "RooRealVar.h"
-#include "rooDoubleCB.h"
+#include "interface/rooDoubleCB.h"
 #include "TStopwatch.h"
 
 #define mt2_cxx

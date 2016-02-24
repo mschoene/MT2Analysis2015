@@ -5,7 +5,7 @@
 #include "TMath.h"
 #include "RooWorkspace.h"
 #include "RooRealVar.h"
-#include "rooDoubleCB.h"
+#include "interface/rooDoubleCB.h"
 #include <vector>
 
 Double_t sigmaSoft = 20.; 

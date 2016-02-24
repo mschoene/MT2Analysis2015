@@ -23,7 +23,7 @@
 #include "RooPlot.h"
 #include "TAxis.h"
 #include "RooAddPdf.h"
-#include "rooDoubleCB.h"
+#include "interface/rooDoubleCB.h"
 
 using namespace RooFit;
 using namespace std;
