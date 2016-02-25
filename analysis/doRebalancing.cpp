@@ -16,6 +16,7 @@
 #include "TLorentzVector.h"
 #include "TH1F.h"
 
+int ijob=0, Njobs=1;
 
 Double_t sigmaSoft = 20.; 
 
@@ -59,7 +60,7 @@ int main( int argc, char* argv[] ) {
 
 
   if( argc<2 ) {
-    std::cout << "USAGE: ./doRebalancing [configFileName] [data/MC/all] " << std::endl;
+    std::cout << "USAGE: ./doRebalancing configFileName [data/MC/all] [sampleID] [job_i] [Njobs]" << std::endl;
     std::cout << "Exiting." << std::endl;
     exit(11);
   }
@@ -85,6 +86,18 @@ int main( int argc, char* argv[] ) {
     std::cout << "-> Will run only on both data and MC." << std::endl;
   }
  
+  int sampleID = -1;
+  if( argc > 3 ) {
+    sampleID = atoi(argv[3]);
+    std::cout << "-> Will run over sample ID" << sampleID << std::endl;
+  }
+
+  if( argc > 5 ) {
+    ijob  = atoi(argv[4]);
+    Njobs = atoi(argv[5]);
+    std::cout << "-> Will run job " << ijob << " out of " << Njobs << std::endl;
+  }
+
 
 
   TH1::AddDirectory(kFALSE); // stupid ROOT memory allocation needs this
@@ -93,14 +106,19 @@ int main( int argc, char* argv[] ) {
   system(Form("mkdir -p %s", outputdir.c_str()));
 
 
-  // load response templates
+  // load response templates on memory
   getTemplates();
 
   if( cfg.useMC() && !onlyData ) { // run on MC
 
     std::string samplesFile = "../samples/samples_" + cfg.mcSamples() + ".dat";
     
-    std::vector<MT2Sample> samples_qcd  = MT2Sample::loadSamples(samplesFile, 100, 199);
+    std::vector<MT2Sample> samples_qcd;
+
+    if (sampleID==-1) // do all qcd samples
+      samples_qcd = MT2Sample::loadSamples(samplesFile, 100, 199);
+    else 
+      samples_qcd = MT2Sample::loadSamples(samplesFile, sampleID, sampleID);
 
 
     MT2Analysis<MT2EstimateTree>* qcdCRtree = new MT2Analysis<MT2EstimateTree>( "qcdRebalancedTree", "13TeV_inclusive" );
@@ -130,9 +148,11 @@ int main( int argc, char* argv[] ) {
     
 
    
-    std::string mcFile = outputdir + "/mc";
-    mcFile = mcFile + ".root";
-    qcdCRtree->writeToFile( mcFile, "RECREATE" );
+    TString mcFile = outputdir + "/mc";
+    if (sampleID!=-1)
+      mcFile += TString::Format("_id%d_job%dof%d", sampleID, ijob, Njobs);
+    mcFile += ".root";
+    qcdCRtree->writeToFile( mcFile.Data(), "RECREATE" );
 
   }
 
@@ -159,24 +179,24 @@ void rebalance( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT2Es
   TFile* file = TFile::Open(sample.file.c_str());
   TTree* tree = (TTree*)file->Get("mt2");
   
-  std::cout << "-> Loaded tree: it has " << tree->GetEntries() << " entries." << std::endl;
+  int nentries = tree->GetEntries();
 
-
+  std::cout << "-> Loaded tree: it has " << nentries << " entries." << std::endl
+	    << "   will run " << Njobs << " jobs (roughly " << nentries/Njobs << " events per job)" << std::endl;
   
   MT2Tree myTree;
   myTree.loadGenStuff = false;
   myTree.Init(tree);
 
-  int nentries = tree->GetEntries();
-
   //nentries = 1000;
 
-  for( int iEntry=0; iEntry<nentries; ++iEntry ) {
+  //for( int iEntry=0; iEntry<nentries; ++iEntry ) {
+  for( int iEntry=0+ijob; iEntry<nentries; iEntry+=Njobs ) {
 
     TStopwatch t;
     t.Start();
 
-    if( iEntry % 50000 == 0 ) std::cout << "    Entry: " << iEntry << " / " << nentries << std::endl;
+    if( iEntry/Njobs % 50000 == 0 ) std::cout << "    Entry: " << iEntry/Njobs << " / " << nentries << std::endl;
 
     myTree.GetEntry(iEntry);
 
@@ -345,7 +365,7 @@ void rebalance( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT2Es
     
     if (NPUj>0){
       met_re = sqrt(metx_re*metx_re+mety_re*mety_re);
-      metphi_re = atan(mety_re/metx_re);
+      metphi_re = mety_re==0.0 && metx_re==0.0 ? 0.0 : TMath::ATan2(mety_re,metx_re);
     }
     //std::cout << "bruno's rebalanced met: " << met_re << "; metphi: " << metphi_re << std::endl;
     
@@ -353,7 +373,7 @@ void rebalance( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT2Es
     Double_t metx_re2 = softPxTrue - softPxReco;
     Double_t mety_re2 = softPyTrue - softPyReco;
     Double_t met_re2 = sqrt(metx_re2*metx_re2+mety_re2*mety_re2);
-    Double_t metphi_re2 = atan(mety_re2/metx_re2);
+    Double_t metphi_re2 =  mety_re2==0.0 && metx_re2==0.0 ? 0.0 : TMath::ATan2(mety_re2,metx_re2);
     //cout << "jason's rebalanced met: " << met_re2 << "; metphi: " << metphi_re2 << std::endl;
     
     int nj=0;
@@ -368,9 +388,9 @@ void rebalance( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT2Es
     }
 
     float true_softpt  = sqrt(softPxTrue*softPxTrue+softPyTrue*softPyTrue);
-    float true_softphi = atan(softPyTrue/softPxTrue);
+    float true_softphi = softPyTrue==0.0 && softPxTrue==0.0 ? 0.0 : TMath::ATan2(softPyTrue,softPxTrue);
     float reco_softpt  = sqrt(softPxReco*softPxReco+softPyReco*softPyReco);
-    float reco_softphi = atan(softPyReco/softPxReco);
+    float reco_softphi = softPyReco==0.0 && softPxReco==0.0 ? 0.0 : TMath::ATan2(softPyReco,softPxReco);
     
     //thisTree->yield->Fill( mt2, weight );
     thisTree->assignVar( "jet1_pt"           , myTree.jet1_pt );
