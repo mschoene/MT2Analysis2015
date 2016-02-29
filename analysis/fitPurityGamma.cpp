@@ -124,31 +124,38 @@ int main( int argc, char* argv[] ) {
   std::string outputdir = gammaCRdir + "/PurityFits" + cfg.gammaTemplateType();
   system( Form( "mkdir -p %s/singleFits", outputdir.c_str()) );
 
-  makePurity( cfg, outputdir,  gammaJet_data, templates_prompt, templates_fake, useMC, "");
+  //makePurity( cfg, outputdir,  gammaJet_data, templates_prompt, templates_fake, useMC, "");
+
 
   if(doAxes){
-    MT2Analysis<MT2EstimateZinvGamma>* gammaJet_data_mt2 = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( gammaCRdir + "/iso_mt2.root", "iso_mt2" );
-
+   
     /*
-    MT2Analysis<MT2EstimateZinvGamma>* gammaJet_data_ht = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( gammaCRdir + "/iso_ht.root", "iso_ht" );
-    MT2Analysis<MT2EstimateZinvGamma>* gammaJet_data_njets = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( gammaCRdir + "/iso_nJets.root", "iso_njets" );
-    MT2Analysis<MT2EstimateZinvGamma>* gammaJet_data_nbjets = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( gammaCRdir + "/iso_nBJets.root", "iso_nbjets" );
-    MT2Analysis<MT2EstimateZinvGamma>* gammaJet_data_mono_nbjets = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( gammaCRdir + "/iso_mono_nBJets.root", "iso_mono_nbjets" );
+      MT2Analysis<MT2EstimateZinvGamma>* gammaJet_data_ht = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( gammaCRdir + "/iso_ht.root", "iso_ht" );
+      MT2Analysis<MT2EstimateZinvGamma>* gammaJet_data_njets = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( gammaCRdir + "/iso_nJets.root", "iso_njets" );
+      MT2Analysis<MT2EstimateZinvGamma>* gammaJet_data_nbjets = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( gammaCRdir + "/iso_nBJets.root", "iso_nbjets" );
+      MT2Analysis<MT2EstimateZinvGamma>* gammaJet_data_mono_nbjets = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( gammaCRdir + "/iso_mono_nBJets.root", "iso_mono_nbjets" );
     */
+    MT2Analysis<MT2EstimateZinvGamma>* gammaJet_data_central = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( gammaCRdir + "/iso_central.root", "iso_central" );
     MT2Analysis<MT2EstimateZinvGamma>* gammaJet_data_mono_ht = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( gammaCRdir + "/iso_mono_ht.root", "iso_mono_ht" );
 
- MT2Analysis<MT2EstimateZinvGamma>* gammaJet_data_incl_ht = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( gammaCRdir + "/iso_incl_ht.root", "iso_incl_ht" );
+    MT2Analysis<MT2EstimateZinvGamma>* gammaJet_data_incl_ht = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( gammaCRdir + "/iso_incl_ht.root", "iso_incl_ht" );
     MT2Analysis<MT2EstimateZinvGamma>* gammaJet_data_incl_njets = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( gammaCRdir + "/iso_incl_nJets.root", "iso_incl_njets" );
     MT2Analysis<MT2EstimateZinvGamma>* gammaJet_data_incl_nbjets = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( gammaCRdir + "/iso_incl_nBJets.root", "iso_incl_nbjets" );
   
+    MT2Analysis<MT2EstimateZinvGamma>* gammaJet_data_mt2 = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( gammaCRdir + "/iso_mt2.root", "iso_mt2" );
 
-    // makePurity( cfg, outputdir,  gammaJet_data_mt2, templates_prompt, templates_fake, useMC, "mt2_");
+    makePurity( cfg, outputdir,  gammaJet_data_mt2, templates_prompt, templates_fake, useMC, "mt2_");
+
+
+   
     /*
-    makePurity( cfg, outputdir,  gammaJet_data_ht, templates_prompt, templates_fake, useMC, "ht_");
-    makePurity( cfg, outputdir,  gammaJet_data_njets, templates_prompt, templates_fake, useMC, "njets_");
-    makePurity( cfg, outputdir,  gammaJet_data_nbjets, templates_prompt, templates_fake, useMC, "nbjets_");
-    makePurity( cfg, outputdir,  gammaJet_data_mono_nbjets, templates_prompt, templates_fake, useMC, "mono_nbjets_");
+      makePurity( cfg, outputdir,  gammaJet_data_ht, templates_prompt, templates_fake, useMC, "ht_");
+      makePurity( cfg, outputdir,  gammaJet_data_njets, templates_prompt, templates_fake, useMC, "njets_");
+      makePurity( cfg, outputdir,  gammaJet_data_nbjets, templates_prompt, templates_fake, useMC, "nbjets_");
+      makePurity( cfg, outputdir,  gammaJet_data_mono_nbjets, templates_prompt, templates_fake, useMC, "mono_nbjets_");
     */
+    makePurity( cfg, outputdir,  gammaJet_data_central, templates_prompt, templates_fake, useMC, "central_");
+   
     makePurity( cfg, outputdir,  gammaJet_data_mono_ht, templates_prompt, templates_fake, useMC, "mono_ht_");
    
     makePurity( cfg, outputdir,  gammaJet_data_incl_ht, templates_prompt, templates_fake, useMC, "incl_ht_");
@@ -184,11 +191,11 @@ void makePurity( const MT2Config& cfg, std::string outputdir,MT2Analysis<MT2Esti
   }
 
  
-  MT2Analysis<MT2EstimateSyst>* purityLoose = new MT2Analysis<MT2EstimateSyst>( "purityLoose", cfg.regionsSet() );
-  MT2Analysis<MT2EstimateSyst>* purityTight = new MT2Analysis<MT2EstimateSyst>( "purity"     , cfg.regionsSet() );
+ std::set<MT2Region> regions = data->getRegions();
 
-  
-  std::set<MT2Region> regions = data->getRegions();
+
+  MT2Analysis<MT2EstimateSyst>* purityLoose = new MT2Analysis<MT2EstimateSyst>( "purityLoose", regions);
+  MT2Analysis<MT2EstimateSyst>* purityTight = new MT2Analysis<MT2EstimateSyst>( "purity"     , regions  );
 
 
   int nBins;
@@ -199,10 +206,9 @@ void makePurity( const MT2Config& cfg, std::string outputdir,MT2Analysis<MT2Esti
   MT2Estimate::rebinYields( (MT2Analysis<MT2Estimate>*)purityLoose,nBins,bins);
   MT2Estimate::rebinYields( (MT2Analysis<MT2Estimate>*)purityTight,nBins,bins);
 
-
-  
+ 
   for( std::set<MT2Region>::iterator iR=regions.begin(); iR!=regions.end(); ++iR ) {
-
+ 
     // if( iR->nBJetsMin()>2 ) continue;
 
     MT2EstimateZinvGamma* thisEstimate = data->get( *iR );
@@ -212,13 +218,11 @@ void makePurity( const MT2Config& cfg, std::string outputdir,MT2Analysis<MT2Esti
       templateFake   = temp_fake  ->get( *(temp_fake  ->matchRegion( *iR )) );
     }
     
- 
     MT2EstimateSyst* thisLoosePurity = purityLoose->get( *iR );
     std::string nameLoose = thisLoosePurity->yield->GetName();
 
     MT2EstimateSyst* thisTightPurity = purityTight->get( *iR );
     std::string nameTight = thisTightPurity->yield->GetName();
-
 
 
  
