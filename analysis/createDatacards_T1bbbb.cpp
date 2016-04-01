@@ -3,6 +3,7 @@
 #include <cmath>
 #include <iomanip> 
 
+#include "TSystem.h"
 #include "TFile.h"
 #include "TF1.h"
 #include "TH1D.h"
@@ -427,7 +428,7 @@ int main( int argc, char* argv[] ) {
        
        float yield_llep = fabs(this_llep->GetBinContent(iBin));
        float yield_qcd = fabs(this_qcd ->GetBinContent(iBin));
-       if( !(iR->nJetsMax()==1) && this_qcd_purity->GetBinContent(iBin) > 0 ) yield_qcd *= (this_qcd_purity->GetBinContent(iBin));
+       //       if( !(iR->nJetsMax()==1) && this_qcd_purity->GetBinContent(iBin) > 0 ) yield_qcd *= (this_qcd_purity->GetBinContent(iBin));
 
 //       ////// Suicidal attempt
 //       if( iR->nJetsMax() >  1 || iR->nJetsMax() < 0 ){
@@ -451,10 +452,10 @@ int main( int argc, char* argv[] ) {
        datacard << "-------------" << std::endl;
        
        datacard << "lumi_syst    lnN    " << 1.+err_lumi_corr << " - - -" << std::endl;
-//       datacard << "sig_MCstat_" << binName << " lnN UUU - - -" << std::endl;
-//       datacard << "sig_isrSyst lnN III - - -" << std::endl;
-//       datacard << "sig_bTagHeavySyst lnN HHH - - -" << std::endl;
-//       datacard << "sig_bTagLightSyst lnN LLL - - -" << std::endl;
+       datacard << "sig_MCstat_" << binName << " lnN UUU - - -" << std::endl;
+       datacard << "sig_isrSyst lnN III - - -" << std::endl;
+       datacard << "sig_bTagHeavySyst lnN HHH - - -" << std::endl;
+       datacard << "sig_bTagLightSyst lnN LLL - - -" << std::endl;
        
        
        // these needed for table
@@ -557,8 +558,8 @@ int main( int argc, char* argv[] ) {
 
 
            datacard << "zinv_doubleRatioOffset lnN   - " << 1.+err_zinv_doubleRatioOffset << " - -" << std::endl;
-//           zinv_systUp += err_zinv_doubleRatioOffset*err_zinv_doubleRatioOffset;
-//           zinv_systDn += err_zinv_doubleRatioOffset*err_zinv_doubleRatioOffset;
+           zinv_systUp += err_zinv_doubleRatioOffset*err_zinv_doubleRatioOffset;
+           zinv_systDn += err_zinv_doubleRatioOffset*err_zinv_doubleRatioOffset;
 
 	   float err_ZGUp = TMath::Sqrt( thisErrNJUp*thisErrNJUp + thisErrNBUp*thisErrNBUp + thisErrHTUp*thisErrHTUp );
 	   float err_ZGDn = TMath::Sqrt( thisErrNJDn*thisErrNJDn + thisErrNBDn*thisErrNBDn + thisErrHTDn*thisErrHTDn );
@@ -647,13 +648,13 @@ int main( int argc, char* argv[] ) {
 	       if( iBin==1 && fabs(yield_zinv)>0 ){
 		 
 		 datacard << "zinv_shape_" << zinvCR_name << " lnN  - " << 1.-shapeErr_zinv/fabs(yield_zinv) << " - - " << std::endl;
-//		 zinv_systUp += (shapeErr_zinv/fabs(yield_zinv))*(shapeErr_zinv/fabs(yield_zinv));
-//		 zinv_systDn += (shapeErr_zinv/fabs(yield_zinv))*(shapeErr_zinv/fabs(yield_zinv));
+		 zinv_systUp += (shapeErr_zinv/fabs(yield_zinv))*(shapeErr_zinv/fabs(yield_zinv));
+		 zinv_systDn += (shapeErr_zinv/fabs(yield_zinv))*(shapeErr_zinv/fabs(yield_zinv));
 	       }
 	       else{
 		 datacard << "zinv_shape_" << zinvCR_name << " lnN  - " << 1.+relativeErr << " - - " << std::endl;
-//		 zinv_systUp += relativeErr*relativeErr;
-//		 zinv_systDn += relativeErr*relativeErr;
+		 zinv_systUp += relativeErr*relativeErr;
+		 zinv_systDn += relativeErr*relativeErr;
 	       }
 	     }
 	   }
@@ -736,15 +737,15 @@ int main( int argc, char* argv[] ) {
 	     if( iBin==1 && yield_llep>0 ){
 	       
 	       datacard << "llep_shape_" << llepCR_name << " lnN - - " << 1.-shapeErr_llep/yield_llep << " - " << std::endl;
-//	       llep_systUp += (shapeErr_llep/yield_llep)*(shapeErr_llep/yield_llep);
-//	       llep_systDn += (shapeErr_llep/yield_llep)*(shapeErr_llep/yield_llep);
+	       llep_systUp += (shapeErr_llep/yield_llep)*(shapeErr_llep/yield_llep);
+	       llep_systDn += (shapeErr_llep/yield_llep)*(shapeErr_llep/yield_llep);
 	     
 	     }
 	     else{
 	     
 	       datacard << "llep_shape_" << llepCR_name << " lnN - - " << 1+relativeErr_llep << " - " << std::endl;
-//	       llep_systUp += relativeErr_llep*relativeErr_llep;
-//	       llep_systDn += relativeErr_llep*relativeErr_llep;
+	       llep_systUp += relativeErr_llep*relativeErr_llep;
+	       llep_systDn += relativeErr_llep*relativeErr_llep;
 	     
 	     }
 	   }
@@ -972,9 +973,13 @@ int main( int argc, char* argv[] ) {
 //  std::vector<MT2Analysis<MT2EstimateSigSyst>*> signals_bTagLight = MT2Analysis<MT2EstimateSigSyst>::readAllSystFromFile( "/shome/mmasciov/signalScansFromDominick/T1bbbb_eth.root", "T1bbbb", "btagsf_light" );
 //  std::vector<MT2Analysis<MT2EstimateSigSyst>*> signals_isr       = MT2Analysis<MT2EstimateSigSyst>::readAllSystFromFile( "/shome/mmasciov/signalScansFromDominick/T1bbbb_eth.root", "T1bbbb", "isr" );
 //  std::vector<MT2Analysis<MT2EstimateSigSyst>*> signals           = MT2Analysis<MT2EstimateSigSyst>::readAllSystFromFile( "/shome/mmasciov/signalScansFromDominick/T1bbbb_eth.root", "T1bbbb", "isr" );
+  std::vector<MT2Analysis<MT2EstimateSigSyst>*> signals_bTagHeavy = MT2Analysis<MT2EstimateSigSyst>::readAllSystFromFile( "./signalScansFromDominick/T1bbbb_eth.root", "T1bbbb", "btagsf_heavy" );
+  std::vector<MT2Analysis<MT2EstimateSigSyst>*> signals_bTagLight = MT2Analysis<MT2EstimateSigSyst>::readAllSystFromFile( "./signalScansFromDominick/T1bbbb_eth.root", "T1bbbb", "btagsf_light" );
+  std::vector<MT2Analysis<MT2EstimateSigSyst>*> signals_isr       = MT2Analysis<MT2EstimateSigSyst>::readAllSystFromFile( "./signalScansFromDominick/T1bbbb_eth.root", "T1bbbb", "isr" );
+  std::vector<MT2Analysis<MT2EstimateSigSyst>*> signals           = MT2Analysis<MT2EstimateSigSyst>::readAllSystFromFile( "./signalScansFromDominick/T1bbbb_eth.root", "T1bbbb", "isr" );
 
  
-  std::vector<MT2Analysis<MT2Estimate>*> signals = MT2Analysis<MT2Estimate>::readAllFromFile( mc_fileName, "T1bbbb_1000_900" );
+  //std::vector<MT2Analysis<MT2Estimate>*> signals = MT2Analysis<MT2Estimate>::readAllFromFile( mc_fileName, "SMS_T1bbbb_fullScan" );
   //std::vector<MT2Analysis<MT2Estimate>*> signals = MT2Analysis<MT2Estimate>::readAllFromFile( mc_fileName, "DMS" );
   //std::vector<MT2Analysis<MT2Estimate>*> signals = MT2Analysis<MT2Estimate>::readAllFromFile( mc_fileName, "DMV" );
   
@@ -993,244 +998,257 @@ int main( int argc, char* argv[] ) {
     
     std::string path = dir + "/datacards_" + sigName;
     system(Form("mkdir -p %s", path.c_str()));
-
+    
+    std::string pathSE = "datacards_" + sigName;
+    
     std::string path_mass = path;
     float xs_norm=1.;
     if( signals[isig]->getName().find("T2qq") != std::string::npos )
       xs_norm=8./10.;
 
     //    if( signals[isig]->getName().find("fullScan") != std::string::npos )
-//      for( std::set<MT2Region>::iterator iR=regions.begin(); iR!=regions.end(); ++iR ) {
-//	
-//	TH3D* this_signal3d;
-//	TH1D* this_signalParent;
-//
-//
-//	int nBinsMT2;
-//	double* binsMT2;
-//	iR->getBins(nBinsMT2, binsMT2);
-//
-//	int nBinsM=81;
-//	double binWidthM=25.;
-//	double binsM[nBinsM+1];
-//	for (int b=0; b<=nBinsM; ++b)
-//	  binsM[b]=b*binWidthM;
-//
-//
-//
-//	MT2EstimateSigSyst* thisSigSystCentral = signals[isig]->get(*iR);
-//	if( thisSigSystCentral->yield3d!=0 ){
-//	  
-//	  this_signal3d = signals[isig]->get(*iR)->yield3d;
-//
-//	}
-//	else{
-//	  
-//	  this_signal3d = new TH3D("emptyHisto", "", nBinsMT2, binsMT2, nBinsM, binsM, nBinsM, binsM);
-//
-//	} 
-//	//continue;
-//	
-//	
-//	this_signalParent = this_signal3d->ProjectionY("mParent");
-//
-//	TH3D* this_signal3d_central;
-//	TH3D* this_signal3d_bTagHeavy_Up;
-//	TH3D* this_signal3d_bTagLight_Up;
-//	TH3D* this_signal3d_isr_Up;
-//	
-//	MT2EstimateSigSyst* thisSigSyst = signals_bTagHeavy[0]->get(*iR);
-//
-//	if( thisSigSyst->yield3d!=0 ){
-//	  
-//	  this_signal3d_central      = (TH3D*) signals_bTagHeavy[isig]->get(*iR)->yield3d->Clone();
-//	  this_signal3d_bTagHeavy_Up = (TH3D*) signals_bTagHeavy[isig]->get(*iR)->yield3d_systUp->Clone();
-//	  this_signal3d_bTagLight_Up = (TH3D*) signals_bTagLight[isig]->get(*iR)->yield3d_systUp->Clone();
-//	  this_signal3d_isr_Up       = (TH3D*) signals_isr[isig]->get(*iR)->yield3d_systDown->Clone();
-//
-//	}
-//	else{
-//	  
-//	  this_signal3d_central      = (TH3D*) this_signal3d->Clone("central");
-//          this_signal3d_bTagHeavy_Up = (TH3D*) this_signal3d->Clone("bHUp");
-//          this_signal3d_bTagLight_Up = (TH3D*) this_signal3d->Clone("bLUp");
-//          this_signal3d_isr_Up       = (TH3D*) this_signal3d->Clone("isrUp");
-//
-//	}
-//	// continue;
-//
-//
-//	for( int iBinY=1; iBinY<this_signalParent->GetNbinsX()+1; ++iBinY ){
-//
-//	  float mParent = this_signalParent->GetBinLowEdge(iBinY);
-//	  if( !(mParent >= m1-1 && mParent < m2-1) ) continue;
-//	  
-//	  TH1D* this_signalLSP = this_signal3d_central->ProjectionZ("mLSP", 0, -1, iBinY, iBinY);
-//	  
-//	  for( int iBinZ=1; iBinZ < iBinY; ++iBinZ ) {
-//	  	  
-//	    float mLSP = this_signalLSP->GetBinLowEdge(iBinZ);
-//	    if( !(mLSP >= m11-1 && mLSP < m22-1) ) continue;
-//	    
-//	    TH1D* this_signal = this_signal3d_central->ProjectionX("mt2", iBinY, iBinY, iBinZ, iBinZ);
-//	    
-//	    if( this_signal->Integral() < 0 ) continue;
-//	    
-//	    for( int iBin=1; iBin<this_signal->GetNbinsX()+1; ++iBin ) {
-//	      
-//	      if( this_signal->GetBinLowEdge( iBin ) > iR->htMax() && iR->htMax()>0 ) continue;
-//	      
-//	      float mt2Min = this_signal->GetBinLowEdge( iBin );
-//	      float mt2Max = (iBin==this_signal->GetNbinsX()) ?  -1. : this_signal->GetBinLowEdge( iBin+1 );
-//	
-//	      if( this_signal->GetBinContent(iBin) <= 0 ){
-//
-//		std::string binName;
-//                if( mt2Max>=0. )
-//                  binName = std::string( Form("%s_m%.0fto%.0f", iR->getName().c_str(), mt2Min, mt2Max) );
-//                else
-//                  binName = std::string( Form("%s_m%.0ftoInf", iR->getName().c_str(), mt2Min) );
-//
-//		std::string templateDatacard( Form("%s/datacard_%s.txt", path_templ.c_str(), binName.c_str()) );
-//
-//		std::string newDatacard( Form("%s/datacard_%s_%s_%.0f_%.0f.txt", path_mass.c_str(), binName.c_str(), sigName.c_str(), mParent, mLSP) );
-//		std::string helpDatacard( Form("%s/datacard_%s_%s_%.0f_%.0f_forSed.txt", path_mass.c_str(), binName.c_str(), sigName.c_str(), mParent, mLSP) );
-//		
-//		std::ifstream thisNewDatacard( newDatacard.c_str() );
-//                if( thisNewDatacard.good() ) continue;
-//
-//		float sig = 0.0;
-//                float sigErr = 0.0;
-//
-//		std::string isrErr = "-";
-//
-//		std::string bTagErr_heavy = "-";
-//
-//		std::string  bTagErr_light = "-";
-//
-//		std::string totUncorrErr = "-";
-//
-//
-//		std::string sedCommand( Form("sed 's/XXX/%.3f/' %s > %s", sig, templateDatacard.c_str(), newDatacard.c_str()) );
-//                system( sedCommand.c_str() );
-//
-//		std::string sedCommand_uncErr( Form("sed -i 's/UUU/%s/' %s", totUncorrErr.c_str(), newDatacard.c_str()) );
-//                system( sedCommand_uncErr.c_str() );
-//
-//		std::string sedCommand_isrErr( Form("sed -i 's/III/%s/' %s", isrErr.c_str(), newDatacard.c_str()) );
-//                system( sedCommand_isrErr.c_str() );
-//
-//		std::string sedCommand_bTagHErr( Form("sed -i 's/HHH/%s/' %s", bTagErr_heavy.c_str(), newDatacard.c_str()) );
-//                system( sedCommand_bTagHErr.c_str() );
-//
-//		std::string sedCommand_bTagLErr( Form("sed -i 's/LLL/%s/g' %s", bTagErr_light.c_str(), newDatacard.c_str()) );
-//                system( sedCommand_bTagLErr.c_str() );
-//
-//	      }
-//	      else{
-//		
-//		std::string binName;
-//		if( mt2Max>=0. )
-//		  binName = std::string( Form("%s_m%.0fto%.0f", iR->getName().c_str(), mt2Min, mt2Max) );
-//		else
-//		  binName = std::string( Form("%s_m%.0ftoInf", iR->getName().c_str(), mt2Min) );
-//		
-//		std::string templateDatacard( Form("%s/datacard_%s.txt", path_templ.c_str(), binName.c_str()) );
-//		
-//		std::string newDatacard( Form("%s/datacard_%s_%s_%.0f_%.0f.txt", path_mass.c_str(), binName.c_str(), sigName.c_str(), mParent, mLSP) );
-//		std::string helpDatacard( Form("%s/datacard_%s_%s_%.0f_%.0f_forSed.txt", path_mass.c_str(), binName.c_str(), sigName.c_str(), mParent, mLSP) );
-//
-//		std::ifstream thisNewDatacard( newDatacard.c_str() );
-//		if( thisNewDatacard.good() ) continue;
-//
-//		float sig = this_signal->GetBinContent(iBin);
-//		float sigErr = this_signal->GetBinError(iBin)/sig;
-//		sig*=xs_norm;
-//		
-//		float isrErr = this_signal3d_isr_Up->GetBinContent(iBin, iBinY, iBinZ);
-//		isrErr = 2 - isrErr/sig;
-//		
-//		float bTagErr_heavy = this_signal3d_bTagHeavy_Up->GetBinContent(iBin, iBinY, iBinZ);
-//		bTagErr_heavy = bTagErr_heavy/sig;
-//
-//		float bTagErr_light = this_signal3d_bTagLight_Up->GetBinContent(iBin, iBinY, iBinZ);
-//		bTagErr_light = bTagErr_light/sig;
-//		
-//		float totUncorrErr = 1.+sqrt(sigErr*sigErr+3*0.05*0.05); // MC stat + PDF + scales + JEC
-//
-//		std::string sedCommand( Form("sed 's/XXX/%.3f/' %s > %s", sig, templateDatacard.c_str(), newDatacard.c_str()) );
-//		system( sedCommand.c_str() );
-//
-//		std::string sedCommand_uncErr( Form("sed -i 's/UUU/%.3f/' %s", totUncorrErr, newDatacard.c_str()) );
-//		system( sedCommand_uncErr.c_str() );
-//
-//		std::string sedCommand_isrErr( Form("sed -i 's/III/%.3f/' %s", isrErr, newDatacard.c_str()) );
-//		system( sedCommand_isrErr.c_str() );
-//
-//		std::string sedCommand_bTagHErr( Form("sed -i 's/HHH/%.3f/' %s", bTagErr_heavy, newDatacard.c_str()) );
-//		system( sedCommand_bTagHErr.c_str() );
-//
-//		std::string sedCommand_bTagLErr( Form("sed -i 's/LLL/%.3f/g' %s", bTagErr_light, newDatacard.c_str()) );
-//		system( sedCommand_bTagLErr.c_str() );
-//		
-//	      }
-//	      
-//	    } // for bins X (MT2)
-//	  } // for bins Z (mLSP)
-//	}// for bins Y (mParent)      
-//      } // for regions
-    
-//    else
       for( std::set<MT2Region>::iterator iR=regions.begin(); iR!=regions.end(); ++iR ) {
 	
-	TH1D* this_signal = signals[isig]->get(*iR)->yield;
+	TH3D* this_signal3d;
+	TH1D* this_signalParent;
+
+	MT2EstimateSigSyst* thisSigSystCentral = signals[isig]->get(*iR);
+	if( thisSigSystCentral->yield3d!=0 && thisSigSystCentral->yield3d_systUp!=0){
+	  
+	  this_signal3d = signals[isig]->get(*iR)->yield3d;
+
+	}
+	else continue;
 	
-	//	if( this_signal->Integral() < 0.01 ) continue; 
+	
+	this_signalParent = this_signal3d->ProjectionY("mParent");
 
-	for( int iBin=1; iBin<this_signal->GetNbinsX()+1; ++iBin ) {
+	TH3D* this_signal3d_central;
+	TH3D* this_signal3d_bTagHeavy_Up;
+	TH3D* this_signal3d_bTagLight_Up;
+	TH3D* this_signal3d_isr_Up;
+	
+	MT2EstimateSigSyst* thisSigSyst = signals_bTagHeavy[0]->get(*iR);
+
+	if( thisSigSyst->yield3d!=0 && thisSigSyst->yield3d_systUp!=0){
 	  
-	  if( this_signal->GetBinLowEdge( iBin ) > iR->htMax() && iR->htMax()>0 ) continue;
+	  this_signal3d_central      = (TH3D*) signals_bTagHeavy[isig]->get(*iR)->yield3d->Clone();
+	  this_signal3d_bTagHeavy_Up = (TH3D*) signals_bTagHeavy[isig]->get(*iR)->yield3d_systUp->Clone();
+	  this_signal3d_bTagLight_Up = (TH3D*) signals_bTagLight[isig]->get(*iR)->yield3d_systUp->Clone();
+	  this_signal3d_isr_Up       = (TH3D*) signals_isr[isig]->get(*iR)->yield3d_systDown->Clone();
+
+	}
+	else continue;
+//	else{
+//	  
+//	  this_signal3d_central      = (TH3D*) signals[isig]->get(*iR)->yield3d->Clone();
+//	  this_signal3d_bTagHeavy_Up = (TH3D*) signals[isig]->get(*iR)->yield3d->Clone();
+//	  this_signal3d_bTagLight_Up = (TH3D*) signals[isig]->get(*iR)->yield3d->Clone();
+//	  this_signal3d_isr_Up       = (TH3D*) signals[isig]->get(*iR)->yield3d->Clone();
+//	
+//	}
+
+	for( int iBinY=1; iBinY<this_signalParent->GetNbinsX()+1; ++iBinY ){
+
+	  float mParent = this_signalParent->GetBinLowEdge(iBinY);
+	  if( !(mParent >= m1-1 && mParent < m2-1) ) continue;
 	  
-	  float mt2Min = this_signal->GetBinLowEdge( iBin );
-	  float mt2Max = (iBin==this_signal->GetNbinsX()) ?  -1. : this_signal->GetBinLowEdge( iBin+1 );
+	  TH1D* this_signalLSP = this_signal3d_central->ProjectionZ("mLSP", 0, -1, iBinY, iBinY);
 	  
-	  if( this_signal->GetBinContent(iBin) < 0 );
-	  //if( this_signal->GetBinContent(iBin) < 0.01 );
-	  else{
+	  for( int iBinZ=1; iBinZ < iBinY; ++iBinZ ) {
+	  	  
+	    float mLSP = this_signalLSP->GetBinLowEdge(iBinZ);
+	    if( !(mLSP >= m11-1 && mLSP < m22-1) ) continue;
 	    
-	    std::string binName;
-	    if( iR->nJetsMax() ==1 ){
-	      binName = std::string( Form("%s_m0toInf", iR->getName().c_str() ) );
-	    }
-	    else{
+	    TH1D* this_signal = this_signal3d_central->ProjectionX("mt2", iBinY, iBinY, iBinZ, iBinZ);
+	    
+	    if( this_signal->Integral() <=0 ) continue;
+	    
+	    for( int iBin=1; iBin<this_signal->GetNbinsX()+1; ++iBin ) {
+	      
+	      if( this_signal->GetBinLowEdge( iBin ) > iR->htMax() && iR->htMax()>0 ) continue;
+	      
+	      float mt2Min = this_signal->GetBinLowEdge( iBin );
+	      float mt2Max = (iBin==this_signal->GetNbinsX()) ?  -1. : this_signal->GetBinLowEdge( iBin+1 );
+	      
+	      
+	      if( this_signal->GetBinContent(iBin) <= 0 );
+	      else{
+		
+		std::string binName;
+		if( mt2Max>=0. )
+		  binName = std::string( Form("%s_m%.0fto%.0f", iR->getName().c_str(), mt2Min, mt2Max) );
+		else
+		  binName = std::string( Form("%s_m%.0ftoInf", iR->getName().c_str(), mt2Min) );
+		
+		Long_t id, size, flags, modtime;
+		std::string fullPathSE = Form( "/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/datacards_T1bbbb_28Jan_postFit/%s_%.0f_%.0f/datacard_%s_%s_%.0f_%.0f.txt", pathSE.c_str(), mParent, mLSP, binName.c_str(), sigName.c_str(), mParent, mLSP);
+		int checkFileSE = (int) gSystem->GetPathInfo(fullPathSE.c_str(),&id, &size, &flags, &modtime);
+		
+		std::string rmOnSE( Form("env --unset=LD_LIBRARY_PATH gfal-rm srm://t3se01.psi.ch/%s", fullPathSE.c_str()) );
+		//std::string rmOnSE( Form("gfal-rm srm://t3se01.psi.ch/%s", fullPathSE.c_str()) );
+		
+		if( checkFileSE==0 && size==0 ){
+		  
+		  std::cout << "Removing. File " << fullPathSE << " exists and has zero size " << size << ". Removing." << std::endl;
+		  system( rmOnSE.c_str() );
+		  
+		}
+		else if ( checkFileSE==0 && size>0 ){
+		  
+		  std::cout << "Skipping. File " << fullPathSE << " exists and has non-zero size  " << size << ". Skipping." << std::endl;
+		  
+		  continue;
+		  
+		}
+		
+		
+		std::string templateDatacard( Form("%s/datacard_%s.txt", path_templ.c_str(), binName.c_str()) );
+		
+		std::string newDatacard( Form("%s/datacard_%s_%s_%.0f_%.0f.txt", path_mass.c_str(), binName.c_str(), sigName.c_str(), mParent, mLSP) );
+		std::string helpDatacard( Form("%s/datacard_%s_%s_%.0f_%.0f_forSed.txt", path_mass.c_str(), binName.c_str(), sigName.c_str(), mParent, mLSP) );
 
-	      if( mt2Max>=0. )
-		binName = std::string( Form("%s_m%.0fto%.0f", iR->getName().c_str(), mt2Min, mt2Max) );
-	      else
-		binName = std::string( Form("%s_m%.0ftoInf", iR->getName().c_str(), mt2Min) );
+		std::ifstream thisNewDatacard( newDatacard.c_str() );
+		if( thisNewDatacard.good() ) continue;
 
-	    }
+//////		std::string newDatacard( Form("%s/datacard_%s_%s.txt", path_mass.c_str(), binName.c_str(), sigName.c_str()) );
+//////		std::string helpDatacard( Form("%s/datacard_%s_%s_forSed.txt", path_mass.c_str(), binName.c_str(), sigName.c_str()) );
+		
+		float sig = this_signal->GetBinContent(iBin);
+		float sigErr = this_signal->GetBinError(iBin)/sig;
+		//sig*=xs_norm;
+		
+		float isrErr = this_signal3d_isr_Up->GetBinContent(iBin, iBinY, iBinZ);
+		isrErr = 2 - isrErr/sig;
+		
+		float bTagErr_heavy = this_signal3d_bTagHeavy_Up->GetBinContent(iBin, iBinY, iBinZ);
+		bTagErr_heavy = bTagErr_heavy/sig;
 
+		float bTagErr_light = this_signal3d_bTagLight_Up->GetBinContent(iBin, iBinY, iBinZ);
+		bTagErr_light = bTagErr_light/sig;
+		
+		float totUncorrErr = 1.+sqrt(sigErr*sigErr+2*0.05*0.05); // MC stat + PDF + scales + JEC
+
+		std::string mvCommand( Form("mv %s %s", newDatacard.c_str(), helpDatacard.c_str()) );
+		std::string rmCommand( Form("rm -f %s", newDatacard.c_str()) );
+
+		sig*=2.26355/2.155;
+		
+		std::string sedCommand( Form("sed 's/XXX/%.3f/' %s > %s", sig, templateDatacard.c_str(), newDatacard.c_str()) );
+                system( sedCommand.c_str() );
+
+		std::string sedCommand_uncErr( Form("sed -i 's/UUU/%.3f/' %s", totUncorrErr, newDatacard.c_str()) );
+                system( sedCommand_uncErr.c_str() );
+
+		std::string sedCommand_isrErr( Form("sed -i 's/III/%.3f/' %s", isrErr, newDatacard.c_str()) );
+                system( sedCommand_isrErr.c_str() );
+
+		std::string sedCommand_bTagHErr( Form("sed -i 's/HHH/%.3f/' %s", bTagErr_heavy, newDatacard.c_str()) );
+                system( sedCommand_bTagHErr.c_str() );
+
+		std::string sedCommand_bTagLErr( Form("sed -i 's/LLL/%.3f/' %s", bTagErr_light, newDatacard.c_str()) );
+                system( sedCommand_bTagLErr.c_str() );
+
+		
+
+		std::string mkdirOnSE( Form("env --unset=LD_LIBRARY_PATH gfal-mkdir -p srm://t3se01.psi.ch:8443/srm/managerv2?SFN=/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/datacards_T1bbbb_28Jan_postFit/%s_%.0f_%.0f", pathSE.c_str(), mParent, mLSP) );
+		//std::string mkdirOnSE( Form("gfal-mkdir -p srm://t3se01.psi.ch:8443/srm/managerv2?SFN=/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/datacards_T1bbbb_28Jan_postFit/%s_%.0f_%.0f", pathSE.c_str(), mParent, mLSP) );
+		std::string copyOnSE( Form("xrdcp -v %s root://t3dcachedb.psi.ch:1094///pnfs/psi.ch/cms/trivcat/store/user/mmasciov/datacards_T1bbbb_28Jan_postFit/%s_%.0f_%.0f/datacard_%s_%s_%.0f_%.0f.txt", newDatacard.c_str(), pathSE.c_str(), mParent, mLSP, binName.c_str(), sigName.c_str(), mParent, mLSP) );
+		system( mkdirOnSE.c_str() );
+		system( copyOnSE.c_str() );
+		
+		for(int c=0; c<3; ++c){
+		  
+		  checkFileSE = (int) gSystem->GetPathInfo(fullPathSE.c_str(),&id, &size, &flags, &modtime);
+		  
+		  if( checkFileSE==0 && size==0 ){
+		    
+		    std::cout << "Copy did not work. Trying again: " << c << std::endl;
+		    
+		    system( rmOnSE.c_str() );
+		    system( copyOnSE.c_str() );
+		    
+		  }
+		  else{
+		    
+		    std::cout << "Copy succeded. Exiting." << std::endl;
+		    
+		    system( rmCommand.c_str() );
+		    break;
+		    
+		  }
+		}
+
+//		std::string sedCommand( Form("sed 's/XXX/%.3f/g' %s > %s", sig, templateDatacard.c_str(), newDatacard.c_str()) );
+//		system( sedCommand.c_str() );
+//		
+//		system( mvCommand.c_str() );
+//
+//		std::string sedCommand_uncErr( Form("sed 's/UUU/%.3f/g' %s > %s", totUncorrErr, helpDatacard.c_str(), newDatacard.c_str()) );
+//		system( sedCommand_uncErr.c_str() );
+//
+//		system( mvCommand.c_str() );
+//
+//		std::string sedCommand_isrErr( Form("sed 's/III/%.3f/g' %s > %s", isrErr, helpDatacard.c_str(), newDatacard.c_str()) );
+//		system( sedCommand_isrErr.c_str() );
+//
+//		system( mvCommand.c_str() );
+//
+//		std::string sedCommand_bTagHErr( Form("sed 's/HHH/%.3f/g' %s > %s", bTagErr_heavy, helpDatacard.c_str(), newDatacard.c_str()) );
+//		system( sedCommand_bTagHErr.c_str() );
+//
+//		system( mvCommand.c_str() );
+//
+//		std::string sedCommand_bTagLErr( Form("sed 's/LLL/%.3f/g' %s > %s", bTagErr_light, helpDatacard.c_str(), newDatacard.c_str()) );
+//		system( sedCommand_bTagLErr.c_str() );
+//
+//		system( rmCommand.c_str() );
+		
+	      }
+	      
+	    } // for bins X (MT2)
+	  } // for bins Z (mLSP)
+	}// for bins Y (mParent)      
+      } // for regions
+    
+//    else
+//      for( std::set<MT2Region>::iterator iR=regions.begin(); iR!=regions.end(); ++iR ) {
+//	
+//	TH1D* this_signal = signals[isig]->get(*iR)->yield;
+//	
+//	//	if( this_signal->Integral() < 0.01 ) continue; 
+//
+//	for( int iBin=1; iBin<this_signal->GetNbinsX()+1; ++iBin ) {
+//	  
+//	  if( this_signal->GetBinLowEdge( iBin ) > iR->htMax() && iR->htMax()>0 ) continue;
+//	  
+//	  float mt2Min = this_signal->GetBinLowEdge( iBin );
+//	  float mt2Max = (iBin==this_signal->GetNbinsX()) ?  -1. : this_signal->GetBinLowEdge( iBin+1 );
+//	  
+//	  if( this_signal->GetBinContent(iBin) < 0 );
+//	  //if( this_signal->GetBinContent(iBin) < 0.01 );
+//	  else{
+//	    
 //	    std::string binName;
 //	    if( mt2Max>=0. )
 //	      binName = std::string( Form("%s_m%.0fto%.0f", iR->getName().c_str(), mt2Min, mt2Max) );
 //	    else
 //	      binName = std::string( Form("%s_m%.0ftoInf", iR->getName().c_str(), mt2Min) );
-	    
-	    std::string templateDatacard( Form("%s/datacard_%s.txt", path_templ.c_str(), binName.c_str()) );
-	    
-	    std::string newDatacard( Form("%s/datacard_%s_%s.txt", path.c_str(), binName.c_str(), sigName.c_str()) );
-	    
-	    float sig = this_signal->GetBinContent(iBin);
-	    sig*=xs_norm;
-
-	    std::string sedCommand( Form("sed 's/XXX/%.3f/g' %s > %s", sig, templateDatacard.c_str(), newDatacard.c_str()) );
-	    system( sedCommand.c_str() );
-	    
-	  }
-	  
-	} // for bins X (MT2)
-      } // for regions
+//	    
+//	    std::string templateDatacard( Form("%s/datacard_%s.txt", path_templ.c_str(), binName.c_str()) );
+//	    
+//	    std::string newDatacard( Form("%s/datacard_%s_%s.txt", path.c_str(), binName.c_str(), sigName.c_str()) );
+//	    
+//	    float sig = this_signal->GetBinContent(iBin);
+//	    sig*=xs_norm;
+//
+//	    std::string sedCommand( Form("sed 's/XXX/%.3f/g' %s > %s", sig, templateDatacard.c_str(), newDatacard.c_str()) );
+//	    system( sedCommand.c_str() );
+//	    
+//	  }
+//	  
+//	} // for bins X (MT2)
+//      } // for regions
     
     std::cout << "-> Created datacards in " << path_mass << std::endl;
        
