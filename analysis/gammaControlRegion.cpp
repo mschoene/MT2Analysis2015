@@ -88,7 +88,8 @@ int main( int argc, char* argv[] ) {
 
     std::string samplesFile = "../samples/samples_" + cfg.mcSamples() + ".dat";
     
-    std::vector<MT2Sample> samples_gammaJet = MT2Sample::loadSamples(samplesFile, "GJets");
+    //    std::vector<MT2Sample> samples_gammaJet = MT2Sample::loadSamples(samplesFile, "GJets");
+    std::vector<MT2Sample> samples_gammaJet = MT2Sample::loadSamples(samplesFile, 201, 299);
     if( samples_gammaJet.size()==0 ) {
       std::cout << "There must be an error: didn't find any gamma+jet files in " << samplesFile << "!" << std::endl;
       exit(1209);
@@ -97,7 +98,8 @@ int main( int argc, char* argv[] ) {
     std::cout << std::endl << std::endl;
     std::cout << "-> Loading QCD samples" << std::endl;
 
-    std::vector<MT2Sample> samples_qcd = MT2Sample::loadSamples(samplesFile, "QCD");
+    //std::vector<MT2Sample> samples_qcd = MT2Sample::loadSamples(samplesFile, "QCD");    
+    std::vector<MT2Sample> samples_qcd = MT2Sample::loadSamples(samplesFile, 101, 199);
 
 
     MT2Analysis<MT2EstimateTree>* tree = new MT2Analysis<MT2EstimateTree>( "gammaCRtree_loose", cfg.crRegionsSet() );
@@ -467,7 +469,7 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
     //Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb;//*cfg.lumi(); 
     Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi(); 
 
-
+    weight*=(myTree.weight_lepsf)*(myTree.weight_btagsf)*(myTree.weight_toppt);
 
     bool passIso = iso<isoCut;
 

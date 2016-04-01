@@ -104,8 +104,8 @@ scalesVariation_pdfEnvelope_signal: scalesVariation_pdfEnvelope_signal.cpp MT2Re
 scalesVariation_pdfEnvelope_TF: scalesVariation_pdfEnvelope_TF.cpp MT2Region.o MT2Sample.o MT2EstimateTree.o MT2Estimate.o MT2DrawTools.o MT2Config.o
 	$(CC) -Wall $(INCLUDES) -o scalesVariation_pdfEnvelope_TF scalesVariation_pdfEnvelope_TF.cpp MT2Region.o MT2Sample.o MT2EstimateTree.o MT2Estimate.o MT2DrawTools.o MT2Config.o $(ROOTFLAG) $(EXTRALIBS) -fpermissive
 
-createDatacards: createDatacards.cpp MT2Region.o MT2Sample.o MT2EstimateSyst.o MT2Estimate.o  MT2DrawTools.o MT2Config.o
-	$(CC) -Wall $(INCLUDES) -o createDatacards createDatacards.cpp MT2Region.o MT2Sample.o MT2EstimateSyst.o MT2Estimate.o  MT2DrawTools.o MT2Config.o $(ROOTFLAG) $(EXTRALIBS) -fpermissive
+createDatacards: createDatacards.cpp MT2Region.o MT2Sample.o MT2EstimateSyst.o MT2EstimateSigSyst.o MT2Estimate.o  MT2DrawTools.o MT2Config.o
+	$(CC) -Wall $(INCLUDES) -o createDatacards createDatacards.cpp MT2Region.o MT2Sample.o MT2EstimateSyst.o MT2EstimateSigSyst.o MT2Estimate.o  MT2DrawTools.o MT2Config.o $(ROOTFLAG) $(EXTRALIBS) -fpermissive
 
 mt2Optimization: mt2Optimization.cpp MT2Region.o MT2Sample.o MT2EstimateSyst.o MT2Estimate.o MT2EstimateTree.o MT2DrawTools.o
 	$(CC) -Wall $(INCLUDES) -o mt2Optimization mt2Optimization.cpp MT2Region.o MT2Sample.o MT2EstimateSyst.o MT2Estimate.o MT2EstimateTree.o MT2DrawTools.o $(ROOTFLAG) $(EXTRALIBS) -fpermissive
@@ -131,6 +131,9 @@ compareYield: compareYield.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2Estimate
 
 compareYield_all: compareYield_all.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateTree.o MT2EstimateSyst.o MT2DrawTools.o MT2Config.o
 	$(CC) -Wall $(INCLUDES) -o compareYield_all compareYield_all.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateTree.o MT2EstimateSyst.o MT2DrawTools.o MT2Config.o $(ROOTFLAG) $(EXTRALIBS)
+
+compareYield_all_post: compareYield_all_post.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateTree.o MT2EstimateSyst.o MT2DrawTools.o MT2Config.o
+	$(CC) -Wall $(INCLUDES) -o compareYield_all_post compareYield_all_post.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateTree.o MT2EstimateSyst.o MT2DrawTools.o MT2Config.o $(ROOTFLAG) $(EXTRALIBS)
 
 compareYield_bins: compareYield_bins.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateSyst.o MT2DrawTools.o
 	$(CC) -Wall $(INCLUDES) -o compareYield_bins compareYield_bins.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateSyst.o  MT2DrawTools.o $(ROOTFLAG) $(EXTRALIBS)
