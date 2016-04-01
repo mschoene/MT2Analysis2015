@@ -4,6 +4,7 @@
 #include "interface/MT2Analysis.h"
 #include "interface/MT2EstimateTree.h"
 #include "TMinuit.h"
+#include "TSystem.h"
 #include "RooWorkspace.h"
 #include "RooRealVar.h"
 #include "interface/rooDoubleCB.h"
@@ -31,13 +32,14 @@ Double_t jEtaPU[NJ];
 Int_t jPtIndex[NJ], jEtaIndex[NJ];
 Double_t softPxReco, softPyReco;
 
+
 // open file with response functions
 double PtBinEdges[23] = {0, 20, 30, 50, 80, 120, 170, 230, 300, 380, 470, 570, 680, 800, 1000, 1300, 1700, 2200, 2800, 3500, 4300, 5200, 6500};
 double EtaBinEdges[12] = {0, 0.3, 0.5, 0.8, 1.1, 1.4, 1.7, 2.3, 2.8, 3.2, 4.1, 5.0};
 RooWorkspace *w[22][12];
 TFile *fTemplates = new TFile("/shome/casal/templatesRandS/responseTemplates.root");
 
-void rebalance( const MT2Sample& sample, const MT2Config& cfg,  MT2Analysis<MT2EstimateTree>* anaTree );
+void rebalance( const MT2Sample& sample, MT2Analysis<MT2EstimateTree>* anaTree );
 void getTemplates();
 void updateIndex(int j, double x);
 Double_t getResponseProb(Double_t x, Int_t p, Int_t e);
@@ -57,7 +59,6 @@ int main( int argc, char* argv[] ) {
   std::cout << "|                                           |" << std::endl;
   std::cout << "---------------------------------------------" << std::endl;
   std::cout << std::endl << std::endl;
-
 
   if( argc<2 ) {
     std::cout << "USAGE: ./doRebalancing configFileName [data/MC/all] [sampleID] [job_i] [Njobs]" << std::endl;
@@ -120,10 +121,10 @@ int main( int argc, char* argv[] ) {
     else 
       samples_qcd = MT2Sample::loadSamples(samplesFile, sampleID, sampleID);
 
-
     MT2Analysis<MT2EstimateTree>* qcdCRtree = new MT2Analysis<MT2EstimateTree>( "qcdRebalancedTree", "13TeV_inclusive" );
     MT2EstimateTree::addVar( qcdCRtree, "jet1_pt" );
     MT2EstimateTree::addVar( qcdCRtree, "jet2_pt" );
+    MT2EstimateTree::addVar( qcdCRtree, "metphi"  );
     MT2EstimateTree::addVar( qcdCRtree, "errflag" );
     MT2EstimateTree::addVar( qcdCRtree, "ntries"  );
     MT2EstimateTree::addVar( qcdCRtree, "cputime" );
@@ -136,15 +137,18 @@ int main( int argc, char* argv[] ) {
     MT2EstimateTree::addVar( qcdCRtree, "reb_jasons_met_phi" );
     MT2EstimateTree::addVar( qcdCRtree, "reb_brunos_met_pt"  );
     MT2EstimateTree::addVar( qcdCRtree, "reb_brunos_met_phi" );
-    MT2EstimateTree::addVector( qcdCRtree, "jet_puId" );
     MT2EstimateTree::addVector( qcdCRtree, "before_jet_pt"  );
     MT2EstimateTree::addVector( qcdCRtree, "reb_jet_pt"  );
     MT2EstimateTree::addVector( qcdCRtree, "jet_eta" );
     MT2EstimateTree::addVector( qcdCRtree, "jet_phi" );
+    MT2EstimateTree::addVector( qcdCRtree, "jet_mass" );
+    MT2EstimateTree::addVector( qcdCRtree, "jet_puId" );
+    MT2EstimateTree::addVector( qcdCRtree, "jet_id" );
+    MT2EstimateTree::addVector( qcdCRtree, "jet_btagCSV" );
     
     
     for( unsigned i=0; i<samples_qcd.size(); ++i ) 
-      rebalance( samples_qcd[i], cfg, qcdCRtree );
+      rebalance( samples_qcd[i], qcdCRtree );
     
 
    
@@ -170,7 +174,7 @@ int main( int argc, char* argv[] ) {
 }
 
 
-void rebalance( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT2EstimateTree>* anaTree ) {
+void rebalance( const MT2Sample& sample, MT2Analysis<MT2EstimateTree>* anaTree ) {
 
 
   std::cout << std::endl << std::endl;
@@ -223,19 +227,25 @@ void rebalance( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT2Es
     if( thisTree==0 ) continue;
 
 
-    std::vector<float> all_jet_puId;
-    std::vector<float> all_jet_pt  ;
-    std::vector<float> all_jet_eta ;
-    std::vector<float> all_jet_phi ;
-    std::vector<float> reb_jet_pt  ;
+    std::vector<float> all_jet_pt     ;
+    std::vector<float> all_jet_eta    ;
+    std::vector<float> all_jet_phi    ;
+    std::vector<float> all_jet_mass   ;
+    std::vector<float> all_jet_puId   ;
+    std::vector<float> all_jet_id     ;
+    std::vector<float> all_jet_btagCSV;
+    std::vector<float> reb_jet_pt     ;
     
     Nj=0;
     NPUj=0;
     for (int j=0; j< myTree.njet; j++) {
-      all_jet_puId.push_back(myTree.jet_puId[j]);
-      all_jet_pt  .push_back(myTree.jet_pt  [j]);
-      all_jet_eta .push_back(myTree.jet_eta [j]);
-      all_jet_phi .push_back(myTree.jet_phi [j]);      
+      all_jet_pt     .push_back(myTree.jet_pt     [j]);
+      all_jet_eta    .push_back(myTree.jet_eta    [j]);
+      all_jet_phi    .push_back(myTree.jet_phi    [j]);      
+      all_jet_mass   .push_back(myTree.jet_mass   [j]);
+      all_jet_puId   .push_back(myTree.jet_puId   [j]);
+      all_jet_id     .push_back(myTree.jet_id     [j]);
+      all_jet_btagCSV.push_back(myTree.jet_btagCSV[j]);
       if (myTree.jet_pt[j]>100 || myTree.jet_puId[j]==1){
     	jPtReco [Nj] = myTree.jet_pt [j];
     	jEtaReco[Nj] = myTree.jet_eta[j];
@@ -292,14 +302,14 @@ void rebalance( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT2Es
     arglist[0] = 10000; // max calls
     arglist[1] = 1.0;   // tolerance. minimization stops when estimated vertical distance to the minimum (EDM) is les than 0.001*[tolerance]*UP  (UP=ERRordef set to 0.5 above for LL)
     gMinuit->mnexcm("MIGRAD", arglist, 2, ierflg);
-    nTries++;
+    nTries++;  // 1
 
     if (ierflg != 0){
       //std::cout << "*******ERROR: MIGRAD minimization failed: " << ierflg << std::endl;
       //std::cout << "attempting relaxed tolerance threshold" << std::endl;
       arglist[1] = 5.0;   // tolerance
       gMinuit->mnexcm("MIGRAD", arglist, 2, ierflg);
-      nTries++;
+      nTries++;  // 2
     }
       
     if (ierflg != 0){
@@ -307,7 +317,7 @@ void rebalance( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT2Es
       //std::cout << "attempting SIMPLEX method" << std::endl;
       arglist[1] = 1.0;   // tolerance
       gMinuit->mnexcm("SIMPLEX", arglist, 2, ierflg);
-      nTries++;
+      nTries++;  // 3
     }
       
     if (ierflg != 0){
@@ -315,7 +325,7 @@ void rebalance( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT2Es
       //std::cout << "attempting SIMPLEX method with relaxed threshold" << std::endl;
       arglist[1] = 5.0;   // tolerance
       gMinuit->mnexcm("SIMPLEX", arglist, 2, ierflg);
-      nTries++;
+      nTries++;  // 4
     }
       
     if (ierflg != 0){
@@ -323,7 +333,7 @@ void rebalance( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT2Es
       //std::cout << "attempting even more relaxed MIGRAD/SIMPLEX tolerance threshold" << std::endl;
       arglist[1] = 10.0;   // tolerance
       gMinuit->mnexcm("MINI", arglist, 2, ierflg); // first tries MIGRAD, switches to SIMPLEX if MIGRAD fails
-      nTries++;
+      nTries++;  // 5
     }
       
 
@@ -356,7 +366,7 @@ void rebalance( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT2Es
     // 	 << "softPxreco: " << softPxReco << "; softPyreco: " << softPyReco << std::endl
     // 	 << "softPxTrue: " << softPxTrue << "; softPyTrue: " << softPyTrue << std::endl;
 
-    // my rebalanced met. uses softPtTrue (balanced with rebalanced jets) and PU jets
+    // my rebalanced met. uses softPtTrue (completely balanced with rebalanced jets) and PU jets
     Double_t metx_re=0., mety_re=0., met_re=0., metphi_re=0.;
     for (int j=0; j<NPUj; j++) {
       metx_re -= jPtPU[j]*TMath::Cos(jPhiPU[j]);
@@ -376,7 +386,7 @@ void rebalance( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT2Es
     Double_t metphi_re2 =  mety_re2==0.0 && metx_re2==0.0 ? 0.0 : TMath::ATan2(mety_re2,metx_re2);
     //cout << "jason's rebalanced met: " << met_re2 << "; metphi: " << metphi_re2 << std::endl;
     
-    int nj=0;
+    int nj=0; // keep original ordering for rebalanced jets
     for (unsigned int j=0; j<all_jet_pt.size(); j++){
       if ( all_jet_pt.at(j)>100 || all_jet_puId.at(j)==1 ){
      	reb_jet_pt.push_back(all_jet_pt.at(j)/ic[nj]);
@@ -395,6 +405,7 @@ void rebalance( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT2Es
     //thisTree->yield->Fill( mt2, weight );
     thisTree->assignVar( "jet1_pt"           , myTree.jet1_pt );
     thisTree->assignVar( "jet2_pt"           , myTree.jet2_pt );
+    thisTree->assignVar( "metphi"            , myTree.met_phi );
     thisTree->assignVar( "errflag"           , ierflg         );
     thisTree->assignVar( "ntries"            , nTries         );
     thisTree->assignVar( "reco_soft_pt"      , reco_softpt    );
@@ -405,11 +416,15 @@ void rebalance( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT2Es
     thisTree->assignVar( "reb_jasons_met_phi", metphi_re2     );
     thisTree->assignVar( "reb_brunos_met_pt" , met_re         );
     thisTree->assignVar( "reb_brunos_met_phi", metphi_re      );
-    thisTree->assignVector( "jet_puId"     , all_jet_puId );
     thisTree->assignVector( "before_jet_pt", all_jet_pt   );
     thisTree->assignVector( "reb_jet_pt"   , reb_jet_pt   );
     thisTree->assignVector( "jet_eta"      , all_jet_eta  );
     thisTree->assignVector( "jet_phi"      , all_jet_phi  );
+    thisTree->assignVector( "jet_mass"     , all_jet_mass );
+    thisTree->assignVector( "jet_puId"     , all_jet_puId );
+    thisTree->assignVector( "jet_id"       , all_jet_id );
+    thisTree->assignVector( "jet_btagCSV"  , all_jet_btagCSV );
+
 
     t.Stop();
     float realTime = t.RealTime();
@@ -419,6 +434,7 @@ void rebalance( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT2Es
 
     thisTree->fillTree( myTree, weight );
 
+    delete gMinuit;
     
   } // for entries
 
@@ -432,6 +448,8 @@ void rebalance( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT2Es
   file->Close();
   delete file;
   
+
+  std::cout << " ---> Rebalancing finished" << std::endl;
 
 }
 
@@ -520,7 +538,7 @@ void fcn(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag){
   }
   //logl +=  TMath::Log(TMath::Gaus((softPxReco-softPxTrue)/sigmaSoft , 0.0, 1.0));
   //logl +=  TMath::Log(TMath::Gaus((softPyReco-softPyTrue)/sigmaSoft , 0.0, 1.0));
-  logl +=  -TMath::Power((softPxReco-softPxTrue)/sigmaSoft,2)/2; // log(gaus)
+  logl +=  -TMath::Power((softPxReco-softPxTrue)/sigmaSoft,2)/2; // = log(gaus); just faster
   logl +=  -TMath::Power((softPyReco-softPyTrue)/sigmaSoft,2)/2;
 
   f = -logl;
