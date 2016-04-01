@@ -16,6 +16,7 @@ class MT2EstimateTree : public MT2Estimate {
   virtual ~MT2EstimateTree();
 
   void initTree();
+  void initTree4read();
   virtual void setName( const std::string& newName );
 
   void assignTree( const MT2Tree& mt2tree, float w );
@@ -38,7 +39,7 @@ class MT2EstimateTree : public MT2Estimate {
 
   int run;
   int lumi;
-  int evt;
+  unsigned int evt;
   float weight; // = crossSecWeight * puWeight
   float puWeight; // the puWeight part of the above
   int id;

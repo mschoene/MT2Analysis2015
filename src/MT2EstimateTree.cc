@@ -87,6 +87,38 @@ void MT2EstimateTree::initTree( ) {
   tree->SetDirectory(0);
 }
 
+void MT2EstimateTree::initTree4read( ) {
+
+  tree->SetBranchAddress( "run"          , &run          );
+  tree->SetBranchAddress( "lumi"         , &lumi         );
+  tree->SetBranchAddress( "evt"          , &evt          );
+  tree->SetBranchAddress( "weight"       , &weight       );
+  tree->SetBranchAddress( "puWeight"     , &puWeight     );
+  tree->SetBranchAddress( "id"           , &id           );
+  tree->SetBranchAddress( "mt2"          , &mt2          );
+  tree->SetBranchAddress( "ht"           , &ht           );
+  tree->SetBranchAddress( "met"          , &met          );
+  tree->SetBranchAddress( "nJets"        , &nJets        );
+  tree->SetBranchAddress( "nBJets"       , &nBJets       );
+  tree->SetBranchAddress( "nJetHF"       , &nJetHF       );
+  tree->SetBranchAddress( "deltaPhiMin"  , &deltaPhiMin  );
+  tree->SetBranchAddress("diffMetMht"    , &diffMetMht   );
+  tree->SetBranchAddress( "nVert"        , &nVert        );
+  tree->SetBranchAddress( "nElectrons"   , &nElectrons   );
+  tree->SetBranchAddress( "nMuons"       , &nMuons       );
+  tree->SetBranchAddress( "nPFLep"       , &nPFLep       );
+  tree->SetBranchAddress( "nPFHad"       , &nPFHad       );
+  tree->SetBranchAddress( "GenSusyMScan1", &GenSusyMScan1);
+  tree->SetBranchAddress( "GenSusyMScan2", &GenSusyMScan2);
+
+  for (std::map< std::string, float* >::iterator i= extraVars.begin(); i!=extraVars.end(); i++)
+    tree->SetBranchAddress(i->first.c_str(), (i->second));
+
+  for (std::map< std::string, std::vector<float>* >::iterator i= extraVectors.begin(); i!=extraVectors.end(); i++)
+    tree->SetBranchAddress(i->first.c_str(), &(i->second));
+
+}
+
 
 
 

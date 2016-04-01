@@ -44,6 +44,9 @@ qcdControlRegion: qcdControlRegion.cpp MT2Region.o MT2Sample.o MT2EstimateSyst.o
 doRebalancing: doRebalancing.cpp MT2Region.o MT2Sample.o MT2EstimateSyst.o MT2Estimate.o MT2Config.o MT2EstimateTree.o MT2DrawTools.o
 	$(CC) -Wall $(INCLUDES) -o doRebalancing doRebalancing.cpp MT2Region.o MT2Sample.o MT2EstimateSyst.o MT2Estimate.o MT2Config.o MT2EstimateTree.o MT2DrawTools.o $(ROOTFLAG) $(EXTRALIBS) -fpermissive
 
+doSmearing: doSmearing.cpp Davismt2.o Hemisphere.o MT2Region.o MT2Sample.o MT2EstimateSyst.o MT2Estimate.o MT2Config.o MT2EstimateTree.o MT2DrawTools.o
+	$(CC) -Wall $(INCLUDES) -o doSmearing doSmearing.cpp Davismt2.o Hemisphere.o MT2Region.o MT2Sample.o MT2EstimateSyst.o MT2Estimate.o MT2Config.o MT2EstimateTree.o MT2DrawTools.o $(ROOTFLAG) $(EXTRALIBS) -fpermissive
+
 computeLostLepton: computeLostLepton.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateTree.o MT2EstimateSyst.o MT2Config.o MT2DrawTools.o
 	$(CC) -Wall $(INCLUDES) -o computeLostLepton computeLostLepton.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateTree.o MT2EstimateSyst.o MT2Config.o MT2DrawTools.o $(ROOTFLAG) $(EXTRALIBS)
 
@@ -279,6 +282,12 @@ checkGammaSignalContamination: checkGammaSignalContamination.cpp MT2Region.o MT2
 
 
 
+
+Davismt2.o: ../src/Davismt2.cc 
+	$(CC) -Wall $(INCLUDES) -c ../src/Davismt2.cc $(EXTRALIBS)
+
+Hemisphere.o: ../src/Hemisphere.cc 
+	$(CC) -Wall $(INCLUDES) -c ../src/Hemisphere.cc $(EXTRALIBS)
 
 MT2Config.o: ../src/MT2Config.cc 
 	$(CC) -Wall $(INCLUDES) -c ../src/MT2Config.cc $(ROOTFLAG) $(EXTRALIBS)
