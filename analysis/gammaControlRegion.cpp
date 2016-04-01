@@ -383,10 +383,8 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
 
     myTree.GetEntry(iEntry);
 
-
-//    if( myTree.isData )
-//      if ( myTree.isGolden == 0 ) continue;
-
+    //    if( myTree.isData )
+    //      if ( myTree.isGolden == 0 ) continue;
 
     if(cfg.analysisType() == "mt2"){
    
@@ -398,6 +396,7 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
     
     }
  
+
 //    if( myTree.gamma_nJet30==1 ){
 //      
 //      float maxDR=0;
@@ -415,7 +414,7 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
 //      if(!(myTree.passMonoJetId(J)));
 //    
 //    }
-   
+  
     if( myTree.isData ) {
       if( !myTree.passGammaAdditionalSelection(1) ) continue;
     } else {
@@ -466,10 +465,11 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
       continue; // will take 2b from reweighted 1b so skip
 
     //    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi()*myTree.puWeight; 
-    //Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb;//*cfg.lumi(); 
-    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi(); 
+    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb;//*cfg.lumi(); 
+    //  Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi(); 
 
-    weight*=(myTree.weight_lepsf)*(myTree.weight_btagsf)*(myTree.weight_toppt);
+    if(!myTree.isData)
+      weight*=(myTree.weight_lepsf)*(myTree.weight_btagsf)*(myTree.weight_toppt);
 
     bool passIso = iso<isoCut;
 

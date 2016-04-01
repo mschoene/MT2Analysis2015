@@ -25,12 +25,15 @@ MT2DrawTools::MT2DrawTools( const std::string& outDir, float lumi ) {
 
   displaySF_ = true;
 
+  doPaperPlots_ = false;
+
   std::cout << "[MT2DrawTools] Initiating: " << std::endl;
   std::cout << "     lumi: " << lumi_ << std::endl;
   std::cout << "     lumiErr: " << lumiErr_ << std::endl;
   std::cout << "     shapeNorm: " << shapeNorm_ << std::endl;
   std::cout << "     mcSF: " << mcSF_ << std::endl;
   std::cout << "     outDir: " << outdir_ << std::endl;
+  std::cout << "     doPaperPlots: " << doPaperPlots_ << std::endl;
 
 }
 
@@ -217,15 +220,16 @@ std::string MT2DrawTools::getLumiText( float lumi ) {
 }
 
 
-
 TPaveText* MT2DrawTools::getLabelTop( float lumi ) {
 
   char text[300];
-  sprintf( text, "CMS Preliminary, %s at #sqrt{s} = 13 TeV", getLumiText(lumi).c_str() );
+  sprintf( text, "%s (13 TeV)", getLumiText(lumi).c_str() );
+  //  sprintf( text, "CMS Preliminary, %s at #sqrt{s} = 13 TeV", getLumiText(lumi).c_str() );
   std::string text_str(text);
   return getLabelTop(text_str);
 
 }
+
 
 TPaveText* MT2DrawTools::getLabelTopSimulation( float lumi ) {
 
@@ -236,21 +240,21 @@ TPaveText* MT2DrawTools::getLabelTopSimulation( float lumi ) {
 
 }
 
-
-
 TPaveText* MT2DrawTools::getLabelTop( const std::string& text ) {
 
-  TPaveText* label_top = new TPaveText(0.4,0.953,0.975,0.975, "brNDC");
+  TPaveText* label_top = new TPaveText(0.4,0.959,0.975,0.963, "brNDC");
+  //  TPaveText* label_top = new TPaveText(0.4,0.953,0.975,0.975, "brNDC");
   label_top->SetBorderSize(0);
   label_top->SetFillColor(kWhite);
   label_top->SetTextSize(0.038);
   label_top->SetTextAlign(31); // align right
-  label_top->SetTextFont(62);
+  label_top->SetTextFont(42);  // label_top->SetTextFont(62);
   label_top->AddText(text.c_str());
 
   return label_top;
 
 }
+
 
 TPaveText* MT2DrawTools::getLabelTopSimulation( const std::string& text ) {
 
@@ -265,6 +269,36 @@ TPaveText* MT2DrawTools::getLabelTopSimulation( const std::string& text ) {
   return label_top;
 
 }
+
+
+TPaveText* MT2DrawTools::getLabelCMS( const std::string& text ) {
+
+  TPaveText* label_cms = new TPaveText(0.143,0.96,0.27,0.965, "brNDC");
+  label_cms->SetBorderSize(0);
+  label_cms->SetFillColor(kWhite);
+  label_cms->SetTextSize(0.042);
+  label_cms->SetTextAlign(11); // align left
+  label_cms->SetTextFont(61);
+  label_cms->AddText( text.c_str() );
+
+  return label_cms;
+
+}
+
+
+
+void MT2DrawTools::addLabels( TCanvas* c1, float lumi, const std::string& text  ) {
+
+  c1->cd();
+  TPaveText* labelTop = MT2DrawTools::getLabelTop( lumi );
+  labelTop->Draw("same");
+  TPaveText* labelCMS = MT2DrawTools::getLabelCMS( text.c_str() );
+  labelCMS->Draw("same");
+
+}
+
+
+
 
 
 TGraphAsymmErrors* MT2DrawTools::getPoissonGraph( TH1D* histo, bool drawZeros, const std::string& xerrType, float nSigma ) {
@@ -774,16 +808,15 @@ std::vector<TCanvas*> MT2DrawTools::drawRegionYields_fromTree( const std::string
       h1_mc->Sumw2();
       if( selection!="" )
         tree_mc->Project( thisName.c_str(), varName.c_str(), Form("%f*weight*(%s)", lumi_, selection.c_str()) );
-        //tree_mc->Project( thisName.c_str(), varName.c_str(), Form("%f*(%s)", lumi_*mc_->at(i)->getWeight(), selection.c_str()) );
+      //tree_mc->Project( thisName.c_str(), varName.c_str(), Form("%f*(%s)", lumi_*mc_->at(i)->getWeight(), selection.c_str()) );
       else
         tree_mc->Project( thisName.c_str(), varName.c_str(), Form("%f*weight", lumi_) );
-        //tree_mc->Project( thisName.c_str(), varName.c_str(), Form("%f", lumi_*mc_->at(i)->getWeight()) );
+      //tree_mc->Project( thisName.c_str(), varName.c_str(), Form("%f", lumi_*mc_->at(i)->getWeight()) );
 
       if( addOverflow_ )
         MT2DrawTools::addOverflowSingleHisto(h1_mc);
 
       histos_mc.push_back(h1_mc);
-
     }
 
     //TH1::AddDirectory(kFALSE); // stupid ROOT memory allocation needs this
@@ -800,10 +833,17 @@ std::vector<TCanvas*> MT2DrawTools::drawRegionYields_fromTree( const std::string
 
     float scaleFactor = mcSF_;
     if( data_ ) {
-      std::cout << "Integrals: " << h1_data->Integral(0, nBins) << "\t" << mc_sum->Integral(0, nBins) << std::endl;
-      float sf  = h1_data->Integral(0, nBins)/mc_sum->Integral(0, nBins);
-      //std::cout << "Integrals: " << h1_data->Integral(0, nBins+1) << "\t" << mc_sum->Integral(0, nBins+1) << std::endl;
-      //float sf  = h1_data->Integral(0, nBins+1)/mc_sum->Integral(0, nBins+1);
+      float sf;
+      if( addOverflow_ ){
+	//adding the overflow bin to the SF calculation
+	std::cout << "Integrals: " << h1_data->Integral(1, nBins+1) << "\t" << mc_sum->Integral(1, nBins+1) << std::endl;
+	sf  = h1_data->Integral(1, nBins+1)/mc_sum->Integral(1, nBins+1);
+
+      }else{ 
+	//not adding the overflow bin
+	std::cout << "Integrals: " << h1_data->Integral(1, nBins) << "\t" << mc_sum->Integral(1, nBins) << std::endl;
+	sf  = h1_data->Integral(1, nBins)/mc_sum->Integral(1, nBins);
+      }
       std::cout << "SF: " << sf << std::endl;
       if( shapeNorm_ ) scaleFactor *= sf;
     }
@@ -1041,7 +1081,7 @@ std::vector<TCanvas*> MT2DrawTools::drawRegionYields_fromTree( const std::string
     if( data_ ) 
       legend->AddEntry( mcBand, "MC Uncert.", "F" );
 
-    TPaveText* labelTop = (data_) ? MT2DrawTools::getLabelTop(lumi_) : MT2DrawTools::getLabelTopSimulation(lumi_);
+   
     
     
     TPaveText* fitText = (fSF) ? MT2DrawTools::getFitText( fSF ) : 0;
@@ -1054,7 +1094,8 @@ std::vector<TCanvas*> MT2DrawTools::drawRegionYields_fromTree( const std::string
     float yMaxR=2.0;
     
     TH2D* h2_axes_ratio = MT2DrawTools::getRatioAxes( xMin, xMax, yMinR, yMaxR );
-    
+
+    std::string CMStext = doPaperPlots_ ? "CMS" : "CMS Preliminary";
 
     c1->cd();
     if( this->twoPads() )
@@ -1065,10 +1106,13 @@ std::vector<TCanvas*> MT2DrawTools::drawRegionYields_fromTree( const std::string
       mcBand->Draw("E2 same");
       gr_data->Draw("p same");
     }
-    labelTop->Draw("same");
     if( !shapeNorm_ && fitText )
       fitText->Draw("same");
     //    ratioText->Draw("same");
+
+
+    (data_) ? MT2DrawTools::addLabels( (TCanvas*)pad1, lumi_, CMStext.c_str() ) : MT2DrawTools::addLabels( (TCanvas*)c1, lumi_, "CMS Simulation"); 
+    //(data_) ? MT2DrawTools::addLabels( (TCanvas*)pad1, lumi_, CMStext.c_str() ) : MT2DrawTools::addLabels( (TCanvas*)pad1, lumi_, "CMS Simulation"); 
 
     gPad->RedrawAxis();
 
@@ -1081,10 +1125,11 @@ std::vector<TCanvas*> MT2DrawTools::drawRegionYields_fromTree( const std::string
       mcBand->Draw("E2 same");
       gr_data->Draw("p same");
     }
-    labelTop->Draw("same");
     if( !shapeNorm_ && fitText )
       fitText->Draw("same");
     //    ratioText->Draw("same");
+    (data_) ? MT2DrawTools::addLabels( (TCanvas*)pad1_log, lumi_, CMStext.c_str() ) : MT2DrawTools::addLabels( (TCanvas*)c1_log, lumi_, "CMS Simulation"); 
+    //(data_) ? MT2DrawTools::addLabels( (TCanvas*)pad1_log, lumi_, CMStext.c_str() ) : MT2DrawTools::addLabels( (TCanvas*)pad1_log, lumi_, "CMS Simulation"); 
 
     gPad->RedrawAxis();
     

@@ -28,6 +28,7 @@ public :
    ULong64_t       evt;
    Int_t           isData;
    Int_t           isGolden;
+   Int_t           isSilver;
    Float_t         xsec;
    //
 //   Float_t         HLT_PFMET170;
@@ -501,6 +502,7 @@ public :
    TBranch        *b_evt;   //!
    TBranch        *b_isData;   //!
    TBranch        *b_isGolden;   //!
+   TBranch        *b_isSilver;   //!
    TBranch        *b_xsec;   //!
    TBranch        *b_HLT_PFMET170;   //!
    TBranch        *b_HLT_Photon90_R9Id90_HE10_IsoM;   //!
@@ -1001,6 +1003,7 @@ void MT2Tree::Init(TTree *tree)
    fChain->SetBranchAddress("evt", &evt, &b_evt);
    fChain->SetBranchAddress("isData", &isData, &b_isData);
    fChain->SetBranchAddress("isGolden", &isGolden, &b_isGolden);
+   fChain->SetBranchAddress("isSilver", &isSilver, &b_isSilver);
    fChain->SetBranchAddress("xsec", &xsec, &b_xsec);
    fChain->SetBranchAddress("HLT_PFMET170", &HLT_PFMET170, &b_HLT_PFMET170);
    fChain->SetBranchAddress("HLT_Photon90_R9Id90_HE10_IsoM", &HLT_Photon90_R9Id90_HE10_IsoM, &b_HLT_Photon90_R9Id90_HE10_IsoM);
