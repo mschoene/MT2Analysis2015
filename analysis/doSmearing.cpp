@@ -216,7 +216,7 @@ void smear( MT2Analysis<MT2EstimateTree>* inputAnaTree, MT2Analysis<MT2EstimateT
       std::vector<float> *jet_eta        = estimateTree->extraVectors["jet_eta"      ];
       std::vector<float> *jet_phi        = estimateTree->extraVectors["jet_phi"      ];
       std::vector<float> *jet_puId       = estimateTree->extraVectors["jet_puId"     ];
-      //std::vector<float> *jet_mass       = estimateTree->extraVectors["jet_mass"     ];
+      std::vector<float> *jet_mass       = estimateTree->extraVectors["jet_mass"     ];
 
       // update rebalanced jets and response templates for the current event
       Nj=reb_jet_pt->size();
@@ -224,7 +224,7 @@ void smear( MT2Analysis<MT2EstimateTree>* inputAnaTree, MT2Analysis<MT2EstimateT
 	jPtReb  [j] = reb_jet_pt ->at(j);
 	jEtaReb [j] = jet_eta ->at(j);
 	jPhiReb [j] = jet_phi ->at(j);
-	//jMassReb[j] = jet_mass->at(j);
+	jMassReb[j] = jet_mass->at(j);
 	updateIndex(j, 1.0); // 1.0 means this jet acts as genJet
       }
       
@@ -383,7 +383,7 @@ void recalculateVars(MT2EstimateTree *tree, std::vector<float> smear_jet_pt, flo
   }
 
   //recalculate mt2
-  mt2 = -9.9;//njets<2 ? -9.9 : calcMT2(smear_jet_pt, met, metphi);
+  mt2 = njets<2 ? -9.9 : calcMT2(smear_jet_pt, met, metphi);
 
 }
 
@@ -461,7 +461,6 @@ void getHemispheres(std::vector<float> smear_jet_pt, TLorentzVector *v1, TLorent
 
 void fillTree(MT2Analysis<MT2EstimateTree>* outputAnaTree, MT2EstimateTree* inputTree, std::vector<float> smear_jet_pt, float softpt, float softphi, float jet1_pt, float jet2_pt, float ht, float met, float mt2, float dPhiMin, float diffMetMht, int njets, int nbjets, int iSmear){
 
-  mt2 = 200; // need to recalculate!!!!
   MT2EstimateTree* thisTree = outputAnaTree->get( ht, njets, nbjets, -1, mt2 );
   if( thisTree==0 ) return;
 
@@ -538,9 +537,9 @@ void addVars(MT2Analysis<MT2EstimateTree>* anaTree, bool smearTree){
     MT2EstimateTree::addVector( anaTree, "jet_eta"       );
     MT2EstimateTree::addVector( anaTree, "jet_phi"       );
     MT2EstimateTree::addVector( anaTree, "jet_puId"      );
-    // MT2EstimateTree::addVector( anaTree, "jet_mass"      );
-    // MT2EstimateTree::addVector( anaTree, "jet_id"        );
-    // MT2EstimateTree::addVector( anaTree, "jet_btagCSV"   );
+    MT2EstimateTree::addVector( anaTree, "jet_mass"      );
+    MT2EstimateTree::addVector( anaTree, "jet_id"        );
+    MT2EstimateTree::addVector( anaTree, "jet_btagCSV"   );
 
     if(smearTree){
       MT2EstimateTree::addVar( anaTree, "before_jet1_pt"     );
