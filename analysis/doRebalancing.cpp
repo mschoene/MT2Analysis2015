@@ -210,6 +210,10 @@ void rebalance( const MT2Sample& sample, MT2Analysis<MT2EstimateTree>* anaTree )
     }
     
 
+    // remove leptons
+    if( (myTree.nElectrons10 + mt2tree.nMuons10 + mt2tree.nPFLep5LowMT + mt2tree.nPFHad10LowMT)>0 )
+      continue;
+
     float minMTBmet = myTree.minMTBMet;
     float met_pt    = myTree.met_pt;
     float met_phi   = myTree.met_phi;
