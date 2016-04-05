@@ -25,7 +25,7 @@ int ijob=0, Njobs=1;
 
 Double_t sigmaSoft = 20.; 
 
-int nSmearings = 10;
+int nSmearings = 100;
 
 bool smearPUjets = false; // smear also PU jets? (Jason didn't)
 
@@ -36,7 +36,6 @@ Double_t jPhiReb [NJ];
 Double_t jEtaReb [NJ];
 Double_t jMassReb[NJ];
 Int_t jPtIndex[NJ], jEtaIndex[NJ];
-
 
 // open file with response functions
 double PtBinEdges[23] = {0, 20, 30, 50, 80, 120, 170, 230, 300, 380, 470, 570, 680, 800, 1000, 1300, 1700, 2200, 2800, 3500, 4300, 5200, 6500};
@@ -49,7 +48,7 @@ void smear( MT2Analysis<MT2EstimateTree>* inputAnaTree,  MT2Analysis<MT2Estimate
 void getTemplates();
 void updateIndex(int j, double x);
 Double_t getRandomFromTemplate(int j);
-std::vector<float> smearJets(std::vector<float> *before_jet_pt, std::vector<float> *jet_puID);
+std::vector<float> smearJets(std::vector<float> before_jet_pt, std::vector<float> jet_puID);
 void smearSoftPt(float &pt, float &phi);
 void recalculateVars(MT2EstimateTree *tree, std::vector<float> smear_jet_pt, float softpt, float softphi, float &jet1_pt, float &jet2_pt, float &ht, float &met, float &mt2, float &dPhiMin, float &diffMetMht, int &njets, int &nbjets);
 Float_t calcMT2(std::vector<float> smear_jet_pt, float met, float metphi);
@@ -74,8 +73,9 @@ int main( int argc, char* argv[] ) {
 
 
   if( argc<2 ) {
-    std::cout << "USAGE: ./doSmearing configFileName [data/MC/all] [sampleID] [job_i] [Njobs]" << std::endl;
-    std::cout << "Exiting." << std::endl;
+    std::cout << "USAGE: ./doSmearing configFileName [data/MC/all] [sampleID] [job_i] [Njobs] [isBatch]" << std::endl
+	      << "if isBatch=true output file temporarily written in /scratch and then moved to SE" << std::endl
+	      << "Exiting." << std::endl;
     exit(11);
   }
 
@@ -86,6 +86,7 @@ int main( int argc, char* argv[] ) {
 
   bool onlyData = false;
   bool onlyMC   = false;
+  bool isBatch  = false;
   if( argc > 2 ) {
     std::string dataMC(argv[2]);
     if( dataMC=="data" ) onlyData = true;
@@ -112,12 +113,21 @@ int main( int argc, char* argv[] ) {
     std::cout << "-> Will run job " << ijob << " out of " << Njobs << std::endl;
   }
 
+  if( argc > 6 ) {
+    std::string batch(argv[6]);
+    if( batch=="true" || batch=="True" ) isBatch = true;
+  }
+
+  if(isBatch) std::cout << "-> Output will be writen in SE" << std::endl;
 
 
   TH1::AddDirectory(kFALSE); // stupid ROOT memory allocation needs this
 
-  std::string inputdir  = cfg.getEventYieldDir() + "/rebalancedTrees"; 
-  std::string outputdir = cfg.getEventYieldDir() + "/smearedTrees"; 
+  std::string user (getenv("USER"));
+
+  std::string inputdir  = cfg.getEventYieldDir() + "/rebalancedTrees/"; 
+  std::string outputdir =  isBatch ? "/scratch/" + user + "/" : "";
+  outputdir += cfg.getEventYieldDir() + "/smearedTrees/"; 
   system(Form("mkdir -p %s", outputdir.c_str()));
 
 
@@ -128,34 +138,36 @@ int main( int argc, char* argv[] ) {
 
     std::string samplesFile = "../samples/samples_" + cfg.mcSamples() + ".dat";
     
-    std::vector<MT2Sample> samples_qcd;
-
-    if (sampleID==-1) // do all qcd samples
-      samples_qcd = MT2Sample::loadSamples(samplesFile, 100, 199);
-    else 
-      samples_qcd = MT2Sample::loadSamples(samplesFile, sampleID, sampleID);
-
-    TString imcFile = inputdir + "/mc";
+    TString mcFile = "mc";
     if (sampleID!=-1)
-      imcFile += TString::Format("_id%d_job%dof%d", sampleID, ijob, Njobs);
-    imcFile += ".root";
+      mcFile += TString::Format("_id%d_job%dof%d", sampleID, ijob, Njobs);
+    mcFile += ".root";
 
-    MT2Analysis<MT2EstimateTree>* rebalanceTree = MT2Analysis<MT2EstimateTree>::readFromFile( imcFile.Data(), "qcdRebalancedTree" );
+    MT2Analysis<MT2EstimateTree>* rebalanceTree = MT2Analysis<MT2EstimateTree>::readFromFile( inputdir+ mcFile.Data(), "qcdRebalancedTree" );
     addVars(rebalanceTree, false); // add extra vars for rebalance tree
     
-
+    TFile *ofile = new TFile((outputdir + mcFile.Data()).c_str(),"RECREATE");
     MT2Analysis<MT2EstimateTree>* smearTree = new MT2Analysis<MT2EstimateTree>( "qcdSmearedTree", "13TeV_inclusive" );
     addVars(smearTree, true); // add extra vars for smear tree
 
-    
+    smearTree->setFile(ofile);
+
     smear( rebalanceTree, smearTree );
     
+    smearTree->write();
 
-    TString omcFile = outputdir + "/mc";
-    if (sampleID!=-1)
-      omcFile += TString::Format("_id%d_job%dof%d", sampleID, ijob, Njobs);
-    omcFile += ".root";
-    smearTree->writeToFile( omcFile.Data(), "RECREATE" );
+    ofile->Close();
+
+
+    if (isBatch) {
+      inputdir = outputdir;
+      outputdir =  "/pnfs/psi.ch/cms/trivcat/store/user/" + user + "/" + cfg.getEventYieldDir() + "/smearedTrees/"; 
+      system(Form("gfal-mkdir -p srm://t3se01.psi.ch%s", outputdir.c_str()));
+      system(Form("gfal-copy -p file://%s%s srm://t3se01.psi.ch%s%s", inputdir.c_str(), mcFile.Data(), outputdir.c_str(), mcFile.Data()));
+      std::cout << "output file copied to " << Form("srm://t3se01.psi.ch%s%s", outputdir.c_str(), mcFile.Data()) << std::endl;
+      system(Form("rm %s%s", inputdir.c_str(), mcFile.Data()));
+    }
+
 
   }
 
@@ -175,7 +187,6 @@ int main( int argc, char* argv[] ) {
 
 void smear( MT2Analysis<MT2EstimateTree>* inputAnaTree, MT2Analysis<MT2EstimateTree>* outputAnaTree ) {
 
-
   // loop over regions
   std::set<MT2Region> regions = inputAnaTree->getRegions();
   for( std::set<MT2Region>::iterator iR = regions.begin(); iR!=regions.end(); ++iR ) {
@@ -187,44 +198,30 @@ void smear( MT2Analysis<MT2EstimateTree>* inputAnaTree, MT2Analysis<MT2EstimateT
 
     std::cout << "-> Loaded tree: it has " << nentries << " entries." << std::endl;
 
-
-    // std::vector<float> *before_jet_pt  = new std::vector<float>();
-    // std::vector<float> *reb_jet_pt     = new std::vector<float>();
-    // std::vector<float> *jet_eta  = new std::vector<float>();
-    // std::vector<float> *jet_phi  = new std::vector<float>();
-    // std::vector<float> *jet_puId = new std::vector<float>();
-    // tree->SetBranchAddress( "before_jet_pt", &(estimateTree->extraVectors["before_jet_pt"]));//before_jet_pt );
-    // tree->SetBranchAddress( "reb_jet_pt"   , &(estimateTree->extraVectors["reb_jet_pt"   ]));//reb_jet_pt    );
-    // tree->SetBranchAddress( "jet_eta"      , &(estimateTree->extraVectors["jet_eta"      ]));//jet_eta    );
-    // tree->SetBranchAddress( "jet_phi"      , &(estimateTree->extraVectors["jet_phi"      ]));//jet_phi    );
-    // tree->SetBranchAddress( "jet_puId"     , &(estimateTree->extraVectors["jet_puId"     ]));//jet_puId   );
-
     estimateTree->initTree4read();
   
-    nentries = 100;
+    nentries = 5000;
 
     for( int iEntry=0; iEntry<nentries; ++iEntry ) {
-      
       
       if( iEntry % 25000 == 0 ) std::cout << "    Entry: " << iEntry << " / " << nentries << std::endl;
       
       tree->GetEntry(iEntry);
 
-
-      std::vector<float> *before_jet_pt  = estimateTree->extraVectors["before_jet_pt"];
-      std::vector<float> *reb_jet_pt     = estimateTree->extraVectors["reb_jet_pt"   ];
-      std::vector<float> *jet_eta        = estimateTree->extraVectors["jet_eta"      ];
-      std::vector<float> *jet_phi        = estimateTree->extraVectors["jet_phi"      ];
-      std::vector<float> *jet_puId       = estimateTree->extraVectors["jet_puId"     ];
-      std::vector<float> *jet_mass       = estimateTree->extraVectors["jet_mass"     ];
+      std::vector<float> before_jet_pt  = *(estimateTree->extraVectors["before_jet_pt"]);
+      std::vector<float> reb_jet_pt     = *(estimateTree->extraVectors["reb_jet_pt"   ]);
+      std::vector<float> jet_eta        = *(estimateTree->extraVectors["jet_eta"      ]);
+      std::vector<float> jet_phi        = *(estimateTree->extraVectors["jet_phi"      ]);
+      std::vector<float> jet_puId       = *(estimateTree->extraVectors["jet_puId"     ]);
+      std::vector<float> jet_mass       = *(estimateTree->extraVectors["jet_mass"     ]);
 
       // update rebalanced jets and response templates for the current event
-      Nj=reb_jet_pt->size();
+      Nj=reb_jet_pt.size();
       for (int j=0; j<Nj; j++) {
-	jPtReb  [j] = reb_jet_pt ->at(j);
-	jEtaReb [j] = jet_eta ->at(j);
-	jPhiReb [j] = jet_phi ->at(j);
-	jMassReb[j] = jet_mass->at(j);
+	jPtReb  [j] = reb_jet_pt.at(j);
+	jEtaReb [j] = jet_eta   .at(j);
+	jPhiReb [j] = jet_phi   .at(j);
+	jMassReb[j] = jet_mass  .at(j);
 	updateIndex(j, 1.0); // 1.0 means this jet acts as genJet
       }
       
@@ -245,7 +242,7 @@ void smear( MT2Analysis<MT2EstimateTree>* inputAnaTree, MT2Analysis<MT2EstimateT
 	fillTree(outputAnaTree,estimateTree, smear_jet_pt, softPt, softPhi, j1pt, j2pt,ht, met, mt2, dPhiMin, diffMetMht, njets, nbjets, iSmear+1); 
 	
       }
-      
+
     } // for entries
    
   } 
@@ -322,11 +319,11 @@ Double_t getRandomFromTemplate(int j){
   return ftemplate[jPtIndex[j]][jEtaIndex[j]]->GetRandom();
 }
 
-std::vector<float> smearJets(std::vector<float> *before_jet_pt, std::vector<float> *jet_puId){
+std::vector<float> smearJets(std::vector<float> before_jet_pt, std::vector<float> jet_puId){
   std::vector<float> smearedJets_pt;
   // if smearPUjets, use response template assuming their reco pt is the true pt
   for (int j=0; j<Nj; j++){
-    if ( smearPUjets || before_jet_pt->at(j)>100 || jet_puId->at(j)==1 )
+    if ( smearPUjets || before_jet_pt.at(j)>100 || jet_puId.at(j)==1 )
       smearedJets_pt.push_back(jPtReb[j]*getRandomFromTemplate(j));
     else
       smearedJets_pt.push_back(jPtReb[j]);
@@ -346,10 +343,10 @@ void smearSoftPt(float &pt, float &phi){
 void recalculateVars(MT2EstimateTree *tree, std::vector<float> smear_jet_pt, float softpt, float softphi, float &jet1_pt, float &jet2_pt, float &ht, float &met, float &mt2, float &dPhiMin, float &diffMetMht, int &njets, int &nbjets){
 
   // recalculate met ( = -ptsoft -PUjetspt (=reb_brunos_met) - smearjetspt
-  float rebMetPt  = *(tree->extraVars["reb_brunos_met_pt" ]);
-  float rebMetPhi = *(tree->extraVars["reb_brunos_met_phi"]);
-  float metx = -softpt*TMath::Cos(softphi) + rebMetPt*TMath::Cos(rebMetPhi);
-  float mety = -softpt*TMath::Sin(softphi) + rebMetPt*TMath::Sin(rebMetPhi);
+  //float rebMetPt  = *(tree->extraVars["reb_brunos_met_pt" ]);
+  //float rebMetPhi = *(tree->extraVars["reb_brunos_met_phi"]);
+  float metx = -softpt*TMath::Cos(softphi);// + rebMetPt*TMath::Cos(rebMetPhi);
+  float mety = -softpt*TMath::Sin(softphi);// + rebMetPt*TMath::Sin(rebMetPhi);
   float diffmetmhtx=metx, diffmetmhty=mety;
   for (unsigned int j = 0; j<smear_jet_pt.size(); j++){
     metx -= smear_jet_pt.at(j)*TMath::Cos(jPhiReb[j]);
@@ -366,6 +363,8 @@ void recalculateVars(MT2EstimateTree *tree, std::vector<float> smear_jet_pt, flo
 
   ht = 0.; jet1_pt = 0.;  jet2_pt = 0.; dPhiMin = 3.5;
   njets = 0; nbjets = 0;
+  float btag_discriminator_74X = 0.89;
+  std::vector<float> *jet_btagCSV  = tree->extraVectors["jet_btagCSV"];
   for (unsigned int j = 0; j<smear_jet_pt.size(); j++){
     if (smear_jet_pt.at(j) > jet1_pt){
       jet2_pt = jet1_pt;
@@ -376,6 +375,9 @@ void recalculateVars(MT2EstimateTree *tree, std::vector<float> smear_jet_pt, flo
     if (smear_jet_pt.at(j)>30 && fabs(jEtaReb[j])<2.5){
       ht += smear_jet_pt.at(j);
       njets++;
+    }
+    if (smear_jet_pt.at(j)>20 && fabs(jEtaReb[j])<2.5 && jet_btagCSV->at(j)>btag_discriminator_74X){
+      nbjets++;
     }
     float dphi = fabs(TVector2::Phi_mpi_pi(metphi-jPhiReb[j]));
     if ( smear_jet_pt.at(j)>30 && fabs(jEtaReb[j])<4.7 && dphi < dPhiMin)
@@ -462,6 +464,7 @@ void getHemispheres(std::vector<float> smear_jet_pt, TLorentzVector *v1, TLorent
 void fillTree(MT2Analysis<MT2EstimateTree>* outputAnaTree, MT2EstimateTree* inputTree, std::vector<float> smear_jet_pt, float softpt, float softphi, float jet1_pt, float jet2_pt, float ht, float met, float mt2, float dPhiMin, float diffMetMht, int njets, int nbjets, int iSmear){
 
   MT2EstimateTree* thisTree = outputAnaTree->get( ht, njets, nbjets, -1, mt2 );
+  //std::cout << "autoSave = " << thisTree->tree->GetAutoSave() << std::endl;
   if( thisTree==0 ) return;
 
   thisTree->run         = inputTree->run        ;
