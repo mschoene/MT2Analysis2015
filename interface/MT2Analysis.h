@@ -84,6 +84,7 @@ class MT2Analysis {
   static MT2Analysis* readFromFile( const std::string& fileName, const std::string& matchName="" );
   static std::vector<MT2Analysis*> readAllFromFile( const std::string& fileName, const std::string& matchName="", bool verbose=true );
   void writeToFile( const std::string& fileName, const std::string& option="UPDATE", bool overwrite=true );
+  void setFile( TFile *file, bool overwrite=true );
   void addToFile( const std::string& fileName, bool overwrite=true ) {
     return this->writeToFile(fileName,"UPDATE",overwrite);
   }
@@ -97,6 +98,7 @@ class MT2Analysis {
   void printRegions() const;
 
   void finalize();
+  void write();
 
   void randomizePoisson( float scale=1. );
   void sqrtErrors      ( float scale=1. );
@@ -1924,6 +1926,33 @@ MT2Analysis<T> MT2Analysis<T>::operator/( float k ) const {
 
 
 
+template<class T> 
+void MT2Analysis<T>::setFile( TFile *file, bool overwrite ){
+
+  for( typename std::set<T*>::iterator it=data.begin(); it!=data.end(); ++it ) {
+
+    TString dir = Form("%s/%s", this->getName().c_str(), (*it)->region->getName().c_str());
+    
+    if( file->GetDirectory(dir) ){
+      if( overwrite ) {
+	file->rmdir(dir.Data());
+      } else {
+	std::cout << "[MT2Analysis::setFile] Directory '" << dir << "' already exists in file '" << file->GetName() << "'. Will not overwrite, file not set." << std::endl;
+	return;
+      }
+    }
+
+    file->mkdir(dir.Data());
+    
+    (*it)->setFile( file->GetDirectory(dir.Data()) );
+
+  }
+
+}
+
+
+
+
 
 template<class T> 
 void MT2Analysis<T>::writeToFile( const std::string& fileName, const std::string& option, bool overwrite ) {
@@ -2246,6 +2275,15 @@ void MT2Analysis<T>::finalize() {
 
   for( typename std::set<T*>::iterator it=data.begin(); it!=data.end(); ++it ) 
     (*it)->finalize();
+
+
+}
+
+template<class T> 
+void MT2Analysis<T>::write() {
+
+  for( typename std::set<T*>::iterator it=data.begin(); it!=data.end(); ++it ) 
+    (*it)->write();
 
 
 }

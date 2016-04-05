@@ -94,6 +94,12 @@ class MT2EstimateTree : public MT2Estimate {
   virtual void finalize() {
   }
 
+  virtual void setFile(TDirectory *dir) {
+    MT2Estimate::setFile(dir);
+    tree->SetDirectory(dir);
+    tree->SetAutoSave (-30000000); // auto save every 30MB
+  }
+
   void projectFromTree( const MT2EstimateTree* treeEst, const std::string& selection, const std::string& variable="mt2" );
 
   static MT2Analysis<MT2EstimateTree>* makeAnalysisFromInclusiveTree( const std::string& aname, const std::string& regionsSet, MT2Analysis<MT2EstimateTree>* analysis, const std::string& selection="" ) { return makeRebinnedAnalysisFromInclusiveTree( aname, regionsSet, analysis, selection ); };

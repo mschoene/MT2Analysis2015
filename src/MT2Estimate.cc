@@ -394,6 +394,18 @@ void MT2Estimate::getShit( TFile* file, const std::string& path ) {
 
 }
 
+void MT2Estimate::write() const {
+  TDirectory* dir = TDirectory::CurrentDirectory();
+  if (yield->GetDirectory())
+    yield->GetDirectory()->cd();
+  yield->Write();
+  
+  if (yield3d->GetDirectory())
+    yield3d->GetDirectory()->cd();
+  yield3d->Write();
+  
+  dir->cd();
+}
 
 
 void MT2Estimate::print(const std::string& ofs){

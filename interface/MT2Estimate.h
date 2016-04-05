@@ -87,9 +87,11 @@ class MT2Estimate {
 
   virtual void finalize() {};
 
-  virtual void write() const {
-    yield3d->Write();
-    yield->Write();
+  virtual void write() const;
+
+  virtual void setFile(TDirectory *dir) {
+    yield3d->SetDirectory(dir);
+    yield  ->SetDirectory(dir);
   }
 
   virtual void getShit( TFile* file, const std::string& path );

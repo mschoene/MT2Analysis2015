@@ -298,7 +298,6 @@ void MT2EstimateTree::addVector( MT2Analysis<MT2EstimateTree>* analysis, const s
 
 }
 
-
 //void MT2EstimateTree::addVarFloat( MT2Analysis<MT2EstimateTree>* analysis, const std::string& name ) {
 //
 //
@@ -544,7 +543,7 @@ void MT2EstimateTree::getShit( TFile* file, const std::string& path ) {
 void MT2EstimateTree::write() const {
 
   MT2Estimate::write();
-  tree->Write();
+  tree->AutoSave();
 
 }
 
