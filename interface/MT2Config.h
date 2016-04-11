@@ -19,14 +19,18 @@ class MT2Config {
   float lumi_DoubleMu()      const;
 
  
-  std::string regionsSet()      const { return regionsSet_; };
-  std::string mcSamples()       const { return mcSamples_; };
-  std::string sigSamples()      const { return sigSamples_; };
-  std::string dataSamples()     const { return dataSamples_; };
-  std::string additionalStuff() const { return additionalStuff_; };
-  std::string analysisType()    const { return analysisType_; };
-  std::string crRegionsSet()    const { return crRegionsSet_; };
-  std::string qcdRegionsSet()    const { return qcdRegionsSet_; };
+  std::string regionsSet()             const { return regionsSet_; };
+  std::string mcSamples()              const { return mcSamples_; };
+  std::string qcdMCSamples()           const { return qcdMCSamples_; };
+  std::string sigSamples()             const { return sigSamples_; };
+  std::string dataSamples()            const { return dataSamples_; };
+  std::string qcdDataSamples()         const { return qcdDataSamples_; };
+  std::string qcdMonoJetMCSamples()    const { return qcdMonoJetMCSamples_; };
+  std::string qcdMonoJetDataSamples()  const { return qcdMonoJetDataSamples_; };
+  std::string additionalStuff()        const { return additionalStuff_; };
+  std::string analysisType()           const { return analysisType_; };
+  std::string crRegionsSet()           const { return crRegionsSet_; };
+  std::string qcdRegionsSet()          const { return qcdRegionsSet_; };
 
   std::string gammaTemplateType() const { return gammaTemplateType_; };
   std::string gammaTemplateRegions() const { return gammaTemplateRegions_; };
@@ -61,8 +65,12 @@ class MT2Config {
 
   std::string regionsSet_;
   std::string mcSamples_;
+  std::string qcdMCSamples_;
   std::string sigSamples_;
   std::string dataSamples_;
+  std::string qcdDataSamples_;
+  std::string qcdMonoJetDataSamples_;
+  std::string qcdMonoJetMCSamples_;
   std::string additionalStuff_;
   std::string analysisType_;
   std::string crRegionsSet_;

@@ -43,7 +43,7 @@ class PurityFit {
 
 
 
-void doAllPurityPlots( const MT2Config& cfg, const std::string& mc_or_data, const std::string& purityName, const std::string& var , const std::string& label= "M_{T2} (Photon Removed) [GeV]", const std::string& topoRegion = "");
+void doAllPurityPlots( const MT2Config& cfg, const std::string& mc_or_data, const std::string& purityName, const std::string& var , const std::string& label= "M_{T2} (photon Removed) [GeV]", const std::string& topoRegion = "");
 
 void compareRegions( const std::string& outputdir, std::vector<MT2Region> regions, MT2Analysis<MT2EstimateSyst>* analysis, const std::string& suffix=""  );
 
@@ -99,13 +99,13 @@ int main( int argc, char* argv[] ) {
   if( mc_or_data=="mc" ) mc_or_data="MC";
 
 
-  doAllPurityPlots( cfg, mc_or_data, "purityLoose", "","" ); 
-  doAllPurityPlots( cfg, mc_or_data, "purity", "", "" ); 
+  //  doAllPurityPlots( cfg, mc_or_data, "purityLoose", "","" ); 
+  //  doAllPurityPlots( cfg, mc_or_data, "purity", "", "" ); 
 
   if(doAxes){
     /*
-    doAllPurityPlots( cfg, mc_or_data, "purityLoose", "ht","H_{T} (Photon Removed) [GeV]", "#geq2j, #geq0b" ); 
-    doAllPurityPlots( cfg, mc_or_data, "purity", "ht", "H_{T} (Photon Removed) [GeV]", "#geq2j, #geq0b" ); 
+    doAllPurityPlots( cfg, mc_or_data, "purityLoose", "ht","H_{T} (photon Removed) [GeV]", "#geq2j, #geq0b" ); 
+    doAllPurityPlots( cfg, mc_or_data, "purity", "ht", "H_{T} (photon Removed) [GeV]", "#geq2j, #geq0b" ); 
 
     doAllPurityPlots( cfg, mc_or_data, "purityLoose", "njets","Jet Multiplicity", "#geq2j, #geq0b" ); 
     doAllPurityPlots( cfg, mc_or_data, "purity", "njets" , "Jet Multiplicity", "#geq2j, #geq0b" ); 
@@ -118,14 +118,17 @@ int main( int argc, char* argv[] ) {
     */
 
     //INCLUSIVE
-    doAllPurityPlots( cfg, mc_or_data, "purityLoose", "incl_ht","H_{T} (Photon Removed) [GeV]", "#geq1j, #geq0b" ); 
-    doAllPurityPlots( cfg, mc_or_data, "purity", "incl_ht", "H_{T} (Photon Removed) [GeV]", "#geq1j, #geq0b" ); 
+    //doAllPurityPlots( cfg, mc_or_data, "purityLoose", "mono_ht","H_{T} (photon removed) [GeV]", "#geq1j, #geq0b" ); 
+    doAllPurityPlots( cfg, mc_or_data, "purity", "mono_ht", "H_{T} (photon removed) [GeV]", "#geq1j, #geq0b" ); 
 
-    doAllPurityPlots( cfg, mc_or_data, "purityLoose", "incl_njets","Jet Multiplicity", "#geq1j, #geq0b" ); 
-    doAllPurityPlots( cfg, mc_or_data, "purity", "incl_njets" , "Jet Multiplicity", "#geq1j, #geq0b" ); 
+    // doAllPurityPlots( cfg, mc_or_data, "purityLoose", "incl_ht","H_{T} (photon removed) [GeV]", "#geq1j, #geq0b" ); 
+    doAllPurityPlots( cfg, mc_or_data, "purity", "incl_ht", "H_{T} (photon removed) [GeV]", "#geq1j, #geq0b" ); 
 
-    doAllPurityPlots( cfg, mc_or_data, "purityLoose", "incl_nbjets", "b-Jet Multiplicity", "#geq1j, #geq0b" ); 
-    doAllPurityPlots( cfg, mc_or_data, "purity", "incl_nbjets", "b-Jet Multiplicity", "#geq1j, #geq0b" ); 
+    // doAllPurityPlots( cfg, mc_or_data, "purityLoose", "incl_njets","Jet multiplicity", "#geq1j, #geq0b" ); 
+    doAllPurityPlots( cfg, mc_or_data, "purity", "incl_njets" , "Jet multiplicity", "#geq1j, #geq0b" ); 
+
+    //  doAllPurityPlots( cfg, mc_or_data, "purityLoose", "incl_nbjets", "b-Jet multiplicity", "#geq1j, #geq0b" ); 
+    doAllPurityPlots( cfg, mc_or_data, "purity", "incl_nbjets", "b-Jet multiplicity", "#geq1j, #geq0b" ); 
   }
 
 
@@ -147,11 +150,12 @@ void doAllPurityPlots( const MT2Config& cfg, const std::string& mc_or_data, cons
 
   std::string gammaCRdir = cfg.getGammaCRdir();
 
-  MT2Analysis<MT2EstimateSyst>* purityMC = MT2Analysis<MT2EstimateSyst>::readFromFile( gammaCRdir + "/purityMC"+variable+".root", purityName );
+  MT2Analysis<MT2EstimateSyst>* purityMC = MT2Analysis<MT2EstimateSyst>::readFromFile( gammaCRdir + "/isolationAndPurity/" + "/purityMC"+variable+".root", purityName );
 
   //MT2Analysis<MT2EstimateSyst>* purityMC = MT2Analysis<MT2EstimateSyst>::readFromFile( gammaCRdir + "/purityMC_ht.root", purityName );
 
-  std::string outputdir = gammaCRdir + "/PurityFits" + variable +"_" + mc_or_data;
+  std::string outputdir = gammaCRdir + "/PurityFits_" + mc_or_data;
+  //  std::string outputdir = gammaCRdir + "/PurityFits" + variable +"_" + mc_or_data;
   system( Form("mkdir -p %s", outputdir.c_str() ));
  
 
@@ -161,7 +165,8 @@ void doAllPurityPlots( const MT2Config& cfg, const std::string& mc_or_data, cons
     fits.push_back( PurityFit( "Template Fit" , cfg.gammaTemplateRegions(), MT2Analysis<MT2EstimateSyst>::readFromFile(gammaCRdir+"/PurityFitsRC/purityFit" + variable +"_MC.root", purityName), 25, kOrange+1 ));
   } else {
     if( cfg.lumi()<=100. ) {
-      fits.push_back( PurityFit( "Data (fit)", cfg.gammaTemplateRegions(), MT2Analysis<MT2EstimateSyst>::readFromFile(gammaCRdir+"/PurityFitsRC/purityFit" + variable +"_data.root", purityName), 20, kOrange+1 ));
+      fits.push_back( PurityFit( "Data (fit)", cfg.gammaTemplateRegions(), MT2Analysis<MT2EstimateSyst>::readFromFile(gammaCRdir+"/PurityFitsRC/purityFit" + variable +"_data.root", purityName), 20, kBlack ));
+      //fits.push_back( PurityFit( "Data (fit)", cfg.gammaTemplateRegions(), MT2Analysis<MT2EstimateSyst>::readFromFile(gammaCRdir+"/PurityFitsRC/purityFit" + variable +"_data.root", purityName), 20, kOrange+1 ));
   
       //     fits.push_back( PurityFit( "Template Fit", cfg.gammaTemplateRegions(), MT2Analysis<MT2EstimateSyst>::readFromFile(gammaCRdir+"/PurityFits" + mc_or_data + "/purityFit.root", purityName), 20, kOrange+1 ));
     } else {
@@ -196,12 +201,10 @@ void doAllPurityPlots( const MT2Config& cfg, const std::string& mc_or_data, cons
 
     TH2D* axes = new TH2D( "axes", "", 10, thisPurityMC->yield->GetXaxis()->GetXmin(), thisPurityMC->yield->GetXaxis()->GetXmax(), 10, yMin, 1.0001 );
     axes->SetXTitle( label.c_str());
-    axes->SetYTitle( "Photon Purity" );
+    axes->SetYTitle( "Photon purity" );
     axes->Draw("");
 
-    TPaveText* labelTop = MT2DrawTools::getLabelTop(cfg.lumi());
-    labelTop->Draw("same");
-
+    MT2DrawTools::addLabels( c1, cfg.lumi(), "CMS" );
 
     gr_purityMC->Draw("p same");
 
@@ -210,7 +213,6 @@ void doAllPurityPlots( const MT2Config& cfg, const std::string& mc_or_data, cons
     TLegend* legend = new TLegend( xMin_legend, 0.2, 0.9, 0.2+0.06*(fits.size()+1.) );
     legend->SetTextSize(0.038); 
     legend->SetFillColor(0);
-    legend->AddEntry( gr_purityMC, "MC Purity", "PL" );
    
     std::vector<TGraphAsymmErrors*> graphs;
 
@@ -224,9 +226,11 @@ void doAllPurityPlots( const MT2Config& cfg, const std::string& mc_or_data, cons
       graph->SetMarkerSize( 1.3 );
       graphs.push_back(graph);
 
-      legend->AddEntry( graph, fits[i].niceName.c_str(), "P" );
+      legend->AddEntry( graph, fits[i].niceName.c_str(), "PL" );
 
     }
+    legend->AddEntry( gr_purityMC, "MC purity", "PL" );
+   
 
     legend->Draw("same");
 
@@ -240,18 +244,19 @@ void doAllPurityPlots( const MT2Config& cfg, const std::string& mc_or_data, cons
     labelRegion->SetTextSize(0.034); 
     labelRegion->SetFillColor(0);
     for( unsigned i=0; i<regionNames.size(); ++i ) {
+      //    for( unsigned i=0; i<regionNames.size(); ++i ) {
       if( topoRegion!="" && i==1){
 	labelRegion->AddText( topoRegion.c_str() );
       }else{
-	labelRegion->AddText( regionNames[i].c_str() );  }
+	; }//	labelRegion->AddText( regionNames[i].c_str() );  }
     }
     labelRegion->Draw("same");
 
     gPad->RedrawAxis();
 
     c1->SaveAs( Form("%s/fits%s_%s_%s.eps", outputdir.c_str(), variable.c_str(), purityName.c_str(), iR->getName().c_str()) );
-    c1->SaveAs( Form("%s/fits%s_%s_%s.png", outputdir.c_str(), variable.c_str(),purityName.c_str(), iR->getName().c_str()) );
-    c1->SaveAs( Form("%s/fits%s_%s_%s.pdf", outputdir.c_str(), variable.c_str(),purityName.c_str(), iR->getName().c_str()) );
+    c1->SaveAs( Form("%s/fits%s_%s_%s.png", outputdir.c_str(), variable.c_str(), purityName.c_str(), iR->getName().c_str()) );
+    c1->SaveAs( Form("%s/fits%s_%s_%s.pdf", outputdir.c_str(), variable.c_str(), purityName.c_str(), iR->getName().c_str()) );
 
     delete c1;
     delete axes;
@@ -401,7 +406,7 @@ void compareRegions( const std::string& outputdir, std::vector<MT2Region> region
 
   TH2D* h2_axes = new TH2D( "axes", "", 10, 200., 1500., 10, 0., 1.0001 );
   h2_axes->SetXTitle( "M_{T2} [GeV]" );
-  h2_axes->SetYTitle( "Purity (MC Fit)");
+  h2_axes->SetYTitle( "Purity (MC fit)");
   h2_axes->Draw("");
   
 
@@ -443,10 +448,13 @@ void compareRegions( const std::string& outputdir, std::vector<MT2Region> region
 
 
   legend->Draw("same");
-
+  
   TPaveText* labelTop = MT2DrawTools::getLabelTop();
   labelTop->Draw("same");
 
+  TPaveText* labelCMS = MT2DrawTools::getLabelCMS();
+  labelCMS->Draw("same");
+  
   gPad->RedrawAxis();
 
   std::string saveName = (loopOnHT) ? regions[0].sigRegion()->getName() : regions[0].htRegion()->getName();

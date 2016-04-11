@@ -91,7 +91,8 @@ int main( int argc, char* argv[] ) {
 
   if( cfg.useMC() && !onlyData ) { // run on MC
 
-    std::string samplesFile = "../samples/samples_" + cfg.mcSamples() + ".dat";
+    std::string samplesFile = "../samples/samples_" + cfg.qcdMCSamples() + ".dat";
+    if(monojet) samplesFile = "../samples/samples_" + cfg.qcdMonoJetMCSamples() + ".dat";
     
     std::vector<MT2Sample> samples_zinv = MT2Sample::loadSamples(samplesFile, 602, 699);
     std::vector<MT2Sample> samples_wjet = MT2Sample::loadSamples(samplesFile, 502, 599);
@@ -124,9 +125,10 @@ int main( int argc, char* argv[] ) {
   }
 
 
-  if( !(cfg.dummyAnalysis()) && cfg.dataSamples()!="" && !onlyMC  ) {
+  if( !(cfg.dummyAnalysis()) && cfg.qcdDataSamples()!="" && !onlyMC  ) {
 
-    std::string samplesFile_data = "../samples/samples_" + cfg.dataSamples() + ".dat";
+    std::string samplesFile_data = "../samples/samples_" + cfg.qcdDataSamples() + ".dat";
+    if(monojet) samplesFile_data = "../samples/samples_" + cfg.qcdMonoJetDataSamples() + ".dat";
 
     std::cout << std::endl << std::endl;
     std::cout << "-> Loading data from file: " << samplesFile_data << std::endl;
@@ -184,6 +186,8 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
 
   int nentries = tree->GetEntries();
 
+
+  //for( int iEntry=0; iEntry<50; ++iEntry ) {
   for( int iEntry=0; iEntry<nentries; ++iEntry ) {
 
     if( iEntry % 50000 == 0 ) std::cout << "    Entry: " << iEntry << " / " << nentries << std::endl;

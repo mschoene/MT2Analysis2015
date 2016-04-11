@@ -83,7 +83,7 @@ int main( int argc, char* argv[] ) {
 
 
   std::string qcdCRdir = cfg.getEventYieldDir() + "/qcdControlRegion/";
-  std::string outputdir = qcdCRdir;
+  std::string outputdir = cfg.getEventYieldDir(); //qcdCRdir;
   if( closureTest ) {
     outputdir = outputdir + "/test/";
   }
@@ -98,7 +98,7 @@ int main( int argc, char* argv[] ) {
   MT2Analysis<MT2EstimateTree>* qcdTree_data = MT2Analysis<MT2EstimateTree>::readFromFile( qcdCRdir + "/data.root", "qcdCRtree" );
   
 
-  std::string regionsSet = cfg.regionsSet();
+  std::string regionsSet = cfg.qcdRegionsSet();
   std::string regionsSet_fJets = "zurich_onlyHT";
   std::string regionsSet_rHat  = "zurich_onlyJets_noB";
 
@@ -174,18 +174,19 @@ int main( int argc, char* argv[] ) {
   std::cout << "-> Making MT2EstimateQCD from inclusive tree...";
   MT2Analysis<MT2EstimateQCD>* est_all;
   if( useMC ) {
-    est_all  = MT2EstimateQCD::makeAnalysisFromInclusiveTree( "est", cfg.qcdRegionsSet(), qcdTree_mc , "(id>153||mt2<200||ht<1000)", "(id>153||mt2<200||ht<1000)" ); // remove id>153 for high HT and high mt2
+    est_all  = MT2EstimateQCD::makeAnalysisFromInclusiveTree( "est", "zurich_onlyHT", qcdTree_mc , "(id>153||mt2<200||ht<1000)", "(id>153||mt2<200||ht<1000)" ); // remove id>153 for high HT and high mt2
   } else {
     if ( closureTest ) // fill tree with ht-only triggers
-      est_all  = MT2EstimateQCD::makeAnalysisFromInclusiveTree( "est", cfg.qcdRegionsSet(), qcdTree_data, "id==1", "id==1" ); //use HT-only triggers for dphi-ratio
+      est_all  = MT2EstimateQCD::makeAnalysisFromInclusiveTree( "est", "zurich_onlyHT", qcdTree_data, "id==1", "id==1" ); //use HT-only triggers for dphi-ratio
     else // fill tree with signal triggers
-      est_all  = MT2EstimateQCD::makeAnalysisFromInclusiveTree( "est", cfg.qcdRegionsSet(), qcdTree_data, "((id==1&&ht>1000)||(id==2&&ht>450&&ht<1000)||(id==3&&ht<450))", "id==1" ); //use HT-only triggers for dphi-ratio
+      est_all  = MT2EstimateQCD::makeAnalysisFromInclusiveTree( "est", "zurich_onlyHT", qcdTree_data, "((id==1&&ht>1000)||(id==2&&ht>450&&ht<1000)||(id==3&&ht<450))", "id==1" ); //use HT-only triggers for dphi-ratio
   }
-  MT2Analysis<MT2EstimateQCD>* mc_rest = MT2EstimateQCD::makeAnalysisFromInclusiveTree( "mc_rest", cfg.qcdRegionsSet(), qcdTree_mc  , "id>=300", "id>=300" );
-  //MT2Analysis<MT2EstimateQCD>* data    = MT2EstimateQCD::makeAnalysisFromInclusiveTree( "data"   , cfg.qcdRegionsSet(), qcdTree_data, "(ht>1000. && id==1) || (ht>450 && ht<1000. && id==2)" );
 
-  MT2Analysis<MT2EstimateQCD>* est_minus_nonQCD = new MT2Analysis<MT2EstimateQCD>("est_minus_nonQCD"  , cfg.qcdRegionsSet() );
-  //MT2Analysis<MT2EstimateQCD>* data_minus_nonQCD  = new MT2Analysis<MT2EstimateQCD>("data_minus_nonQCD", cfg.qcdRegionsSet() );
+  MT2Analysis<MT2EstimateQCD>* mc_rest = MT2EstimateQCD::makeAnalysisFromInclusiveTree( "mc_rest", "zurich_onlyHT", qcdTree_mc  , "id>=300", "id>=300" );
+  //MT2Analysis<MT2EstimateQCD>* data    = MT2EstimateQCD::makeAnalysisFromInclusiveTree( "data"   , "zurich_onlyHT", qcdTree_data, "(ht>1000. && id==1) || (ht>450 && ht<1000. && id==2)" );
+
+  MT2Analysis<MT2EstimateQCD>* est_minus_nonQCD = new MT2Analysis<MT2EstimateQCD>("est_minus_nonQCD"  , "zurich_onlyHT" );
+  //MT2Analysis<MT2EstimateQCD>* data_minus_nonQCD  = new MT2Analysis<MT2EstimateQCD>("data_minus_nonQCD", "zurich_onlyHT" );
   std::cout << " Done." << std::endl;
 
 
@@ -232,8 +233,10 @@ int main( int argc, char* argv[] ) {
 
     drawSingleFit( cfg, useMC, fitsDir, matchedEstimate_mnQ, matchedEstimate, fits[*iR], bands[*iR], xMin_fit, xMax_fit );
 
+
   } // end loop qcd regions
 
+  std::cout << "Finished the MC fits for all the regions" << std::endl;
 
   std::set<MT2Region> regions = estimate->getRegions();
 
@@ -288,11 +291,11 @@ int main( int argc, char* argv[] ) {
       else if( iR->htMin() < 600. ) ps =   60.;
     }
 
+
     fillFromTreeAndRatio( this_estimate  , this_nCR       , this_r_effective , matchedEstimate->tree     , fits[*fit_matchedRegion], bands[*fit_matchedRegion]     );
     fillFromTreeAndRatio( this_est_mcRest, this_nCR_mcRest, this_r_eff_mcRest, matchedEstimate_rest->tree, fits[*fit_matchedRegion], bands[*fit_matchedRegion] , ps);
     //fillFromTreeAndRatio( this_estimate, this_nCR, this_r_effective, matchedEstimate_qcd->tree, f1_ratio, h_band );
-
-    
+ 
     computePurity( this_qcdPurity->yield, this_est_mcRest->yield, this_estimate->yield );
     multiplyHisto( this_estimate->yield, this_qcdPurity->yield );
     multiplyHisto( this_r_effective->yield, this_qcdPurity->yield );
@@ -344,7 +347,7 @@ int main( int argc, char* argv[] ) {
 
   est_all          ->writeToFile( outputFile_fits, "recreate" );
   if( useMC ) {
-    MT2Analysis<MT2EstimateQCD>* mc_qcd  = MT2EstimateQCD::makeAnalysisFromInclusiveTree( "mc_qcd" , cfg.qcdRegionsSet(), qcdTree_mc  , "id>=100 && id<200" );
+    MT2Analysis<MT2EstimateQCD>* mc_qcd  = MT2EstimateQCD::makeAnalysisFromInclusiveTree( "mc_qcd" ,  "zurich_onlyHT", qcdTree_mc  , "id>=100 && id<200" );
     mc_qcd         ->writeToFile( outputFile_fits );
   }
   mc_rest          ->writeToFile( outputFile_fits );
@@ -529,7 +532,6 @@ void get_fJets( MT2Analysis<MT2Estimate>* fJets, MT2Analysis<MT2EstimateTree>* a
 
 void fillFromTreeAndRatio( MT2Estimate* estimate, MT2Estimate* nCR, MT2Estimate* r_effective, TTree* tree, TF1* f1_ratio, TH1D* h_band , float prescale) {
 
-
   int nBins;
   double* bins;
   estimate->getYieldBins(nBins, bins);
@@ -560,8 +562,6 @@ void fillFromTreeAndRatio( MT2Estimate* estimate, MT2Estimate* nCR, MT2Estimate*
     hp_rErr->Fill( mt2, h_band->GetBinError(h_band->FindBin(mt2)), ps_weight );
 
   } // for entries
-
-
 
   for( int iBin=1; iBin<nBins+1; ++iBin ) {
 

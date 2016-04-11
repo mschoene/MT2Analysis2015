@@ -184,7 +184,7 @@ int main( int argc, char* argv[] ) {
   }
     
 
-  std::string outfileName( Form( "%s/qcdEstimateMonojet.root", qcdCRdir.c_str() ) );
+  std::string outfileName( Form( "%s/qcdEstimateMonojet.root", cfg.getEventYieldDir().c_str() ) );
   qcdMonojet->writeToFile( outfileName, "recreate" ); 
   nCRMonojet->writeToFile( outfileName );
   rMonojet  ->writeToFile( outfileName );

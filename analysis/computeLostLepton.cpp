@@ -75,15 +75,18 @@ int main( int argc, char* argv[] ) {
     std::cout << "-> Thank you for your cooperation." << std::endl;
     exit(193);
   }
+  (*MCcr_) = (*MCcr_) * cfg.lumi();
 
   MT2Analysis<MT2Estimate>* MCcr = MT2Analysis<MT2Estimate>::readFromFile(llepControlRegionDir + "/mc.root", "llepCR");
   MCcr->setName("llepCR_mc");
+  (*MCcr) = (*MCcr) * cfg.lumi();
   
   MT2Analysis<MT2Estimate>* MCcr_integral;
   if( use_extrapolation ){
     MCcr_integral = MT2Estimate::makeIntegralAnalysisFromEstimate( "MCcr_integral", cfg.regionsSet(), MCcr_ );
     MCcr_integral->setName("llepCR_mc_integral");
   }
+
   
   // MC Signal Region
   MT2Analysis<MT2Estimate>* Top   = MT2Analysis<MT2Estimate>::readFromFile(cfg.getEventYieldDir() + "/analyses.root", "Top");
@@ -93,6 +96,8 @@ int main( int argc, char* argv[] ) {
     std::cout << "-> Thank you for your cooperation." << std::endl;
     exit(197);
   }
+  (*Top) = (*Top) * cfg.lumi();
+  (*WJets) = (*WJets) * cfg.lumi();
 
   MT2Analysis<MT2Estimate>* MCsr = new MT2Analysis<MT2Estimate>( *(Top) );
   (*MCsr) += (*(WJets));

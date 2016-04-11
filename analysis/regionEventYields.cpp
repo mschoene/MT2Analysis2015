@@ -218,7 +218,7 @@ int main( int argc, char* argv[] ) {
 
     //    std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, "JetHTMHT"); //, 1, 99 );
     //    std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, 1, 3 );
-    std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, -1, 0 );
+    std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, "noDuplicates" );
     if( samples_data.size()==0 ) {
       std::cout << "There must be an error: samples_data is empty!" << std::endl;
       exit(1209);
@@ -232,7 +232,7 @@ int main( int argc, char* argv[] ) {
     //dataYield = EventYield_data[0];
     //dataYield->setName("data");
     //dataYield   = mergeYields<MT2EstimateTree>( EventYield_data, cfg.regionsSet(), "data", 1, 3 );
-    dataYield   = mergeYields<MT2EstimateTree>( EventYield_data, cfg.regionsSet(), "data", -1, -1 );
+    dataYield   = mergeYields<MT2EstimateTree>( EventYield_data, cfg.regionsSet(), "data", -1, 3 );
 
     yields.push_back( dataYield );
 
@@ -296,10 +296,9 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg ) {
 
   std::cout << "-> Setting up MT2Analysis with name: " << sample.sname << std::endl;
   MT2Analysis<T>* analysis = new MT2Analysis<T>( sample.sname, regionsSet, sample.id );
-  
- 
+
   if( sample.id < 1000){
-    
+
     if( cfg.additionalStuff()=="qgVars" ) {
       
       T::addVar( analysis, "partId0" );
@@ -342,6 +341,8 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg ) {
     if ( myTree.nJet30==1 && !myTree.passMonoJetId(0) ) continue;
       
 
+    if(myTree.evt_id>=150 && myTree.evt_id<153) continue; //qcd spike cleaning
+
     float ht   = myTree.ht;
     float met  = myTree.met_pt;
     float minMTBmet = myTree.minMTBMet;
@@ -350,12 +351,16 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg ) {
     float mt2  = (njets>1) ? myTree.mt2 : ht;
     //float mt2  = myTree.mt2;
     
-    int GenSusyMScan1 = myTree.GenSusyMGluino;
-    int GenSusyMScan2 = myTree.GenSusyMNeutralino;
+    int GenSusyMScan1=0;
+    int GenSusyMScan2=0;
+    if(  myTree.evt_id > 999){
+    GenSusyMScan1 = myTree.GenSusyMGluino;
+    GenSusyMScan2 = myTree.GenSusyMNeutralino;
+    }
     
     //Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi()*myTree.puWeight;
-    //Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb;//*cfg.lumi();
-    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi();
+    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb;//*cfg.lumi();
+    //Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi();
     Double_t weight_syst = 1.;
 
     if( myTree.evt_id > 1000 )
@@ -408,6 +413,8 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg ) {
       if ( !(myTree.HLT_PFMETNoMu90_PFMHTNoMu90 || myTree.HLT_PFHT800 || myTree.HLT_PFHT350_PFMET100) ) continue;
 
     } // if is data
+
+    if ( !(myTree.HLT_PFMETNoMu90_PFMHTNoMu90 || myTree.HLT_PFHT800 || myTree.HLT_PFHT350_PFMET100) ) continue;
 
    
     T* thisEstimate = analysis->get( ht, njets, nbjets, minMTBmet, mt2 );

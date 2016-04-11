@@ -108,9 +108,10 @@ std::vector<MT2Sample> MT2Sample::loadSamples(const std::string& filename, const
 
     s.id       = evt_id;
     
-    if(s.id<0){
+    if(s.id<=0){
 
-      if( rootFileName.Contains("JetHT") ) s.id = 1;
+      if( rootFileName.Contains("noDuplicates") ) s.id = 0;
+      else if( rootFileName.Contains("JetHT") ) s.id = 1;
       else if( rootFileName.Contains("HTMHT") ) s.id = 2;
       else if( rootFileName.Contains("MET") ) s.id = 3;
       else if( rootFileName.Contains("DoubleEG") ) s.id = 4;
