@@ -16,6 +16,7 @@ class MT2EstimateTree : public MT2Estimate {
   virtual ~MT2EstimateTree();
 
   void initTree();
+  void initTree4read();
   virtual void setName( const std::string& newName );
 
   void assignTree( const MT2Tree& mt2tree, float w );
@@ -33,10 +34,12 @@ class MT2EstimateTree : public MT2Estimate {
   void assignVars( float aht, int anJets, int anBJets, float amet, float amt2 );
   void assignVar( const std::string& name, float value );
   //void assignVar( const std::string& name, int value );
+  static void addVector( MT2Analysis<MT2EstimateTree>* analysis, const std::string& name );
+  void assignVector( const std::string& name, std::vector<float> vec );
 
   int run;
   int lumi;
-  int evt;
+  unsigned int evt;
   float weight; // = crossSecWeight * puWeight
   float puWeight; // the puWeight part of the above
   int id;
@@ -72,6 +75,7 @@ class MT2EstimateTree : public MT2Estimate {
   
   //std::map< std::string, size_t > extraVars;
   std::map< std::string, float* > extraVars;
+  std::map< std::string, std::vector<float>* > extraVectors;
  
   TTree* tree;
 
@@ -94,7 +98,17 @@ class MT2EstimateTree : public MT2Estimate {
 
   static MT2Analysis<MT2EstimateTree>* makeAnalysisFromInclusiveTree( const std::string& aname, const std::string& regionsSet, MT2Analysis<MT2EstimateTree>* analysis, const std::string& selection="" ) { return makeRebinnedAnalysisFromInclusiveTree( aname, regionsSet, analysis, selection ); };
 
+
+
+
+
   static MT2Analysis<MT2EstimateTree>* makeRebinnedAnalysisFromInclusiveTree( const std::string& aname, const std::string& regionsSet, MT2Analysis<MT2EstimateTree>* analysis, const std::string& selection="", int nBins=0, double* bins=0,  const std::string& variable="mt2" );
+
+  static MT2Analysis<MT2EstimateTree>* makeRebinnedAnalysisFromInclusiveTree( const std::string& aname, const std::string& regionsSet, MT2Analysis<MT2EstimateTree>* estimate, const std::string& selection, int nBins, float xMin, float xMax, const std::string& variable="mt2" );
+
+
+
+
 
   virtual void getShit( TFile* file, const std::string& path );
 

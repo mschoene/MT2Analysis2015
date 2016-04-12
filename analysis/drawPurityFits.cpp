@@ -129,6 +129,7 @@ int main( int argc, char* argv[] ) {
 
     //  doAllPurityPlots( cfg, mc_or_data, "purityLoose", "incl_nbjets", "b-Jet multiplicity", "#geq1j, #geq0b" ); 
     doAllPurityPlots( cfg, mc_or_data, "purity", "incl_nbjets", "b-Jet multiplicity", "#geq1j, #geq0b" ); 
+
   }
 
 

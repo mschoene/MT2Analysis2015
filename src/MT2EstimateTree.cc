@@ -87,6 +87,38 @@ void MT2EstimateTree::initTree( ) {
   tree->SetDirectory(0);
 }
 
+void MT2EstimateTree::initTree4read( ) {
+
+  tree->SetBranchAddress( "run"          , &run          );
+  tree->SetBranchAddress( "lumi"         , &lumi         );
+  tree->SetBranchAddress( "evt"          , &evt          );
+  tree->SetBranchAddress( "weight"       , &weight       );
+  tree->SetBranchAddress( "puWeight"     , &puWeight     );
+  tree->SetBranchAddress( "id"           , &id           );
+  tree->SetBranchAddress( "mt2"          , &mt2          );
+  tree->SetBranchAddress( "ht"           , &ht           );
+  tree->SetBranchAddress( "met"          , &met          );
+  tree->SetBranchAddress( "nJets"        , &nJets        );
+  tree->SetBranchAddress( "nBJets"       , &nBJets       );
+  tree->SetBranchAddress( "nJetHF"       , &nJetHF       );
+  tree->SetBranchAddress( "deltaPhiMin"  , &deltaPhiMin  );
+  tree->SetBranchAddress("diffMetMht"    , &diffMetMht   );
+  tree->SetBranchAddress( "nVert"        , &nVert        );
+  tree->SetBranchAddress( "nElectrons"   , &nElectrons   );
+  tree->SetBranchAddress( "nMuons"       , &nMuons       );
+  tree->SetBranchAddress( "nPFLep"       , &nPFLep       );
+  tree->SetBranchAddress( "nPFHad"       , &nPFHad       );
+  tree->SetBranchAddress( "GenSusyMScan1", &GenSusyMScan1);
+  tree->SetBranchAddress( "GenSusyMScan2", &GenSusyMScan2);
+
+  for (std::map< std::string, float* >::iterator i= extraVars.begin(); i!=extraVars.end(); i++)
+    tree->SetBranchAddress(i->first.c_str(), (i->second));
+
+  for (std::map< std::string, std::vector<float>* >::iterator i= extraVectors.begin(); i!=extraVectors.end(); i++)
+    tree->SetBranchAddress(i->first.c_str(), &(i->second));
+
+}
+
 
 
 
@@ -177,36 +209,20 @@ void MT2EstimateTree::projectFromTree( const MT2EstimateTree* treeEst, const std
 
 
 
-/*
-MT2Analysis<MT2EstimateTree>* MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( const std::string& aname, const std::string& regionsSet, MT2Analysis<MT2EstimateTree>* estimate, int nBins, float xMin, float xMax, const std::string& selection, const std::string& variable ) {
 
-  std::set<MT2Region> regions = estimate->getRegions();
+MT2Analysis<MT2EstimateTree>* MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( const std::string& aname, const std::string& regionsSet, MT2Analysis<MT2EstimateTree>* estimate, const std::string& selection, int nBins, float xMin, float xMax, const std::string& variable ) {
 
-  if( regions.size()!=1 ) {
-    std::cout << "[MT2EstimateTree::makeAnalysisFromEstimateTreeInclusive] ERROR!! You need to pass an inclusive MT2EstimateTree Analysis to use this function!" << std::endl;
-    exit(19191);
-  }
-  
-  MT2EstimateTree* treeInclusive = estimate->get( *(regions.begin()) );
+  double bins[nBins+1];
+  double step = (xMax-xMin)/(double)nBins;
 
-  // will create a new analysis with custom regions from inclusive tree:
-  MT2Analysis<MT2EstimateTree>* analysis = new MT2Analysis<MT2EstimateTree>( aname, regionsSet );
-  std::set<MT2Region> newRegions = analysis->getRegions();
-  
-  if ( nBins > 0 )
-    MT2Estimate::rebinYields( (MT2Analysis<MT2Estimate>*) analysis, nBins, bins );
-  
-  for( std::set<MT2Region>::iterator iR=newRegions.begin(); iR!=newRegions.end(); ++iR ) {
-   
-    MT2EstimateTree* thisEstimateTree = analysis->get( *iR );
-    thisEstimateTree->projectFromTree( treeInclusive, selection, variable );
+  for(int i=0; i <= nBins; i++)
+    bins[i] = xMin + ((double)i )* step;
 
-  } // for regions
+  MT2Analysis<MT2EstimateTree>* analysis =  MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( aname, regionsSet, estimate,  selection,  nBins, bins, variable );
 
   return analysis;
-
 }
-*/
+
 
 
 MT2Analysis<MT2EstimateTree>* MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( const std::string& aname, const std::string& regionsSet, MT2Analysis<MT2EstimateTree>* estimate, const std::string& selection, int nBins, double* bins, const std::string& variable ) {
@@ -252,6 +268,20 @@ void MT2EstimateTree::addVar( MT2Analysis<MT2EstimateTree>* analysis, const std:
 
 }
 
+void MT2EstimateTree::addVector( MT2Analysis<MT2EstimateTree>* analysis, const std::string& name ) {
+
+
+  for( std::set<MT2EstimateTree*>::iterator iD=analysis->data.begin(); iD!=analysis->data.end(); ++iD ) {
+
+    std::vector<float> *x = new std::vector<float>();
+    (*iD)->extraVectors[name] = x;
+
+    (*iD)->tree->Branch( name.c_str(), x );
+
+  }
+
+}
+
 
 //void MT2EstimateTree::addVarFloat( MT2Analysis<MT2EstimateTree>* analysis, const std::string& name ) {
 //
@@ -290,6 +320,13 @@ void MT2EstimateTree::assignVar( const std::string& name, float value ) {
   //&(extraVars[name]) = value;
   float* x = (float*)extraVars[name];
   *x = value;
+
+}
+
+void MT2EstimateTree::assignVector( const std::string& name, std::vector<float> vec ) {
+
+  std::vector<float>* x = (std::vector<float>*)extraVectors[name];
+  *x = vec;
 
 }
 

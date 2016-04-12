@@ -88,7 +88,8 @@ int main( int argc, char* argv[] ) {
 
     std::string samplesFile = "../samples/samples_" + cfg.mcSamples() + ".dat";
     
-    std::vector<MT2Sample> samples_gammaJet = MT2Sample::loadSamples(samplesFile, "GJets",200,299);
+    std::vector<MT2Sample> samples_gammaJet = MT2Sample::loadSamples(samplesFile, "GJets",200,299); 
+
     if( samples_gammaJet.size()==0 ) {
       std::cout << "There must be an error: didn't find any gamma+jet files in " << samplesFile << "!" << std::endl;
       exit(1209);
@@ -97,7 +98,8 @@ int main( int argc, char* argv[] ) {
     std::cout << std::endl << std::endl;
     std::cout << "-> Loading QCD samples" << std::endl;
 
-    std::vector<MT2Sample> samples_qcd = MT2Sample::loadSamples(samplesFile, "QCD");
+    std::vector<MT2Sample> samples_qcd = MT2Sample::loadSamples(samplesFile, "qcd");
+    //    std::vector<MT2Sample> samples_qcd = MT2Sample::loadSamples(samplesFile, "QCD");
 
 
     MT2Analysis<MT2EstimateTree>* tree = new MT2Analysis<MT2EstimateTree>( "gammaCRtree_loose", cfg.crRegionsSet() );
@@ -381,10 +383,8 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
 
     myTree.GetEntry(iEntry);
 
-
-//    if( myTree.isData )
-//      if ( myTree.isGolden == 0 ) continue;
-
+    //    if( myTree.isData )
+    //      if ( myTree.isGolden == 0 ) continue;
 
     if(cfg.analysisType() == "mt2"){
    
@@ -396,6 +396,7 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
     
     }
  
+
 //    if( myTree.gamma_nJet30==1 ){
 //      
 //      float maxDR=0;
@@ -413,7 +414,7 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
 //      if(!(myTree.passMonoJetId(J)));
 //    
 //    }
-   
+  
     if( myTree.isData ) {
       if( !myTree.passGammaAdditionalSelection(1) ) continue;
     } else {
@@ -465,7 +466,6 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
 
     //    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi()*myTree.puWeight; 
     Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb;//*cfg.lumi(); 
-    //Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi(); 
 
     if( !myTree.isData )
       weight *= myTree.weight_btagsf;

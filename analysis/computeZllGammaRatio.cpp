@@ -28,9 +28,11 @@
 
 double lumiErr = 0.046;
 
+
 void drawRatios(std::string fullPath, double *binss, unsigned int size,  std::string selection, MT2Analysis<MT2EstimateSyst>*  zll_ratio,  MT2Analysis<MT2EstimateTree>*  gamma_mc, MT2Analysis<MT2EstimateTree>*  gamma_data, MT2Analysis<MT2EstimateSyst>*  purity, MT2Analysis<MT2EstimateTree>*  zll_mc,MT2Analysis<MT2EstimateTree>*  zll_data,   MT2Analysis<MT2EstimateTree>*  top, MT2Analysis<MT2EstimateSyst>*  zll_yield, MT2Analysis<MT2EstimateSyst>*  zllG_data,  MT2Analysis<MT2EstimateSyst>*  zllG_mc, const MT2Region thisRegion, std::string cut,  std::string cut_gamma, std::string cut_data, std::string cut_gamma_data, float lumi, std::string saveName, bool onlyMC, bool fullUncert , std::string topoCuts="" );
 
 void drawRatiosTopHisto(std::string fullPath, double *binss, unsigned int size,  std::string selection, MT2Analysis<MT2EstimateSyst>*  zll_ratio, MT2Analysis<MT2EstimateTree>* gamma_mc, MT2Analysis<MT2EstimateTree>* gamma_data, MT2Analysis<MT2EstimateSyst>* purity, MT2Analysis<MT2EstimateTree>*  zll_mc, MT2Analysis<MT2EstimateTree>* zll_data, MT2Analysis<MT2Estimate>* top, MT2Analysis<MT2EstimateSyst>* zll_yield, MT2Analysis<MT2EstimateSyst>*  zllG_data, MT2Analysis<MT2EstimateSyst>* zllG_mc, const MT2Region thisRegion, std::string cut, std::string cut_gamma, std::string cut_data, std::string cut_gamma_data, float lumi, std::string saveName, bool onlyMC, bool fullUncert , std::string topoCuts="" );
+
 
 int main(int argc, char* argv[]){
 
@@ -84,7 +86,6 @@ int main(int argc, char* argv[]){
 
   MT2Analysis<MT2EstimateTree>* gamma_mc = MT2Analysis<MT2EstimateTree>::readFromFile( gammaControlRegionDir + "/mc.root", "gammaCRtree" );
   MT2Analysis<MT2EstimateTree>* gamma_data = MT2Analysis<MT2EstimateTree>::readFromFile( gammaControlRegionDir + "/data.root", "gammaCRtree" );
-  
 
   MT2Analysis<MT2EstimateSyst>* purity_central = MT2Analysis<MT2EstimateSyst>::readFromFile( gammaControlRegionDir + "/PurityFitsRC/purityFit_central_data.root", "purity");
   MT2Analysis<MT2EstimateSyst>* purity_mono_ht = MT2Analysis<MT2EstimateSyst>::readFromFile( gammaControlRegionDir + "/PurityFitsRC/purityFit_mono_ht_data.root", "purity");
@@ -263,7 +264,6 @@ int main(int argc, char* argv[]){
 
     //draw ratio also fills the ratio and yield estimates
     //outputdir, bins, nbins, var to project, ratio estimate, gamma mc, gamma data, purity gamma, zll mc, zll data, yield estimate, region, cut zll, cut gamma, cut zll data, cut gamma data, lumi, name, flag , topo region);
-    
     //  drawRatios( outputdir, bins_mt2, size_mt2 , "mt2",  zllG_mt2,   gamma_mc, gamma_data, purity,  zll_mc, zll_data, top, zll_mt2 , zllG_data_mt2, zllG_mc_mt2 , thisRegion, cut_el, cut_gamma, cut_el_data,  cut_gamma_data,  lumi , "mt2_el" , onlyMC, "#geq2j, #geq0b" );
     //  drawRatios( outputdir, bins_mt2, size_mt2 , "mt2",  zllG_mt2,   gamma_mc, gamma_data, purity,  zll_mc, zll_data, top, zll_mt2, zllG_data_mt2, zllG_mc_mt2 , thisRegion, cut_mu,  cut_gamma, cut_mu_data, cut_gamma_data, lumi , "mt2_mu" , onlyMC, "#geq2j, #geq0b");
     // drawRatios( outputdir, bins_mt2, size_mt2 , "mt2",  zllG_mt2,   gamma_mc, gamma_data, purity,  zll_mc, zll_data, top, zll_mt2, zllG_data_mt2, zllG_mc_mt2 ,thisRegion, cut, cut_gamma, cut_data,cut_gamma_data, lumi , "mt2" , onlyMC, "#geq2j, #geq0b");
@@ -301,7 +301,7 @@ int main(int argc, char* argv[]){
     
 
 
-    //incl//////////////////////////////////////
+    //incl nJets//////////////////////////////////////
     drawRatios( outputdir, bins_nJets, size_nJets , "nJets",   zllG_nJets,   gamma_mc, gamma_data, purity_incl_njets,  zll_mc, zll_data,top,  zll_nJets, zllG_data_nJets, zllG_mc_nJets ,  thisRegion,cut_incl_el, cut_incl_gamma, cut_incl_data_el,  cut_incl_gamma_data, lumi, "nJets_incl_el" , onlyMC, 1 ,"#geq1j, #geq0b");
     drawRatios( outputdir, bins_nJets, size_nJets , "nJets",   zllG_nJets,   gamma_mc, gamma_data, purity_incl_njets,  zll_mc, zll_data,top,  zll_nJets, zllG_data_nJets, zllG_mc_nJets ,  thisRegion,cut_incl_mu, cut_incl_gamma, cut_incl_data_mu,  cut_incl_gamma_data, lumi, "nJets_incl_mu" , onlyMC, 1 ,"#geq1j, #geq0b");
 
@@ -313,7 +313,8 @@ int main(int argc, char* argv[]){
 
 
 
-    //incl///////////////////
+
+    //incl nBJets///////////////////
     drawRatios( outputdir, bins_nBJets, size_nBJets , "nBJets",  zllG_nBJets,   gamma_mc, gamma_data, purity_incl_nbjets,  zll_mc, zll_data, top, zll_nBJets,zllG_data_nBJets, zllG_mc_nBJets ,   thisRegion, cut_incl_el, cut_incl_gamma ,  cut_incl_data_el,  cut_incl_gamma_data, lumi, "nBJets_incl_el" , onlyMC, 1 ,"#geq1j, #geq0b");
     drawRatios( outputdir, bins_nBJets, size_nBJets , "nBJets",  zllG_nBJets,   gamma_mc, gamma_data, purity_incl_nbjets,  zll_mc, zll_data, top, zll_nBJets,zllG_data_nBJets, zllG_mc_nBJets ,   thisRegion, cut_incl_mu, cut_incl_gamma ,  cut_incl_data_mu,  cut_incl_gamma_data, lumi, "nBJets_incl_mu" , onlyMC, 1 ,"#geq1j, #geq0b");
 
@@ -360,6 +361,10 @@ int main(int argc, char* argv[]){
   return 0;
 
 }
+
+
+
+
 
 
 void drawRatios(std::string fullPath, double *binss, unsigned int size,  std::string selection, MT2Analysis<MT2EstimateSyst>*  zll_ratio, MT2Analysis<MT2EstimateTree>* gamma_mc, MT2Analysis<MT2EstimateTree>* gamma_data, MT2Analysis<MT2EstimateSyst>* purity, MT2Analysis<MT2EstimateTree>*  zll_mc, MT2Analysis<MT2EstimateTree>* zll_data, MT2Analysis<MT2EstimateTree>* top, MT2Analysis<MT2EstimateSyst>* zll_yield, MT2Analysis<MT2EstimateSyst>*  zllG_data, MT2Analysis<MT2EstimateSyst>* zllG_mc, const MT2Region thisRegion, std::string cut, std::string cut_gamma, std::string cut_data, std::string cut_gamma_data, float lumi, std::string saveName, bool onlyMC, bool fullUncert , std::string topoCuts ){
@@ -605,7 +610,17 @@ void drawRatios(std::string fullPath, double *binss, unsigned int size,  std::st
   //    h_mt2->DrawClone("p same");
   // if(!onlyMC)
   //   gr_ratio->Draw("same P");
-  MT2DrawTools::addLabels( pad1, lumi, "CMS" );
+  MT2DrawTools::addLabels( pad1, lumi, "CMS Supplementary" );
+  //  MT2DrawTools::addLabels( pad1, lumi, "CMS" );
+
+  TPaveText* arxiv = new TPaveText( 0.6, 0.9, 0.85, 0.8, "brNDC" );
+  arxiv->SetTextSize(0.042);
+  arxiv->SetTextFont(42);
+  arxiv->SetFillColor(0);
+  arxiv->SetTextAlign(11);
+  arxiv->AddText( "arXiv:1603.04053" );
+  arxiv->Draw("same");
+
   gPad->RedrawAxis();
 
   int i= 2 - int(onlyMC);
@@ -1023,20 +1038,4 @@ void drawRatiosTopHisto(std::string fullPath, double *binss, unsigned int size, 
   delete g_Up; delete g_Down;
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

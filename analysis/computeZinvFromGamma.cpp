@@ -78,9 +78,15 @@ int main( int argc, char* argv[] ) {
 
   MT2Analysis<MT2Estimate>* gammaCR = MT2Analysis<MT2Estimate>::readFromFile(gammaControlRegionDir + "/data.root", "gammaCR");
   MT2Analysis<MT2Estimate>* gamma_prompt_ = MT2Analysis<MT2Estimate>::readFromFile(gammaControlRegionDir + "/mc.root", "prompt");
+
+  (*gamma_prompt_) = (*gamma_prompt_) * cfg.lumi();
+
   
   MT2Analysis<MT2Estimate>* gamma_prompt;
-  if ( !use_extrapolation ) gamma_prompt = MT2Analysis<MT2Estimate>::readFromFile(gammaControlRegionDir + "/mc.root", "prompt");
+  if ( !use_extrapolation )  {
+    gamma_prompt = MT2Analysis<MT2Estimate>::readFromFile(gammaControlRegionDir + "/mc.root", "prompt");
+    (*gamma_prompt) = (*gamma_prompt) * cfg.lumi(); 
+  }
 
   MT2Analysis<MT2Estimate>* gamma_prompt_integral;
   if( use_extrapolation )
@@ -100,10 +106,12 @@ int main( int argc, char* argv[] ) {
     std::cout << "-> Thank you for your cooperation." << std::endl;
     exit(197);
   }
+  (* (MT2Analysis<MT2Estimate>*) Zinv) = (* (MT2Analysis<MT2Estimate>*)Zinv) * cfg.lumi();
 
 
   //MT2Analysis<MT2EstimateTree>* gammaCRtree = MT2Analysis<MT2EstimateTree>::readFromFile(gammaControlRegionDir + "/data.root", "gammaCRtree");
   //MT2Analysis<MT2Estimate>* ZgammaRatioMC = getInclusiveRatioMC( regionsSet, Zinv, gammaCRtree );
+
   MT2Analysis<MT2Estimate>* ZgammaRatioMC = new MT2Analysis<MT2Estimate>( "ZgammaRatioMC", cfg.regionsSet() );
   if( !use_extrapolation )
     (*ZgammaRatioMC) = ( (* (MT2Analysis<MT2Estimate>*)Zinv) / (*gamma_prompt) );
@@ -114,10 +122,11 @@ int main( int argc, char* argv[] ) {
   //MT2Analysis<MT2Estimate>* ZgammaRatio = MT2EstimateSyst::makeAnalysisFromEstimate( "ZgammaRatio", regionsSet, ZgammaRatioMC );
   MT2Analysis<MT2Estimate>* ZgammaRatio = new MT2Analysis<MT2Estimate>( "ZgammaRatio", cfg.regionsSet() );
   (*ZgammaRatio) = (*ZgammaRatioMC)/1.23;
-  (*ZgammaRatio) = (*ZgammaRatio)*0.9;
+  (*ZgammaRatio) = (*ZgammaRatio)*0.95; //from Zll Gamma ratio
   MT2Analysis<MT2EstimateSyst>* purity;
   if( type > 0 ) {
-    purity = MT2Analysis<MT2EstimateSyst>::readFromFile( gammaControlRegionDir + "/PurityFitsRC/purityFit.root", "purity" );
+    purity = MT2Analysis<MT2EstimateSyst>::readFromFile( gammaControlRegionDir + "/PurityFitsRC/purityFit_data.root", "purity" );
+    //    purity = MT2Analysis<MT2EstimateSyst>::readFromFile( gammaControlRegionDir + "/PurityFitsRC/purityFit.root", "purity" );
     ////purity = MT2Analysis<MT2EstimateSyst>::readFromFile( gammaControlRegionDir + "/PurityFitsMC/purityFit.root", "purity" );
     //purity = MT2Analysis<MT2EstimateSyst>::readFromFile( gammaControlRegionDir + "/purityMC.root", "purity" );
   }

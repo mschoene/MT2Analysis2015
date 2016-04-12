@@ -39,11 +39,13 @@ int main( int argc, char* argv[] ) {
 
   std::string mc_or_not = (useMC) ? "MC" : "";
 
+  std::string inputdir = cfg.getEventYieldDir() + "/gammaControlRegion";
+
   std::string outputdir = "Plots_GammaTemplates" + mc_or_not + "_" + samples + "_" + regionsSet;
   system( Form("mkdir -p %s", outputdir.c_str()) );
 
-  MT2Analysis<MT2EstimateZinvGamma>* templatesPrompt = MT2Analysis<MT2EstimateZinvGamma>::readFromFile("gammaTemplates" + mc_or_not + "_" + samples + "_" + regionsSet + ".root", "templatesPrompt");
-  MT2Analysis<MT2EstimateZinvGamma>* templatesFake   = MT2Analysis<MT2EstimateZinvGamma>::readFromFile("gammaTemplates" + mc_or_not + "_" + samples + "_" + regionsSet + ".root", "templatesFake");
+  MT2Analysis<MT2EstimateZinvGamma>* templatesPrompt = MT2Analysis<MT2EstimateZinvGamma>::readFromFile(inputdir+"gammaTemplates" + mc_or_not + "_" + samples + "_" + regionsSet + ".root", "templatesPrompt");
+  MT2Analysis<MT2EstimateZinvGamma>* templatesFake   = MT2Analysis<MT2EstimateZinvGamma>::readFromFile(inputdir+"gammaTemplates" + mc_or_not + "_" + samples + "_" + regionsSet + ".root", "templatesFake");
 
 
   if( regionsSet=="13TeV_inclusive" ) {

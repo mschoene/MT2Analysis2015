@@ -808,16 +808,15 @@ std::vector<TCanvas*> MT2DrawTools::drawRegionYields_fromTree( const std::string
       h1_mc->Sumw2();
       if( selection!="" )
         tree_mc->Project( thisName.c_str(), varName.c_str(), Form("%f*weight*(%s)", lumi_, selection.c_str()) );
-        //tree_mc->Project( thisName.c_str(), varName.c_str(), Form("%f*(%s)", lumi_*mc_->at(i)->getWeight(), selection.c_str()) );
+      //tree_mc->Project( thisName.c_str(), varName.c_str(), Form("%f*(%s)", lumi_*mc_->at(i)->getWeight(), selection.c_str()) );
       else
         tree_mc->Project( thisName.c_str(), varName.c_str(), Form("%f*weight", lumi_) );
-        //tree_mc->Project( thisName.c_str(), varName.c_str(), Form("%f", lumi_*mc_->at(i)->getWeight()) );
+      //tree_mc->Project( thisName.c_str(), varName.c_str(), Form("%f", lumi_*mc_->at(i)->getWeight()) );
 
       if( addOverflow_ )
         MT2DrawTools::addOverflowSingleHisto(h1_mc);
 
       histos_mc.push_back(h1_mc);
-
     }
 
     //TH1::AddDirectory(kFALSE); // stupid ROOT memory allocation needs this
@@ -834,10 +833,17 @@ std::vector<TCanvas*> MT2DrawTools::drawRegionYields_fromTree( const std::string
 
     float scaleFactor = mcSF_;
     if( data_ ) {
-      std::cout << "Integrals: " << h1_data->Integral(0, nBins) << "\t" << mc_sum->Integral(0, nBins) << std::endl;
-      float sf  = h1_data->Integral(0, nBins)/mc_sum->Integral(0, nBins);
-      //std::cout << "Integrals: " << h1_data->Integral(0, nBins+1) << "\t" << mc_sum->Integral(0, nBins+1) << std::endl;
-      //float sf  = h1_data->Integral(0, nBins+1)/mc_sum->Integral(0, nBins+1);
+      float sf;
+      if( addOverflow_ ){
+	//adding the overflow bin to the SF calculation
+	std::cout << "Integrals: " << h1_data->Integral(1, nBins+1) << "\t" << mc_sum->Integral(1, nBins+1) << std::endl;
+	sf  = h1_data->Integral(1, nBins+1)/mc_sum->Integral(1, nBins+1);
+
+      }else{ 
+	//not adding the overflow bin
+	std::cout << "Integrals: " << h1_data->Integral(1, nBins) << "\t" << mc_sum->Integral(1, nBins) << std::endl;
+	sf  = h1_data->Integral(1, nBins)/mc_sum->Integral(1, nBins);
+      }
       std::cout << "SF: " << sf << std::endl;
       if( shapeNorm_ ) scaleFactor *= sf;
     }
@@ -1105,7 +1111,8 @@ std::vector<TCanvas*> MT2DrawTools::drawRegionYields_fromTree( const std::string
     //    ratioText->Draw("same");
 
 
-    (data_) ? MT2DrawTools::addLabels( (TCanvas*)pad1, lumi_, CMStext.c_str() ) : MT2DrawTools::addLabels( (TCanvas*)pad1, lumi_, "CMS Simulation"); 
+    (data_) ? MT2DrawTools::addLabels( (TCanvas*)pad1, lumi_, CMStext.c_str() ) : MT2DrawTools::addLabels( (TCanvas*)c1, lumi_, "CMS Simulation"); 
+    //(data_) ? MT2DrawTools::addLabels( (TCanvas*)pad1, lumi_, CMStext.c_str() ) : MT2DrawTools::addLabels( (TCanvas*)pad1, lumi_, "CMS Simulation"); 
 
     gPad->RedrawAxis();
 
@@ -1121,7 +1128,8 @@ std::vector<TCanvas*> MT2DrawTools::drawRegionYields_fromTree( const std::string
     if( !shapeNorm_ && fitText )
       fitText->Draw("same");
     //    ratioText->Draw("same");
-    (data_) ? MT2DrawTools::addLabels( (TCanvas*)pad1_log, lumi_, CMStext.c_str() ) : MT2DrawTools::addLabels( (TCanvas*)pad1_log, lumi_, "CMS Simulation"); 
+    (data_) ? MT2DrawTools::addLabels( (TCanvas*)pad1_log, lumi_, CMStext.c_str() ) : MT2DrawTools::addLabels( (TCanvas*)c1_log, lumi_, "CMS Simulation"); 
+    //(data_) ? MT2DrawTools::addLabels( (TCanvas*)pad1_log, lumi_, CMStext.c_str() ) : MT2DrawTools::addLabels( (TCanvas*)pad1_log, lumi_, "CMS Simulation"); 
 
     gPad->RedrawAxis();
     

@@ -125,7 +125,7 @@ int main( int argc, char* argv[] ) {
   std::string outputdir = gammaCRdir + "/PurityFits" + cfg.gammaTemplateType();
   system( Form( "mkdir -p %s/singleFits", outputdir.c_str()) );
 
-  makePurity( cfg, outputdir,  gammaJet_data, templates_prompt, templates_fake, useMC, "");
+  //makePurity( cfg, outputdir,  gammaJet_data, templates_prompt, templates_fake, useMC, "");
 
 
   if(doAxes){
@@ -146,7 +146,6 @@ int main( int argc, char* argv[] ) {
     MT2Analysis<MT2EstimateZinvGamma>* gammaJet_data_mt2 = MT2Analysis<MT2EstimateZinvGamma>::readFromFile( workingDir + "/iso_mt2.root", "iso_mt2" );
 
     makePurity( cfg, outputdir,  gammaJet_data_mt2, templates_prompt, templates_fake, useMC, "mt2_");
-
 
    
     /*

@@ -381,19 +381,16 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
     if( !myTree.isData ){ //temporarily scaling by hand the cross sections
 
       weight *= myTree.weight_btagsf;
-      // weight *= myTree.weight_toppt;
-
-
-      //      weight *= myTree.weight_btagsf;
-      //      weight *= myTree.weight_toppt;
+      weight *= myTree.weight_toppt;
 
       //      weight *= myTree.puWeight;
 
-
+      //      manual scaling for old cross sections to new ones (not necessary if you run on files postprocessed after Feb2016
       //      if( myTree.evt_id == 702) weight = weight * 1.0573;
       //      if( myTree.evt_id == 703) weight = weight * 0.9588;
       //      if( myTree.evt_id == 704) weight = weight * 1.0329;
       //      if( myTree.evt_id == 705) weight = weight * 0.9945;
+
     }
 
     if( myTree.isData == 0 ){
@@ -493,7 +490,6 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
 
       thisTree->assignVar("lep_tightId0", myTree.lep_tightId[0] );
       thisTree->assignVar("lep_tightId1", myTree.lep_tightId[1] );
-
  
       thisTree->fillTree_zll(myTree, weight );
       thisTree->yield->Fill(myTree.zll_mt2, weight );
