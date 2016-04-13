@@ -1,3 +1,4 @@
+Progam overview as implemented in runFullAnalysis.sh
 
 ():progamms in ( ) are optional drawing functions
 {}:special requirments, IR=inclusive region
@@ -18,7 +19,7 @@
    |             |    |      |	     |                  |	        |		|			|
    |             |    |      |	     |                  |	        |		|			|
    |             |    |      |	     V                  |	        |		|			V
-   |             |    |      |  gammaControlRegion------|-------\ 	|		|	     qcdControlRegion (monojet)	                                    
+   |             |    |      |  gammaControlRegion------|-------\ 	|		|	     qcdControlRegion (monojet)	                 
    |             |    |      |  (drawGammaControlRegion)|       | 	|		|		 	|{qcd IR}
    |             |    |      |       |       |          |       | 	|		|		 	|
    |             |    |      |       |       |          |       | 	|		|		 	|
