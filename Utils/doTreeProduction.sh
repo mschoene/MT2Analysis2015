@@ -99,15 +99,17 @@ do
     echo "number of files = " $numFiles
 
     for ((i=0; i<4; i++)); do
-	if [ ${isCrab} = 1 ]; then
-    	    crabExt=$(ls $inputFolder/${name}_ext_${i}/)
-	    for f in $inputFolder/${name}_ext_${i}/${crabExt}/0000/mt2*.root; do
-		echo $f>>$fileList
-	    done;
-	else
-	    for f in $inputFolder/${name}_ext_${i}/mt2*.root; do
-		echo $f>>$fileList
-	    done;
+	if [ -d $inputFolder/${name}_ext_${i}/ ]; then
+	    if [ ${isCrab} = 1 ]; then
+    		crabExt=$(ls $inputFolder/${name}_ext_${i}/)
+		for f in $inputFolder/${name}_ext_${i}/${crabExt}/0000/mt2*.root; do
+		    echo $f>>$fileList
+		done;
+	    else
+		for f in $inputFolder/${name}_ext_${i}/mt2*.root; do
+		    echo $f>>$fileList
+		done;
+	    fi;
 	fi;
     done;
 
@@ -288,18 +290,25 @@ do
     numFiles=$(wc -l inputChunkList.txt | awk '{print $1}')
     echo "number of files = " $numFiles
 
-    for ((i=0; i<4; i++)); do
-    	if [ ${isCrab} = 1 ]; then
-    	    crabExt=$(ls $inputFolder/${name}_ext_${i}/)
-    	    for f in $inputFolder/${name}_ext_${i}/${crabExt}/0000/mt2*.root; do
-    		echo $f>>$fileList
-    	    done;
-    	else
-    	    for f in $inputFolder/${name}_ext_${i}/mt2*.root; do
-    		echo $f>>$fileList
-    	    done;
-    	fi;
+
+    for ((i=0; i<4; i++)); do	 
+	if [ -d $inputFolder/${name}_ext_${i}/ ]; then
+    	    if [ ${isCrab} = 1 ]; then
+    		crabExt=$(ls $inputFolder/${name}_ext_${i}/)
+
+    		for f in $inputFolder/${name}_ext_${i}/${crabExt}/0000/mt2*.root; do
+    		    echo $f>>$fileList
+    		done;
+
+    	    else
+    		for f in $inputFolder/${name}_ext_${i}/mt2*.root; do
+    		    echo $f>>$fileList
+    		done;
+    	    fi;
+	fi;
     done;
+    
+
 
     numFiles=$(wc -l inputChunkList.txt | awk '{print $1}')
     echo "number of files = " $numFiles
