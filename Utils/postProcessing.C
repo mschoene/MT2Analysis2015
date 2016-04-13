@@ -670,18 +670,27 @@ int postProcessing(std::string inputString,
     for( ULong64_t k = 0; k < nEventsTree; k++) {
       weight_toppt=1;
 
+      int foundTop=0;
+      int foundAntiTop=0;
+
       chain->GetEntry(k);
       if(nGenPart>0)
 	for(int o=0; o<nGenPart; ++o){
 	  if(GenPart_status[o] != 62) continue;
 	  //Only apply weight to top or antitop
 	  if( abs(GenPart_pdgId[o])==6 ){
-	    weight_toppt *= exp( a + b * GenPart_pt[o] );
+	    weight_toppt *= sqrt(exp( a + b * GenPart_pt[o] ) );
+
+	    if( GenPart_pdgId[o]== 6 )  foundTop++;
+	    if( GenPart_pdgId[o]==-6 )  foundAntiTop++;
 	  }
 	  else continue;
-
 	}//end loop over objects  
-      average += weight_toppt;  
+
+      if( foundTop==1 && foundAntiTop==1 )
+	average += weight_toppt;  
+      else 
+	average += 1.0;  
     }
     average /= (double) nEventsTree;
   }//end or first loop for toppt average
@@ -776,17 +785,30 @@ int postProcessing(std::string inputString,
 	
       }//finished isr (and scale) weights
 
+
+      int foundTop=0;
+      int foundAntiTop=0;
+
       /////////Add Top pt scale factor//////////
       if( id >399 || id < 300 ) ;
       else if(nGenPart>0){
 	for(int o=0; o<nGenPart; ++o){
 	  if(GenPart_status[o] != 62) continue;
 	  //Only apply weight to top or antitop
-	  if( abs(GenPart_pdgId[o])==6 )
-	    weight_toppt *= exp( a + b * GenPart_pt[o] );
+	  if( abs(GenPart_pdgId[o])==6 ){
+	    weight_toppt *= sqrt(exp( a + b * GenPart_pt[o] ) );
+
+	    if( GenPart_pdgId[o]== 6 )  foundTop++;
+	    if( GenPart_pdgId[o]==-6 )  foundAntiTop++;
+	  }
 	  else continue;
 	}//end loop over objects
-	weight_toppt /= average;
+
+	if( foundTop==1 && foundAntiTop==1 )
+	  weight_toppt /= average;
+	else
+	  weight_toppt=1.0;
+
       }
 
 

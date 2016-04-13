@@ -219,7 +219,6 @@ int preProcessing(std::string inputString,
       
       weight_toppt=1;
 
-      int foundPair=0;
       int foundTop=0;
       int foundAntiTop=0;
 
@@ -237,15 +236,12 @@ int preProcessing(std::string inputString,
 	  }
 	  else continue;
 
-	  if( foundTop==1 && foundAntiTop==1 )
-	    foundPair=1;
-
 	}//end loop over objects  
 
-      if(foundPair==1)
+      if( foundTop==1 && foundAntiTop==1 )
 	average += weight_toppt;  
       else 
-	average += 1;
+	average += 1.0;
     }
     average /= (double) nEventsTree;
   }//end or first loop for toppt average
