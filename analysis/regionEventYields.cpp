@@ -359,7 +359,8 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg ) {
     }
     
     //Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi()*myTree.puWeight;
-    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb;//*cfg.lumi();
+    //Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb; //*cfg.lumi();
+    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*(myTree.weight_lepsf)*(myTree.weight_btagsf)*(myTree.weight_toppt); //*cfg.lumi();
     //Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi();
     Double_t weight_syst = 1.;
 

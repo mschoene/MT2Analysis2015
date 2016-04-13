@@ -2,42 +2,31 @@
 
 # --- configuration (consider to move this into a separate file) ---
 treeName="mt2"
-inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/babies/MT2_CMGTools-from-CMSSW_7_4_12/ZGData_12Feb/"
-#"/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/EGMuonData_76X/myCMGTools-from-CMSSW_7_6_3/EGMuonDataRunC/"
-#"/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/EGMuonData_76X/myCMGTools-from-CMSSW_7_6_3/EGMuonData/"
-
-#74"/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/babies/MT2_CMGTools-from-CMSSW_7_4_12/ZGMC_Private_12Feb/"
-#74"/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/babies/MT2_CMGTools-from-CMSSW_7_4_12/ZGMC_12Feb/"
-#data74"/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/babies/MT2_CMGTools-from-CMSSW_7_4_12/ZGData_12Feb/"
-#data76"/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/EGMuonData_76X/myCMGTools-from-CMSSW_7_6_3/EGMuonData/"
-#"/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/ZGammaMC_76X/myCMGTools-from-CMSSW_7_6_3/ZGammaMC/"
+inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/babies/MT2_CMGTools-from-CMSSW_7_4_12/fullMC_Spring15_miniAODv2_03Nov2015/"
 #"/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/babies/MT2_CMGTools-from-CMSSW_7_4_12/fullMC_miniAODv2_09Nov2015/"
-#"/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/babies/MT2_CMGTools-from-CMSSW_7_4_12/fullMC_Spring15_miniAODv2_03Nov2015/"
-#"/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/babies/MT2_CMGTools-from-CMSSW_7_4_12/fullMC_miniAODv2_06Nov2015/"
+#"/pnfs/psi.ch/cms/trivcat/store/user/mschoene/babies/MT2_CMGTools-from-CMSSW_7_4_12/FullSUSYSignalsScans_miniAODv2_11Feb2016/
+#"/pnfs/psi.ch/cms/trivcat/store/user/mschoene/babies/MT2_CMGTools-from-CMSSW_7_4_12/SUSYSignalsScans_miniAODv2_11Feb2016/"
+#"/pnfs/psi.ch/cms/trivcat/store/user/mschoene/babies/MT2_CMGTools-from-CMSSW_7_4_12/Missing_SUSYSignalsScans_miniAODv2_11Feb2016/"
 
-#"/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/babies/MT2_CMGTools-from-CMSSW_7_4_12/ZG_20Dec2015/"
+#"/pnfs/psi.ch/cms/trivcat/store/user/mschoene/babies/MT2_CMGTools-from-CMSSW_7_4_12/FullSUSYSignalsScans_miniAODv2_11Feb2016/"
+
+#"/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/babies/MT2_CMGTools-from-CMSSW_7_4_12/fullMC_miniAODv2_06Nov2015/"
 #"/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/babies/MT2_CMGTools-from-CMSSW_7_4_12/fullData_miniAODv2_15Nov2015_jecV6/"
-productionName="16Feb2016_74X_EGMuonDataRunD_LooperTest"
+productionName="2016_04_12_TTJets_withSqrt"
 
 fileExt="_post.root"
 isCrab=1
-inputPU="/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/MT2production/74X/Spring15/PostProcessed/23Oct2015_data_noSkim/JetHT_Run2015D_post.root"
+inputPU="MyDataPileupHistogram.root"
+#inputPU="/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/MT2production/74X/Spring15/PostProcessed/23Oct2015_data_noSkim/JetHT_Run2015D_post.root"
 PUvar="nTrueInt"
-#GoldenJSON="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-255031_13TeV_PromptReco_Collisions15_25ns_JSON_v2.txt"
-#GoldenJSON="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-257599_13TeV_PromptReco_Collisions15_25ns_JSON.txt"
-#GoldenJSON="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-258159_13TeV_PromptReco_Collisions15_25ns_JSON.txt"
-#GoldenJSON="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-258750_13TeV_PromptReco_Collisions15_25ns_JSON.txt"
-#GoldenJSON="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-260426_13TeV_PromptReco_Collisions15_25ns_JSON.txt"
-#"/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt"
-#"/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON_Silver.txt"
 GoldenJSON="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Reprocessing/Cert_13TeV_16Dec2015ReReco_Collisions15_25ns_JSON.txt"
 SilverJSON="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Reprocessing/Cert_13TeV_16Dec2015ReReco_Collisions15_25ns_JSON_Silver.txt"
-applyJSON=1 #0 for MC
-doSilver=1 #0 for MC
-doFilterTxt=1 #0 for MC
-doAllSF=0 #1 for MC
-splitFactor=5
-# --------------------------
+applyJSON=0     #0 for MC
+doSilver=0      #0 for MC
+doFilterTxt=0   #0 for MC
+doAllSF=1       #1 for MC
+doPreProc=1     #0 (only 1 for TTJets or if you want to split MC samples, then run ./doTreeProduction pre first)
+# ------------------------------------------------------------------------------
 
 
 # initialization
@@ -47,8 +36,9 @@ workingFolder="/scratch/`whoami`/"$productionName
 
 
 if [[ "$#" -eq 0 ]]; then
-    echo "Relunch the script with one of the following options: "
+    echo "Relaunch the script with one of the following options: "
     echo "./doTreeProduction.sh post      # post-processing"
+    echo "./doTreeProduction.sh per       # pre-processing"
     echo "./doTreeProduction.sh postCheck # check post-processing"
     echo "./doTreeProduction.sh mergeData # merge data and remove duplicates (not implemented yet)"
     echo "./doTreeProduction.sh addAllSF  # add all scale factor weights"
@@ -60,7 +50,130 @@ if [[ "$#" -eq 0 ]]; then
 fi;
 
 
- 
+
+
+if [[ "$1" = "pre" ]]; then
+
+if [ -d "$jobsLogsFolder" ]; then 
+    echo "ERROR: the logFolder" $jobsLogsFolder " already exists."
+    echo "Delete it and start from a clean area, or redirect the logs in a different place."
+    echo "Exiting ..."
+    exit
+else
+    mkdir  $jobsLogsFolder
+fi
+
+
+while read line; 
+do 
+    case "$line" in \#*) continue ;; esac; #skip commented lines
+    case "$line" in *"_ext"*) continue ;; esac; #skip extensions
+    if [ -z "$line" ]; then continue; fi;  #skip empty lines
+    id=`echo $line |awk '{print $1}'`
+    name=`echo $line |awk '{print $2}'`
+
+    fileList=inputChunkList.txt
+
+    if [ inputChunkList.txt ]; then
+	echo "deleting the old file list"
+	rm $fileList
+    fi;
+
+    crabExt=""
+    if [ ${isCrab} = 1 ]; then
+	crabExt=$(ls $inputFolder/$name/)
+    fi;
+
+    if [ ${isCrab} = 1 ]; then
+	for f in $inputFolder/$name/$crabExt/0000/mt2*.root; do
+	    echo $f>>$fileList
+	done;
+    else
+	for f in $inputFolder/$name/mt2*.root; do
+	    echo $f>>$fileList
+	done;
+    fi;
+    
+
+    numFiles=$(wc -l inputChunkList.txt | awk '{print $1}')
+    echo "number of files = " $numFiles
+
+    for ((i=0; i<4; i++)); do
+	if [ ${isCrab} = 1 ]; then
+    	    crabExt=$(ls $inputFolder/${name}_ext_${i}/)
+	    for f in $inputFolder/${name}_ext_${i}/${crabExt}/0000/mt2*.root; do
+		echo $f>>$fileList
+	    done;
+	else
+	    for f in $inputFolder/${name}_ext_${i}/mt2*.root; do
+		echo $f>>$fileList
+	    done;
+	fi;
+    done;
+
+
+    numFiles=$(wc -l inputChunkList.txt | awk '{print $1}')
+    echo "number of files = " $numFiles
+
+    awk '$0="dcap://t3se01.psi.ch:22125/"$0' $fileList > inputChunkList_dcap.txt 
+    mv inputChunkList_dcap.txt inputChunkList.txt
+    cp  inputChunkList.txt  inputChunkList_${name}.txt
+    fileListTemp=inputChunkList_${name}.txt
+    #   fileList=inputChunkList_dcap.txt
+
+    scriptName=batchScript_${name}.sh
+
+    outputFile=${name}_pre.cfg
+
+    cat <<EOF > $scriptName
+#!/bin/bash
+
+#### The following configurations you should not need to change
+# Job name (defines name seen in monitoring by qstat and the
+#     job script's stderr/stdout names)
+#$ -N pP_${name}_`whoami`
+
+### Specify the queue on which to run
+#$ -q short.q
+
+# Change to the current working directory from which the job go
+# submitted . This will also result in the job report stdout/stderr being
+# written to this directory, if you do not override it (below).
+#$ -cwd
+
+# here you could change location of the job report stdout/stderr files
+#  if you did not want them in the submission directory
+####v$ -o $jobsLogsFolder/${name}.out
+####c$ -e $jobsLogsFolder/${name}.err
+#$ -o $jobsLogsFolder/${name}.out
+#$ -e $jobsLogsFolder/${name}.err
+
+
+source $VO_CMS_SW_DIR/cmsset_default.sh
+source /mnt/t3nfs01/data01/swshare/glite/external/etc/profile.d/grid-env.sh
+export SCRAM_ARCH=slc6_amd64_gcc491
+export LD_LIBRARY_PATH=/mnt/t3nfs01/data01/swshare/glite/d-cache/dcap/lib/:$LD_LIBRARY_PATH
+echo "Loading your CMSSW release or CMSSW_7_4_12/"
+echo "from $myCMSSW"
+cd $myCMSSW
+eval `scramv1 runtime -sh`
+cd -
+
+echo "preProcessing(\"$name\",\"$inputFolder\",\"$outputFile\",\"$treeName\",$id,$fileList);"
+echo "gROOT->LoadMacro(\"preProcessing.C+\"); preProcessing(\"$name\",\"$inputFolder\",\"$outputFile\",\"$treeName\",$id,\"$fileListTemp\"); gSystem->Exit(0);" |root.exe -b -l ;
+
+
+EOF
+
+    qsub -q long.q $scriptName;
+    rm $scriptName;
+
+done < postProcessing.cfg
+
+fi;
+#done pre processing
+
+
 
 #######################################
 if [[ "$1" = "post" ]]; then
@@ -137,7 +250,6 @@ do
 	doAllSF="false"
     fi;
 
-
     if [[ $id -lt 10 && $doFilterTxt == 1 ]]; then
 	# this is the merged (and duplicate removed) file including Nov15 txts and Oct 15 txts for all datasets
 	# filterTxt=/shome/casal/eventlist_Nov14/filter_cscNov15_ecalscnNov15_cscOct15_sortu.txt
@@ -146,47 +258,95 @@ do
 	outputFilteredFile=${workingFolder}/${name}_filtered$fileExt;
     fi;
     
-    # outputFile=${workingFolder}/${name}$fileExt;
-
+    crabExt=""
     if [ ${isCrab} = 1 ]; then
 	crabExt=$(ls $inputFolder/$name/)
-    else
-	crabExt=""
     fi;
-
 
     #default is to not do the splitting into 10 files
     #also this should NEVER be done for MC as some scale factors need normalization
-    looper=-1
+    #unless you did the preprocessing
 
-    #will split into 10 jobs if the amount of chunks is >300 && it is data
-    if [[ $id -lt 10 ]]; then
-	if [[ $(find $inputFolder/$name/$crabExt/ -iname "mt2*.root" -type f |wc -l ) -gt 300  ]]; then
-	    echo "File will be split into 10 files for speed and memory limit purposes"
-	    looper=7
-	fi;
+    fileList=inputChunkList.txt
+
+    if [ inputChunkList.txt ]; then
+	echo "deleting the old file list"
+	rm $fileList
     fi;
 
-    while [ $looper -lt 8 ] || [ $looper -eq -1 ]; do  
-	echo "Submitting the job for part" $looper; 
+    if [ ${isCrab} = 1 ]; then
+	for f in $inputFolder/$name/$crabExt/0000/mt2*.root; do
+	    echo $f>>$fileList
+	done;
+    else
+	for f in $inputFolder/$name/mt2*.root; do
+	    echo $f>>$fileList
+	done;
+    fi;
+    
 
-	looperName=${name}_${looper};
+    numFiles=$(wc -l inputChunkList.txt | awk '{print $1}')
+    echo "number of files = " $numFiles
 
-	if [[ $looper == -1 ]]; then
-	    outputFile=${workingFolder}/${name}$fileExt;
-	else
-	    outputFile=${workingFolder}/${looperName}$fileExt;
-	    if [[ $doFilterTxt == 1 ]]; then
-		outputFilteredFile=${workingFolder}/${looperName}_filtered$fileExt;
-	    fi;
+    for ((i=0; i<4; i++)); do
+    	if [ ${isCrab} = 1 ]; then
+    	    crabExt=$(ls $inputFolder/${name}_ext_${i}/)
+    	    for f in $inputFolder/${name}_ext_${i}/${crabExt}/0000/mt2*.root; do
+    		echo $f>>$fileList
+    	    done;
+    	else
+    	    for f in $inputFolder/${name}_ext_${i}/mt2*.root; do
+    		echo $f>>$fileList
+    	    done;
+    	fi;
+    done;
+
+    numFiles=$(wc -l inputChunkList.txt | awk '{print $1}')
+    echo "number of files = " $numFiles
+
+
+    maxNfiles=9000
+    counter=-1
+
+
+    if [[ (( $doPreProc==1 && (( $numFiles -lt $maxNfiles )) ))  || (( $id -lt 10 )) ]]; then
+	echo "File will be split into multiple files for speed and memory limit purposes"
+	counter=0;
+	maxNfiles=100;
+    fi;
+    
+
+    while (( (( (( $numFiles + 1 )) > (($counter * $maxNfiles)) )) || $(($counter < 0 )) )); do 
+
+        counterFile=chunkPart_${name}_${counter}.txt
+
+        #   #the input file list for the current range
+	if [[ $counter -gt -1 ]]; then
+	    echo "running on chunks $((counter*maxNfiles+1)) to $(((counter+1)*maxNfiles+1))"
+	    sed -n $((counter*maxNfiles+1)),$(((counter+1)*maxNfiles+1))p  inputChunkList.txt > chunkPart_${name}_${counter}.txt
+	    awk '$0="dcap://t3se01.psi.ch:22125/"$0' chunkPart_${name}_$counter.txt > chunkPart_${name}_${counter}_dcap.txt
+	    mv chunkPart_${name}_${counter}_dcap.txt chunkPart_${name}_${counter}.txt
 	fi;
 
+	echo "Submitting the job for part" $counter; 
 
+	if [[ ${doPreProc} == 0 ]]; then
+	    awk '$0="dcap://t3se01.psi.ch:22125/"$0' inputChunkList.txt > temp_${name}_${counter}_dcap.txt
+	    mv temp_${name}_${counter}_dcap.txt chunkPart_${name}_${counter}.txt
+	fi;
 
-	if [[ $looper == -1 ]]; then
+	counterName=${name}_${counter};
+
+	if [[ $counter == -1 ]]; then
+	    outputFile=${workingFolder}/${name}$fileExt;
+	    counterName=${name}
 	    scriptName=batchScript_${name}.sh
 	else
-	    scriptName=batchScript_${looper}_${name}.sh;
+	    scriptName=batchScript_${counter}_${name}.sh;
+	    outputFile=${workingFolder}/${counterName}$fileExt;
+	    if [[ $doFilterTxt == 1 ]]; then
+		outputFilteredFile=${workingFolder}/${counterName}_filtered$fileExt;
+	    fi;
 	fi;
 
 
@@ -211,20 +371,20 @@ do
 #  if you did not want them in the submission directory
 ####v$ -o $jobsLogsFolder/${name}.out
 ####c$ -e $jobsLogsFolder/${name}.err
-#$ -o $jobsLogsFolder/${looperName}.out
-#$ -e $jobsLogsFolder/${looperName}.err
+#$ -o $jobsLogsFolder/${counterName}.out
+#$ -e $jobsLogsFolder/${counterName}.err
 
-#source /swshare/psit3/etc/profile.d/cms_ui_env.sh
+#source /mnt/t3nfs01/data01/swshare/psit3/etc/profile.d/cms_ui_env.sh
 #source $VO_CMS_SW_DIR/cmsset_default.sh
-#source /swshare/ROOT/thisroot.sh 
+#source //mnt/t3nfs01/data01/swshare/ROOT/thisroot.sh 
 #eval \`scramv1 runtime -sh\`
 
 
 
 source $VO_CMS_SW_DIR/cmsset_default.sh
-source /swshare/glite/external/etc/profile.d/grid-env.sh
+source /mnt/t3nfs01/data01/swshare/glite/external/etc/profile.d/grid-env.sh
 export SCRAM_ARCH=slc6_amd64_gcc491
-export LD_LIBRARY_PATH=/swshare/glite/d-cache/dcap/lib/:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=/mnt/t3nfs01/data01/swshare/glite/d-cache/dcap/lib/:$LD_LIBRARY_PATH
 echo "Loading your CMSSW release or CMSSW_7_4_12/"
 echo "from $myCMSSW"
 cd $myCMSSW
@@ -235,15 +395,15 @@ cd -
 mkdir -p $workingFolder
 gfal-mkdir -p srm://t3se01.psi.ch/$outputFolder
 
+
 echo "postProcessing(\"$name\",\"$inputFolder\",\"$outputFile\",\"$treeName\",$filter,$kfactor,$xsec,$id,\"$crabExt\", \"$inputPU\", \"$PUvar\", $applyJSON);"
+echo "gROOT->LoadMacro(\"postProcessing.C+\"); postProcessing(\"$name\",\"$counterFile\",\"$outputFile\",\"$treeName\",$filter,$kfactor,$xsec,$id,\"$crabExt\",\"$inputPU\",\"$PUvar\",$applyJSON,$doAllSF,$doSilver,\"$name\"); gSystem->Exit(0);" |root.exe -b -l ;
+
 
 ### Uncomment for ROOT v5
 #echo "gSystem->Load(\"goodrun_cc\"); gROOT->LoadMacro(\"postProcessing.C\"); postProcessing(\"$name\",\"$inputFolder\",\"$outputFile\",\"$treeName\",$filter,$kfactor,$xsec,$id,\"$crabExt\",\"$inputPU\",\"$PUvar\",$applyJSON); gSystem->Exit(0);" |root.exe -b -l ;
 ### Comment for ROOT v5
 
-echo "gROOT->LoadMacro(\"postProcessing.C+\"); postProcessing(\"$name\",\"$inputFolder\",\"$outputFile\",\"$treeName\",$filter,$kfactor,$xsec,$id,\"$crabExt\",\"$inputPU\",\"$PUvar\",$applyJSON,$doAllSF,$doSilver,$looper); gSystem->Exit(0);" |root.exe -b -l ;
-
-#gfal-copy file://$outputFile srm://t3se01.psi.ch/$outputFolder
 
 if [[ $id -lt 10 && $doFilterTxt == 1 ]]; then 
    echo "filterFromTxt(\"$filterTxt\",\"$outputFile\",1,\"$outputFilteredFile\",\"mt2\",\"\")"
@@ -251,17 +411,30 @@ if [[ $id -lt 10 && $doFilterTxt == 1 ]]; then
    mv $outputFilteredFile $outputFile;
 fi;
 
-#mv $outputFile $outputFolder
+#######mv $outputFile $outputFolder
 gfal-copy file://$outputFile srm://t3se01.psi.ch/$outputFolder
 rm $outputFile
-skimmingPruningCfg="${workingFolder}/skimmingPruning_${looperName}.cfg"
-    cat skimmingPruning.cfg |grep -v \# | sed  "s#INPUTDIR#${outputFolder}#" |sed "s#INPUTFILTER#${looperName}#" \
-	| sed "s#OUTPUTDIR#${outputFolder}/skimAndPrune#" | sed "s#DOPRUNING#${doPruning}#" > \$skimmingPruningCfg
+
+#Normal skim
+skimmingPruningCfg="${workingFolder}/skimmingPruning_${counterName}.cfg"
+     cat skimmingPruning.cfg |grep -v \# | sed  "s#INPUTDIR#${outputFolder}#" |sed "s#INPUTFILTER#${counterName}#" \
+ 	| sed "s#OUTPUTDIR#${outputFolder}/skimAndPrune#" | sed "s#DOPRUNING#${doPruning}#" > \$skimmingPruningCfg
 ./runSkimmingPruning.sh \$skimmingPruningCfg
 rm \$skimmingPruningCfg
-#echo "is anything left in working folder? workingFolder: " 
-#ls $workingFolder
 
+#qcd skim
+skimmingPruningCfgQCD="${workingFolder}/skimmingPruningQCD_${counterName}.cfg"
+    cat skimmingPruningQCD.cfg |grep -v \# | sed  "s#INPUTDIR#${outputFolder}#" |sed "s#INPUTFILTER#${counterName}#" \
+	| sed "s#OUTPUTDIR#${outputFolder}/QCDskimAndPrune#" | sed "s#DOPRUNING#${doPruning}#" > \$skimmingPruningCfgQCD
+./runSkimmingPruning.sh \$skimmingPruningCfgQCD
+rm \$skimmingPruningCfgQCD
+
+#qcd skim for monojet
+skimmingPruningCfg="${workingFolder}/skimmingPruningMonoJet_${counterName}.cfg"
+    cat skimmingPruningMonoJet.cfg |grep -v \# | sed  "s#INPUTDIR#${outputFolder}#" |sed "s#INPUTFILTER#${counterName}#" \
+	| sed "s#OUTPUTDIR#${outputFolder}/QCDMonoJetSkimAndPrune#" | sed "s#DOPRUNING#${doPruning}#" > \$skimmingPruningCfgMonoJet
+./runSkimmingPruning.sh \$skimmingPruningCfgMonoJet
+rm \$skimmingPruningCfgMonoJet
 
 
 #echo "is anything left in working folder? workingFolder: " 
@@ -270,26 +443,19 @@ rm \$skimmingPruningCfg
 
 EOF
 
-#if you have a big file and no time to change the code: qsub  -q long.q -l h_vmem=5g batchScript_${name}.sh;
+        #if you have a big file and no time to change the code to be smoother: qsub  -q long.q -l h_vmem=5g batchScript_${name}.sh;
 
-
-	qsub -q long.q -l h_vmem=6g $scriptName;
+	qsub -q long.q $scriptName;
 	rm $scriptName;
 
-	# if [[ $looper == -1 ]]; then
-	#     qsub  -q long.q batchScript_${name}.sh;
-	#     rm batchScript_${name}.sh;
-	# else
-	#     qsub  -q long.q batchScript_${looper}_${name}.sh;
-	#     rm batchScript_${looper}_${name}.sh;
-	# fi;
-
-
-	if [[ $looper -eq -1 ]]; then
-	    looper=$[looper+11]; 
+	if (($counter < 0)); then
+	    break;
 	else
-	    looper=$[$looper+1]; 
+	counter=$[$counter+1]; #	    counter=$[$counter+1]; 
 	fi;
+	
+	#rm $counterFile
+
     done;
 
 done < postProcessing.cfg
@@ -347,31 +513,3 @@ if [[ "$1" = "clean" ]]; then
 fi
 
 
-
-
-
-
-
-# skimmingPruningCfg="${workingFolder}/skimmingPruning_${name}.cfg"
-# cat skimmingPruning.cfg |grep -v \# | sed  "s#INPUTDIR#${outputFolder}#" |sed "s#INPUTFILTER#${name}#" \
-#     | sed "s#OUTPUTDIR#${outputFolder}/skimAndPrune#" | sed "s#DOPRUNING#${doPruning}#" > \$skimmingPruningCfg
-
-# ./runSkimmingPruning.sh \$skimmingPruningCfg
-# rm \$skimmingPruningCfg
-# gfal-copy skimmingPruning.cfg srm://t3se01.psi.ch/$outputFolder/skimAndPrune 
-
-# if [[ $id -lt 10 ]]; then
-#     crabExt=""
-#     ##Second round
-#     echo "gROOT->LoadMacro(\"postProcessing.C+\"); postProcessing(\"$name\",\"$secondInputFolder\",\"$outputFileFinal\",\"$treeName\",$filter,$kfactor,$xsec,$id,\"$crabExt\",\"$inputPU\",\"$PUvar\",$applyJSON,$doAllSF,$doSilver, 1); gSystem->Exit(0);" |root.exe -b -l ;
-# fi;
-
-# #gfal-copy file://$outputFileFinal srm://t3se01.psi.ch/$outputFolder
-# if [[ $id -lt 10 && $doFilterTxt == 1 ]]; then 
-#     echo "filterFromTxt(\"$filterTxt\",\"$outputFileFinal\",1,\"$outputFilteredFile\",\"mt2\",\"\")"
-#     echo "gROOT->LoadMacro(\"filterFromTxt.C\"); filterFromTxt(\"$filterTxt\",\"$outputFileFinal\",1,\"$outputFilteredFile\",\"mt2\",\"\"); gSystem->Exit(0);" |root.exe -b -l ;
-#    mv $outputFilteredFile $outputFileFinal;
-# fi;
-#mv $outputFile $outputFolder
-#gfal-copy file://$outputFileFinal srm://t3se01.psi.ch/$outputFolder
-#rm $outputFile
