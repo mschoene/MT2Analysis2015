@@ -85,7 +85,7 @@ int isrSF(string inputString,
   clone->SetBranchAddress((objectName+"_status").c_str(), obj_status);
 
   TBranch* b1 = clone->Branch("weight_isr", &weight_isr, "weight_isr/F");
-    
+
   int nEntries = clone->GetEntries();
   std::cout << "Starting loop over " << nEntries << " entries..." << std::endl;
 
@@ -116,15 +116,14 @@ int isrSF(string inputString,
       
       float pt_hard = s.Pt();
       if( pt_hard < 0. )         continue;
-      else if( pt_hard < 120. )  weight_isr = 1.0;
-      else if( pt_hard < 150. )  weight_isr = 0.95;
-      else if( pt_hard < 250. )  weight_isr = 0.90;
-      else if( pt_hard >= 250. ) weight_isr = 0.80;
-      
+      else if( pt_hard < 400. )  weight_isr = 1.0;
+      else if( pt_hard < 600. )  weight_isr = 1.15;
+      else if( pt_hard >= 600. ) weight_isr = 1.30;
+
     }
     
     b1->Fill();
-    
+  
   }
   //-------------------------------------------------------------
 
