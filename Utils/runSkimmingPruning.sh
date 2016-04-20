@@ -1,5 +1,21 @@
 #!/bin/bash
 
+if [ $CMSSW_BASE ]; then
+    myCMSSW=$CMSSW_BASE  
+else
+    myCMSSW=/cvmfs/cms.cern.ch/slc6_amd64_gcc491/cms/cmssw-patch/CMSSW_7_4_12_patch4
+fi
+
+source $VO_CMS_SW_DIR/cmsset_default.sh
+source /swshare/glite/external/etc/profile.d/grid-env.sh
+export SCRAM_ARCH=slc6_amd64_gcc491
+export LD_LIBRARY_PATH=/swshare/glite/d-cache/dcap/lib/:$LD_LIBRARY_PATH
+echo "Loading your CMSSW release or CMSSW_7_4_12/"
+echo "from $myCMSSW"
+cd $myCMSSW
+eval `scramv1 runtime -sh`
+cd -
+
 if [ "$#" -ne 1 ]; then
     echo "=== ERROR ==="
     echo "You need to provide one single argument to the script, ie the name of the input configuration file"
