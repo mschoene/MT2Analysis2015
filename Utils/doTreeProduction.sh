@@ -324,16 +324,16 @@ do
 	maxNfiles=100;
     fi;
     
-    counter=5
+    #counter=5
 
     while (( (( (( $numFiles + 1 )) > (($counter * $maxNfiles)) )) || $(($counter < 0 )) )); do 
 
         counterFile=chunkPart_${name}_${counter}.txt
 
-        #   #the input file list for the current range
+        ##the input file list for the current range
 	if [[ $counter -gt -1 ]]; then
-	    echo "running on chunks $((counter*maxNfiles+1)) to $(((counter+1)*maxNfiles+1))"
-	    sed -n $((counter*maxNfiles+1)),$(((counter+1)*maxNfiles+1))p  inputChunkList.txt > chunkPart_${name}_${counter}.txt
+	    echo "running on chunks $((counter*maxNfiles+1)) to $(((counter+1)*maxNfiles))"
+ 	    sed -n $((counter*maxNfiles+1)),$(((counter+1)*maxNfiles))p  inputChunkList.txt > chunkPart_${name}_${counter}.txt
 	    awk '$0="dcap://t3se01.psi.ch:22125/"$0' chunkPart_${name}_$counter.txt > chunkPart_${name}_${counter}_dcap.txt
 	    mv chunkPart_${name}_${counter}_dcap.txt chunkPart_${name}_${counter}.txt
 	fi;
