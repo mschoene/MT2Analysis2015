@@ -12,7 +12,7 @@ inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/babies/MT2_CMGTools-fr
 
 #"/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/babies/MT2_CMGTools-from-CMSSW_7_4_12/fullMC_miniAODv2_06Nov2015/"
 #"/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/babies/MT2_CMGTools-from-CMSSW_7_4_12/fullData_miniAODv2_15Nov2015_jecV6/"
-productionName="2016_04_12_TTJets_withSqrt"
+productionName="Test"
 
 fileExt="_post.root"
 isCrab=1
@@ -25,7 +25,7 @@ applyJSON=0     #0 for MC
 doSilver=0      #0 for MC
 doFilterTxt=0   #0 for MC
 doAllSF=1       #1 for MC
-doPreProc=1     #0 (only 1 for TTJets or if you want to split MC samples, then run ./doTreeProduction pre first)
+doPreProc=0     #0 (only 1 for TTJets or if you want to split MC samples, then run ./doTreeProduction pre first)
 # ------------------------------------------------------------------------------
 
 
@@ -314,17 +314,19 @@ do
     echo "number of files = " $numFiles
 
 
-    maxNfiles=9000
+    maxNfiles=1000
     counter=-1
+    preProcFile=""
 
-
-    if [[ (( $doPreProc==1 && (( $numFiles -lt $maxNfiles )) ))  || (( $id -lt 10 )) ]]; then
+    if [[ (( $doPreProc -eq 1 && (( $numFiles -gt $maxNfiles )) ))  || (( $id -lt 10 )) ]]; then
 	echo "File will be split into multiple files for speed and memory limit purposes"
 	counter=0;
 	maxNfiles=100;
+	if [[ $id < 10 ]]; then
+	    preProcFile=${name}_pre.cfg;
+	fi;
     fi;
     
-    #counter=5
 
     while (( (( (( $numFiles + 1 )) > (($counter * $maxNfiles)) )) || $(($counter < 0 )) )); do 
 
@@ -392,7 +394,7 @@ do
 
 
 source $VO_CMS_SW_DIR/cmsset_default.sh
-source /mnt/t3nfs01/data01/swshare/glite/external/etc/profile.d/grid-env.sh
+#source /mnt/t3nfs01/data01/swshare/glite/external/etc/profile.d/grid-env.sh
 export SCRAM_ARCH=slc6_amd64_gcc491
 export LD_LIBRARY_PATH=/mnt/t3nfs01/data01/swshare/glite/d-cache/dcap/lib/:$LD_LIBRARY_PATH
 echo "Loading your CMSSW release or CMSSW_7_4_12/"
@@ -407,7 +409,7 @@ gfal-mkdir -p srm://t3se01.psi.ch/$outputFolder
 
 
 echo "postProcessing(\"$name\",\"$inputFolder\",\"$outputFile\",\"$treeName\",$filter,$kfactor,$xsec,$id,\"$crabExt\", \"$inputPU\", \"$PUvar\", $applyJSON);"
-echo "gROOT->LoadMacro(\"postProcessing.C+\"); postProcessing(\"$name\",\"$counterFile\",\"$outputFile\",\"$treeName\",$filter,$kfactor,$xsec,$id,\"$crabExt\",\"$inputPU\",\"$PUvar\",$applyJSON,$doAllSF,$doSilver,\"$name\"); gSystem->Exit(0);" |root.exe -b -l ;
+echo "gROOT->LoadMacro(\"postProcessing.C+\"); postProcessing(\"$name\",\"$counterFile\",\"$outputFile\",\"$treeName\",$filter,$kfactor,$xsec,$id,\"$crabExt\",\"$inputPU\",\"$PUvar\",$applyJSON,$doAllSF,$doSilver,\"$preProcFile\"); gSystem->Exit(0);" |root.exe -b -l ;
 
 
 ### Uncomment for ROOT v5
