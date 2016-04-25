@@ -7,7 +7,7 @@ else
 fi
 
 source $VO_CMS_SW_DIR/cmsset_default.sh
-source /swshare/glite/external/etc/profile.d/grid-env.sh
+#source /swshare/glite/external/etc/profile.d/grid-env.sh
 export SCRAM_ARCH=slc6_amd64_gcc491
 export LD_LIBRARY_PATH=/swshare/glite/d-cache/dcap/lib/:$LD_LIBRARY_PATH
 echo "Loading your CMSSW release or CMSSW_7_4_12/"

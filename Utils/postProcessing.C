@@ -37,7 +37,7 @@ run()
 using namespace std;
 
 int postProcessing(std::string inputString="input",
-		   std::string inputFolder="./",
+		   std::string inputFileList="", //		   std::string inputFolder="./",
 		   std::string outputFile="output.root",
 		   std::string treeName="tree",
 		   float filter=1.0, float kfactor=1.0, float xsec=-1.0, int id=1,
@@ -125,7 +125,7 @@ int postProcessing(std::string inputString,
   double totalSumGenWeightsHisto, topAverageWeight;
  
   if( normFile!="" ){
-    ifstream configuration( Form("%s_pre.cfg", normFile.c_str()) );
+    ifstream configuration( Form("%s", normFile.c_str()) );
     std::string line;
     while(std::getline(configuration,line)){
       istringstream ss(line);
@@ -207,12 +207,12 @@ int postProcessing(std::string inputString,
   if(!f_mu->IsOpen()) { std::cout<<" ERROR: Could not find muon Fastsim scale factor file " <<std::endl; return 0;}
   if(!f_el->IsOpen()) { std::cout<<" ERROR: Could not find electron Fastsim scale factor file " <<std::endl; return 0;}
 
-  TH3D* h_fast_mu = (TH3D*) f_mu->Get("histo3D");
-  TH3D* h_fast_el = (TH3D*) f_el->Get("histo3D");
-  if(!h_fast_mu || !h_fast_el) {std::cout << " ERROR: Could not find the 3D histogram in your files " << std::endl; return 0;}
+  TH3D* h_fast_muSF = (TH3D*) f_mu->Get("histo2D");
+  TH3D* h_fast_elSF = (TH3D*) f_el->Get("histo2D");
+  if(!h_fast_muSF || !h_fast_elSF ) {std::cout << " ERROR: Could not find the 3D histogram in your files " << std::endl; return 0;}
 
-  h_fast_mu->SetDirectory(0);
-  h_fast_el->SetDirectory(0);
+  h_fast_muSF->SetDirectory(0);
+  h_fast_elSF->SetDirectory(0);
 
   f_mu->Close(); f_el->Close();
   delete f_mu; delete f_el;
@@ -220,60 +220,27 @@ int postProcessing(std::string inputString,
 
 
   TChain* chain = new TChain(treeName.c_str());
-  // Add all files in the input folder
-  /*std::string dcap = inputFolder.find("pnfs")!=std::string::npos ? "dcap://t3se01.psi.ch:22125/" : "";
-
-  std::string fullInputString;
-  if(crabExt!="")
-    fullInputString = dcap + inputFolder + "/" + inputString + "/"+ crabExt +"/0000/mt2_*.root";
-  else
-    fullInputString = dcap + inputFolder + "/" + inputString + "/mt2*.root";
-
-  if(looper>=0){
-    std::string lop = Form("%d",looper);
-    if(crabExt!="")
-      fullInputString = dcap + inputFolder + "/" + inputString + "/"+ crabExt +"/0000/mt2_*" + lop + ".root";
-    else
-      fullInputString = dcap + inputFolder + "/" + inputString + "/mt2_*" + lop + ".root";
-  } 
-
-  std::cout << fullInputString << std::endl;
-  */
 
   std::cout << inputFileList << std::endl;
-
   TFileCollection *filelist = new TFileCollection("listOfFiles");
   
   std::cout << "Adding file list... " << std::endl;
-  //filelist->Add(fullInputString.c_str());
   filelist->AddFromFile( inputFileList.c_str() );
   
   std::cout << "Adding files to chain... " << std::endl;  
   int chainReturn = chain->AddFileInfoList((TCollection*) filelist->GetList());
  
-  //  int chainReturn = chain->Add( fullInputString.c_str() );
   if (chainReturn < 1) {
     std::cout << "ERROR: input folder/fileName is not well defined. Exit!" << std::endl;
     std::cout << "InputFileList: " << inputFileList << std::endl;
-    //    std::cout << "fullInputString: " << fullInputString << std::endl;
     return 1;
   }
   
-  //std::string inputPU_ = inputPU.find("pnfs")!=std::string::npos ? "dcap://t3se01.psi.ch:22125/" + inputPU : "" + inputPU;
 
-  //TChain* chain_pu = new TChain(treeName.c_str());
-  //chain_pu->Add(inputPU_.c_str());
-  
   TFile * f_puData = new TFile( inputPU.c_str() );
-  //  TFile * f_puData = new TFile("MyDataPileupHistogram.root");
   if (!f_puData->IsOpen()) { std::cout<<"ERROR: Could not find data pile up histogram"<<std::endl; return 0;}
   TH2D* hPU_data = (TH2D*) f_puData->Get("pileup");
 
-  // TH1D* hPU_data = new TH1D("hPU_data", "", 100, 0, 100);
-  //read in histo
-  // hPU_data->Sumw2();
-  //  chain_pu->Project("hPU_data", "nVert", "(HLT_PFHT800 || HLT_ht475prescale)");
-  
   ULong64_t nData = hPU_data->Integral();
   hPU_data->Scale(1.0/nData);
 
@@ -524,7 +491,9 @@ int postProcessing(std::string inputString,
 	 << "#events histo: "  << nEventsHisto << std::endl
 	 << "#events tree: "  << nEventsTree << std::endl;
     
-
+  bool isFastSim=0;
+  if( id>=1000 && id<=2000)
+    isFastSim=1;
 
 
   TBranch* b1 = clone->Branch("evt_scale1fb", &scale1fb, "evt_scale1fb/F");
@@ -618,8 +587,8 @@ int postProcessing(std::string inputString,
 	double pt_hard = s.Pt();
 	if( pt_hard < 0. || pt_hard > 99999 )         continue;
 	else if( pt_hard < 400. )  weight_isr_av = 1.0;
-	else if( pt_hard < 600. )  weight_isr_av = 1.15;
-	else if( pt_hard >= 600. ) weight_isr_av = 1.30;
+	else if( pt_hard < 600. )  weight_isr_av = 1.0-0.15;
+	else if( pt_hard >= 600. ) weight_isr_av = 1.0-0.30;
       }
 
       h_isr->Fill((float)GenSusyMGluino , (float)GenSusyMNeutralino,  weight_isr_av);
@@ -698,6 +667,9 @@ int postProcessing(std::string inputString,
   if(normFile!="")
     average = topAverageWeight;
 
+
+
+
   std::cout << "Entering the final loop over the events" << std::endl;
 
   for( Long64_t i = 0; i < (Long64_t)nEventsTree; i++) {
@@ -759,8 +731,8 @@ int postProcessing(std::string inputString,
 	float pt_hard = s.Pt();
 	if( pt_hard < 0. )         continue;
 	else if( pt_hard < 400. )  weight_isr = 1.0;
-	else if( pt_hard < 600. )  weight_isr = 1.15;
-	else if( pt_hard >= 600. ) weight_isr = 1.30;
+	else if( pt_hard < 600. )  weight_isr = 1.0-0.15;
+	else if( pt_hard >= 600. ) weight_isr = 1.0-0.30;
 
 	Int_t binx = h_isr->GetXaxis()->FindBin( (float)GenSusyMGluino );
 	Int_t biny = h_isr->GetYaxis()->FindBin( (float)GenSusyMNeutralino );
@@ -813,13 +785,17 @@ int postProcessing(std::string inputString,
 
 
       /////////Add b-tagging scale factor//////////     
-      get_weight_btag(njet, jet_pt, jet_eta, jet_mcFlavour, jet_btagCSV, weight_btagsf, weight_btagsf_heavy_UP, weight_btagsf_heavy_DN, weight_btagsf_light_UP, weight_btagsf_light_DN);
+      get_weight_btag(njet, jet_pt, jet_eta, jet_mcFlavour, jet_btagCSV, weight_btagsf, weight_btagsf_heavy_UP, weight_btagsf_heavy_DN, weight_btagsf_light_UP, weight_btagsf_light_DN, isFastSim);
 
       /////////Add lepton scale factor//////////
       if(nlep>0){
 	Float_t uncert = 0; //Place holder for total uncertainty
 	Float_t central = 1; 
 	Float_t err = 0;
+
+	Float_t fast_central = 1; 
+	Float_t fast_err = 0;
+
 
 	for(int o=0; o<nlep; ++o){
 	  //Electrons
@@ -830,6 +806,20 @@ int postProcessing(std::string inputString,
 	    err  = h_elSF->GetBinError(binx,biny);
 	    if (central > 1.2 || central < 0.8) 
 	      std::cout<<"STRANGE: Electron with pT/eta of "<<lep_pt[o]<<"/"<<lep_eta[o]<<". SF is "<< central <<std::endl;
+
+	    if( id>999 ){//FASTSIM SCALEFACTORS
+	    Int_t fast_binx = h_fast_elSF->GetXaxis()->FindBin(lep_pt[o]);
+	    Int_t fast_biny = h_fast_elSF->GetYaxis()->FindBin(fabs(lep_eta[o]));
+	    fast_central = h_fast_elSF->GetBinContent(fast_binx,fast_biny);
+	    fast_err  = h_fast_elSF->GetBinError(fast_binx,fast_biny);
+	    fast_err= sqrt(fast_err*fast_err+ 0.05*0.05); // 5% systematic uncertainty
+
+	    if( fast_central > 1.2 || fast_central < 0.8 )
+	      std::cout << "Strange FastSim Electron with pT/eta of" <<lep_pt[o]<<"/"<<lep_eta[o]<<". SF is "<< fast_central <<std::endl;
+	    central *= fast_central;
+	    err = sqrt( fast_err*fast_err + err*err );
+	    }
+
 	  } //else Muons
 	  else if (abs( lep_pdgId[o]) == 13) {
 	    Int_t binx = h_muSF->GetXaxis()->FindBin(lep_pt[o]);
@@ -837,8 +827,25 @@ int postProcessing(std::string inputString,
 	    if ( binx >7 ) binx = 7; //overflow bin empty for the muons...
 	    central = h_muSF->GetBinContent(binx,biny);
 	    err  = 0.014; // adding in quadrature 1% unc. on ID and 1% unc. on ISO
-	    if (central > 1.2 || central < 0.8) 
+	    if (central > 1.3 || central < 0.7) 
 	      std::cout<<"STRANGE: Muon with pT/eta of "<<lep_pt[o]<<"/"<< fabs(lep_eta[o]) <<". SF is "<< central <<std::endl;
+	  
+	    if( id>999 ){ //FASTSIM SCALE FACTORS
+	    Int_t fast_binx = h_fast_muSF->GetXaxis()->FindBin(lep_pt[o]);
+	    Int_t fast_biny = h_fast_muSF->GetYaxis()->FindBin(fabs(lep_eta[o]));
+	    fast_central = h_fast_muSF->GetBinContent(fast_binx,fast_biny);
+	    fast_err  = h_fast_muSF->GetBinError(fast_binx,fast_biny);
+	    if(lep_pt[0]>20)
+	      fast_err= sqrt(fast_err*fast_err+ 0.03*0.03); // 5% systematic uncertainty
+	    else
+	      fast_err= sqrt(fast_err*fast_err+ 0.01*0.01); // 5% systematic uncertainty
+
+	    if( fast_central > 1.3 || fast_central < 0.7 )
+	      std::cout << "Strange FastSim Muon with pT/eta of" <<lep_pt[o]<<"/"<<lep_eta[o]<<". SF is "<< fast_central <<std::endl;
+
+	    central *= fast_central;
+	    err = sqrt( fast_err*fast_err+ err*err );
+	    }
 	  } 
 	  weight_lepsf *= central;
 	  //uncertainties are supposed to be summed up linearly for the lepton SF

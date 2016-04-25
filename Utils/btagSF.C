@@ -48,7 +48,20 @@ TH2D* h_btag_eff_c    = (TH2D*) f_btag_eff->Get("h2_BTaggingEff_csv_med_Eff_c"  
 TH2D* h_btag_eff_udsg = (TH2D*) f_btag_eff->Get("h2_BTaggingEff_csv_med_Eff_udsg");
 
 
-void get_SF_btag(float pt, float eta, int mcFlavour, float &SF, float &SFup, float &SFdown){
+BTagCalibration *calib_fast = new BTagCalibration("csvv2", "/shome/mschoene/btagSF/CSV_13TEV_Combined_20_11_2015.csv"); // 25 ns official version of SFs
+BTagCalibrationReader *reader_fast    = new BTagCalibrationReader(calib_fast, BTagEntry::OP_MEDIUM, "fastsim", "central");  // central
+BTagCalibrationReader *reader_fast_UP = new BTagCalibrationReader(calib_fast, BTagEntry::OP_MEDIUM, "fastsim", "up");       // sys up
+BTagCalibrationReader *reader_fast_DN = new BTagCalibrationReader(calib_fast, BTagEntry::OP_MEDIUM, "fastsim", "down");     // sys down
+
+TFile *f_btag_fast_eff = new TFile("/shome/mschoene/btagSF/btageff__SMS-T1bbbb-T1qqqq_fastsim.root"); // Dominick's fast sim b-tagging efficiencies
+TH2D* h_btag_fast_eff_b    = (TH2D*) f_btag_fast_eff->Get("h2_BTaggingEff_csv_med_Eff_b"   );
+TH2D* h_btag_fast_eff_c    = (TH2D*) f_btag_fast_eff->Get("h2_BTaggingEff_csv_med_Eff_c"   );
+TH2D* h_btag_fast_eff_udsg = (TH2D*) f_btag_fast_eff->Get("h2_BTaggingEff_csv_med_Eff_udsg");
+
+
+
+
+void get_SF_btag(float pt, float eta, int mcFlavour, float &SF, float &SFup, float &SFdown, bool isFastSim){
 
   BTagEntry::JetFlavor flavour = BTagEntry::FLAV_UDSG;
   if      ( abs(mcFlavour)==5 ) flavour = BTagEntry::FLAV_B;
@@ -68,11 +81,23 @@ void get_SF_btag(float pt, float eta, int mcFlavour, float &SF, float &SFup, flo
     SFdown = reader_heavy_DN->eval(flavour,eta_cutoff, pt_cutoff);
   }
 
+  if( isFastSim ){
+    SF     *= reader_fast   ->eval(flavour,eta_cutoff, pt_cutoff);
+    SFup   *= reader_fast_UP->eval(flavour,eta_cutoff, pt_cutoff);
+    SFdown *= reader_fast_DN->eval(flavour,eta_cutoff, pt_cutoff);
+  }
+
 }
 
-float getBtagEffFromFile(float pt, float eta, int mcFlavour){
+
+float getBtagEffFromFile(float pt, float eta, int mcFlavour, bool isFastSim){
   if(!h_btag_eff_b || !h_btag_eff_c || !h_btag_eff_udsg) {
     std::cout << "ERROR: missing input hists" << std::endl;
+    return 1.;
+  }
+
+  if( isFastSim && (!h_btag_eff_b || !h_btag_eff_c || !h_btag_eff_udsg) ) {
+    std::cout << "ERROR: missing fastsim input hists" << std::endl;
     return 1.;
   }
   
@@ -80,15 +105,15 @@ float getBtagEffFromFile(float pt, float eta, int mcFlavour){
   float pt_cutoff = std::max(20.,std::min(399.,double(pt)));
   TH2D* h(0);
   if (abs(mcFlavour) == 5) {
-    h = h_btag_eff_b;
+    h = isFastSim ? h_btag_fast_eff_b : h_btag_eff_b; 
     // use pt bins up to 600 GeV for b
     pt_cutoff = std::max(20.,std::min(599.,double(pt)));
   }
   else if (abs(mcFlavour) == 4) {
-    h = h_btag_eff_c;
+    h = isFastSim ? h_btag_fast_eff_c : h_btag_eff_c;
   }
   else {
-    h = h_btag_eff_udsg;
+    h = isFastSim ? h_btag_fast_eff_udsg : h_btag_eff_udsg;
   }
   
   int binx = h->GetXaxis()->FindBin(pt_cutoff);
@@ -96,7 +121,9 @@ float getBtagEffFromFile(float pt, float eta, int mcFlavour){
   return h->GetBinContent(binx,biny);
 }
 
-void get_weight_btag(int nobj, float* obj_pt, float* obj_eta, int* obj_mcFlavour, float* obj_btagCSV, float &wtbtag, float &wtbtagUp_heavy, float &wtbtagDown_heavy, float &wtbtagUp_light, float &wtbtagDown_light){
+
+
+void get_weight_btag(int nobj, float* obj_pt, float* obj_eta, int* obj_mcFlavour, float* obj_btagCSV, float &wtbtag, float &wtbtagUp_heavy, float &wtbtagDown_heavy, float &wtbtagUp_light, float &wtbtagDown_light, bool isFastSim){
 
   float mcTag = 1.;
   float mcNoTag = 1.;
@@ -121,7 +148,7 @@ void get_weight_btag(int nobj, float* obj_pt, float* obj_eta, int* obj_mcFlavour
 
     
     // get efficiency
-    float eff = getBtagEffFromFile(pt, eta, mcFlavour);
+    float eff = getBtagEffFromFile(pt, eta, mcFlavour, isFastSim);
 
 
     bool istag = csv > 0.890 && eta < 2.5 && pt>20;
@@ -130,8 +157,8 @@ void get_weight_btag(int nobj, float* obj_pt, float* obj_eta, int* obj_mcFlavour
     float SFdown = 0.;
 
     // get SF
-    get_SF_btag(pt, eta, mcFlavour, SF, SFup, SFdown);
- 
+    get_SF_btag(pt, eta, mcFlavour, SF, SFup, SFdown, isFastSim);
+
     if(istag){
       mcTag   *= eff;
       dataTag *= eff*SF;
@@ -176,7 +203,8 @@ int btagSF(string inputString,
 	   string inputFolder,
 	   string outputFile,
 	   string treeName,
-	   string objectName)
+	   string objectName,
+	   bool   isFastSim)
 {
   //Add all files in the input folder 
   string dcap = inputFolder.find("pnfs")!=std::string::npos ? "dcap://t3se01.psi.ch:22125/" : "";
@@ -242,7 +270,7 @@ int btagSF(string inputString,
     if( objectName != "jet" || isData == 1 ) ;
     else{
       
-      get_weight_btag(nobj, obj_pt, obj_eta, obj_mcFlavour, obj_btagCSV, weight_btagsf, weight_btagsf_heavy_UP, weight_btagsf_heavy_DN, weight_btagsf_light_UP, weight_btagsf_light_DN);
+      get_weight_btag(nobj, obj_pt, obj_eta, obj_mcFlavour, obj_btagCSV, weight_btagsf, weight_btagsf_heavy_UP, weight_btagsf_heavy_DN, weight_btagsf_light_UP, weight_btagsf_light_DN , isFastSim );
       
     }
 
