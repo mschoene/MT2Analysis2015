@@ -322,7 +322,7 @@ do
 	echo "File will be split into multiple files for speed and memory limit purposes"
 	counter=0;
 	maxNfiles=100;
-	if [[ $id < 10 ]]; then
+	if [[ $id > 10 ]]; then
 	    preProcFile=${name}_pre.cfg;
 	fi;
     fi;
