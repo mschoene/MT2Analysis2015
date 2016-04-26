@@ -183,7 +183,7 @@ int main( int argc, char* argv[] ) {
 
     if (toSE) {
       std::string inputdir = outputdir;
-      outputdir =  "/pnfs/psi.ch/cms/trivcat/store/user/" + user + "/25apr_gaus/" + cfg.getEventYieldDir() + "/" + rebTreeOutput.Data(); 
+      outputdir =  "/pnfs/psi.ch/cms/trivcat/store/user/" + user + "/analysisRS/" + cfg.getEventYieldDir() + "/" + rebTreeOutput.Data(); 
       system(Form("gfal-mkdir -p srm://t3se01.psi.ch%s", outputdir.c_str()));
       system(Form("gfal-copy -p file://%s%s srm://t3se01.psi.ch%s%s", inputdir.c_str(), mcFile.Data(), outputdir.c_str(), mcFile.Data()));
       std::cout << "output file copied to " << Form("srm://t3se01.psi.ch%s%s", outputdir.c_str(), mcFile.Data()) << std::endl;

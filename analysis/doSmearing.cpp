@@ -152,7 +152,7 @@ int main( int argc, char* argv[] ) {
   smearTreeOutput += smearGen      ? "_smearGen"    : "";
   smearTreeOutput += "/";
   
-  std::string inputdir = fromSE ? "dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/"+user+"/25apr_gaus/" : "";
+  std::string inputdir = fromSE ? "dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/"+user+"/analysisRS/" : "";
     inputdir  += cfg.getEventYieldDir() + "/rebalancedTrees/"; 
   std::string outputdir =  toSE ? "/scratch/" + user + "/" : "";
   outputdir += cfg.getEventYieldDir() + "/" + smearTreeOutput.Data();
@@ -189,7 +189,7 @@ int main( int argc, char* argv[] ) {
 
     if (toSE) {
       inputdir = outputdir;
-      outputdir =  "/pnfs/psi.ch/cms/trivcat/store/user/" + user + "/25apr_gaus/" + cfg.getEventYieldDir() + "/" + smearTreeOutput.Data(); 
+      outputdir =  "/pnfs/psi.ch/cms/trivcat/store/user/" + user + "/analysisRS/" + cfg.getEventYieldDir() + "/" + smearTreeOutput.Data(); 
       system(Form("gfal-mkdir -p srm://t3se01.psi.ch%s", outputdir.c_str()));
       system(Form("gfal-copy -p file://%s%s srm://t3se01.psi.ch%s%s", inputdir.c_str(), mcFile.Data(), outputdir.c_str(), mcFile.Data()));
       std::cout << "output file copied to " << Form("srm://t3se01.psi.ch%s%s", outputdir.c_str(), mcFile.Data()) << std::endl;
