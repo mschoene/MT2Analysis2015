@@ -534,17 +534,24 @@ void MT2EstimateTree::getShit( TFile* file, const std::string& path ) {
 
   tree = (TTree*)file->Get(Form("%s/%s", path.c_str(), tree->GetName()));
 
-  this->initTree();
+  //this->initTree();
 
 }
 
 
 
 void MT2EstimateTree::write() const {
+  TDirectory* dir = TDirectory::CurrentDirectory();
+  if (tree->GetDirectory()){
+    tree->GetDirectory()->cd();
+    tree->AutoSave();
+  }
+  else
+    tree->Write();
 
   MT2Estimate::write();
-  tree->AutoSave();
 
+  dir->cd();
 }
 
 

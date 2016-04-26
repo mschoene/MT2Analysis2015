@@ -13,11 +13,12 @@ MC=$2
 SID=$3
 JOB=$4
 NJOB=$5
-ISBATCH=$6
+TOSE=$6
+FROMSE=$7
 
 source $VO_CMS_SW_DIR/cmsset_default.sh
 cd $WDIR
 eval `scramv1 runtime -sh`
 #cmsenv
 
-./doSmearing $CFG $MC $SID $JOB $NJOB $ISBATCH
+./doSmearing $CFG $MC $SID $JOB $NJOB $TOSE $FROMSE
