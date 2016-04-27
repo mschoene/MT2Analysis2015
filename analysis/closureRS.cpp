@@ -5,6 +5,14 @@
 #include "TChain.h"
 #include "TLegend.h"
 
+//options from rebalancing and smearing
+bool smearPUjets   = false; // smear also PU jets? (Jason didn't)
+bool smearSoft     = false; // jason's choice is not to smear soft pt
+bool smearGen      = true; // smear genjets instead of rebalanced reco jets
+bool rebOnlyGaus   = true; // take rebalancing that uses only gauss of response templates, otherwise doubleCB
+bool smearOnlyGaus = true; // take smearing that uses only gauss of response templates, otherwise doubleCB
+
+
 void setBranches(TChain *c, std::vector<std::string> vars, std::map<std::string, float> &fvars, int &njets, int &nbjets);
 void setHistos  (std::vector<std::string> vars, std::map<std::string, TH1F*> &hvars, std::string str="");
 void fillHistos (float w, std::vector<std::string> vars, std::map< std::string, float > fVars, std::map< std::string, TH1F* > &hVars, std::string prefix);
@@ -73,9 +81,15 @@ int main( int argc, char* argv[] ) {
 
   int nSmearings = 100;
 
-  bool smearGen = false;
+  TString extension = "";
+  extension += rebOnlyGaus   ? "_rebGaus"     : "_rebDCB";
+  extension += smearOnlyGaus ? "_smearGaus"   : "_smearDCB";
+  extension += smearPUjets   ? "_smearPU"     : "";
+  extension += smearSoft     ? "_smearSoft"   : "";
+  extension += smearGen      ? "_smearGen"    : "";
+  extension += "/";
 
-  TString dcapPath = "dcap://t3se01.psi.ch:22125/pnfs/psi.ch/cms/trivcat/store/user/casal/20apr" + std::string(smearGen ? "_gen/" : "/") + cfg.getEventYieldDir() + "/smearedTrees/";
+  TString dcapPath = "dcap://t3se01.psi.ch:22125/pnfs/psi.ch/cms/trivcat/store/user/casal/analysisRS/" + cfg.getEventYieldDir() + "/smearedTrees" + extension.Data();
   TString treename = "qcdSmearedTree/HT0toInf_j1toInf_b0toInf/tree_qcdSmearedTree_HT0toInf_j1toInf_b0toInf";
 
   std::vector<std::string> vars = {"ht", "met", "mht", "mt2", "nJets", "nBJets", "jet1_pt", "jet2_pt", "deltaPhiMin", "diffMetMht"};
@@ -172,7 +186,7 @@ int main( int argc, char* argv[] ) {
   // drawHistos(vars, hVars_hHT,"_hHT");
   // drawHistos(vars, hVars_lHT,"_lHT");
 
-  TString outputdir =  cfg.getEventYieldDir() + "/closureRS" + (smearGen ? "_gen/" : "/"); 
+  TString outputdir =  cfg.getEventYieldDir() + "/closureRS" + extension.Data();
   system(Form("mkdir -p %s", outputdir.Data()));
   TFile *outFile = new TFile(outputdir+TString::Format("histos_id%d_job%dof%d.root", sampleID, ijob, Njobs),"RECREATE");
 
@@ -234,21 +248,6 @@ void fillHistos(float w, std::vector<std::string> vars, std::map< std::string, f
   }
   
 }
-
-// void drawHistos(std::vector<std::string> vars, std::map< std::string, TH1F* > hVars){
-  
-
-//   TCanvas *c = new TCanvas("c", "", 600, 600);
-//   c->SetLogy();
-//   for (unsigned int v=0; v<vars.size();v++){
-//     std::string var = vars.at(v);
-//     hVars["before_"+var]->Draw();
-//     hVars[          var]->Draw("same");
-//     c->SaveAs(("smearPlots/" + var + ".pdf").c_str());
-//   }
-  
-// }
-
 
 void drawHistos(std::vector<std::string> vars, std::map< std::string, TH1F* > hVars, std::string str){
   TCanvas* c = new TCanvas( "c1", "", 600, 700 );

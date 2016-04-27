@@ -32,7 +32,7 @@ Double_t jEtaPU[NJ];
 Int_t jPtIndex[NJ], jEtaIndex[NJ];
 Double_t softPxReco, softPyReco;
 
-bool onlyGausCore = true;
+bool onlyGausCore = true; // rebalance using only gauss of response templates, otherwise doubleCB
 
 
 // open file with response functions

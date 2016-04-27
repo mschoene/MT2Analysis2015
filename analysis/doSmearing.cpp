@@ -31,8 +31,8 @@ bool smearSoft   = false; // jason's choice is not to smear soft pt
 
 bool smearGen = false; // smear genjets instead of rebalanced reco jets
 
-bool rebOnlyGaus   = true; // take rebalancing that uses only gauss of response templates
-bool smearOnlyGaus = true; // smear using only gauss of response templates
+bool rebOnlyGaus   = true; // take rebalancing that uses only gauss of response templates, otherwise doubleCB
+bool smearOnlyGaus = true; // smear using only gauss of response templates, otherwise doubleCB
 
 bool recoSoft = true; // use recoSoftPt (jason's choice) or rebalanced softPt
 
@@ -144,7 +144,7 @@ int main( int argc, char* argv[] ) {
 
   //TString rebTreeOutput = "rebalancedTrees";
   //rebTreeOutput += rebOnlyGausCore ? "_gaus/" : "_dCB/";
-  TString smearTreeOutput = "smearededTrees";
+  TString smearTreeOutput = "smearedTrees";
   smearTreeOutput += rebOnlyGaus   ? "_rebGaus"     : "_rebDCB";
   smearTreeOutput += smearOnlyGaus ? "_smearGaus"   : "_smearDCB";
   smearTreeOutput += smearPUjets   ? "_smearPU"     : "";
