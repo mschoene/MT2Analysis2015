@@ -163,6 +163,9 @@ makePromptTemplateData: makePromptTemplateData.cpp MT2Region.o MT2Sample.o MT2Es
 drawFirstData: drawFirstData.cpp MT2Region.o MT2Estimate.o MT2DrawTools.o MT2EstimateTree.o
 	$(CC) -Wall $(INCLUDES) -o drawFirstData drawFirstData.cpp MT2Region.o MT2Estimate.o MT2DrawTools.o MT2EstimateTree.o  $(ROOTFLAG) $(EXTRALIBS)
 
+drawJetResponseTemplates: drawJetResponseTemplates.cpp MT2Region.o MT2Estimate.o MT2DrawTools.o MT2EstimateTree.o
+	$(CC) -Wall $(INCLUDES) -o drawJetResponseTemplates drawJetResponseTemplates.cpp MT2Region.o MT2Estimate.o MT2DrawTools.o MT2EstimateTree.o  $(ROOTFLAG) $(EXTRALIBS)
+
 drawDataMC: drawDataMC.cpp MT2Region.o MT2Estimate.o MT2DrawTools.o MT2EstimateTree.o MT2Config.o
 	$(CC) -Wall $(INCLUDES) -o drawDataMC drawDataMC.cpp MT2Region.o MT2Estimate.o MT2DrawTools.o MT2EstimateTree.o MT2Config.o  $(ROOTFLAG) $(EXTRALIBS)
 
