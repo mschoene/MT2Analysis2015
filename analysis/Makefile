@@ -22,6 +22,9 @@ binIsoAlongAxes: binIsoAlongAxes.cpp MT2Region.o MT2Sample.o MT2EstimateZinvGamm
 makePurityAlongAxes: makePurityAlongAxes.cpp MT2Region.o MT2Sample.o MT2EstimateZinvGamma.o MT2EstimateSyst.o MT2Estimate.o MT2DrawTools.o MT2Config.o MT2EstimateTree.o
 	$(CC) -Wall $(INCLUDES) -o makePurityAlongAxes makePurityAlongAxes.cpp MT2Region.o MT2Sample.o MT2EstimateSyst.o MT2Estimate.o MT2DrawTools.o MT2Config.o MT2EstimateTree.o MT2EstimateZinvGamma.o $(ROOTFLAG) $(EXTRALIBS) -fpermissive
 
+makeJetResponseTemplates: makeJetResponseTemplates.cpp 
+	$(CC) -Wall $(INCLUDES) -o makeJetResponseTemplates makeJetResponseTemplates.cpp $(ROOTFLAG) $(EXTRALIBS) -fpermissive
+
 
 computeZGratio: computeZGratio.cpp MT2Region.o MT2Sample.o MT2EstimateSyst.o MT2Estimate.o MT2DrawTools.o MT2Config.o MT2EstimateTree.o
 	$(CC) -Wall $(INCLUDES) -o computeZGratio computeZGratio.cpp MT2Region.o MT2Sample.o MT2EstimateSyst.o MT2Estimate.o MT2DrawTools.o MT2Config.o MT2EstimateTree.o $(ROOTFLAG) $(EXTRALIBS) -fpermissive
