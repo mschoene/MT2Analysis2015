@@ -8,9 +8,12 @@
 //options from rebalancing and smearing
 bool smearPUjets   = false; // smear also PU jets? (Jason didn't)
 bool smearSoft     = false; // jason's choice is not to smear soft pt
-bool smearGen      = true; // smear genjets instead of rebalanced reco jets
+bool smearGen      = false; // smear genjets instead of rebalanced reco jets
 bool rebOnlyGaus   = true; // take rebalancing that uses only gauss of response templates, otherwise doubleCB
+bool smearFromHist = true; // smear using histos of response templates, if true takes precedence over option below
 bool smearOnlyGaus = true; // take smearing that uses only gauss of response templates, otherwise doubleCB
+bool doubleBinCoarseness = false; // test to see effect of doubling the coarseness of the template binning
+bool usePandolfis = true; // use Francesco's templates
 
 
 void setBranches(TChain *c, std::vector<std::string> vars, std::map<std::string, float> &fvars, int &njets, int &nbjets);
@@ -38,7 +41,7 @@ int main( int argc, char* argv[] ) {
   std::cout << std::endl << std::endl;
 
   if( argc<2 ) {
-    std::cout << "USAGE: ./closureRS configFileName [data/MC/all] [sampleID] [job_i] [Njobs]" << std::endl
+    std::cout << "USAGE: ./closureRS configFileName [data/MC/all] [sampleID] [job_i] [Njobs] [label]" << std::endl
 	      << "Exiting." << std::endl;
     exit(11);
   }
@@ -51,6 +54,7 @@ int main( int argc, char* argv[] ) {
   bool onlyData = false;
   bool onlyMC   = false;
   int ijob=0, Njobs=1;
+  std::string label = "analysisRS";
   if( argc > 2 ) {
     std::string dataMC(argv[2]);
     if( dataMC=="data" ) onlyData = true;
@@ -77,22 +81,29 @@ int main( int argc, char* argv[] ) {
     std::cout << "-> Will run job " << ijob << " out of " << Njobs << std::endl;
   }
 
+  if( argc > 6 ) {
+    std::string tmp(argv[6]);
+    label += "_"+tmp;
+  }
+
   MT2DrawTools::setStyle();
 
   int nSmearings = 100;
 
   TString extension = "";
   extension += rebOnlyGaus   ? "_rebGaus"     : "_rebDCB";
-  extension += smearOnlyGaus ? "_smearGaus"   : "_smearDCB";
+  extension += smearFromHist ? "_smearHist"   : (smearOnlyGaus ? "_smearGaus"   : "_smearDCB");
+  extension += usePandolfis  ? "_pandolfTemp" : "";
   extension += smearPUjets   ? "_smearPU"     : "";
   extension += smearSoft     ? "_smearSoft"   : "";
   extension += smearGen      ? "_smearGen"    : "";
+  extension += doubleBinCoarseness ? "_coarserBin" : "";
   extension += "/";
 
-  TString dcapPath = "dcap://t3se01.psi.ch:22125/pnfs/psi.ch/cms/trivcat/store/user/casal/analysisRS/" + cfg.getEventYieldDir() + "/smearedTrees" + extension.Data();
+  TString dcapPath = "dcap://t3se01.psi.ch:22125/pnfs/psi.ch/cms/trivcat/store/user/casal/"+label+"/" + cfg.getEventYieldDir() + "/smearedTrees" + extension.Data();
   TString treename = "qcdSmearedTree/HT0toInf_j1toInf_b0toInf/tree_qcdSmearedTree_HT0toInf_j1toInf_b0toInf";
 
-  std::vector<std::string> vars = {"ht", "met", "mht", "mt2", "nJets", "nBJets", "jet1_pt", "jet2_pt", "deltaPhiMin", "diffMetMht"};
+  std::vector<std::string> vars = {"ht", "met", "mht", "mhtcorr", "mt2", "nJets", "nBJets", "jet1_pt", "jet2_pt", "deltaPhiMin", "diffMetMht"};
   std::map< std::string, float > fVars;
   std::map< std::string, TH1F* > hVars;
   std::map< std::string, TH1F* > hVars_hHT;
@@ -105,18 +116,9 @@ int main( int argc, char* argv[] ) {
 
   TChain *ch = new TChain(treename);
   ch->Add(dcapPath+TString::Format("mc_id%d_job%dof%d.root", sampleID, ijob, Njobs));
-  // for (int sampleID=156; sampleID<=156; sampleID++)
-  //   for (int j=0; j<Njobs; j++){
-  //     int job = j;
-  //     // this is bullshit, be careful
-  //     //if(sampleID==153 && j==10)  job=j-1;
-  //     //if(j==10)  continue;
-  //     if(j==4||j==5||j==14)  continue;
-  //     //ch->Add(dcapPath+TString::Format("mc_id%d_job%dof25.root", sampleID, job));
-  //     ch->Add(dcapPath+TString::Format("mc_id%d_job%dof30.root", sampleID, job));
-  //   }
-  // //ch->Add(dcapPath+TString::Format("mc_id%d_job%dof%d.root", sampleID, j, Njobs));
-  
+
+  ch->GetListOfFiles()->Print();
+
   int njets, nbjets; // the ones w/o "before_" are ints!!
   setBranches(ch,vars,fVars, njets, nbjets);
 
@@ -240,6 +242,8 @@ void fillHistos(float w, std::vector<std::string> vars, std::map< std::string, f
   for (unsigned int v=0; v<vars.size();v++){
     std::string var = vars.at(v);
     if (var=="nJets" || fVars[prefix+"nJets"] >=2){
+      if (var=="mhtcorr" && prefix=="before_")  // mhtcorr not define "before"
+	continue;
       float val = fVars[prefix+var];
       //if(prefix=="before_" && var=="ht") std::cout << val << std::endl;
       if (var=="diffMetMht") val /= fVars[prefix+"met"];

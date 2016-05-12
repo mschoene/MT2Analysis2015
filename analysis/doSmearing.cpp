@@ -32,13 +32,18 @@ bool smearSoft   = false; // jason's choice is not to smear soft pt
 bool smearGen = false; // smear genjets instead of rebalanced reco jets
 
 bool rebOnlyGaus   = true; // take rebalancing that uses only gauss of response templates, otherwise doubleCB
-bool smearOnlyGaus = true; // smear using only gauss of response templates, otherwise doubleCB
+
+bool smearFromHist = true; // smear using histos of response templates, if true takes precedence over option below
+bool smearOnlyGaus = false; // smear using only gauss of response templates, otherwise doubleCB
+
+bool usePandolfis = true; // use Francesco's templates
 
 bool recoSoft = true; // use recoSoftPt (jason's choice) or rebalanced softPt
 
 bool switchOnVectors = false;
 bool switchOnVars    = true;
 
+bool doubleBinCoarseness = false; // test to see effect of doubling the coarseness of the template binning
 
 const Int_t NJ=50;
 Int_t Nj, NPUj;
@@ -52,8 +57,10 @@ Int_t jPtIndex[NJ], jEtaIndex[NJ];
 double PtBinEdges[23] = {0, 20, 30, 50, 80, 120, 170, 230, 300, 380, 470, 570, 680, 800, 1000, 1300, 1700, 2200, 2800, 3500, 4300, 5200, 6500};
 double EtaBinEdges[12] = {0, 0.3, 0.5, 0.8, 1.1, 1.4, 1.7, 2.3, 2.8, 3.2, 4.1, 5.0};
 //RooWorkspace *w[22][12];
-TF1 *ftemplate[22][12];
-TFile *fTemplates = new TFile("/mnt/t3nfs01/data01/shome/casal/templatesRandS/responseTemplates.root");
+TF1  *ftemplate[22][12];
+TH1F *htemplate[22][12];
+TFile *fTemplates = new TFile(TString::Format("/mnt/t3nfs01/data01/shome/casal/templatesRandS/%s", 
+					      (smearFromHist ? (usePandolfis ? "templates_v0.root" : "QCD_13TeV_MGMLM_Spring15_bestMatching_angles_withNeutrinos.root") : "responseTemplates.root")));
 
 void smear( MT2Analysis<MT2EstimateTree>* inputAnaTree,  MT2Analysis<MT2EstimateTree>* outputAnaTree );
 void getTemplates();
@@ -61,10 +68,10 @@ void updateIndex(int j, double x);
 Double_t getRandomFromTemplate(int j);
 std::vector<float> smearJets(std::vector<float> before_jet_pt, std::vector<float> jet_puID);
 void smearSoftPt(float &pt, float &phi);
-void recalculateVars(MT2EstimateTree *tree, std::vector<float> smear_jet_pt, float softpt, float softphi, float &jet1_pt, float &jet2_pt, float &ht, float &met, float &mt2, float &dPhiMin, float &diffMetMht, float &mht, int &njets, int &nbjets);
+void recalculateVars(MT2EstimateTree *tree, std::vector<float> smear_jet_pt, float softpt, float softphi, float &jet1_pt, float &jet2_pt, float &ht, float &met, float &mt2, float &dPhiMin, float &diffMetMht, float &mht, float &mhtcorr, int &njets, int &nbjets);
 Float_t calcMT2(std::vector<float> smear_jet_pt, float met, float metphi);
 void getHemispheres(std::vector<float> smear_jet_pt, TLorentzVector *v1, TLorentzVector *v2);
-void fillTree(MT2Analysis<MT2EstimateTree>* outputAnaTree, MT2EstimateTree* inputTree, std::vector<float> smear_jet_pt, float softpt, float softphi, float jet1_pt, float jet2_pt, float ht, float met, float mt2, float dPhiMin, float diffMetMht, float mht, float before_mht, int njets, int nbjets, int iSmear);
+void fillTree(MT2Analysis<MT2EstimateTree>* outputAnaTree, MT2EstimateTree* inputTree, std::vector<float> smear_jet_pt, float softpt, float softphi, float jet1_pt, float jet2_pt, float ht, float met, float mt2, float dPhiMin, float diffMetMht, float mht, float mhtcorr, float before_mht, int njets, int nbjets, int iSmear);
 void addVars(MT2Analysis<MT2EstimateTree>* anaTree, bool smearTree);
 
 
@@ -84,7 +91,7 @@ int main( int argc, char* argv[] ) {
 
 
   if( argc<2 ) {
-    std::cout << "USAGE: ./doSmearing configFileName [data/MC/all] [sampleID] [job_i] [Njobs] [toSE] [fromSE]" << std::endl
+    std::cout << "USAGE: ./doSmearing configFileName [data/MC/all] [sampleID] [job_i] [Njobs] [toSE] [fromSE] [label]" << std::endl
 	      << "if toSE=true output file temporarily written in /scratch and then moved to SE" << std::endl
 	      << "Exiting." << std::endl;
     exit(11);
@@ -98,6 +105,7 @@ int main( int argc, char* argv[] ) {
   bool onlyData = false;
   bool onlyMC   = false;
   bool toSE  = false;
+  std::string label = "analysisRS";
   bool fromSE  = false;
   if( argc > 2 ) {
     std::string dataMC(argv[2]);
@@ -131,8 +139,13 @@ int main( int argc, char* argv[] ) {
   }
 
   if( argc > 7 ) {
-    std::string se(argv[6]);
+    std::string se(argv[7]);
     if( se=="true" || se=="True" ) fromSE = true;
+  }
+
+  if( argc > 8 ) {
+    std::string tmp(argv[8]);
+    label += "_"+tmp;
   }
 
   if(toSE) std::cout << "-> Output will be writen in SE" << std::endl;
@@ -142,18 +155,20 @@ int main( int argc, char* argv[] ) {
 
   std::string user (getenv("USER"));
 
-  //TString rebTreeOutput = "rebalancedTrees";
-  //rebTreeOutput += rebOnlyGausCore ? "_gaus/" : "_dCB/";
+  TString rebTreeOutput = "/rebalancedTrees";
+  rebTreeOutput += rebOnlyGaus ? "_gaus/" : "_dCB/";
   TString smearTreeOutput = "smearedTrees";
   smearTreeOutput += rebOnlyGaus   ? "_rebGaus"     : "_rebDCB";
-  smearTreeOutput += smearOnlyGaus ? "_smearGaus"   : "_smearDCB";
+  smearTreeOutput += smearFromHist ? "_smearHist"   : (smearOnlyGaus ? "_smearGaus"   : "_smearDCB");
+  smearTreeOutput += usePandolfis  ? "_pandolfTemp" : "";
   smearTreeOutput += smearPUjets   ? "_smearPU"     : "";
   smearTreeOutput += smearSoft     ? "_smearSoft"   : "";
   smearTreeOutput += smearGen      ? "_smearGen"    : "";
+  smearTreeOutput += doubleBinCoarseness ? "_coarserBin" : "";
   smearTreeOutput += "/";
   
-  std::string inputdir = fromSE ? "dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/"+user+"/analysisRS/" : "";
-    inputdir  += cfg.getEventYieldDir() + "/rebalancedTrees/"; 
+  std::string inputdir = fromSE ? "dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/"+user+"/"+label+"/" : "";
+  inputdir  += cfg.getEventYieldDir() + rebTreeOutput.Data();
   std::string outputdir =  toSE ? "/scratch/" + user + "/" : "";
   outputdir += cfg.getEventYieldDir() + "/" + smearTreeOutput.Data();
   system(Form("mkdir -p %s", outputdir.c_str()));
@@ -189,7 +204,7 @@ int main( int argc, char* argv[] ) {
 
     if (toSE) {
       inputdir = outputdir;
-      outputdir =  "/pnfs/psi.ch/cms/trivcat/store/user/" + user + "/analysisRS/" + cfg.getEventYieldDir() + "/" + smearTreeOutput.Data(); 
+      outputdir =  "/pnfs/psi.ch/cms/trivcat/store/user/" + user + "/"+label+"/" + cfg.getEventYieldDir() + "/" + smearTreeOutput.Data(); 
       system(Form("gfal-mkdir -p srm://t3se01.psi.ch%s", outputdir.c_str()));
       system(Form("gfal-copy -p file://%s%s srm://t3se01.psi.ch%s%s", inputdir.c_str(), mcFile.Data(), outputdir.c_str(), mcFile.Data()));
       std::cout << "output file copied to " << Form("srm://t3se01.psi.ch%s%s", outputdir.c_str(), mcFile.Data()) << std::endl;
@@ -245,8 +260,16 @@ void smear( MT2Analysis<MT2EstimateTree>* inputAnaTree, MT2Analysis<MT2EstimateT
       std::vector<float> jet_puId       = *(estimateTree->extraVectors["jet_puId"     ]);
       std::vector<float> jet_mass       = *(estimateTree->extraVectors["jet_mass"     ]);
       std::vector<float> reb_jet_pt;
-      if (smearGen)
-	reb_jet_pt = *(estimateTree->extraVectors["mc_jet_pt"    ]);
+      std::vector<float> gen_jet_eta;
+      std::vector<float> gen_jet_phi;
+      std::vector<float> gen_jet_mass;
+      if (smearGen){
+	//reb_jet_pt = *(estimateTree->extraVectors["mc_jet_pt"    ]);
+	reb_jet_pt   = *(estimateTree->extraVectors["gen_jet_pt"    ]);
+	gen_jet_eta  = *(estimateTree->extraVectors["gen_jet_eta"   ]);
+	gen_jet_phi  = *(estimateTree->extraVectors["gen_jet_phi"   ]);
+	gen_jet_mass = *(estimateTree->extraVectors["gen_jet_mass"  ]);
+      }
       else
 	reb_jet_pt = *(estimateTree->extraVectors["reb_jet_pt"   ]);
 
@@ -255,18 +278,25 @@ void smear( MT2Analysis<MT2EstimateTree>* inputAnaTree, MT2Analysis<MT2EstimateT
       //std::cout << iEntry << ": " << HT << ": " << before_jet_pt.size() << ": " << jet_eta.size() << std::endl;
       for (int j=0; j<Nj; j++) {
 	jPtReb  [j] = reb_jet_pt.at(j);
-	jEtaReb [j] = jet_eta   .at(j);
-	jPhiReb [j] = jet_phi   .at(j);
-	jMassReb[j] = jet_mass  .at(j);
+	if (smearGen){
+	  jEtaReb [j] = gen_jet_eta .at(j);
+	  jPhiReb [j] = gen_jet_phi .at(j);
+	  jMassReb[j] = gen_jet_mass.at(j);
+	}
+	else{
+	  jEtaReb [j] = jet_eta .at(j);
+	  jPhiReb [j] = jet_phi .at(j);
+	  jMassReb[j] = jet_mass.at(j);
+	}
 	//std::cout << jPtReb  [j] << "  " << jEtaReb [j] << "  " << jPhiReb [j] << "  " << jMassReb [j] << std::endl;
 	updateIndex(j, 1.0); // 1.0 means this jet acts as genJet
       }
       
       float mhtx=0, mhty=0;
       for (unsigned int j = 0; j<before_jet_pt.size(); j++){
-	if ( (before_jet_pt.at(j)>30 && fabs(jEtaReb[j])<2.5) ){
-	  mhtx -= before_jet_pt.at(j)*TMath::Cos(jPhiReb[j]);
-	  mhty -= before_jet_pt.at(j)*TMath::Sin(jPhiReb[j]);
+	if ( (before_jet_pt.at(j)>30 && fabs(jet_eta.at(j))<2.5) ){
+	  mhtx -= before_jet_pt.at(j)*TMath::Cos(jet_phi.at(j));
+	  mhty -= before_jet_pt.at(j)*TMath::Sin(jet_phi.at(j));
 	}
       }
       float before_mht = sqrt(mhtx*mhtx+mhty*mhty);
@@ -290,11 +320,11 @@ void smear( MT2Analysis<MT2EstimateTree>* inputAnaTree, MT2Analysis<MT2EstimateT
 	  smearSoftPt(softPt, softPhi);
 	
 	
-	float j1pt, j2pt, ht, met, mt2, dPhiMin, diffMetMht, mht;
+	float j1pt, j2pt, ht, met, mt2, dPhiMin, diffMetMht, mht, mhtcorr;
 	int njets, nbjets;
-	recalculateVars(estimateTree, smear_jet_pt, softPt, softPhi, j1pt, j2pt,ht, met, mt2, dPhiMin, diffMetMht, mht, njets, nbjets);
+	recalculateVars(estimateTree, smear_jet_pt, softPt, softPhi, j1pt, j2pt,ht, met, mt2, dPhiMin, diffMetMht, mht, mhtcorr, njets, nbjets);
 	
-	fillTree(outputAnaTree,estimateTree, smear_jet_pt, softPt, softPhi, j1pt, j2pt,ht, met, mt2, dPhiMin, diffMetMht, mht, before_mht, njets, nbjets, iSmear+1); 
+	fillTree(outputAnaTree,estimateTree, smear_jet_pt, softPt, softPhi, j1pt, j2pt,ht, met, mt2, dPhiMin, diffMetMht, mht, mhtcorr, before_mht, njets, nbjets, iSmear+1); 
 	
       }
 
@@ -310,22 +340,30 @@ void smear( MT2Analysis<MT2EstimateTree>* inputAnaTree, MT2Analysis<MT2EstimateT
   
   
 void getTemplates(){
+
   for (int pt=0; pt<22; pt++){
     for (int eta=0; eta<12; eta++){
-      TString temp = TString::Format("wsp_h_tot_JetAll_ResponsePt_Pt%d_Eta%d", pt, eta);
-      if ( fTemplates->GetListOfKeys()->Contains(temp) ){
-  	RooWorkspace* w = (RooWorkspace*)fTemplates->Get(temp);
-	if (smearOnlyGaus){
-	  ftemplate[pt][eta] = new TF1(TString::Format("gaus_Pt%d_Eta%d", pt, eta),"gaus(0)",0.,10.);
-	  ftemplate[pt][eta]->SetParameter(0, 1.0);  // "arbitrary" normalization
-	  ftemplate[pt][eta]->SetParameter(1, w->var("mean" )->getVal());
-	  ftemplate[pt][eta]->SetParameter(2, w->var("sigma")->getVal());
+      if(smearFromHist){
+	TString histname = TString::Format("h_tot_JetAll_ResponsePt_Pt%d_Eta%d", pt, eta);
+	htemplate[pt][eta] = (TH1F*)fTemplates->Get(histname);
+      }
+      else{
+	TString temp = TString::Format("wsp_h_tot_JetAll_ResponsePt_Pt%d_Eta%d", pt, eta);
+	if ( fTemplates->GetListOfKeys()->Contains(temp) ){
+	  RooWorkspace* w = (RooWorkspace*)fTemplates->Get(temp);
+	  if (smearOnlyGaus){
+	    ftemplate[pt][eta] = new TF1(TString::Format("gaus_Pt%d_Eta%d", pt, eta),"gaus(0)",0.,10.);
+	    ftemplate[pt][eta]->SetParameter(0, 1.0);  // "arbitrary" normalization
+	    ftemplate[pt][eta]->SetParameter(1, w->var("mean" )->getVal());
+	    ftemplate[pt][eta]->SetParameter(2, w->var("sigma")->getVal());
+	  }
+	  else  // take full double crystal ball
+	    ftemplate[pt][eta] = (TF1*)w->pdf("cb")->asTF( RooArgList(*(w->var("x"))), RooArgList(*(w->var("mean")),*(w->var("sigma")),*(w->var("a")),*(w->var("n")),*(w->var("aDx")),*(w->var("nDx")))); // "arbitrary" normalization
 	}
-	else  // take full double crystal ball
-	  ftemplate[pt][eta] = (TF1*)w->pdf("cb")->asTF( RooArgList(*(w->var("x"))), RooArgList(*(w->var("mean")),*(w->var("sigma")),*(w->var("a")),*(w->var("n")),*(w->var("aDx")),*(w->var("nDx")))); // "arbitrary" normalization
       }
     }
   }
+
 }
  
 void updateIndex(int j, double x){
@@ -373,19 +411,28 @@ void updateIndex(int j, double x){
 	break;
     }
   }
+
+  if (doubleBinCoarseness){ // for odd bins take previous even bin
+    if (p%2==1) p--;
+    if (e%2==1) e--;
+  }
+
   jPtIndex [j]=p;
   jEtaIndex[j]=e;
 }
 
 Double_t getRandomFromTemplate(int j){
-  return ftemplate[jPtIndex[j]][jEtaIndex[j]]->GetRandom();
+  if (smearFromHist)
+    return htemplate[jPtIndex[j]][jEtaIndex[j]]->GetRandom();    
+  else
+    return ftemplate[jPtIndex[j]][jEtaIndex[j]]->GetRandom();
 }
 
 std::vector<float> smearJets(std::vector<float> before_jet_pt, std::vector<float> jet_puId){
   std::vector<float> smearedJets_pt;
   // if smearPUjets, use response template assuming their reco pt is the true pt
   for (int j=0; j<Nj; j++){
-    if ( smearPUjets || before_jet_pt.at(j)>100 || jet_puId.at(j)==1 )
+    if ( smearGen || (smearPUjets || before_jet_pt.at(j)>100 || jet_puId.at(j)==1) )
       smearedJets_pt.push_back(jPtReb[j]*getRandomFromTemplate(j));
     else
       smearedJets_pt.push_back(jPtReb[j]);
@@ -402,7 +449,7 @@ void smearSoftPt(float &pt, float &phi){
 }
 
 
-void recalculateVars(MT2EstimateTree *tree, std::vector<float> smear_jet_pt, float softpt, float softphi, float &jet1_pt, float &jet2_pt, float &ht, float &met, float &mt2, float &dPhiMin, float &diffMetMht, float &mht, int &njets, int &nbjets){
+void recalculateVars(MT2EstimateTree *tree, std::vector<float> smear_jet_pt, float softpt, float softphi, float &jet1_pt, float &jet2_pt, float &ht, float &met, float &mt2, float &dPhiMin, float &diffMetMht, float &mht, float &mhtcorr, int &njets, int &nbjets){
 
   // recalculate met ( = -ptsoft -PUjetspt (=reb_brunos_met) - smearjetspt
   //float rebMetPt  = *(tree->extraVars["reb_brunos_met_pt" ]);
@@ -410,7 +457,10 @@ void recalculateVars(MT2EstimateTree *tree, std::vector<float> smear_jet_pt, flo
   float metx = -softpt*TMath::Cos(softphi);// + rebMetPt*TMath::Cos(rebMetPhi);
   float mety = -softpt*TMath::Sin(softphi);// + rebMetPt*TMath::Sin(rebMetPhi);
   float mhtx=0, mhty=0;
+  float mhtx0=0, mhty0=0;
   for (unsigned int j = 0; j<smear_jet_pt.size(); j++){
+    mhtx0 -= jPtReb[j]*TMath::Cos(jPhiReb[j]);
+    mhty0 -= jPtReb[j]*TMath::Sin(jPhiReb[j]);
     metx -= smear_jet_pt.at(j)*TMath::Cos(jPhiReb[j]);
     mety -= smear_jet_pt.at(j)*TMath::Sin(jPhiReb[j]);
     if ( (smear_jet_pt.at(j)>30 && fabs(jEtaReb[j])<2.5) ){
@@ -418,8 +468,9 @@ void recalculateVars(MT2EstimateTree *tree, std::vector<float> smear_jet_pt, flo
       mhty -= smear_jet_pt.at(j)*TMath::Sin(jPhiReb[j]);
     }
   }
-  met    = sqrt(metx*metx+mety*mety);
-  mht    = sqrt(mhtx*mhtx+mhty*mhty);
+  met     = sqrt(metx*metx+mety*mety);
+  mht     = sqrt(mhtx*mhtx+mhty*mhty);
+  mhtcorr = sqrt((mhtx-mhtx0)*(mhtx-mhtx0)+(mhty-mhty0)*(mhty-mhty0)); // corrected mht to account for genjets invalance due to missing jets because of pt threshold or missing match
   float metphi = mety==0.0 && metx==0.0 ? 0.0 : TMath::ATan2(mety,metx);
   float diffmetmhtx=metx-mhtx, diffmetmhty=mety-mhty;
   diffMetMht = sqrt(diffmetmhtx*diffmetmhtx+diffmetmhty*diffmetmhty);
@@ -443,7 +494,7 @@ void recalculateVars(MT2EstimateTree *tree, std::vector<float> smear_jet_pt, flo
       ht += jpt;
       njets++;
     }
-    if (jpt>20 && fabs(jEtaReb[j])<2.5 && jet_btagCSV->at(j)>btag_discriminator_74X){
+    if (jpt>20 && fabs(jEtaReb[j])<2.5 && (!smearGen && jet_btagCSV->at(j)>btag_discriminator_74X)){ // for gen ignore b-tagging cause there is no matching
       nbjets++;
     }
     float jdphi = fabs(TVector2::Phi_mpi_pi(metphi-jPhiReb[j]));
@@ -547,7 +598,7 @@ void getHemispheres(std::vector<float> smear_jet_pt, TLorentzVector *v1, TLorent
 
 }
 
-void fillTree(MT2Analysis<MT2EstimateTree>* outputAnaTree, MT2EstimateTree* inputTree, std::vector<float> smear_jet_pt, float softpt, float softphi, float jet1_pt, float jet2_pt, float ht, float met, float mt2, float dPhiMin, float diffMetMht, float mht, float before_mht, int njets, int nbjets, int iSmear){
+void fillTree(MT2Analysis<MT2EstimateTree>* outputAnaTree, MT2EstimateTree* inputTree, std::vector<float> smear_jet_pt, float softpt, float softphi, float jet1_pt, float jet2_pt, float ht, float met, float mt2, float dPhiMin, float diffMetMht, float mht, float mhtcorr, float before_mht, int njets, int nbjets, int iSmear){
 
   MT2EstimateTree* thisTree = outputAnaTree->get( ht, njets, nbjets, -1, mt2 );
   if( thisTree==0 )  return;
@@ -600,6 +651,7 @@ void fillTree(MT2Analysis<MT2EstimateTree>* outputAnaTree, MT2EstimateTree* inpu
     thisTree->assignVar( "iSmear"         , iSmear     );
     thisTree->assignVar( "nSmears"        , nSmearings );
     thisTree->assignVar( "mht"            , mht        );
+    thisTree->assignVar( "mhtcorr"        , mhtcorr    );
     thisTree->assignVar( "before_mht"     , before_mht );
   }
   if( switchOnVectors ){
@@ -647,6 +699,7 @@ void addVars(MT2Analysis<MT2EstimateTree>* anaTree, bool smearTree){
 	MT2EstimateTree::addVar( anaTree, "iSmear"             );
 	MT2EstimateTree::addVar( anaTree, "nSmears"            );
 	MT2EstimateTree::addVar( anaTree, "mht"                );
+	MT2EstimateTree::addVar( anaTree, "mhtcorr"            );
 	MT2EstimateTree::addVar( anaTree, "before_mht"         );
       }
       if( switchOnVectors ){
@@ -671,6 +724,10 @@ void addVars(MT2Analysis<MT2EstimateTree>* anaTree, bool smearTree){
       //MT2EstimateTree::addVar( anaTree, "reb_jasons_met_phi" );
       //MT2EstimateTree::addVar( anaTree, "reb_brunos_met_pt"  ); // contribution from PU jets
       //MT2EstimateTree::addVar( anaTree, "reb_brunos_met_phi" );
+      MT2EstimateTree::addVector( anaTree, "gen_jet_pt"    );
+      MT2EstimateTree::addVector( anaTree, "gen_jet_eta"   );
+      MT2EstimateTree::addVector( anaTree, "gen_jet_phi"   );
+      MT2EstimateTree::addVector( anaTree, "gen_jet_mass"  );
       MT2EstimateTree::addVector( anaTree, "mc_jet_pt"     );
       MT2EstimateTree::addVector( anaTree, "before_jet_pt" );
       MT2EstimateTree::addVector( anaTree, "reb_jet_pt"    );

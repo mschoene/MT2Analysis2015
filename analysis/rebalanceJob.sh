@@ -14,10 +14,11 @@ SID=$3
 JOB=$4
 NJOB=$5
 TOSE=$6
+LBL=$7
 
 source $VO_CMS_SW_DIR/cmsset_default.sh
 cd $WDIR
 eval `scramv1 runtime -sh`
 #cmsenv
 
-./doRebalancing $CFG $MC $SID $JOB $NJOB $TOSE
+./doRebalancing $CFG $MC $SID $JOB $NJOB $TOSE $LBL

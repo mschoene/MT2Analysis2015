@@ -13,10 +13,11 @@ MC=$2
 SID=$3
 JOB=$4
 NJOB=$5
+LBL=$6
 
 source $VO_CMS_SW_DIR/cmsset_default.sh
 cd $WDIR
 eval `scramv1 runtime -sh`
 #cmsenv
 
-./closureRS $CFG $MC $SID $JOB $NJOB
+./closureRS $CFG $MC $SID $JOB $NJOB $LBL

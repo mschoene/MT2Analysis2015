@@ -318,9 +318,14 @@ public :
    Float_t         isoTrack_dz[8];   //[nisoTrack]
    Float_t         isoTrack_absIso[8];   //[nisoTrack]
    Int_t           isoTrack_mcMatchId[8];   //[nisoTrack]
-   Int_t           njet;
    Float_t         jet1_pt;
    Float_t         jet2_pt;
+   Int_t           ngenJet;
+   Float_t         genJet_pt[50];   //[ngenJet]
+   Float_t         genJet_eta[50];   //[ngenJet]
+   Float_t         genJet_phi[50];   //[ngenJet]
+   Float_t         genJet_mass[50];   //[ngenJet]
+   Int_t           njet;
    Float_t         jet_pt[50];   //[njet]
    Float_t         jet_eta[50];   //[njet]
    Float_t         jet_phi[50];   //[njet]
@@ -491,9 +496,9 @@ public :
    Float_t weight_scales_DN;
    Float_t weight_pdfs_UP;
    Float_t weight_pdfs_DN;
-   Int_t LHEweight_id[1000];
-   Float_t LHEweight_wgt[1000];
-   Float_t LHEweight_original;
+   //Int_t LHEweight_id[1000];
+   //Float_t LHEweight_wgt[1000];
+   //Float_t LHEweight_original;
    
    // List of branches
    TBranch        *b_run;   //!
@@ -747,9 +752,14 @@ public :
    TBranch        *b_isoTrack_dz;   //!
    TBranch        *b_isoTrack_absIso;   //!
    TBranch        *b_isoTrack_mcMatchId;   //!
-   TBranch        *b_njet;   //!
    TBranch        *b_jet1_pt;   //!
    TBranch        *b_jet2_pt;   //!
+   TBranch        *b_ngenJet;   //!
+   TBranch        *b_genJet_pt;   //!
+   TBranch        *b_genJet_eta;   //!
+   TBranch        *b_genJet_phi;   //!
+   TBranch        *b_genJet_mass;   //!
+   TBranch        *b_njet;   //!
    TBranch        *b_jet_pt;   //!
    TBranch        *b_jet_eta;   //!
    TBranch        *b_jet_phi;   //!
@@ -919,9 +929,9 @@ public :
    TBranch *b_weight_scales_DN;
    TBranch *b_weight_pdfs_UP;
    TBranch *b_weight_pdfs_DN;
-   TBranch *b_LHEweight_id;
-   TBranch *b_LHEweight_wgt;
-   TBranch *b_LHEweight_original;
+   //TBranch *b_LHEweight_id;
+   //TBranch *b_LHEweight_wgt;
+   //TBranch *b_LHEweight_original;
 
    bool loadGenStuff;
 
@@ -1287,9 +1297,14 @@ void MT2Tree::Init(TTree *tree)
    fChain->SetBranchAddress("isoTrack_dz", isoTrack_dz, &b_isoTrack_dz);
    fChain->SetBranchAddress("isoTrack_absIso", isoTrack_absIso, &b_isoTrack_absIso);
    fChain->SetBranchAddress("isoTrack_mcMatchId", isoTrack_mcMatchId, &b_isoTrack_mcMatchId);
-   fChain->SetBranchAddress("njet", &njet, &b_njet);
    fChain->SetBranchAddress("jet1_pt", &jet1_pt, &b_jet1_pt);
    fChain->SetBranchAddress("jet2_pt", &jet2_pt, &b_jet2_pt);
+   fChain->SetBranchAddress("ngenJet", &ngenJet, &b_ngenJet);
+   fChain->SetBranchAddress("genJet_pt"  , genJet_pt  , &b_genJet_pt);
+   fChain->SetBranchAddress("genJet_eta" , genJet_eta , &b_genJet_eta);
+   fChain->SetBranchAddress("genJet_phi" , genJet_phi , &b_genJet_phi);
+   fChain->SetBranchAddress("genJet_mass", genJet_mass, &b_genJet_mass);
+   fChain->SetBranchAddress("njet", &njet, &b_njet);
    fChain->SetBranchAddress("jet_pt", jet_pt, &b_jet_pt);
    fChain->SetBranchAddress("jet_eta", jet_eta, &b_jet_eta);
    fChain->SetBranchAddress("jet_phi", jet_phi, &b_jet_phi);
@@ -1421,9 +1436,9 @@ void MT2Tree::Init(TTree *tree)
    fChain->SetBranchAddress("weight_scales_DN", &weight_scales_DN, &b_weight_scales_DN);
    fChain->SetBranchAddress("weight_pdfs_UP", &weight_pdfs_UP, &b_weight_pdfs_UP);
    fChain->SetBranchAddress("weight_pdfs_DN", &weight_pdfs_UP, &b_weight_pdfs_UP);
-   fChain->SetBranchAddress("LHEweight_id", LHEweight_id, &b_LHEweight_id);
-   fChain->SetBranchAddress("LHEweight_wgt", LHEweight_wgt, &b_LHEweight_wgt);
-   fChain->SetBranchAddress("LHEweight_original", &LHEweight_original, &b_LHEweight_original);
+   //fChain->SetBranchAddress("LHEweight_id", LHEweight_id, &b_LHEweight_id);
+   //fChain->SetBranchAddress("LHEweight_wgt", LHEweight_wgt, &b_LHEweight_wgt);
+   //fChain->SetBranchAddress("LHEweight_original", &LHEweight_original, &b_LHEweight_original);
 
    Notify();
 }
