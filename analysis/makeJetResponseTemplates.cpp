@@ -103,21 +103,90 @@ int main( int argc, char* argv[] ) {
     
     myTree.GetEntry(iEntry);
 
-    if( myTree.njet<2 ) continue;
-    if( myTree.ngenJet<2 ) continue;
+    //if( myTree.njet<2 ) continue;
+    //if( myTree.ngenJet<2 ) continue;
+    bool dijetEvent = false;
+    if( myTree.ngenJet==2 ) {
+      dijetEvent = true;
+    } else if( myTree.ngenJet>2 ) {
+      TLorentzVector jet0, jet1, jet2;
+      jet0.SetPtEtaPhiM( myTree.genJet_pt[0], myTree.genJet_eta[0], myTree.genJet_phi[0], myTree.genJet_mass[0] );
+      jet1.SetPtEtaPhiM( myTree.genJet_pt[1], myTree.genJet_eta[1], myTree.genJet_phi[1], myTree.genJet_mass[1] );
+      jet2.SetPtEtaPhiM( myTree.genJet_pt[2], myTree.genJet_eta[2], myTree.genJet_phi[2], myTree.genJet_mass[2] );
 
-    TLorentzVector jet0, jet1;
-    jet0.SetPtEtaPhiM( myTree.jet_pt[0], myTree.jet_eta[0], myTree.jet_phi[0], myTree.jet_mass[0] );
-    jet1.SetPtEtaPhiM( myTree.jet_pt[1], myTree.jet_eta[1], myTree.jet_phi[1], myTree.jet_mass[1] );
-    if( fabs( jet0.DeltaPhi(jet1) ) < 3.14159 - 0.5 ) continue;
-
-    bool dijetEvent = myTree.ngenJet==2 || ( myTree.ngenJet>2 && myTree.genJet_pt[2] < 0.3*0.5*(myTree.genJet_pt[0] + myTree.genJet_pt[1]) );
+      bool balanced = jet2.Pt() < 0.3*0.5*( jet0.Pt() + jet1.Pt() );
+      bool thirdJetAway = jet2.DeltaR(jet0)>0.7 && jet2.DeltaR(jet1)>0.7;
+      dijetEvent = balanced && thirdJetAway;
+    }
     if( !dijetEvent ) continue;
 
-    if( myTree.jet_mcPt[0]>htMin/2. && myTree.jet_mcPt[0]<htMax/2. )
-      fillTemplates( myTree.jet_pt[0], myTree.jet_mcPt[0], myTree.jet_eta[0], myTree.evt_scale1fb, templates, ptBins, etaBins ); 
-    if( myTree.jet_mcPt[1]>htMin/2. && myTree.jet_mcPt[1]<htMax/2. )
-      fillTemplates( myTree.jet_pt[1], myTree.jet_mcPt[1], myTree.jet_eta[1], myTree.evt_scale1fb, templates, ptBins, etaBins ); 
+    for( int iGen=0; iGen<myTree.ngenJet; ++iGen ) {
+
+      if( iGen>1 ) break; // only two leading jets
+
+      TLorentzVector thisGen;
+      thisGen.SetPtEtaPhiM( myTree.jet_pt[iGen], myTree.jet_eta[iGen], myTree.jet_phi[iGen], myTree.jet_mass[iGen] );
+
+      float deltaRmatch = 0.1;
+      float deltaRveto = 0.7;
+      int nJetVetoCone = 0;
+      int matchedRecoIndex = -1;
+
+
+      for( int iReco=0; iReco<myTree.njet; ++iReco ) {
+
+        TLorentzVector thisReco;
+        thisReco.SetPtEtaPhiM( myTree.jet_pt[iReco], myTree.jet_eta[iReco], myTree.jet_phi[iReco], myTree.jet_mass[iReco] );
+
+        if( thisReco.Pt() < 30. ) continue;
+
+        float thisDeltaR = thisReco.DeltaR(thisGen);
+        if( thisDeltaR < deltaRmatch ) 
+          matchedRecoIndex = iReco;
+        if( thisDeltaR < deltaRveto && thisReco.Pt()>20. && thisReco.Pt()/thisGen.Pt()>0.05 ) 
+          nJetVetoCone++;
+
+      } 
+
+      if( matchedRecoIndex<0 || nJetVetoCone>1 ) continue;
+
+      //// no other genjets
+      //bool skipThisOne = false;
+      //for( int iOtherGen=0; iOtherGen<myTree.ngenJet; ++iOtherGen ) {
+
+      //  if( iOtherGen==iGen ) continue;
+
+      //  TLorentzVector otherGen;
+      //  otherGen.SetPtEtaPhiM( myTree.jet_pt[iOtherGen], myTree.jet_eta[iOtherGen], myTree.jet_phi[iOtherGen], myTree.jet_mass[iOtherGen] );
+
+      //  if( otherGen.Pt()<thisGen.Pt()*0.1 ) {
+      //    break;
+      //  } else { 
+      //    if( otherGen.DeltaR(thisGen)<deltaRveto ) {
+      //      skipThisOne = true;
+      //      break;
+      //    }
+      //  }
+
+      //}
+
+      //if( !skipThisOne )
+        fillTemplates( myTree.jet_pt[matchedRecoIndex], myTree.genJet_pt[iGen], myTree.jet_eta[matchedRecoIndex], myTree.evt_scale1fb, templates, ptBins, etaBins ); 
+
+    }
+
+   // TLorentzVector jet0, jet1;
+   // jet0.SetPtEtaPhiM( myTree.jet_pt[0], myTree.jet_eta[0], myTree.jet_phi[0], myTree.jet_mass[0] );
+   // jet1.SetPtEtaPhiM( myTree.jet_pt[1], myTree.jet_eta[1], myTree.jet_phi[1], myTree.jet_mass[1] );
+   // //if( fabs( 3.14159 - fabs( jet0.DeltaPhi(jet1) ) ) > 0.5 ) continue;
+
+   // bool dijetEvent = myTree.ngenJet==2 || ( myTree.ngenJet>2 && myTree.genJet_pt[2] < 0.3*0.5*(myTree.genJet_pt[0] + myTree.genJet_pt[1]) );
+   // if( !dijetEvent ) continue;
+
+   // if( myTree.jet_mcPt[0]>htMin && myTree.jet_mcPt[0]<htMax )
+   //   fillTemplates( myTree.jet_pt[0], myTree.jet_mcPt[0], myTree.jet_eta[0], myTree.evt_scale1fb, templates, ptBins, etaBins ); 
+   // if( myTree.jet_mcPt[1]>htMin && myTree.jet_mcPt[1]<htMax )
+   //   fillTemplates( myTree.jet_pt[1], myTree.jet_mcPt[1], myTree.jet_eta[1], myTree.evt_scale1fb, templates, ptBins, etaBins ); 
 
   }
 
