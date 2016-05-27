@@ -2,22 +2,21 @@
 
 # --- configuration (consider to move this into a separate file) ---
 treeName="mt2"
-inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/pandolf/crab/MT2_8_0_5/data2016_v3"
-#"/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/babies/MT2_CMGTools-from-CMSSW_7_4_12/fullMC_miniAODv2_09Nov2015/"
-#"/pnfs/psi.ch/cms/trivcat/store/user/mschoene/babies/MT2_CMGTools-from-CMSSW_7_4_12/FullSUSYSignalsScans_miniAODv2_11Feb2016/
-#"/pnfs/psi.ch/cms/trivcat/store/user/mschoene/babies/MT2_CMGTools-from-CMSSW_7_4_12/SUSYSignalsScans_miniAODv2_11Feb2016/"
-#"/pnfs/psi.ch/cms/trivcat/store/user/mschoene/babies/MT2_CMGTools-from-CMSSW_7_4_12/Missing_SUSYSignalsScans_miniAODv2_11Feb2016/"
+inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/mangano/crab/MT2_8_0_5/data2016_26May"
+listOfSamplesFile="postProcessing2016-Data.cfg"
+#listOfSamplesFile="postProcessing2016-MC.cfg"
 
-#"/pnfs/psi.ch/cms/trivcat/store/user/mschoene/babies/MT2_CMGTools-from-CMSSW_7_4_12/FullSUSYSignalsScans_miniAODv2_11Feb2016/"
+#productionName="$(basename $inputFolder)" 
+productionName="$(basename $inputFolder)_attempt5" 
 
-#"/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/babies/MT2_CMGTools-from-CMSSW_7_4_12/fullMC_miniAODv2_06Nov2015/"
-#"/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/babies/MT2_CMGTools-from-CMSSW_7_4_12/fullData_miniAODv2_15Nov2015_jecV6/"
-productionName="data2016_v3"
+
+#outputFolder="/pnfs/psi.ch/cms/trivcat/store/user/`whoami`/MT2production/80X/PostProcessed/"$productionName"/"
+outputFolder="/pnfs/psi.ch/cms/trivcat/store/user/`whoami`/babies/80X/MT2/PostProcessed/"$productionName"/"
+
 
 fileExt="_post.root"
 isCrab=1
 inputPU="MyDataPileupHistogram.root"
-#inputPU="/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/MT2production/74X/Spring15/PostProcessed/23Oct2015_data_noSkim/JetHT_Run2015D_post.root"
 PUvar="nTrueInt"
 GoldenJSON="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions16/13TeV/Cert_271036-273450_13TeV_PromptReco_Collisions16_JSON_NoL1T.txt"
 SilverJSON="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions16/13TeV/Cert_271036-273450_13TeV_PromptReco_Collisions16_JSON_NoL1T.txt"
@@ -31,7 +30,6 @@ doPreProc=0     #0 (only 1 for TTJets or if you want to split MC samples, then r
 
 # initialization
 jobsLogsFolder="./${productionName}"
-outputFolder="/pnfs/psi.ch/cms/trivcat/store/user/`whoami`/MT2production/80X/PostProcessed/"$productionName"/"
 workingFolder="/scratch/`whoami`/"$productionName
 
 
@@ -170,7 +168,7 @@ EOF
     qsub -q long.q $scriptName;
     rm $scriptName;
 
-done < postProcessing.cfg
+done < $listOfSamplesFile
 
 fi;
 #done pre processing
@@ -206,11 +204,15 @@ else
     mkdir  $jobsLogsFolder
 fi
 
-python $PWD/convertGoodRunsList_JSON.py $GoldenJSON >& goodruns_golden.txt
-python $PWD/convertGoodRunsList_JSON.py $SilverJSON >& goodruns_silver.txt
+
 gfal-mkdir -p srm://t3se01.psi.ch/$outputFolder 
+python $PWD/convertGoodRunsList_JSON.py $GoldenJSON >& goodruns_golden.txt
 gfal-copy file://$GoldenJSON srm://t3se01.psi.ch/$outputFolder/ 
-gfal-copy file://$SilverJSON srm://t3se01.psi.ch/$outputFolder/ 
+
+if [ $doSilver -eq 1 ]; then
+    gfal-copy file://$SilverJSON srm://t3se01.psi.ch/$outputFolder/ 
+    python $PWD/convertGoodRunsList_JSON.py $SilverJSON >& goodruns_silver.txt
+fi
 
 echo "Location of log files is: " $jobsLogsFolder
 echo "Location of final files on SE is: " $outputFolder
