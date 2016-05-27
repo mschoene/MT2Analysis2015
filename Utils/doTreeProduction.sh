@@ -7,7 +7,7 @@ listOfSamplesFile="postProcessing2016-Data.cfg"
 #listOfSamplesFile="postProcessing2016-MC.cfg"
 
 #productionName="$(basename $inputFolder)" 
-productionName="$(basename $inputFolder)_attempt20"
+productionName="$(basename $inputFolder)_attempt23"
 
 
 #outputFolder="/pnfs/psi.ch/cms/trivcat/store/user/`whoami`/MT2production/80X/PostProcessed/"$productionName"/"
@@ -69,9 +69,9 @@ do
     id=`echo $line |awk '{print $1}'`
     name=`echo $line |awk '{print $2}'`
 
-    fileList="inputChunkList.txt"
+    fileList=inputChunkList.txt
 
-    if [ -e fileList ]; then
+    if [ -e inputChunkList.txt ]; then
 	echo "deleting the old file list"
 	rm $fileList
     fi;
@@ -268,9 +268,9 @@ do
     #also this should NEVER be done for MC as some scale factors need normalization
     #unless you did the preprocessing
 
-    fileList="inputChunkList.txt"
+    fileList=inputChunkList.txt
 
-    if [ -e fileList ]; then
+    if [ -e  inputChunkList.txt ]; then
 	echo "deleting the old file list"
 	rm $fileList
     fi;
@@ -286,9 +286,7 @@ do
     fi;
     
 
-    #BM numFiles=$(wc -l inputChunkList.txt | awk '{print $1}')
-    #BM why somewhere $fileList is used while in other places inputChunkList.txt is used ? Can use only one everywhere consistently ?
-    numFiles=$(wc -l $fileList | awk '{print $1}')
+    numFiles=$(wc -l inputChunkList.txt | awk '{print $1}')
     echo "number of files = " $numFiles
 
 
