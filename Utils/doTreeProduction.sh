@@ -7,7 +7,7 @@ listOfSamplesFile="postProcessing2016-Data.cfg"
 #listOfSamplesFile="postProcessing2016-MC.cfg"
 
 #productionName="$(basename $inputFolder)" 
-productionName="$(basename $inputFolder)_attempt5" 
+productionName="$(basename $inputFolder)_attempt7" 
 
 
 #outputFolder="/pnfs/psi.ch/cms/trivcat/store/user/`whoami`/MT2production/80X/PostProcessed/"$productionName"/"
@@ -472,7 +472,7 @@ EOF
 
     done;
 
-done < postProcessing.cfg
+done < $listOfSamplesFile
 
 
 
