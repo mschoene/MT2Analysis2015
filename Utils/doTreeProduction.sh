@@ -7,7 +7,7 @@ listOfSamplesFile="postProcessing2016-Data.cfg"
 #listOfSamplesFile="postProcessing2016-MC.cfg"
 
 #productionName="$(basename $inputFolder)" 
-productionName="$(basename $inputFolder)_attempt9" 
+productionName="$(basename $inputFolder)_attempt20"
 
 
 #outputFolder="/pnfs/psi.ch/cms/trivcat/store/user/`whoami`/MT2production/80X/PostProcessed/"$productionName"/"
@@ -33,10 +33,10 @@ jobsLogsFolder="./${productionName}"
 workingFolder="/scratch/`whoami`/"$productionName
 
 
+
 if [[ "$#" -eq 0 ]]; then
     echo "Relaunch the script with one of the following options: "
     echo "./doTreeProduction.sh post      # post-processing"
-    echo "./doTreeProduction.sh per       # pre-processing"
     echo "./doTreeProduction.sh postCheck # check post-processing"
     echo "./doTreeProduction.sh mergeData # merge data and remove duplicates (not implemented yet)"
     echo "./doTreeProduction.sh addAllSF  # add all scale factor weights"
@@ -48,9 +48,8 @@ if [[ "$#" -eq 0 ]]; then
 fi;
 
 
-
-
 if [[ "$1" = "pre" ]]; then
+
 
 if [ -d "$jobsLogsFolder" ]; then 
     echo "ERROR: the logFolder" $jobsLogsFolder " already exists."
@@ -158,7 +157,6 @@ echo "from $myCMSSW"
 cd $myCMSSW
 eval `scramv1 runtime -sh`
 cd -
-
 echo "preProcessing(\"$name\",\"$inputFolder\",\"$outputFile\",\"$treeName\",$id,$fileList);"
 echo "gROOT->LoadMacro(\"preProcessing.C+\"); preProcessing(\"$name\",\"$inputFolder\",\"$outputFile\",\"$treeName\",$id,\"$fileListTemp\"); gSystem->Exit(0);" |root.exe -b -l ;
 
@@ -179,7 +177,7 @@ fi;
 if [[ "$1" = "post" ]]; then
 
 # --- check the existence of outputFolder on SE ---
-gfal-ls srm://t3se01.psi.ch$outputFolder &> /tmp/checkOutputDir
+gfal-ls srm://t3se01.psi.ch$outputFolder &> ./checkOutputDir
 if [ -n "`cat /tmp/checkOutputDir|grep 'No such file or directory'`"  ]; then
     :
 else
@@ -230,10 +228,9 @@ if [ ! -f MyDataPileupHistogram.root ]; then
     pileupCalc.py -i $GoldenJSON --inputLumiJSON /afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/PileUp/pileup_latest.txt --calcMode true --minBiasXsec 80000 --maxPileupBin 50 --numPileupBins 50  MyDataPileupHistogram.root
 fi
 
-### here I compile the root macro only once
-### Uncomment for ROOT v5
+
 #echo "gROOT->LoadMacro(\"goodrun.cc+\"); gSystem->Exit(0);" |root.exe -b -l ;
-###echo "gROOT->LoadMacro(\"postProcessing.C+\"); gSystem->Exit(0);" |root.exe -b -l ;
+#echo "gROOT->LoadMacro(\"postProcessing.C+\"); gSystem->Exit(0);" |root.exe -b -l ;
 
 while read line; 
 do 
@@ -529,6 +526,7 @@ if [[ "$1" = "clean" ]]; then
     rm -f chunkPart_*.txt;
     rm -f inputChunkList.txt;
     rm -f goodruns_golden.txt;
+    rm -f goodrun_cc.d;
 fi
 
 
