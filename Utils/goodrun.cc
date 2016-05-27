@@ -1,6 +1,6 @@
 // $Id: goodrun.cc,v 1.12 2012/11/12 18:58:08 kelley Exp $
 // CINT is allowed to see this, but nothing else:
-#include "/shome/mmasciov/CMSSW_7_2_3_PostProcessing/src/analysisCode/Utils/goodrun.h"
+#include "goodrun.h"
 
 #ifndef __CINT__
 
