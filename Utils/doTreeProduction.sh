@@ -2,22 +2,21 @@
 
 # --- configuration (consider to move this into a separate file) ---
 treeName="mt2"
-inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/pandolf/crab/MT2_8_0_5/data2016_v3"
-#"/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/babies/MT2_CMGTools-from-CMSSW_7_4_12/fullMC_miniAODv2_09Nov2015/"
-#"/pnfs/psi.ch/cms/trivcat/store/user/mschoene/babies/MT2_CMGTools-from-CMSSW_7_4_12/FullSUSYSignalsScans_miniAODv2_11Feb2016/
-#"/pnfs/psi.ch/cms/trivcat/store/user/mschoene/babies/MT2_CMGTools-from-CMSSW_7_4_12/SUSYSignalsScans_miniAODv2_11Feb2016/"
-#"/pnfs/psi.ch/cms/trivcat/store/user/mschoene/babies/MT2_CMGTools-from-CMSSW_7_4_12/Missing_SUSYSignalsScans_miniAODv2_11Feb2016/"
+inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/mangano/crab/MT2_8_0_5/data2016_26May"
+listOfSamplesFile="postProcessing2016-Data.cfg"
+#listOfSamplesFile="postProcessing2016-MC.cfg"
 
-#"/pnfs/psi.ch/cms/trivcat/store/user/mschoene/babies/MT2_CMGTools-from-CMSSW_7_4_12/FullSUSYSignalsScans_miniAODv2_11Feb2016/"
+#productionName="$(basename $inputFolder)" 
+productionName="$(basename $inputFolder)_attempt23"
 
-#"/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/babies/MT2_CMGTools-from-CMSSW_7_4_12/fullMC_miniAODv2_06Nov2015/"
-#"/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/babies/MT2_CMGTools-from-CMSSW_7_4_12/fullData_miniAODv2_15Nov2015_jecV6/"
-productionName="data2016_v3"
+
+#outputFolder="/pnfs/psi.ch/cms/trivcat/store/user/`whoami`/MT2production/80X/PostProcessed/"$productionName"/"
+outputFolder="/pnfs/psi.ch/cms/trivcat/store/user/`whoami`/babies/80X/MT2/PostProcessed/"$productionName"/"
+
 
 fileExt="_post.root"
 isCrab=1
 inputPU="MyDataPileupHistogram.root"
-#inputPU="/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/MT2production/74X/Spring15/PostProcessed/23Oct2015_data_noSkim/JetHT_Run2015D_post.root"
 PUvar="nTrueInt"
 GoldenJSON="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions16/13TeV/Cert_271036-273450_13TeV_PromptReco_Collisions16_JSON_NoL1T.txt"
 SilverJSON="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions16/13TeV/Cert_271036-273450_13TeV_PromptReco_Collisions16_JSON_NoL1T.txt"
@@ -31,14 +30,13 @@ doPreProc=0     #0 (only 1 for TTJets or if you want to split MC samples, then r
 
 # initialization
 jobsLogsFolder="./${productionName}"
-outputFolder="/pnfs/psi.ch/cms/trivcat/store/user/`whoami`/MT2production/80X/PostProcessed/"$productionName"/"
 workingFolder="/scratch/`whoami`/"$productionName
+
 
 
 if [[ "$#" -eq 0 ]]; then
     echo "Relaunch the script with one of the following options: "
     echo "./doTreeProduction.sh post      # post-processing"
-    echo "./doTreeProduction.sh per       # pre-processing"
     echo "./doTreeProduction.sh postCheck # check post-processing"
     echo "./doTreeProduction.sh mergeData # merge data and remove duplicates (not implemented yet)"
     echo "./doTreeProduction.sh addAllSF  # add all scale factor weights"
@@ -50,9 +48,8 @@ if [[ "$#" -eq 0 ]]; then
 fi;
 
 
-
-
 if [[ "$1" = "pre" ]]; then
+
 
 if [ -d "$jobsLogsFolder" ]; then 
     echo "ERROR: the logFolder" $jobsLogsFolder " already exists."
@@ -74,7 +71,7 @@ do
 
     fileList=inputChunkList.txt
 
-    if [ inputChunkList.txt ]; then
+    if [ -e inputChunkList.txt ]; then
 	echo "deleting the old file list"
 	rm $fileList
     fi;
@@ -160,7 +157,6 @@ echo "from $myCMSSW"
 cd $myCMSSW
 eval `scramv1 runtime -sh`
 cd -
-
 echo "preProcessing(\"$name\",\"$inputFolder\",\"$outputFile\",\"$treeName\",$id,$fileList);"
 echo "gROOT->LoadMacro(\"preProcessing.C+\"); preProcessing(\"$name\",\"$inputFolder\",\"$outputFile\",\"$treeName\",$id,\"$fileListTemp\"); gSystem->Exit(0);" |root.exe -b -l ;
 
@@ -170,7 +166,7 @@ EOF
     qsub -q long.q $scriptName;
     rm $scriptName;
 
-done < postProcessing.cfg
+done < $listOfSamplesFile
 
 fi;
 #done pre processing
@@ -181,7 +177,7 @@ fi;
 if [[ "$1" = "post" ]]; then
 
 # --- check the existence of outputFolder on SE ---
-gfal-ls srm://t3se01.psi.ch$outputFolder &> /tmp/checkOutputDir
+gfal-ls srm://t3se01.psi.ch$outputFolder &> ./checkOutputDir
 if [ -n "`cat /tmp/checkOutputDir|grep 'No such file or directory'`"  ]; then
     :
 else
@@ -206,11 +202,15 @@ else
     mkdir  $jobsLogsFolder
 fi
 
-python $PWD/convertGoodRunsList_JSON.py $GoldenJSON >& goodruns_golden.txt
-python $PWD/convertGoodRunsList_JSON.py $SilverJSON >& goodruns_silver.txt
+
 gfal-mkdir -p srm://t3se01.psi.ch/$outputFolder 
+python $PWD/convertGoodRunsList_JSON.py $GoldenJSON >& goodruns_golden.txt
 gfal-copy file://$GoldenJSON srm://t3se01.psi.ch/$outputFolder/ 
-gfal-copy file://$SilverJSON srm://t3se01.psi.ch/$outputFolder/ 
+
+if [ $doSilver -eq 1 ]; then
+    gfal-copy file://$SilverJSON srm://t3se01.psi.ch/$outputFolder/ 
+    python $PWD/convertGoodRunsList_JSON.py $SilverJSON >& goodruns_silver.txt
+fi
 
 echo "Location of log files is: " $jobsLogsFolder
 echo "Location of final files on SE is: " $outputFolder
@@ -228,10 +228,9 @@ if [ ! -f MyDataPileupHistogram.root ]; then
     pileupCalc.py -i $GoldenJSON --inputLumiJSON /afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/PileUp/pileup_latest.txt --calcMode true --minBiasXsec 80000 --maxPileupBin 50 --numPileupBins 50  MyDataPileupHistogram.root
 fi
 
-### here I compile the root macro only once
-### Uncomment for ROOT v5
+
 #echo "gROOT->LoadMacro(\"goodrun.cc+\"); gSystem->Exit(0);" |root.exe -b -l ;
-###echo "gROOT->LoadMacro(\"postProcessing.C+\"); gSystem->Exit(0);" |root.exe -b -l ;
+#echo "gROOT->LoadMacro(\"postProcessing.C+\"); gSystem->Exit(0);" |root.exe -b -l ;
 
 while read line; 
 do 
@@ -271,7 +270,7 @@ do
 
     fileList=inputChunkList.txt
 
-    if [ inputChunkList.txt ]; then
+    if [ -e  inputChunkList.txt ]; then
 	echo "deleting the old file list"
 	rm $fileList
     fi;
@@ -470,7 +469,7 @@ EOF
 
     done;
 
-done < postProcessing.cfg
+done < $listOfSamplesFile
 
 
 
@@ -520,8 +519,12 @@ if [[ "$1" = "addISR" ]]; then
 fi
 
 if [[ "$1" = "clean" ]]; then
-    echo "INFO: option 'clean' is not implemented yet."
-
+    rm -f inputChunkList.txt;
+    rm -f postProcessing_C*;
+    rm -f chunkPart_*.txt;
+    rm -f inputChunkList.txt;
+    rm -f goodruns_golden.txt;
+    rm -f goodrun_cc.d;
 fi
 
 

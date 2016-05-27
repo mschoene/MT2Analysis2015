@@ -510,18 +510,18 @@ int postProcessing(std::string inputString,
   TBranch* b12 = clone->Branch("isGolden", &isGolden, "isGolden/I");
   TBranch* b13 = clone->Branch("isSilver", &isSilver, "isSilver/I");
  
-  TBranch* b14;
-  TBranch* b15; 
-  TBranch* b16;
-  TBranch* b17;
-  TBranch* b18;
-  TBranch* b19; 
-  TBranch* b20; 
-  TBranch* b21; 
-  TBranch* b22;
-  TBranch* b23; 
-  TBranch* b24; 
-  TBranch* b25; 
+  TBranch* b14=0;
+  TBranch* b15=0; 
+  TBranch* b16=0;
+  TBranch* b17=0;
+  TBranch* b18=0;
+  TBranch* b19=0; 
+  TBranch* b20=0; 
+  TBranch* b21=0; 
+  TBranch* b22=0;
+  TBranch* b23=0; 
+  TBranch* b24=0; 
+  TBranch* b25=0; 
   
   if( applySF ){
     b14 = clone->Branch("weight_btagsf"         , &weight_btagsf         , "weight_btagsf/F"         );
@@ -858,7 +858,7 @@ int postProcessing(std::string inputString,
       }//end of lepton sf
     }//end of if applySF
 
-    if( i==(nEventsTree-1))
+    if( i==(Long64_t)(nEventsTree-1))
       std::cout << "End of loop over tree entries" << std::endl;
 
     b1->Fill();
