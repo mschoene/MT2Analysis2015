@@ -354,6 +354,11 @@ public :
    Int_t           jet_muMult[50];   //[njet]
    Int_t           jet_HFHMult[50];   //[njet]
    Int_t           jet_HFEMMult[50];   //[njet]
+   Int_t           ngenJet;
+   Float_t         genJet_pt[50];   //[ngenJet]
+   Float_t         genJet_eta[50];   //[ngenJet]
+   Float_t         genJet_phi[50];   //[ngenJet]
+   Float_t         genJet_mass[50];   //[ngenJet]
    Int_t           ngenNu;
    Float_t         genNu_pt[9];   //[ngenNu]
    Float_t         genNu_eta[9];   //[ngenNu]
@@ -783,6 +788,11 @@ public :
    TBranch        *b_jet_muMult;   //!
    TBranch        *b_jet_HFHMult;   //!
    TBranch        *b_jet_HFEMMult;   //!
+   TBranch        *b_ngenJet;   //!
+   TBranch        *b_genJet_pt;   //!
+   TBranch        *b_genJet_eta;   //!
+   TBranch        *b_genJet_phi;   //!
+   TBranch        *b_genJet_mass;   //!
    TBranch        *b_ngenNu;   //!
    TBranch        *b_genNu_pt;   //!
    TBranch        *b_genNu_eta;   //!
@@ -1323,6 +1333,11 @@ void MT2Tree::Init(TTree *tree)
    fChain->SetBranchAddress("jet_muMult", jet_muMult, &b_jet_muMult);
    fChain->SetBranchAddress("jet_HFHMult", jet_HFHMult, &b_jet_HFHMult);
    fChain->SetBranchAddress("jet_HFEMMult", jet_HFEMMult, &b_jet_HFEMMult);
+   fChain->SetBranchAddress("ngenJet", &ngenJet, &b_ngenJet);
+   fChain->SetBranchAddress("genJet_pt", genJet_pt, &b_genJet_pt);
+   fChain->SetBranchAddress("genJet_eta", genJet_eta, &b_genJet_eta);
+   fChain->SetBranchAddress("genJet_phi", genJet_phi, &b_genJet_phi);
+   fChain->SetBranchAddress("genJet_mass", genJet_mass, &b_genJet_mass);
    fChain->SetBranchAddress("nlep", &nlep, &b_nlep);
    fChain->SetBranchAddress("lep_pt", lep_pt, &b_lep_pt);
    fChain->SetBranchAddress("lep_eta", lep_eta, &b_lep_eta);

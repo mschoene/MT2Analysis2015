@@ -2,7 +2,7 @@
 
 # --- configuration (consider to move this into a separate file) ---
 treeName="mt2"
-inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/babies/MT2_CMGTools-from-CMSSW_7_4_12/fullMC_Spring15_miniAODv2_03Nov2015/"
+inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/pandolf/crab/MT2_8_0_5/data2016_v3"
 #"/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/babies/MT2_CMGTools-from-CMSSW_7_4_12/fullMC_miniAODv2_09Nov2015/"
 #"/pnfs/psi.ch/cms/trivcat/store/user/mschoene/babies/MT2_CMGTools-from-CMSSW_7_4_12/FullSUSYSignalsScans_miniAODv2_11Feb2016/
 #"/pnfs/psi.ch/cms/trivcat/store/user/mschoene/babies/MT2_CMGTools-from-CMSSW_7_4_12/SUSYSignalsScans_miniAODv2_11Feb2016/"
@@ -12,26 +12,26 @@ inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/babies/MT2_CMGTools-fr
 
 #"/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/babies/MT2_CMGTools-from-CMSSW_7_4_12/fullMC_miniAODv2_06Nov2015/"
 #"/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/babies/MT2_CMGTools-from-CMSSW_7_4_12/fullData_miniAODv2_15Nov2015_jecV6/"
-productionName="Test"
+productionName="data2016_v3"
 
 fileExt="_post.root"
 isCrab=1
 inputPU="MyDataPileupHistogram.root"
 #inputPU="/pnfs/psi.ch/cms/trivcat/store/user/mmasciov/MT2production/74X/Spring15/PostProcessed/23Oct2015_data_noSkim/JetHT_Run2015D_post.root"
 PUvar="nTrueInt"
-GoldenJSON="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Reprocessing/Cert_13TeV_16Dec2015ReReco_Collisions15_25ns_JSON.txt"
-SilverJSON="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Reprocessing/Cert_13TeV_16Dec2015ReReco_Collisions15_25ns_JSON_Silver.txt"
-applyJSON=0     #0 for MC
+GoldenJSON="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions16/13TeV/Cert_271036-273450_13TeV_PromptReco_Collisions16_JSON_NoL1T.txt"
+SilverJSON="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions16/13TeV/Cert_271036-273450_13TeV_PromptReco_Collisions16_JSON_NoL1T.txt"
+applyJSON=1     #0 for MC
 doSilver=0      #0 for MC
 doFilterTxt=0   #0 for MC
-doAllSF=1       #1 for MC
+doAllSF=0       #1 for MC
 doPreProc=0     #0 (only 1 for TTJets or if you want to split MC samples, then run ./doTreeProduction pre first)
 # ------------------------------------------------------------------------------
 
 
 # initialization
 jobsLogsFolder="./${productionName}"
-outputFolder="/pnfs/psi.ch/cms/trivcat/store/user/`whoami`/MT2production/74X/Spring15/PostProcessed/"$productionName"/"
+outputFolder="/pnfs/psi.ch/cms/trivcat/store/user/`whoami`/MT2production/80X/PostProcessed/"$productionName"/"
 workingFolder="/scratch/`whoami`/"$productionName
 
 
@@ -318,14 +318,14 @@ do
     counter=-1
     preProcFile=""
 
-    if [[ (( $doPreProc -eq 1 && (( $numFiles -gt $maxNfiles )) ))  || (( $id -lt 10 )) ]]; then
-	echo "File will be split into multiple files for speed and memory limit purposes"
-	counter=0;
-	maxNfiles=100;
-	if [[ $id < 10 ]]; then
-	    preProcFile=${name}_pre.cfg;
-	fi;
-    fi;
+#    if [[ (( $doPreProc -eq 1 && (( $numFiles -gt $maxNfiles )) ))  || (( $id -lt 10 )) ]]; then
+#	echo "File will be split into multiple files for speed and memory limit purposes"
+#	counter=0;
+#	maxNfiles=100;
+#	if [[ $id > 10 ]]; then
+#	    preProcFile=${name}_pre.cfg;
+#	fi;
+#    fi;
     
 
     while (( (( (( $numFiles + 1 )) > (($counter * $maxNfiles)) )) || $(($counter < 0 )) )); do 

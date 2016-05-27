@@ -353,8 +353,8 @@ int postProcessing(std::string inputString,
 
 
 
-  //float nTrueInt=0;
-  int nTrueInt=0;
+  float nTrueInt=0;
+  //int nTrueInt=0;
   TBranch* thisNTrueInt = (TBranch*) chain->GetListOfBranches()->FindObject("nTrueInt");
   if (thisNTrueInt) chain->SetBranchAddress("nTrueInt", &nTrueInt);
   
