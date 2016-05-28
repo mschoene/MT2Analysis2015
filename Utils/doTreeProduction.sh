@@ -7,7 +7,7 @@ listOfSamplesFile="postProcessing2016-Data.cfg"
 #listOfSamplesFile="postProcessing2016-MC.cfg"
 
 #productionName="$(basename $inputFolder)" 
-productionName="$(basename $inputFolder)_attempt23"
+productionName="$(basename $inputFolder)_attempt31"
 
 
 #outputFolder="/pnfs/psi.ch/cms/trivcat/store/user/`whoami`/MT2production/80X/PostProcessed/"$productionName"/"
@@ -232,8 +232,8 @@ if [ ! -f MyDataPileupHistogram.root ]; then
 fi
 
 
-#echo "gROOT->LoadMacro(\"goodrun.cc+\"); gSystem->Exit(0);" |root.exe -b -l ;
-#echo "gROOT->LoadMacro(\"postProcessing.C+\"); gSystem->Exit(0);" |root.exe -b -l ;
+echo "gROOT->LoadMacro(\"goodrunClass.cc+\"); gSystem->Exit(0);" |root.exe -b -l ;
+echo "gSystem->Load(\"goodrunClass_cc.so\"); gROOT->LoadMacro(\"postProcessing.C+\"); gSystem->Exit(0);" |root.exe -b -l ;
 
 while read line; 
 do 
@@ -410,13 +410,10 @@ mkdir -p $workingFolder
 gfal-mkdir -p srm://t3se01.psi.ch/$outputFolder
 
 
-echo "postProcessing(\"$name\",\"$inputFolder\",\"$outputFile\",\"$treeName\",$filter,$kfactor,$xsec,$id,\"$crabExt\", \"$inputPU\", \"$PUvar\", $applyJSON);"
-echo "gROOT->LoadMacro(\"postProcessing.C+\"); postProcessing(\"$name\",\"$counterFile\",\"$outputFile\",\"$treeName\",$filter,$kfactor,$xsec,$id,\"$crabExt\",\"$inputPU\",\"$PUvar\",$applyJSON,$doAllSF,$doSilver,\"$preProcFile\"); gSystem->Exit(0);" |root.exe -b -l ;
+echo "postProcessing(\"$name\",\"$counterFile\",\"$outputFile\",\"$treeName\",$filter,$kfactor,$xsec,$id,\"$crabExt\",\"$inputPU\",\"$PUvar\",$applyJSON,$doAllSF,$doSilver,\"$preProcFile\"); gSystem->Exit(0);"
 
+echo "gSystem->Load(\"goodrunClass_cc.so\"); gSystem->Load(\"libCondFormatsBTauObjects.so\"); gROOT->LoadMacro(\"postProcessing.C\"); postProcessing(\"$name\",\"$counterFile\",\"$outputFile\",\"$treeName\",$filter,$kfactor,$xsec,$id,\"$crabExt\",\"$inputPU\",\"$PUvar\",$applyJSON,$doAllSF,$doSilver,\"$preProcFile\"); gSystem->Exit(0);" |root.exe -b -l ;
 
-### Uncomment for ROOT v5
-#echo "gSystem->Load(\"goodrun_cc\"); gROOT->LoadMacro(\"postProcessing.C\"); postProcessing(\"$name\",\"$inputFolder\",\"$outputFile\",\"$treeName\",$filter,$kfactor,$xsec,$id,\"$crabExt\",\"$inputPU\",\"$PUvar\",$applyJSON); gSystem->Exit(0);" |root.exe -b -l ;
-### Comment for ROOT v5
 
 
 if [[ $id -lt 10 && $doFilterTxt == 1 ]]; then 
@@ -527,7 +524,9 @@ if [[ "$1" = "clean" ]]; then
     rm -f chunkPart_*.txt;
     rm -f inputChunkList.txt;
     rm -f goodruns_golden.txt;
-    rm -f goodrun_cc.d;
+    rm -f goodrun_cc*;
+    rm -f goodrunClass_cc*;
+    rm -f BTagCalibrationStandalone_cc*;
     rm -f checkOutputDir
 fi
 
