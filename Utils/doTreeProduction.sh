@@ -36,6 +36,7 @@ workingFolder="/scratch/`whoami`/"$productionName
 
 if [[ "$#" -eq 0 ]]; then
     echo "Relaunch the script with one of the following options: "
+    echo "./doTreeProduction.sh pre       # pre-processing"
     echo "./doTreeProduction.sh post      # post-processing"
     echo "./doTreeProduction.sh postCheck # check post-processing"
     echo "./doTreeProduction.sh mergeData # merge data and remove duplicates (not implemented yet)"
@@ -48,83 +49,82 @@ if [[ "$#" -eq 0 ]]; then
 fi;
 
 
+##### beginning pre processing
 if [[ "$1" = "pre" ]]; then
-
-
-if [ -d "$jobsLogsFolder" ]; then 
-    echo "ERROR: the logFolder" $jobsLogsFolder " already exists."
-    echo "Delete it and start from a clean area, or redirect the logs in a different place."
-    echo "Exiting ..."
-    exit
-else
-    mkdir  $jobsLogsFolder
-fi
-
-
-while read line; 
-do 
-    case "$line" in \#*) continue ;; esac; #skip commented lines
-    case "$line" in *"_ext"*) continue ;; esac; #skip extensions
-    if [ -z "$line" ]; then continue; fi;  #skip empty lines
-    id=`echo $line |awk '{print $1}'`
-    name=`echo $line |awk '{print $2}'`
-
-    fileList=inputChunkList.txt
-
-    if [ -e inputChunkList.txt ]; then
-	echo "deleting the old file list"
-	rm $fileList
-    fi;
-
-    crabExt=""
-    if [ ${isCrab} = 1 ]; then
-	crabExt=$(ls $inputFolder/$name/)
-    fi;
-
-    if [ ${isCrab} = 1 ]; then
-	for f in $inputFolder/$name/$crabExt/0000/mt2*.root; do
-	    echo $f>>$fileList
-	done;
+    if [ -d "$jobsLogsFolder" ]; then 
+	echo "ERROR: the logFolder" $jobsLogsFolder " already exists."
+	echo "Delete it and start from a clean area, or redirect the logs in a different place."
+	echo "Exiting ..."
+	exit
     else
-	for f in $inputFolder/$name/mt2*.root; do
-	    echo $f>>$fileList
-	done;
-    fi;
+	mkdir  $jobsLogsFolder
+    fi
+
+
+    while read line; 
+    do 
+	case "$line" in \#*) continue ;; esac; #skip commented lines
+	case "$line" in *"_ext"*) continue ;; esac; #skip extensions
+	if [ -z "$line" ]; then continue; fi;  #skip empty lines
+	id=`echo $line |awk '{print $1}'`
+	name=`echo $line |awk '{print $2}'`
+
+	fileList=inputChunkList.txt
+	
+	if [ -e inputChunkList.txt ]; then
+	    echo "deleting the old file list"
+	    rm $fileList
+	fi;
+
+	crabExt=""
+	if [ ${isCrab} = 1 ]; then
+	    crabExt=$(ls $inputFolder/$name/)
+	fi;
+
+	if [ ${isCrab} = 1 ]; then
+	    for f in $inputFolder/$name/$crabExt/0000/mt2*.root; do
+		echo $f>>$fileList
+	    done;
+	else
+	    for f in $inputFolder/$name/mt2*.root; do
+		echo $f>>$fileList
+	    done;
+	fi;
     
 
-    numFiles=$(wc -l inputChunkList.txt | awk '{print $1}')
-    echo "number of files = " $numFiles
-
-    for ((i=0; i<4; i++)); do
-	if [ -d $inputFolder/${name}_ext_${i}/ ]; then
-	    if [ ${isCrab} = 1 ]; then
-    		crabExt=$(ls $inputFolder/${name}_ext_${i}/)
-		for f in $inputFolder/${name}_ext_${i}/${crabExt}/0000/mt2*.root; do
-		    echo $f>>$fileList
-		done;
-	    else
-		for f in $inputFolder/${name}_ext_${i}/mt2*.root; do
-		    echo $f>>$fileList
-		done;
+	numFiles=$(wc -l inputChunkList.txt | awk '{print $1}')
+	echo "number of files = " $numFiles
+	
+	for ((i=0; i<4; i++)); do
+	    if [ -d $inputFolder/${name}_ext_${i}/ ]; then
+		if [ ${isCrab} = 1 ]; then
+    		    crabExt=$(ls $inputFolder/${name}_ext_${i}/)
+		    for f in $inputFolder/${name}_ext_${i}/${crabExt}/0000/mt2*.root; do
+			echo $f>>$fileList
+		    done;
+		else
+		    for f in $inputFolder/${name}_ext_${i}/mt2*.root; do
+			echo $f>>$fileList
+		    done;
+		fi;
 	    fi;
-	fi;
-    done;
+	done;
 
 
-    numFiles=$(wc -l inputChunkList.txt | awk '{print $1}')
-    echo "number of files = " $numFiles
+	numFiles=$(wc -l inputChunkList.txt | awk '{print $1}')
+	echo "number of files = " $numFiles
 
-    awk '$0="dcap://t3se01.psi.ch:22125/"$0' $fileList > inputChunkList_dcap.txt 
-    mv inputChunkList_dcap.txt inputChunkList.txt
-    cp  inputChunkList.txt  inputChunkList_${name}.txt
-    fileListTemp=inputChunkList_${name}.txt
+	awk '$0="dcap://t3se01.psi.ch:22125/"$0' $fileList > inputChunkList_dcap.txt 
+	mv inputChunkList_dcap.txt inputChunkList.txt
+	cp  inputChunkList.txt  inputChunkList_${name}.txt
+	fileListTemp=inputChunkList_${name}.txt
     #   fileList=inputChunkList_dcap.txt
+	
+	scriptName=batchScript_${name}.sh
 
-    scriptName=batchScript_${name}.sh
+	outputFile=${name}_pre.cfg
 
-    outputFile=${name}_pre.cfg
-
-    cat <<EOF > $scriptName
+	cat <<EOF > $scriptName
 #!/bin/bash
 
 #### The following configurations you should not need to change
@@ -163,13 +163,16 @@ echo "gROOT->LoadMacro(\"preProcessing.C+\"); preProcessing(\"$name\",\"$inputFo
 
 EOF
 
-    qsub -q long.q $scriptName;
-    rm $scriptName;
-
-done < $listOfSamplesFile
+	qsub -q long.q $scriptName;
+	rm $scriptName;
+	
+    done < $listOfSamplesFile
 
 fi;
-#done pre processing
+##### done pre processing
+
+
+
 
 
 
@@ -525,6 +528,7 @@ if [[ "$1" = "clean" ]]; then
     rm -f inputChunkList.txt;
     rm -f goodruns_golden.txt;
     rm -f goodrun_cc.d;
+    rm -f checkOutputDir
 fi
 
 
