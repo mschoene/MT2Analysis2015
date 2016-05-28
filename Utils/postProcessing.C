@@ -29,9 +29,7 @@ run()
 #include "TH3.h"
 #include "TLorentzVector.h"
 
-#include "BTagCalibrationStandalone.cc"
-#include "goodrunClass.cc"
-
+#include "goodrunClass.h"
 #include "btagSF.C"
 
 using namespace std;

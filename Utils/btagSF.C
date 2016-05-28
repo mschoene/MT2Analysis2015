@@ -26,7 +26,11 @@ btagSF(inputString, inputFolder, outputFile, treeName, objectName)
 #include "TH2F.h"
 #include "TLorentzVector.h"
 
-#include "BTagCalibrationStandalone.h"   // https://twiki.cern.ch/twiki/bin/view/CMS/BTagCalibration
+//#include "BTagCalibrationStandalone.h"   // https://twiki.cern.ch/twiki/bin/view/CMS/BTagCalibration
+#include "CondFormats/BTauObjects/interface/BTagCalibration.h"
+#include "CondFormats/BTauObjects/interface/BTagCalibrationReader.h"
+
+
 
 using namespace std;
 
