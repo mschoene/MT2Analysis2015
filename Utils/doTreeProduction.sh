@@ -2,12 +2,12 @@
 
 # --- configuration (consider to move this into a separate file) ---
 treeName="mt2"
-inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/mangano/crab/MT2_8_0_5/data2016_26May"
+inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/mangano/crab/MT2_8_0_5/data27May_v1"
 listOfSamplesFile="postProcessing2016-Data.cfg"
 #listOfSamplesFile="postProcessing2016-MC.cfg"
 
-#productionName="$(basename $inputFolder)" 
-productionName="$(basename $inputFolder)_attempt31"
+productionName="$(basename $inputFolder)" 
+#productionName="$(basename $inputFolder)_attempt31"
 
 
 #outputFolder="/pnfs/psi.ch/cms/trivcat/store/user/`whoami`/MT2production/80X/PostProcessed/"$productionName"/"
@@ -18,8 +18,8 @@ fileExt="_post.root"
 isCrab=1
 inputPU="MyDataPileupHistogram.root"
 PUvar="nTrueInt"
-GoldenJSON="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions16/13TeV/Cert_271036-273450_13TeV_PromptReco_Collisions16_JSON_NoL1T.txt"
-SilverJSON="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions16/13TeV/Cert_271036-273450_13TeV_PromptReco_Collisions16_JSON_NoL1T.txt"
+GoldenJSON="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions16/13TeV/Cert_271036-273730_13TeV_PromptReco_Collisions16_JSON.txt"
+SilverJSON=$GoldenJSON
 applyJSON=1     #0 for MC
 doSilver=0      #0 for MC
 doFilterTxt=0   #0 for MC
