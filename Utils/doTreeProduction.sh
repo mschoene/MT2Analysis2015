@@ -25,7 +25,22 @@ doSilver=0      #0 for MC
 doFilterTxt=0   #0 for MC
 doAllSF=0       #1 for MC
 doPreProc=0     #0 (only 1 for TTJets or if you want to split MC samples, then run ./doTreeProduction pre first)
+
 # ------------------------------------------------------------------------------
+# NOTA BENE: the following files should also be (may have to) edited according 
+# to the type of production (for example MT2 vs ZGamma, data vs MC):
+#
+# postProcessing2016-MC.cfg/postProcessing2016-Data.cfg
+# skimmingPruning.cfg, skimmingPruningQCD.cfg, skimmingPruningMonoJet.cfg
+#
+# TO DO: add switches here in doTreeProduction.sh instead of force editing by hand
+# ------------------------------------------------------------------------------
+
+
+
+
+
+
 
 
 # initialization
