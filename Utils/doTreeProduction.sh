@@ -2,16 +2,18 @@
 
 # --- configuration (consider to move this into a separate file) ---
 treeName="mt2"
-inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/mangano/crab/MT2_8_0_5/data27May_v1"
-listOfSamplesFile="postProcessing2016-Data.cfg"
-#listOfSamplesFile="postProcessing2016-MC.cfg"
+#inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/pandolf/crab/ZG_8_0_5/mc2016_v1/"
+inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/pandolf/crab/MT2_8_0_5/mc2016_v0/"
+#inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/mangano/crab/MT2_8_0_5/data27May_v1"
+#listOfSamplesFile="postProcessing2016-Data.cfg"
+listOfSamplesFile="postProcessing2016-MC.cfg"
 
 productionName="$(basename $inputFolder)" 
-#productionName="$(basename $inputFolder)_attempt31"
 
 
-#outputFolder="/pnfs/psi.ch/cms/trivcat/store/user/`whoami`/MT2production/80X/PostProcessed/"$productionName"/"
-outputFolder="/pnfs/psi.ch/cms/trivcat/store/user/`whoami`/babies/80X/MT2/PostProcessed/"$productionName"/"
+#outputFolder="/pnfs/psi.ch/cms/trivcat/store/user/`whoami`/ZGproduction/80X/PostProcessed/"$productionName"_pu/"
+outputFolder="/pnfs/psi.ch/cms/trivcat/store/user/`whoami`/MT2production/80X/PostProcessed/"$productionName"/"
+#outputFolder="/pnfs/psi.ch/cms/trivcat/store/user/`whoami`/babies/80X/MT2/PostProcessed/"$productionName"/"
 
 
 fileExt="_post.root"
@@ -20,7 +22,7 @@ inputPU="MyDataPileupHistogram.root"
 PUvar="nTrueInt"
 GoldenJSON="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions16/13TeV/Cert_271036-273730_13TeV_PromptReco_Collisions16_JSON.txt"
 SilverJSON=$GoldenJSON
-applyJSON=1     #0 for MC
+applyJSON=0     #0 for MC
 doSilver=0      #0 for MC
 doFilterTxt=0   #0 for MC
 doAllSF=0       #1 for MC
@@ -243,7 +245,7 @@ fi
 
 #get the pileUp histogram
 if [ ! -f MyDataPileupHistogram.root ]; then
-    pileupCalc.py -i $GoldenJSON --inputLumiJSON /afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/PileUp/pileup_latest.txt --calcMode true --minBiasXsec 80000 --maxPileupBin 50 --numPileupBins 50  MyDataPileupHistogram.root
+    pileupCalc.py -i $GoldenJSON --inputLumiJSON /afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions16/13TeV/PileUp/pileup_latest.txt --calcMode true --minBiasXsec 69000 --maxPileupBin 50 --numPileupBins 50  MyDataPileupHistogram.root
 fi
 
 
