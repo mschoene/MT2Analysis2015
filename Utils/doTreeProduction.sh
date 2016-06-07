@@ -97,34 +97,40 @@ if [[ "$1" = "pre" ]]; then
 	fi;
 
 	if [ ${isCrab} = 1 ]; then
-	    for f in $inputFolder/$name/$crabExt/0000/mt2*.root; do
-		echo $f>>$fileList
+	    for ((i=0; i<10; i++)); do
+		if [ -d $inputFolder/${name}/$crabExt/000${i}/ ]; then
+		    for f in $inputFolder/$name/$crabExt/000${i}/mt2*.root; do
+			echo $f>>$fileList
+		    done;
+		fi;
 	    done;
 	else
 	    for f in $inputFolder/$name/mt2*.root; do
 		echo $f>>$fileList
 	    done;
 	fi;
-    
+	
 
 	numFiles=$(wc -l inputChunkList.txt | awk '{print $1}')
 	echo "number of files = " $numFiles
 	
-	for ((i=0; i<4; i++)); do
-	    if [ -d $inputFolder/${name}_ext_${i}/ ]; then
-		if [ ${isCrab} = 1 ]; then
-    		    crabExt=$(ls $inputFolder/${name}_ext_${i}/)
-		    for f in $inputFolder/${name}_ext_${i}/${crabExt}/0000/mt2*.root; do
-			echo $f>>$fileList
-		    done;
-		else
-		    for f in $inputFolder/${name}_ext_${i}/mt2*.root; do
-			echo $f>>$fileList
-		    done;
-		fi;
+	if [ -d $inputFolder/${name}_ext/ ]; then
+	    if [ ${isCrab} = 1 ]; then
+    		crabExt=$(ls $inputFolder/${name}_ext/)
+		for ((i=0; i<10; i++)); do
+		    if [ -d $inputFolder/${name}_ext/$crabExt/000${i}/ ]; then
+			for f in $inputFolder/${name}_ext/${crabExt}/000${i}/mt2*.root; do
+			    echo $f>>$fileList
+			done;
+		    fi;
+		done;
+	    else
+		for f in $inputFolder/${name}_ext_${i}/mt2*.root; do
+		    echo $f>>$fileList
+		done;
 	    fi;
-	done;
-
+	fi;
+	    
 
 	numFiles=$(wc -l inputChunkList.txt | awk '{print $1}')
 	echo "number of files = " $numFiles
@@ -294,8 +300,12 @@ do
     fi;
 
     if [ ${isCrab} = 1 ]; then
-	for f in $inputFolder/$name/$crabExt/0000/mt2*.root; do
-	    echo $f>>$fileList
+	for ((i=0; i<10; i++)); do
+	    if [ -d $inputFolder/${name}/$crabExt/000${i}/ ]; then
+		for f in $inputFolder/$name/$crabExt/000${i}/mt2*.root; do
+		    echo $f>>$fileList
+		done;
+	    fi;
 	done;
     else
 	for f in $inputFolder/$name/mt2*.root; do
@@ -307,25 +317,22 @@ do
     numFiles=$(wc -l inputChunkList.txt | awk '{print $1}')
     echo "number of files = " $numFiles
 
-
-    for ((i=0; i<4; i++)); do	 
-	if [ -d $inputFolder/${name}_ext_${i}/ ]; then
-    	    if [ ${isCrab} = 1 ]; then
-    		crabExt=$(ls $inputFolder/${name}_ext_${i}/)
-
-    		for f in $inputFolder/${name}_ext_${i}/${crabExt}/0000/mt2*.root; do
-    		    echo $f>>$fileList
-    		done;
-
-    	    else
-    		for f in $inputFolder/${name}_ext_${i}/mt2*.root; do
-    		    echo $f>>$fileList
-    		done;
-    	    fi;
+    if [ -d $inputFolder/${name}_ext/ ]; then
+	if [ ${isCrab} = 1 ]; then
+    	    crabExt=$(ls $inputFolder/${name}_ext/)
+	    for ((i=0; i<10; i++)); do
+		if [ -d $inputFolder/${name}_ext/$crabExt/000${i}/ ]; then
+		    for f in $inputFolder/${name}_ext/${crabExt}/000${i}/mt2*.root; do
+			echo $f>>$fileList
+		    done;
+		fi;
+	    done;
+	else
+	    for f in $inputFolder/${name}_ext_${i}/mt2*.root; do
+		echo $f>>$fileList
+	    done;
 	fi;
-    done;
-    
-
+    fi;
 
     numFiles=$(wc -l inputChunkList.txt | awk '{print $1}')
     echo "number of files = " $numFiles
@@ -335,14 +342,14 @@ do
     counter=-1
     preProcFile=""
 
-#    if [[ (( $doPreProc -eq 1 && (( $numFiles -gt $maxNfiles )) ))  || (( $id -lt 10 )) ]]; then
-#	echo "File will be split into multiple files for speed and memory limit purposes"
-#	counter=0;
-#	maxNfiles=100;
-#	if [[ $id > 10 ]]; then
-#	    preProcFile=${name}_pre.cfg;
-#	fi;
-#    fi;
+    if [[ (( $doPreProc -eq 1 && (( $numFiles -gt $maxNfiles )) ))  || (( $id -lt 10 )) ]]; then
+	echo "File will be split into multiple files for speed and memory limit purposes"
+	counter=0;
+	maxNfiles=100;
+	if [[ $id > 10 ]]; then
+	    preProcFile=${name}_pre.cfg;
+	fi;
+    fi;
     
 
     while (( (( (( $numFiles + 1 )) > (($counter * $maxNfiles)) )) || $(($counter < 0 )) )); do 
@@ -359,8 +366,9 @@ do
 
 	echo "Submitting the job for part" $counter; 
 
-	if [[ ${doPreProc} == 0 ]]; then
-	    awk '$0="dcap://t3se01.psi.ch:22125/"$0' inputChunkList.txt > temp_${name}_${counter}_dcap.txt
+	#if [[ ${doPreProc} == 0 ]]; then
+	if [[ $counter == -1 ]]; then
+    	    awk '$0="dcap://t3se01.psi.ch:22125/"$0' inputChunkList.txt > temp_${name}_${counter}_dcap.txt
 	    mv temp_${name}_${counter}_dcap.txt chunkPart_${name}_${counter}.txt
 	fi;
 
@@ -456,7 +464,7 @@ skimmingPruningCfgQCD="${workingFolder}/skimmingPruningQCD_${counterName}.cfg"
 rm \$skimmingPruningCfgQCD
 
 #qcd skim for monojet
-skimmingPruningCfg="${workingFolder}/skimmingPruningMonoJet_${counterName}.cfg"
+skimmingPruningCfgMonoJet="${workingFolder}/skimmingPruningMonoJet_${counterName}.cfg"
     cat skimmingPruningMonoJet.cfg |grep -v \# | sed  "s#INPUTDIR#${outputFolder}#" |sed "s#INPUTFILTER#${counterName}#" \
 	| sed "s#OUTPUTDIR#${outputFolder}/QCDMonoJetSkimAndPrune#" | sed "s#DOPRUNING#${doPruning}#" > \$skimmingPruningCfgMonoJet
 ./runSkimmingPruning.sh \$skimmingPruningCfgMonoJet
