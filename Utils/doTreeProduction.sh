@@ -2,7 +2,7 @@
 
 # --- configuration (consider to move this into a separate file) ---
 treeName="mt2"
-inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/mangano/crab/MT2_8_0_5/data27May_v1"
+inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/mangano/crab/MT2_8_0_5/data05June_all_v1"
 listOfSamplesFile="postProcessing2016-Data.cfg"
 #listOfSamplesFile="postProcessing2016-MC.cfg"
 
@@ -18,7 +18,7 @@ fileExt="_post.root"
 isCrab=1
 inputPU="MyDataPileupHistogram.root"
 PUvar="nTrueInt"
-GoldenJSON="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions16/13TeV/Cert_271036-273730_13TeV_PromptReco_Collisions16_JSON.txt"
+GoldenJSON="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions16/13TeV/Cert_271036-274240_13TeV_PromptReco_Collisions16_JSON.txt"
 SilverJSON=$GoldenJSON
 applyJSON=1     #0 for MC
 doSilver=0      #0 for MC
@@ -196,7 +196,7 @@ if [[ "$1" = "post" ]]; then
 
 # --- check the existence of outputFolder on SE ---
 gfal-ls srm://t3se01.psi.ch$outputFolder &> ./checkOutputDir
-if [ -n "`cat /tmp/checkOutputDir|grep 'No such file or directory'`"  ]; then
+if [ -n "`cat ./checkOutputDir|grep 'No such file or directory'`"  ]; then
     :
 else
     echo "WARNING: output directory " $outputFolder "already exists."
