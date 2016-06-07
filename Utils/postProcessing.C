@@ -159,84 +159,103 @@ int postProcessing(std::string inputString,
       silver.set_goodrun_file(silverjson_file);
     }
   }
-  //Getting the lepton scale factor histograms/////////////////
-  //Electrons//
-  std::string filename = "kinematicBinSFele.root";
-  TFile * f_ele = new TFile(filename.c_str() );
-  if (!f_ele->IsOpen()) std::cout << " ERROR: Could not find scale factor file " << filename << std::endl; 
-  //Uncomment for loose Id
-  //TH2D* h_id = (TH2D*) f_ele->Get("CutBasedLoose");
-  TH2D* h_id = (TH2D*) f_ele->Get("CutBasedVeto");
-  TH2D* h_iso = (TH2D*) f_ele->Get("MiniIso0p1_vs_AbsEta");
-  if (!h_id || !h_iso) std::cout << "ERROR: Could not find scale factor histogram"<< std::endl;
-  TH2D* h_elSF = (TH2D*) h_id->Clone("h_elSF");
-  h_elSF->SetDirectory(0);
-  h_elSF->Multiply(h_iso);
 
-  //Muons//
-  std::string filenameID = "TnP_MuonID_NUM_LooseID_DENOM_generalTracks_VAR_map_pt_eta.root";
-  std::string filenameISO = "TnP_MuonID_NUM_MiniIsoTight_DENOM_LooseID_VAR_map_pt_eta.root";
-  TFile * f1 = new TFile(filenameID.c_str() );
-  TFile * f2 = new TFile(filenameISO.c_str() );
-  if (!f1->IsOpen()) { std::cout<<" ERROR: Could not find ID scale factor file "<<filenameID<<std::endl; return 0;}
-  if (!f2->IsOpen()) { std::cout<<"ERROR: Could not find ISO scale factor file "<<filenameISO<<std::endl; return 0;}
-  TH2D* h_id_mu = (TH2D*) f1->Get("pt_abseta_PLOT_pair_probeMultiplicity_bin0_&_tag_combRelIsoPF04dBeta_bin0_&_tag_pt_bin0_&_tag_IsoMu20_pass");
-  TH2D* h_iso_mu = (TH2D*) f2->Get("pt_abseta_PLOT_pair_probeMultiplicity_bin0_&_tag_combRelIsoPF04dBeta_bin0_&_tag_pt_bin0_&_PF_pass_&_tag_IsoMu20_pass");
-  if (!h_id_mu || !h_iso_mu) { std::cout<<"ERROR: Could not find scale factor histogram"<<std::endl; return 0;}
-  TH2D* h_muSF = (TH2D*) h_id_mu->Clone("h_muSF");
-  h_muSF->SetDirectory(0);
-  h_muSF->Multiply(h_iso_mu);
+  TH2D* h_id = 0;
+  TH2D* h_iso = 0;
+  TH2D* h_elSF = 0;
+  TH2D* h_id_mu = 0;
+  TH2D* h_iso_mu = 0;
+  TH2D* h_muSF = 0;
 
-  f_ele->Close();  f1->Close(); f2->Close();
-  delete f_ele; delete f1; delete f2;
+  TH2D* h_fast_muSF = 0;
+  TH2D* h_fast_elSF = 0;
+  TH2D* h_eff_full_mu = 0;
+  TH2D* h_eff_full_el = 0;
+  TH2D* h_eff_fast_mu =  0;
+  TH2D* h_eff_fast_el =  0;
 
-  std::cout << std::endl;
-  std::cout << "Using Loose Muon ID, MiniIso 0.2 lepton scale factors" << std::endl;
-  std::cout << "Using Veto Electrons ID, MiniIso 0.1 lepton scale factors" << std::endl;
-  std::cout << "Be aware that Veto Electrons are not suited for selecting Electrons." << std::endl;
-  std::cout << std::endl;
+  if( applySF ){
+
+    //Getting the lepton scale factor histograms/////////////////
+    //Electrons//
+    std::string filename = "kinematicBinSFele.root";
+    TFile * f_ele = new TFile(filename.c_str() );
+    if (!f_ele->IsOpen()) std::cout << " ERROR: Could not find scale factor file " << filename << std::endl; 
+    //Uncomment for loose Id
+    //TH2D* h_id = (TH2D*) f_ele->Get("CutBasedLoose");
+    //(TH2D*) f_ele->Get("CutBasedVeto");
+    h_id = (TH2D*) f_ele->Get("CutBasedVeto");
+    h_iso = (TH2D*) f_ele->Get("MiniIso0p1_vs_AbsEta");
+    if (!h_id || !h_iso) std::cout << "ERROR: Could not find scale factor histogram"<< std::endl;
+    h_elSF = (TH2D*) h_id->Clone("h_elSF");
+    h_elSF->SetDirectory(0);
+    h_elSF->Multiply(h_iso);
+
+    //Muons//
+    std::string filenameID = "TnP_MuonID_NUM_LooseID_DENOM_generalTracks_VAR_map_pt_eta.root";
+    std::string filenameISO = "TnP_MuonID_NUM_MiniIsoTight_DENOM_LooseID_VAR_map_pt_eta.root";
+    TFile * f1 = new TFile(filenameID.c_str() );
+    TFile * f2 = new TFile(filenameISO.c_str() );
+    if (!f1->IsOpen()) { std::cout<<" ERROR: Could not find ID scale factor file "<<filenameID<<std::endl; return 0;}
+    if (!f2->IsOpen()) { std::cout<<"ERROR: Could not find ISO scale factor file "<<filenameISO<<std::endl; return 0;}
+    h_id_mu = (TH2D*) f1->Get("pt_abseta_PLOT_pair_probeMultiplicity_bin0_&_tag_combRelIsoPF04dBeta_bin0_&_tag_pt_bin0_&_tag_IsoMu20_pass");
+    h_iso_mu = (TH2D*) f2->Get("pt_abseta_PLOT_pair_probeMultiplicity_bin0_&_tag_combRelIsoPF04dBeta_bin0_&_tag_pt_bin0_&_PF_pass_&_tag_IsoMu20_pass");
+    if (!h_id_mu || !h_iso_mu) { std::cout<<"ERROR: Could not find scale factor histogram"<<std::endl; return 0;}
+    h_muSF = (TH2D*) h_id_mu->Clone("h_muSF");
+    h_muSF->SetDirectory(0);
+    h_muSF->Multiply(h_iso_mu);
+
+    f_ele->Close();  f1->Close(); f2->Close();
+    delete f_ele; delete f1; delete f2;
+
+    std::cout << std::endl;
+    std::cout << "Using Loose Muon ID, MiniIso 0.2 lepton scale factors" << std::endl;
+    std::cout << "Using Veto Electrons ID, MiniIso 0.1 lepton scale factors" << std::endl;
+    std::cout << "Be aware that Veto Electrons are not suited for selecting Electrons." << std::endl;
+    std::cout << std::endl;
+
+    if( id >= 1000 ){
+      std::cout << "Also loading the FastSim/FullSim Lepton scale factors" << std::endl;
+      TFile * f_mu = new TFile("sf_mu_looseID_mini02.root" );
+      TFile * f_el = new TFile("sf_el_vetoCB_mini01.root" );
+      if(!f_mu->IsOpen()) { std::cout<<" ERROR: Could not find muon Fastsim scale factor file " <<std::endl; return 0;}
+      if(!f_el->IsOpen()) { std::cout<<" ERROR: Could not find electron Fastsim scale factor file " <<std::endl; return 0;}
+
+      h_fast_muSF = (TH2D*) f_mu->Get("histo2D");
+      h_fast_elSF = (TH2D*) f_el->Get("histo2D");
+      if(!h_fast_muSF || !h_fast_elSF ) {std::cout << " ERROR: Could not find the 3D histogram in your files " << std::endl; return 0;}
+
+      h_fast_muSF->SetDirectory(0);
+      h_fast_elSF->SetDirectory(0);
+
+      f_mu->Close(); f_el->Close();
+      delete f_mu; delete f_el;
 
 
-  std::cout << "Also loading the FastSim/FullSim Lepton scale factors" << std::endl;
-
-  TFile * f_mu = new TFile("sf_mu_looseID_mini02.root" );
-  TFile * f_el = new TFile("sf_el_vetoCB_mini01.root" );
-  if(!f_mu->IsOpen()) { std::cout<<" ERROR: Could not find muon Fastsim scale factor file " <<std::endl; return 0;}
-  if(!f_el->IsOpen()) { std::cout<<" ERROR: Could not find electron Fastsim scale factor file " <<std::endl; return 0;}
-
-  TH3D* h_fast_muSF = (TH3D*) f_mu->Get("histo2D");
-  TH3D* h_fast_elSF = (TH3D*) f_el->Get("histo2D");
-  if(!h_fast_muSF || !h_fast_elSF ) {std::cout << " ERROR: Could not find the 3D histogram in your files " << std::endl; return 0;}
-
-  h_fast_muSF->SetDirectory(0);
-  h_fast_elSF->SetDirectory(0);
-
-  f_mu->Close(); f_el->Close();
-  delete f_mu; delete f_el;
-
-  std::cout << "Also loading the FullSim efficiency map" << std::endl;
-  TFile * f_eff_full = new TFile("vetoeff_emu_etapt_lostlep.root" );
-  if(!f_eff_full->IsOpen()) {std::cout<<" ERROR: Could not find muon Fullsim scale factor file" <<std::endl; return 0;}
-  TH2D* h_eff_full_mu = (TH2D*) f_eff_full->Get("h_mu_comb_eff");
-  TH2D* h_eff_full_el = (TH2D*) f_eff_full->Get("h_ele_comb_eff");
-  if(!h_eff_full_mu || !h_eff_full_el ) {std::cout << " ERROR: Could not find the 2D histogram in your files " << std::endl; return 0;}
-  h_eff_full_mu->SetDirectory(0);
-  h_eff_full_el->SetDirectory(0);
-  f_eff_full->Close();
-  delete f_eff_full;
+      std::cout << "Also loading the FullSim efficiency map" << std::endl;
+      TFile * f_eff_full = new TFile("vetoeff_emu_etapt_lostlep.root" );
+      if(!f_eff_full->IsOpen()) {std::cout<<" ERROR: Could not find muon Fullsim scale factor file" <<std::endl; return 0;}
+      h_eff_full_mu = (TH2D*) f_eff_full->Get("h_mu_comb_eff");
+      h_eff_full_el = (TH2D*) f_eff_full->Get("h_ele_comb_eff");
+      if(!h_eff_full_mu || !h_eff_full_el ) {std::cout << " ERROR: Could not find the 2D histogram in your files " << std::endl; return 0;}
+      h_eff_full_mu->SetDirectory(0);
+      h_eff_full_el->SetDirectory(0);
+      f_eff_full->Close();
+      delete f_eff_full;
 
 
-  std::cout << "Also loading the FastSim efficiency map" << std::endl; 
-  TFile * f_eff_fast = new TFile("vetoeff_emu_etapt_T1tttt_mGluino-1500to1525.root" );
-  if(!f_eff_fast->IsOpen()) {std::cout<<" ERROR: Could not find muon Fastsim scale factor file" <<std::endl; return 0;}
-  TH2D* h_eff_fast_mu = (TH2D*) f_eff_fast->Get("h_ele_comb_eff");
-  TH2D* h_eff_fast_el = (TH2D*) f_eff_fast->Get("h_mu_comb_eff");
-  if(!h_eff_fast_mu || !h_eff_fast_el ) {std::cout << " ERROR: Could not find the 2D histogram in your files " << std::endl; return 0;}
-  h_eff_fast_mu->SetDirectory(0);
-  h_eff_fast_el->SetDirectory(0);
-  f_eff_fast->Close();
-  delete f_eff_fast;
-
+      std::cout << "Also loading the FastSim efficiency map" << std::endl; 
+      TFile * f_eff_fast = new TFile("vetoeff_emu_etapt_T1tttt_mGluino-1500to1525.root" );
+      if(!f_eff_fast->IsOpen()) {std::cout<<" ERROR: Could not find muon Fastsim scale factor file" <<std::endl; return 0;}
+      h_eff_fast_mu = (TH2D*) f_eff_fast->Get("h_ele_comb_eff");
+      h_eff_fast_el = (TH2D*) f_eff_fast->Get("h_mu_comb_eff");
+      if(!h_eff_fast_mu || !h_eff_fast_el ) {std::cout << " ERROR: Could not find the 2D histogram in your files " << std::endl; return 0;}
+      h_eff_fast_mu->SetDirectory(0);
+      h_eff_fast_el->SetDirectory(0);
+      f_eff_fast->Close();
+      delete f_eff_fast;
+    }
+  }
 
 
   TChain* chain = new TChain(treeName.c_str());
