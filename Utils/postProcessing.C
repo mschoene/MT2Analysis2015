@@ -178,7 +178,7 @@ int postProcessing(std::string inputString,
 
     //Getting the lepton scale factor histograms/////////////////
     //Electrons//
-    std::string filename = "kinematicBinSFele.root";
+    std::string filename = "/mnt/t3nfs01/data01/shome/mschoene/CMSSW_7_4_12_pP/src/analysisCode/Utils/kinematicBinSFele.root";
     TFile * f_ele = new TFile(filename.c_str() );
     if (!f_ele->IsOpen()) std::cout << " ERROR: Could not find scale factor file " << filename << std::endl; 
     //Uncomment for loose Id
@@ -192,8 +192,8 @@ int postProcessing(std::string inputString,
     h_elSF->Multiply(h_iso);
 
     //Muons//
-    std::string filenameID = "TnP_MuonID_NUM_LooseID_DENOM_generalTracks_VAR_map_pt_eta.root";
-    std::string filenameISO = "TnP_MuonID_NUM_MiniIsoTight_DENOM_LooseID_VAR_map_pt_eta.root";
+    std::string filenameID = "/mnt/t3nfs01/data01/shome/mschoene/CMSSW_7_4_12_pP/src/analysisCode/Utils/TnP_MuonID_NUM_LooseID_DENOM_generalTracks_VAR_map_pt_eta.root";
+    std::string filenameISO = "/mnt/t3nfs01/data01/shome/mschoene/CMSSW_7_4_12_pP/src/analysisCode/Utils/TnP_MuonID_NUM_MiniIsoTight_DENOM_LooseID_VAR_map_pt_eta.root";
     TFile * f1 = new TFile(filenameID.c_str() );
     TFile * f2 = new TFile(filenameISO.c_str() );
     if (!f1->IsOpen()) { std::cout<<" ERROR: Could not find ID scale factor file "<<filenameID<<std::endl; return 0;}
@@ -214,10 +214,22 @@ int postProcessing(std::string inputString,
     std::cout << "Be aware that Veto Electrons are not suited for selecting Electrons." << std::endl;
     std::cout << std::endl;
 
+    std::cout << "Also loading the FullSim efficiency map" << std::endl;
+    TFile * f_eff_full = new TFile("/mnt/t3nfs01/data01/shome/mschoene/CMSSW_7_4_12_pP/src/analysisCode/Utils/vetoeff_emu_etapt_lostlep.root" );
+    if(!f_eff_full->IsOpen()) {std::cout<<" ERROR: Could not find muon Fullsim scale factor file" <<std::endl; return 0;}
+    h_eff_full_mu = (TH2D*) f_eff_full->Get("h_mu_comb_eff");
+    h_eff_full_el = (TH2D*) f_eff_full->Get("h_ele_comb_eff");
+    if(!h_eff_full_mu || !h_eff_full_el ) {std::cout << " ERROR: Could not find the 2D histogram in your files " << std::endl; return 0;}
+    h_eff_full_mu->SetDirectory(0);
+    h_eff_full_el->SetDirectory(0);
+    f_eff_full->Close();
+    delete f_eff_full;
+
+
     if( id >= 1000 ){
       std::cout << "Also loading the FastSim/FullSim Lepton scale factors" << std::endl;
-      TFile * f_mu = new TFile("sf_mu_looseID_mini02.root" );
-      TFile * f_el = new TFile("sf_el_vetoCB_mini01.root" );
+      TFile * f_mu = new TFile("/mnt/t3nfs01/data01/shome/mschoene/CMSSW_7_4_12_pP/src/analysisCode/Utils/sf_mu_looseID_mini02.root" );
+      TFile * f_el = new TFile("/mnt/t3nfs01/data01/shome/mschoene/CMSSW_7_4_12_pP/src/analysisCode/Utils/sf_el_vetoCB_mini01.root" );
       if(!f_mu->IsOpen()) { std::cout<<" ERROR: Could not find muon Fastsim scale factor file " <<std::endl; return 0;}
       if(!f_el->IsOpen()) { std::cout<<" ERROR: Could not find electron Fastsim scale factor file " <<std::endl; return 0;}
 
@@ -232,20 +244,8 @@ int postProcessing(std::string inputString,
       delete f_mu; delete f_el;
 
 
-      std::cout << "Also loading the FullSim efficiency map" << std::endl;
-      TFile * f_eff_full = new TFile("vetoeff_emu_etapt_lostlep.root" );
-      if(!f_eff_full->IsOpen()) {std::cout<<" ERROR: Could not find muon Fullsim scale factor file" <<std::endl; return 0;}
-      h_eff_full_mu = (TH2D*) f_eff_full->Get("h_mu_comb_eff");
-      h_eff_full_el = (TH2D*) f_eff_full->Get("h_ele_comb_eff");
-      if(!h_eff_full_mu || !h_eff_full_el ) {std::cout << " ERROR: Could not find the 2D histogram in your files " << std::endl; return 0;}
-      h_eff_full_mu->SetDirectory(0);
-      h_eff_full_el->SetDirectory(0);
-      f_eff_full->Close();
-      delete f_eff_full;
-
-
       std::cout << "Also loading the FastSim efficiency map" << std::endl; 
-      TFile * f_eff_fast = new TFile("vetoeff_emu_etapt_T1tttt_mGluino-1500to1525.root" );
+      TFile * f_eff_fast = new TFile("/mnt/t3nfs01/data01/shome/mschoene/CMSSW_7_4_12_pP/src/analysisCode/Utils/vetoeff_emu_etapt_T1tttt_mGluino-1500to1525.root" );
       if(!f_eff_fast->IsOpen()) {std::cout<<" ERROR: Could not find muon Fastsim scale factor file" <<std::endl; return 0;}
       h_eff_fast_mu = (TH2D*) f_eff_fast->Get("h_ele_comb_eff");
       h_eff_fast_el = (TH2D*) f_eff_fast->Get("h_mu_comb_eff");
