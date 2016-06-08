@@ -203,14 +203,15 @@ int preProcessing(std::string inputString,
 	      << "#events tree: "  << nEventsTree << std::endl;
     
 
-
-
+  double average = 0;
+  average = 1.0; //dont' average for now
+  /*
   //Top pt reweighting 
   //Values from Run1 still valid for now, see here: https://twiki.cern.ch/twiki/bin/viewauth/CMS/TopPtReweighting
   float a = 0.156;
   float b = -0.00137;
   //First loop over events for the normalization of the toppt reweighting///////
-  double average = 0;
+
   if( id>300 && id<400 ){
     for( ULong64_t k = 0; k < nEventsTree; k++) {
 
@@ -246,6 +247,7 @@ int preProcessing(std::string inputString,
     average /= (double) nEventsTree;
   }//end or first loop for toppt average
 
+  */
 
   std::cout << "average = " << average << std::endl;
 

@@ -159,62 +159,103 @@ int postProcessing(std::string inputString,
       silver.set_goodrun_file(silverjson_file);
     }
   }
-  //Getting the lepton scale factor histograms/////////////////
-  //Electrons//
-  std::string filename = "kinematicBinSFele.root";
-  TFile * f_ele = new TFile(filename.c_str() );
-  if (!f_ele->IsOpen()) std::cout << " ERROR: Could not find scale factor file " << filename << std::endl; 
-  //Uncomment for loose Id
-  //TH2D* h_id = (TH2D*) f_ele->Get("CutBasedLoose");
-  TH2D* h_id = (TH2D*) f_ele->Get("CutBasedVeto");
-  TH2D* h_iso = (TH2D*) f_ele->Get("MiniIso0p1_vs_AbsEta");
-  if (!h_id || !h_iso) std::cout << "ERROR: Could not find scale factor histogram"<< std::endl;
-  TH2D* h_elSF = (TH2D*) h_id->Clone("h_elSF");
-  h_elSF->SetDirectory(0);
-  h_elSF->Multiply(h_iso);
 
-  //Muons//
-  std::string filenameID = "TnP_MuonID_NUM_LooseID_DENOM_generalTracks_VAR_map_pt_eta.root";
-  std::string filenameISO = "TnP_MuonID_NUM_MiniIsoTight_DENOM_LooseID_VAR_map_pt_eta.root";
-  TFile * f1 = new TFile(filenameID.c_str() );
-  TFile * f2 = new TFile(filenameISO.c_str() );
-  if (!f1->IsOpen()) { std::cout<<" ERROR: Could not find ID scale factor file "<<filenameID<<std::endl; return 0;}
-  if (!f2->IsOpen()) { std::cout<<"ERROR: Could not find ISO scale factor file "<<filenameISO<<std::endl; return 0;}
-  TH2D* h_id_mu = (TH2D*) f1->Get("pt_abseta_PLOT_pair_probeMultiplicity_bin0_&_tag_combRelIsoPF04dBeta_bin0_&_tag_pt_bin0_&_tag_IsoMu20_pass");
-  TH2D* h_iso_mu = (TH2D*) f2->Get("pt_abseta_PLOT_pair_probeMultiplicity_bin0_&_tag_combRelIsoPF04dBeta_bin0_&_tag_pt_bin0_&_PF_pass_&_tag_IsoMu20_pass");
-  if (!h_id_mu || !h_iso_mu) { std::cout<<"ERROR: Could not find scale factor histogram"<<std::endl; return 0;}
-  TH2D* h_muSF = (TH2D*) h_id_mu->Clone("h_muSF");
-  h_muSF->SetDirectory(0);
-  h_muSF->Multiply(h_iso_mu);
+  TH2D* h_id = 0;
+  TH2D* h_iso = 0;
+  TH2D* h_elSF = 0;
+  TH2D* h_id_mu = 0;
+  TH2D* h_iso_mu = 0;
+  TH2D* h_muSF = 0;
 
-  f_ele->Close();  f1->Close(); f2->Close();
-  delete f_ele; delete f1; delete f2;
+  TH2D* h_fast_muSF = 0;
+  TH2D* h_fast_elSF = 0;
+  TH2D* h_eff_full_mu = 0;
+  TH2D* h_eff_full_el = 0;
+  TH2D* h_eff_fast_mu =  0;
+  TH2D* h_eff_fast_el =  0;
 
-  std::cout << std::endl;
-  std::cout << "Using Loose Muon ID, MiniIso 0.2 lepton scale factors" << std::endl;
-  std::cout << "Using Veto Electrons ID, MiniIso 0.1 lepton scale factors" << std::endl;
-  std::cout << "Be aware that Veto Electrons are not suited for selecting Electrons." << std::endl;
-  std::cout << std::endl;
+  if( applySF ){
+
+    //Getting the lepton scale factor histograms/////////////////
+    //Electrons//
+    std::string filename = "/mnt/t3nfs01/data01/shome/mschoene/CMSSW_7_4_12_pP/src/analysisCode/Utils/kinematicBinSFele.root";
+    TFile * f_ele = new TFile(filename.c_str() );
+    if (!f_ele->IsOpen()) std::cout << " ERROR: Could not find scale factor file " << filename << std::endl; 
+    //Uncomment for loose Id
+    //TH2D* h_id = (TH2D*) f_ele->Get("CutBasedLoose");
+    //(TH2D*) f_ele->Get("CutBasedVeto");
+    h_id = (TH2D*) f_ele->Get("CutBasedVeto");
+    h_iso = (TH2D*) f_ele->Get("MiniIso0p1_vs_AbsEta");
+    if (!h_id || !h_iso) std::cout << "ERROR: Could not find scale factor histogram"<< std::endl;
+    h_elSF = (TH2D*) h_id->Clone("h_elSF");
+    h_elSF->SetDirectory(0);
+    h_elSF->Multiply(h_iso);
+
+    //Muons//
+    std::string filenameID = "/mnt/t3nfs01/data01/shome/mschoene/CMSSW_7_4_12_pP/src/analysisCode/Utils/TnP_MuonID_NUM_LooseID_DENOM_generalTracks_VAR_map_pt_eta.root";
+    std::string filenameISO = "/mnt/t3nfs01/data01/shome/mschoene/CMSSW_7_4_12_pP/src/analysisCode/Utils/TnP_MuonID_NUM_MiniIsoTight_DENOM_LooseID_VAR_map_pt_eta.root";
+    TFile * f1 = new TFile(filenameID.c_str() );
+    TFile * f2 = new TFile(filenameISO.c_str() );
+    if (!f1->IsOpen()) { std::cout<<" ERROR: Could not find ID scale factor file "<<filenameID<<std::endl; return 0;}
+    if (!f2->IsOpen()) { std::cout<<"ERROR: Could not find ISO scale factor file "<<filenameISO<<std::endl; return 0;}
+    h_id_mu = (TH2D*) f1->Get("pt_abseta_PLOT_pair_probeMultiplicity_bin0_&_tag_combRelIsoPF04dBeta_bin0_&_tag_pt_bin0_&_tag_IsoMu20_pass");
+    h_iso_mu = (TH2D*) f2->Get("pt_abseta_PLOT_pair_probeMultiplicity_bin0_&_tag_combRelIsoPF04dBeta_bin0_&_tag_pt_bin0_&_PF_pass_&_tag_IsoMu20_pass");
+    if (!h_id_mu || !h_iso_mu) { std::cout<<"ERROR: Could not find scale factor histogram"<<std::endl; return 0;}
+    h_muSF = (TH2D*) h_id_mu->Clone("h_muSF");
+    h_muSF->SetDirectory(0);
+    h_muSF->Multiply(h_iso_mu);
+
+    f_ele->Close();  f1->Close(); f2->Close();
+    delete f_ele; delete f1; delete f2;
+
+    std::cout << std::endl;
+    std::cout << "Using Loose Muon ID, MiniIso 0.2 lepton scale factors" << std::endl;
+    std::cout << "Using Veto Electrons ID, MiniIso 0.1 lepton scale factors" << std::endl;
+    std::cout << "Be aware that Veto Electrons are not suited for selecting Electrons." << std::endl;
+    std::cout << std::endl;
+
+    std::cout << "Also loading the FullSim efficiency map" << std::endl;
+    TFile * f_eff_full = new TFile("/mnt/t3nfs01/data01/shome/mschoene/CMSSW_7_4_12_pP/src/analysisCode/Utils/vetoeff_emu_etapt_lostlep.root" );
+    if(!f_eff_full->IsOpen()) {std::cout<<" ERROR: Could not find muon Fullsim scale factor file" <<std::endl; return 0;}
+    h_eff_full_mu = (TH2D*) f_eff_full->Get("h_mu_comb_eff");
+    h_eff_full_el = (TH2D*) f_eff_full->Get("h_ele_comb_eff");
+    if(!h_eff_full_mu || !h_eff_full_el ) {std::cout << " ERROR: Could not find the 2D histogram in your files " << std::endl; return 0;}
+    h_eff_full_mu->SetDirectory(0);
+    h_eff_full_el->SetDirectory(0);
+    f_eff_full->Close();
+    delete f_eff_full;
 
 
-  // if(id>=1000 && id <2000){
-  std::cout << "Also loading the FastSim/FullSim Lepton scale factors" << std::endl;
+    if( id >= 1000 ){
+      std::cout << "Also loading the FastSim/FullSim Lepton scale factors" << std::endl;
+      TFile * f_mu = new TFile("/mnt/t3nfs01/data01/shome/mschoene/CMSSW_7_4_12_pP/src/analysisCode/Utils/sf_mu_looseID_mini02.root" );
+      TFile * f_el = new TFile("/mnt/t3nfs01/data01/shome/mschoene/CMSSW_7_4_12_pP/src/analysisCode/Utils/sf_el_vetoCB_mini01.root" );
+      if(!f_mu->IsOpen()) { std::cout<<" ERROR: Could not find muon Fastsim scale factor file " <<std::endl; return 0;}
+      if(!f_el->IsOpen()) { std::cout<<" ERROR: Could not find electron Fastsim scale factor file " <<std::endl; return 0;}
 
-  TFile * f_mu = new TFile("sf_mu_looseID_mini02.root" );
-  TFile * f_el = new TFile("sf_el_vetoCB_mini01.root" );
-  if(!f_mu->IsOpen()) { std::cout<<" ERROR: Could not find muon Fastsim scale factor file " <<std::endl; return 0;}
-  if(!f_el->IsOpen()) { std::cout<<" ERROR: Could not find electron Fastsim scale factor file " <<std::endl; return 0;}
+      h_fast_muSF = (TH2D*) f_mu->Get("histo2D");
+      h_fast_elSF = (TH2D*) f_el->Get("histo2D");
+      if(!h_fast_muSF || !h_fast_elSF ) {std::cout << " ERROR: Could not find the 3D histogram in your files " << std::endl; return 0;}
 
-  TH3D* h_fast_muSF = (TH3D*) f_mu->Get("histo2D");
-  TH3D* h_fast_elSF = (TH3D*) f_el->Get("histo2D");
-  if(!h_fast_muSF || !h_fast_elSF ) {std::cout << " ERROR: Could not find the 3D histogram in your files " << std::endl; return 0;}
+      h_fast_muSF->SetDirectory(0);
+      h_fast_elSF->SetDirectory(0);
 
-  h_fast_muSF->SetDirectory(0);
-  h_fast_elSF->SetDirectory(0);
+      f_mu->Close(); f_el->Close();
+      delete f_mu; delete f_el;
 
-  f_mu->Close(); f_el->Close();
-  delete f_mu; delete f_el;
-  // }
+
+      std::cout << "Also loading the FastSim efficiency map" << std::endl; 
+      TFile * f_eff_fast = new TFile("/mnt/t3nfs01/data01/shome/mschoene/CMSSW_7_4_12_pP/src/analysisCode/Utils/vetoeff_emu_etapt_T1tttt_mGluino-1500to1525.root" );
+      if(!f_eff_fast->IsOpen()) {std::cout<<" ERROR: Could not find muon Fastsim scale factor file" <<std::endl; return 0;}
+      h_eff_fast_mu = (TH2D*) f_eff_fast->Get("h_ele_comb_eff");
+      h_eff_fast_el = (TH2D*) f_eff_fast->Get("h_mu_comb_eff");
+      if(!h_eff_fast_mu || !h_eff_fast_el ) {std::cout << " ERROR: Could not find the 2D histogram in your files " << std::endl; return 0;}
+      h_eff_fast_mu->SetDirectory(0);
+      h_eff_fast_el->SetDirectory(0);
+      f_eff_fast->Close();
+      delete f_eff_fast;
+    }
+  }
 
 
   TChain* chain = new TChain(treeName.c_str());
@@ -406,8 +447,13 @@ int postProcessing(std::string inputString,
   Float_t weight_lepsf_DN;
   Float_t weight_toppt;
   Float_t weight_isr;
+  Float_t weight_isr_norm;
   Float_t weight_scales[110];
   Float_t weight_scales_av[110];
+
+  Float_t weight_lepsf_0l;
+  Float_t weight_lepsf_0l_UP;
+  Float_t weight_lepsf_0l_DN;
 
 
   ////// Lepton Efficiency SF
@@ -420,6 +466,38 @@ int postProcessing(std::string inputString,
   Int_t lep_pdgId[100];
   chain->SetBranchAddress("lep_pdgId", lep_pdgId);
   
+
+  Int_t ngenLep;
+  Float_t genLep_pt[100];
+  Float_t genLep_eta[100];  
+  Int_t genLep_pdgId[100];
+  Int_t ngenLepFromTau;
+  Float_t genLepFromTau_pt[100];
+  Float_t genLepFromTau_eta[100];  
+  Int_t genLepFromTau_pdgId[100];
+  Int_t nMuons10;
+  Int_t nElectrons10;
+  Int_t nPFLep5LowMT;
+  Int_t nPFHad10LowMT;
+
+  if(!isData){
+    chain->SetBranchAddress("ngenLep", &ngenLep);
+    chain->SetBranchAddress("genLep_pt", genLep_pt);
+    chain->SetBranchAddress("genLep_eta", genLep_eta);
+    chain->SetBranchAddress("genLep_pdgId", genLep_pdgId);
+
+    chain->SetBranchAddress("ngenLepFromTau", &ngenLepFromTau);
+    chain->SetBranchAddress("genLepFromTau_pt", genLepFromTau_pt);
+    chain->SetBranchAddress("genLepFromTau_eta", genLepFromTau_eta);
+    chain->SetBranchAddress("genLepFromTau_pdgId", genLepFromTau_pdgId);
+
+    chain->SetBranchAddress("nMuons10", &nMuons10);
+    chain->SetBranchAddress("nElectrons10", &nElectrons10);
+    chain->SetBranchAddress("nPFLep5LowMT", &nPFLep5LowMT);
+    chain->SetBranchAddress("nPFHad10LowMT", &nPFHad10LowMT);
+  }
+
+
   ////// b-tag SF
   Int_t njet;
   chain->SetBranchAddress("njet", &njet);
@@ -508,18 +586,24 @@ int postProcessing(std::string inputString,
   TBranch* b12 = clone->Branch("isGolden", &isGolden, "isGolden/I");
   TBranch* b13 = clone->Branch("isSilver", &isSilver, "isSilver/I");
  
-  TBranch* b14=0;
-  TBranch* b15=0; 
-  TBranch* b16=0;
-  TBranch* b17=0;
-  TBranch* b18=0;
-  TBranch* b19=0; 
-  TBranch* b20=0; 
-  TBranch* b21=0; 
-  TBranch* b22=0;
-  TBranch* b23=0; 
-  TBranch* b24=0; 
-  TBranch* b25=0; 
+  TBranch* b14 = 0;
+  TBranch* b15 = 0; 
+  TBranch* b16 = 0;
+  TBranch* b17 = 0;
+  TBranch* b18 = 0;
+  TBranch* b19 = 0; 
+  TBranch* b20 = 0; 
+  TBranch* b21 = 0; 
+  TBranch* b22 = 0;
+  TBranch* b23 = 0; 
+  TBranch* b24 = 0; 
+  TBranch* b25 = 0; 
+  TBranch* b26 = 0;
+  TBranch* b27 = 0;
+  TBranch* b28 = 0; 
+  TBranch* b29 = 0; 
+
+  bool doIsrAv = 0;
   
   if( applySF ){
     b14 = clone->Branch("weight_btagsf"         , &weight_btagsf         , "weight_btagsf/F"         );
@@ -532,22 +616,29 @@ int postProcessing(std::string inputString,
     b21 = clone->Branch("weight_lepsf_DN", &weight_lepsf_DN, "weight_lepsf_DN/F");
     b22 = clone->Branch("weight_toppt", &weight_toppt, "weight_toppt/F");
     b23 = clone->Branch("weight_isr", &weight_isr, "weight_isr/F");
-    b24 = clone->Branch("weight_scales", &weight_scales, "weight_scales[110]/F");
-    b25 = clone->Branch("weight_scales_av", &weight_scales_av, "weight_scales_av[110]/F");
+
+    b24 = clone->Branch("weight_isr_norm", &weight_isr_norm, "weight_isr_norm/F");
+
+    b25 = clone->Branch("weight_scales", &weight_scales, "weight_scales[110]/F");
+    b26 = clone->Branch("weight_scales_av", &weight_scales_av, "weight_scales_av[110]/F");
+
+    b27 = clone->Branch("weight_lepsf_0l", &weight_lepsf_0l, "weight_lepsf_0l/F");
+    b28 = clone->Branch("weight_lepsf_0l_UP", &weight_lepsf_0l_UP, "weight_lepsf_0l_UP/F");
+    b29 = clone->Branch("weight_lepsf_0l_DN", &weight_lepsf_0l_DN, "weight_lepsf_0l_DN/F");
   }
-
-
 
 
   vector<TH2F*> h_scales;
   vector<TH2F*> h_evt;
 
-
-
   //ISR /// bins of size 5GeV for T2cc
+  Int_t nBins = 120*5;
+  Float_t min = 12.5;
+  Float_t max = 3012.5;
+
   Float_t weight_isr_av;
-  TH2F* h_isr = new TH2F("h_isr", "", 120*5, 12.5, 3012.5, 120*5, -12.5, 2987.5); h_isr->Sumw2();
-  TH2F* h_counter = new TH2F("h_counter", "", 120*5, 12.5, 3012.5, 120*5, -12.5, 2987.5); h_counter->Sumw2();
+  TH2F* h_isr = new TH2F("h_isr", "", nBins, min, max, nBins, -min, max-min); h_isr->Sumw2();
+  TH2F* h_counter = new TH2F("h_counter", "", nBins, min, max, nBins, -min, max-min); h_counter->Sumw2();
   Int_t GenSusyMNeutralino;
   Int_t GenSusyMGluino;
 
@@ -555,11 +646,11 @@ int postProcessing(std::string inputString,
 
     for(int k=0;k<110;k++){
       std::string name = "var"+  std::to_string(k);
-      TH2F* h_scales_temp = new TH2F(name.c_str(), "", 120*5, 12.5, 3012.5, 120*5, -12.5, 2987.5); h_scales_temp->Sumw2();
+      TH2F* h_scales_temp = new TH2F(name.c_str(), "", nBins, min, max, nBins, -min, max-min); h_scales_temp->Sumw2();
       h_scales.push_back(h_scales_temp);
  
       std::string name_evt = "evt"+  std::to_string(k); 
-      TH2F* h_evt_temp = new TH2F(name_evt.c_str(), "", 120*5, 12.5, 3012.5, 120*5, -12.5, 2987.5); h_evt_temp->Sumw2();
+      TH2F* h_evt_temp = new TH2F(name_evt.c_str(), "", nBins, min, max, nBins, -min, max-min); h_evt_temp->Sumw2();
       h_evt.push_back(h_evt_temp);
     }
 
@@ -626,11 +717,14 @@ int postProcessing(std::string inputString,
     std::cout << "Finished first loop over the events to get the average weight of ISR" << std::endl;
   }//end of ISR norm histo calculation
 
-
+  
   //Top pt reweighting 
   //Values from Run1 still valid for now, see here: https://twiki.cern.ch/twiki/bin/viewauth/CMS/TopPtReweighting
   float a = 0.156;
   float b = -0.00137;
+
+  //NOT averaging the top pt weight 
+  /*
   //First loop over events for the normalization of the toppt reweighting///////
   double average = 0;
   if( applySF && normFile==""&& id>300 && id<400 ){
@@ -665,6 +759,7 @@ int postProcessing(std::string inputString,
   if(normFile!="")
     average = topAverageWeight;
 
+  */
 
 
 
@@ -716,8 +811,7 @@ int postProcessing(std::string inputString,
 
     if( applySF ){
       /////////Add ISR scale factor//////////
-      if( id < 1000 ) ;
-      else{
+      if( id > 1000 ){
 	TLorentzVector s;
 	if(nGenPart>0)
 	  for(int o=0; o<nGenPart; ++o){
@@ -755,7 +849,6 @@ int postProcessing(std::string inputString,
 	
       }//finished isr (and scale) weights
 
-
       int foundTop=0;
       int foundAntiTop=0;
 
@@ -766,7 +859,12 @@ int postProcessing(std::string inputString,
 	  if(GenPart_status[o] != 62) continue;
 	  //Only apply weight to top or antitop
 	  if( abs(GenPart_pdgId[o])==6 ){
-	    weight_toppt *= sqrt(exp( a + b * GenPart_pt[o] ) );
+
+	    float pt_withCutOff = GenPart_pt[o];
+	    if(pt_withCutOff>400.0)
+	      pt_withCutOff=400.0;
+
+	    weight_toppt *= sqrt(exp( a + b * pt_withCutOff ) );
 
 	    if( GenPart_pdgId[o]== 6 )  foundTop++;
 	    if( GenPart_pdgId[o]==-6 )  foundAntiTop++;
@@ -774,87 +872,232 @@ int postProcessing(std::string inputString,
 	  else continue;
 	}//end loop over objects
 
-	if( foundTop==1 && foundAntiTop==1 )
-	  weight_toppt /= average;
-	else
+	//	if( foundTop==1 && foundAntiTop==1 ) //not averaging till we see that it has a big effect
+	// weight_toppt /= average;
+	//	else
+	//  weight_toppt=1.0;
+       
+	//Only apply the weight if you find a pair
+	if( !(foundTop==1 && foundAntiTop==1) )
 	  weight_toppt=1.0;
-
       }
+
 
 
       /////////Add b-tagging scale factor//////////     
       get_weight_btag(njet, jet_pt, jet_eta, jet_mcFlavour, jet_btagCSV, weight_btagsf, weight_btagsf_heavy_UP, weight_btagsf_heavy_DN, weight_btagsf_light_UP, weight_btagsf_light_DN, isFastSim);
 
+
+
       /////////Add lepton scale factor//////////
       if(nlep>0){
-	Float_t uncert = 0; //Place holder for total uncertainty
+	Float_t uncert = 1; //Place holder for total uncertainty
 	Float_t central = 1; 
 	Float_t err = 0;
+	Float_t uncert_UP = 0; 	Float_t uncert_DN = 0; 
 
 	Float_t fast_central = 1; 
 	Float_t fast_err = 0;
 
 
 	for(int o=0; o<nlep; ++o){
+
+	  float pt = lep_pt[o];
+	  float eta = fabs( lep_eta[o] );
+	  int pdgId = abs( lep_pdgId[o] );
+
+	  float pt_cutoff = std::max( 10.1, std::min( 100., double(pt) ) );
+	  float pt_cutoff_eff = std::max( 5.1, std::min( 100., double(pt) ) );
+
 	  //Electrons
-	  if (abs( lep_pdgId[o]) == 11) {
-	    Int_t binx = h_elSF->GetXaxis()->FindBin(lep_pt[o]);
-	    Int_t biny = h_elSF->GetYaxis()->FindBin(fabs(lep_eta[o]));
+	  if( pdgId == 11) {
+	    Int_t binx = h_elSF->GetXaxis()->FindBin(pt_cutoff);
+	    Int_t biny = h_elSF->GetYaxis()->FindBin(eta);
 	    central = h_elSF->GetBinContent(binx,biny);
 	    err  = h_elSF->GetBinError(binx,biny);
 	    if (central > 1.2 || central < 0.8) 
-	      std::cout<<"STRANGE: Electron with pT/eta of "<<lep_pt[o]<<"/"<<lep_eta[o]<<". SF is "<< central <<std::endl;
+	      std::cout<<"STRANGE: Electron with pT/eta of "<< pt <<"/"<< eta <<". SF is "<< central <<std::endl;
+	    uncert_UP = central + err;
+	    uncert_DN = central - err;
 
 	    if( id>999 ){//FASTSIM SCALEFACTORS
-	    Int_t fast_binx = h_fast_elSF->GetXaxis()->FindBin(lep_pt[o]);
-	    Int_t fast_biny = h_fast_elSF->GetYaxis()->FindBin(fabs(lep_eta[o]));
+	    Int_t fast_binx = h_fast_elSF->GetXaxis()->FindBin(pt_cutoff);
+	    Int_t fast_biny = h_fast_elSF->GetYaxis()->FindBin(eta);
 	    fast_central = h_fast_elSF->GetBinContent(fast_binx,fast_biny);
 	    fast_err  = h_fast_elSF->GetBinError(fast_binx,fast_biny);
 	    fast_err= sqrt(fast_err*fast_err+ 0.05*0.05); // 5% systematic uncertainty
 
-	    if( fast_central > 1.2 || fast_central < 0.8 )
-	      std::cout << "Strange FastSim Electron with pT/eta of" <<lep_pt[o]<<"/"<<lep_eta[o]<<". SF is "<< fast_central <<std::endl;
-	    central *= fast_central;
-	    err = sqrt( fast_err*fast_err + err*err );
+	    if( fast_central > 1.3 || fast_central < 0.7 )
+	      std::cout << "Strange FastSim Electron with pT/eta of" << pt <<"/"<< eta <<". SF is "<< fast_central <<std::endl;
+
+	    central   *= fast_central;
+	    uncert_UP *= ( fast_central + fast_err );
+	    uncert_DN *= ( fast_central - fast_err );
+
 	    }
 
 	  } //else Muons
 	  else if (abs( lep_pdgId[o]) == 13) {
-	    Int_t binx = h_muSF->GetXaxis()->FindBin(lep_pt[o]);
-	    Int_t biny = h_muSF->GetYaxis()->FindBin(fabs(lep_eta[o]));
+	    Int_t binx = h_muSF->GetXaxis()->FindBin(pt);
+	    Int_t biny = h_muSF->GetYaxis()->FindBin(fabs(eta));
 	    if ( binx >7 ) binx = 7; //overflow bin empty for the muons...
 	    central = h_muSF->GetBinContent(binx,biny);
 	    err  = 0.014; // adding in quadrature 1% unc. on ID and 1% unc. on ISO
 	    if (central > 1.3 || central < 0.7) 
-	      std::cout<<"STRANGE: Muon with pT/eta of "<<lep_pt[o]<<"/"<< fabs(lep_eta[o]) <<". SF is "<< central <<std::endl;
-	  
+	      std::cout<<"STRANGE: Muon with pT/eta of "<<pt<<"/"<< fabs(eta) <<". SF is "<< central <<std::endl;
+	    uncert_UP = central + err;
+	    uncert_DN = central - err;
+
 	    if( id>999 ){ //FASTSIM SCALE FACTORS
-	    Int_t fast_binx = h_fast_muSF->GetXaxis()->FindBin(lep_pt[o]);
-	    Int_t fast_biny = h_fast_muSF->GetYaxis()->FindBin(fabs(lep_eta[o]));
+	    Int_t fast_binx = h_fast_muSF->GetXaxis()->FindBin(pt);
+	    Int_t fast_biny = h_fast_muSF->GetYaxis()->FindBin(fabs(eta));
 	    fast_central = h_fast_muSF->GetBinContent(fast_binx,fast_biny);
 	    fast_err  = h_fast_muSF->GetBinError(fast_binx,fast_biny);
-	    if(lep_pt[0]>20)
-	      fast_err= sqrt(fast_err*fast_err+ 0.03*0.03); // 5% systematic uncertainty
+	    if(lep_pt[0] < 20)
+	      fast_err= sqrt(fast_err*fast_err+ 0.03*0.03); // 3% systematic uncertainty
 	    else
-	      fast_err= sqrt(fast_err*fast_err+ 0.01*0.01); // 5% systematic uncertainty
+	      fast_err= sqrt(fast_err*fast_err+ 0.01*0.01); // 1% systematic uncertainty
 
 	    if( fast_central > 1.3 || fast_central < 0.7 )
-	      std::cout << "Strange FastSim Muon with pT/eta of" <<lep_pt[o]<<"/"<<lep_eta[o]<<". SF is "<< fast_central <<std::endl;
+	      std::cout << "Strange FastSim Muon with pT/eta of" <<pt<<"/"<<eta<<". SF is "<< fast_central <<std::endl;
 
-	    central *= fast_central;
-	    err = sqrt( fast_err*fast_err+ err*err );
+	    central   *= fast_central;
+	    uncert_UP *= ( fast_central + fast_err );
+	    uncert_DN *= ( fast_central - fast_err );
 	    }
-	  } 
-	  weight_lepsf *= central;
-	  //uncertainties are supposed to be summed up linearly for the lepton SF
-	  uncert += err; 	
+	  }//done with one  electron/muon 
+	  weight_lepsf    *= central;
+	  weight_lepsf_UP *= uncert_UP;
+	  weight_lepsf_DN *= uncert_DN;	  	
 	}//end of loop over objects
-    
-	weight_lepsf_UP = central + uncert; 
-	weight_lepsf_DN = central - uncert;
-	 
+
       }//end of lepton sf
+
+
+
+
+      //0lepton efficiency correction
+      if( nMuons10+nElectrons10+nPFLep5LowMT+nPFHad10LowMT == 0 ){ //otherwise we have caught the lep
+
+
+	for(int o=0; o < ngenLep+ngenLepFromTau; ++o){
+
+	  float central=1;
+	  float err=0;
+	  float uncert=0;
+	  float fast_central=1;
+	  float fast_err=0.;
+	  float uncert_fast=0;
+
+
+	  float pt, eta;
+	  int  pdgId;
+	  if(o < ngenLep){
+	    pt = genLep_pt[o];
+	    eta = genLep_eta[o];
+	    pdgId = genLep_pdgId[o];
+	  }else{
+	    pt = genLepFromTau_pt[o-ngenLep];
+	    eta = genLepFromTau_eta[o-ngenLep];
+	    pdgId = genLepFromTau_pdgId[o-ngenLep] ;
+	  }
+	  // acceptance of lepton veto: pt>5, |eta| < 2.4
+	  if( pt < 5.) continue;
+	  if( fabs(eta) > 2.4) continue; 
+
+
+	  float pt_cutoff = std::max( 10.1, std::min( 100., double(pt) ) );
+	  float pt_cutoff_eff = std::max( 5.1, std::min( 100., double(pt) ) );
+	  float veto_eff = 1.; //just need one veto eff, not one for full and fast sim
+
+	  if ( abs( pdgId ) == 11) { 
+	    Int_t binx = h_elSF->GetXaxis()->FindBin(pt_cutoff);
+	    Int_t biny = h_elSF->GetYaxis()->FindBin( fabs(eta) );
+	    central = h_elSF->GetBinContent(binx,biny);
+	    uncert  = h_elSF->GetBinError(binx,biny);
+
+	    Int_t binx_eff = h_eff_full_el->GetXaxis()->FindBin(pt_cutoff_eff);
+	    Int_t biny_eff = h_eff_full_el->GetYaxis()->FindBin( fabs(eta) );
+	    veto_eff = h_eff_full_el->GetBinContent(binx_eff,biny_eff);
+
+	  } else if( abs( pdgId ) == 13) {
+	    Int_t binx = h_muSF->GetXaxis()->FindBin(pt_cutoff);
+	    Int_t biny = h_muSF->GetYaxis()->FindBin( fabs(eta) );
+	    central = h_muSF->GetBinContent(binx,biny);
+	    uncert  = 0.014;   // adding in quadrature 1% unc. on ID and 1% unc. on ISO
+
+	    Int_t binx_eff = h_eff_full_mu->GetXaxis()->FindBin( pt_cutoff_eff );
+	    Int_t biny_eff = h_eff_full_mu->GetYaxis()->FindBin( fabs(eta) );
+	    veto_eff = h_eff_full_mu->GetBinContent(binx_eff,biny_eff);
+	  }
+
+	  //Fast sim correction included, change weight and uncertainty
+	  if( id>999 ){
+	    if ( abs( pdgId ) == 11) {
+	      Int_t fast_binx = h_fast_elSF->GetXaxis()->FindBin(pt_cutoff);
+	      Int_t fast_biny = h_fast_elSF->GetYaxis()->FindBin( fabs(eta) );
+	      fast_central = h_fast_elSF->GetBinContent(fast_binx,fast_biny);
+	      //	      fast_err  = h_fast_elSF->GetBinError(fast_binx,fast_biny);
+	      //	      uncert_fast = sqrt(fast_err*fast_err+ 0.05*0.05); // 5% systematic uncertainty
+	      uncert_fast = 0.05; // 5% systematic uncertainty
+
+	      veto_eff = h_eff_fast_el->GetBinContent(fast_binx,fast_biny);
+
+	    }else if( abs( pdgId ) == 13) {
+
+	      Int_t fast_binx = h_fast_muSF->GetXaxis()->FindBin(pt_cutoff);
+	      Int_t fast_biny = h_fast_muSF->GetYaxis()->FindBin( fabs(eta) );
+	      fast_central = h_fast_muSF->GetBinContent(fast_binx,fast_biny);
+	      fast_err  = h_fast_muSF->GetBinError(fast_binx,fast_biny);
+	      uncert_fast = 0.01;
+	      if( pt_cutoff < 20.)
+		uncert_fast= sqrt(fast_err*fast_err+ 0.03*0.03); // 3% systematic uncertainty
+	      else
+		uncert_fast= sqrt(fast_err*fast_err+ 0.01*0.01); // 1% systematic uncertainty
+	      
+
+	      veto_eff = h_eff_fast_mu->GetBinContent(fast_binx,fast_biny);
+
+	    }//got the sf
+	    float sf = central*fast_central;
+
+	    float veto_eff_corr = veto_eff* sf; //corrected veto eff with the
+
+	    weight_lepsf_0l *= (1. - veto_eff) / (1. - veto_eff_corr);
+
+	    float unc = uncert + uncert_fast;
+	    float veto_eff_cor_unc_UP = veto_eff_corr * ( 1. + unc);
+	    float unc_UP_0l = (  1. - veto_eff_cor_unc_UP) / (1. - veto_eff_corr) -1. ;
+
+	    weight_lepsf_0l_UP *= ( ( (1. - veto_eff) / (1. - veto_eff_corr)  + unc_UP_0l ));
+	    weight_lepsf_0l_DN *= ( ( (1. - veto_eff) / (1. - veto_eff_corr)  - unc_UP_0l ));
+	  
+	  }else{//Only full sim correction, only uncertainty, not weight
+	    
+	    float sf = central;
+	    // float veto_eff_corr = veto_eff* sf; //corrected veto eff with the 
+
+	    float unc = uncert;
+	    float veto_eff_unc_UP = veto_eff* (1. + unc);
+
+	    float unc_UP_0l = (( 1. - veto_eff_unc_UP) / (1. - veto_eff))  -1.;
+	    weight_lepsf_0l_UP *= ( 1. + unc_UP_0l);
+	    weight_lepsf_0l_DN *= ( 1. - unc_UP_0l);
+	  }
+
+
+	}//end loop over genLep
+
+      }//end 0Lep region
+ 
+
     }//end of if applySF
+
+
+
+
+
+
 
     if( i==(Long64_t)(nEventsTree-1))
       std::cout << "End of loop over tree entries" << std::endl;
@@ -886,6 +1129,10 @@ int postProcessing(std::string inputString,
       b23->Fill();
       b24->Fill();
       b25->Fill();
+      b26->Fill();
+      b27->Fill();
+      b28->Fill();
+      b29->Fill();
     }
     
   }//end loop over events
