@@ -13,6 +13,10 @@ productionName="$(basename $inputFolder)"
 outputFolder="/pnfs/psi.ch/cms/trivcat/store/user/`whoami`/MT2production/80X/PostProcessed/"$productionName"/"
 #outputFolder="/pnfs/psi.ch/cms/trivcat/store/user/`whoami`/babies/80X/MT2/PostProcessed/"$productionName"/"
 
+# in current implementation one also needs to change this in runSkimmingPruning.sh
+useXRD="false"
+gfalProtocol="gsiftp" # if useXRD disabled, use gfal via the given protocol
+#gfalProtocol="srm" # alternative to gsiftp (gsiftp supposed to be more stable)
 
 fileExt="_post.root"
 isCrab=1
@@ -200,9 +204,12 @@ fi;
 #######################################
 if [[ "$1" = "post" ]]; then
 
+if [[ $useXRD == "true" ]]; then
+    xrdfs t3dcachedb.psi.ch ls $outputFolder &> ./checkOutputDir
+else
+    gfal-ls ${gfalProtocol}://t3se01.psi.ch$outputFolder &> ./checkOutputDir
+fi
 # --- check the existence of outputFolder on SE ---
-#gfal-ls srm://t3se01.psi.ch$outputFolder &> ./checkOutputDir # old way
-xrdfs t3dcachedb.psi.ch ls $outputFolder &> ./checkOutputDir
 if [ -n "`cat ./checkOutputDir|grep 'No such file or directory'`"  ]; then
     :
 else
@@ -228,15 +235,27 @@ else
 fi
 
 
-#gfal-mkdir -p srm://t3se01.psi.ch/$outputFolder # old way
-xrdfs t3dcachedb.psi.ch mkdir -p $outputFolder 
+if [[ $useXRD == "true" ]]; then
+    #xrdfs t3dcachedb.psi.ch mkdir -p $outputFolder # recursive mkdir does not work via xrootd
+    gfal-mkdir -p ${gfalProtocol}://t3se01.psi.ch/$outputFolder # use gfal instead
+else
+    gfal-mkdir -p ${gfalProtocol}://t3se01.psi.ch/$outputFolder
+fi
+
 python $PWD/convertGoodRunsList_JSON.py $GoldenJSON >& goodruns_golden.txt
-# gfal-copy file://$GoldenJSON srm://t3se01.psi.ch/$outputFolder/ # old way
-xrdcp -d 1 $GoldenJSON root://t3dcachedb.psi.ch:1094/$outputFolder/ 
+if [[ $useXRD == "true" ]]; then
+    xrdcp -d 1 $GoldenJSON root://t3dcachedb.psi.ch:1094/$outputFolder/ 
+else
+    gfal-copy file://$GoldenJSON ${gfalProtocol}://t3se01.psi.ch/$outputFolder/
+fi
+
 
 if [ $doSilver -eq 1 ]; then
-    # gfal-copy file://$SilverJSON srm://t3se01.psi.ch/$outputFolder/ # old way
-    xrdcp -d 1 $SilverJSON root://t3dcachedb.psi.ch:1094/$outputFolder/ 
+    if [[ $useXRD == "true" ]]; then
+	xrdcp -d 1 $SilverJSON root://t3dcachedb.psi.ch:1094/$outputFolder/ 
+    else
+	gfal-copy file://$SilverJSON ${gfalProtocol}://t3se01.psi.ch/$outputFolder/
+    fi
     python $PWD/convertGoodRunsList_JSON.py $SilverJSON >& goodruns_silver.txt
 fi
 
@@ -434,8 +453,12 @@ cd -
 
 
 mkdir -p $workingFolder
-#gfal-mkdir -p srm://t3se01.psi.ch/$outputFolder # old way
-xrdfs t3dcachedb.psi.ch mkdir -p $outputFolder
+if [[ $useXRD == "true" ]]; then
+    #xrdfs t3dcachedb.psi.ch mkdir -p $outputFolder # recursive mkdir does not work via xrootd
+    gfal-mkdir -p ${gfalProtocol}://t3se01.psi.ch/$outputFolder # let's use gfal then
+else
+    gfal-mkdir -p ${gfalProtocol}://t3se01.psi.ch/$outputFolder
+fi
 
 
 echo "postProcessing(\"$name\",\"$counterFile\",\"$outputFile\",\"$treeName\",$filter,$kfactor,$xsec,$id,\"$crabExt\",\"$inputPU\",\"$PUvar\",$applyJSON,$doAllSF,$doSilver,\"$preProcFile\"); gSystem->Exit(0);"
@@ -451,8 +474,11 @@ if [[ $id -lt 10 && $doFilterTxt == 1 ]]; then
 fi;
 
 #######mv $outputFile $outputFolder
-#gfal-copy file://$outputFile srm://t3se01.psi.ch/$outputFolder # old way
-xrdcp -d 1 $outputFile root://t3dcachedb.psi.ch:1094/$outputFolder
+if [[ $useXRD == "true" ]]; then
+    xrdcp -d 1 $outputFile root://t3dcachedb.psi.ch:1094/$outputFolder
+else
+    gfal-copy file://$outputFile ${gfalProtocol}://t3se01.psi.ch/$outputFolder
+fi
 rm $outputFile
 
 #Normal skim
@@ -513,8 +539,11 @@ if [[ "$1" = "postCheck" ]]; then
 	echo "there were no errors. Zipping all logs and copying them to the SE"	 
 	cd $jobsLogsFolder
 	tar -czvf logs.tgz  *
-	#gfal-copy file://`pwd`/logs.tgz srm://t3se01.psi.ch/$outputFolder # old way
-	xrdcp -d 1 `pwd`/logs.tgz root://t3dcachedb.psi.ch:1094/$outputFolder
+	if [[ $useXRD == "true" ]]; then
+	    xrdcp -d 1 `pwd`/logs.tgz root://t3dcachedb.psi.ch:1094/$outputFolder
+	else
+	    gfal-copy file://`pwd`/logs.tgz ${gfalProtocol}://t3se01.psi.ch/$outputFolder
+	fi
 	cd ..
 	rm $jobsLogsFolder/*
 	rmdir $jobsLogsFolder
