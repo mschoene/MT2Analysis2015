@@ -37,7 +37,7 @@ if __name__ == '__main__':
                       default="",
                       help="skim only selected dataset")
    parser.add_option("-x","--useXRD", dest="useXRD",
-                      default=False,
+                      default="false",
                       help="useXRD (default=false -> gfal)")
    parser.add_option("-p","--gfalProtocol", dest="gfalProtocol",
                       default="gsiftp",
@@ -59,7 +59,7 @@ if __name__ == '__main__':
 
    if options.filter !="" :
      print "-> Skimming only files containing: " + str(options.filter)
-   if options.useXRD:
+   if options.useXRD == "true":
      print "-> chosen to use xrootd"
    else:
      print "-> chosen to use gfal via "+gfalProtocol+" protocol"
@@ -71,7 +71,7 @@ if __name__ == '__main__':
 
    
    if "pnfs/psi.ch" in dir : 
-     if options.useXRD:
+     if options.useXRD == "true":
        status,files = commands.getstatusoutput("xrdfs t3dcachedb.psi.ch ls "+dir)
      else:
        status,files = commands.getstatusoutput("gfal-ls "+options.gfalProtocol+"://t3se01.psi.ch"+dir)
@@ -80,6 +80,7 @@ if __name__ == '__main__':
      files = os.listdir(dir)
 
    for f in files:
+     f = f.split("/")[-1] # xrootd takes the full path, truncate
      if ".root" in f:
        if options.filter in f:
          skimBaby(f, dir, skimdir, cuts)
