@@ -69,7 +69,8 @@ if __name__ == '__main__':
    os.system("mkdir -p " + prunedir)
 
    if "pnfs/psi.ch" in dir : 
-     status,files = commands.getstatusoutput("gfal-ls "+"srm://t3se01.psi.ch"+dir)
+     #status,files = commands.getstatusoutput("gfal-ls "+"srm://t3se01.psi.ch"+dir) # old way
+     status,files = commands.getstatusoutput("xrdfs t3dcachedb.psi.ch ls "+dir)
      files=files.splitlines()
    else :
      files = os.listdir(dir)

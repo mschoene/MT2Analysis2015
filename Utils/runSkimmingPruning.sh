@@ -91,7 +91,8 @@ fi
 
 # --- creating destinatinon folder, copying files, cleaning of tmp folders in scratch
 if [[ "$outputDir" == *"/pnfs/psi.ch/"* ]]; then
-    gfal-mkdir -p srm://t3se01.psi.ch/$outputDir
+    #gfal-mkdir -p srm://t3se01.psi.ch/$outputDir # old way
+    xrdfs t3dcachedb.psi.ch mkdir -p $outputDir
 else
     mkdir -p $outputDir
 fi
@@ -101,7 +102,8 @@ echo "cleaning/moving temp folders...";
 if [[ "$doSkimming" = true && ! "$doPruning" = true ]]; then
     if [[ "$outputDir" == *"/pnfs/psi.ch/"* ]]; then
 	for x in $outputSkimming/*; do 
-	    gfal-copy file://$x "srm://t3se01.psi.ch"$outputDir/
+	    #gfal-copy file://$x "srm://t3se01.psi.ch"$outputDir/ # old way
+	    xrdcp -d 1 $x "root://t3dcachedb.psi.ch:1094/"$outputDir/
 	done;
     else
 	for x in $outputSkimming/*; do 
@@ -112,7 +114,8 @@ if [[ "$doSkimming" = true && ! "$doPruning" = true ]]; then
 elif [[ ! "$doSkimming" = true &&  "$doPruning" = true ]]; then
     if [[ "$outputDir" == *"/pnfs/psi.ch/"* ]]; then
 	for x in $outputPruning/*; do 
-	    gfal-copy file://$x "srm://t3se01.psi.ch"$outputDir/
+	    #gfal-copy file://$x "srm://t3se01.psi.ch"$outputDir/ # old way
+	    xrdcp -d 1 $x "root://t3dcachedb.psi.ch:1094/"$outputDir/
 	done;
     else
 	for x in $outputPruning/*; do 
@@ -123,10 +126,12 @@ elif [[ ! "$doSkimming" = true &&  "$doPruning" = true ]]; then
 elif [[ "$doSkimming" = true &&  "$doPruning" = true ]]; then
     if [[ "$outputDir" == *"/pnfs/psi.ch/"* ]]; then
 	for x in $outputSkimming/*; do 
-	    gfal-copy file://$x "srm://t3se01.psi.ch"$outputDir/
+	    #gfal-copy file://$x "srm://t3se01.psi.ch"$outputDir/ # old way
+	    xrdcp -d 1 $x "root://t3dcachedb.psi.ch:1094/"$outputDir/
 	done;
 	for x in $outputPruning/*; do 
-	    gfal-copy file://$x "srm://t3se01.psi.ch"$outputDir/
+	    #gfal-copy file://$x "srm://t3se01.psi.ch"$outputDir/ # old way
+	    xrdcp -d 1 $x "root://t3dcachedb.psi.ch:1094/"$outputDir/
 	done;
     else
 	for x in $outputSkimming/*; do 

@@ -12,7 +12,8 @@ def copyToSE(inputPath, sePath):
                 continue
             else:
                 print '\nCopying file ', inputPath+f, 'to /pnfs/psi.ch/cms/trivcat/store/user/'+sePath
-                os.system("gfal-copy file://"+inputPath+f+" srm://t3se01.psi.ch/pnfs/psi.ch/cms/trivcat/store/user/"+sePath+f)
+                #os.system("gfal-copy file://"+inputPath+f+" srm://t3se01.psi.ch/pnfs/psi.ch/cms/trivcat/store/user/"+sePath+f) # old way
+                os.system("xrdcp /"+inputPath+f+" root://t3dcachedb.psi.ch:1094//pnfs/psi.ch/cms/trivcat/store/user/"+sePath+f)
 
     else: 
         print 'Input directory does NOT exist! Exiting...'

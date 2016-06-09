@@ -201,7 +201,8 @@ fi;
 if [[ "$1" = "post" ]]; then
 
 # --- check the existence of outputFolder on SE ---
-gfal-ls srm://t3se01.psi.ch$outputFolder &> ./checkOutputDir
+#gfal-ls srm://t3se01.psi.ch$outputFolder &> ./checkOutputDir # old way
+xrdfs t3dcachedb.psi.ch ls $outputFolder &> ./checkOutputDir
 if [ -n "`cat ./checkOutputDir|grep 'No such file or directory'`"  ]; then
     :
 else
@@ -227,12 +228,15 @@ else
 fi
 
 
-gfal-mkdir -p srm://t3se01.psi.ch/$outputFolder 
+#gfal-mkdir -p srm://t3se01.psi.ch/$outputFolder # old way
+xrdfs t3dcachedb.psi.ch mkdir -p $outputFolder 
 python $PWD/convertGoodRunsList_JSON.py $GoldenJSON >& goodruns_golden.txt
-gfal-copy file://$GoldenJSON srm://t3se01.psi.ch/$outputFolder/ 
+# gfal-copy file://$GoldenJSON srm://t3se01.psi.ch/$outputFolder/ # old way
+xrdcp -d 1 $GoldenJSON root://t3dcachedb.psi.ch:1094/$outputFolder/ 
 
 if [ $doSilver -eq 1 ]; then
-    gfal-copy file://$SilverJSON srm://t3se01.psi.ch/$outputFolder/ 
+    # gfal-copy file://$SilverJSON srm://t3se01.psi.ch/$outputFolder/ # old way
+    xrdcp -d 1 $SilverJSON root://t3dcachedb.psi.ch:1094/$outputFolder/ 
     python $PWD/convertGoodRunsList_JSON.py $SilverJSON >& goodruns_silver.txt
 fi
 
@@ -430,7 +434,8 @@ cd -
 
 
 mkdir -p $workingFolder
-gfal-mkdir -p srm://t3se01.psi.ch/$outputFolder
+#gfal-mkdir -p srm://t3se01.psi.ch/$outputFolder # old way
+xrdfs t3dcachedb.psi.ch mkdir -p $outputFolder
 
 
 echo "postProcessing(\"$name\",\"$counterFile\",\"$outputFile\",\"$treeName\",$filter,$kfactor,$xsec,$id,\"$crabExt\",\"$inputPU\",\"$PUvar\",$applyJSON,$doAllSF,$doSilver,\"$preProcFile\"); gSystem->Exit(0);"
@@ -446,7 +451,8 @@ if [[ $id -lt 10 && $doFilterTxt == 1 ]]; then
 fi;
 
 #######mv $outputFile $outputFolder
-gfal-copy file://$outputFile srm://t3se01.psi.ch/$outputFolder
+#gfal-copy file://$outputFile srm://t3se01.psi.ch/$outputFolder # old way
+xrdcp -d 1 $outputFile root://t3dcachedb.psi.ch:1094/$outputFolder
 rm $outputFile
 
 #Normal skim
@@ -507,7 +513,8 @@ if [[ "$1" = "postCheck" ]]; then
 	echo "there were no errors. Zipping all logs and copying them to the SE"	 
 	cd $jobsLogsFolder
 	tar -czvf logs.tgz  *
-	gfal-copy file://`pwd`/logs.tgz srm://t3se01.psi.ch/$outputFolder
+	#gfal-copy file://`pwd`/logs.tgz srm://t3se01.psi.ch/$outputFolder # old way
+	xrdcp -d 1 `pwd`/logs.tgz root://t3dcachedb.psi.ch:1094/$outputFolder
 	cd ..
 	rm $jobsLogsFolder/*
 	rmdir $jobsLogsFolder
