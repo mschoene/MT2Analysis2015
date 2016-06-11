@@ -10,7 +10,7 @@ productionName="$(basename $inputFolder)"
 
 
 #outputFolder="/pnfs/psi.ch/cms/trivcat/store/user/`whoami`/ZGproduction/80X/PostProcessed/"$productionName"_pu/"
-outputFolder="/pnfs/psi.ch/cms/trivcat/store/user/`whoami`/MT2production/80X/PostProcessed/"$productionName"_attempt2/"
+outputFolder="/pnfs/psi.ch/cms/trivcat/store/user/`whoami`/MT2production/80X/PostProcessed/"$productionName"/"
 
 # in current implementation one also needs to change this in runSkimmingPruning.sh
 useXRD="false"
