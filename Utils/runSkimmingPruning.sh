@@ -113,7 +113,7 @@ if [[ "$doSkimming" = true && ! "$doPruning" = true ]]; then
 	    if [[ $useXRD == "true" ]]; then
 		xrdcp -d 1 $x "root://t3dcachedb.psi.ch:1094/"$outputDir/
 	    else
-		gfal-copy file://$x ${gfalProtocol}t3se01.psi.ch$outputDir/
+		gfal-copy file://$x ${gfalProtocol}://t3se01.psi.ch$outputDir/
 	    fi
 	done;
     else
@@ -128,7 +128,7 @@ elif [[ ! "$doSkimming" = true &&  "$doPruning" = true ]]; then
 	    if [[ $useXRD == "true" ]]; then
 		xrdcp -d 1 $x "root://t3dcachedb.psi.ch:1094/"$outputDir/
 	    else
-		gfal-copy file://$x ${gfalProtocol}t3se01.psi.ch$outputDir/
+		gfal-copy file://$x ${gfalProtocol}://t3se01.psi.ch$outputDir/
 	    fi
 	done;
     else
@@ -143,14 +143,14 @@ elif [[ "$doSkimming" = true &&  "$doPruning" = true ]]; then
 	    if [[ $useXRD == "true" ]]; then
 		xrdcp -d 1 $x "root://t3dcachedb.psi.ch:1094/"$outputDir/
 	    else
-		gfal-copy file://$x ${gfalProtocol}t3se01.psi.ch$outputDir/
+		gfal-copy file://$x ${gfalProtocol}://t3se01.psi.ch$outputDir/
 	    fi
 	done;
 	for x in $outputPruning/*; do 
 	    if [[ $useXRD == "true" ]]; then
 		xrdcp -d 1 $x "root://t3dcachedb.psi.ch:1094/"$outputDir/
 	    else
-		gfal-copy file://$x ${gfalProtocol}t3se01.psi.ch$outputDir/
+		gfal-copy file://$x ${gfalProtocol}://t3se01.psi.ch$outputDir/
 	    fi
 	done;
     else
