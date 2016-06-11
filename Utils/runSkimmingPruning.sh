@@ -6,6 +6,10 @@ else
     myCMSSW=/cvmfs/cms.cern.ch/slc6_amd64_gcc491/cms/cmssw-patch/CMSSW_7_4_12_patch4
 fi
 
+useXRD="false"
+gfalProtocol="gsiftp" # if useXRD disabled, use gfal via the given protocol
+#gfalProtocol="srm" # alternative to gsiftp (gsiftp supposed to be more stable)
+
 source $VO_CMS_SW_DIR/cmsset_default.sh
 #source /swshare/glite/external/etc/profile.d/grid-env.sh
 export SCRAM_ARCH=slc6_amd64_gcc491
@@ -73,7 +77,7 @@ outputSkimming=/scratch/`whoami`/dirOutSkimming_$rand2
 if [ "$doSkimming" = true ]; then
     echo "Running skimming... "
     mkdir $outputSkimming
-    python skimBabies.py $inputDir $outputSkimming "$skimmingSelection"  --filter="$inputFilter"
+    python skimBabies.py $inputDir $outputSkimming "$skimmingSelection"  --filter="$inputFilter" --useXRD="$useXRD" --gfalProtocol="$gfalProtocol"
 fi
 
 
@@ -84,14 +88,19 @@ if [ "$doPruning" = true ]; then
     if [ "$doSkimming" = true ]; then
       inputDir=$outputSkimming
     fi
-    python pruneBabies.py $inputDir $outputPruning "$branchesToPrune"  --filter="$inputFilter"
+    python pruneBabies.py $inputDir $outputPruning "$branchesToPrune"  --filter="$inputFilter" --useXRD="$useXRD" --gfalProtocol="$gfalProtocol"
 fi
 
 
 
 # --- creating destinatinon folder, copying files, cleaning of tmp folders in scratch
 if [[ "$outputDir" == *"/pnfs/psi.ch/"* ]]; then
-    gfal-mkdir -p srm://t3se01.psi.ch/$outputDir
+    if [[ $useXRD == "true" ]]; then
+	#xrdfs t3dcachedb.psi.ch mkdir -p $outputDir # recursive mkdir does not work via xrootd
+	gfal-mkdir -p ${gfalProtocol}://t3se01.psi.ch/$outputDir # use gfal instead
+    else
+	gfal-mkdir -p ${gfalProtocol}://t3se01.psi.ch/$outputDir
+    fi
 else
     mkdir -p $outputDir
 fi
@@ -101,7 +110,11 @@ echo "cleaning/moving temp folders...";
 if [[ "$doSkimming" = true && ! "$doPruning" = true ]]; then
     if [[ "$outputDir" == *"/pnfs/psi.ch/"* ]]; then
 	for x in $outputSkimming/*; do 
-	    gfal-copy file://$x "srm://t3se01.psi.ch"$outputDir/
+	    if [[ $useXRD == "true" ]]; then
+		xrdcp -d 1 $x "root://t3dcachedb.psi.ch:1094/"$outputDir/
+	    else
+		gfal-copy file://$x ${gfalProtocol}t3se01.psi.ch$outputDir/
+	    fi
 	done;
     else
 	for x in $outputSkimming/*; do 
@@ -112,7 +125,11 @@ if [[ "$doSkimming" = true && ! "$doPruning" = true ]]; then
 elif [[ ! "$doSkimming" = true &&  "$doPruning" = true ]]; then
     if [[ "$outputDir" == *"/pnfs/psi.ch/"* ]]; then
 	for x in $outputPruning/*; do 
-	    gfal-copy file://$x "srm://t3se01.psi.ch"$outputDir/
+	    if [[ $useXRD == "true" ]]; then
+		xrdcp -d 1 $x "root://t3dcachedb.psi.ch:1094/"$outputDir/
+	    else
+		gfal-copy file://$x ${gfalProtocol}t3se01.psi.ch$outputDir/
+	    fi
 	done;
     else
 	for x in $outputPruning/*; do 
@@ -123,10 +140,18 @@ elif [[ ! "$doSkimming" = true &&  "$doPruning" = true ]]; then
 elif [[ "$doSkimming" = true &&  "$doPruning" = true ]]; then
     if [[ "$outputDir" == *"/pnfs/psi.ch/"* ]]; then
 	for x in $outputSkimming/*; do 
-	    gfal-copy file://$x "srm://t3se01.psi.ch"$outputDir/
+	    if [[ $useXRD == "true" ]]; then
+		xrdcp -d 1 $x "root://t3dcachedb.psi.ch:1094/"$outputDir/
+	    else
+		gfal-copy file://$x ${gfalProtocol}t3se01.psi.ch$outputDir/
+	    fi
 	done;
 	for x in $outputPruning/*; do 
-	    gfal-copy file://$x "srm://t3se01.psi.ch"$outputDir/
+	    if [[ $useXRD == "true" ]]; then
+		xrdcp -d 1 $x "root://t3dcachedb.psi.ch:1094/"$outputDir/
+	    else
+		gfal-copy file://$x ${gfalProtocol}t3se01.psi.ch$outputDir/
+	    fi
 	done;
     else
 	for x in $outputSkimming/*; do 
