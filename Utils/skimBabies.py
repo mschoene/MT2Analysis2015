@@ -62,7 +62,7 @@ if __name__ == '__main__':
    if options.useXRD == "true":
      print "-> chosen to use xrootd"
    else:
-     print "-> chosen to use gfal via "+gfalProtocol+" protocol"
+     print "-> chosen to use gfal via "+options.gfalProtocol+" protocol"
 
 
    skimdir = outdir
