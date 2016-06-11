@@ -2,7 +2,7 @@
 
 # --- configuration (consider to move this into a separate file) ---
 treeName="mt2"
-inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/mangano/crab/MT2_8_0_5/data05June_all_v1"
+inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/mangano/crab/MT2_8_0_5/data09June_upto274240_v1"
 listOfSamplesFile="postProcessing2016-Data.cfg"
 #listOfSamplesFile="postProcessing2016-MC.cfg"
 
@@ -10,8 +10,7 @@ productionName="$(basename $inputFolder)"
 
 
 #outputFolder="/pnfs/psi.ch/cms/trivcat/store/user/`whoami`/ZGproduction/80X/PostProcessed/"$productionName"_pu/"
-outputFolder="/pnfs/psi.ch/cms/trivcat/store/user/`whoami`/MT2production/80X/PostProcessed/"$productionName"/"
-#outputFolder="/pnfs/psi.ch/cms/trivcat/store/user/`whoami`/babies/80X/MT2/PostProcessed/"$productionName"/"
+outputFolder="/pnfs/psi.ch/cms/trivcat/store/user/`whoami`/MT2production/80X/PostProcessed/"$productionName"_attempt2/"
 
 # in current implementation one also needs to change this in runSkimmingPruning.sh
 useXRD="false"
@@ -22,7 +21,7 @@ fileExt="_post.root"
 isCrab=1
 inputPU="MyDataPileupHistogram.root"
 PUvar="nTrueInt"
-GoldenJSON="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions16/13TeV/Cert_271036-274240_13TeV_PromptReco_Collisions16_JSON.txt"
+GoldenJSON="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions16/13TeV/Cert_271036-274421_13TeV_PromptReco_Collisions16_JSON.txt"
 SilverJSON=$GoldenJSON
 applyJSON=1     #0 for MC
 doSilver=0      #0 for MC
