@@ -42,6 +42,12 @@ if __name__ == '__main__':
    parser.add_option("-f","--filter", dest="filter",
                       default="",
                       help="prune only selected dataset")
+   parser.add_option("-x","--useXRD", dest="useXRD",
+                      default="false",
+                      help="useXRD (default=false -> gfal)")
+   parser.add_option("-p","--gfalProtocol", dest="gfalProtocol",
+                      default="gsiftp",
+                      help="gfal protocol (default and recommended: gsiftp; supported alternative: srm)")
 
    (options,args) = parser.parse_args()
    if len(args)==0:
@@ -59,6 +65,11 @@ if __name__ == '__main__':
    if options.filter !="" :
      print "-> Pruning only files containing: " + str(options.filter)
 
+   if options.useXRD == "true":
+     print "-> chosen to use xrootd"
+   else:
+     print "-> chosen to use gfal via "+gfalProtocol+" protocol"
+
    pruneBranches = pruneBranches.replace(",", " ")
    pruneBranches = pruneBranches.split()
 
@@ -69,7 +80,11 @@ if __name__ == '__main__':
    os.system("mkdir -p " + prunedir)
 
    if "pnfs/psi.ch" in dir : 
-     status,files = commands.getstatusoutput("gfal-ls "+"srm://t3se01.psi.ch"+dir)
+     if options.useXRD == "true":
+       status,files = commands.getstatusoutput("xrdfs t3dcachedb.psi.ch ls "+dir)
+     else:
+       status,files = commands.getstatusoutput("gfal-ls "+gfalProtocol+"://t3se01.psi.ch"+dir)
+
      files=files.splitlines()
    else :
      files = os.listdir(dir)
@@ -77,6 +92,7 @@ if __name__ == '__main__':
 
 
    for f in files:
+     f = f.split("/")[-1] # xrootd takes the full path, truncate
      if ".root" in f:
        if options.filter in f:
          pruneBaby(f, dir, prunedir, pruneBranches)
