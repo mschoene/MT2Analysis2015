@@ -1,6 +1,6 @@
 #!/bin/bash
 
-goldenJson=/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions16/13TeV/Cert_271036-274421_13TeV_PromptReco_Collisions16_JSON.txt
+goldenJson=/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions16/13TeV/Cert_271036-275125_13TeV_PromptReco_Collisions16_JSON.txt
 
 echo "calculating missing lumis using json: " $goldenJson
 
@@ -23,3 +23,8 @@ for i in `ls -1 $path`; do
 done
 
 
+## to filter out some run ranges
+#for x in *.txt ; do  filterJSON.py $x --min=274422 --output=$x.new ; done;
+
+## to calculate the lumi for all files
+#for x in *.new; do echo $x; brilcalc lumi -b "STABLE BEAMS" -i $x -u /pb ;done;
