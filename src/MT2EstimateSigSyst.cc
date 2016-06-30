@@ -26,15 +26,26 @@ MT2EstimateSigSyst::MT2EstimateSigSyst( const std::string& aname, const MT2Regio
   for (int b=0; b<=nBinsM; ++b)
     binsM[b]=b*binWidthM;
 
-//  yield3d_systUp = new TH3D( this->getHistoName("yield3d_"+this->systName+"_UP").c_str(), "", nBins, bins, nBinsM, binsM, nBinsM, binsM);
-//  yield3d_systUp->Sumw2();
-//  yield3d_systDown = new TH3D( this->getHistoName("yield3d_"+this->systName+"_DN").c_str(), "", nBins, bins, nBinsM, binsM, nBinsM, binsM);
-//  yield3d_systDown->Sumw2();
+  int nBinsMY=161;
+  double binWidthMY=5.;
+  double binsMY[nBinsMY+1];
+  for (int b=0; b<=nBinsMY; ++b)
+    binsMY[b]=b*binWidthMY;
+
+////  yield3d_systUp = new TH3D( this->getHistoName("yield3d_"+this->systName+"_UP").c_str(), "", nBins, bins, nBinsM, binsM, nBinsM, binsM);
+////  yield3d_systUp->Sumw2();
+////  yield3d_systDown = new TH3D( this->getHistoName("yield3d_"+this->systName+"_DN").c_str(), "", nBins, bins, nBinsM, binsM, nBinsM, binsM);
+////  yield3d_systDown->Sumw2();
 
   yield3d_systUp = new TH3D( this->getHistoName("yield3d_"+asystName+"_UP").c_str(), "", nBins, bins, nBinsM, binsM, nBinsM, binsM);
   yield3d_systUp->Sumw2();
   yield3d_systDown = new TH3D( this->getHistoName("yield3d_"+asystName+"_DN").c_str(), "", nBins, bins, nBinsM, binsM, nBinsM, binsM);
   yield3d_systDown->Sumw2();
+
+//  yield3d_systUp = new TH3D( this->getHistoName("yield3d_"+asystName+"_UP").c_str(), "", nBins, bins, nBinsM, binsM, nBinsMY, binsMY);
+//  yield3d_systUp->Sumw2();
+//  yield3d_systDown = new TH3D( this->getHistoName("yield3d_"+asystName+"_DN").c_str(), "", nBins, bins, nBinsM, binsM, nBinsMY, binsMY);
+//  yield3d_systDown->Sumw2();
 
 }
 
@@ -96,8 +107,6 @@ void MT2EstimateSigSyst::getShit( TFile* file, const std::string& path ) {
 
   MT2Estimate::getShit(file, path);
   
-  std::cout << yield3d_systUp->GetName() << std::endl;
-
   yield3d_systUp   = (TH3D*)file->Get(Form("%s/%s", path.c_str(), yield3d_systUp->GetName()));
   yield3d_systDown = (TH3D*)file->Get(Form("%s/%s", path.c_str(), yield3d_systDown->GetName()));
 
