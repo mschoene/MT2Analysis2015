@@ -27,33 +27,10 @@
 #include "RooHistError.h"
 
 
-struct BGTable {
+float lumi2015; //fb-1
+float lumi2016; //fb-1 
 
-  float zinv;
-  float zinv_statUp;
-  float zinv_statDn;
-  float zinv_systUp;
-  float zinv_systDn;
-
-  float llep;
-  float llep_statUp;
-  float llep_statDn;
-  float llep_systUp;
-  float llep_systDn;
-
-  float qcd;
-  float qcd_statUp;
-  float qcd_statDn;
-  float qcd_systUp;
-  float qcd_systDn;
-
-};
-
-
-float lumi; //fb-1 
-
-BGTable getTable( const std::string& tableFileName );
-void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, std::string dir );
+void drawYields( const std::string& outputdir, std::string dir2015, std::string dir2016 );
 
 
 int main( int argc, char* argv[] ) {
@@ -70,57 +47,36 @@ int main( int argc, char* argv[] ) {
   std::cout << std::endl << std::endl;
   
   
-  if( argc!=2 ) {
+  if( argc!=3 ) {
     std::cout << "USAGE: ./computeLostLepton [configFileName]" << std::endl;
     std::cout << "Exiting." << std::endl;
     exit(11);
   }
   
-  
-  std::string configFileName(argv[1]);
-  MT2Config cfg(configFileName);
 
-  lumi = cfg.lumi();
-  
+
+  std::string configFileName2015(argv[1]);
+  MT2Config cfg2015(configFileName2015);
+
+  std::string configFileName2016(argv[2]);
+  MT2Config cfg2016(configFileName2016);
+
+  lumi2015 = cfg2015.lumi();
+  lumi2016 = cfg2016.lumi();
+
   TH1::AddDirectory(kTRUE);
-  
-  std::string dir = cfg.getEventYieldDir();
-  std::string outputdir = cfg.getEventYieldDir() + "/YieldComparison_dataMC_binned";
- 
- 
-  MT2Analysis<MT2Estimate>* analysis = MT2Analysis<MT2Estimate>::readFromFile( dir + "/analyses.root", "data" ); // any one is good, just need to know the regions                                                                    
 
-  std::vector < MT2Analysis<MT2Estimate>* > analysesSignal;
-//  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( dir + "/analyses.root", "T1tttt_1500_100") );
-//  analysesSignal[0]->setName("T1tttt 1500,100");
-//
-//  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( dir + "/analyses.root", "T1tttt_1200_800") );
-//  analysesSignal[1]->setName("T1tttt 1200,800");
-//
-//  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( dir + "/analyses.root", "T1bbbb_1500_100") );
-//  analysesSignal[2]->setName("T1bbbb 1500,100");
-//
-//  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( dir + "/analyses.root", "T1bbbb_1000_900") );
-//  analysesSignal[3]->setName("T1bbbb 1000,900");
-//
-//  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( dir + "/analyses.root", "T1qqqq_1400_100") );
-//  analysesSignal[4]->setName("T1qqqq 1400,100");
-//
-//  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( dir + "/analyses.root", "T1qqqq_1000_800") );
-//  analysesSignal[5]->setName("T1qqqq 1000,800");
+  std::string dir2015 = cfg2015.getEventYieldDir();
+  std::string dir2016 = cfg2016.getEventYieldDir();
+  std::string outputdir = "./YieldComparison_dataMC_binned_combination2015plus2016/";
 
-  std::set<MT2Region> regions = analysis->getRegions();
-
-  MT2Analysis<MT2Estimate>* data = MT2Analysis<MT2Estimate>::readFromFile( dir + "/analyses.root", "data" );
-  
-  drawYields( outputdir.c_str(), data, dir );
+  drawYields( outputdir.c_str(), dir2015, dir2016 );
 
   return 0;
 
 }
 
-void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, std::string dir ) {
-
+void drawYields( const std::string& outputdir, std::string dir2015, std::string dir2016 ) {
   
   MT2DrawTools::setStyle();
 
@@ -145,36 +101,45 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   
   unsigned int bgSize = 3;
   
-  std::set<MT2Region> MT2Regions = data->getRegions();
-  
-  TH1D* hdata = new TH1D("hdata", "", 174, 0, 174);
-  hdata->Sumw2();
+  TFile* file2015 = TFile::Open(Form("%s/YieldComparison_dataMC_binned/histograms_ALL.root", dir2015.c_str()));
+  TFile* file2016 = TFile::Open(Form("%s/YieldComparison_dataMC_binned/histograms_ALL.root", dir2016.c_str()));
+  TH1D* hdata2015 = (TH1D*) file2015->Get("hdata");
+  TH1D* hdata2016 = (TH1D*) file2016->Get("hdata");
+  TH1D* hdata = (TH1D*) hdata2015->Clone();
+  hdata->Add(hdata2016);
   hdata->GetYaxis()->SetTitle("Entries");
   hdata->SetMarkerStyle(20);
   hdata->SetMarkerSize(1.6);
   hdata->SetLineColor( 1 );
   hdata->SetMarkerColor( 1 );
 
-  TH1D* hestimate_all;
+  TH1D* hestimate_all2015 = (TH1D*) file2015->Get("hestimate_all");
+  TH1D* hestimate_all2016 = (TH1D*) file2016->Get("hestimate_all");
+  TH1D* hestimate_all = (TH1D*) hestimate_all2015->Clone();
+  hestimate_all->Add(hestimate_all2016);
+
+  TH1D* hestimate_all_forRatio2015 = (TH1D*) file2015->Get("hestimate_all_forRatio");
+  TH1D* hestimate_all_forRatio2016 = (TH1D*) file2016->Get("hestimate_all_forRatio");
+  TH1D* hestimate_all_forRatio = (TH1D*) hestimate_all_forRatio2015->Clone();
+  hestimate_all_forRatio->Add(hestimate_all_forRatio2016);
+
   TH1D* hestimate[bgSize];
-  TH1D* hestimate_all_forRatio;
-  TH1D* hestimate_forRatio[bgSize];
-  
+  TH1D* hestimate2015[bgSize];
+  TH1D* hestimate2016[bgSize];
   for(unsigned int b=0; b<bgSize; ++b){
-  
-    hestimate[b]= new TH1D(Form("hestimate_%d", b), "", 174, 0, 174);
-    hestimate[b]->Sumw2();
+
+    hestimate2015[b] = (TH1D*) file2015->Get(Form("hestimate_%d", b));
+    hestimate2016[b] = (TH1D*) file2016->Get(Form("hestimate_%d", b));
+
+    hestimate[b] = (TH1D*) hestimate2015[b]->Clone();
+    hestimate[b]->Add(hestimate2016[b]);
+
     hestimate[b]->GetYaxis()->SetTitle("Entries");
     hestimate[b]->SetFillColor(colors[b]);
     hestimate[b]->SetLineColor(1);
 
-    hestimate_forRatio[b]= new TH1D(Form("hestimate_forRatio%d", b), "", 174, 0, 174);
-    hestimate_forRatio[b]->Sumw2();
-    hestimate_forRatio[b]->GetYaxis()->SetTitle("Entries");
-    hestimate_forRatio[b]->SetFillColor(colors[b]);
-    hestimate_forRatio[b]->SetLineColor(1);
-    
   }
+
 
   THStack bgStack("bgStack", "");
 
@@ -187,304 +152,12 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   
   std::string labelsMono[12]={"[200,250]","[250,350]","[350,450]","[450,575]","[575,700]","[700,1000]",">1000", "[200,250]","[250,350]","[350,450]","[450,575]",">575"};
   
-  TFile* bigHistoFile = TFile::Open( Form("%s/histograms_ALL.root", fullPath.c_str()), "recreate" );
-
-  int iRegion = 1;
-  for( std::set<MT2Region>::iterator iMT2 = MT2Regions.begin(); iMT2!=MT2Regions.end(); ++iMT2 ) {
-
-      std::vector<std::string> niceNames = iMT2->getNiceNames();
-      
-      int nBins;
-      double *bins;
-      iMT2->getBins(nBins, bins);
-      
-      TH1D* h_first = data->get(*iMT2)->yield;
-
-      TGraphAsymmErrors* g_first = MT2DrawTools::getPoissonGraph(h_first);      
-      
-      TFile* histoFile = TFile::Open( Form("%s/histograms_%s.root", fullPath.c_str(), iMT2->getName().c_str()), "recreate" );
-      histoFile->cd();
-      h_first->Write();
-      
-      g_first->SetMarkerStyle(20);
-      g_first->SetMarkerSize(1.6);
-      g_first->SetLineColor( 1 );
-      g_first->SetMarkerColor( 1 );
-
-      THStack bgStack_region("bgStack_region", "");
-      
-      TH1D* h_second_all;
-      TH1D* h_second_forRatio_all;
-      TH1D* h_second[bgSize];
-      TH1D* h_second_forRatio[bgSize];
-
-      for(unsigned int b=0; b< bgSize; ++b){
-	
-	h_second[b] = new TH1D(Form("h_second_%d", b), "", nBins, bins);
-	
-	h_second_forRatio[b] = new TH1D(Form("h_second_%d", b), "", nBins, bins);
-	
-	h_second[b]->SetFillColor( colors[b] );
-	h_second[b]->SetLineColor( 1 );
-	
-      }
-      
-      for( int iBin=0; iBin<nBins; ++iBin ) {
-
-	std::string tableName;
-	if(iMT2->nJetsMax()==1){
-          tableName = std::string(Form("%s/datacard_templates/table_%s_m0toInf.txt", dir.c_str(), iMT2->getName().c_str() ));
-	}
-        else{
-          if( iBin < nBins-1 )
-            tableName = std::string(Form("%s/datacard_templates/table_%s_m%.0lfto%.0lf.txt", dir.c_str(), iMT2->getName().c_str(), bins[iBin], bins[iBin+1]) );
-          else
-            tableName = std::string(Form("%s/datacard_templates/table_%s_m%.0lftoInf.txt", dir.c_str(), iMT2->getName().c_str(), bins[iBin] ));
-        }
-//	if( iBin < nBins-1 )
-//	  tableName = std::string(Form("%s/datacard_templates/table_%s_m%.0lfto%.0lf.txt", dir.c_str(), iMT2->getName().c_str(), bins[iBin], bins[iBin+1]) );
-//	else
-//	  tableName = std::string(Form("%s/datacard_templates/table_%s_m%.0lftoInf.txt", dir.c_str(), iMT2->getName().c_str(), bins[iBin] ));
-
-	BGTable thisTable = getTable(tableName);
-	
-	float totalErr=0.;
-	float statErr=0.;
-	float systErr=0.;
-
-	//QCD
-	statErr = (thisTable.qcd_statUp > thisTable.qcd_statDn) ? thisTable.qcd_statUp : thisTable.qcd_statDn;
-	systErr = (thisTable.qcd_systUp > thisTable.qcd_systDn) ? thisTable.qcd_systUp : thisTable.qcd_systDn;
-	totalErr = TMath::Sqrt( statErr*statErr + systErr*systErr );
-	h_second[0]->SetBinContent(iBin+1, thisTable.qcd);
-	h_second[0]->SetBinError(iBin+1, totalErr);
-	
-	h_second_forRatio[0]->SetBinContent(iBin+1, thisTable.qcd);
-	h_second_forRatio[0]->SetBinError(iBin+1, 0);
-	
-	//Lost Lepton
-	statErr = (thisTable.llep_statUp > thisTable.llep_statDn) ? thisTable.llep_statUp : thisTable.llep_statDn;
-	systErr = (thisTable.llep_systUp > thisTable.llep_systDn) ? thisTable.llep_systUp : thisTable.llep_systDn;
-	totalErr = TMath::Sqrt( statErr*statErr + systErr*systErr );
-	h_second[1]->SetBinContent(iBin+1, thisTable.llep);
-	h_second[1]->SetBinError(iBin+1, totalErr);
-
-	h_second_forRatio[1]->SetBinContent(iBin+1, thisTable.llep);
-	h_second_forRatio[1]->SetBinError(iBin+1, 0);
-
-	//Invisible Z
-	statErr = (thisTable.zinv_statUp > thisTable.zinv_statDn) ? thisTable.zinv_statUp : thisTable.zinv_statDn;
-	systErr = (thisTable.zinv_systUp > thisTable.zinv_systDn) ? thisTable.zinv_systUp : thisTable.zinv_systDn;
-	totalErr = TMath::Sqrt( statErr*statErr + systErr*systErr );
-	h_second[2]->SetBinContent(iBin+1, thisTable.zinv);
-	h_second[2]->SetBinError(iBin+1, totalErr);
-
-	h_second_forRatio[2]->SetBinContent(iBin+1, thisTable.zinv);
-	h_second_forRatio[2]->SetBinError(iBin+1, 0);
-
-      }	
-	
-      for(unsigned int b=0; b<bgSize; ++b){
-      
-	bgStack_region.Add(h_second[b]);
-	
-	if(b==0) h_second_all = (TH1D*) h_second[b]->Clone("h_second_all");
-	else h_second_all->Add(h_second[b]);
-	
-	if(b==0) h_second_forRatio_all = (TH1D*) h_second_forRatio[b]->Clone("h_second_forRatio_all");
-	else h_second_forRatio_all->Add(h_second_forRatio[b]);
-      
-      }
-      
-//      for(int iBin=1; iBin<=nBins; ++iBin){
-//
-//	float thisData    = h_first->GetBinContent(iBin);
-//	float thisDataErr = h_first->GetBinError(iBin);
-//
-//	float thisEst     = h_second_all->GetBinContent(iBin);
-//	float thisEstErr  = h_second_all->GetBinError(iBin);
-//	
-//
-//	hPull->Fill( (thisEst-thisData)/( TMath::Sqrt( thisDataErr*thisDataErr + thisEstErr*thisEstErr ) ) );
-//	
-//      }
-
-      
-      double err_data;
-      double int_data;
-      for (int iBin=1; iBin<=nBins; ++iBin){
-	
-	int_data = h_first->GetBinContent(iBin);
-	err_data = h_first->GetBinError(iBin);
-	
-	hdata->SetBinContent(iRegion, int_data);
-	//	hdata->SetBinError(iRegion, err_data);
-
-	hdata->GetXaxis()->SetBinLabel( iRegion, niceNames[1].c_str() );
-	
-	for(unsigned int b=0; b<bgSize; ++b){
-
-	  double err_int = fabs(h_second[b]->GetBinError(iBin));
-	  double integral = fabs(h_second[b]->GetBinContent(iBin));
-	  hestimate[b]->SetBinContent(iRegion, integral);
-	  hestimate[b]->SetBinError(iRegion, err_int);
-
-	  double integral_forRatio = fabs(h_second_forRatio[b]->GetBinContent(iBin));
-	  hestimate_forRatio[b]->SetBinContent(iRegion, integral_forRatio);
-	  hestimate_forRatio[b]->SetBinError(iRegion, 0);
-	  
-	  //	  std::string thisLabel=Form("%s,%d", niceNames[1].c_str(), iBin); 
-
-	  if( iMT2->nJetsMax()==1 )
-            hestimate[b]->GetXaxis()->SetBinLabel( iRegion, labelsMono[iRegion-1].c_str() );
-	  else{
-	    std::string thisLabel;
-	    if( iBin < nBins )
-	      thisLabel=Form("[%.0lf,%.0lf]", bins[iBin-1], bins[iBin]);
-	    else
-	      thisLabel=Form(">%.0lf", bins[iBin-1]);
-	    hestimate[b]->GetXaxis()->SetBinLabel( iRegion, thisLabel.c_str() );
-	  }
-	}
-		
-	std::cout <<"iRegion " << iRegion << std::endl;
-	++iRegion;
-       
-      }
-
-      TCanvas* c1 = new TCanvas( "c1", "", 600, 700 );
-      c1->cd();
-
-      TPad *pad1 = new TPad("pad1","pad1",0,0.3-0.1,1,1);
-      pad1->SetBottomMargin(0.15);
-      pad1->Draw();
-      pad1->cd();
-
-      float xMin = h_first->GetXaxis()->GetXmin();
-      float xMax = h_first->GetXaxis()->GetXmax();
-      float yMax_1 = h_first->GetMaximum()*1.5;
-      float yMax_2 = 1.2*(h_first->GetMaximum() + h_first->GetBinError(h_first->GetMaximumBin()));
-      float yMax1 = (yMax_1>yMax_2) ? yMax_1 : yMax_2;
-      
-      float yMax_3 = h_second_all->GetMaximum()*1.5;
-      float yMax_4 = 1.2*(h_second_all->GetMaximum() + h_second_all->GetBinError(h_second_all->GetMaximumBin()));
-      float yMax2 = (yMax_3>yMax_4) ? yMax_3 : yMax_4;
-      float yMax = (yMax1>yMax2) ? yMax1 : yMax2;
-      
-      TH2D* h2_axes = new TH2D("axes", "", 10, xMin, xMax, 10, 0., yMax );
-      h2_axes->SetXTitle("M_{T2} [GeV]");
-      h2_axes->SetYTitle("Entries");
-
-      if(iMT2->nJetsMax()==1)
-	h2_axes->SetXTitle("p_{T}^{jet_{1}} [GeV]");
-
-      h2_axes->Draw();
- 
-      for( unsigned i=0; i<niceNames.size(); ++i ) {
-
-        float yMax = 0.9-(float)i*0.05;
-        float yMin = yMax - 0.05;
-        TPaveText* regionText = new TPaveText( 0.18, yMin, 0.55, yMax, "brNDC" );
-        regionText->SetTextSize(0.035);
-        regionText->SetTextFont(42);
-        regionText->SetFillColor(0);
-        regionText->SetTextAlign(11);
-        regionText->AddText( niceNames[i].c_str() );
-        regionText->Draw("same");
-	
-      }
-
-
-      TLegend* legend = new TLegend( 0.6, 0.9-(bgSize)*0.06, 0.93, 0.9 );
-      legend->SetTextSize(0.038);
-      legend->SetTextFont(42);
-      legend->SetFillColor(0);
-      legend->AddEntry( g_first, "Data", "P" );
-
-      legend->Draw("same");
-
-      bgStack_region.Draw("histo, same");
-      g_first->Draw("pe,same");
-      
-      TPaveText* labelTop = MT2DrawTools::getLabelTop(lumi);
-      labelTop->Draw("same");
-      TPaveText* labelCMS = MT2DrawTools::getLabelCMS();
-      labelCMS->Draw("same");
-
-      gPad->RedrawAxis();
-
-      c1->cd();
-      TPad *pad2 = new TPad("pad2","pad2",0,0,1,0.21);
-      pad2->SetTopMargin(0.05);
-      pad2->SetBottomMargin(0.1);
-      pad2->Draw();
-      pad2->cd();
-
-      std::string thisName = Form("%s_ratio", h_first->GetName());
-      TH1D* h_ratio = (TH1D*) h_first->Clone(thisName.c_str());
-      h_ratio->Divide(h_second_all);
-      h_ratio->Write();
-      h_ratio->SetStats(0);	    
-      h_ratio->SetMarkerStyle(20);
-      h_ratio->SetMarkerColor(1);
-      h_ratio->SetLineColor(1);
-      h_ratio->GetXaxis()->SetLabelSize(0.00);
-      h_ratio->GetXaxis()->SetTickLength(0.09);
-      h_ratio->GetYaxis()->SetNdivisions(5,5,0);
-      h_ratio->GetYaxis()->SetRangeUser(0.0,2.0);
-      h_ratio->GetYaxis()->SetTitleSize(0.17);
-      h_ratio->GetYaxis()->SetTitleOffset(0.4);
-      h_ratio->GetYaxis()->SetLabelSize(0.17);
-      h_ratio->GetYaxis()->SetTitle("Ratio");
-            
-      TH2D* h2_axes_ratio = MT2DrawTools::getRatioAxes( xMin, xMax, 0.0, 2.0 );
-      h2_axes_ratio->GetYaxis()->SetTitle("Ratio");
-      
-      TLine* lineCentral = new TLine(xMin, 1.0, xMax, 1.0);
-      lineCentral->SetLineColor(1);
-
-      h2_axes_ratio->Draw("");
-      lineCentral->Draw("same");
-      h_ratio->Draw("pe,same");
-      
-      gPad->RedrawAxis();
-      
-      c1->cd();
-
-      c1->SaveAs( Form("%s/mt2_%s.pdf", fullPath.c_str(), iMT2->getName().c_str()) );
-      c1->SaveAs( Form("%s/mt2_%s.png", fullPath.c_str(), iMT2->getName().c_str()) );
-      c1->SaveAs( Form("%s/mt2_%s.eps", fullPath.c_str(), iMT2->getName().c_str()) );
-
-      delete c1;
-
-      delete h2_axes;
-      delete h2_axes_ratio;
-
-      delete h_ratio;
-
-      delete h_first;
-
-      delete h_second_all;
-
-      for(unsigned int b=0; b<bgSize; ++b)
-	delete h_second[b];
-      
-      //      ++iRegion;
-
-  } // for MT2 regions
-
 
   for(unsigned int b=0; b<bgSize; ++b){
 
     hestimate[b]->SetLineWidth(0);
     bgStack.Add(hestimate[b]);
     //bgStack.Add(hestimate_forRatio[b]);
-    
-    if(b==0) hestimate_all = (TH1D*) hestimate[b]->Clone("hestimate_all");
-    else hestimate_all->Add(hestimate[b]);
-
-    if(b==0) hestimate_all_forRatio = (TH1D*) hestimate_forRatio[b]->Clone("hestimate_all_forRatio");
-    else hestimate_all_forRatio->Add(hestimate_forRatio[b]);
 
   }
 
@@ -639,7 +312,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   legend->Draw("same");
 
   //  TPaveText* labelTop = MT2DrawTools::getLabelTopSimulation(lumi);
-  TPaveText* labelTop = MT2DrawTools::getLabelTop(lumi);
+  TPaveText* labelTop = MT2DrawTools::getLabelTop(lumi2015,lumi2016);
   labelTop->Draw("same");
   TPaveText* labelCMS = MT2DrawTools::getLabelCMS();
   labelCMS->Draw("same");
@@ -730,18 +403,9 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   gPad->RedrawAxis();
 
   c2->cd();
-  //  c2->SaveAs( Form("%s/mt2_ALL_fullEstimate.pdf", fullPath.c_str()) );
-  c2->SaveAs( Form("%s/mt2_ALL_fullEstimate.png", fullPath.c_str()) );
-  c2->SaveAs( Form("%s/mt2_ALL_fullEstimate.eps", fullPath.c_str()) );
-
-  bigHistoFile->cd();
-  h_band->Write();
-  hestimate_all->Write();
-  hestimate_all_forRatio->Write();
-  hdata->Write();
-  for(unsigned int b=0; b<bgSize; ++b)
-    hestimate[b]->Write();
-
+//  //  c2->SaveAs( Form("%s/mt2_ALL_fullEstimate.pdf", fullPath.c_str()) );
+//  c2->SaveAs( Form("%s/mt2_ALL_fullEstimate.png", fullPath.c_str()) );
+//  c2->SaveAs( Form("%s/mt2_ALL_fullEstimate.eps", fullPath.c_str()) );
 
   TCanvas* c2_0 = new TCanvas("c2_0", "", 1100, 600);
   c2_0->cd();
@@ -787,7 +451,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
 
   gPad->RedrawAxis();
   
-  bool doLogRatio=false;
+  bool doLogRatio=true;
 
   c2_0->cd();
   TPad *pad2_0 = new TPad("pad2_0","pad2_0",0,0,1,0.21);
@@ -1259,51 +923,3 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   
 }
 
-
-
-BGTable getTable( const std::string& tableFileName ) {
-
-  std::ifstream ifs( tableFileName.c_str() );
-
-  BGTable table;
-
-  while( ifs.good() ) {
-
-
-    char thisLine[256];
-    ifs.getline( thisLine, 256 );
-    if( thisLine[0]=='#' ) continue;
-
-    std::istringstream thisLine_iss(thisLine);
-
-    std::string name;
-    float yield, statUp, statDn, systUp, systDn;
-    thisLine_iss >> name >> yield >> statUp >> statDn >> systUp >> systDn;
-
-    if( name=="zinv" ) {
-      table.zinv = yield;
-      table.zinv_statUp = statUp;
-      table.zinv_statDn = statDn;
-      table.zinv_systUp = systUp;
-      table.zinv_systDn = systDn;
-    } else if( name=="llep" ) {
-      table.llep = yield;
-      table.llep_statUp = statUp;
-      table.llep_statDn = statDn;
-      table.llep_systUp = systUp;
-      table.llep_systDn = systDn;
-    } else if( name=="qcd" ) {
-      table.qcd = yield;
-      table.qcd_statUp = statUp;
-      table.qcd_statDn = statDn;
-      table.qcd_systUp = systUp;
-      table.qcd_systDn = systDn;
-    } else {
-      continue;
-    }
-
-  }
-
-  return table;
-
-}
