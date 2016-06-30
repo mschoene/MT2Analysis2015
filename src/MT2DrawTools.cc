@@ -230,6 +230,16 @@ TPaveText* MT2DrawTools::getLabelTop( float lumi ) {
 
 }
 
+TPaveText* MT2DrawTools::getLabelTop( float lumi2015, float lumi2016 ) {
+
+  char text[300];
+  sprintf( text, "%s + %s (13 TeV)", getLumiText(lumi2015).c_str(), getLumiText(lumi2016).c_str() );
+  //  sprintf( text, "CMS Preliminary, %s at #sqrt{s} = 13 TeV", getLumiText(lumi).c_str() );
+  std::string text_str(text);
+  return getLabelTop(text_str);
+
+}
+
 
 TPaveText* MT2DrawTools::getLabelTopSimulation( float lumi ) {
 

@@ -59,6 +59,7 @@ class MT2DrawTools {
   static void addLabels( TCanvas* c1, float lumi, const std::string& text="CMS Preliminary");
 
   static TPaveText* getLabelTop( float lumi );
+  static TPaveText* getLabelTop( float lumi2015, float lumi2016 );
   static TPaveText* getLabelTopSimulation( float lumi );
   static TPaveText* getLabelCMS( const std::string& text="CMS" );
   static TPaveText* getLabelTop( const std::string& text="CMS Preliminary, #sqrt{s} = 13 TeV" );
