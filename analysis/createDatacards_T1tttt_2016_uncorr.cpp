@@ -448,7 +448,11 @@ int main( int argc, char* argv[] ) {
 	 int thisFJetsBin_ = this_qcd_fjets->FindBin( iR->nJetsMin() );
 	 int thisRBBin_ = this_qcd_rb->FindBin( iR->nBJetsMin() );
 
-	 yield_qcd = (this_qcdCR->GetBinContent(iBin)) * (this_qcd_ratio->GetBinContent(iBin)) * (this_qcd_purity->GetBinContent(iBin)) * (this_qcd_fjets->GetBinContent(thisFJetsBin_)) * (this_qcd_rb->GetBinContent(thisRBBin_));
+	 if(iR->nJetsMin()==2)
+           yield_qcd = (this_qcdCR->GetBinContent(iBin)) * (this_qcd_ratio->GetBinContent(iBin)) * (this_qcd_purity->GetBinContent(iBin)) * (this_qcd_fjets->GetBinContent(thisFJetsBin_)+this_qcd_fjets->GetBinContent(thisFJetsBin_+1)) * (this_qcd_rb->GetBinContent(thisRBBin_));
+         else
+           yield_qcd = (this_qcdCR->GetBinContent(iBin)) * (this_qcd_ratio->GetBinContent(iBin)) * (this_qcd_purity->GetBinContent(iBin)) * (this_qcd_fjets->GetBinContent(thisFJetsBin_)) * (this_qcd_rb->GetBinContent(thisRBBin_));
+
        }
 
 
