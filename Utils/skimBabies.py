@@ -74,7 +74,7 @@ if __name__ == '__main__':
      if options.useXRD == "true":
        status,files = commands.getstatusoutput("xrdfs t3dcachedb.psi.ch ls "+dir)
      else:
-       status,files = commands.getstatusoutput("gfal-ls "+options.gfalProtocol+"://t3se01.psi.ch"+dir)
+       status,files = commands.getstatusoutput("env -i X509_USER_PROXY=~/.x509up_u`id -u` gfal-ls "+options.gfalProtocol+"://t3se01.psi.ch"+dir)
      files=files.splitlines()
    else :
      files = os.listdir(dir)
