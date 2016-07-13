@@ -1,16 +1,15 @@
 #!/bin/bash
 
-goldenJson=/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions16/13TeV/Cert_271036-275125_13TeV_PromptReco_Collisions16_JSON.txt
+# --- Start of configuration ----------------------------------
+
+path=/pnfs/psi.ch/cms/trivcat/store/user/mangano/crab/MT2_8_0_11/prodJuly08_runC_275377-276097_v1/
+goldenJson=gold_runC.txt
+
+# --- End of configuration ----------------------------------
+
+
 
 echo "calculating missing lumis using json: " $goldenJson
-
-if [ $# -ne 1 ]; then
-    echo "usage: merge.sh path"
-    echo "e.g.: merge.sh /pnfs/psi.ch/cms/trivcat/store/user/casal/babies/MT2_CMGTools-from-CMSSW_7_4_7/prod747data_Run2015B_golden_v2/"
-    exit 1
-fi
-
-path=$1
 
 prod_label=`basename $path`
 mkdir $prod_label
