@@ -38,15 +38,15 @@ using namespace std;
 // setup calibration readers 
 // https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation74X  --  official SFs
 // https://twiki.cern.ch/twiki/bin/view/CMS/BTagCalibration  --  calibration reader documentations
-BTagCalibration *calib = new BTagCalibration("csvv2", "/shome/casal/btagsf/CSVv2.csv"); // 25 ns official version of SFs
-BTagCalibrationReader *reader_heavy    = new BTagCalibrationReader(calib, BTagEntry::OP_MEDIUM, "mujets", "central");  // central
-BTagCalibrationReader *reader_heavy_UP = new BTagCalibrationReader(calib, BTagEntry::OP_MEDIUM, "mujets", "up");       // sys up
-BTagCalibrationReader *reader_heavy_DN = new BTagCalibrationReader(calib, BTagEntry::OP_MEDIUM, "mujets", "down");     // sys down
-BTagCalibrationReader *reader_light    = new BTagCalibrationReader(calib, BTagEntry::OP_MEDIUM, "comb"  , "central");  // central
-BTagCalibrationReader *reader_light_UP = new BTagCalibrationReader(calib, BTagEntry::OP_MEDIUM, "comb"  , "up");       // sys up
-BTagCalibrationReader *reader_light_DN = new BTagCalibrationReader(calib, BTagEntry::OP_MEDIUM, "comb"  , "down");     // sys down
+BTagCalibration *calib = new BTagCalibration("csvv2", "/shome/mschoene/btagSF/CSVv2_4invfb.csv"); // 25 ns official version of SFs
+BTagCalibrationReader *reader_heavy    = new BTagCalibrationReader(calib, BTagEntry::OP_MEDIUM, "comb", "central");  // central
+BTagCalibrationReader *reader_heavy_UP = new BTagCalibrationReader(calib, BTagEntry::OP_MEDIUM, "comb", "up");       // sys up
+BTagCalibrationReader *reader_heavy_DN = new BTagCalibrationReader(calib, BTagEntry::OP_MEDIUM, "comb", "down");     // sys down
+BTagCalibrationReader *reader_light    = new BTagCalibrationReader(calib, BTagEntry::OP_MEDIUM, "incl"  , "central");  // central
+BTagCalibrationReader *reader_light_UP = new BTagCalibrationReader(calib, BTagEntry::OP_MEDIUM, "incl"  , "up");       // sys up
+BTagCalibrationReader *reader_light_DN = new BTagCalibrationReader(calib, BTagEntry::OP_MEDIUM, "incl"  , "down");     // sys down
 
-TFile *f_btag_eff = new TFile("/shome/casal/btagsf/btageff__ttbar_powheg_pythia8_25ns.root"); // Dominick's b-tagging efficiencies
+TFile *f_btag_eff = new TFile("/shome/mschoene/btagSF/btageff__ttbar_powheg_pythia8_25ns.root"); // Dominick's b-tagging efficiencies
 TH2D* h_btag_eff_b    = (TH2D*) f_btag_eff->Get("h2_BTaggingEff_csv_med_Eff_b"   );
 TH2D* h_btag_eff_c    = (TH2D*) f_btag_eff->Get("h2_BTaggingEff_csv_med_Eff_c"   );
 TH2D* h_btag_eff_udsg = (TH2D*) f_btag_eff->Get("h2_BTaggingEff_csv_med_Eff_udsg");
