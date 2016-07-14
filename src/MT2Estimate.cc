@@ -20,13 +20,20 @@ MT2Estimate::MT2Estimate( const std::string& aname, const MT2Region& aregion ) {
   double* bins;
   region->getBins(nBins, bins);
   
-  int nBinsM=80;
+  int nBinsM=81;
   double binWidthM=25.;
   double binsM[nBinsM+1];
   for (int b=0; b<=nBinsM; ++b)
     binsM[b]=b*binWidthM;
  
+  int nBinsMY=161;
+  double binWidthMY=5.;
+  double binsMY[nBinsMY+1];
+  for (int b=0; b<=nBinsMY; ++b)
+    binsMY[b]=b*binWidthMY;
+ 
   yield3d = new TH3D(this->getHistoName("yield3d").c_str(), "", nBins, bins, nBinsM, binsM, nBinsM, binsM);
+  //yield3d = new TH3D(this->getHistoName("yield3d").c_str(), "", nBins, bins, nBinsM, binsM, nBinsMY, binsMY);
   yield3d->Sumw2();
 
   yield = new TH1D(this->getHistoName("yield").c_str(), "", nBins, bins);
@@ -364,10 +371,22 @@ MT2Analysis<MT2Estimate>* MT2Estimate::makeIntegralAnalysisFromEstimate( const s
     double error;
     double integral = thisEstimate->yield->IntegralAndError(1, -1, error);
 
-    for( int iBin = 1; iBin < thisEstimate->yield->GetNbinsX()+1; ++iBin ){
+    int nBins;
+    double* bins;
+    iR->getBins(nBins,bins);
 
-      thisEstimate->yield->SetBinContent(iBin, integral);
-      thisEstimate->yield->SetBinError(iBin, error);
+    TH1D* thisYield = new TH1D("yield", "", nBins, bins);
+    thisYield->Sumw2();
+
+    //    for( int iBin = 1; iBin < thisEstimate->yield->GetNbinsX()+1; ++iBin ){
+    for( int iBin = 1; iBin < nBins+1; ++iBin ){
+
+      thisYield->SetBinContent(iBin, integral);
+      thisYield->SetBinError(iBin, error);
+      thisEstimate->yield = (TH1D*) thisYield->Clone((thisEstimate->yield->GetName()));
+      
+//      thisEstimate->yield->SetBinContent(iBin, integral);
+//      thisEstimate->yield->SetBinError(iBin, error);
 
       for( int jBin = 1; jBin < thisEstimate->yield3d->GetNbinsY()+1; ++jBin )
 	for( int kBin = 1; kBin < thisEstimate->yield3d->GetNbinsZ()+1; ++kBin ){
@@ -433,6 +452,58 @@ void MT2Estimate::print( std::ofstream& ofs_file, Int_t mt2_bin ){
   Double_t error;
   Double_t integral = yield->IntegralAndError(mt2_bin, mt2_bin, error);
   
+  if(integral >= 10)
+    ofs_file << std::fixed << std::setprecision(1) << " & " << integral << " $\\pm$ " << error;
+  else if(integral < 10)
+    ofs_file << std::fixed << std::setprecision(2) << " & " << integral << " $\\pm$ " << error;
+  
+}
+
+void MT2Estimate::printData( std::ofstream& ofs_file, Int_t mt2_bin, Bool_t lastBin ){
+
+  Double_t error;
+  Double_t integral;
+  if(!lastBin)
+    integral = yield->IntegralAndError(mt2_bin, mt2_bin, error);
+  else
+    integral = yield->IntegralAndError(mt2_bin, -1, error);
+
+  ofs_file << std::fixed << std::setprecision(0) << " & " << integral;
+  
+}
+
+void MT2Estimate::print( std::ofstream& ofs_file, Float_t m1, Float_t m2, Int_t mt2_bin, float k ){
+
+  TH1D* h_sig;
+  TH3D* h_sig3d;
+  h_sig3d = yield3d;
+
+  int nBinsM=81;
+  double binWidthM=25.;
+  double binsM[nBinsM+1];
+  for (int b=0; b<=nBinsM; ++b)
+    binsM[b]=b*binWidthM;
+
+  std::cout << "Printing for m1 = " << m1 << ", m2 = " << m2 << std::endl;
+
+  if( h_sig3d == 0 ){
+    
+    std::cout << "3d histogram does not exist, initializing empty histogram..." << std::endl;
+    h_sig3d = new TH3D("emptyHisto", "", nBinsM, binsM, nBinsM, binsM, nBinsM, binsM);
+  
+  }
+
+  int binY, binZ;
+  binY = h_sig3d->GetYaxis()->FindBin(m1);
+  binZ = h_sig3d->GetYaxis()->FindBin(m2);
+  h_sig = h_sig3d->ProjectionX("mt2_0", binY, binY, binZ, binZ);
+
+  Double_t error;
+  Double_t integral = h_sig->IntegralAndError(mt2_bin, mt2_bin, error);
+  
+  integral*=k;
+  error*=k;
+
   if(integral >= 10)
     ofs_file << std::fixed << std::setprecision(1) << " & " << integral << " $\\pm$ " << error;
   else if(integral < 10)
