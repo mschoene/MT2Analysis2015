@@ -12,7 +12,7 @@ productionName="$(basename $inputFolder)"
 
 
 #outputFolder="/pnfs/psi.ch/cms/trivcat/store/user/`whoami`/ZGproduction/80X/PostProcessed/"$productionName"_pu/"
-outputFolder="/pnfs/psi.ch/cms/trivcat/store/user/`whoami`/MT2production/80X/PostProcessed/"$productionName"_testGfal5/"
+outputFolder="/pnfs/psi.ch/cms/trivcat/store/user/`whoami`/MT2production/80X/PostProcessed/"$productionName"_testGfal11/"
 
 # in current implementation one also needs to change this in runSkimmingPruning.sh
 useXRD="false"
@@ -214,7 +214,7 @@ if [[ "$1" = "post" ]]; then
 
 
 #xrdfs t3dcachedb.psi.ch ls $outputFolder &> ./checkOutputDir
-gfal-ls ${gfalProtocol}://t3se01.psi.ch$outputFolder &> ./checkOutputDir
+env -i X509_USER_PROXY=~/.x509up_u`id -u` gfal-ls ${gfalProtocol}://t3se01.psi.ch$outputFolder &> ./checkOutputDir
 
 # --- check the existence of outputFolder on SE ---
 if [ -n "`cat ./checkOutputDir|grep 'No such file or directory'`"  ]; then
