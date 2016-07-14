@@ -68,7 +68,7 @@ class MT2DrawTools {
   static std::string getLumiText( float lumi );
 
   static TGraphAsymmErrors* getPoissonGraph( TH1D* h1, bool drawZeros=true, const std::string& xerrType="0", float nSigma=1. );
-  static TGraphAsymmErrors* getRatioGraph( TH1D* h1, TH1D* h2 );
+  static TGraphAsymmErrors* getRatioGraph( TH1D* h1, TH1D* h2, const std::string& xerrType="0" );
 
   static float getDataMCSF( TCanvas* c1 );
   static float graphIntegral( TGraphAsymmErrors* graph, float xMin = -99999., float xMax=999999. );
