@@ -267,6 +267,9 @@ printLowYields: printLowYields.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2Esti
 printPurity: printPurity.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateZinvGamma.o MT2EstimateSyst.o MT2EstimateTree.o
 	$(CC) -Wall $(INCLUDES) -o printPurity printPurity.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateZinvGamma.o MT2EstimateSyst.o MT2EstimateTree.o $(ROOTFLAG) $(EXTRALIBS)
 
+printLatexBGTable_2016: printLatexBGTable_2016.cpp MT2Region.o MT2Estimate.o  MT2EstimateSigContSyst.o MT2DrawTools.o
+	$(CC) -Wall $(INCLUDES) -o printLatexBGTable_2016 printLatexBGTable_2016.cpp MT2Region.o MT2Estimate.o MT2EstimateSigContSyst.o MT2DrawTools.o $(ROOTFLAG) $(EXTRALIBS)
+
 printLatexBGTable: printLatexBGTable.cpp MT2Region.o MT2Estimate.o MT2DrawTools.o
 	$(CC) -Wall $(INCLUDES) -o printLatexBGTable printLatexBGTable.cpp MT2Region.o MT2Estimate.o MT2DrawTools.o $(ROOTFLAG) $(EXTRALIBS)
 
