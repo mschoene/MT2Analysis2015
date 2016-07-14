@@ -26,11 +26,11 @@ MT2Estimate::MT2Estimate( const std::string& aname, const MT2Region& aregion ) {
   for (int b=0; b<=nBinsM; ++b)
     binsM[b]=b*binWidthM;
  
-  int nBinsMY=161;
-  double binWidthMY=5.;
-  double binsMY[nBinsMY+1];
-  for (int b=0; b<=nBinsMY; ++b)
-    binsMY[b]=b*binWidthMY;
+  //int nBinsMY=161;
+  //double binWidthMY=5.;
+  // double binsMY[nBinsMY+1];
+  // for (int b=0; b<=nBinsMY; ++b)
+  //   binsMY[b]=b*binWidthMY;
  
   yield3d = new TH3D(this->getHistoName("yield3d").c_str(), "", nBins, bins, nBinsM, binsM, nBinsM, binsM);
   //yield3d = new TH3D(this->getHistoName("yield3d").c_str(), "", nBins, bins, nBinsM, binsM, nBinsMY, binsMY);
