@@ -27,6 +27,7 @@ bool use_extrapolation = true;
 bool doSignalContamination = true;
 bool doSimultaneousFit = false;
 bool includeSignalUnc = true; // signal lep eff commented out till available
+bool copy2SE = true; // copy datacards to SE
 
 int round(float d) {
   return (int)(floor(d + 0.5));
@@ -1136,7 +1137,7 @@ int main( int argc, char* argv[] ) {
     if (label=="")
       pathSE = dir + "/datacards_" + sigName;
     else
-      pathSE = label + "/" + dir + "/datacards_" + sigName;
+      pathSE = dir + "/datacards_" + sigName + "_" + label;
     
     std::string path_mass = path;
 
@@ -1291,13 +1292,16 @@ int main( int argc, char* argv[] ) {
 	      Long_t flags; 
 	      Long_t modtime;
 	      Long_t size;
+	      std::string fullPathSE;
+	      int checkFileSE;
+	      std::string rmOnSE;
 	      if( copy2SE ){
-		std::string fullPathSE = Form("/pnfs/psi.ch/cms/trivcat/store/user/`whoami`/%s/datacards_%.0f_%.0f/datacard_%s_%s_%.0f_%.0f.txt", pathSE.c_str(), mParent, mLSP, binName.c_str(), sigName.c_str(), mParent, mLSP);
-		int checkFileSE = (int) gSystem->GetPathInfo(fullPathSE.c_str(), &id, &size, &flags, &modtime);
+		fullPathSE = Form("/pnfs/psi.ch/cms/trivcat/store/user/`whoami`/%s/datacards_%.0f_%.0f/datacard_%s_%s_%.0f_%.0f.txt", pathSE.c_str(), mParent, mLSP, binName.c_str(), sigName.c_str(), mParent, mLSP);
+		checkFileSE = (int) gSystem->GetPathInfo(fullPathSE.c_str(), &id, &size, &flags, &modtime);
 		std::cout << fullPathSE << "\t" << checkFileSE << "\t" <<size<< std::endl;
 		
 		//std::string rmOnSE( Form("env --unset=LD_LIBRARY_PATH gfal-rm srm://t3se01.psi.ch/%s", fullPathSE.c_str()) );
-		std::string rmOnSE( Form("gfal-rm srm://t3se01.psi.ch/%s", fullPathSE.c_str()) );
+		rmOnSE = Form("gfal-rm srm://t3se01.psi.ch/%s", fullPathSE.c_str()) ;
 		
 		if( checkFileSE==0 && (size)==0 ){
 		  

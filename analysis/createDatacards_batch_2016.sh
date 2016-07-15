@@ -1,7 +1,7 @@
 #!/bin/bash                                                                                                                                                                          
 echo $#;
-if [ $# != 6 ]; then
-    echo "USAGE: ${0} MODEL CFG M1 M2 M11 M22";
+if [ $# -lt 6 ]; then
+    echo "USAGE: ${0} MODEL CFG M1 M2 M11 M22 [LABEL]";
     exit;
 fi
 
@@ -11,6 +11,11 @@ M1=$3
 M2=$4
 M11=$5
 M22=$6
+if [ $# -ge 7 ]; then
+    LABEL=$7;
+else
+    LABEL="";
+fi
 
 source $VO_CMS_SW_DIR/cmsset_default.sh
 #source /mnt/t3nfs01/data01/swshare/glite/external/etc/profile.d/grid-env.sh
@@ -38,7 +43,7 @@ cd $JOBDIR/analysis/
 echo $PWD
 
 echo "Starting to create datacards..."
-./createDatacards_general $1 $2 $3 $4 $5 $6
+./createDatacards_general $1 $2 $3 $4 $5 $6 $7
 
 cd /scratch/casal/
 rm -rf $JOBDIR

@@ -5,7 +5,12 @@ from sys import argv
 if len(argv)>1:
     model = argv[1]
 else:
-   model = "T1tttt"
+    model = "T1tttt"
+
+if len(argv)>2:
+    label = argv[2]
+else:
+    label = ""
 
 
 cfg = "data_Run2016_7p7ifb"
@@ -25,6 +30,6 @@ for i,m in enumerate(M):
         if m11 >= m2: 
             continue
         
-        command="qsub -l h_vmem=6g -q short.q -o `pwd`/jobs_"+model+"_2016/log_"+str(m1)+"_"+str(m2)+"_"+str(m11)+"_"+str(m22)+".out -e `pwd`/jobs_"+model+"_2016/log_"+str(m1)+"_"+str(m2)+"_"+str(m11)+"_"+str(m22)+".err -N creatingDatacards_"+model+"_"+str(m1)+"_"+str(m2)+"_"+str(m11)+"_"+str(m22)+" createDatacards_batch_2016.sh "+cfg+" "+model+" "+str(m1)+" "+str(m2)+" "+str(m11)+" "+str(m22)+" "
+        command="qsub -l h_vmem=6g -q short.q -o `pwd`/jobs_"+model+"_2016/log_"+str(m1)+"_"+str(m2)+"_"+str(m11)+"_"+str(m22)+".out -e `pwd`/jobs_"+model+"_2016/log_"+str(m1)+"_"+str(m2)+"_"+str(m11)+"_"+str(m22)+".err -N creatingDatacards_"+model+"_"+str(m1)+"_"+str(m2)+"_"+str(m11)+"_"+str(m22)+" createDatacards_batch_2016.sh "+cfg+" "+model+" "+str(m1)+" "+str(m2)+" "+str(m11)+" "+str(m22)+" "+label+" "
         print command
         os.system(command)
