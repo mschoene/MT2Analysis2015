@@ -161,9 +161,9 @@ int main( int argc, char* argv[] ) {
 
     ofs << "\\begin{table}[htbp]" << std::endl; 
     if( iR->nJetsMin() > 1 )
-      ofs << "\\caption{Background estimate, observation, and signal yields in bins of \\mttwo for " << names[0].c_str() << ", " << names[1].c_str() << ". The yields are normalized to $2.3~\\mathrm{fb}^{-1}$.}" << std::endl;
+      ofs << "\\caption{Background estimate, observation, and signal yields in bins of \\mttwo for " << names[0].c_str() << ", " << names[1].c_str() << ". The yields are normalized to $7.7~\\mathrm{fb}^{-1}$.}" << std::endl;
     else
-      ofs << "\\caption{Background estimate, observation, and signal yields for " << names[0].c_str() << ", " << names[1].c_str() << ". The yields are normalized to $2.3~\\mathrm{fb}^{-1}$.}" << std::endl;
+      ofs << "\\caption{Background estimate, observation, and signal yields for " << names[0].c_str() << ", " << names[1].c_str() << ". The yields are normalized to $7.7~\\mathrm{fb}^{-1}$.}" << std::endl;
     ofs << "\\scriptsize" << std::endl;
     ofs << "\\centering" << std::endl;
     ofs << "\\makebox[\\textwidth][c]{" << std::endl;
@@ -1050,7 +1050,7 @@ int main( int argc, char* argv[] ) {
     Float_t m1T1bbbb[scanPointsT1bbbb]={1500., 1000.};
     Float_t m2T1bbbb[scanPointsT1bbbb]={ 100.,  900.};
     for(int a=0;  a < scanPointsT1bbbb; ++a) {
-      ofs << "T1bbbb " << m1T1bbbb[a] << ", " << m2T1bbbb[a];
+      ofs << "T1bbbb " << (int)m1T1bbbb[a] << ", " << (int)m2T1bbbb[a];
       analysesT1bbbb->print(ofs, m1T1bbbb[a], m2T1bbbb[a], thisRegion, 1.0 );
     }
 
@@ -1058,7 +1058,7 @@ int main( int argc, char* argv[] ) {
     Float_t m1T1qqqq[scanPointsT1qqqq]={1400., 1000.};
     Float_t m2T1qqqq[scanPointsT1qqqq]={ 100.,  800.};
     for(int a=0;  a < scanPointsT1qqqq; ++a) {
-      ofs << "T1qqqq " << m1T1qqqq[a] << ", " << m2T1qqqq[a];
+      ofs << "T1qqqq " << (int)m1T1qqqq[a] << ", " << (int)m2T1qqqq[a];
       analysesT1qqqq->print(ofs, m1T1qqqq[a], m2T1qqqq[a], thisRegion, 1.0 );
     }
 
@@ -1066,7 +1066,7 @@ int main( int argc, char* argv[] ) {
     Float_t m1T1tttt[scanPointsT1tttt]={1500., 1200.};
     Float_t m2T1tttt[scanPointsT1tttt]={ 100.,  800.};
     for(int a=0;  a < scanPointsT1tttt; ++a) {
-      ofs << "T1tttt " << m1T1tttt[a] << ", " << m2T1tttt[a];
+      ofs << "T1tttt " << (int)m1T1tttt[a] << ", " << (int)m2T1tttt[a];
       analysesT1tttt->print(ofs, m1T1tttt[a], m2T1tttt[a], thisRegion, 1.0 );
     }
 
@@ -1074,7 +1074,7 @@ int main( int argc, char* argv[] ) {
     Float_t m1T2bb[scanPointsT2bb]={800., 500.};
     Float_t m2T2bb[scanPointsT2bb]={  0., 350.};
     for(int a=0;  a < scanPointsT2bb; ++a) {
-      ofs << "T2bb " << m1T2bb[a] << ", " << m2T2bb[a];
+      ofs << "T2bb " << (int)m1T2bb[a] << ", " << (int)m2T2bb[a];
       analysesT2bb->print(ofs, m1T2bb[a], m2T2bb[a], thisRegion, 1.0 );
     }
 
@@ -1082,7 +1082,7 @@ int main( int argc, char* argv[] ) {
     Float_t m1T2tt[scanPointsT2tt]={ 750., 600., 350., 300., 300.};
     Float_t m2T2tt[scanPointsT2tt]={   0., 250., 150., 125., 175.};
     for(int a=0;  a < scanPointsT2tt; ++a) {
-      ofs << "T2tt " << m1T2tt[a] << ", " << m2T2tt[a];
+      ofs << "T2tt " << (int)m1T2tt[a] << ", " << (int)m2T2tt[a];
       analysesT2tt->print(ofs, m1T2tt[a], m2T2tt[a], thisRegion, 1.0 );
     }
 
@@ -1090,7 +1090,7 @@ int main( int argc, char* argv[] ) {
     // Float_t m1T2qq[scanPointsT2qq]={ 1200., 600., 700.};
     // Float_t m2T2qq[scanPointsT2qq]={    0.,   0., 500.};
     // for(int a=0;  a < scanPointsT2qq; ++a) {
-    //   ofs << "T2qq " << m1T2qq[a] << ", " << m2T2qq[a];
+    //   ofs << "T2qq " << (int)m1T2qq[a] << ", " << (int)m2T2qq[a];
     //   analysesT2qq->print(ofs, m1T2qq[a], m2T2qq[a], thisRegion, 1.0 );
     // }
 
