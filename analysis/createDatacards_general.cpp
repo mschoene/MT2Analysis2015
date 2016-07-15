@@ -26,7 +26,7 @@
 bool use_extrapolation = true;
 bool doSignalContamination = true;
 bool doSimultaneousFit = false;
-bool includeSignalUnc = false;
+bool includeSignalUnc = true; // signal lep eff commented out till available
 
 int round(float d) {
   return (int)(floor(d + 0.5));
@@ -119,7 +119,7 @@ int main( int argc, char* argv[] ) {
   MT2Analysis<MT2Estimate>* qcd_ratio;
   MT2Analysis<MT2Estimate>* qcd_purity;
   MT2Analysis<MT2Estimate>* qcd_fjets;
-  MT2Analysis<MT2Estimate>* qcd_fjets_vlht;
+  // MT2Analysis<MT2Estimate>* qcd_fjets_vlht;
   MT2Analysis<MT2Estimate>* qcd_rb;
   MT2Analysis<MT2Estimate>* qcd_ratioSystFit;
 
@@ -132,19 +132,19 @@ int main( int argc, char* argv[] ) {
     qcd = MT2Analysis<MT2Estimate>::readFromFile( mc_fileName, "QCD"  );
   else{
 
-    qcd = MT2Analysis<MT2Estimate>::readFromFile( dir + "/qcdEstimateData.root", "qcdEstimate" );
-    qcdCR = MT2Analysis<MT2Estimate>::readFromFile( dir + "/qcdEstimateData.root", "nCR" );
-    qcd_ratio = MT2Analysis<MT2Estimate>::readFromFile( dir + "/qcdEstimateData.root", "r_effective" );
-    qcd_purity = MT2Analysis<MT2Estimate>::readFromFile( dir + "/qcdEstimateData.root", "qcdPurity" );
-    qcd_fjets = MT2Analysis<MT2Estimate>::readFromFile( dir + "/qcdEstimateData.root", "f_jets_data" );
-    qcd_fjets_vlht = MT2Analysis<MT2Estimate>::readFromFile( dir + "/qcdEstimateData.root", "f_jets_data_noPS" );
-    qcd_rb = MT2Analysis<MT2Estimate>::readFromFile( dir + "/qcdEstimateData.root", "r_hat_data" );
-    qcd_ratioSystFit = MT2Analysis<MT2Estimate>::readFromFile( dir + "/qcdEstimateData.root", "r_systFit" );
+    qcd = MT2Analysis<MT2Estimate>::readFromFile( dir + "/qcdControlRegion/qcdEstimateData.root", "qcdEstimate" );
+    qcdCR = MT2Analysis<MT2Estimate>::readFromFile( dir + "/qcdControlRegion/qcdEstimateData.root", "nCR" );
+    qcd_ratio = MT2Analysis<MT2Estimate>::readFromFile( dir + "/qcdControlRegion/qcdEstimateData.root", "r_effective" );
+    qcd_purity = MT2Analysis<MT2Estimate>::readFromFile( dir + "/qcdControlRegion/qcdEstimateData.root", "qcdPurity" );
+    qcd_fjets = MT2Analysis<MT2Estimate>::readFromFile( dir + "/qcdControlRegion/qcdEstimateData.root", "f_jets_data" );
+    //qcd_fjets_vlht = MT2Analysis<MT2Estimate>::readFromFile( dir + "/qcdEstimateData.root", "f_jets_data_noPS" );
+    qcd_rb = MT2Analysis<MT2Estimate>::readFromFile( dir + "/qcdControlRegion/qcdEstimateData.root", "r_hat_data" );
+    qcd_ratioSystFit = MT2Analysis<MT2Estimate>::readFromFile( dir + "/qcdControlRegion/qcdEstimateData.root", "r_systFit" );
     //    qcd_mc = MT2Analysis<MT2Estimate>::readFromFile( mc_fileName, "QCD"  );
 
-    qcd_monojet = MT2Analysis<MT2Estimate>::readFromFile( dir + "/qcdEstimateMonojet.root", "monojet_qcdEstimate" );
-    qcdCR_monojet = MT2Analysis<MT2Estimate>::readFromFile( dir + "/qcdEstimateMonojet.root", "monojet_nCR" );
-    qcd_ratio_monojet = MT2Analysis<MT2Estimate>::readFromFile( dir + "/qcdEstimateMonojet.root", "monojet_r" );
+    qcd_monojet = MT2Analysis<MT2Estimate>::readFromFile( dir + "/qcdControlRegion/qcdEstimateMonojet.root", "monojet_qcdEstimate" );
+    qcdCR_monojet = MT2Analysis<MT2Estimate>::readFromFile( dir + "/qcdControlRegion/qcdEstimateMonojet.root", "monojet_nCR" );
+    qcd_ratio_monojet = MT2Analysis<MT2Estimate>::readFromFile( dir + "/qcdControlRegion/qcdEstimateMonojet.root", "monojet_r" );
     
   }
 
@@ -241,8 +241,7 @@ int main( int argc, char* argv[] ) {
 
   
   // Start loop over topological regions
-  for( std::set<MT2Region>::iterator iR=regions.begin(); iR!=regions.end(); ++iR ) {
-    
+  for( std::set<MT2Region>::iterator iR=regions.begin(); iR!=regions.end(); ++iR ) { 
     // Getting data yield histogram
     TH1D* this_data = data->get(*iR)->yield;
     
@@ -273,26 +272,23 @@ int main( int argc, char* argv[] ) {
       this_qcd_purity = qcd_purity->get(*iR)->yield;
       this_qcd_ratioSystFit = qcd_ratioSystFit->get(*iR)->yield;
       
-      if( iR->htMin() < 450 ){ // For very low HT, read different analysis for F(J)
-	 
-	MT2Region* thisQCDCR = qcd_fjets_vlht->matchRegion(*iR);
+      // not anymore due to new PFHT125 trigger 
+      // if( iR->htMin() < 450 ){ // For very low HT, read different analysis for F(J)
+      // 	MT2Region* thisQCDCR = qcd_fjets_vlht->matchRegion(*iR);
+      // 	this_qcd_fjets = qcd_fjets_vlht->get(*thisQCDCR)->yield;
+      // 	qcd_fjetsCR_name = thisQCDCR->getName();
+      // }
+      // else{ // From low HT, read from main analysis
 	
-	this_qcd_fjets = qcd_fjets_vlht->get(*thisQCDCR)->yield;
+      MT2Region* thisQCDCR = qcd_fjets->matchRegion(*iR);
+      this_qcd_fjets = qcd_fjets->get(*thisQCDCR)->yield;
+      
+      qcd_fjetsCR_name = thisQCDCR->getName();
 	
-	qcd_fjetsCR_name = thisQCDCR->getName();
-	
-      }
-      else{ // From low HT, read from main analysis
-	
-	MT2Region* thisQCDCR = qcd_fjets->matchRegion(*iR);
-	this_qcd_fjets = qcd_fjets->get(*thisQCDCR)->yield;
-	
-	qcd_fjetsCR_name = thisQCDCR->getName();
-	
-      }
+      // }
       
       // For region 2-6j, 3b, take R(B) from 4-6 jets region
-      MT2Region* thisQCDCR;
+      //MT2Region* thisQCDCR;
       if( iR->nBJetsMin()==3 && iR->nJetsMin()==2 ) 
 	thisQCDCR = new MT2Region( 200, -1, 4, 6, 0, -1 );
       else  
@@ -314,14 +310,12 @@ int main( int argc, char* argv[] ) {
     this_zinv_purity = purity->get(*iR)->getGraph();
     
     int Ngamma=0; // Initialize variable for number of events in photon CR
-
     // Get histograms for lost lepton estimate
     TH1D* this_llep = llep->get(*iR)->yield;
     TH1D* this_llep_ratio = llep_ratio->get(*iR)->yield;
     TH1D* this_llepCR = llepCR->get(*iR)->yield;
     
     float N_llep_CR = this_llepCR->Integral();
-
     // Regions with N(J)>=7 and N(B)>=1 share same control region (1-2 b jets)
     std::string llepCR_name;
     if(iR->nJetsMin()>=7 && iR->nBJetsMin()>=1){
@@ -468,7 +462,6 @@ int main( int argc, char* argv[] ) {
 	datacard << std::endl << std::endl;	 
 	
       }
-
       // Read background estimates values
       float yield_llep = fabs(this_llep->GetBinContent(iBin));
       float yield_qcd = fabs(this_qcd ->GetBinContent(iBin));
@@ -495,8 +488,8 @@ int main( int argc, char* argv[] ) {
 	  datacard << "sig_isrSyst lnN III - - - - -" << std::endl;
 	  datacard << "sig_bTagHeavySyst lnN HHH - - - - -" << std::endl;
 	  datacard << "sig_bTagLightSyst lnN LLL - - - - -" << std::endl;
-	  if(model=="T2tt" || model=="T1tttt")
-	    datacard << "sig_lepEffSyst lnN EEE - - - - -" << std::endl; // Include lepton eff. uncertainty only for T2tt and T1tttt
+	  // if(model=="T2tt" || model=="T1tttt")
+	  //   datacard << "sig_lepEffSyst lnN EEE - - - - -" << std::endl; // Include lepton eff. uncertainty only for T2tt and T1tttt
 	}
       }
       
@@ -518,8 +511,8 @@ int main( int argc, char* argv[] ) {
 	  datacard << "sig_isrSyst lnN III - - -" << std::endl;
 	  datacard << "sig_bTagHeavySyst lnN HHH - - -" << std::endl;
 	  datacard << "sig_bTagLightSyst lnN LLL - - -" << std::endl;
-	  if(model=="T2tt" || model=="T1tttt")
-	    datacard << "sig_lepEffSyst lnN EEE - - -" << std::endl; // Include lepton eff. uncertainty only for T2tt and T1tttt 
+	  // if(model=="T2tt" || model=="T1tttt")
+	  //   datacard << "sig_lepEffSyst lnN EEE - - -" << std::endl; // Include lepton eff. uncertainty only for T2tt and T1tttt 
 	}
       }
       
@@ -583,10 +576,8 @@ int main( int argc, char* argv[] ) {
 	    thisErrHTDn = ( this_zllG_ht->GetBinContent(thisBinHT) > 0 )     ? ( this_zllG_ht->GetBinContent(thisBinHT)     - thisDn_zllG_ht->GetBinContent(thisBinHT) )    / this_zllG_ht->GetBinContent(thisBinHT)     : 1.0;
 	    
 	    if( iR->nBJetsMin() >= 3 ){ // If NB>=3 take uncertainty from 2B (stats), THEN DOUBLE IT
-	      
 	      thisErrNBUp*=2;
 	      thisErrNBDn*=2;
-	      
 	    }
 	    
 	  }
@@ -1089,43 +1080,52 @@ int main( int argc, char* argv[] ) {
   std::vector<MT2Analysis<MT2EstimateSigSyst>*> signals_isr;
   std::vector<MT2Analysis<MT2EstimateSigSyst>*> signals_bTagHeavy;
   std::vector<MT2Analysis<MT2EstimateSigSyst>*> signals_bTagLight;
-  std::vector<MT2Analysis<MT2EstimateSigSyst>*> signals_lepEff;
+  //std::vector<MT2Analysis<MT2EstimateSigSyst>*> signals_lepEff;
 
-  signals       = MT2Analysis<MT2EstimateSigContSyst>::readAllSystFromFile( "./signalScansFromDominick/T2tt_sigcontam_eth.root", "T2tt_sigcontam", "isr" );
+  std::string modelName = model;
+  if( model == "T2tt" || model == "T1tttt" )
+    modelName += "_sigcontam";
+
+  signals       = MT2Analysis<MT2EstimateSigContSyst>::readAllSystFromFile( "./signalScansFromDominick/"+modelName+"_eth.root", modelName, "isr" );
 
   if( includeSignalUnc ){
-    signals_isr       = MT2Analysis<MT2EstimateSigSyst>::readAllSystFromFile( "./signalScansFromDominick/T2tt_sigcontam_eth.root", "T2tt_sigcontam", "isr" );
-    signals_bTagHeavy = MT2Analysis<MT2EstimateSigSyst>::readAllSystFromFile( "./signalScansFromDominick/T2tt_sigcontam_eth.root", "T2tt_sigcontam", "btagsf_heavy" );
-    signals_bTagLight = MT2Analysis<MT2EstimateSigSyst>::readAllSystFromFile( "./signalScansFromDominick/T2tt_sigcontam_eth.root", "T2tt_sigcontam", "btagsf_light" );
+    signals_isr       = MT2Analysis<MT2EstimateSigSyst>::readAllSystFromFile( "./signalScansFromDominick/"+modelName+"_eth.root", modelName, "isr" );
+    signals_bTagHeavy = MT2Analysis<MT2EstimateSigSyst>::readAllSystFromFile( "./signalScansFromDominick/"+modelName+"_eth.root", modelName, "btagsf_heavy" );
+    signals_bTagLight = MT2Analysis<MT2EstimateSigSyst>::readAllSystFromFile( "./signalScansFromDominick/"+modelName+"_eth.root", modelName, "btagsf_light" );
     
-    if( model == "T2tt" || model == "T1tttt" )
-      signals_lepEff = MT2Analysis<MT2EstimateSigSyst>::readAllSystFromFile( "./signalScansFromDominick/T2tt_sigcontam_eth.root", "T2tt_sigcontam", "lepeff" );
+    // if( model == "T2tt" || model == "T1tttt" )
+    //   signals_lepEff = MT2Analysis<MT2EstimateSigSyst>::readAllSystFromFile( "./signalScansFromDominick/"+modelName+"_eth.root", modelName, "lepeff" );
   }
   
   
   ////// To replace signal to existing one (for T2tt corridor studies)
   //std::vector<MT2Analysis<MT2Estimate>*> signalVeto = MT2Analysis<MT2Estimate>::readAllFromFile( dir+"/T2tt_175_0_evtVeto.root", "T2tt_175_0" );
   //std::vector<MT2Analysis<MT2Estimate>*> signalVeto_1lCR = MT2Analysis<MT2Estimate>::readAllFromFile( dir+"/T2tt_175_0_evtVeto_1LCR.root", "llepCR" );
-  std::vector<MT2Analysis<MT2Estimate>*> signalVeto = MT2Analysis<MT2Estimate>::readAllFromFile( dir+"/t2tt.root", "T2tt" );
-  std::vector<MT2Analysis<MT2Estimate>*> signalVeto_1lCR = MT2Analysis<MT2Estimate>::readAllFromFile( dir+"/llepControlRegion/t2tt.root", "llepCR" );
+  //std::vector<MT2Analysis<MT2Estimate>*> signalVeto = MT2Analysis<MT2Estimate>::readAllFromFile( dir+"/t2tt.root", "T2tt" );
+  //std::vector<MT2Analysis<MT2Estimate>*> signalVeto_1lCR = MT2Analysis<MT2Estimate>::readAllFromFile( dir+"/llepControlRegion/t2tt.root", "llepCR" );
   
 
   for( unsigned  isig=0; isig<signals.size(); ++isig ) {
 
     
-    signals[isig]           ->setName(model.c_str());
-    if(includeSignalUnc){
-      signals_isr[isig]       ->setName(model.c_str());
-      signals_bTagHeavy[isig] ->setName(model.c_str());
-      signals_bTagLight[isig] ->setName(model.c_str());
-      if( model == "T2tt" || model == "T1tttt" )
-	signals_lepEff[isig]    ->setName(model.c_str());
-    }
+    // signals[isig]           ->setName(model.c_str());
+    // if(includeSignalUnc){
+    //   signals_isr[isig]       ->setName(model.c_str());
+    //   signals_bTagHeavy[isig] ->setName(model.c_str());
+    //   signals_bTagLight[isig] ->setName(model.c_str());
+    //   // if( model == "T2tt" || model == "T1tttt" )
+    //   // 	signals_lepEff[isig]    ->setName(model.c_str());
+    // }
 
     // Name convention
     std::string sigName;
     sigName = signals[isig]->getName();
     //sigName = getSimpleSignalName( signals[isig]->getName() );
+
+    std::string scont = "_sigcontam";
+    std::string::size_type pos = sigName.find(scont);
+    if(pos != std::string::npos) sigName.erase(pos,scont.length());
+
     
     // Local path for datacards
     std::string path = dir + "/datacards_" + sigName;
@@ -1152,11 +1152,12 @@ int main( int argc, char* argv[] ) {
       TH1D* this_signalParent;
       
       // Read signal analysis, and take 3D histogram if it exists for this region
-      //      MT2EstimateSigContSyst* thisSigSystCentral = signals[isig]->get(*iR);
-      MT2Estimate* thisSigSystCentral = signalVeto[isig]->get(*iR);
+      MT2EstimateSigContSyst* thisSigSystCentral = signals[isig]->get(*iR);
+      //MT2Estimate* thisSigSystCentral = signalVeto[isig]->get(*iR);
       if( thisSigSystCentral->yield3d!=0 ){
 	
-	this_signal3d_central = signalVeto[isig]->get(*iR)->yield3d;
+	//this_signal3d_central = signalVeto[isig]->get(*iR)->yield3d;
+	this_signal3d_central = signals[isig]->get(*iR)->yield3d;
 	
       }
       else continue;
@@ -1169,13 +1170,13 @@ int main( int argc, char* argv[] ) {
       TH3D* this_signal3d_bTagHeavy_Up;
       TH3D* this_signal3d_bTagLight_Up;
       TH3D* this_signal3d_isr_Up;
-      TH3D* this_signal3d_lepEff_Up;
+      // TH3D* this_signal3d_lepEff_Up;
       
       // Read signal systematic analysis, and take 3D histogrms if they exist for this region
       MT2EstimateSigSyst* thisSigSyst_isr;
       MT2EstimateSigSyst* thisSigSyst_bTagHeavy;
       MT2EstimateSigSyst* thisSigSyst_bTagLight;
-      MT2EstimateSigSyst* thisSigSyst_lepEff;
+      // MT2EstimateSigSyst* thisSigSyst_lepEff;
 
       if( includeSignalUnc ){
 	
@@ -1197,13 +1198,13 @@ int main( int argc, char* argv[] ) {
 	else
 	  this_signal3d_bTagLight_Up = (TH3D*) signals[isig]->get(*iR)->yield3d->Clone();
 	
-	if( model == "T2tt" || model == "T1tttt" ){
-	  thisSigSyst_lepEff = signals_lepEff[isig]->get(*iR);
-	  if( thisSigSyst_lepEff->yield3d_systUp!=0 )
-	    this_signal3d_lepEff_Up       = (TH3D*) signals_lepEff[isig]->get(*iR)->yield3d_systUp->Clone();
-	  else
-	    this_signal3d_lepEff_Up = (TH3D*) signals[isig]->get(*iR)->yield3d->Clone();
-	}
+	// if( model == "T2tt" || model == "T1tttt" ){
+	//   thisSigSyst_lepEff = signals_lepEff[isig]->get(*iR);
+	//   if( thisSigSyst_lepEff->yield3d_systUp!=0 )
+	//     this_signal3d_lepEff_Up       = (TH3D*) signals_lepEff[isig]->get(*iR)->yield3d_systUp->Clone();
+	//   else
+	//     this_signal3d_lepEff_Up = (TH3D*) signals[isig]->get(*iR)->yield3d->Clone();
+	// }
 
       }
       
@@ -1238,8 +1239,8 @@ int main( int argc, char* argv[] ) {
 	  TH1D* this_signal_alpha;
 	  
 	  if( (model == "T2tt" || model == "T1tttt") && doSignalContamination ){
-	    //	    this_signal3d_crsl = (TH3D*) signals[isig]->get(*iR)->yield3d_crsl->Clone();
-	    this_signal3d_crsl = (TH3D*) signalVeto_1lCR[isig]->get(*iR)->yield3d->Clone();
+	    this_signal3d_crsl = (TH3D*) signals[isig]->get(*iR)->yield3d_crsl->Clone();
+	    //this_signal3d_crsl = (TH3D*) signalVeto_1lCR[isig]->get(*iR)->yield3d->Clone();
 	    this_signal_crsl   = this_signal3d_crsl->ProjectionX("mt2_crsl", iBinY, iBinY, iBinZ, iBinZ);
 	    this_signal_alpha  = (TH1D*) signals[isig]->get(*iR)->yield_alpha->Clone();
 	    
@@ -1290,26 +1291,28 @@ int main( int argc, char* argv[] ) {
 	      Long_t flags; 
 	      Long_t modtime;
 	      Long_t size;
-//	      std::string fullPathSE = Form("/pnfs/psi.ch/cms/trivcat/store/user/`whoami`/%s/datacards_%.0f_%.0f/datacard_%s_%s_%.0f_%.0f.txt", pathSE.c_str(), mParent, mLSP, binName.c_str(), sigName.c_str(), mParent, mLSP);
-//	      int checkFileSE = (int) gSystem->GetPathInfo(fullPathSE.c_str(), &id, &size, &flags, &modtime);
-//	      std::cout << fullPathSE << "\t" << checkFileSE << "\t" <<size<< std::endl;
-//	      
-//	      //std::string rmOnSE( Form("env --unset=LD_LIBRARY_PATH gfal-rm srm://t3se01.psi.ch/%s", fullPathSE.c_str()) );
-//	      std::string rmOnSE( Form("gfal-rm srm://t3se01.psi.ch/%s", fullPathSE.c_str()) );
-//	      
-//	      if( checkFileSE==0 && (size)==0 ){
-//		
-//		std::cout << "Removing. File " << fullPathSE << " exists and has zero size " << (size) << ". Removing." << std::endl;
-//		system( rmOnSE.c_str() );
-//		
-//	      }
-//	      else if ( checkFileSE==0 && (size)>0 ){
-//		
-//		std::cout << "Skipping. File " << fullPathSE << " exists and has non-zero size  " << (size) << ". Skipping." << std::endl;
-//		
-//		continue;
-//		
-//	      }
+	      if( copy2SE ){
+		std::string fullPathSE = Form("/pnfs/psi.ch/cms/trivcat/store/user/`whoami`/%s/datacards_%.0f_%.0f/datacard_%s_%s_%.0f_%.0f.txt", pathSE.c_str(), mParent, mLSP, binName.c_str(), sigName.c_str(), mParent, mLSP);
+		int checkFileSE = (int) gSystem->GetPathInfo(fullPathSE.c_str(), &id, &size, &flags, &modtime);
+		std::cout << fullPathSE << "\t" << checkFileSE << "\t" <<size<< std::endl;
+		
+		//std::string rmOnSE( Form("env --unset=LD_LIBRARY_PATH gfal-rm srm://t3se01.psi.ch/%s", fullPathSE.c_str()) );
+		std::string rmOnSE( Form("gfal-rm srm://t3se01.psi.ch/%s", fullPathSE.c_str()) );
+		
+		if( checkFileSE==0 && (size)==0 ){
+		  
+		  std::cout << "Removing. File " << fullPathSE << " exists and has zero size " << (size) << ". Removing." << std::endl;
+		  system( rmOnSE.c_str() );
+		  
+		}
+		else if ( checkFileSE==0 && (size)>0 ){
+		  
+		  std::cout << "Skipping. File " << fullPathSE << " exists and has non-zero size  " << (size) << ". Skipping." << std::endl;
+		  
+		  continue;
+		
+		}
+	      }
 	      
 	      // Get template card for this bin
 	      std::string templateDatacard( Form("%s/datacard_%s.txt", path_templ.c_str(), binName.c_str()) );
@@ -1346,7 +1349,7 @@ int main( int argc, char* argv[] ) {
 	      float isrErr;
 	      float bTagErr_heavy;
 	      float bTagErr_light;
-	      float lepEffErr;
+	      // float lepEffErr;
 	      
 	      if( includeSignalUnc ) {
 		
@@ -1360,8 +1363,8 @@ int main( int argc, char* argv[] ) {
 		bTagErr_light = this_signal3d_bTagLight_Up->GetBinContent(iBin, iBinY, iBinZ);
 		bTagErr_light = bTagErr_light/sig;
 	      
-		lepEffErr = this_signal3d_lepEff_Up->GetBinContent(iBin, iBinY, iBinZ);
-		lepEffErr = lepEffErr/sig;
+		// lepEffErr = this_signal3d_lepEff_Up->GetBinContent(iBin, iBinY, iBinZ);
+		// lepEffErr = lepEffErr/sig;
 		
 	      }
 	      
@@ -1397,7 +1400,7 @@ int main( int argc, char* argv[] ) {
 	      std::string sedCommand_isrErr( Form("sed -i 's/III/%.3f/' %s", isrErr, newDatacard.c_str()) );
 	      std::string sedCommand_bTagHErr( Form("sed -i 's/HHH/%.3f/' %s", bTagErr_heavy, newDatacard.c_str()) );
 	      std::string sedCommand_bTagLErr( Form("sed -i 's/LLL/%.3f/' %s", bTagErr_light, newDatacard.c_str()) );
-	      std::string sedCommand_lepEffErr( Form("sed -i 's/EEE/%.3f/' %s", lepEffErr, newDatacard.c_str()) );
+	      // std::string sedCommand_lepEffErr( Form("sed -i 's/EEE/%.3f/' %s", lepEffErr, newDatacard.c_str()) );
 
 	      if( includeSignalUnc ){
 		
@@ -1405,40 +1408,42 @@ int main( int argc, char* argv[] ) {
 		system( sedCommand_bTagHErr.c_str() );
 		system( sedCommand_bTagLErr.c_str() );
 		
-		if( model == "T2tt" || model == "T1tttt" )
-		  system( sedCommand_lepEffErr.c_str() );
+		// if( model == "T2tt" || model == "T1tttt" )
+		//   system( sedCommand_lepEffErr.c_str() );
 	      
 	      }
 	      
-//	      // Copying on SE
-//	      std::string mkdirOnSE( Form("env --unset=LD_LIBRARY_PATH gfal-mkdir -p srm://t3se01.psi.ch:8443/srm/managerv2?SFN=/pnfs/psi.ch/cms/trivcat/store/user/`whoami`/%s/datacards_%.0f_%.0f", pathSE.c_str(), mParent, mLSP) );
-//	      std::string copyOnSE( Form("xrdcp -v %s root://t3dcachedb.psi.ch:1094///pnfs/psi.ch/cms/trivcat/store/user/`whoami`/%s/datacards_%.0f_%.0f/datacard_%s_%s_%.0f_%.0f.txt", newDatacard.c_str(), pathSE.c_str(), mParent, mLSP, binName.c_str(), sigName.c_str(), mParent, mLSP) );
-//	      system( mkdirOnSE.c_str() );
-//	      system( copyOnSE.c_str() );
-//	      
-//	      // Attempt copying 3 times (to maximize efficiency)
-//	      for(int c=0; c<3; ++c){
-//		
-//		
-//		checkFileSE = (int) gSystem->GetPathInfo(fullPathSE.c_str(),&id, &size, &flags, &modtime);
-//		
-//		if( checkFileSE==0 && (size)==0 ){
-//		  
-//		  std::cout << "Copy did not work. Trying again: " << c << std::endl;
-//		  
-//		  system( rmOnSE.c_str() );
-//		  system( copyOnSE.c_str() );
-//		  
-//		}
-//		else{
-//		  
-//		  std::cout << "Copy succeded. Exiting." << std::endl;
-//		  
-//		  system( rmCommand.c_str() );
-//		  break;
-//		  
-//		}
-//	      }
+	      if( copy2SE ){
+		// Copying on SE
+		std::string mkdirOnSE( Form("env --unset=LD_LIBRARY_PATH gfal-mkdir -p srm://t3se01.psi.ch:8443/srm/managerv2?SFN=/pnfs/psi.ch/cms/trivcat/store/user/`whoami`/%s/datacards_%.0f_%.0f", pathSE.c_str(), mParent, mLSP) );
+		std::string copyOnSE( Form("xrdcp -v %s root://t3dcachedb.psi.ch:1094///pnfs/psi.ch/cms/trivcat/store/user/`whoami`/%s/datacards_%.0f_%.0f/datacard_%s_%s_%.0f_%.0f.txt", newDatacard.c_str(), pathSE.c_str(), mParent, mLSP, binName.c_str(), sigName.c_str(), mParent, mLSP) );
+		system( mkdirOnSE.c_str() );
+		system( copyOnSE.c_str() );
+		
+		// Attempt copying 3 times (to maximize efficiency)
+		for(int c=0; c<3; ++c){
+		  
+		  
+		  checkFileSE = (int) gSystem->GetPathInfo(fullPathSE.c_str(),&id, &size, &flags, &modtime);
+		  
+		  if( checkFileSE==0 && (size)==0 ){
+		    
+		    std::cout << "Copy did not work. Trying again: " << c << std::endl;
+		    
+		    system( rmOnSE.c_str() );
+		    system( copyOnSE.c_str() );
+		    
+		  }
+		  else{
+		    
+		    std::cout << "Copy succeded. Exiting." << std::endl;
+		    
+		    system( rmCommand.c_str() );
+		    break;
+		    
+		  }
+		}
+	      }
 	      
 	      
 	    }
