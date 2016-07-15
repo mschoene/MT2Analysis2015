@@ -12,7 +12,7 @@ productionName="$(basename $inputFolder)"
 
 
 #outputFolder="/pnfs/psi.ch/cms/trivcat/store/user/`whoami`/ZGproduction/80X/PostProcessed/"$productionName"_pu/"
-outputFolder="/pnfs/psi.ch/cms/trivcat/store/user/`whoami`/MT2production/80X/PostProcessed/"$productionName"_testGfal11/"
+outputFolder="/pnfs/psi.ch/cms/trivcat/store/user/`whoami`/MT2production/80X/PostProcessed/"$productionName"_testGfal23/"
 
 # in current implementation one also needs to change this in runSkimmingPruning.sh
 useXRD="false"
@@ -185,7 +185,7 @@ source $VO_CMS_SW_DIR/cmsset_default.sh
 source /mnt/t3nfs01/data01/swshare/glite/external/etc/profile.d/grid-env.sh
 export SCRAM_ARCH=slc6_amd64_gcc491
 export LD_LIBRARY_PATH=/mnt/t3nfs01/data01/swshare/glite/d-cache/dcap/lib/:$LD_LIBRARY_PATH
-echo "Loading your CMSSW release or CMSSW_7_4_12/"
+echo "Loading your CMSSW release"
 echo "from $myCMSSW"
 cd $myCMSSW
 eval `scramv1 runtime -sh`
@@ -209,7 +209,7 @@ fi;
 
 
 
-#######################################
+########## post-processing ######################
 if [[ "$1" = "post" ]]; then
 
 
@@ -269,7 +269,8 @@ fi
 
 
 echo "gROOT->LoadMacro(\"goodrunClass.cc+\"); gSystem->Exit(0);" |root.exe -b -l ;
-echo "gSystem->Load(\"goodrunClass_cc.so\"); gROOT->LoadMacro(\"postProcessing.C+\"); gSystem->Exit(0);" |root.exe -b -l ;
+echo "gROOT->LoadMacro(\"BTagCalibrationStandalone.cc+\"); gSystem->Exit(0);" |root.exe -b -l ;
+echo "gSystem->Load(\"goodrunClass_cc.so\"); gSystem->Load(\"BTagCalibrationStandalone_cc.so\"); gROOT->LoadMacro(\"postProcessing.C+\"); gSystem->Exit(0);" |root.exe -b -l ;
 
 while read line; 
 do 
@@ -439,7 +440,7 @@ source $VO_CMS_SW_DIR/cmsset_default.sh
 #source /mnt/t3nfs01/data01/swshare/glite/external/etc/profile.d/grid-env.sh
 export SCRAM_ARCH=slc6_amd64_gcc491
 export LD_LIBRARY_PATH=/mnt/t3nfs01/data01/swshare/glite/d-cache/dcap/lib/:$LD_LIBRARY_PATH
-echo "Loading your CMSSW release or CMSSW_7_4_12/"
+echo "Loading your CMSSW release"
 echo "from $myCMSSW"
 cd $myCMSSW
 eval `scramv1 runtime -sh`
@@ -452,7 +453,7 @@ semkdir ${gfalProtocol}://t3se01.psi.ch/$outputFolder
 
 echo "postProcessing(\"$name\",\"$counterFile\",\"$outputFile\",\"$treeName\",$filter,$kfactor,$xsec,$id,\"$crabExt\",\"$inputPU\",\"$PUvar\",$applyJSON,$doAllSF,$doSilver,\"$preProcFile\"); gSystem->Exit(0);"
 
-echo "gSystem->Load(\"goodrunClass_cc.so\"); gSystem->Load(\"libCondFormatsBTauObjects.so\"); gROOT->LoadMacro(\"postProcessing.C\"); postProcessing(\"$name\",\"$counterFile\",\"$outputFile\",\"$treeName\",$filter,$kfactor,$xsec,$id,\"$crabExt\",\"$inputPU\",\"$PUvar\",$applyJSON,$doAllSF,$doSilver,\"$preProcFile\"); gSystem->Exit(0);" |root.exe -b -l ;
+echo "gSystem->Load(\"goodrunClass_cc.so\");  gSystem->Load(\"BTagCalibrationStandalone_cc.so\"); gROOT->LoadMacro(\"postProcessing.C\"); postProcessing(\"$name\",\"$counterFile\",\"$outputFile\",\"$treeName\",$filter,$kfactor,$xsec,$id,\"$crabExt\",\"$inputPU\",\"$PUvar\",$applyJSON,$doAllSF,$doSilver,\"$preProcFile\"); gSystem->Exit(0);" |root.exe -b -l ;
 
 
 
@@ -462,7 +463,7 @@ if [[ $id -lt 10 && $doFilterTxt == 1 ]]; then
    mv $outputFilteredFile $outputFile;
 fi;
 
-#######mv $outputFile $outputFolder
+####### mv $outputFile $outputFolder
 secp file://$outputFile ${gfalProtocol}://t3se01.psi.ch/$outputFolder
 
 rm $outputFile

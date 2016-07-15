@@ -36,12 +36,12 @@ using namespace std;
 // https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation74X  --  official SFs
 // https://twiki.cern.ch/twiki/bin/view/CMS/BTagCalibration  --  calibration reader documentations
 BTagCalibration *calib = new BTagCalibration("csvv2", "/shome/casal/btagsf/CSVv2.csv"); // 25 ns official version of SFs
-BTagCalibrationReader *reader_heavy    = new BTagCalibrationReader(calib, BTagEntry::OP_MEDIUM, "mujets", "central");  // central
-BTagCalibrationReader *reader_heavy_UP = new BTagCalibrationReader(calib, BTagEntry::OP_MEDIUM, "mujets", "up");       // sys up
-BTagCalibrationReader *reader_heavy_DN = new BTagCalibrationReader(calib, BTagEntry::OP_MEDIUM, "mujets", "down");     // sys down
-BTagCalibrationReader *reader_light    = new BTagCalibrationReader(calib, BTagEntry::OP_MEDIUM, "comb"  , "central");  // central
-BTagCalibrationReader *reader_light_UP = new BTagCalibrationReader(calib, BTagEntry::OP_MEDIUM, "comb"  , "up");       // sys up
-BTagCalibrationReader *reader_light_DN = new BTagCalibrationReader(calib, BTagEntry::OP_MEDIUM, "comb"  , "down");     // sys down
+BTagCalibrationReader *reader_heavy    = new BTagCalibrationReader(calib, BTagEntryStandalone::OP_MEDIUM, "mujets", "central");  // central
+BTagCalibrationReader *reader_heavy_UP = new BTagCalibrationReader(calib, BTagEntryStandalone::OP_MEDIUM, "mujets", "up");       // sys up
+BTagCalibrationReader *reader_heavy_DN = new BTagCalibrationReader(calib, BTagEntryStandalone::OP_MEDIUM, "mujets", "down");     // sys down
+BTagCalibrationReader *reader_light    = new BTagCalibrationReader(calib, BTagEntryStandalone::OP_MEDIUM, "comb"  , "central");  // central
+BTagCalibrationReader *reader_light_UP = new BTagCalibrationReader(calib, BTagEntryStandalone::OP_MEDIUM, "comb"  , "up");       // sys up
+BTagCalibrationReader *reader_light_DN = new BTagCalibrationReader(calib, BTagEntryStandalone::OP_MEDIUM, "comb"  , "down");     // sys down
 
 TFile *f_btag_eff = new TFile("/shome/casal/btagsf/btageff__ttbar_powheg_pythia8_25ns.root"); // Dominick's b-tagging efficiencies
 TH2D* h_btag_eff_b    = (TH2D*) f_btag_eff->Get("h2_BTaggingEff_csv_med_Eff_b"   );
@@ -51,14 +51,14 @@ TH2D* h_btag_eff_udsg = (TH2D*) f_btag_eff->Get("h2_BTaggingEff_csv_med_Eff_udsg
 
 void get_SF_btag(float pt, float eta, int mcFlavour, float &SF, float &SFup, float &SFdown){
 
-  BTagEntry::JetFlavor flavour = BTagEntry::FLAV_UDSG;
-  if      ( abs(mcFlavour)==5 ) flavour = BTagEntry::FLAV_B;
-  else if ( abs(mcFlavour)==4 ) flavour = BTagEntry::FLAV_C;
+  BTagEntryStandalone::JetFlavor flavour = BTagEntryStandalone::FLAV_UDSG;
+  if      ( abs(mcFlavour)==5 ) flavour = BTagEntryStandalone::FLAV_B;
+  else if ( abs(mcFlavour)==4 ) flavour = BTagEntryStandalone::FLAV_C;
   
   float pt_cutoff  = std::max(30. ,std::min(669., double(pt)));
   float eta_cutoff = std::min(2.39,fabs(double(eta)));
 
-  if ( flavour==BTagEntry::FLAV_UDSG ){
+  if ( flavour==BTagEntryStandalone::FLAV_UDSG ){
     SF     = reader_light   ->eval(flavour,eta_cutoff, pt_cutoff);
     SFup   = reader_light_UP->eval(flavour,eta_cutoff, pt_cutoff);
     SFdown = reader_light_DN->eval(flavour,eta_cutoff, pt_cutoff);
