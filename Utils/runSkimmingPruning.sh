@@ -19,7 +19,7 @@ source $VO_CMS_SW_DIR/cmsset_default.sh
 #source /swshare/glite/external/etc/profile.d/grid-env.sh
 export SCRAM_ARCH=slc6_amd64_gcc491
 export LD_LIBRARY_PATH=/swshare/glite/d-cache/dcap/lib/:$LD_LIBRARY_PATH
-echo "Loading your CMSSW release or CMSSW_7_4_12/"
+echo "Loading your CMSSW release"
 echo "from $myCMSSW"
 cd $myCMSSW
 eval `scramv1 runtime -sh`
@@ -110,7 +110,7 @@ echo "cleaning/moving temp folders...";
 if [[ "$doSkimming" = true && ! "$doPruning" = true ]]; then
     if [[ "$outputDir" == *"/pnfs/psi.ch/"* ]]; then
 	for x in $outputSkimming/*; do 
-	    secp file://$x ${gfalProtocol}://t3se01.psi.ch$outputDir/
+	    secp file://$x ${gfalProtocol}://t3se01.psi.ch/$outputDir/
 	done;
     else
 	for x in $outputSkimming/*; do 
@@ -121,7 +121,7 @@ if [[ "$doSkimming" = true && ! "$doPruning" = true ]]; then
 elif [[ ! "$doSkimming" = true &&  "$doPruning" = true ]]; then
     if [[ "$outputDir" == *"/pnfs/psi.ch/"* ]]; then
 	for x in $outputPruning/*; do 
-	    secp file://$x ${gfalProtocol}://t3se01.psi.ch$outputDir/
+	    secp file://$x ${gfalProtocol}://t3se01.psi.ch/$outputDir/
 	done;
     else
 	for x in $outputPruning/*; do 
@@ -132,10 +132,10 @@ elif [[ ! "$doSkimming" = true &&  "$doPruning" = true ]]; then
 elif [[ "$doSkimming" = true &&  "$doPruning" = true ]]; then
     if [[ "$outputDir" == *"/pnfs/psi.ch/"* ]]; then
 	for x in $outputSkimming/*; do 
-	    secp file://$x ${gfalProtocol}://t3se01.psi.ch$outputDir/
+	    secp file://$x ${gfalProtocol}://t3se01.psi.ch/$outputDir/
 	done;
 	for x in $outputPruning/*; do 
-	    secp file://$x ${gfalProtocol}://t3se01.psi.ch$outputDir/
+	    secp file://$x ${gfalProtocol}://t3se01.psi.ch/$outputDir/
 	done;
     else
 	for x in $outputSkimming/*; do 
