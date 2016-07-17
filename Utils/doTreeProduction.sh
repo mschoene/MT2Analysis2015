@@ -2,17 +2,16 @@
 
 # --- configuration (consider to move this into a separate file) ---
 treeName="mt2"
-inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/mangano/crab/MT2_8_0_11/prodJuly08_runC_275377-276097_v1/"
-
+inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/mangano/crab/MT2_8_0_11/prodJuly15_runC_all_v1/"
 
 listOfSamplesFile="postProcessing2016-Data.cfg"
 #listOfSamplesFile="postProcessing2016-MC.cfg"
 
 productionName="$(basename $inputFolder)" 
 
+outputFolder="/pnfs/psi.ch/cms/trivcat/store/user/`whoami`/MT2production/80X/PostProcessed/"$productionName"/"
 
-#outputFolder="/pnfs/psi.ch/cms/trivcat/store/user/`whoami`/ZGproduction/80X/PostProcessed/"$productionName"_pu/"
-outputFolder="/pnfs/psi.ch/cms/trivcat/store/user/`whoami`/MT2production/80X/PostProcessed/"$productionName"_testGfal23/"
+
 
 # in current implementation one also needs to change this in runSkimmingPruning.sh
 useXRD="false"
@@ -24,8 +23,7 @@ isCrab=1
 inputPU="MyDataPileupHistogram.root"
 PUvar="nTrueInt"
 #GoldenJSON="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions16/13TeV/Cert_271036-275125_13TeV_PromptReco_Collisions16_JSON.txt"
-#GoldenJSON="$PWD/gold_runB.txt"
-GoldenJSON="$PWD/gold_runC.txt"
+GoldenJSON="$PWD/gold_runD.txt"
 SilverJSON=$GoldenJSON
 applyJSON=1     #0 for MC
 doSilver=0      #0 for MC
