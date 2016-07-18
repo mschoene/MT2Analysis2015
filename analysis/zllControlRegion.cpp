@@ -210,6 +210,10 @@ int main(int argc, char* argv[]) {
     std::vector<MT2Sample> samples_data_photon = MT2Sample::loadSamples(samplesFile_data, "SinglePhoton");  
     samples_data.insert(samples_data.end(), samples_data_photon.begin(), samples_data_photon.end());
 
+
+   std::vector<MT2Sample> samples_data_muon = MT2Sample::loadSamples(samplesFile_data, "SingleMuon");  
+    samples_data.insert(samples_data.end(), samples_data_muon.begin(), samples_data_muon.end());
+
     std::vector<MT2Sample> samples_data_of = MT2Sample::loadSamples(samplesFile_data, "MuonEG");
   
     MT2Analysis<MT2EstimateTree>* dataTree = new MT2Analysis<MT2EstimateTree>( "data", cfg.crRegionsSet() );
@@ -449,9 +453,13 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
     if(isSF){ //////////SAME FLAVOR//////////////////////////////////////////
       //if(  myTree.isData && !( ( sample.id==5  && myTree.HLT_DoubleMu_NonIso ) || ( myTree.HLT_DoubleEl33 && sample.id==4) )  ) continue;
 
-      // if(  myTree.isData && !( ( sample.id==5  && (myTree.HLT_DoubleMu || myTree.HLT_DoubleMu_NonIso || myTree.HLT_SingleMu)  ) || ( myTree.HLT_DoubleEl && sample.id==4  )   ||  ( sample.id==7 && !myTree.HLT_DoubleEl && !myTree.HLT_DoubleMu && !myTree.HLT_DoubleMu_NonIso && !myTree.HLT_SingleMu && myTree.HLT_Photon165_HE10 ) )  ) continue;
+      if(  myTree.isData && !( ( sample.id==5  && (myTree.HLT_DoubleMu || myTree.HLT_DoubleMu_NonIso)  ) ||   ( sample.id==8  && (myTree.HLT_SingleMu_NonIso && !myTree.HLT_DoubleMu && !myTree.HLT_DoubleMu_NonIso )  ) || ( myTree.HLT_DoubleEl && sample.id==4  )   ||  ( sample.id==7 && !myTree.HLT_DoubleEl && !myTree.HLT_DoubleMu && !myTree.HLT_DoubleMu_NonIso && !myTree.HLT_SingleMu_NonIso && myTree.HLT_Photon165_HE10 ) )  ) continue;
 
-      if(  myTree.isData && !( ( sample.id==5  && (myTree.HLT_DoubleMu || myTree.HLT_DoubleMu_NonIso)  ) || ( myTree.HLT_DoubleEl && sample.id==4  )   ||  ( sample.id==7 && !myTree.HLT_DoubleEl && !myTree.HLT_DoubleMu && !myTree.HLT_DoubleMu_NonIso && myTree.HLT_Photon165_HE10 ) )  ) continue;
+      //      if(  myTree.isData && !( ( sample.id==5  && (myTree.HLT_DoubleMu || myTree.HLT_DoubleMu_NonIso)  ) ||   ( sample.id==8  && (myTree.HLT_SingleMu && !myTree.HLT_DoubleMu && !myTree.HLT_DoubleMu_NonIso )  ) || ( myTree.HLT_DoubleEl && sample.id==4  )   ||  ( sample.id==7 && !myTree.HLT_DoubleEl && !myTree.HLT_DoubleMu && !myTree.HLT_DoubleMu_NonIso && !myTree.HLT_SingleMu && myTree.HLT_Photon165_HE10 ) )  ) continue;
+
+
+
+      // if(  myTree.isData && !( ( sample.id==5  && (myTree.HLT_DoubleMu || myTree.HLT_DoubleMu_NonIso)) || ( myTree.HLT_DoubleEl && sample.id==4  )   ||  ( sample.id==7 && !myTree.HLT_DoubleEl && !myTree.HLT_DoubleMu && !myTree.HLT_DoubleMu_NonIso && myTree.HLT_Photon165_HE10 ) )  ) continue;
 
       //NOMINAL     if(  myTree.isData && !( ( sample.id==5  && myTree.HLT_DoubleMu ) || ( myTree.HLT_DoubleEl && sample.id==4  )   ||  ( sample.id==7 && !myTree.HLT_DoubleEl && !myTree.HLT_DoubleMu && myTree.HLT_Photon165_HE10 ) )  ) continue;
       // if( !myTree.isData && !( myTree.HLT_DoubleEl || myTree.HLT_DoubleMu || myTree.HLT_Photon165_HE10)) continue;
