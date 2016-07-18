@@ -1,4 +1,4 @@
-//////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////
 // This class has been automatically generated on
 // Fri Dec 12 23:39:08 2014 by ROOT version 5.34/10
 // from TTree mt2/treeProducerSusyFullHad
@@ -31,87 +31,97 @@ public :
    Int_t           isSilver;
    Float_t         xsec;
    //
-   Float_t         HLT_PFMET170;
-   Float_t         HLT_Photon90_R9Id90_HE10_IsoM;
-   Float_t         HLT_Photon75_R9Id90_HE10_IsoM;
-   Float_t         HLT_Photon120;
-   Float_t         HLT_Photon75;
-   Float_t         HLT_Photon165_HE10;
-   Float_t         HLT_Photon120_R9Id90_HE10_IsoM;
-   Float_t         HLT_Photon90;
-   Float_t         HLT_PFHT350_PFMET100;
-   Float_t         HLT_PFMETNoMu90_PFMHTNoMu90;
-   Float_t         HLT_PFMET90_PFMHT90;
-   Float_t         HLT_PFHT475_Prescale;
-   Float_t         HLT_PFHT350_Prescale;
-   Float_t         HLT_SingleMu;
-   Float_t         HLT_MuX_Ele12;
-   Float_t         HLT_Mu8_EleX;
-   Float_t         HLT_SingleEl;
-   Float_t         HLT_PFHT800;
-   Float_t         HLT_Photon155;
-   Float_t         HLT_PFHT900;
-   Float_t         HLT_Photon175;
-   Float_t         HLT_DiJet;
-   Float_t         HLT_DoubleEl;
-   Float_t         HLT_DoubleMu;
-   Float_t         Flag_EcalDeadCellTriggerPrimitiveFilter;
-   Float_t         Flag_trkPOG_manystripclus53X;
-   Float_t         Flag_ecalLaserCorrFilter;
-   Float_t         Flag_trkPOG_toomanystripclus53X;
-   Float_t         Flag_hcalLaserEventFilter;
-   Float_t         Flag_trkPOG_logErrorTooManyClusters;
-   Float_t         Flag_trkPOGFilters;
-   Float_t         Flag_trackingFailureFilter;
-   Float_t         Flag_CSCTightHaloFilter;
-   Float_t         Flag_HBHENoiseFilter;
-   Float_t         Flag_HBHEIsoNoiseFilter;
-   Float_t         Flag_goodVertices;
-   Float_t         Flag_METFilters;
-   Float_t         Flag_eeBadScFilter;
+   /* Float_t         HLT_PFMET170; */
+   /* Float_t         HLT_Photon90_R9Id90_HE10_IsoM; */
+   /* Float_t         HLT_Photon75_R9Id90_HE10_IsoM; */
+   /* Float_t         HLT_Photon120; */
+   /* Float_t         HLT_Photon75; */
+   /* Float_t         HLT_Photon165_HE10; */
+   /* Float_t         HLT_Photon120_R9Id90_HE10_IsoM; */
+   /* Float_t         HLT_Photon90; */
+   /* Float_t         HLT_PFHT350_PFMET100; */
+   /* Float_t         HLT_PFMETNoMu90_PFMHTNoMu90; */
+   /* Float_t         HLT_PFMET90_PFMHT90; */
+   /* Float_t         HLT_PFHT475_Prescale; */
+   /* Float_t         HLT_PFHT350_Prescale; */
+   /* Float_t         HLT_SingleMu; */
+   /* Float_t         HLT_MuX_Ele12; */
+   /* Float_t         HLT_Mu8_EleX; */
+   /* Float_t         HLT_SingleEl; */
+   /* Float_t         HLT_PFHT800; */
+   /* Float_t         HLT_Photon155; */
+   /* Float_t         HLT_PFHT900; */
+   /* Float_t         HLT_Photon175; */
+   /* Float_t         HLT_DiJet; */
+   /* Float_t         HLT_DoubleEl; */
+   /* Float_t         HLT_DoubleMu; */
+   /* Float_t         Flag_EcalDeadCellTriggerPrimitiveFilter; */
+   /* Float_t         Flag_trkPOG_manystripclus53X; */
+   /* Float_t         Flag_ecalLaserCorrFilter; */
+   /* Float_t         Flag_trkPOG_toomanystripclus53X; */
+   /* Float_t         Flag_hcalLaserEventFilter; */
+   /* Float_t         Flag_trkPOG_logErrorTooManyClusters; */
+   /* Float_t         Flag_trkPOGFilters; */
+   /* Float_t         Flag_trackingFailureFilter; */
+   /* Float_t         Flag_CSCTightHaloFilter; */
+   /* Float_t         Flag_CSCTightHalo2015Filter; */
+   /* Float_t         Flag_HBHENoiseFilter; */
+   /* Float_t         Flag_HBHENoiseIsoFilter; */
+   /* Float_t         Flag_goodVertices; */
+   /* Float_t         Flag_METFilters; */
+   /* Float_t         Flag_eeBadScFilter; */
    // 
-//   Int_t         HLT_PFMET170;
-//   Int_t         HLT_Photon90_R9Id90_HE10_IsoM;
-//   Int_t         HLT_Photon75_R9Id90_HE10_IsoM;
-//   Int_t         HLT_Photon120;
-//   Int_t         HLT_Photon75;
-//   Int_t         HLT_Photon165_HE10;
-//   Int_t         HLT_Photon120_R9Id90_HE10_IsoM;
-//   Int_t         HLT_Photon90;
-//   Int_t         HLT_PFHT350_PFMET100;
-//   Int_t         HLT_PFMET90_PFMHT90;
-//   Int_t         HLT_PFMETNoMu90_PFMHTNoMu90;
-//   Int_t         HLT_PFHT475_Prescale;
-//   Int_t         HLT_PFHT350_Prescale;
-//   Int_t         HLT_ht475prescale;
-//   Int_t         HLT_SingleMu;
-//   Int_t         HLT_MuX_Ele12;
-//   Int_t         HLT_Mu8_EleX;
-//   Int_t         HLT_SingleEl;
-//   Int_t         HLT_PFHT800;
-//   Int_t         HLT_ht350prescale;
-//   Int_t         HLT_Photon155;
-//   Int_t         HLT_PFHT900;
-//   Int_t         HLT_Photon175;
-//   Int_t         HLT_MuEG;
-//   Int_t         HLT_DiJet;
-//   Int_t         HLT_DoubleEl;
-//   Int_t         HLT_DoubleMu;
-//   Int_t         Flag_EcalDeadCellTriggerPrimitiveFilter;
-//   Int_t         Flag_trkPOG_manystripclus53X;
-//   Int_t         Flag_ecalLaserCorrFilter;
-//   Int_t         Flag_trkPOG_toomanystripclus53X;
-//   Int_t         Flag_hcalLaserEventFilter;
-//   Int_t         Flag_trkPOG_logErrorTooManyClusters;
-//   Int_t         Flag_trkPOGFilters;
-//   Int_t         Flag_trackingFailureFilter;
-//   Int_t         Flag_CSCTightHaloFilter;
-//   Int_t         Flag_HBHENoiseFilter;
-//   Int_t         Flag_HBHEIsoNoiseFilter;
-//   Int_t         Flag_goodVertices;
-//   Int_t         Flag_METFilters;
-//   Int_t         Flag_eeBadScFilter;
-   //
+  Int_t         HLT_PFMET170;
+  Int_t         HLT_Photon90_R9Id90_HE10_IsoM;
+  Int_t         HLT_Photon75_R9Id90_HE10_IsoM;
+  Int_t         HLT_Photon120;
+  Int_t         HLT_Photon75;
+  Int_t         HLT_Photon165_HE10;
+  Int_t         HLT_Photon120_R9Id90_HE10_IsoM;
+  Int_t         HLT_Photon90;
+  Int_t         HLT_PFHT350_PFMET100;
+  Int_t         HLT_PFHT300_PFMET100;
+  Int_t         HLT_PFMET90_PFMHT90;
+  Int_t         HLT_PFMETNoMu90_PFMHTNoMu90;
+  Int_t         HLT_PFMET100_PFMHT100;
+  Int_t         HLT_PFHT475_Prescale;
+  Int_t         HLT_PFHT350_Prescale;
+  Int_t         HLT_ht475prescale;
+  Int_t         HLT_SingleMu;
+  Int_t         HLT_SingleMu_NonIso;
+  Int_t         HLT_MuX_Ele12;
+  Int_t         HLT_Mu8_EleX;
+  Int_t         HLT_SingleEl;
+  Int_t         HLT_PFHT800;
+  Int_t         HLT_ht350prescale;
+  Int_t         HLT_Photon155;
+  Int_t         HLT_PFHT900;
+  Int_t         HLT_Photon175;
+  Int_t         HLT_MuEG;
+  Int_t         HLT_DiJet;
+  Int_t         HLT_DoubleEl;
+  Int_t         HLT_DoubleMu;;
+  Int_t         HLT_DoubleEl33;
+  Int_t         HLT_DoubleMu_NonIso;
+  Int_t         Flag_EcalDeadCellTriggerPrimitiveFilter;
+  Int_t         Flag_trkPOG_manystripclus53X;
+  Int_t         Flag_ecalLaserCorrFilter;
+  Int_t         Flag_trkPOG_toomanystripclus53X;
+  Int_t         Flag_hcalLaserEventFilter;
+  Int_t         Flag_trkPOG_logErrorTooManyClusters;
+  Int_t         Flag_trkPOGFilters;
+  Int_t         Flag_trackingFailureFilter;
+  Int_t         Flag_CSCTightHaloFilter;
+  Int_t         Flag_CSCTightHalo2015Filter;
+  Int_t         Flag_globalTightHalo2016Filter;
+  Int_t         Flag_HBHENoiseFilter;
+  Int_t         Flag_HBHENoiseIsoFilter;
+  Int_t         Flag_goodVertices;
+  Int_t         Flag_METFilters;
+  Int_t         Flag_eeBadScFilter;
+  Int_t         Flag_badMuonFilter;
+  Int_t         Flag_badChargedHadronFilter;
+   
    Float_t         puWeight;
    Int_t           nTrueInt;
    Float_t         genWeight;
@@ -165,6 +175,7 @@ public :
    Float_t         deltaPhiMin_had;
    Float_t         met_rawPt;
    Float_t         met_rawPhi;
+   Int_t           nBJet20csv;
    Int_t           nBJet20;
    Int_t           nBJet25;
    Int_t           nBJet40;
@@ -187,6 +198,7 @@ public :
    Int_t           gamma_nJet25;
    Int_t           gamma_nJet30;
    Int_t           gamma_nJet40;
+   Int_t           gamma_nBJet20csv;
    Int_t           gamma_nBJet20;
    Int_t           gamma_nBJet25;
    Int_t           gamma_nBJet40;
@@ -231,6 +243,7 @@ public :
    Float_t         pseudoViaKtJet2_had_phi;
    Float_t         pseudoViaKtJet2_had_mass;
    Float_t         met_pt;
+   Float_t         met_caloPt;
    Float_t         met_eta;
    Float_t         met_phi;
    Float_t         met_mass;
@@ -517,11 +530,14 @@ public :
    TBranch        *b_HLT_Photon120_R9Id90_HE10_IsoM;   //!
    TBranch        *b_HLT_Photon90;   //!
    TBranch        *b_HLT_PFHT350_PFMET100;   //!
+   TBranch        *b_HLT_PFHT300_PFMET100;   //!
    TBranch        *b_HLT_PFMETNoMu90_PFMHTNoMu90;   //!
+   TBranch        *b_HLT_PFMET100_PFMHT100;   //!
    TBranch        *b_HLT_PFMET90_PFMHT90;   //!
    TBranch        *b_HLT_PFHT475_Prescale;   //!
    TBranch        *b_HLT_PFHT350_Prescale;   //!
    TBranch        *b_HLT_SingleMu;   //!
+   TBranch        *b_HLT_SingleMu_NonIso;   //!
    TBranch        *b_HLT_SingleEl;   //!
    TBranch        *b_HLT_MuX_Ele12;   //!
    TBranch        *b_HLT_Mu8_EleX;   //!
@@ -532,6 +548,8 @@ public :
    TBranch        *b_HLT_DiJet;   //!
    TBranch        *b_HLT_DoubleEl;   //!
    TBranch        *b_HLT_DoubleMu;   //!
+   TBranch        *b_HLT_DoubleEl33;   //!
+   TBranch        *b_HLT_DoubleMu_NonIso;   //!
    TBranch        *b_Flag_EcalDeadCellTriggerPrimitiveFilter;   //!
    TBranch        *b_Flag_trkPOG_manystripclus53X;   //!
    TBranch        *b_Flag_ecalLaserCorrFilter;   //!
@@ -541,11 +559,15 @@ public :
    TBranch        *b_Flag_trkPOGFilters;   //!
    TBranch        *b_Flag_trackingFailureFilter;   //!
    TBranch        *b_Flag_CSCTightHaloFilter;   //!
+   TBranch        *b_Flag_CSCTightHalo2015Filter;   //!
+   TBranch        *b_Flag_globalTightHalo2016Filter;   //!
    TBranch        *b_Flag_HBHENoiseFilter;   //!
-   TBranch        *b_Flag_HBHEIsoNoiseFilter;   //!
+   TBranch        *b_Flag_HBHENoiseIsoFilter;   //!
    TBranch        *b_Flag_goodVertices;   //!
    TBranch        *b_Flag_METFilters;   //!
    TBranch        *b_Flag_eeBadScFilter;   //!
+   TBranch        *b_Flag_badMuonFilter;   //!
+   TBranch        *b_Flag_badChargedHadronFilter;   //!
    TBranch        *b_puWeight;   //!
    TBranch        *b_nTrueInt;   //!
    TBranch        *b_genWeight;   //!
@@ -599,6 +621,7 @@ public :
    TBranch        *b_deltaPhiMin_had;   //!
    TBranch        *b_met_rawPt;   //!
    TBranch        *b_met_rawPhi;   //!
+   TBranch        *b_nBJet20csv;   //!
    TBranch        *b_nBJet20;   //!
    TBranch        *b_nBJet25;   //!
    TBranch        *b_nBJet40;   //!
@@ -621,6 +644,7 @@ public :
    TBranch        *b_gamma_nJet25;   //!
    TBranch        *b_gamma_nJet30;   //!
    TBranch        *b_gamma_nJet40;   //!
+   TBranch        *b_gamma_nBJet20csv;   //! 
    TBranch        *b_gamma_nBJet20;   //! 
    TBranch        *b_gamma_nBJet25;   //! 
    TBranch        *b_gamma_nBJet40;   //!
@@ -665,6 +689,7 @@ public :
    TBranch        *b_pseudoViaKtJet2_had_phi;   //!
    TBranch        *b_pseudoViaKtJet2_had_mass;   //!
    TBranch        *b_met_pt;   //!
+   TBranch        *b_met_caloPt;   //!
    TBranch        *b_met_eta;   //!
    TBranch        *b_met_phi;   //!
    TBranch        *b_met_mass;   //!
@@ -1022,11 +1047,14 @@ void MT2Tree::Init(TTree *tree)
    fChain->SetBranchAddress("HLT_Photon120_R9Id90_HE10_IsoM", &HLT_Photon120_R9Id90_HE10_IsoM, &b_HLT_Photon120_R9Id90_HE10_IsoM);
    fChain->SetBranchAddress("HLT_Photon90", &HLT_Photon90, &b_HLT_Photon90);
    fChain->SetBranchAddress("HLT_PFHT350_PFMET100", &HLT_PFHT350_PFMET100, &b_HLT_PFHT350_PFMET100);
+   fChain->SetBranchAddress("HLT_PFHT300_PFMET100", &HLT_PFHT300_PFMET100, &b_HLT_PFHT300_PFMET100);
    fChain->SetBranchAddress("HLT_PFMETNoMu90_PFMHTNoMu90", &HLT_PFMETNoMu90_PFMHTNoMu90, &b_HLT_PFMETNoMu90_PFMHTNoMu90);
+   fChain->SetBranchAddress("HLT_PFMET100_PFMHT100", &HLT_PFMET100_PFMHT100, &b_HLT_PFMET100_PFMHT100);
    fChain->SetBranchAddress("HLT_PFMET90_PFMHT90", &HLT_PFMET90_PFMHT90, &b_HLT_PFMET90_PFMHT90);
    fChain->SetBranchAddress("HLT_PFHT475_Prescale", &HLT_PFHT475_Prescale, &b_HLT_PFHT475_Prescale);
    fChain->SetBranchAddress("HLT_PFHT350_Prescale", &HLT_PFHT350_Prescale, &b_HLT_PFHT350_Prescale);
    fChain->SetBranchAddress("HLT_SingleMu", &HLT_SingleMu, &b_HLT_SingleMu);
+   fChain->SetBranchAddress("HLT_SingleMu_NonIso", &HLT_SingleMu_NonIso, &b_HLT_SingleMu_NonIso);
    fChain->SetBranchAddress("HLT_SingleEl", &HLT_SingleEl, &b_HLT_SingleEl);
    fChain->SetBranchAddress("HLT_Mu8_EleX", &HLT_Mu8_EleX, &b_HLT_Mu8_EleX);
    fChain->SetBranchAddress("HLT_MuX_Ele12", &HLT_MuX_Ele12, &b_HLT_MuX_Ele12);
@@ -1034,9 +1062,11 @@ void MT2Tree::Init(TTree *tree)
    fChain->SetBranchAddress("HLT_Photon155", &HLT_Photon155, &b_HLT_Photon155);
    fChain->SetBranchAddress("HLT_PFHT900", &HLT_PFHT900, &b_HLT_PFHT900);
    fChain->SetBranchAddress("HLT_Photon175", &HLT_Photon175, &b_HLT_Photon175);
-   fChain->SetBranchAddress("HLT_DiJet", &HLT_DiJet, &b_HLT_DiJet);
+   fChain->SetBranchAddress("HLT_DiJet", &HLT_DiJet, &b_HLT_DiJet);;
    fChain->SetBranchAddress("HLT_DoubleEl", &HLT_DoubleEl, &b_HLT_DoubleEl);
    fChain->SetBranchAddress("HLT_DoubleMu", &HLT_DoubleMu, &b_HLT_DoubleMu);
+   fChain->SetBranchAddress("HLT_DoubleEl33", &HLT_DoubleEl33, &b_HLT_DoubleEl33);
+   fChain->SetBranchAddress("HLT_DoubleMu_NonIso", &HLT_DoubleMu_NonIso, &b_HLT_DoubleMu_NonIso);
    fChain->SetBranchAddress("Flag_EcalDeadCellTriggerPrimitiveFilter", &Flag_EcalDeadCellTriggerPrimitiveFilter, &b_Flag_EcalDeadCellTriggerPrimitiveFilter);
    fChain->SetBranchAddress("Flag_trkPOG_manystripclus53X", &Flag_trkPOG_manystripclus53X, &b_Flag_trkPOG_manystripclus53X);
    fChain->SetBranchAddress("Flag_ecalLaserCorrFilter", &Flag_ecalLaserCorrFilter, &b_Flag_ecalLaserCorrFilter);
@@ -1046,11 +1076,15 @@ void MT2Tree::Init(TTree *tree)
    fChain->SetBranchAddress("Flag_trkPOGFilters", &Flag_trkPOGFilters, &b_Flag_trkPOGFilters);
    fChain->SetBranchAddress("Flag_trackingFailureFilter", &Flag_trackingFailureFilter, &b_Flag_trackingFailureFilter);
    fChain->SetBranchAddress("Flag_CSCTightHaloFilter", &Flag_CSCTightHaloFilter, &b_Flag_CSCTightHaloFilter);
+   fChain->SetBranchAddress("Flag_CSCTightHalo2015Filter", &Flag_CSCTightHalo2015Filter, &b_Flag_CSCTightHalo2015Filter);
+   fChain->SetBranchAddress("Flag_globalTightHalo2016Filter", &Flag_globalTightHalo2016Filter, &b_Flag_globalTightHalo2016Filter);
    fChain->SetBranchAddress("Flag_HBHENoiseFilter", &Flag_HBHENoiseFilter, &b_Flag_HBHENoiseFilter);
-   fChain->SetBranchAddress("Flag_HBHEIsoNoiseFilter", &Flag_HBHEIsoNoiseFilter, &b_Flag_HBHEIsoNoiseFilter);
+   fChain->SetBranchAddress("Flag_HBHENoiseIsoFilter", &Flag_HBHENoiseIsoFilter, &b_Flag_HBHENoiseIsoFilter);
    fChain->SetBranchAddress("Flag_goodVertices", &Flag_goodVertices, &b_Flag_goodVertices);
    fChain->SetBranchAddress("Flag_METFilters", &Flag_METFilters, &b_Flag_METFilters);
    fChain->SetBranchAddress("Flag_eeBadScFilter", &Flag_eeBadScFilter, &b_Flag_eeBadScFilter);
+   fChain->SetBranchAddress("Flag_badMuonFilter", &Flag_badMuonFilter, &b_Flag_badMuonFilter);
+   fChain->SetBranchAddress("Flag_badChargedHadronFilter", &Flag_badChargedHadronFilter, &b_Flag_badChargedHadronFilter);
    fChain->SetBranchAddress("puWeight", &puWeight, &b_puWeight);
    fChain->SetBranchAddress("nTrueInt", &nTrueInt, &b_nTrueInt);
    fChain->SetBranchAddress("genWeight", &genWeight, &b_genWeight);
@@ -1105,6 +1139,7 @@ void MT2Tree::Init(TTree *tree)
    fChain->SetBranchAddress("met_rawPt", &met_rawPt, &b_met_rawPt);
    fChain->SetBranchAddress("met_rawPhi", &met_rawPhi, &b_met_rawPhi);
    fChain->SetBranchAddress("nBJet20", &nBJet20, &b_nBJet20);
+   fChain->SetBranchAddress("nBJet20csv", &nBJet20csv, &b_nBJet20csv); //change
    fChain->SetBranchAddress("nBJet25", &nBJet25, &b_nBJet25);
    fChain->SetBranchAddress("nBJet40", &nBJet40, &b_nBJet40);
    fChain->SetBranchAddress("nMuons10", &nMuons10, &b_nMuons10);
@@ -1127,6 +1162,7 @@ void MT2Tree::Init(TTree *tree)
    fChain->SetBranchAddress("gamma_nJet30", &gamma_nJet30, &b_gamma_nJet30);
    fChain->SetBranchAddress("gamma_nJet40", &gamma_nJet40, &b_gamma_nJet40);
    fChain->SetBranchAddress("gamma_nBJet20", &gamma_nBJet20, &b_gamma_nBJet20);
+   fChain->SetBranchAddress("gamma_nBJet20csv", &gamma_nBJet20csv, &b_gamma_nBJet20csv);//change
    fChain->SetBranchAddress("gamma_nBJet25", &gamma_nBJet25, &b_gamma_nBJet25);
    fChain->SetBranchAddress("gamma_nBJet40", &gamma_nBJet40, &b_gamma_nBJet40);
    fChain->SetBranchAddress("gamma_nJet30FailId", &gamma_nJet30FailId, &b_gamma_nJet30FailId);
@@ -1170,6 +1206,7 @@ void MT2Tree::Init(TTree *tree)
    fChain->SetBranchAddress("pseudoViaKtJet2_had_phi", &pseudoViaKtJet2_had_phi, &b_pseudoViaKtJet2_had_phi);
    fChain->SetBranchAddress("pseudoViaKtJet2_had_mass", &pseudoViaKtJet2_had_mass, &b_pseudoViaKtJet2_had_mass);
    fChain->SetBranchAddress("met_pt", &met_pt, &b_met_pt);
+   fChain->SetBranchAddress("met_caloPt", &met_caloPt, &b_met_caloPt);
    fChain->SetBranchAddress("met_eta", &met_eta, &b_met_eta);
    fChain->SetBranchAddress("met_phi", &met_phi, &b_met_phi);
    fChain->SetBranchAddress("met_mass", &met_mass, &b_met_mass);
@@ -1480,9 +1517,14 @@ Bool_t MT2Tree::passIsoTrackVeto() const {
   return nPFLep5LowMT==0 && nPFHad10LowMT==0;
 }
 
-
 Bool_t MT2Tree::passFilters() const {
-  return nVert>0 && Flag_HBHENoiseFilter && Flag_HBHEIsoNoiseFilter && Flag_eeBadScFilter; // Beam halo from txt file
+  //return nVert>0. && Flag_HBHENoiseFilter==1 && Flag_eeBadScFilter==1 ; // Beam halo from txt file
+
+  //return Flag_HBHENoiseFilter==1 && Flag_HBHENoiseIsoFilter==1 && Flag_globalTightHalo2016Filter==1 && Flag_EcalDeadCellTriggerPrimitiveFilter==1 && Flag_goodVertices==1 && Flag_eeBadScFilter==1 ;
+  
+  return Flag_HBHENoiseFilter==1 && Flag_HBHENoiseIsoFilter==1 && Flag_globalTightHalo2016Filter==1 && Flag_EcalDeadCellTriggerPrimitiveFilter==1 && Flag_goodVertices==1 && Flag_eeBadScFilter==1 && Flag_badMuonFilter==1 && Flag_badChargedHadronFilter==1 ;
+  
+  //  return Flag_HBHENoiseFilter==1 && Flag_HBHENoiseIsoFilter==1 && Flag_CSCTightHalo2015Filter==1 && Flag_EcalDeadCellTriggerPrimitiveFilter==1 && Flag_goodVertices==1 && Flag_eeBadScFilter==1;
 }
 
 Bool_t MT2Tree::passMonoJetId( int j ) const {

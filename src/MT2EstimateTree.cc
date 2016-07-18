@@ -399,7 +399,7 @@ void MT2EstimateTree::assignTree( const MT2Tree& mt2tree, float w  ) {
   met    = mt2tree.met_pt;
 
   nJets  = mt2tree.nJet30;
-  nBJets = mt2tree.nBJet20;
+  nBJets = mt2tree.nBJet20csv;
 
   deltaPhiMin   = mt2tree.deltaPhiMin;
   diffMetMht    = mt2tree.diffMetMht;
@@ -452,7 +452,7 @@ void MT2EstimateTree::assignTree_zll( const MT2Tree& mt2tree, float w ) {
 
 
   nJets         = mt2tree.nJet30;
-  nBJets        = mt2tree.nBJet20;
+  nBJets        = mt2tree.nBJet20csv;
 
   nElectrons    = mt2tree.nElectrons10;
   nMuons        = mt2tree.nMuons10;
@@ -494,7 +494,7 @@ void MT2EstimateTree::assignTree_gamma( const MT2Tree& mt2tree, float w ) {
   deltaPhiMin   = mt2tree.gamma_deltaPhiMin;
   diffMetMht    = mt2tree.gamma_diffMetMht;
   nJets         = mt2tree.gamma_nJet30;
-  nBJets        = mt2tree.gamma_nBJet20;
+  nBJets        = mt2tree.gamma_nBJet20csv;
   nElectrons    = mt2tree.nElectrons10;
   nMuons        = mt2tree.nMuons10;
   nPFLep        = mt2tree.nPFLep5LowMT;

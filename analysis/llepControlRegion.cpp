@@ -119,7 +119,7 @@ int main( int argc, char* argv[] ) {
     std::cout << "-> Loading data from file: " << samplesFile_data << std::endl;
 
     //    std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, 1, 3 );
-    std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, -1, 0 );
+    std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, "noDuplicates" );
     if( samples_data.size()==0 ) {
       std::cout << "There must be an error: samples_data is empty!" << std::endl;
       exit(1209);
@@ -179,11 +179,14 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
     if ( myTree.nJet30==1 && !myTree.passMonoJetId(0) ) continue;
 
     int njets  = myTree.nJet30;
-    int nbjets = myTree.nBJet20; 
+    int nbjets = myTree.nBJet20csv; 
     float ht   = myTree.ht;
     float met  = myTree.met_pt;
     float mt2  = (njets>1) ? myTree.mt2 : ht;
     float minMTBmet = myTree.minMTBMet;
+    
+    myTree.nBJet20csv=nbjets;
+    //    if( myTree.isData && myTree.run>275125.) continue;
     
     int nMuons10 = myTree.nMuons10;
     int nElectrons10 = myTree.nElectrons10;
@@ -192,7 +195,7 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
     
     Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb;//*cfg.lumi();
     //Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi();
-
+    if(!myTree.isData) weight *= myTree.weight_btagsf;
 
     if (myTree.isData) {
 

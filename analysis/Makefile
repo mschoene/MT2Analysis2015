@@ -211,6 +211,9 @@ drawGammaControlRegionDataMC: drawGammaControlRegionDataMC.cpp MT2Region.o MT2Es
 drawZllControlRegion: drawZllControlRegion.cpp MT2Region.o MT2Estimate.o MT2EstimateTree.o MT2DrawTools.o MT2Config.o
 	$(CC) -Wall $(INCLUDES) -o drawZllControlRegion drawZllControlRegion.cpp MT2Region.o MT2Estimate.o MT2EstimateTree.o MT2DrawTools.o MT2Config.o $(ROOTFLAG) $(EXTRALIBS)
 
+drawZllTop: drawZllTop.cpp MT2Region.o MT2Estimate.o MT2EstimateTree.o MT2DrawTools.o MT2Config.o
+	$(CC) -Wall $(INCLUDES) -o drawZllTop drawZllTop.cpp MT2Region.o MT2Estimate.o MT2EstimateTree.o MT2DrawTools.o MT2Config.o $(ROOTFLAG) $(EXTRALIBS)
+
 drawLostLeptonControlRegionDataMC: drawLostLeptonControlRegionDataMC.cpp MT2Region.o MT2Estimate.o MT2EstimateTree.o MT2DrawTools.o MT2Config.o
 	$(CC) -Wall $(INCLUDES) -o drawLostLeptonControlRegionDataMC drawLostLeptonControlRegionDataMC.cpp MT2Region.o MT2Estimate.o MT2EstimateTree.o MT2DrawTools.o MT2Config.o $(ROOTFLAG) $(EXTRALIBS)
 

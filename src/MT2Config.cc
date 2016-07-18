@@ -27,8 +27,12 @@ MT2Config::MT2Config( const std::string& name ) {
 
   regionsSet_ = "";
   mcSamples_ = "";
+  qcdMCSamples_ = "";
+  qcdMonoJetMCSamples_ = "";
   sigSamples_ = "";
   dataSamples_ = "";
+  qcdDataSamples_ = "";
+  qcdMonoJetDataSamples_ = "";
   additionalStuff_ = "";
   analysisType_ = "mt2";
   crRegionsSet_ = "13TeV_inclusive";
@@ -74,10 +78,18 @@ MT2Config::MT2Config( const std::string& name ) {
       regionsSet_ = std::string(StringValue);
     else if( this_name=="mcSamples" )
       mcSamples_ = std::string(StringValue);
+    else if( this_name=="qcdMCSamples" )
+      qcdMCSamples_ = std::string(StringValue);
+    else if( this_name=="qcdMonoJetMCSamples" )
+      qcdMonoJetMCSamples_ = std::string(StringValue);
     else if( this_name=="sigSamples" )
       sigSamples_ = std::string(StringValue);
     else if( this_name=="dataSamples" )
       dataSamples_ = std::string(StringValue);
+    else if( this_name=="qcdDataSamples" )
+      qcdDataSamples_ = std::string(StringValue);
+    else if( this_name=="qcdMonoJetDataSamples" )
+      qcdMonoJetDataSamples_ = std::string(StringValue);
     else if( this_name=="additionalStuff" )
       additionalStuff_ = std::string(StringValue);
     else if( this_name=="gammaTemplateRegions" )

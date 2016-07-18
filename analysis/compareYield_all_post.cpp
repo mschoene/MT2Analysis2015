@@ -149,6 +149,7 @@ int main( int argc, char* argv[] ) {
 //  analysesSignal[8]->setName("T2tt 200, 100");
 
 
+/*
   analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( sigPath + "/T1bbbb_eth.root", "T1bbbb") );
   //  analysesSignal[0]->setName("T1bbbb 1500, 100");
   analysesSignal[0]->setName("pp #rightarrow #tilde{g}#tilde{g}, #tilde{g} #rightarrow b#bar{b}#chi_{1}^{0}");
@@ -200,7 +201,9 @@ int main( int argc, char* argv[] ) {
 
   analysesSignalCont.push_back( MT2Analysis<MT2EstimateSigContSyst>::readSystFromFile( sigPath + "/T2tt_sigcontam_eth.root", "T2tt_sigcontam", "isr") );
   analysesSignalCont[4]->setName("pp #rightarrow #tilde{t}#bar{#tilde{t}}, #tilde{t} #rightarrow t#tilde{#chi}_{1}^{0}");
-  
+*/
+
+
   std::set<MT2Region> regions = analysis->getRegions();
 
   MT2Analysis<MT2Estimate>* data = MT2Analysis<MT2Estimate>::readFromFile( dir + "/analyses.root", "data" );
@@ -278,8 +281,9 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
   styleSig.push_back(1);
 
   int bgSize = 3;
-  int sigSize = 9;
-  int sigContSize = 5;
+  int sigSize = 0;
+  int sigContSize = 0;
+  //  int sigSize = 9;  int sigContSize = 5;
 
   int S=10;
 
@@ -347,12 +351,20 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
 
   std::string labelsMono[12]={"[200,250]","[250,350]","[350,450]","[450,575]","[575,700]","[700,1000]",">1000", "[200,250]","[250,350]","[350,450]","[450,575]",">575"};
 
-  TFile* fmono=TFile::Open("mlfit_monojet.root");
-  TFile* fvlht=TFile::Open("mlfit_veryLowHT.root");
-  TFile* flht =TFile::Open("mlfit_LowHT.root");
-  TFile* fmht =TFile::Open("mlfit_MediumHT.root");
-  TFile* fhht =TFile::Open("mlfit_HighHT.root");
-  TFile* feht =TFile::Open("mlfit_ExtremeHT.root");
+     
+  TFile* fmono=TFile::Open(Form("%s/mlfit_monojet.root", dir.c_str()) );
+  TFile* fvlht=TFile::Open(Form("%s/mlfit_veryLowHT.root", dir.c_str()));
+  TFile* flht =TFile::Open(Form("%s/mlfit_LowHT.root", dir.c_str()));
+  TFile* fmht =TFile::Open(Form("%s/mlfit_MediumHT.root", dir.c_str()));
+  TFile* fhht =TFile::Open(Form("%s/mlfit_HighHT.root", dir.c_str()));
+  TFile* feht =TFile::Open(Form("%s/mlfit_ExtremeHT.root", dir.c_str()) );
+
+  // TFile* fmono=TFile::Open("mlfit_monojet.root");
+  // TFile* fvlht=TFile::Open("mlfit_veryLowHT.root");
+  // TFile* flht =TFile::Open("mlfit_LowHT.root");
+  // TFile* fmht =TFile::Open("mlfit_MediumHT.root");
+  // TFile* fhht =TFile::Open("mlfit_HighHT.root");
+  // TFile* feht =TFile::Open("mlfit_ExtremeHT.root");
   
   int iBinRegion = 1;
   int iRegion = 1;

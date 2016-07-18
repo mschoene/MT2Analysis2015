@@ -99,7 +99,7 @@ int main( int argc, char* argv[] ) {
   if( mc_or_data=="mc" ) mc_or_data="MC";
 
 
-  doAllPurityPlots( cfg, mc_or_data, "purityLoose", "","" ); 
+  // doAllPurityPlots( cfg, mc_or_data, "purityLoose", "","" ); 
   doAllPurityPlots( cfg, mc_or_data, "purity", "", "" ); 
 
   if(doAxes){
@@ -116,14 +116,14 @@ int main( int argc, char* argv[] ) {
     doAllPurityPlots( cfg, mc_or_data, "purityLoose", "mono_nbjets", "b-Jet Multiplicity", "=1j, #geq0b"  ); 
     doAllPurityPlots( cfg, mc_or_data, "purity", "mono_nbjets" , "b-Jet Multiplicity", "=1j, #geq0b" ); 
     */
-
+    
     //INCLUSIVE
     //doAllPurityPlots( cfg, mc_or_data, "purityLoose", "mono_ht","H_{T} (Photon Removed) [GeV]", "#geq1j, #geq0b" ); 
     doAllPurityPlots( cfg, mc_or_data, "purity", "mono_ht", "H_{T} (Photon Removed) [GeV]", "#geq1j, #geq0b" ); 
 
     // doAllPurityPlots( cfg, mc_or_data, "purityLoose", "incl_ht","H_{T} (Photon Removed) [GeV]", "#geq1j, #geq0b" ); 
     doAllPurityPlots( cfg, mc_or_data, "purity", "incl_ht", "H_{T} (Photon Removed) [GeV]", "#geq1j, #geq0b" ); 
-
+    
     // doAllPurityPlots( cfg, mc_or_data, "purityLoose", "incl_njets","Jet Multiplicity", "#geq1j, #geq0b" ); 
     doAllPurityPlots( cfg, mc_or_data, "purity", "incl_njets" , "Jet Multiplicity", "#geq1j, #geq0b" ); 
 
@@ -163,14 +163,15 @@ void doAllPurityPlots( const MT2Config& cfg, const std::string& mc_or_data, cons
     //    fits.push_back( PurityFit( "Template Fit" , cfg.gammaTemplateRegions(), MT2Analysis<MT2EstimateSyst>::readFromFile(gammaCRdir+"/PurityFitsMC/purityFit.root", purityName), 25, kOrange+1 ));
     fits.push_back( PurityFit( "Template Fit" , cfg.gammaTemplateRegions(), MT2Analysis<MT2EstimateSyst>::readFromFile(gammaCRdir+"/PurityFitsRC/purityFit" + variable +"_MC.root", purityName), 25, kOrange+1 ));
   } else {
-    if( cfg.lumi()<=100. ) {
+    /* if( cfg.lumi()<=100. ) {
       fits.push_back( PurityFit( "Data (fit)", cfg.gammaTemplateRegions(), MT2Analysis<MT2EstimateSyst>::readFromFile(gammaCRdir+"/PurityFitsRC/purityFit" + variable +"_data.root", purityName), 20, kOrange+1 ));
   
       //     fits.push_back( PurityFit( "Template Fit", cfg.gammaTemplateRegions(), MT2Analysis<MT2EstimateSyst>::readFromFile(gammaCRdir+"/PurityFits" + mc_or_data + "/purityFit.root", purityName), 20, kOrange+1 ));
-    } else {
-      fits.push_back( PurityFit( "Template Fit (MC)"  , cfg.gammaTemplateRegions(), MT2Analysis<MT2EstimateSyst>::readFromFile(gammaCRdir+"/PurityFitsMC/purityFit.root", purityName), 21, 29 ));
-      fits.push_back( PurityFit( "Template Fit (Data)", cfg.gammaTemplateRegions(), MT2Analysis<MT2EstimateSyst>::readFromFile(gammaCRdir+"/PurityFits" + mc_or_data + "/purityFit.root", purityName), 20, kOrange+1 ));
-    }
+      } else {*/
+    
+    // fits.push_back( PurityFit( "Template Fit of MC (MC)"  , cfg.gammaTemplateRegions(), MT2Analysis<MT2EstimateSyst>::readFromFile(gammaCRdir+"/PurityFitsRC/purityFit" + variable +"_MC.root", purityName), 21, 29 ));
+    fits.push_back( PurityFit( "Template Fit (Data)", cfg.gammaTemplateRegions(), MT2Analysis<MT2EstimateSyst>::readFromFile(gammaCRdir+"/PurityFitsRC/purityFit" + variable +"_data.root", purityName), 20, kOrange+1 ));
+      // }
   }
 
 
@@ -202,13 +203,14 @@ void doAllPurityPlots( const MT2Config& cfg, const std::string& mc_or_data, cons
     axes->SetYTitle( "Photon Purity" );
     axes->Draw("");
 
-    MT2DrawTools::addLabels( c1, cfg.lumi(), "CMS" );
+    MT2DrawTools::addLabels( c1, cfg.lumi(), "CMS Preliminary" );
 
     gr_purityMC->Draw("p same");
 
     //float xMin_legend = 0.6;
-    float xMin_legend = (mc_or_data=="MC" || fits.size()==1) ? 0.6 : 0.52;
-    TLegend* legend = new TLegend( xMin_legend, 0.2, 0.9, 0.2+0.06*(fits.size()+1.) );
+    float xMin_legend = 0.52;
+    //   float xMin_legend = (mc_or_data=="MC" || fits.size()==1) ? 0.6 : 0.52;
+    TLegend* legend = new TLegend( xMin_legend, 0.2, 0.75, 0.2+0.06*(fits.size()+1.) );
     legend->SetTextSize(0.038); 
     legend->SetFillColor(0);
     legend->AddEntry( gr_purityMC, "MC Purity", "PL" );
@@ -245,15 +247,24 @@ void doAllPurityPlots( const MT2Config& cfg, const std::string& mc_or_data, cons
       if( topoRegion!="" && i==1){
 	labelRegion->AddText( topoRegion.c_str() );
       }else{
-	; }//	labelRegion->AddText( regionNames[i].c_str() );  }
+	labelRegion->AddText( regionNames[i].c_str() );  }
     }
+
+    /*    for( unsigned i=0; i<regionNames.size(); ++i ) {
+    //    for( unsigned i=0; i<regionNames.size(); ++i ) {
+    if( topoRegion!="" && i==1){
+    labelRegion->AddText( topoRegion.c_str() );
+    }else{
+    ; }//	labelRegion->AddText( regionNames[i].c_str() );  }
+    }*/
+
     labelRegion->Draw("same");
 
     gPad->RedrawAxis();
 
     c1->SaveAs( Form("%s/fits%s_%s_%s.eps", outputdir.c_str(), variable.c_str(), purityName.c_str(), iR->getName().c_str()) );
-    c1->SaveAs( Form("%s/fits%s_%s_%s.png", outputdir.c_str(), variable.c_str(),purityName.c_str(), iR->getName().c_str()) );
-    c1->SaveAs( Form("%s/fits%s_%s_%s.pdf", outputdir.c_str(), variable.c_str(),purityName.c_str(), iR->getName().c_str()) );
+    c1->SaveAs( Form("%s/fits%s_%s_%s.png", outputdir.c_str(), variable.c_str(), purityName.c_str(), iR->getName().c_str()) );
+    c1->SaveAs( Form("%s/fits%s_%s_%s.pdf", outputdir.c_str(), variable.c_str(), purityName.c_str(), iR->getName().c_str()) );
 
     delete c1;
     delete axes;

@@ -1112,7 +1112,7 @@ std::vector<TCanvas*> MT2DrawTools::drawRegionYields_fromTree( const std::string
         pad1->cd();
       else
         c1->cd();
-      normText->Draw("same");
+      // normText->Draw("same");
       if( this->twoPads() ) 
         pad1_log->cd();
       else

@@ -1,5 +1,0 @@
-lumi 0.1065
-regionsSet 13TeV_inclusive450
-mcSamples Spring15_25ns_noSkim
-dataSamples Run2015D_25nsGolden
-additionalStuff noSignals

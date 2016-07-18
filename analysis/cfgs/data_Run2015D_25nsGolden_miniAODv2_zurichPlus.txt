@@ -1,5 +1,0 @@
-lumi 1.260
-regionsSet zurichPlus
-mcSamples Spring15_25ns_miniAODv2_skimprune
-dataSamples Run2015D_25nsGolden_miniAODv2_skim
-additionalStuff noSignals

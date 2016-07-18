@@ -63,7 +63,8 @@ int main( int argc, char* argv[] ) {
   std::string dir = cfg.getEventYieldDir();
   std::string mc_fileName = dir + "/analyses.root";
   
-  std::string data_fileName = "EventYields_data_Run2015D_25nsGolden_miniAODv2_skim/analyses.root";
+  std::string data_fileName = mc_fileName;
+  //  std::string data_fileName = "EventYields_data_Run2015D_25nsGolden_miniAODv2_skim/analyses.root";
 
 
   bool useMC_qcd  = false;
@@ -107,24 +108,35 @@ int main( int argc, char* argv[] ) {
   MT2Analysis<MT2Estimate>* qcd_ratio_monojet;
 
 
+  bool doScaledEst=0;
+  float lumiRatio = 0.8042/ 2.07;
+
+
   if( useMC_qcd )
     qcd = MT2Analysis<MT2Estimate>::readFromFile( mc_fileName, "QCD"  );
   else{
 
-    qcd = MT2Analysis<MT2Estimate>::readFromFile( dir + "/qcdEstimateData.root", "qcdEstimate" );
-    qcdCR = MT2Analysis<MT2Estimate>::readFromFile( dir + "/qcdEstimateData.root", "nCR" );
-    qcd_ratio = MT2Analysis<MT2Estimate>::readFromFile( dir + "/qcdEstimateData.root", "r_effective" );
-    qcd_fjets = MT2Analysis<MT2Estimate>::readFromFile( dir + "/qcdEstimateData.root", "f_jets_data" );
-    qcd_fjets_vlht = MT2Analysis<MT2Estimate>::readFromFile( dir + "/qcdEstimateData.root", "f_jets_data_noPS" );
-    qcd_rb = MT2Analysis<MT2Estimate>::readFromFile( dir + "/qcdEstimateData.root", "r_hat_data" );
-    qcd_ratioSystFit = MT2Analysis<MT2Estimate>::readFromFile( dir + "/qcdEstimateData.root", "r_systFit" );
+    qcd = MT2Analysis<MT2Estimate>::readFromFile( dir + "/qcdControlRegion/qcdEstimateData.root", "qcdEstimate" );
+    qcdCR = MT2Analysis<MT2Estimate>::readFromFile( dir + "/qcdControlRegion/qcdEstimateData.root", "nCR" );
+    qcd_ratio = MT2Analysis<MT2Estimate>::readFromFile( dir + "/qcdControlRegion/qcdEstimateData.root", "r_effective" );
+    qcd_fjets = MT2Analysis<MT2Estimate>::readFromFile( dir + "/qcdControlRegion/qcdEstimateData.root", "f_jets_data" );
+    qcd_fjets_vlht = MT2Analysis<MT2Estimate>::readFromFile( dir + "/qcdControlRegion/qcdEstimateData.root", "f_jets_data_noPS" );
+    qcd_rb = MT2Analysis<MT2Estimate>::readFromFile( dir + "/qcdControlRegion/qcdEstimateData.root", "r_hat_data" );
+    qcd_ratioSystFit = MT2Analysis<MT2Estimate>::readFromFile( dir + "/qcdControlRegion/qcdEstimateData.root", "r_systFit" );
     qcd_mc = MT2Analysis<MT2Estimate>::readFromFile( mc_fileName, "QCD"  );
 
-    qcd_monojet = MT2Analysis<MT2Estimate>::readFromFile( dir + "/qcdEstimateMonojet.root", "monojet_qcdEstimate" );
-    qcdCR_monojet = MT2Analysis<MT2Estimate>::readFromFile( dir + "/qcdEstimateMonojet.root", "monojet_nCR" );
-    qcd_ratio_monojet = MT2Analysis<MT2Estimate>::readFromFile( dir + "/qcdEstimateMonojet.root", "monojet_r" );
+    qcd_monojet = MT2Analysis<MT2Estimate>::readFromFile( dir + "/qcdControlRegion/qcdEstimateMonojet.root", "monojet_qcdEstimate" );
+    qcdCR_monojet = MT2Analysis<MT2Estimate>::readFromFile( dir + "/qcdControlRegion/qcdEstimateMonojet.root", "monojet_nCR" );
+    qcd_ratio_monojet = MT2Analysis<MT2Estimate>::readFromFile( dir + "/qcdControlRegion/qcdEstimateMonojet.root", "monojet_r" );
+
+    if(doScaledEst==1){
+      (*qcd) = (*qcd) * lumiRatio;
+      (*qcdCR) = (*qcdCR) * lumiRatio;
+      (*qcdCR_monojet) = (*qcdCR_monojet) * lumiRatio;
+    }
     
   }
+
 
 
   
@@ -144,7 +156,7 @@ int main( int argc, char* argv[] ) {
   else {
     
     zinvCR      = MT2Analysis<MT2Estimate>    ::readFromFile( dir + "/gammaControlRegion/data.root", "gammaCR");
-    
+ 
     zinv        = MT2Analysis<MT2Estimate>    ::readFromFile( dir + "/zinvFromGamma.root", "ZinvEstimate");
     
     zinv_ratio  = MT2Analysis<MT2Estimate>    ::readFromFile( dir + "/zinvFromGamma.root", "ZgammaRatio");
@@ -156,6 +168,11 @@ int main( int argc, char* argv[] ) {
     zllG_nJets  = MT2Analysis<MT2EstimateSyst>::readFromFile( dir + "/zllGammaRatio/zllG_data_ratio.root", "zllG_data_nJets");
     zllG_nBJets = MT2Analysis<MT2EstimateSyst>::readFromFile( dir + "/zllGammaRatio/zllG_data_ratio.root", "zllG_data_nBJets");
     //    zllG_nBJets_monojet = MT2Analysis<MT2EstimateSyst>::readFromFile( dir + "/zllGammaRatio/zllG_data_ratio.root", "zllG_data_mono_nBJets");
+
+    if(doScaledEst==1){
+      (*zinvCR) = (*zinvCR)* ( lumiRatio);
+      (*zinv) = (*zinv)* ( lumiRatio);
+    }
     
   }
   zinv->setName("zinv");
@@ -181,6 +198,11 @@ int main( int argc, char* argv[] ) {
     llep_ratio = MT2Analysis<MT2Estimate>::readFromFile( dir + "/llepEstimate.root", "llepRatioMC" );
     llepCR = MT2Analysis<MT2Estimate>::readFromFile( cfg.getEventYieldDir() + "/llepControlRegion/data.root", "llepCR" );
   
+    if(doScaledEst==1){
+      (*llepCR) = (*llepCR)* ( lumiRatio);
+      (*llep) = (*llep)* ( lumiRatio);
+    }
+
   }
   llep->setName( "llep" );
   //llep->addToFile( mc_fileName, true );

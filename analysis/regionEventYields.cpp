@@ -218,7 +218,8 @@ int main( int argc, char* argv[] ) {
 
     //    std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, "JetHTMHT"); //, 1, 99 );
     //    std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, 1, 3 );
-    std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, -1, 0 );
+    // std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, -1, 0 );
+    std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, "noDuplicates" );
     if( samples_data.size()==0 ) {
       std::cout << "There must be an error: samples_data is empty!" << std::endl;
       exit(1209);
@@ -232,7 +233,7 @@ int main( int argc, char* argv[] ) {
     //dataYield = EventYield_data[0];
     //dataYield->setName("data");
     //dataYield   = mergeYields<MT2EstimateTree>( EventYield_data, cfg.regionsSet(), "data", 1, 3 );
-    dataYield   = mergeYields<MT2EstimateTree>( EventYield_data, cfg.regionsSet(), "data", -1, -1 );
+    dataYield   = mergeYields<MT2EstimateTree>( EventYield_data, cfg.regionsSet(), "data", -1, 10 );
 
     yields.push_back( dataYield );
 
@@ -346,17 +347,34 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg ) {
     float met  = myTree.met_pt;
     float minMTBmet = myTree.minMTBMet;
     int njets  = myTree.nJet30;
-    int nbjets = myTree.nBJet20;    
+    int nbjets      = ( (sample.id>200 && sample.id<300 ) || (sample.id >=600 &&sample.id<700) ) ?  myTree.nBJet20 :  myTree.nBJet20csv;  
+    //    int nbjets = myTree.nBJet20csv;    
     float mt2  = (njets>1) ? myTree.mt2 : ht;
     //float mt2  = myTree.mt2;
+
+    //TEEEEEMPORARYYYYY
+    //    if( myTree.isData && myTree.run>275125) continue;
+
+    //temp fix
+    myTree.nBJet20csv=nbjets;
     
-    int GenSusyMScan1 = myTree.GenSusyMGluino;
-    int GenSusyMScan2 = myTree.GenSusyMNeutralino;
-    
+    int GenSusyMScan1=0;
+    int GenSusyMScan2=0;
+    if(  myTree.evt_id > 999){
+      GenSusyMScan1 = myTree.GenSusyMGluino;
+      GenSusyMScan2 = myTree.GenSusyMNeutralino;
+    }
+
+   
     //Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi()*myTree.puWeight;
-    //Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb;//*cfg.lumi();
-    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi();
+    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb;//*cfg.lumi();
+    //Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi();
     Double_t weight_syst = 1.;
+
+    if( !myTree.isData )
+      weight *= myTree.weight_btagsf;
+    
+
 
     if( myTree.evt_id > 1000 )
       weight_syst = myTree.weight_isr;
@@ -386,26 +404,21 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg ) {
       // JetHT = 1
       // HTMHT = 2
       // MET   = 3
+      //  if( njets==1 ) {
+      //    if( !( id==3 && myTree.HLT_PFMETNoMu90_PFMHTNoMu90) ) continue;
+      //  } else { // njets>=2
+      //    if( ht>1000. ) {
+      //      if( !( id==1 && myTree.HLT_PFHT800) ) continue;
+      //    } else if( ht>575. ) {
+      //      if( !( id==2 && myTree.HLT_PFHT350_PFMET100 )  ) continue;
+      //    } else if( ht>450. ) {
+      //      if( !( id==2 && myTree.HLT_PFHT350_PFMET100 )  ) continue;
+      //    } else if( ht>200. ) {
+      //      if( !( id==3 && myTree.HLT_PFMETNoMu90_PFMHTNoMu90  )  ) continue;
+      //    }
+      //  }
 
-    //  if( njets==1 ) {
-    //
-    //    if( !( id==3 && myTree.HLT_PFMETNoMu90_PFMHTNoMu90) ) continue;
-    //
-    //  } else { // njets>=2
-    //
-    //    if( ht>1000. ) {
-    //      if( !( id==1 && myTree.HLT_PFHT800) ) continue;
-    //    } else if( ht>575. ) {
-    //      if( !( id==2 && myTree.HLT_PFHT350_PFMET100 )  ) continue;
-    //    } else if( ht>450. ) {
-    //      if( !( id==2 && myTree.HLT_PFHT350_PFMET100 )  ) continue;
-    //    } else if( ht>200. ) {
-    //      if( !( id==3 && myTree.HLT_PFMETNoMu90_PFMHTNoMu90  )  ) continue;
-    //    }
-    //
-    //  }
-
-      if ( !(myTree.HLT_PFMETNoMu90_PFMHTNoMu90 || myTree.HLT_PFHT800 || myTree.HLT_PFHT350_PFMET100) ) continue;
+      if ( !(myTree.HLT_PFMET100_PFMHT100 || myTree.HLT_PFHT800 || myTree.HLT_PFHT300_PFMET100) ) continue;
 
     } // if is data
 
@@ -608,16 +621,21 @@ MT2Analysis<T>* computeSigYield( const MT2Sample& sample, const MT2Config& cfg )
     float met  = myTree.met_pt;
     float minMTBmet = myTree.minMTBMet;
     int njets  = myTree.nJet30;
-    int nbjets = myTree.nBJet20;    
+    int nbjets      = ( (sample.id>200 && sample.id<300 ) || (sample.id >=600 &&sample.id<700) ) ?  myTree.nBJet20 :  myTree.nBJet20csv;  
+    //    int nbjets = myTree.nBJet20csv;    
     float mt2  = (njets>1) ? myTree.mt2 : ht;
     //float mt2  = myTree.mt2;
     
-    int GenSusyMScan1 = myTree.GenSusyMGluino;
-    int GenSusyMScan2 = myTree.GenSusyMNeutralino;
-    
+    int GenSusyMScan1=0;
+    int GenSusyMScan2=0;
+    if(  myTree.evt_id > 999){
+      GenSusyMScan1 = myTree.GenSusyMGluino;
+      GenSusyMScan2 = myTree.GenSusyMNeutralino;
+    }
+
     //Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi()*myTree.puWeight;
-    //Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb;//*cfg.lumi();
-    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi();
+    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb;//*cfg.lumi();
+    // Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi();
     Double_t weight_syst = 1.;
 
     if( myTree.evt_id > 1000 )
@@ -638,7 +656,7 @@ MT2Analysis<T>* computeSigYield( const MT2Sample& sample, const MT2Config& cfg )
     if( myTree.isData ) {
       
       if( !myTree.passFilters() ) continue;
-
+      
     }
 
     if (myTree.isData) {
@@ -648,26 +666,21 @@ MT2Analysis<T>* computeSigYield( const MT2Sample& sample, const MT2Config& cfg )
       // JetHT = 1
       // HTMHT = 2
       // MET   = 3
+      //  if( njets==1 ) {
+      //    if( !( id==3 && myTree.HLT_PFMET100_PFMHT100) ) continue;
+      //  } else { // njets>=2
+      //    if( ht>1000. ) {
+      //      if( !( id==1 && myTree.HLT_PFHT800) ) continue;
+      //    } else if( ht>575. ) {
+      //      if( !( id==2 && myTree.HLT_PFHT350_PFMET100 )  ) continue;
+      //    } else if( ht>450. ) {
+      //      if( !( id==2 && myTree.HLT_PFHT350_PFMET100 )  ) continue;
+      //    } else if( ht>200. ) {
+      //      if( !( id==3 && myTree.HLT_PFMET100_PFMHT100  )  ) continue;
+      //    }
+      //  }
 
-    //  if( njets==1 ) {
-    //
-    //    if( !( id==3 && myTree.HLT_PFMETNoMu90_PFMHTNoMu90) ) continue;
-    //
-    //  } else { // njets>=2
-    //
-    //    if( ht>1000. ) {
-    //      if( !( id==1 && myTree.HLT_PFHT800) ) continue;
-    //    } else if( ht>575. ) {
-    //      if( !( id==2 && myTree.HLT_PFHT350_PFMET100 )  ) continue;
-    //    } else if( ht>450. ) {
-    //      if( !( id==2 && myTree.HLT_PFHT350_PFMET100 )  ) continue;
-    //    } else if( ht>200. ) {
-    //      if( !( id==3 && myTree.HLT_PFMETNoMu90_PFMHTNoMu90  )  ) continue;
-    //    }
-    //
-    //  }
-
-      if ( !(myTree.HLT_PFMETNoMu90_PFMHTNoMu90 || myTree.HLT_PFHT800 || myTree.HLT_PFHT350_PFMET100) ) continue;
+      if ( !(myTree.HLT_PFMET100_PFMHT100 || myTree.HLT_PFHT800 || myTree.HLT_PFHT300_PFMET100) ) continue;
 
     } // if is data
 

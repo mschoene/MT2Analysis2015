@@ -85,7 +85,7 @@ int main(int argc, char* argv[]){
 
   std::string configFileName(argv[1]);
   MT2Config cfg( configFileName);
-  regionsSet = cfg.regionsSet();
+  regionsSet = cfg.crRegionsSet();
 
   std::string outputdir = cfg.getEventYieldDir() + "/zllTop";
   //  std::string outputdir_of = cfg.getEventYieldDir() + "/zllTop_of";
@@ -533,7 +533,7 @@ MT2Analysis<MT2Estimate>* getEstimate( MT2Config cfg, const std::string& saveNam
   MT2Region thisRegion( (*iMT2) );
 
 
-  MT2Analysis<MT2Estimate>* estimate = new MT2Analysis<MT2Estimate>( saveName.c_str(), cfg.regionsSet() ); 
+  MT2Analysis<MT2Estimate>* estimate = new MT2Analysis<MT2Estimate>( saveName.c_str(), cfg.crRegionsSet() ); 
   MT2Estimate::rebinYields( estimate, nBins, bins);
 
   TTree* treeTop = top->get(thisRegion)->tree;
@@ -554,11 +554,11 @@ MT2Analysis<MT2Estimate>* getEstimate( MT2Config cfg, const std::string& saveNam
 
 MT2Analysis<MT2Estimate>* getTopBG( MT2Config cfg,  MT2Analysis<MT2EstimateTree>* data_of , MT2Analysis<MT2EstimateTree>* tree_top, MT2Analysis<MT2EstimateTree>*  tree_top_of, const std::string& saveName, const std::string& varName, const std::string& selection,  const std::string& selection_of, int nBins, double *bins, std::string name, std::string name_of, std::string axisName, const std::string& units , const std::string& kinCuts, const std::string& topoCuts ){
 
-  TH1::AddDirectory(kTRUE); // stupid ROOT memory allocation needs this
+  TH1::AddDirectory(kTRUE); // stupid ROOT memory allocation needs this 
 
   //The correctly binned estimate of the top background
   //Estimated from opposite flavor events, scaled by the ratio of SF/OF (due to different ranges) and added up to it the TTbarZ events
-  MT2Analysis<MT2Estimate>* estimate = new MT2Analysis<MT2Estimate>( saveName.c_str(), cfg.regionsSet() ); 
+  MT2Analysis<MT2Estimate>* estimate = new MT2Analysis<MT2Estimate>( saveName.c_str(), cfg.crRegionsSet() ); 
   MT2Estimate::rebinYields( estimate, nBins, bins);
 
   //Get the first region (NB inclusive!)
@@ -602,12 +602,15 @@ MT2Analysis<MT2Estimate>* getTopBG( MT2Config cfg,  MT2Analysis<MT2EstimateTree>
 
   for(int i=1; i<=nBins; i++){
     double data = h1_data_of->GetBinContent(i);
+    std::cout << "data = " << data << std::endl;
     h1_data_of->SetBinError( i, sqrt( data + 0.1*0.1*data*data) );
 
     double uncertZ = h1_topZ->GetBinContent(i);
+    std::cout << "uncertz = " << uncertZ << std::endl;
     h1_topZ->SetBinError( i, uncertZ*0.5 );
 
     double uncert = h1_top->GetBinContent(i);
+    std::cout << "uncert  = " << uncert << std::endl;
     h1_top->SetBinError( i, uncert*0.5 );
   }
 
@@ -624,11 +627,13 @@ MT2Analysis<MT2Estimate>* getTopBG( MT2Config cfg,  MT2Analysis<MT2EstimateTree>
   //   double val = h1_data_of->GetBinContent(i);
   //   estimate->get(thisRegion)->yield->SetBinContent(i, val);
   // }
-
+  std::cout << "Meh???" << std::endl;
 
   for(int i=1; i<=nBins; i++){
     double val = h1_data_of->GetBinContent(i);
+    std::cout << "val = " << val << std::endl;
     double err = h1_data_of->GetBinError(i);
+    std::cout << "err = " << err << std::endl;
     estimate->get(thisRegion)->yield->SetBinContent(i, val); 
     estimate->get(thisRegion)->yield->SetBinError(i, err);
     std::cout << "Error in bin " << i  << " with value = " << val << " is = " << err << std::endl;
@@ -1018,12 +1023,12 @@ void drawYieldsTopSplit( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, MT2A
     if( drawData == false ) {
       histos_mc_of[0]->Draw("L same");
       histos_mc_of[1]->Draw("L same");
-      MT2DrawTools::addLabels( gPad, cfg.lumi(), "CMS Simulation" );
+      MT2DrawTools::addLabels( (TCanvas*)gPad, cfg.lumi(), "CMS Simulation" );
     } else {
       bgStack_of.GetStack()->Last()->Draw("L same");
       gr_data->Draw("p same");
       gr_data_of->Draw("p same");
-      MT2DrawTools::addLabels( gPad, cfg.lumi(), "CMS Preliminary" );
+      MT2DrawTools::addLabels( (TCanvas*)gPad, cfg.lumi(), "CMS Preliminary" );
     }
     // if( !shapeNorm )
     //     fitText->Draw("same");
@@ -1039,12 +1044,12 @@ void drawYieldsTopSplit( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, MT2A
     if( drawData == false ) {
       histos_mc_of[0]->Draw("L same");
       histos_mc_of[1]->Draw("L same");
-      MT2DrawTools::addLabels( gPad, cfg.lumi(), "CMS Simulation" );
+      MT2DrawTools::addLabels( (TCanvas*)gPad, cfg.lumi(), "CMS Simulation" );
     } else {
       bgStack_of.GetStack()->Last()->Draw("L same");
       gr_data->Draw("p same");
       gr_data_of->Draw("p same");
-      MT2DrawTools::addLabels( gPad, cfg.lumi(), "CMS Preliminary" );
+      MT2DrawTools::addLabels( (TCanvas*)gPad, cfg.lumi(), "CMS Preliminary" );
     }
 
    //  if( !shapeNorm )
@@ -1485,9 +1490,9 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, MT2Analysis<
     // gr_data->Draw("p same");
     if(drawData==true) gr_data_of->Draw("EP same");
     if( drawData == false ) {
-      MT2DrawTools::addLabels( pad1, cfg.lumi(), "CMS Simulation" );
+      MT2DrawTools::addLabels( (TCanvas*)pad1, cfg.lumi(), "CMS Simulation" );
     } else {
-      MT2DrawTools::addLabels( pad1, cfg.lumi(), "CMS Preliminary" );
+      MT2DrawTools::addLabels( (TCanvas*)pad1, cfg.lumi(), "CMS Preliminary" );
     }
 
 
@@ -1511,9 +1516,9 @@ void drawYields( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, MT2Analysis<
     //  ratioText->Draw("same");
 
     if( drawData == false ) {
-      MT2DrawTools::addLabels( pad1_log, cfg.lumi(), "CMS Simulation" );
+      MT2DrawTools::addLabels( (TCanvas*)pad1_log, cfg.lumi(), "CMS Simulation" );
     } else {
-      MT2DrawTools::addLabels( pad1_log, cfg.lumi(), "CMS Preliminary" );
+      MT2DrawTools::addLabels( (TCanvas*)pad1_log, cfg.lumi(), "CMS Preliminary" );
     }
     gPad->RedrawAxis();
 
@@ -1848,7 +1853,7 @@ void drawYieldsFromHisto( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, MT2
     legend->Draw("same");
     bgStack.Draw("histo same");
     gr_data->Draw("p same");
-    MT2DrawTools::addLabels( pad1, cfg.lumi(), "CMS Preliminary" );
+    MT2DrawTools::addLabels( (TCanvas*)pad1, cfg.lumi(), "CMS Preliminary" );
 
     //  if( !shapeNorm )
     //   fitText->Draw("same");
@@ -1861,7 +1866,7 @@ void drawYieldsFromHisto( MT2Config cfg, MT2Analysis<MT2EstimateTree>* data, MT2
     legend->Draw("same");
     bgStack.Draw("histo same");
     gr_data->Draw("p same");
-    MT2DrawTools::addLabels( pad1_log, cfg.lumi(), "CMS Preliminary" );
+    MT2DrawTools::addLabels( (TCanvas*)pad1_log, cfg.lumi(), "CMS Preliminary" );
     //if( !shapeNorm )
     // fitText->Draw("same");
     //  ratioText->Draw("same");
