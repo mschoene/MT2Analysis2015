@@ -29,7 +29,6 @@ btagSF(inputString, inputFolder, outputFile, treeName, objectName)
 
 
 #include "BTagCalibrationStandalone.h"
-#include "BTagCalibrationStandalone.h"
 
 //using namespace std;
 
@@ -131,7 +130,8 @@ void BTagSFHelper::get_SF_btag(float pt, float eta, int mcFlavour, float &SF, fl
   else if ( abs(mcFlavour)==4 ) flavour = BTagEntryStandalone::FLAV_C;
   
   //BM: these two lines are probably unnecessary now with "eval_auto_bounds" method. To be checked
-  float pt_cutoff  = std::max(30. ,std::min(669., double(pt)));
+  float pt_cutoff  = std::max(29.999. ,std::min(669., double(pt)));
+  //  float pt_cutoff  = std::max(30. ,std::min(669., double(pt)));
   float eta_cutoff = std::min(2.39,fabs(double(eta)));
 
   if ( flavour==BTagEntryStandalone::FLAV_UDSG ){
@@ -160,7 +160,7 @@ float BTagSFHelper::getBtagEffFromFile(float pt, float eta, int mcFlavour, bool 
     return 1.;
   }
 
-  if( isFastSim && (!h_btag_eff_b || !h_btag_eff_c || !h_btag_eff_udsg) ) {
+  if( isFastSim && (!h_btag_fast_eff_b || !h_btag_fast_eff_c || !h_btag_fastg_eff_udsg) ) {
     std::cout << "ERROR: missing fastsim input hists" << std::endl;
     return 1.;
   }
