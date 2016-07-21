@@ -2,8 +2,14 @@
 
 # --- Start of configuration ----------------------------------
 
-path=/pnfs/psi.ch/cms/trivcat/store/user/mangano/crab/MT2_8_0_11/prodJuly08_runC_275377-276097_v1/
+#path=/pnfs/psi.ch/cms/trivcat/store/user/mangano/crab/MT2_8_0_11/prodJuly15_runC_all_v1/
+path=/pnfs/psi.ch/cms/trivcat/store/user/mangano/crab/MT2_8_0_11/prodJuly15_runC_all_forQCD_v1/
 goldenJson=gold_runC.txt
+
+#path=/pnfs/psi.ch/cms/trivcat/store/user/mangano/crab/MT2_8_0_11/prodJuly15_runD_276311-276384_v1
+#path=/pnfs/psi.ch/cms/trivcat/store/user/mangano/crab/MT2_8_0_11/prodJuly15_runD_276311-276384_forQCD_v1
+#goldenJson=gold_runD.txt
+
 
 # --- End of configuration ----------------------------------
 
