@@ -2,7 +2,7 @@
 
 # --- configuration (consider to move this into a separate file) ---
 treeName="mt2"
-inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/mangano/crab/MT2_8_0_11/prodJuly15_runC_all_v1/"
+inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/mangano/crab/MT2_8_0_11/prodJuly19_runD_276311-276811_forQCD_v1/"
 
 listOfSamplesFile="postProcessing2016-Data.cfg"
 #listOfSamplesFile="postProcessing2016-MC.cfg"
@@ -194,7 +194,7 @@ echo "gROOT->LoadMacro(\"preProcessing.C+\"); preProcessing(\"$name\",\"$inputFo
 
 EOF
 
-	qsub -q long.q $scriptName;
+	qsub -q short.q $scriptName;
 	rm $scriptName;
 	
     done < $listOfSamplesFile
@@ -494,9 +494,9 @@ rm \$skimmingPruningCfgMonoJet
 
 EOF
 
-        #if you have a big file and no time to change the code to be smoother: qsub  -q long.q -l h_vmem=5g batchScript_${name}.sh;
+        #if you have a big file and no time to change the code to be smoother: qsub  -q short.q -l h_vmem=5g batchScript_${name}.sh;
 
-	qsub -q long.q $scriptName;
+	qsub -q short.q $scriptName;
 	rm $scriptName;
 
 	if (($counter < 0)); then
