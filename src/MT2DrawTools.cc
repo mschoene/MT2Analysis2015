@@ -359,13 +359,14 @@ TGraphAsymmErrors* MT2DrawTools::getPoissonGraph( TH1D* histo, bool drawZeros, c
 }
 
 
-TGraphAsymmErrors* MT2DrawTools::getRatioGraph( TH1D* histo_data, TH1D* histo_mc ){
+TGraphAsymmErrors* MT2DrawTools::getRatioGraph( TH1D* histo_data, TH1D* histo_mc, const std::string& xerrType){
 
   if( !histo_data || !histo_mc ) return 0;
 
   TGraphAsymmErrors* graph  = new TGraphAsymmErrors();
   
   TGraphAsymmErrors* graph_data = MT2DrawTools::getPoissonGraph(histo_data, false);
+  //TGraphAsymmErrors* graph_data = MT2DrawTools::getPoissonGraph(histo_data, true);
   
   for( int i=0; i < graph_data->GetN(); ++i){
     
@@ -384,10 +385,24 @@ TGraphAsymmErrors* MT2DrawTools::getRatioGraph( TH1D* histo_data, TH1D* histo_mc
     float ratio_errUp = sqrt( data_errUp*data_errUp/(mc*mc) + mc_err*mc_err*data*data/(mc*mc*mc*mc) );
     float ratio_errDn = sqrt( data_errDn*data_errDn/(mc*mc) + mc_err*mc_err*data*data/(mc*mc*mc*mc) );
 
+    double xerr;
+    
+    if( xerrType=="0" )
+      xerr = 0.;
+    else if( xerrType=="binWidth" )
+      xerr = histo_mc->GetBinWidth(iBin)/2.;
+    else if( xerrType=="sqrt12" )
+      xerr = histo_mc->GetBinWidth(iBin)/sqrt(12.);
+    else {
+      std::cout << "[MT2DrawTools::getPoissonGraph] Unkown xerrType '" << xerrType << "'. Setting to bin width." << std::endl;
+      xerr = histo_mc->GetBinWidth(iBin);
+    }
+
     graph->SetPoint(i, x_tmp, ratio );
     graph->SetPointEYhigh(i, ratio_errUp );
     graph->SetPointEYlow(i, ratio_errDn );
-    
+    graph->SetPointEXhigh(i, xerr );
+    graph->SetPointEXlow(i, xerr );
 
   }
 
@@ -399,21 +414,65 @@ TGraphAsymmErrors* MT2DrawTools::getRatioGraph( TH1D* histo_data, TH1D* histo_mc
 
 }
 
-TH1D* MT2DrawTools::getBandAtOne( TH1D* h ){
 
-  TH1D* h_band = (TH1D*)h->Clone( Form("%s_band", h->GetName()) );
-  h_band->SetMarkerSize(0);
-  h_band->SetFillColor ( h->GetLineColor()-4 );
-  h_band->SetFillStyle (3001);
-  for ( int iBin=1; iBin <= h->GetNbinsX(); iBin++){
-    h_band->SetBinContent(iBin,1);
-    double error = h->GetBinContent(iBin) ? h->GetBinError(iBin)/h->GetBinContent(iBin) : 0.0;
-    h_band->SetBinError(iBin, error);
-  }
+// TGraphAsymmErrors* MT2DrawTools::getRatioGraph( TH1D* histo_data, TH1D* histo_mc ){
+
+//   if( !histo_data || !histo_mc ) return 0;
+
+//   TGraphAsymmErrors* graph  = new TGraphAsymmErrors();
   
-  return h_band;
+//   TGraphAsymmErrors* graph_data = MT2DrawTools::getPoissonGraph(histo_data, false, "binWidth");
+  
+//   for( int i=0; i < graph_data->GetN(); ++i){
+    
+//     Double_t x_tmp, data;
+//     graph_data->GetPoint( i, x_tmp, data );
 
-}
+//     Double_t data_errUp = graph_data->GetErrorYhigh(i);
+//     Double_t data_errDn = graph_data->GetErrorYlow(i);
+    
+//     int iBin = histo_mc->FindBin(x_tmp);
+//     float mc = histo_mc->GetBinContent(iBin);
+//     float mc_err = histo_mc->GetBinError(iBin);
+
+
+//     float ratio = data/mc;
+//     float ratio_errUp = sqrt( data_errUp*data_errUp/(mc*mc) + mc_err*mc_err*data*data/(mc*mc*mc*mc) );
+//     float ratio_errDn = sqrt( data_errDn*data_errDn/(mc*mc) + mc_err*mc_err*data*data/(mc*mc*mc*mc) );
+
+//     graph->SetPoint(i, x_tmp, ratio );
+//     graph->SetPointEYhigh(i, ratio_errUp );
+//     graph->SetPointEYlow(i, ratio_errDn );
+
+//     float  xerr = histo_data->GetBinWidth(iBin)/2.;
+//     graph->SetPointEXhigh(i, xerr);    
+//     graph->SetPointEXlow(i, xerr);    
+
+//   }
+
+//   graph->SetLineColor(1);
+//   graph->SetMarkerColor(1);
+//   graph->SetMarkerStyle(20);
+
+//   return graph;
+
+// }
+
+// TH1D* MT2DrawTools::getBandAtOne( TH1D* h ){
+
+//   TH1D* h_band = (TH1D*)h->Clone( Form("%s_band", h->GetName()) );
+//   h_band->SetMarkerSize(0);
+//   h_band->SetFillColor ( h->GetLineColor()-4 );
+//   h_band->SetFillStyle (3001);
+//   for ( int iBin=1; iBin <= h->GetNbinsX(); iBin++){
+//     h_band->SetBinContent(iBin,1);
+//     double error = h->GetBinContent(iBin) ? h->GetBinError(iBin)/h->GetBinContent(iBin) : 0.0;
+//     h_band->SetBinError(iBin, error);
+//   }
+  
+//   return h_band;
+
+// }
 
 
 TPad* MT2DrawTools::getCanvasMainPad( bool logY ){
@@ -801,7 +860,7 @@ std::vector<TCanvas*> MT2DrawTools::drawRegionYields_fromTree( const std::string
       //tree_data->Project( "h1_data", varName.c_str(), Form("%f*(%s)", data_->getWeight(), selection.c_str()) );
       if( addOverflow_ )
         MT2DrawTools::addOverflowSingleHisto(h1_data);
-      gr_data = MT2DrawTools::getPoissonGraph(h1_data);
+      gr_data = MT2DrawTools::getPoissonGraph(h1_data, false, "binWidth");
       gr_data->SetMarkerStyle(20);
       gr_data->SetMarkerSize(1.2);
     }
@@ -1041,7 +1100,7 @@ std::vector<TCanvas*> MT2DrawTools::drawRegionYields_fromTree( const std::string
     }
 
 
-    TPaveText* normText = new TPaveText( 0.47, 0.78, 0.62, 0.9, "brNDC" );
+    TPaveText* normText = new TPaveText( 0.47, 0.7, 0.62, 0.82, "brNDC" );
     normText->SetFillColor(0);
     normText->SetTextSize(0.035);
     if( scaleFactor!=1. ) {

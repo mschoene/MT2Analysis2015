@@ -277,9 +277,9 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
   styleSig.push_back(1);
   styleSig.push_back(1);
 
-  unsigned int bgSize = 3;
-  unsigned int sigSize = 9;
-  unsigned int sigContSize = 5;
+  int bgSize = 3;
+  int sigSize = 9;
+  int sigContSize = 5;
 
   int S=10;
 
@@ -315,7 +315,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
 
   TH1D* hestimate_forRatio[bgSize];
   
-  for(unsigned int b=0; b<bgSize; ++b){
+  for(int b=0; b<bgSize; ++b){
   
     hestimate[b]= new TH1D(Form("hestimate_%d", b), "", 67, 0, 67);
     hestimate[b]->Sumw2();
@@ -445,7 +445,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
       TH1D* h_second[bgSize];
       TH1D* h_second_forRatio[bgSize];
 
-      for(unsigned int b=0; b< bgSize; ++b){
+      for(int b=0; b< bgSize; ++b){
 	
 	h_second[b] = new TH1D(Form("h_second_%d", b), "", nBins, bins);
 	
@@ -471,15 +471,16 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
 	else
 	  tableName = std::string(Form("%s/datacard_templates/table_%s_m%.0lftoInf.txt", dir.c_str(), iMT2->getName().c_str(), bins[iBin] ));
 
-	BGTable thisTable = getTable(tableName);
+	//BGTable thisTable = getTable(tableName);
+	getTable(tableName);
 	
 
 	float totalPost_llep;
 	float totalPost_zinv;
 	float totalPost_qcd;
-	float totalPost_Err_llep;
-	float totalPost_Err_zinv;
-	float totalPost_Err_qcd;
+	// float totalPost_Err_llep;
+	// float totalPost_Err_zinv;
+	// float totalPost_Err_qcd;
 
 	float totalPost;
 	float totalPost_Err;
@@ -503,9 +504,9 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
 	  totalPost_zinv = (gDirectory->GetListOfKeys()->Contains("zinv")) ? thiszinv->GetBinContent(1) : 0;
 	  totalPost_qcd  = (gDirectory->GetListOfKeys()->Contains("qcd")) ? thisqcd ->GetBinContent(1) : 0;
 
-	  totalPost_Err_llep = (gDirectory->GetListOfKeys()->Contains("llep")) ? thisllep->GetBinError(1) : 0;
-	  totalPost_Err_zinv = (gDirectory->GetListOfKeys()->Contains("zinv")) ? thiszinv->GetBinError(1) : 0;
-	  totalPost_Err_qcd  = (gDirectory->GetListOfKeys()->Contains("qcd"))  ? thisqcd ->GetBinError(1) : 0;
+	  // totalPost_Err_llep = (gDirectory->GetListOfKeys()->Contains("llep")) ? thisllep->GetBinError(1) : 0;
+	  // totalPost_Err_zinv = (gDirectory->GetListOfKeys()->Contains("zinv")) ? thiszinv->GetBinError(1) : 0;
+	  // totalPost_Err_qcd  = (gDirectory->GetListOfKeys()->Contains("qcd"))  ? thisqcd ->GetBinError(1) : 0;
 	  
 	  totalPost = thisBG->GetBinContent(1);
 	  totalPost_Err = thisBG->GetBinError(1);
@@ -697,7 +698,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
       }
       
       
-      for(unsigned int b=0; b<bgSize; ++b){
+      for(int b=0; b<bgSize; ++b){
 	
 	bgStack_region.Add(h_second[b]);
 	      
@@ -762,7 +763,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
 
       }
 
-      for(unsigned int b=0; b<bgSize; ++b){
+      for(int b=0; b<bgSize; ++b){
 	
 	double err_int;
 	double integral = h_second[b]->IntegralAndError(firstBin, nBins+1, err_int);
@@ -897,7 +898,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
 
       delete h_second_all;
 
-      for(unsigned int b=0; b<bgSize; ++b)
+      for(int b=0; b<bgSize; ++b)
 	delete h_second[b];
       
       ++iRegion;
@@ -905,7 +906,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
   } // for MT2 regions
 
 
-  for(unsigned int b=0; b<bgSize; ++b){
+  for(int b=0; b<bgSize; ++b){
 
     hestimate[b]->SetLineWidth(0);
     bgStack.Add(hestimate[b]);
@@ -956,7 +957,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
 
 
     double prob=1.0*counterN/counterD;
-    double significance  = TMath::NormQuantile(1-prob);
+    // double significance  = TMath::NormQuantile(1-prob);
 
 //    std::cout << "probability: " << prob  << std::endl;
 //    std::cout << "significance: " << significance << std::endl;

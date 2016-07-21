@@ -73,7 +73,7 @@ int main( int argc, char* argv[] ) {
     std::cout << iR->getName() << std::endl;
     std::vector< std::string > names = iR->getNiceNamesLatex();
 
-    MT2Region* thisRegion = new MT2Region( *(iR) );
+    //MT2Region* thisRegion = new MT2Region( *(iR) );
 
     ofs << "\\begin{table}[htbp]" << std::endl; 
     if( iR->nJetsMin() > 1 )
