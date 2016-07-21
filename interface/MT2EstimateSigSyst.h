@@ -26,6 +26,8 @@ class MT2EstimateSigSyst : public MT2Estimate {
   TH3D* yield3d_systUp;
   TH3D* yield3d_systDown;
 
+  TH3D* yield3d_genmet;
+
   const MT2EstimateSigSyst& operator=( const MT2EstimateSigSyst& rhs );
   const MT2EstimateSigSyst& operator=( const MT2Estimate& rhs );
 
@@ -42,6 +44,8 @@ class MT2EstimateSigSyst : public MT2Estimate {
 
   virtual void getShit( TFile* file, const std::string& path );
 
+  virtual void print( std::ofstream& ofs_file, Float_t m1, Float_t m2, Int_t mt2_bin, float k );
+  
   virtual void write() const;
 
  
