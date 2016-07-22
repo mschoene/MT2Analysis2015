@@ -1233,7 +1233,7 @@ int main( int argc, char* argv[] ) {
 	  
 	  if (doGenAverage) {
 	    TH3D* this_signal3d_central_genmet = signals[isig]->get(*iR)->yield3d_genmet;
-	    TH1D* this_signal_genmet = this_signal3d_central_genmet->ProjectionX("mt2", iBinY, iBinY, iBinZ, iBinZ);
+	    TH1D* this_signal_genmet = this_signal3d_central_genmet->ProjectionX("mt2_genmet", iBinY, iBinY, iBinZ, iBinZ);
 	    this_signal->Add(this_signal_genmet);
 	    this_signal->Scale(0.5);
 
