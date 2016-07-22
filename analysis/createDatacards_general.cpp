@@ -1476,8 +1476,8 @@ int main( int argc, char* argv[] ) {
 		
 	      }
 	      
-	      float totUncorrErr = 1.+sqrt(sigErr*sigErr+2*0.05*0.05+0.1*0.1); // MC stat + scales (5%) + JEC (10%)
-	      float totUncorrErrCont = 1.+sqrt(sigContErr*sigContErr+2*0.05*0.05+0.1*0.1); // MC stat + scales (5%) + JEC (10%)
+	      float totUncorrErr = 1.+sqrt(sigErr*sigErr+0.05*0.05+0.1*0.1); // MC stat + scales (5%) + JEC (10%)
+	      float totUncorrErrCont = 1.+sqrt(sigContErr*sigContErr+0.05*0.05+0.1*0.1); // MC stat + scales (5%) + JEC (10%)
 
 	      if(doSignalContamination && !doSimultaneousFit) sig=sig-sigCont;
 	      else if(!doSignalContamination) {
