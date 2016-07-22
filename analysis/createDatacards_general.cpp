@@ -27,7 +27,8 @@ bool use_extrapolation = true;
 bool doSignalContamination = true;
 bool doSimultaneousFit = false;
 bool includeSignalUnc = true; // signal lep eff commented out till available
-bool copy2SE = true; // copy datacards to SE
+bool copy2SE = false; // copy datacards to SE
+bool doGenAverage = true;
 
 int round(float d) {
   return (int)(floor(d + 0.5));
@@ -506,6 +507,8 @@ int main( int argc, char* argv[] ) {
 	
 	datacard << "lumi_syst    lnN    " << 1.+err_lumi_corr << " - - -" << std::endl;
 	datacard << "sig_MCstat_" << binName << " lnN UUU - - -" << std::endl;
+	if (doGenAverage)
+	  datacard << "sig_gensyst lnU SSS - - -" << std::endl;
 	if(!includeSignalUnc)
 	  datacard << "sig_syst_" << binName << " lnN 1.2 - - -" << std::endl;
 	else{
@@ -1158,7 +1161,7 @@ int main( int argc, char* argv[] ) {
       if( thisSigSystCentral->yield3d!=0 ){
 	
 	//this_signal3d_central = signalVeto[isig]->get(*iR)->yield3d;
-	this_signal3d_central = signals[isig]->get(*iR)->yield3d;
+	this_signal3d_central        = signals[isig]->get(*iR)->yield3d;
 	
       }
       else continue;
@@ -1225,8 +1228,21 @@ int main( int argc, char* argv[] ) {
 	  if( !(mLSP >= m11-1 && mLSP < m22-1) ) continue;
 	  
 	  // Get MT2 yield histogram for this mass point
-	  TH1D* this_signal = this_signal3d_central->ProjectionX("mt2", iBinY, iBinY, iBinZ, iBinZ);
+	  TH1D* this_signal      = this_signal3d_central->ProjectionX("mt2"     , iBinY, iBinY, iBinZ, iBinZ);
+	  TH1D* this_signal_syst = this_signal3d_central->ProjectionX("mt2_syst", iBinY, iBinY, iBinZ, iBinZ);
 	  
+	  if (doGenAverage) {
+	    TH3D* this_signal3d_central_genmet = signals[isig]->get(*iR)->yield3d_genmet;
+	    TH1D* this_signal_genmet = this_signal3d_central_genmet->ProjectionX("mt2", iBinY, iBinY, iBinZ, iBinZ);
+	    this_signal->Add(this_signal_genmet);
+	    this_signal->Scale(0.5);
+
+	    this_signal_syst->Add(this_signal_genmet, -1.0);
+	    this_signal_syst->Scale(0.5); // half difference between gen and reco
+
+	  }
+	  
+
 //	  // If want to replace central yield
 //	  TH1D* this_signal_veto = (TH1D*) signalVeto[isig]->get(*iR)->yield->Clone();
 	  
@@ -1234,16 +1250,29 @@ int main( int argc, char* argv[] ) {
 	  
 	  ////// Signal contamination
 	  TH1D* this_signalContamination;
+	  TH1D* this_signalContamination_syst;
 	 
 	  TH3D* this_signal3d_crsl;
 	  TH1D* this_signal_crsl;
+	  TH1D* this_signal_crsl_syst;
 	  TH1D* this_signal_alpha;
 	  
 	  if( (model == "T2tt" || model == "T1tttt") && doSignalContamination ){
-	    this_signal3d_crsl = (TH3D*) signals[isig]->get(*iR)->yield3d_crsl->Clone();
+	    this_signal3d_crsl        = (TH3D*) signals[isig]->get(*iR)->yield3d_crsl       ->Clone();
 	    //this_signal3d_crsl = (TH3D*) signalVeto_1lCR[isig]->get(*iR)->yield3d->Clone();
-	    this_signal_crsl   = this_signal3d_crsl->ProjectionX("mt2_crsl", iBinY, iBinY, iBinZ, iBinZ);
+	    this_signal_crsl        = this_signal3d_crsl       ->ProjectionX("mt2_crsl", iBinY, iBinY, iBinZ, iBinZ);
 	    this_signal_alpha  = (TH1D*) signals[isig]->get(*iR)->yield_alpha->Clone();
+
+	    if (doGenAverage){
+	      TH3D *this_signal3d_crsl_genmet = (TH3D*) signals[isig]->get(*iR)->yield3d_crsl_genmet->Clone();
+	      TH1D *this_signal_crsl_genmet = this_signal3d_crsl_genmet->ProjectionX("mt2_crsl", iBinY, iBinY, iBinZ, iBinZ);
+	      this_signal_crsl->Add(this_signal_crsl_genmet);
+	      this_signal_crsl->Scale(0.5);
+
+	      this_signal_crsl_syst= this_signal3d_crsl->ProjectionX("mt2_crsl_syst", iBinY, iBinY, iBinZ, iBinZ);
+	      this_signal_crsl_syst->Add(this_signal_crsl_genmet,-1.0);
+	      this_signal_crsl_syst->Scale(0.5);
+	    }
 	    
 	  //	  //If want to replace yield in 1l CR for signal contamination
 	  //	  TH1D* this_signal_veto_1lCR = (TH1D*) signalVeto_1lCR[isig]->get(*iR)->yield->Clone();
@@ -1254,12 +1283,20 @@ int main( int argc, char* argv[] ) {
 	    else{
 	      this_signalContamination = (TH1D*) this_signal_alpha->Clone();
 	      this_signalContamination->Scale( this_signal_crsl->Integral() );
+	      if(doGenAverage){
+		this_signalContamination_syst = (TH1D*) this_signal_alpha->Clone("mt2_cont_syst");
+		this_signalContamination_syst->Scale( this_signal_crsl_syst->Integral() );
+	      }
 	    }
 	  }
 	  else{
 	    
 	    this_signalContamination = (TH1D*) this_signal->Clone();
 	    this_signalContamination->Scale(0.);
+	    if(doGenAverage){
+	      this_signalContamination_syst = (TH1D*) this_signal_syst->Clone("mt2_cont_syst");
+	      this_signalContamination_syst->Scale(0.);
+	    }
 
 	  }
 	    
@@ -1330,6 +1367,7 @@ int main( int argc, char* argv[] ) {
 
 	      float sig = this_signal->GetBinContent(iBin);
 	      float sigErr = this_signal->GetBinError(iBin)/sig;
+	      float sig_syst = 0;
 	      
 	      ////// If you want to replace central yield
 	      //	      float sig_veto = this_signal_veto->GetBinContent(iBin);
@@ -1382,6 +1420,12 @@ int main( int argc, char* argv[] ) {
 	      }
 	      if(sig<0.) sig=0.;
 
+	      if(doGenAverage){
+		sig_syst = 1 + fabs((this_signal_syst->GetBinContent(iBin)-this_signalContamination_syst->GetBinContent(iBin))/(sig !=0 ? sig : 1.0)); // cont_syst=0 if no doSignalCont
+		if ( (this_signal_syst->GetBinContent(iBin)-this_signalContamination_syst->GetBinContent(iBin))*sig < 0 )
+		  sig_syst = 1/sig_syst; // to account for negative variation
+	      }
+
 	      
 	      std::string mvCommand( Form("mv %s %s", newDatacard.c_str(), helpDatacard.c_str()) );
 	      std::string rmCommand( Form("rm -f %s", helpDatacard.c_str()) );
@@ -1405,6 +1449,12 @@ int main( int argc, char* argv[] ) {
 	      std::string sedCommand_bTagHErr( Form("sed -i 's/HHH/%.3f/' %s", bTagErr_heavy, newDatacard.c_str()) );
 	      std::string sedCommand_bTagLErr( Form("sed -i 's/LLL/%.3f/' %s", bTagErr_light, newDatacard.c_str()) );
 	      // std::string sedCommand_lepEffErr( Form("sed -i 's/EEE/%.3f/' %s", lepEffErr, newDatacard.c_str()) );
+
+	      std::string sedCommand_genErr( Form("sed -i 's/SSS/%.3f/' %s", sig_syst, newDatacard.c_str()) );
+
+	      if (doGenAverage)
+		system( sedCommand_genErr.c_str() );
+
 
 	      if( includeSignalUnc ){
 		
