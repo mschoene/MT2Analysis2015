@@ -2,18 +2,18 @@
 
 # --- configuration (consider to move this into a separate file) ---
 treeName="mt2"
-inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/mangano/crab/MT2_8_0_11/prodJuly19_runD_276311-276811_forQCD_v1/"
+inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/mangano/crab/MT2_8_0_11/prodJuly15_runB_forQCD_v1/"
 
 listOfSamplesFile="postProcessing2016-Data.cfg"
 #listOfSamplesFile="postProcessing2016-MC.cfg"
 
 productionName="$(basename $inputFolder)" 
 
-outputFolder="/pnfs/psi.ch/cms/trivcat/store/user/`whoami`/MT2production/80X/PostProcessed/"$productionName"/"
+outputFolder="/pnfs/psi.ch/cms/trivcat/store/user/`whoami`/MT2production/80X/PostProcessed/"$productionName"_v5/"
 
 
 
-# in current implementation one also needs to change this in runSkimmingPruning.sh
+# --- in current implementation one also needs to change this in runSkimmingPruning.sh
 useXRD="false"
 gfalProtocol="gsiftp" # if useXRD disabled, use gfal via the given protocol
 #gfalProtocol="srm" # alternative to gsiftp (gsiftp supposed to be more stable)
@@ -22,9 +22,9 @@ fileExt="_post.root"
 isCrab=1
 inputPU="MyDataPileupHistogram.root"
 PUvar="nTrueInt"
-#GoldenJSON="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions16/13TeV/Cert_271036-275125_13TeV_PromptReco_Collisions16_JSON.txt"
-GoldenJSON="$PWD/gold_runD.txt"
+GoldenJSON="$PWD/gold_runB.txt"
 SilverJSON=$GoldenJSON
+doSkimmingPruning=1 #1 as default; 0 for QCD-specific datasets, which are already skimmed at heppy level
 applyJSON=1     #0 for MC
 doSilver=0      #0 for MC
 doFilterTxt=0   #0 for MC
@@ -466,6 +466,7 @@ secp file://$outputFile ${gfalProtocol}://t3se01.psi.ch/$outputFolder
 
 rm $outputFile
 
+if [[ $doSkimmingPruning == 1 ]]; then
 #Normal skim
 skimmingPruningCfg="${workingFolder}/skimmingPruning_${counterName}.cfg"
      cat skimmingPruning.cfg |grep -v \# | sed  "s#INPUTDIR#${outputFolder}#" |sed "s#INPUTFILTER#${counterName}#" \
@@ -486,7 +487,9 @@ skimmingPruningCfgMonoJet="${workingFolder}/skimmingPruningMonoJet_${counterName
 	| sed "s#OUTPUTDIR#${outputFolder}/QCDMonoJetSkimAndPrune#" | sed "s#DOPRUNING#${doPruning}#" > \$skimmingPruningCfgMonoJet
 ./runSkimmingPruning.sh \$skimmingPruningCfgMonoJet
 rm \$skimmingPruningCfgMonoJet
-
+else
+ echo "skipping skimming/pruning steps"
+fi;
 
 #echo "is anything left in working folder? workingFolder: " 
 #ls $workingFolder
@@ -528,8 +531,8 @@ if [[ "$1" = "postCheck" ]]; then
 	cd ..
 	rm $jobsLogsFolder/*
 	rmdir $jobsLogsFolder
-	rm postProcessing_C.d;
-	rm postProcessing_C.so;
+	rm -f postProcessing_C.d;
+	rm -f postProcessing_C.so;
     else
 	echo "ERROR: something went wrong. Check your logs in " $jobsLogsFolder
     fi
