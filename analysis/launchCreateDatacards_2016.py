@@ -14,7 +14,7 @@ else:
 
 
 cfg = "data_Run2016_7p7ifb"
-M = range(600 if "T1" in model else 100 if "T2tt"==model else 300,2001 if "T1" in model else 1501 if "T2qq"==model else 1000,25)
+M = range(600 if "T1" in model else 100 if "T2tt"==model else 300,2301 if "T1" in model else 1801 if "T2qq"==model else 1500,25)
 
 os.system("mkdir jobs_"+model+"_2016")
 
