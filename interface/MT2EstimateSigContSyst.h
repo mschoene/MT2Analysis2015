@@ -52,7 +52,7 @@ class MT2EstimateSigContSyst : public MT2Estimate {
 
   virtual void write() const;
 
-  virtual void print( std::ofstream& ofs_file, Float_t m1, Float_t m2, Int_t mt2_bin, float k, bool doGenAverage );
+  virtual void print( std::ofstream& ofs_file, Float_t m1, Float_t m2, Int_t mt2_bin, float k, bool doGenAverage=true );
  
  private:
 
