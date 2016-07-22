@@ -109,7 +109,7 @@ int main( int argc, char* argv[] ) {
   float err_zinv_doubleRatioOffset = 0.10; // 10%, fully correlated, on zinv // TO BE UPDATED IN CASE IT CHANGES WITH FULL LUMI
   float zinv_doubleRatioOffset = 0.90; // 90%, used to correct the Z/G ratio in zinv estimate // TO BE UPDATED IN CASE IT CHANGES WITH FULL LUMI
   
-  float err_lumi_corr   = 0.027; // Uncertainty on luminosity (2.7% for 2016 public results)
+  float err_lumi_corr   = 0.062; // Uncertainty on luminosity (6.2% for 2016 public results)
 
 
   // Reading data analysis (in search region)
