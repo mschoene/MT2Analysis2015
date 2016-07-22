@@ -22,7 +22,7 @@ def main(argv):
 
   inputPath  = "/pnfs/psi.ch/cms/trivcat/store/user/" + inputdir
   outputPath = "/pnfs/psi.ch/cms/trivcat/store/user/" + outputdir
-  os.system("gfal-mkdir srm://t3se01.psi.ch" + outputPath)
+  os.system("env -i X509_USER_PROXY=~/.x509up_u`id -u` gfal-mkdir srm://t3se01.psi.ch" + outputPath)
 
   subdirs = os.listdir( inputPath )
 
@@ -47,7 +47,7 @@ def main(argv):
 
     os.system( command )
 
-    os.system( "gfal-copy file:///`pwd`/" + outfile + " srm://t3se01.psi.ch" + outputPath )
+    os.system( "env -i X509_USER_PROXY=~/.x509up_u`id -u` gfal-copy file:///`pwd`/" + outfile + " srm://t3se01.psi.ch" + outputPath )
   
     os.system("rm " + outfile )
       

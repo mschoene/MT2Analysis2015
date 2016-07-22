@@ -174,7 +174,9 @@ int postProcessing(std::string inputString,
   TH2D* h_eff_fast_mu =  0;
   TH2D* h_eff_fast_el =  0;
 
+  BTagSFHelper* bTagSFHelper = 0;
   if( applySF ){
+    bTagSFHelper =  new BTagSFHelper();
 
     //Getting the lepton scale factor histograms/////////////////
     //Electrons//
@@ -885,7 +887,7 @@ int postProcessing(std::string inputString,
 
 
       /////////Add b-tagging scale factor//////////     
-      get_weight_btag(njet, jet_pt, jet_eta, jet_mcFlavour, jet_btagCSV, weight_btagsf, weight_btagsf_heavy_UP, weight_btagsf_heavy_DN, weight_btagsf_light_UP, weight_btagsf_light_DN, isFastSim);
+      bTagSFHelper->get_weight_btag(njet, jet_pt, jet_eta, jet_mcFlavour, jet_btagCSV, weight_btagsf, weight_btagsf_heavy_UP, weight_btagsf_heavy_DN, weight_btagsf_light_UP, weight_btagsf_light_DN, isFastSim);
 
 
 
@@ -1146,7 +1148,7 @@ int postProcessing(std::string inputString,
     }
     delete h_isr; delete h_counter;
   }
-
+  if(bTagSFHelper) delete bTagSFHelper;
   delete chain; 
   hPU->Write();
   hPU_data->Write();
@@ -1164,6 +1166,6 @@ int postProcessing(std::string inputString,
   delete out;
   return 0;
   
-  }
+}
 
 

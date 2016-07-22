@@ -29,6 +29,10 @@ class MT2EstimateSigContSyst : public MT2Estimate {
   TH3D* yield3d_crsl;
   TH1D* yield_alpha;
 
+  TH3D* yield3d_genmet;
+  TH3D* yield3d_crsl_genmet;
+
+
   const MT2EstimateSigContSyst& operator=( const MT2EstimateSigContSyst& rhs );
   const MT2EstimateSigContSyst& operator=( const MT2Estimate& rhs );
 

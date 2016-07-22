@@ -20,7 +20,13 @@ MT2EstimateSigContSyst::MT2EstimateSigContSyst( const std::string& aname, const 
   double* bins;
   region->getBins(nBins, bins);
 
-  int nBinsM=81;
+//  int nBinsM=81;
+//  double binWidthM=25.;
+//  double binsM[nBinsM+1];
+//  for (int b=0; b<=nBinsM; ++b)
+//    binsM[b]=b*binWidthM;
+
+  int nBinsM=93;
   double binWidthM=25.;
   double binsM[nBinsM+1];
   for (int b=0; b<=nBinsM; ++b)
@@ -37,6 +43,12 @@ MT2EstimateSigContSyst::MT2EstimateSigContSyst( const std::string& aname, const 
   yield3d_crsl = new TH3D( this->getHistoName("yield3d_crsl").c_str(), "", nBins, bins, nBinsM, binsM, nBinsM, binsM);
   yield3d_crsl->Sumw2();
 
+  yield3d_genmet = new TH3D( this->getHistoName("yield3d_genmet").c_str(), "", nBins, bins, nBinsM, binsM, nBinsM, binsM);
+  yield3d_genmet->Sumw2();
+
+  yield3d_crsl_genmet = new TH3D( this->getHistoName("yield3d_crsl_genmet").c_str(), "", nBins, bins, nBinsM, binsM, nBinsM, binsM);
+  yield3d_crsl_genmet->Sumw2();
+
 }
 
 
@@ -52,6 +64,9 @@ MT2EstimateSigContSyst::MT2EstimateSigContSyst( const MT2EstimateSigContSyst& rh
   this->yield_alpha = new TH1D(*(rhs.yield_alpha));
   this->yield3d_crsl = new TH3D(*(rhs.yield3d_crsl));
 
+  this->yield3d_genmet = new TH3D(*(rhs.yield3d_genmet));
+  this->yield3d_crsl_genmet = new TH3D(*(rhs.yield3d_crsl_genmet));
+
 }
 
 
@@ -63,6 +78,9 @@ MT2EstimateSigContSyst::~MT2EstimateSigContSyst() {
 
   delete yield_alpha;
   delete yield3d_crsl;
+
+  delete yield3d_genmet;
+  delete yield3d_crsl_genmet;
 
 }
 
@@ -81,6 +99,9 @@ void MT2EstimateSigContSyst::setName( const std::string& newName ) {
 
   yield3d_crsl  ->SetName( this->getHistoName("yield3d_crsl").c_str() );
   yield_alpha->SetName( this->getHistoName("yield_alpha").c_str() );
+
+  yield3d_genmet  ->SetName( this->getHistoName("yield3d_genmet").c_str() );
+  yield3d_crsl_genmet  ->SetName( this->getHistoName("yield3d_crsl_genmet").c_str() );
 
 }
 
@@ -112,6 +133,8 @@ void MT2EstimateSigContSyst::getShit( TFile* file, const std::string& path ) {
   yield3d_crsl   = (TH3D*)file->Get(Form("%s/%s", path.c_str(), yield3d_crsl->GetName()));
   yield_alpha = (TH1D*)file->Get(Form("%s/%s", path.c_str(), yield_alpha->GetName()));
 
+  yield3d_genmet   = (TH3D*)file->Get(Form("%s/%s", path.c_str(), yield3d_genmet->GetName()));
+  yield3d_crsl_genmet   = (TH3D*)file->Get(Form("%s/%s", path.c_str(), yield3d_crsl_genmet->GetName()));
 
 }
 
@@ -126,6 +149,9 @@ void MT2EstimateSigContSyst::write() const {
   yield3d_crsl->Write();
   yield_alpha->Write();
 
+  yield3d_genmet->Write();
+  yield3d_crsl_genmet->Write();
+
 }
 
 void MT2EstimateSigContSyst::print( std::ofstream& ofs_file, Float_t m1, Float_t m2, Int_t mt2_bin, float k ){
@@ -133,15 +159,25 @@ void MT2EstimateSigContSyst::print( std::ofstream& ofs_file, Float_t m1, Float_t
   TH1D* h_sig;
   TH3D* h_sig3d;
   h_sig3d = this->yield3d;
+  h_sig3d->Add( (this->yield3d_genmet) );
+  h_sig3d->Scale(0.5);
 
   TH1D* h_sigCont;
   TH3D* h_sig3d_crsl;
   h_sig3d_crsl = this->yield3d_crsl;
+  h_sig3d_crsl->Add( (this->yield3d_crsl_genmet) );
+  h_sig3d_crsl->Scale(0.5);
   
   TH1D* h_alpha;
   h_alpha = this->yield_alpha;
 
-  int nBinsM=81;
+//  int nBinsM=81;
+//  double binWidthM=25.;
+//  double binsM[nBinsM+1];
+//  for (int b=0; b<=nBinsM; ++b)
+//    binsM[b]=b*binWidthM;
+
+  int nBinsM=93;
   double binWidthM=25.;
   double binsM[nBinsM+1];
   for (int b=0; b<=nBinsM; ++b)
@@ -201,6 +237,9 @@ const MT2EstimateSigContSyst& MT2EstimateSigContSyst::operator=( const MT2Estima
   this->yield3d_crsl   = new TH3D(*(rhs.yield3d_crsl));
   this->yield_alpha = new TH1D(*(rhs.yield_alpha));
 
+  this->yield3d_genmet   = new TH3D(*(rhs.yield3d_genmet));
+  this->yield3d_crsl_genmet   = new TH3D(*(rhs.yield3d_crsl_genmet));
+
   this->systName = rhs.systName;
 
   this->setName( this->getName() );
@@ -224,6 +263,9 @@ const MT2EstimateSigContSyst& MT2EstimateSigContSyst::operator=( const MT2Estima
   this->yield3d_systDown = new TH3D(*(rhs.yield3d));
   this->yield_alpha = new TH1D(*(rhs.yield));
   this->yield3d_crsl = new TH3D(*(rhs.yield3d));
+
+  this->yield3d_genmet = new TH3D(*(rhs.yield3d));
+  this->yield3d_crsl_genmet = new TH3D(*(rhs.yield3d));
 
   this->systName = "syst";
 
@@ -262,6 +304,12 @@ MT2EstimateSigContSyst MT2EstimateSigContSyst::operator*( float k ) const{
   result.yield3d_crsl = new TH3D(*(this->yield3d_crsl));
   result.yield3d_crsl->Scale(k);
 
+  result.yield3d_genmet = new TH3D(*(this->yield3d_genmet));
+  result.yield3d_genmet->Scale(k);
+
+  result.yield3d_crsl_genmet = new TH3D(*(this->yield3d_crsl_genmet));
+  result.yield3d_crsl_genmet->Scale(k);
+
   return result;
 
 }
@@ -289,6 +337,12 @@ MT2EstimateSigContSyst MT2EstimateSigContSyst::operator/( float k ) const{
   result.yield3d_crsl = new TH3D(*(this->yield3d_crsl));
   result.yield3d_crsl->Scale(1./k);
 
+  result.yield3d_genmet = new TH3D(*(this->yield3d_genmet));
+  result.yield3d_genmet->Scale(1./k);
+
+  result.yield3d_crsl_genmet = new TH3D(*(this->yield3d_crsl_genmet));
+  result.yield3d_crsl_genmet->Scale(1./k);
+
 
   return result;
 
@@ -306,6 +360,10 @@ const MT2EstimateSigContSyst& MT2EstimateSigContSyst::operator*=( float k ) {
   this->yield3d_systDown->Scale(k);
   this->yield_alpha->Scale(k);
   this->yield3d_crsl->Scale(k);
+
+  this->yield3d_genmet->Scale(k);
+  this->yield3d_crsl_genmet->Scale(k);
+
   return (*this);
 
 }
@@ -318,6 +376,10 @@ const MT2EstimateSigContSyst& MT2EstimateSigContSyst::operator/=( float k ) {
   this->yield3d_systDown->Scale(1./k);
   this->yield_alpha->Scale(1./k);
   this->yield3d_crsl->Scale(1./k);
+
+  this->yield3d_genmet->Scale(1./k);
+  this->yield3d_crsl_genmet->Scale(1./k);
+
   return (*this);
 
 }
