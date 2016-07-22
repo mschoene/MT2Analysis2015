@@ -154,20 +154,26 @@ void MT2EstimateSigContSyst::write() const {
 
 }
 
-void MT2EstimateSigContSyst::print( std::ofstream& ofs_file, Float_t m1, Float_t m2, Int_t mt2_bin, float k ){
+void MT2EstimateSigContSyst::print( std::ofstream& ofs_file, Float_t m1, Float_t m2, Int_t mt2_bin, float k, bool doGenAverage ){
 
   TH1D* h_sig;
   TH3D* h_sig3d;
   h_sig3d = this->yield3d;
-  h_sig3d->Add( (this->yield3d_genmet) );
-  h_sig3d->Scale(0.5);
+  
+  if(doGenAverage){
+    h_sig3d->Add( (this->yield3d_genmet) );
+    h_sig3d->Scale(0.5);
+  }
 
   TH1D* h_sigCont;
   TH3D* h_sig3d_crsl;
   h_sig3d_crsl = this->yield3d_crsl;
-  h_sig3d_crsl->Add( (this->yield3d_crsl_genmet) );
-  h_sig3d_crsl->Scale(0.5);
   
+  if(doGenAverage){
+    h_sig3d_crsl->Add( (this->yield3d_crsl_genmet) );
+    h_sig3d_crsl->Scale(0.5);
+  }
+
   TH1D* h_alpha;
   h_alpha = this->yield_alpha;
 
