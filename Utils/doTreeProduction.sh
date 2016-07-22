@@ -9,7 +9,7 @@ listOfSamplesFile="postProcessing2016-Data.cfg"
 
 productionName="$(basename $inputFolder)" 
 
-outputFolder="/pnfs/psi.ch/cms/trivcat/store/user/`whoami`/MT2production/80X/PostProcessed/"$productionName"_v5/"
+outputFolder="/pnfs/psi.ch/cms/trivcat/store/user/`whoami`/MT2production/80X/PostProcessed/"$productionName"/"
 
 
 
@@ -531,8 +531,7 @@ if [[ "$1" = "postCheck" ]]; then
 	cd ..
 	rm $jobsLogsFolder/*
 	rmdir $jobsLogsFolder
-	rm -f postProcessing_C.d;
-	rm -f postProcessing_C.so;
+	./doTreeProduction.sh clean 
     else
 	echo "ERROR: something went wrong. Check your logs in " $jobsLogsFolder
     fi
