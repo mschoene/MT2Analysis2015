@@ -40,7 +40,7 @@ btagSF(inputString, inputFolder, outputFile, treeName, objectName)
 class BTagSFHelper{
 public:
   BTagSFHelper(){
-    calib = new BTagCalibrationStandalone("csvv2", "/shome/mschoene/btagSF/CSVv2_4invfb.csv");
+    calib = new BTagCalibrationStandalone("csvv2", "/shome/mschoene/btagSF/CSVv2_ichep.csv");
     reader_fullSim_heavy    = new BTagCalibrationStandaloneReader(BTagEntryStandalone::OP_MEDIUM, "central",{"up","down"}); 
     reader_fullSim_light    = new BTagCalibrationStandaloneReader(BTagEntryStandalone::OP_MEDIUM, "central",{"up","down"}); 
 
@@ -58,14 +58,14 @@ public:
 
 
 
-    calib_fast = new BTagCalibrationStandalone("csvv2", "/shome/mschoene/btagSF/CSV_13TEV_Combined_20_11_2015.csv"); // 25 ns official version of SFs
+    calib_fast = new BTagCalibrationStandalone("csvv2", "/shome/mschoene/btagSF/CSV_13TEV_Combined_14_7_2016.csv"); // 25 ns official version of SFs
     reader_fastSim    = new BTagCalibrationStandaloneReader(BTagEntryStandalone::OP_MEDIUM, "central", {"up","down"}); 
 
     reader_fastSim->load(*calib_fast,BTagEntryStandalone::FLAV_UDSG,"fastsim");
     reader_fastSim->load(*calib_fast,BTagEntryStandalone::FLAV_B,"fastsim");
     reader_fastSim->load(*calib_fast,BTagEntryStandalone::FLAV_C,"fastsim");
 
-    f_btag_fast_eff = new TFile("/shome/mschoene/btagSF/btageff__SMS-T1bbbb-T1qqqq_fastsim.root"); // Dominick's fast sim b-tagging efficiencies
+    f_btag_fast_eff = new TFile("/shome/mschoene/btagSF/btageff__SMS-T1bbbb-T1qqqq_fastsim_2016.root"); // Dominick's fast sim b-tagging efficiencies
     h_btag_fast_eff_b    = (TH2D*) f_btag_fast_eff->Get("h2_BTaggingEff_csv_med_Eff_b"   );
     h_btag_fast_eff_c    = (TH2D*) f_btag_fast_eff->Get("h2_BTaggingEff_csv_med_Eff_c"   );
     h_btag_fast_eff_udsg = (TH2D*) f_btag_fast_eff->Get("h2_BTaggingEff_csv_med_Eff_udsg");
