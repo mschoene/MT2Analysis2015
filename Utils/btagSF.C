@@ -130,7 +130,7 @@ void BTagSFHelper::get_SF_btag(float pt, float eta, int mcFlavour, float &SF, fl
   else if ( abs(mcFlavour)==4 ) flavour = BTagEntryStandalone::FLAV_C;
   
   //BM: these two lines are probably unnecessary now with "eval_auto_bounds" method. To be checked
-  float pt_cutoff  = std::max(29.999. ,std::min(669., double(pt)));
+  float pt_cutoff  = std::max(29.999 ,std::min(669., double(pt)));
   //  float pt_cutoff  = std::max(30. ,std::min(669., double(pt)));
   float eta_cutoff = std::min(2.39,fabs(double(eta)));
 
@@ -160,7 +160,7 @@ float BTagSFHelper::getBtagEffFromFile(float pt, float eta, int mcFlavour, bool 
     return 1.;
   }
 
-  if( isFastSim && (!h_btag_fast_eff_b || !h_btag_fast_eff_c || !h_btag_fastg_eff_udsg) ) {
+  if( isFastSim && (!h_btag_fast_eff_b || !h_btag_fast_eff_c || !h_btag_fast_eff_udsg) ) {
     std::cout << "ERROR: missing fastsim input hists" << std::endl;
     return 1.;
   }
@@ -194,10 +194,15 @@ void BTagSFHelper::get_weight_btag(int nobj, float* obj_pt, float* obj_eta, int*
   float dataTag = 1.;
   float dataNoTag = 1.;
 
-  float errHup   = 0;
-  float errHdown = 0;
-  float errLup   = 0;
-  float errLdown = 0;
+  float errHup   = 1.;
+  float errHdown = 1.;
+  float errLup   = 1.;
+  float errLdown = 1.;
+
+  // float errHup   = 0;
+  // float errHdown = 0;
+  // float errLup   = 0;
+  // float errLdown = 0;
 
   for(int indj=0; indj < nobj; ++indj){ //Here we loop over all selected jets ( for our case, pt>30, PF loose ID, etc )
     
@@ -216,6 +221,7 @@ void BTagSFHelper::get_weight_btag(int nobj, float* obj_pt, float* obj_eta, int*
 
 
     bool istag = csv > 0.890 && eta < 2.5 && pt>20;
+
     float SF = 0.;
     float SFup = 0.;
     float SFdown = 0.;
@@ -227,27 +233,35 @@ void BTagSFHelper::get_weight_btag(int nobj, float* obj_pt, float* obj_eta, int*
       mcTag   *= eff;
       dataTag *= eff*SF;
 
-      if(mcFlavour==5 || mcFlavour ==4) {
-	errHup   += (SFup - SF  )/SF;
-	errHdown += (SF - SFdown)/SF;
+      if(mcFlavour==5 || mcFlavour ==4) {//b or c
+	errHup   *= (SFup * eff);
+	errHdown *= (SFdown * eff);
+	errLup   *= (SF * eff);
+	errLdown *= (SF * eff);
       }
       else {
-	errLup   += (SFup - SF  )/SF;
-	errLdown += (SF - SFdown)/SF;
+	errHup   *= (SF * eff);
+	errHdown *= (SF * eff);
+	errLup   *= (SFup * eff);
+	errLdown *= (SFdown * eff);
       }
 
     }
-    else{
+    else{ //NOT TAGGED
       mcNoTag   *= (1 - eff);
       dataNoTag *= (1 - eff*SF);
 
-      if( mcFlavour==5 || mcFlavour==4 ) {
-	errHup   += -eff*(SFup - SF  )/(1-eff*SF);
-	errHdown += -eff*(SF - SFdown)/(1-eff*SF);	
+      if( mcFlavour==5 || mcFlavour==4 ) {//b or c
+	errHup   *= (1. - SFup * eff );
+	errHdown *= (1. - SFdown * eff );
+	errLup   *= (1. - SF * eff );
+	errLdown *= (1. - SF * eff );
       }
       else {
-	errLup   += -eff*(SFup - SF  )/(1-eff*SF);
-	errLdown += -eff*(SF - SFdown)/(1-eff*SF);	
+	errHup   *= (1. - SF * eff );
+	errHdown *= (1. - SF * eff );
+	errLup   *= (1. - SFup * eff );
+	errLdown *= (1. - SFdown * eff );
       }
     }
 
@@ -255,11 +269,10 @@ void BTagSFHelper::get_weight_btag(int nobj, float* obj_pt, float* obj_eta, int*
 
   wtbtag = (dataNoTag * dataTag ) / ( mcNoTag * mcTag );
 
-  wtbtagUp_heavy   = wtbtag*( 1 + errHup   );
-  wtbtagUp_light   = wtbtag*( 1 + errLup   );
-  wtbtagDown_heavy = wtbtag*( 1 - errHdown );
-  wtbtagDown_light = wtbtag*( 1 - errLdown );
-
+  wtbtagUp_heavy   = errHup   / ( mcNoTag * mcTag );
+  wtbtagUp_light   = errLup   / ( mcNoTag * mcTag );
+  wtbtagDown_heavy = errHdown / ( mcNoTag * mcTag );
+  wtbtagDown_light = errHdown / ( mcNoTag * mcTag );
 }
 
 
