@@ -2,18 +2,18 @@
 
 # --- configuration (consider to move this into a separate file) ---
 treeName="mt2"
-inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/mangano/crab/MT2_8_0_11/prodJune21_274422-275125_v1/"
+inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/mangano/crab/MT2_8_0_11/prodJuly15_runB_forQCD_v1/"
 
 listOfSamplesFile="postProcessing2016-Data.cfg"
 #listOfSamplesFile="postProcessing2016-MC.cfg"
 
 productionName="$(basename $inputFolder)" 
 
+outputFolder="/pnfs/psi.ch/cms/trivcat/store/user/`whoami`/MT2production/80X/PostProcessed/"$productionName"_v5/"
 
-#outputFolder="/pnfs/psi.ch/cms/trivcat/store/user/`whoami`/ZGproduction/80X/PostProcessed/"$productionName"_pu/"
-outputFolder="/pnfs/psi.ch/cms/trivcat/store/user/`whoami`/MT2production/80X/PostProcessed/"$productionName"/"
 
-# in current implementation one also needs to change this in runSkimmingPruning.sh
+
+# --- in current implementation one also needs to change this in runSkimmingPruning.sh
 useXRD="false"
 gfalProtocol="gsiftp" # if useXRD disabled, use gfal via the given protocol
 #gfalProtocol="srm" # alternative to gsiftp (gsiftp supposed to be more stable)
@@ -22,8 +22,9 @@ fileExt="_post.root"
 isCrab=1
 inputPU="MyDataPileupHistogram.root"
 PUvar="nTrueInt"
-GoldenJSON="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions16/13TeV/Cert_271036-275125_13TeV_PromptReco_Collisions16_JSON.txt"
+GoldenJSON="$PWD/gold_runB.txt"
 SilverJSON=$GoldenJSON
+doSkimmingPruning=1 #1 as default; 0 for QCD-specific datasets, which are already skimmed at heppy level
 applyJSON=1     #0 for MC
 doSilver=0      #0 for MC
 doFilterTxt=0   #0 for MC
@@ -42,14 +43,15 @@ doPreProc=0     #0 (only 1 for TTJets or if you want to split MC samples, then r
 
 
 
-
-
-
-
-
 # initialization
 jobsLogsFolder="./${productionName}"
 workingFolder="/scratch/`whoami`/"$productionName
+
+# warning: these 3 lines need to be replicated also in all other bash-script created on the fly (see next)
+shopt -s expand_aliases
+alias semkdir="env -i X509_USER_PROXY=~/.x509up_u`id -u` gfal-mkdir -p"
+alias secp="env -i X509_USER_PROXY=~/.x509up_u`id -u` gfal-copy"
+
 
 
 
@@ -151,6 +153,10 @@ if [[ "$1" = "pre" ]]; then
 
 	cat <<EOF > $scriptName
 #!/bin/bash
+shopt -s expand_aliases
+alias semkdir="env -i X509_USER_PROXY=~/.x509up_u`id -u` gfal-mkdir -p"
+alias secp="env -i X509_USER_PROXY=~/.x509up_u`id -u` gfal-copy"
+
 
 #### The following configurations you should not need to change
 # Job name (defines name seen in monitoring by qstat and the
@@ -177,7 +183,7 @@ source $VO_CMS_SW_DIR/cmsset_default.sh
 source /mnt/t3nfs01/data01/swshare/glite/external/etc/profile.d/grid-env.sh
 export SCRAM_ARCH=slc6_amd64_gcc491
 export LD_LIBRARY_PATH=/mnt/t3nfs01/data01/swshare/glite/d-cache/dcap/lib/:$LD_LIBRARY_PATH
-echo "Loading your CMSSW release or CMSSW_7_4_12/"
+echo "Loading your CMSSW release"
 echo "from $myCMSSW"
 cd $myCMSSW
 eval `scramv1 runtime -sh`
@@ -188,7 +194,7 @@ echo "gROOT->LoadMacro(\"preProcessing.C+\"); preProcessing(\"$name\",\"$inputFo
 
 EOF
 
-	qsub -q long.q $scriptName;
+	qsub -q short.q $scriptName;
 	rm $scriptName;
 	
     done < $listOfSamplesFile
@@ -201,14 +207,13 @@ fi;
 
 
 
-#######################################
+########## post-processing ######################
 if [[ "$1" = "post" ]]; then
 
-if [[ $useXRD == "true" ]]; then
-    xrdfs t3dcachedb.psi.ch ls $outputFolder &> ./checkOutputDir
-else
-    gfal-ls ${gfalProtocol}://t3se01.psi.ch$outputFolder &> ./checkOutputDir
-fi
+
+#xrdfs t3dcachedb.psi.ch ls $outputFolder &> ./checkOutputDir
+env -i X509_USER_PROXY=~/.x509up_u`id -u` gfal-ls ${gfalProtocol}://t3se01.psi.ch$outputFolder &> ./checkOutputDir
+
 # --- check the existence of outputFolder on SE ---
 if [ -n "`cat ./checkOutputDir|grep 'No such file or directory'`"  ]; then
     :
@@ -235,27 +240,12 @@ else
 fi
 
 
-if [[ $useXRD == "true" ]]; then
-    #xrdfs t3dcachedb.psi.ch mkdir -p $outputFolder # recursive mkdir does not work via xrootd
-    gfal-mkdir -p ${gfalProtocol}://t3se01.psi.ch/$outputFolder # use gfal instead
-else
-    gfal-mkdir -p ${gfalProtocol}://t3se01.psi.ch/$outputFolder
-fi
-
+semkdir ${gfalProtocol}://t3se01.psi.ch/$outputFolder
 python $PWD/convertGoodRunsList_JSON.py $GoldenJSON >& goodruns_golden.txt
-if [[ $useXRD == "true" ]]; then
-    xrdcp -d 1 $GoldenJSON root://t3dcachedb.psi.ch:1094/$outputFolder/ 
-else
-    gfal-copy file://$GoldenJSON ${gfalProtocol}://t3se01.psi.ch/$outputFolder/
-fi
-
+secp file://$GoldenJSON ${gfalProtocol}://t3se01.psi.ch/$outputFolder/
 
 if [ $doSilver -eq 1 ]; then
-    if [[ $useXRD == "true" ]]; then
-	xrdcp -d 1 $SilverJSON root://t3dcachedb.psi.ch:1094/$outputFolder/ 
-    else
-	gfal-copy file://$SilverJSON ${gfalProtocol}://t3se01.psi.ch/$outputFolder/
-    fi
+    secp file://$SilverJSON ${gfalProtocol}://t3se01.psi.ch/$outputFolder/
     python $PWD/convertGoodRunsList_JSON.py $SilverJSON >& goodruns_silver.txt
 fi
 
@@ -277,7 +267,8 @@ fi
 
 
 echo "gROOT->LoadMacro(\"goodrunClass.cc+\"); gSystem->Exit(0);" |root.exe -b -l ;
-echo "gSystem->Load(\"goodrunClass_cc.so\"); gROOT->LoadMacro(\"postProcessing.C+\"); gSystem->Exit(0);" |root.exe -b -l ;
+echo "gROOT->LoadMacro(\"BTagCalibrationStandalone.cc+\"); gSystem->Exit(0);" |root.exe -b -l ;
+echo "gSystem->Load(\"goodrunClass_cc.so\"); gSystem->Load(\"BTagCalibrationStandalone_cc.so\"); gROOT->LoadMacro(\"postProcessing.C+\"); gSystem->Exit(0);" |root.exe -b -l ;
 
 while read line; 
 do 
@@ -412,7 +403,9 @@ do
 
 	cat <<EOF > $scriptName
 #!/bin/bash
-
+shopt -s expand_aliases
+alias semkdir="env -i X509_USER_PROXY=~/.x509up_u`id -u` gfal-mkdir -p"
+alias secp="env -i X509_USER_PROXY=~/.x509up_u`id -u` gfal-copy"
 
 #### The following configurations you should not need to change
 # Job name (defines name seen in monitoring by qstat and the
@@ -445,7 +438,7 @@ source $VO_CMS_SW_DIR/cmsset_default.sh
 #source /mnt/t3nfs01/data01/swshare/glite/external/etc/profile.d/grid-env.sh
 export SCRAM_ARCH=slc6_amd64_gcc491
 export LD_LIBRARY_PATH=/mnt/t3nfs01/data01/swshare/glite/d-cache/dcap/lib/:$LD_LIBRARY_PATH
-echo "Loading your CMSSW release or CMSSW_7_4_12/"
+echo "Loading your CMSSW release"
 echo "from $myCMSSW"
 cd $myCMSSW
 eval `scramv1 runtime -sh`
@@ -453,17 +446,12 @@ cd -
 
 
 mkdir -p $workingFolder
-if [[ $useXRD == "true" ]]; then
-    #xrdfs t3dcachedb.psi.ch mkdir -p $outputFolder # recursive mkdir does not work via xrootd
-    gfal-mkdir -p ${gfalProtocol}://t3se01.psi.ch/$outputFolder # let's use gfal then
-else
-    gfal-mkdir -p ${gfalProtocol}://t3se01.psi.ch/$outputFolder
-fi
 
+semkdir ${gfalProtocol}://t3se01.psi.ch/$outputFolder
 
 echo "postProcessing(\"$name\",\"$counterFile\",\"$outputFile\",\"$treeName\",$filter,$kfactor,$xsec,$id,\"$crabExt\",\"$inputPU\",\"$PUvar\",$applyJSON,$doAllSF,$doSilver,\"$preProcFile\"); gSystem->Exit(0);"
 
-echo "gSystem->Load(\"goodrunClass_cc.so\"); gSystem->Load(\"libCondFormatsBTauObjects.so\"); gROOT->LoadMacro(\"postProcessing.C\"); postProcessing(\"$name\",\"$counterFile\",\"$outputFile\",\"$treeName\",$filter,$kfactor,$xsec,$id,\"$crabExt\",\"$inputPU\",\"$PUvar\",$applyJSON,$doAllSF,$doSilver,\"$preProcFile\"); gSystem->Exit(0);" |root.exe -b -l ;
+echo "gSystem->Load(\"goodrunClass_cc.so\");  gSystem->Load(\"BTagCalibrationStandalone_cc.so\"); gROOT->LoadMacro(\"postProcessing.C\"); postProcessing(\"$name\",\"$counterFile\",\"$outputFile\",\"$treeName\",$filter,$kfactor,$xsec,$id,\"$crabExt\",\"$inputPU\",\"$PUvar\",$applyJSON,$doAllSF,$doSilver,\"$preProcFile\"); gSystem->Exit(0);" |root.exe -b -l ;
 
 
 
@@ -473,14 +461,12 @@ if [[ $id -lt 10 && $doFilterTxt == 1 ]]; then
    mv $outputFilteredFile $outputFile;
 fi;
 
-#######mv $outputFile $outputFolder
-if [[ $useXRD == "true" ]]; then
-    xrdcp -d 1 $outputFile root://t3dcachedb.psi.ch:1094/$outputFolder
-else
-    gfal-copy file://$outputFile ${gfalProtocol}://t3se01.psi.ch/$outputFolder
-fi
+####### mv $outputFile $outputFolder
+secp file://$outputFile ${gfalProtocol}://t3se01.psi.ch/$outputFolder
+
 rm $outputFile
 
+if [[ $doSkimmingPruning == 1 ]]; then
 #Normal skim
 skimmingPruningCfg="${workingFolder}/skimmingPruning_${counterName}.cfg"
      cat skimmingPruning.cfg |grep -v \# | sed  "s#INPUTDIR#${outputFolder}#" |sed "s#INPUTFILTER#${counterName}#" \
@@ -501,7 +487,9 @@ skimmingPruningCfgMonoJet="${workingFolder}/skimmingPruningMonoJet_${counterName
 	| sed "s#OUTPUTDIR#${outputFolder}/QCDMonoJetSkimAndPrune#" | sed "s#DOPRUNING#${doPruning}#" > \$skimmingPruningCfgMonoJet
 ./runSkimmingPruning.sh \$skimmingPruningCfgMonoJet
 rm \$skimmingPruningCfgMonoJet
-
+else
+ echo "skipping skimming/pruning steps"
+fi;
 
 #echo "is anything left in working folder? workingFolder: " 
 #ls $workingFolder
@@ -509,9 +497,9 @@ rm \$skimmingPruningCfgMonoJet
 
 EOF
 
-        #if you have a big file and no time to change the code to be smoother: qsub  -q long.q -l h_vmem=5g batchScript_${name}.sh;
+        #if you have a big file and no time to change the code to be smoother: qsub  -q short.q -l h_vmem=5g batchScript_${name}.sh;
 
-	qsub -q long.q $scriptName;
+	qsub -q short.q $scriptName;
 	rm $scriptName;
 
 	if (($counter < 0)); then
@@ -539,16 +527,12 @@ if [[ "$1" = "postCheck" ]]; then
 	echo "there were no errors. Zipping all logs and copying them to the SE"	 
 	cd $jobsLogsFolder
 	tar -czvf logs.tgz  *
-	if [[ $useXRD == "true" ]]; then
-	    xrdcp -d 1 `pwd`/logs.tgz root://t3dcachedb.psi.ch:1094/$outputFolder
-	else
-	    gfal-copy file://`pwd`/logs.tgz ${gfalProtocol}://t3se01.psi.ch/$outputFolder
-	fi
+	secp file://`pwd`/logs.tgz ${gfalProtocol}://t3se01.psi.ch/$outputFolder
 	cd ..
 	rm $jobsLogsFolder/*
 	rmdir $jobsLogsFolder
-	rm postProcessing_C.d;
-	rm postProcessing_C.so;
+	rm -f postProcessing_C.d;
+	rm -f postProcessing_C.so;
     else
 	echo "ERROR: something went wrong. Check your logs in " $jobsLogsFolder
     fi

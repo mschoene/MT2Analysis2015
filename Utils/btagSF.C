@@ -5,6 +5,7 @@ root -l
 btagSF(inputString, inputFolder, outputFile, treeName, objectName)
 */
 
+
 #include <sstream>
 #include <fstream>
 #include <cmath>
@@ -26,75 +27,134 @@ btagSF(inputString, inputFolder, outputFile, treeName, objectName)
 #include "TH2F.h"
 #include "TLorentzVector.h"
 
-//#include "BTagCalibrationStandalone.h"   // https://twiki.cern.ch/twiki/bin/view/CMS/BTagCalibration
-#include "CondFormats/BTauObjects/interface/BTagCalibration.h"
-#include "CondFormats/BTauObjects/interface/BTagCalibrationReader.h"
 
+#include "BTagCalibrationStandalone.h"
+#include "BTagCalibrationStandalone.h"
 
-
-using namespace std;
+//using namespace std;
 
 
 // setup calibration readers 
 // https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation74X  --  official SFs
 // https://twiki.cern.ch/twiki/bin/view/CMS/BTagCalibration  --  calibration reader documentations
-BTagCalibration *calib = new BTagCalibration("csvv2", "/shome/casal/btagsf/CSVv2.csv"); // 25 ns official version of SFs
-BTagCalibrationReader *reader_heavy    = new BTagCalibrationReader(calib, BTagEntry::OP_MEDIUM, "mujets", "central");  // central
-BTagCalibrationReader *reader_heavy_UP = new BTagCalibrationReader(calib, BTagEntry::OP_MEDIUM, "mujets", "up");       // sys up
-BTagCalibrationReader *reader_heavy_DN = new BTagCalibrationReader(calib, BTagEntry::OP_MEDIUM, "mujets", "down");     // sys down
-BTagCalibrationReader *reader_light    = new BTagCalibrationReader(calib, BTagEntry::OP_MEDIUM, "comb"  , "central");  // central
-BTagCalibrationReader *reader_light_UP = new BTagCalibrationReader(calib, BTagEntry::OP_MEDIUM, "comb"  , "up");       // sys up
-BTagCalibrationReader *reader_light_DN = new BTagCalibrationReader(calib, BTagEntry::OP_MEDIUM, "comb"  , "down");     // sys down
 
-TFile *f_btag_eff = new TFile("/shome/casal/btagsf/btageff__ttbar_powheg_pythia8_25ns.root"); // Dominick's b-tagging efficiencies
-TH2D* h_btag_eff_b    = (TH2D*) f_btag_eff->Get("h2_BTaggingEff_csv_med_Eff_b"   );
-TH2D* h_btag_eff_c    = (TH2D*) f_btag_eff->Get("h2_BTaggingEff_csv_med_Eff_c"   );
-TH2D* h_btag_eff_udsg = (TH2D*) f_btag_eff->Get("h2_BTaggingEff_csv_med_Eff_udsg");
+class BTagSFHelper{
+public:
+  BTagSFHelper(){
+    calib = new BTagCalibrationStandalone("csvv2", "/shome/mschoene/btagSF/CSVv2_4invfb.csv");
+    reader_fullSim_heavy    = new BTagCalibrationStandaloneReader(BTagEntryStandalone::OP_MEDIUM, "central",{"up","down"}); 
+    reader_fullSim_light    = new BTagCalibrationStandaloneReader(BTagEntryStandalone::OP_MEDIUM, "central",{"up","down"}); 
 
+    reader_fullSim_heavy->load(*calib,BTagEntryStandalone::FLAV_UDSG,"comb");
+    reader_fullSim_heavy->load(*calib,BTagEntryStandalone::FLAV_B,"comb");
+    reader_fullSim_heavy->load(*calib,BTagEntryStandalone::FLAV_C,"comb");
+    reader_fullSim_light->load(*calib,BTagEntryStandalone::FLAV_UDSG,"incl");
+    reader_fullSim_light->load(*calib,BTagEntryStandalone::FLAV_B,"incl");
+    reader_fullSim_light->load(*calib,BTagEntryStandalone::FLAV_C,"incl");
 
-BTagCalibration *calib_fast = new BTagCalibration("csvv2", "/shome/mschoene/btagSF/CSV_13TEV_Combined_20_11_2015.csv"); // 25 ns official version of SFs
-BTagCalibrationReader *reader_fast    = new BTagCalibrationReader(calib_fast, BTagEntry::OP_MEDIUM, "fastsim", "central");  // central
-BTagCalibrationReader *reader_fast_UP = new BTagCalibrationReader(calib_fast, BTagEntry::OP_MEDIUM, "fastsim", "up");       // sys up
-BTagCalibrationReader *reader_fast_DN = new BTagCalibrationReader(calib_fast, BTagEntry::OP_MEDIUM, "fastsim", "down");     // sys down
-
-TFile *f_btag_fast_eff = new TFile("/shome/mschoene/btagSF/btageff__SMS-T1bbbb-T1qqqq_fastsim.root"); // Dominick's fast sim b-tagging efficiencies
-TH2D* h_btag_fast_eff_b    = (TH2D*) f_btag_fast_eff->Get("h2_BTaggingEff_csv_med_Eff_b"   );
-TH2D* h_btag_fast_eff_c    = (TH2D*) f_btag_fast_eff->Get("h2_BTaggingEff_csv_med_Eff_c"   );
-TH2D* h_btag_fast_eff_udsg = (TH2D*) f_btag_fast_eff->Get("h2_BTaggingEff_csv_med_Eff_udsg");
+    f_btag_eff = new TFile("/shome/mschoene/btagSF/btageff__ttbar_powheg_pythia8_25ns.root"); // Dominick's b-tagging efficiencies
+    h_btag_eff_b    = (TH2D*) f_btag_eff->Get("h2_BTaggingEff_csv_med_Eff_b"   );
+    h_btag_eff_c    = (TH2D*) f_btag_eff->Get("h2_BTaggingEff_csv_med_Eff_c"   );
+    h_btag_eff_udsg = (TH2D*) f_btag_eff->Get("h2_BTaggingEff_csv_med_Eff_udsg");
 
 
 
+    calib_fast = new BTagCalibrationStandalone("csvv2", "/shome/mschoene/btagSF/CSV_13TEV_Combined_20_11_2015.csv"); // 25 ns official version of SFs
+    reader_fastSim    = new BTagCalibrationStandaloneReader(BTagEntryStandalone::OP_MEDIUM, "central", {"up","down"}); 
 
-void get_SF_btag(float pt, float eta, int mcFlavour, float &SF, float &SFup, float &SFdown, bool isFastSim){
+    reader_fastSim->load(*calib_fast,BTagEntryStandalone::FLAV_UDSG,"fastsim");
+    reader_fastSim->load(*calib_fast,BTagEntryStandalone::FLAV_B,"fastsim");
+    reader_fastSim->load(*calib_fast,BTagEntryStandalone::FLAV_C,"fastsim");
 
-  BTagEntry::JetFlavor flavour = BTagEntry::FLAV_UDSG;
-  if      ( abs(mcFlavour)==5 ) flavour = BTagEntry::FLAV_B;
-  else if ( abs(mcFlavour)==4 ) flavour = BTagEntry::FLAV_C;
+    f_btag_fast_eff = new TFile("/shome/mschoene/btagSF/btageff__SMS-T1bbbb-T1qqqq_fastsim.root"); // Dominick's fast sim b-tagging efficiencies
+    h_btag_fast_eff_b    = (TH2D*) f_btag_fast_eff->Get("h2_BTaggingEff_csv_med_Eff_b"   );
+    h_btag_fast_eff_c    = (TH2D*) f_btag_fast_eff->Get("h2_BTaggingEff_csv_med_Eff_c"   );
+    h_btag_fast_eff_udsg = (TH2D*) f_btag_fast_eff->Get("h2_BTaggingEff_csv_med_Eff_udsg");
+  }
+
+  ~BTagSFHelper(){
+    delete calib;
+    delete reader_fullSim_heavy;
+    delete reader_fullSim_light;
+
+    delete calib_fast;
+    delete reader_fastSim;
+
+
+    delete f_btag_eff;
+    delete h_btag_eff_b;
+    delete h_btag_eff_c;
+    delete h_btag_eff_udsg;
+
+    delete f_btag_fast_eff;
+    delete h_btag_fast_eff_b;
+    delete h_btag_fast_eff_c;
+    delete h_btag_fast_eff_udsg;
+  }
   
+  void get_SF_btag(float pt, float eta, int mcFlavour, float &SF, float &SFup, float &SFdown, bool isFastSim);
+
+  float getBtagEffFromFile(float pt, float eta, int mcFlavour, bool isFastSim);
+  
+  void get_weight_btag(int nobj, float* obj_pt, float* obj_eta, int* obj_mcFlavour, float* obj_btagCSV, float &wtbtag, float &wtbtagUp_heavy, float &wtbtagDown_heavy, float &wtbtagUp_light, float &wtbtagDown_light, bool isFastSim);
+
+private:
+  BTagCalibrationStandalone *calib;
+  BTagCalibrationStandaloneReader *reader_fullSim_heavy;
+  BTagCalibrationStandaloneReader *reader_fullSim_light;
+
+  BTagCalibrationStandalone *calib_fast;
+  BTagCalibrationStandaloneReader *reader_fastSim;
+
+
+  TFile *f_btag_eff;
+  TH2D* h_btag_eff_b;
+  TH2D* h_btag_eff_c;
+  TH2D* h_btag_eff_udsg;
+
+
+  TFile *f_btag_fast_eff;
+  TH2D* h_btag_fast_eff_b;
+  TH2D* h_btag_fast_eff_c;
+  TH2D* h_btag_fast_eff_udsg;
+
+};
+
+
+
+
+
+void BTagSFHelper::get_SF_btag(float pt, float eta, int mcFlavour, float &SF, float &SFup, float &SFdown, bool isFastSim){
+
+  BTagEntryStandalone::JetFlavor flavour = BTagEntryStandalone::FLAV_UDSG;
+  if      ( abs(mcFlavour)==5 ) flavour = BTagEntryStandalone::FLAV_B;
+  else if ( abs(mcFlavour)==4 ) flavour = BTagEntryStandalone::FLAV_C;
+  
+  //BM: these two lines are probably unnecessary now with "eval_auto_bounds" method. To be checked
   float pt_cutoff  = std::max(30. ,std::min(669., double(pt)));
   float eta_cutoff = std::min(2.39,fabs(double(eta)));
 
-  if ( flavour==BTagEntry::FLAV_UDSG ){
-    SF     = reader_light   ->eval(flavour,eta_cutoff, pt_cutoff);
-    SFup   = reader_light_UP->eval(flavour,eta_cutoff, pt_cutoff);
-    SFdown = reader_light_DN->eval(flavour,eta_cutoff, pt_cutoff);
+  if ( flavour==BTagEntryStandalone::FLAV_UDSG ){
+    SF     = reader_fullSim_light->eval_auto_bounds("central",flavour,eta_cutoff, pt_cutoff);
+    SFup   = reader_fullSim_light->eval_auto_bounds("up",flavour,eta_cutoff, pt_cutoff);
+    SFdown = reader_fullSim_light->eval_auto_bounds("down",flavour,eta_cutoff, pt_cutoff);
   }
   else {
-    SF     = reader_heavy   ->eval(flavour,eta_cutoff, pt_cutoff);
-    SFup   = reader_heavy_UP->eval(flavour,eta_cutoff, pt_cutoff);
-    SFdown = reader_heavy_DN->eval(flavour,eta_cutoff, pt_cutoff);
+    SF     = reader_fullSim_heavy->eval_auto_bounds("central",flavour,eta_cutoff, pt_cutoff);
+    SFup   = reader_fullSim_heavy->eval_auto_bounds("up",flavour,eta_cutoff, pt_cutoff);
+    SFdown = reader_fullSim_heavy->eval_auto_bounds("down",flavour,eta_cutoff, pt_cutoff);
   }
 
   if( isFastSim ){
-    SF     *= reader_fast   ->eval(flavour,eta_cutoff, pt_cutoff);
-    SFup   *= reader_fast_UP->eval(flavour,eta_cutoff, pt_cutoff);
-    SFdown *= reader_fast_DN->eval(flavour,eta_cutoff, pt_cutoff);
+    SF     *= reader_fastSim->eval_auto_bounds("central",flavour,eta_cutoff, pt_cutoff);
+    SFup   *= reader_fastSim->eval_auto_bounds("up",flavour,eta_cutoff, pt_cutoff);
+    SFdown *= reader_fastSim->eval_auto_bounds("down",flavour,eta_cutoff, pt_cutoff);
   }
 
 }
 
 
-float getBtagEffFromFile(float pt, float eta, int mcFlavour, bool isFastSim){
+float BTagSFHelper::getBtagEffFromFile(float pt, float eta, int mcFlavour, bool isFastSim){
   if(!h_btag_eff_b || !h_btag_eff_c || !h_btag_eff_udsg) {
     std::cout << "ERROR: missing input hists" << std::endl;
     return 1.;
@@ -127,7 +187,7 @@ float getBtagEffFromFile(float pt, float eta, int mcFlavour, bool isFastSim){
 
 
 
-void get_weight_btag(int nobj, float* obj_pt, float* obj_eta, int* obj_mcFlavour, float* obj_btagCSV, float &wtbtag, float &wtbtagUp_heavy, float &wtbtagDown_heavy, float &wtbtagUp_light, float &wtbtagDown_light, bool isFastSim){
+void BTagSFHelper::get_weight_btag(int nobj, float* obj_pt, float* obj_eta, int* obj_mcFlavour, float* obj_btagCSV, float &wtbtag, float &wtbtagUp_heavy, float &wtbtagDown_heavy, float &wtbtagUp_light, float &wtbtagDown_light, bool isFastSim){
 
   float mcTag = 1.;
   float mcNoTag = 1.;
@@ -210,6 +270,8 @@ int btagSF(string inputString,
 	   string objectName,
 	   bool   isFastSim)
 {
+  BTagSFHelper bTagSFHelper;
+
   //Add all files in the input folder 
   string dcap = inputFolder.find("pnfs")!=std::string::npos ? "dcap://t3se01.psi.ch:22125/" : "";
   string fullInputString = dcap + inputFolder + "/" + inputString + ".root";
@@ -274,7 +336,7 @@ int btagSF(string inputString,
     if( objectName != "jet" || isData == 1 ) ;
     else{
       
-      get_weight_btag(nobj, obj_pt, obj_eta, obj_mcFlavour, obj_btagCSV, weight_btagsf, weight_btagsf_heavy_UP, weight_btagsf_heavy_DN, weight_btagsf_light_UP, weight_btagsf_light_DN , isFastSim );
+      bTagSFHelper.get_weight_btag(nobj, obj_pt, obj_eta, obj_mcFlavour, obj_btagCSV, weight_btagsf, weight_btagsf_heavy_UP, weight_btagsf_heavy_DN, weight_btagsf_light_UP, weight_btagsf_light_DN , isFastSim );
       
     }
 

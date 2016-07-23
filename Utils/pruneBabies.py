@@ -55,6 +55,7 @@ if __name__ == '__main__':
      print "   python pruneBabies.py [input_directory] [output_dir] [configFile=\"pruneBranches.txt\"]"
      exit()
 
+
    dir = args[0]
    outdir = args[1]
    pruneBranches = args[2]
@@ -68,7 +69,7 @@ if __name__ == '__main__':
    if options.useXRD == "true":
      print "-> chosen to use xrootd"
    else:
-     print "-> chosen to use gfal via "+gfalProtocol+" protocol"
+     print "-> chosen to use gfal via "+options.gfalProtocol+" protocol"
 
    pruneBranches = pruneBranches.replace(",", " ")
    pruneBranches = pruneBranches.split()
@@ -83,7 +84,8 @@ if __name__ == '__main__':
      if options.useXRD == "true":
        status,files = commands.getstatusoutput("xrdfs t3dcachedb.psi.ch ls "+dir)
      else:
-       status,files = commands.getstatusoutput("gfal-ls "+gfalProtocol+"://t3se01.psi.ch"+dir)
+       gfalLsString="env -i X509_USER_PROXY="+os.path.expanduser("~/")+".x509up_u"+commands.getoutput("id -u")+" gfal-ls "+options.gfalProtocol+"://t3se01.psi.ch"+dir
+       status,files = commands.getstatusoutput(gfalLsString)
 
      files=files.splitlines()
    else :

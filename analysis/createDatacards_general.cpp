@@ -26,8 +26,9 @@
 bool use_extrapolation = true;
 bool doSignalContamination = true;
 bool doSimultaneousFit = false;
-bool includeSignalUnc = true; // signal lep eff commented out till available, also btags
-bool copy2SE = true; // copy datacards to SE
+bool includeSignalUnc = true; // signal lep eff commented out till available
+bool copy2SE = false; // copy datacards to SE
+bool doGenAverage = true;
 
 int round(float d) {
   return (int)(floor(d + 0.5));
@@ -91,6 +92,7 @@ int main( int argc, char* argv[] ) {
   std::string mc_fileName = dir + "/analyses.root";
   std::string data_fileName = dir + "/analyses.root";
 
+  bool addSigLepSF= false;
 
   bool useMC_qcd  = false;
   bool useMC_zinv = false;
@@ -105,9 +107,10 @@ int main( int argc, char* argv[] ) {
   float err_zinv_uncorr_2b = 1.0;
 
   float err_zinv_puritySyst = 0.1; // 10%, including 5% on purity + 8% on fragmentation
-  float err_zinv_doubleRatioOffset = 0.11; // 11%, fully correlated, on zinv
+  float err_zinv_doubleRatioOffset = 0.10; // 10%, fully correlated, on zinv // TO BE UPDATED IN CASE IT CHANGES WITH FULL LUMI
+  float zinv_doubleRatioOffset = 0.90; // 90%, used to correct the Z/G ratio in zinv estimate // TO BE UPDATED IN CASE IT CHANGES WITH FULL LUMI
   
-  float err_lumi_corr   = 0.046; // Uncertainty on luminosity (4.6% for 2015 public results)
+  float err_lumi_corr   = 0.062; // Uncertainty on luminosity (6.2% for 2016 public results)
 
 
   // Reading data analysis (in search region)
@@ -162,6 +165,11 @@ int main( int argc, char* argv[] ) {
   MT2Analysis<MT2EstimateSyst>* zllG_nBJets;
   MT2Analysis<MT2EstimateSyst>* zllG_ht_monojet;
 
+  MT2Analysis<MT2EstimateSyst>* zllG_mc_ht;
+  MT2Analysis<MT2EstimateSyst>* zllG_mc_nJets;
+  MT2Analysis<MT2EstimateSyst>* zllG_mc_nBJets;
+  MT2Analysis<MT2EstimateSyst>* zllG_mc_ht_monojet;
+
   if( useMC_zinv )
     zinv = MT2Analysis<MT2Estimate>::readFromFile( mc_fileName, "ZJets");
   else {
@@ -174,10 +182,15 @@ int main( int argc, char* argv[] ) {
     
     purity      = MT2Analysis<MT2EstimateSyst>::readFromFile( dir + "/zinvFromGamma.root", "purity");
     
-    zllG_ht_monojet     = MT2Analysis<MT2EstimateSyst>::readFromFile( dir + "/zllGammaRatio/zllG_data_ratio.root", "zllG_data_mono_ht");
-    zllG_ht     = MT2Analysis<MT2EstimateSyst>::readFromFile( dir + "/zllGammaRatio/zllG_data_ratio.root", "zllG_data_ht");
-    zllG_nJets  = MT2Analysis<MT2EstimateSyst>::readFromFile( dir + "/zllGammaRatio/zllG_data_ratio.root", "zllG_data_nJets");
-    zllG_nBJets = MT2Analysis<MT2EstimateSyst>::readFromFile( dir + "/zllGammaRatio/zllG_data_ratio.root", "zllG_data_nBJets");
+    zllG_ht_monojet  = MT2Analysis<MT2EstimateSyst>::readFromFile( dir + "/zllGammaRatio/zllG_data_ratio.root", "zllG_data_mono_ht");
+    zllG_ht          = MT2Analysis<MT2EstimateSyst>::readFromFile( dir + "/zllGammaRatio/zllG_data_ratio.root", "zllG_data_ht");
+    zllG_nJets       = MT2Analysis<MT2EstimateSyst>::readFromFile( dir + "/zllGammaRatio/zllG_data_ratio.root", "zllG_data_nJets");
+    zllG_nBJets      = MT2Analysis<MT2EstimateSyst>::readFromFile( dir + "/zllGammaRatio/zllG_data_ratio.root", "zllG_data_nBJets");
+    
+    zllG_mc_ht_monojet  = MT2Analysis<MT2EstimateSyst>::readFromFile( dir + "/zllGammaRatio/zllG_mc_ratio.root", "zllG_mc_mono_ht");
+    zllG_mc_ht          = MT2Analysis<MT2EstimateSyst>::readFromFile( dir + "/zllGammaRatio/zllG_mc_ratio.root", "zllG_mc_ht");
+    zllG_mc_nJets       = MT2Analysis<MT2EstimateSyst>::readFromFile( dir + "/zllGammaRatio/zllG_mc_ratio.root", "zllG_mc_nJets");
+    zllG_mc_nBJets      = MT2Analysis<MT2EstimateSyst>::readFromFile( dir + "/zllGammaRatio/zllG_mc_ratio.root", "zllG_mc_nBJets");
     
   }
   zinv->setName("zinv");
@@ -234,6 +247,11 @@ int main( int argc, char* argv[] ) {
   TH1D* this_zllG_nJets  = zllG_nJets ->get(inclusiveRegion)->yield;
   TH1D* this_zllG_nBJets = zllG_nBJets->get(inclusiveRegion)->yield;
   TH1D* this_zllG_ht_monojet = zllG_ht_monojet->get(inclusiveRegion)->yield;
+
+  TH1D* this_zllG_mc_ht         = zllG_mc_ht    ->get(inclusiveRegion)->yield;
+  TH1D* this_zllG_mc_nJets      = zllG_mc_nJets ->get(inclusiveRegion)->yield;
+  TH1D* this_zllG_mc_nBJets     = zllG_mc_nBJets->get(inclusiveRegion)->yield;
+  TH1D* this_zllG_mc_ht_monojet = zllG_mc_ht_monojet->get(inclusiveRegion)->yield;
 
   
   // First create template datacards
@@ -487,10 +505,11 @@ int main( int argc, char* argv[] ) {
 	  datacard << "sig_syst_" << binName << " lnN 1.2 - - - - -" << std::endl;
 	else{
 	  datacard << "sig_isrSyst lnN III - - - - -" << std::endl;
-	  // datacard << "sig_bTagHeavySyst lnN HHH - - - - -" << std::endl;
-	  // datacard << "sig_bTagLightSyst lnN LLL - - - - -" << std::endl;
-	  // if(model=="T2tt" || model=="T1tttt")
-	  //   datacard << "sig_lepEffSyst lnN EEE - - - - -" << std::endl; // Include lepton eff. uncertainty only for T2tt and T1tttt
+
+	  datacard << "sig_bTagHeavySyst lnN HHH - - - - -" << std::endl;
+	  datacard << "sig_bTagLightSyst lnN LLL - - - - -" << std::endl;
+	  if( addSigLepSF && (model=="T2tt" || model=="T1tttt") )
+	    datacard << "sig_lepEffSyst lnN EEE - - - - -" << std::endl; // Include lepton eff. uncertainty only for T2tt and T1tttt
 	}
       }
       
@@ -506,14 +525,16 @@ int main( int argc, char* argv[] ) {
 	
 	datacard << "lumi_syst    lnN    " << 1.+err_lumi_corr << " - - -" << std::endl;
 	datacard << "sig_MCstat_" << binName << " lnN UUU - - -" << std::endl;
+	if (doGenAverage)
+	  datacard << "sig_gensyst lnU SSS - - -" << std::endl;
 	if(!includeSignalUnc)
 	  datacard << "sig_syst_" << binName << " lnN 1.2 - - -" << std::endl;
 	else{
 	  datacard << "sig_isrSyst lnN III - - -" << std::endl;
-	  // datacard << "sig_bTagHeavySyst lnN HHH - - -" << std::endl;
-	  // datacard << "sig_bTagLightSyst lnN LLL - - -" << std::endl;
-	  // if(model=="T2tt" || model=="T1tttt")
-	  //   datacard << "sig_lepEffSyst lnN EEE - - -" << std::endl; // Include lepton eff. uncertainty only for T2tt and T1tttt 
+	  datacard << "sig_bTagHeavySyst lnN HHH - - -" << std::endl;
+	  datacard << "sig_bTagLightSyst lnN LLL - - -" << std::endl;
+	  if( addSigLepSF && ((model=="T2tt" || model=="T1tttt")) )
+	    datacard << "sig_lepEffSyst lnN EEE - - -" << std::endl; // Include lepton eff. uncertainty only for T2tt and T1tttt 
 	}
       }
       
@@ -559,6 +580,15 @@ int main( int argc, char* argv[] ) {
 	  float thisErrNBDn;
 	  float thisErrHTDn;
 	  
+	  float thisCentralNJ;
+	  float thisCentralNJ_mc;
+
+	  float thisCentralNB;
+	  float thisCentralNB_mc;
+
+	  float thisCentralHT;
+	  float thisCentralHT_mc;
+
 	  if( iR->nJetsMax()>1 || iR->nJetsMax()<0){
 	    
 	    thisBinNJ = this_zllG_nJets->FindBin(iR->nJetsMin());
@@ -581,6 +611,15 @@ int main( int argc, char* argv[] ) {
 	      thisErrNBDn*=2;
 	    }
 	    
+	    thisCentralNJ = this_zllG_nJets->GetBinContent(thisBinNJ);
+	    thisCentralNJ_mc = this_zllG_mc_nJets->GetBinContent(thisBinNJ);
+
+	    thisCentralNB = this_zllG_nBJets->GetBinContent(thisBinNB);
+	    thisCentralNB_mc = this_zllG_mc_nBJets->GetBinContent(thisBinNB);
+
+	    thisCentralHT = this_zllG_ht->GetBinContent(thisBinHT);
+	    thisCentralHT_mc = this_zllG_mc_ht->GetBinContent(thisBinHT);
+
 	  }
 	  else{
 	    
@@ -595,11 +634,43 @@ int main( int argc, char* argv[] ) {
 	    
 	    thisBinHT = this_zllG_ht_monojet->FindBin(iR->htMin()+1.);
 	    thisErrHTUp = ( this_zllG_ht_monojet->GetBinContent(thisBinHT) > 0 )     ? ( thisUp_zllG_ht_monojet->GetBinContent(thisBinHT) - this_zllG_ht_monojet->GetBinContent(thisBinHT) ) / this_zllG_ht_monojet->GetBinContent(thisBinHT)     : 1.0;
-	    thisErrHTDn = ( this_zllG_ht_monojet->GetBinContent(thisBinHT) > 0 )     ? ( this_zllG_ht_monojet->GetBinContent(thisBinHT)     - thisDn_zllG_ht_monojet->GetBinContent(thisBinHT) )    / this_zllG_ht_monojet->GetBinContent(thisBinHT)     : 1.0;
+	    thisErrHTDn = ( this_zllG_ht_monojet->GetBinContent(thisBinHT) > 0 )     ? ( this_zllG_ht_monojet->GetBinContent(thisBinHT)   - thisDn_zllG_ht_monojet->GetBinContent(thisBinHT) ) / this_zllG_ht_monojet->GetBinContent(thisBinHT)     : 1.0;
+	    
+	    
+	    thisCentralNJ = this_zllG_nJets->GetBinContent(thisBinNJ);
+	    thisCentralNJ_mc = this_zllG_mc_nJets->GetBinContent(thisBinNJ);
+
+	    thisCentralNB = this_zllG_nBJets->GetBinContent(thisBinNB);
+	    thisCentralNB_mc = this_zllG_mc_nBJets->GetBinContent(thisBinNB);
+
+	    thisCentralHT = this_zllG_ht_monojet->GetBinContent(thisBinHT);
+	    thisCentralHT_mc = this_zllG_mc_ht_monojet->GetBinContent(thisBinHT);
 	    
 	  }
 	  
 	  
+	  ////// NEW in 2016:
+	  //If stat. uncertainty in Z/G ratio (from data) is smaller than data-MC (AFTER correction), then take data-MC difference as uncertainty
+	  thisCentralNJ_mc *= zinv_doubleRatioOffset;
+	  thisCentralNB_mc *= zinv_doubleRatioOffset;
+	  thisCentralHT_mc *= zinv_doubleRatioOffset;
+	  
+	  if( thisCentralNJ_mc > thisCentralNJ*(1+thisErrNJUp) ) 
+	    thisErrNJUp = (thisCentralNJ>0) ? (thisCentralNJ_mc - thisCentralNJ)/thisCentralNJ : 1.0;
+	  else if ( thisCentralNJ_mc < thisCentralNJ*(1-thisErrNJDn) ) 
+	    thisErrNJDn = (thisCentralNJ>0) ? (thisCentralNJ - thisCentralNJ_mc)/thisCentralNJ : 1.0;
+
+	  if( thisCentralNB_mc > thisCentralNB*(1+thisErrNBUp) ) 
+	    thisErrNBUp = (thisCentralNB>0) ? (thisCentralNB_mc - thisCentralNB)/thisCentralNB : 1.0;
+	  else if ( thisCentralNB_mc < thisCentralNB*(1-thisErrNBDn) ) 
+	    thisErrNBDn = (thisCentralNB>0) ? (thisCentralNB - thisCentralNB_mc)/thisCentralNB : 1.0;
+
+	  if( thisCentralHT_mc > thisCentralHT*(1+thisErrHTUp) ) 
+	    thisErrHTUp = (thisCentralHT>0) ? (thisCentralHT_mc - thisCentralHT)/thisCentralHT : 1.0;
+	  else if ( thisCentralHT_mc < thisCentralHT*(1-thisErrHTDn) ) 
+	    thisErrHTDn = (thisCentralHT>0) ? (thisCentralHT - thisCentralHT_mc)/thisCentralHT : 1.0;
+	  //////
+
 	  if(doSimultaneousFit && includeCR)
 	    datacard << "zinv_doubleRatioOffset lnN   - " << 1.+err_zinv_doubleRatioOffset << " - - - -" << std::endl;
 	  else
@@ -1079,9 +1150,10 @@ int main( int argc, char* argv[] ) {
 
   std::vector<MT2Analysis<MT2EstimateSigContSyst>*> signals;
   std::vector<MT2Analysis<MT2EstimateSigSyst>*> signals_isr;
-  // std::vector<MT2Analysis<MT2EstimateSigSyst>*> signals_bTagHeavy;
-  // std::vector<MT2Analysis<MT2EstimateSigSyst>*> signals_bTagLight;
-  //std::vector<MT2Analysis<MT2EstimateSigSyst>*> signals_lepEff;
+  std::vector<MT2Analysis<MT2EstimateSigSyst>*> signals_bTagHeavy;
+  std::vector<MT2Analysis<MT2EstimateSigSyst>*> signals_bTagLight;
+  std::vector<MT2Analysis<MT2EstimateSigSyst>*> signals_lepEff;
+
 
   std::string modelName = model;
   if( model == "T2tt" || model == "T1tttt" )
@@ -1094,8 +1166,8 @@ int main( int argc, char* argv[] ) {
     // signals_bTagHeavy = MT2Analysis<MT2EstimateSigSyst>::readAllSystFromFile( "./signalScansFromDominick/"+modelName+"_eth.root", modelName, "btagsf_heavy" );
     // signals_bTagLight = MT2Analysis<MT2EstimateSigSyst>::readAllSystFromFile( "./signalScansFromDominick/"+modelName+"_eth.root", modelName, "btagsf_light" );
     
-    // if( model == "T2tt" || model == "T1tttt" )
-    //   signals_lepEff = MT2Analysis<MT2EstimateSigSyst>::readAllSystFromFile( "./signalScansFromDominick/"+modelName+"_eth.root", modelName, "lepeff" );
+    if( addSigLepSF && (( model == "T2tt" || model == "T1tttt" )) )
+      signals_lepEff = MT2Analysis<MT2EstimateSigSyst>::readAllSystFromFile( "./signalScansFromDominick/"+modelName+"_eth.root", modelName, "lepeff" );
   }
   
   
@@ -1158,7 +1230,7 @@ int main( int argc, char* argv[] ) {
       if( thisSigSystCentral->yield3d!=0 ){
 	
 	//this_signal3d_central = signalVeto[isig]->get(*iR)->yield3d;
-	this_signal3d_central = signals[isig]->get(*iR)->yield3d;
+	this_signal3d_central        = signals[isig]->get(*iR)->yield3d;
 	
       }
       else continue;
@@ -1171,13 +1243,13 @@ int main( int argc, char* argv[] ) {
       // TH3D* this_signal3d_bTagHeavy_Up;
       // TH3D* this_signal3d_bTagLight_Up;
       TH3D* this_signal3d_isr_Up;
-      // TH3D* this_signal3d_lepEff_Up;
+      TH3D* this_signal3d_lepEff_Up;
       
       // Read signal systematic analysis, and take 3D histogrms if they exist for this region
       MT2EstimateSigSyst* thisSigSyst_isr;
-      // MT2EstimateSigSyst* thisSigSyst_bTagHeavy;
-      // MT2EstimateSigSyst* thisSigSyst_bTagLight;
-      // MT2EstimateSigSyst* thisSigSyst_lepEff;
+      MT2EstimateSigSyst* thisSigSyst_bTagHeavy;
+      MT2EstimateSigSyst* thisSigSyst_bTagLight;
+      MT2EstimateSigSyst* thisSigSyst_lepEff;
 
       if( includeSignalUnc ){
 	
@@ -1199,14 +1271,14 @@ int main( int argc, char* argv[] ) {
 	// else
 	//   this_signal3d_bTagLight_Up = (TH3D*) signals[isig]->get(*iR)->yield3d->Clone();
 	
-	// if( model == "T2tt" || model == "T1tttt" ){
-	//   thisSigSyst_lepEff = signals_lepEff[isig]->get(*iR);
-	//   if( thisSigSyst_lepEff->yield3d_systUp!=0 )
-	//     this_signal3d_lepEff_Up       = (TH3D*) signals_lepEff[isig]->get(*iR)->yield3d_systUp->Clone();
-	//   else
-	//     this_signal3d_lepEff_Up = (TH3D*) signals[isig]->get(*iR)->yield3d->Clone();
-	// }
-
+	if( addSigLepSF && (( model == "T2tt" || model == "T1tttt" ))){
+	  thisSigSyst_lepEff = signals_lepEff[isig]->get(*iR);
+	  if( thisSigSyst_lepEff->yield3d_systUp!=0 )
+	    this_signal3d_lepEff_Up       = (TH3D*) signals_lepEff[isig]->get(*iR)->yield3d_systUp->Clone();
+	  else
+	    this_signal3d_lepEff_Up = (TH3D*) signals[isig]->get(*iR)->yield3d->Clone();
+	}
+	
       }
       
       // Start loop over SUSY parent mass
@@ -1225,8 +1297,21 @@ int main( int argc, char* argv[] ) {
 	  if( !(mLSP >= m11-1 && mLSP < m22-1) ) continue;
 	  
 	  // Get MT2 yield histogram for this mass point
-	  TH1D* this_signal = this_signal3d_central->ProjectionX("mt2", iBinY, iBinY, iBinZ, iBinZ);
+	  TH1D* this_signal      = this_signal3d_central->ProjectionX("mt2"     , iBinY, iBinY, iBinZ, iBinZ);
+	  TH1D* this_signal_syst = this_signal3d_central->ProjectionX("mt2_syst", iBinY, iBinY, iBinZ, iBinZ);
 	  
+	  if (doGenAverage) {
+	    TH3D* this_signal3d_central_genmet = signals[isig]->get(*iR)->yield3d_genmet;
+	    TH1D* this_signal_genmet = this_signal3d_central_genmet->ProjectionX("mt2_genmet", iBinY, iBinY, iBinZ, iBinZ);
+	    this_signal->Add(this_signal_genmet);
+	    this_signal->Scale(0.5);
+
+	    this_signal_syst->Add(this_signal_genmet, -1.0);
+	    this_signal_syst->Scale(0.5); // half difference between gen and reco
+
+	  }
+	  
+
 //	  // If want to replace central yield
 //	  TH1D* this_signal_veto = (TH1D*) signalVeto[isig]->get(*iR)->yield->Clone();
 	  
@@ -1234,16 +1319,29 @@ int main( int argc, char* argv[] ) {
 	  
 	  ////// Signal contamination
 	  TH1D* this_signalContamination;
+	  TH1D* this_signalContamination_syst;
 	 
 	  TH3D* this_signal3d_crsl;
 	  TH1D* this_signal_crsl;
+	  TH1D* this_signal_crsl_syst;
 	  TH1D* this_signal_alpha;
 	  
 	  if( (model == "T2tt" || model == "T1tttt") && doSignalContamination ){
-	    this_signal3d_crsl = (TH3D*) signals[isig]->get(*iR)->yield3d_crsl->Clone();
+	    this_signal3d_crsl        = (TH3D*) signals[isig]->get(*iR)->yield3d_crsl       ->Clone();
 	    //this_signal3d_crsl = (TH3D*) signalVeto_1lCR[isig]->get(*iR)->yield3d->Clone();
-	    this_signal_crsl   = this_signal3d_crsl->ProjectionX("mt2_crsl", iBinY, iBinY, iBinZ, iBinZ);
+	    this_signal_crsl        = this_signal3d_crsl       ->ProjectionX("mt2_crsl", iBinY, iBinY, iBinZ, iBinZ);
 	    this_signal_alpha  = (TH1D*) signals[isig]->get(*iR)->yield_alpha->Clone();
+
+	    if (doGenAverage){
+	      TH3D *this_signal3d_crsl_genmet = (TH3D*) signals[isig]->get(*iR)->yield3d_crsl_genmet->Clone();
+	      TH1D *this_signal_crsl_genmet = this_signal3d_crsl_genmet->ProjectionX("mt2_crsl", iBinY, iBinY, iBinZ, iBinZ);
+	      this_signal_crsl->Add(this_signal_crsl_genmet);
+	      this_signal_crsl->Scale(0.5);
+
+	      this_signal_crsl_syst= this_signal3d_crsl->ProjectionX("mt2_crsl_syst", iBinY, iBinY, iBinZ, iBinZ);
+	      this_signal_crsl_syst->Add(this_signal_crsl_genmet,-1.0);
+	      this_signal_crsl_syst->Scale(0.5);
+	    }
 	    
 	  //	  //If want to replace yield in 1l CR for signal contamination
 	  //	  TH1D* this_signal_veto_1lCR = (TH1D*) signalVeto_1lCR[isig]->get(*iR)->yield->Clone();
@@ -1254,12 +1352,20 @@ int main( int argc, char* argv[] ) {
 	    else{
 	      this_signalContamination = (TH1D*) this_signal_alpha->Clone();
 	      this_signalContamination->Scale( this_signal_crsl->Integral() );
+	      if(doGenAverage){
+		this_signalContamination_syst = (TH1D*) this_signal_alpha->Clone("mt2_cont_syst");
+		this_signalContamination_syst->Scale( this_signal_crsl_syst->Integral() );
+	      }
 	    }
 	  }
 	  else{
 	    
 	    this_signalContamination = (TH1D*) this_signal->Clone();
 	    this_signalContamination->Scale(0.);
+	    if(doGenAverage){
+	      this_signalContamination_syst = (TH1D*) this_signal_syst->Clone("mt2_cont_syst");
+	      this_signalContamination_syst->Scale(0.);
+	    }
 
 	  }
 	    
@@ -1330,6 +1436,7 @@ int main( int argc, char* argv[] ) {
 
 	      float sig = this_signal->GetBinContent(iBin);
 	      float sigErr = this_signal->GetBinError(iBin)/sig;
+	      float sig_syst = 0;
 	      
 	      ////// If you want to replace central yield
 	      //	      float sig_veto = this_signal_veto->GetBinContent(iBin);
@@ -1351,9 +1458,9 @@ int main( int argc, char* argv[] ) {
 	      
 	      
 	      float isrErr;
-	      // float bTagErr_heavy;
-	      // float bTagErr_light;
-	      // float lepEffErr;
+	      float bTagErr_heavy;
+	      float bTagErr_light;
+	      float lepEffErr;
 	      
 	      if( includeSignalUnc ) {
 		
@@ -1364,16 +1471,18 @@ int main( int argc, char* argv[] ) {
 		// bTagErr_heavy = this_signal3d_bTagHeavy_Up->GetBinContent(iBin, iBinY, iBinZ);
 		// bTagErr_heavy = bTagErr_heavy/sig;
 	      
-		// bTagErr_light = this_signal3d_bTagLight_Up->GetBinContent(iBin, iBinY, iBinZ);
-		// bTagErr_light = bTagErr_light/sig;
-	      
-		// lepEffErr = this_signal3d_lepEff_Up->GetBinContent(iBin, iBinY, iBinZ);
-		// lepEffErr = lepEffErr/sig;
+		bTagErr_light = this_signal3d_bTagLight_Up->GetBinContent(iBin, iBinY, iBinZ);
+		bTagErr_light = bTagErr_light/sig;
+		
+		if( addSigLepSF && (( model == "T2tt" || model == "T1tttt" ))){
+		  lepEffErr = this_signal3d_lepEff_Up->GetBinContent(iBin, iBinY, iBinZ);
+		  lepEffErr = lepEffErr/sig;
+		}
 		
 	      }
 	      
-	      float totUncorrErr = 1.+sqrt(sigErr*sigErr+2*0.05*0.05+0.1*0.1); // MC stat + scales (5%) + JEC (10%)
-	      float totUncorrErrCont = 1.+sqrt(sigContErr*sigContErr+2*0.05*0.05+0.1*0.1); // MC stat + scales (5%) + JEC (10%)
+	      float totUncorrErr = 1.+sqrt(sigErr*sigErr+0.05*0.05+0.1*0.1); // MC stat + scales (5%) + JEC (10%)
+	      float totUncorrErrCont = 1.+sqrt(sigContErr*sigContErr+0.05*0.05+0.1*0.1); // MC stat + scales (5%) + JEC (10%)
 
 	      if(doSignalContamination && !doSimultaneousFit) sig=sig-sigCont;
 	      else if(!doSignalContamination) {
@@ -1381,6 +1490,12 @@ int main( int argc, char* argv[] ) {
 		totUncorrErrCont=0.;
 	      }
 	      if(sig<0.) sig=0.;
+
+	      if(doGenAverage){
+		sig_syst = 1 + fabs((this_signal_syst->GetBinContent(iBin)-this_signalContamination_syst->GetBinContent(iBin))/(sig !=0 ? sig : 1.0)); // cont_syst=0 if no doSignalCont
+		if ( (this_signal_syst->GetBinContent(iBin)-this_signalContamination_syst->GetBinContent(iBin))*sig < 0 )
+		  sig_syst = 1/sig_syst; // to account for negative variation
+	      }
 
 	      
 	      std::string mvCommand( Form("mv %s %s", newDatacard.c_str(), helpDatacard.c_str()) );
@@ -1402,9 +1517,14 @@ int main( int argc, char* argv[] ) {
 		system( sedCommand_uncErrCR.c_str() );
 	      
 	      std::string sedCommand_isrErr( Form("sed -i 's/III/%.3f/' %s", isrErr, newDatacard.c_str()) );
-	      // std::string sedCommand_bTagHErr( Form("sed -i 's/HHH/%.3f/' %s", bTagErr_heavy, newDatacard.c_str()) );
-	      // std::string sedCommand_bTagLErr( Form("sed -i 's/LLL/%.3f/' %s", bTagErr_light, newDatacard.c_str()) );
-	      // std::string sedCommand_lepEffErr( Form("sed -i 's/EEE/%.3f/' %s", lepEffErr, newDatacard.c_str()) );
+	      std::string sedCommand_bTagHErr( Form("sed -i 's/HHH/%.3f/' %s", bTagErr_heavy, newDatacard.c_str()) );
+	      std::string sedCommand_bTagLErr( Form("sed -i 's/LLL/%.3f/' %s", bTagErr_light, newDatacard.c_str()) );
+	      std::string sedCommand_lepEffErr( Form("sed -i 's/EEE/%.3f/' %s", lepEffErr, newDatacard.c_str()) );
+
+	      std::string sedCommand_genErr( Form("sed -i 's/SSS/%.3f/' %s", sig_syst, newDatacard.c_str()) );
+
+	      if (doGenAverage)
+		system( sedCommand_genErr.c_str() );
 
 	      if( includeSignalUnc ){
 		
@@ -1412,8 +1532,8 @@ int main( int argc, char* argv[] ) {
 		// system( sedCommand_bTagHErr.c_str() );
 		// system( sedCommand_bTagLErr.c_str() );
 		
-		// if( model == "T2tt" || model == "T1tttt" )
-		//   system( sedCommand_lepEffErr.c_str() );
+		if( addSigLepSF && (( model == "T2tt" || model == "T1tttt" )))
+		  system( sedCommand_lepEffErr.c_str() );
 	      
 	      }
 	      

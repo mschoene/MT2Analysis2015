@@ -174,7 +174,9 @@ int postProcessing(std::string inputString,
   TH2D* h_eff_fast_mu =  0;
   TH2D* h_eff_fast_el =  0;
 
+  BTagSFHelper* bTagSFHelper = 0;
   if( applySF ){
+    bTagSFHelper =  new BTagSFHelper();
 
     //Getting the lepton scale factor histograms/////////////////
     //Electrons//
@@ -456,16 +458,18 @@ int postProcessing(std::string inputString,
   Float_t weight_lepsf_0l_DN;
 
 
-  ////// Lepton Efficiency SF
+  ////// Lepton Efficiency SF (to be run only for MC)
   Int_t nlep;
-  chain->SetBranchAddress("nlep", &nlep);
   Float_t lep_pt[100];
-  chain->SetBranchAddress("lep_pt", lep_pt);
   Float_t lep_eta[100];
-  chain->SetBranchAddress("lep_eta", lep_eta);
   Int_t lep_pdgId[100];
-  chain->SetBranchAddress("lep_pdgId", lep_pdgId);
-  
+
+  if(!isData){
+    chain->SetBranchAddress("nlep", &nlep);
+    chain->SetBranchAddress("lep_pt", lep_pt);
+    chain->SetBranchAddress("lep_eta", lep_eta);    
+    chain->SetBranchAddress("lep_pdgId", lep_pdgId);
+  }
 
   Int_t ngenLep;
   Float_t genLep_pt[100];
@@ -498,19 +502,22 @@ int postProcessing(std::string inputString,
   }
 
 
-  ////// b-tag SF
+  ////// b-tag SF (to be run only for MC)
   Int_t njet;
-  chain->SetBranchAddress("njet", &njet);
   Float_t jet_pt[100];
-  chain->SetBranchAddress("jet_pt", jet_pt);
   Float_t jet_eta[100];
-  chain->SetBranchAddress("jet_eta", jet_eta);
   Int_t jet_mcFlavour[100];
-  if(!isData)
-    chain->SetBranchAddress("jet_mcFlavour", jet_mcFlavour);
   Float_t jet_btagCSV[100];
-  chain->SetBranchAddress("jet_btagCSV", jet_btagCSV);
-  
+
+
+  if(!isData){
+    chain->SetBranchAddress("njet", &njet);
+    chain->SetBranchAddress("jet_pt", jet_pt);
+    chain->SetBranchAddress("jet_eta", jet_eta);
+    chain->SetBranchAddress("jet_mcFlavour", jet_mcFlavour);
+    chain->SetBranchAddress("jet_btagCSV", jet_btagCSV);
+  }  
+
   ////// isr re-weight
   Int_t nGenPart;
   Float_t GenPart_pt[100];
@@ -885,7 +892,7 @@ int postProcessing(std::string inputString,
 
 
       /////////Add b-tagging scale factor//////////     
-      get_weight_btag(njet, jet_pt, jet_eta, jet_mcFlavour, jet_btagCSV, weight_btagsf, weight_btagsf_heavy_UP, weight_btagsf_heavy_DN, weight_btagsf_light_UP, weight_btagsf_light_DN, isFastSim);
+      bTagSFHelper->get_weight_btag(njet, jet_pt, jet_eta, jet_mcFlavour, jet_btagCSV, weight_btagsf, weight_btagsf_heavy_UP, weight_btagsf_heavy_DN, weight_btagsf_light_UP, weight_btagsf_light_DN, isFastSim);
 
 
 
@@ -1146,7 +1153,7 @@ int postProcessing(std::string inputString,
     }
     delete h_isr; delete h_counter;
   }
-
+  if(bTagSFHelper) delete bTagSFHelper;
   delete chain; 
   hPU->Write();
   hPU_data->Write();
@@ -1164,6 +1171,6 @@ int postProcessing(std::string inputString,
   delete out;
   return 0;
   
-  }
+}
 
 

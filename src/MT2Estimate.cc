@@ -20,7 +20,7 @@ MT2Estimate::MT2Estimate( const std::string& aname, const MT2Region& aregion ) {
   double* bins;
   region->getBins(nBins, bins);
   
-  int nBinsM=81;
+  int nBinsM=93;
   double binWidthM=25.;
   double binsM[nBinsM+1];
   for (int b=0; b<=nBinsM; ++b)
@@ -478,7 +478,8 @@ void MT2Estimate::print( std::ofstream& ofs_file, Float_t m1, Float_t m2, Int_t 
   TH3D* h_sig3d;
   h_sig3d = yield3d;
 
-  int nBinsM=81;
+  //  int nBinsM=81;
+  int nBinsM=93;
   double binWidthM=25.;
   double binsM[nBinsM+1];
   for (int b=0; b<=nBinsM; ++b)
