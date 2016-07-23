@@ -92,6 +92,7 @@ int main( int argc, char* argv[] ) {
   std::string mc_fileName = dir + "/analyses.root";
   std::string data_fileName = dir + "/analyses.root";
 
+  bool addSigLepSF= false;
 
   bool useMC_qcd  = false;
   bool useMC_zinv = false;
@@ -506,7 +507,7 @@ int main( int argc, char* argv[] ) {
 	  datacard << "sig_isrSyst lnN III - - - - -" << std::endl;
 	  datacard << "sig_bTagHeavySyst lnN HHH - - - - -" << std::endl;
 	  datacard << "sig_bTagLightSyst lnN LLL - - - - -" << std::endl;
-	  if(model=="T2tt" || model=="T1tttt")
+	  if( addSigLepSF && (model=="T2tt" || model=="T1tttt") )
 	    datacard << "sig_lepEffSyst lnN EEE - - - - -" << std::endl; // Include lepton eff. uncertainty only for T2tt and T1tttt
 	}
       }
@@ -531,7 +532,7 @@ int main( int argc, char* argv[] ) {
 	  datacard << "sig_isrSyst lnN III - - -" << std::endl;
 	  datacard << "sig_bTagHeavySyst lnN HHH - - -" << std::endl;
 	  datacard << "sig_bTagLightSyst lnN LLL - - -" << std::endl;
-	  if(model=="T2tt" || model=="T1tttt")
+	  if( addSigLepSF && ((model=="T2tt" || model=="T1tttt")) )
 	    datacard << "sig_lepEffSyst lnN EEE - - -" << std::endl; // Include lepton eff. uncertainty only for T2tt and T1tttt 
 	}
       }
@@ -1163,7 +1164,7 @@ int main( int argc, char* argv[] ) {
     signals_bTagHeavy = MT2Analysis<MT2EstimateSigSyst>::readAllSystFromFile( "./signalScansFromDominick/"+modelName+"_eth.root", modelName, "btagsf_heavy" );
     signals_bTagLight = MT2Analysis<MT2EstimateSigSyst>::readAllSystFromFile( "./signalScansFromDominick/"+modelName+"_eth.root", modelName, "btagsf_light" );
     
-    if( model == "T2tt" || model == "T1tttt" )
+    if( addSigLepSF && (( model == "T2tt" || model == "T1tttt" )) )
       signals_lepEff = MT2Analysis<MT2EstimateSigSyst>::readAllSystFromFile( "./signalScansFromDominick/"+modelName+"_eth.root", modelName, "lepeff" );
   }
   
@@ -1268,7 +1269,7 @@ int main( int argc, char* argv[] ) {
 	else
 	  this_signal3d_bTagLight_Up = (TH3D*) signals[isig]->get(*iR)->yield3d->Clone();
 	
-	if( model == "T2tt" || model == "T1tttt" ){
+	if( addSigLepSF && (( model == "T2tt" || model == "T1tttt" ))){
 	  thisSigSyst_lepEff = signals_lepEff[isig]->get(*iR);
 	  if( thisSigSyst_lepEff->yield3d_systUp!=0 )
 	    this_signal3d_lepEff_Up       = (TH3D*) signals_lepEff[isig]->get(*iR)->yield3d_systUp->Clone();
@@ -1471,8 +1472,10 @@ int main( int argc, char* argv[] ) {
 		bTagErr_light = this_signal3d_bTagLight_Up->GetBinContent(iBin, iBinY, iBinZ);
 		bTagErr_light = bTagErr_light/sig;
 		
-		lepEffErr = this_signal3d_lepEff_Up->GetBinContent(iBin, iBinY, iBinZ);
-		lepEffErr = lepEffErr/sig;
+		if( addSigLepSF && (( model == "T2tt" || model == "T1tttt" ))){
+		  lepEffErr = this_signal3d_lepEff_Up->GetBinContent(iBin, iBinY, iBinZ);
+		  lepEffErr = lepEffErr/sig;
+		}
 		
 	      }
 	      
@@ -1528,7 +1531,7 @@ int main( int argc, char* argv[] ) {
 		system( sedCommand_bTagHErr.c_str() );
 		system( sedCommand_bTagLErr.c_str() );
 		
-		if( model == "T2tt" || model == "T1tttt" )
+		if( addSigLepSF && (( model == "T2tt" || model == "T1tttt" )))
 		  system( sedCommand_lepEffErr.c_str() );
 	      
 	      }
