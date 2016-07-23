@@ -135,14 +135,17 @@ void MT2EstimateSigSyst::getShit( TFile* file, const std::string& path ) {
 }
 
 
-void MT2EstimateSigSyst::print( std::ofstream& ofs_file, Float_t m1, Float_t m2, Int_t mt2_bin, float k ){
+void MT2EstimateSigSyst::print( std::ofstream& ofs_file, Float_t m1, Float_t m2, Int_t mt2_bin, float k, bool doGenAverage ){
 
   TH1D* h_sig;
   TH3D* h_sig3d;
   h_sig3d = this->yield3d;
-  h_sig3d->Add( (this->yield3d_genmet) );
-  h_sig3d->Scale(0.5);
-
+  
+  if(doGenAverage){
+    h_sig3d->Add( (this->yield3d_genmet) );
+    h_sig3d->Scale(0.5);
+  }
+  
   int nBinsM=93;
   double binWidthM=25.;
   double binsM[nBinsM+1];

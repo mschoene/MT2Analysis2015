@@ -44,7 +44,7 @@ class MT2EstimateSigSyst : public MT2Estimate {
 
   virtual void getShit( TFile* file, const std::string& path );
 
-  virtual void print( std::ofstream& ofs_file, Float_t m1, Float_t m2, Int_t mt2_bin, float k );
+  virtual void print( std::ofstream& ofs_file, Float_t m1, Float_t m2, Int_t mt2_bin, float k, bool doGenAverage=true );
   
   virtual void write() const;
 
