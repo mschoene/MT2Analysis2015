@@ -2,12 +2,12 @@
 
 # --- configuration (consider to move this into a separate file) ---
 treeName="mt2"
-inputFolder="/pnfs/psi.ch/cms/trivcat/store/user/mangano/crab/MT2_8_0_11/prodJuly15_runB_forQCD_v1/"
+inputFolder=" /pnfs/psi.ch/cms/trivcat/store/user/mangano/crab/MT2_8_0_11/prodJuly21_runD_forZll_v1/"
 
 listOfSamplesFile="postProcessing2016-Data.cfg"
 #listOfSamplesFile="postProcessing2016-MC.cfg"
 
-productionName="$(basename $inputFolder)" 
+productionName="$(basename $inputFolder)_fullStat" 
 
 outputFolder="/pnfs/psi.ch/cms/trivcat/store/user/`whoami`/MT2production/80X/PostProcessed/"$productionName"/"
 
@@ -522,8 +522,13 @@ done < $listOfSamplesFile
 fi;
 
 if [[ "$1" = "postCheck" ]]; then
-    sizeLogsErr=`ls -l ${jobsLogsFolder}/*.err |awk '{sum+=$5} END {print sum}'`
-    if [[ $sizeLogsErr -eq 0 ]]; then
+    #logsErr=`cat ${jobsLogsFolder}/*.err`
+    # use the following until a solution is found to remove dictionary warning messages, 
+    # which appear only when running skimming/pruning:
+    logsErr=`cat ${jobsLogsFolder}/*.err | \
+	grep -v "found in libCore.so  is already in libDataFormatsStdDictionaries.so | \
+	grep -v "BTagCalibrationReader found in libCondToolsBTau.so  is already in libCondFormatsBTauObjects.so`
+    if [[ -z $logsErr ]]; then
 	echo "there were no errors. Zipping all logs and copying them to the SE"	 
 	cd $jobsLogsFolder
 	tar -czvf logs.tgz  *
