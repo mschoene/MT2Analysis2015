@@ -1298,7 +1298,7 @@ int main( int argc, char* argv[] ) {
 	  TH1D* this_signal      = this_signal3d_central->ProjectionX("mt2"     , iBinY, iBinY, iBinZ, iBinZ);
 	  TH1D* this_signal_syst = this_signal3d_central->ProjectionX("mt2_syst", iBinY, iBinY, iBinZ, iBinZ);
 	  
-	  if (doGenAverage) {
+	  if (doGenAverage && signals[isig]->get(*iR)->yield3d_genmet!=0) {
 	    TH3D* this_signal3d_central_genmet = signals[isig]->get(*iR)->yield3d_genmet;
 	    TH1D* this_signal_genmet = this_signal3d_central_genmet->ProjectionX("mt2_genmet", iBinY, iBinY, iBinZ, iBinZ);
 	    this_signal->Add(this_signal_genmet);
@@ -1330,7 +1330,7 @@ int main( int argc, char* argv[] ) {
 	    this_signal_crsl        = this_signal3d_crsl       ->ProjectionX("mt2_crsl", iBinY, iBinY, iBinZ, iBinZ);
 	    this_signal_alpha  = (TH1D*) signals[isig]->get(*iR)->yield_alpha->Clone();
 
-	    if (doGenAverage){
+	    if (doGenAverage && signals[isig]->get(*iR)->yield3d_crsl_genmet!=0){
 	      TH3D *this_signal3d_crsl_genmet = (TH3D*) signals[isig]->get(*iR)->yield3d_crsl_genmet->Clone();
 	      TH1D *this_signal_crsl_genmet = this_signal3d_crsl_genmet->ProjectionX("mt2_crsl", iBinY, iBinY, iBinZ, iBinZ);
 	      this_signal_crsl->Add(this_signal_crsl_genmet);
