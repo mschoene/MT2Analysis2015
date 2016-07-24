@@ -1,28 +1,38 @@
 #!/bin/bash
 
 # --- configuration (consider to move this into a separate file) ---
+inputProductionFolder="/store/user/mangano/crab/MT2_8_0_11/prodJuly23_runD_forZll_v1/"
+#inputProductionFolder="/store/user/mangano/crab/MT2_8_0_11/prodJuly21_runD_forZll_v1/"
+
+
+#postFix=""
+postFix="_testNewSeAccess_v6"
+
 treeName="mt2"
-inputFolder=" /pnfs/psi.ch/cms/trivcat/store/user/mangano/crab/MT2_8_0_11/prodJuly21_runD_forZll_v1/"
+
+# For T2
+site="lcg.cscs.ch"
+se="storage01"
+
+# For T3
+#site="psi.ch"
+#se="t3dcachedb03"
 
 listOfSamplesFile="postProcessing2016-Data.cfg"
 #listOfSamplesFile="postProcessing2016-MC.cfg"
 
-productionName="$(basename $inputFolder)_fullStat" 
-
-outputFolder="/pnfs/psi.ch/cms/trivcat/store/user/`whoami`/MT2production/80X/PostProcessed/"$productionName"/"
-
-
-
-# --- in current implementation one also needs to change this in runSkimmingPruning.sh
+# --- in current implementation one also needs to change this in runSkimmingPruning.sh ------
 useXRD="false"
 gfalProtocol="gsiftp" # if useXRD disabled, use gfal via the given protocol
 #gfalProtocol="srm" # alternative to gsiftp (gsiftp supposed to be more stable)
+# -------------------------------------------------------------------------------------------
+
 
 fileExt="_post.root"
 isCrab=1
 inputPU="MyDataPileupHistogram.root"
 PUvar="nTrueInt"
-GoldenJSON="$PWD/gold_runB.txt"
+GoldenJSON="$PWD/gold_runD.txt"
 SilverJSON=$GoldenJSON
 doSkimmingPruning=1 #1 as default; 0 for QCD-specific datasets, which are already skimmed at heppy level
 applyJSON=1     #0 for MC
@@ -30,6 +40,7 @@ doSilver=0      #0 for MC
 doFilterTxt=0   #0 for MC
 doAllSF=0       #1 for MC
 doPreProc=0     #0 (only 1 for TTJets or if you want to split MC samples, then run ./doTreeProduction pre first)
+
 
 # ------------------------------------------------------------------------------
 # NOTA BENE: the following files should also be (may have to) edited according 
@@ -43,7 +54,17 @@ doPreProc=0     #0 (only 1 for TTJets or if you want to split MC samples, then r
 
 
 
-# initialization
+# ------------- Initialization -----------------------
+
+host="${se}.${site}"
+
+inputFolder="/pnfs/"$site"/cms/trivcat"$inputProductionFolder
+productionName="$(basename $inputFolder)$postFix" 
+
+outputFolder="/pnfs/psi.ch/cms/trivcat/store/user/`whoami`/MT2production/80X/PostProcessed/"$productionName"/"
+
+
+
 jobsLogsFolder="./${productionName}"
 workingFolder="/scratch/`whoami`/"$productionName
 
@@ -299,9 +320,12 @@ do
     
     crabExt=""
     if [ ${isCrab} = 1 ]; then
-	crabExt=$(ls $inputFolder/$name/)
+	#crabExt=$(ls $inputFolder/$name/)
+	crabExt=$(xrdfs $host ls $inputFolder/$name/)
     fi;
+    #echo "crabExt: " $crabExt;
 
+    
     #default is to not do the splitting into 10 files
     #also this should NEVER be done for MC as some scale factors need normalization
     #unless you did the preprocessing
@@ -314,11 +338,17 @@ do
     fi;
 
     if [ ${isCrab} = 1 ]; then
-	for ((i=0; i<10; i++)); do
-	    if [ -d $inputFolder/${name}/$crabExt/000${i}/ ]; then
-		for f in $inputFolder/$name/$crabExt/000${i}/mt2*.root; do
+	for ((i=0; i<10; i++)); do  #BM: where this 10 is coming from ?? 
+	    #if [ -d $inputFolder/${name}/$crabExt/000${i}/ ]; then
+	    xrdfs $host ls $crabExt/000${i}/ &> /dev/null;
+	    remoteDirectoryExist=`echo $?`
+	    if [ "$remoteDirectoryExist" -eq "0" ]; then
+		remoteFiles=`xrdfs $host ls $crabExt/000${i}/ |grep mt2`
+		for f in $remoteFiles; do
 		    echo $f>>$fileList
 		done;
+	    else
+		break;
 	    fi;
 	done;
     else
@@ -330,7 +360,8 @@ do
 
     numFiles=$(wc -l inputChunkList.txt | awk '{print $1}')
     echo "number of files = " $numFiles
-
+    
+    #BM: this is only for MC with extension. I've not fixed this for T2 yet. Do the same as lines above
     if [ -d $inputFolder/${name}_ext/ ]; then
 	if [ ${isCrab} = 1 ]; then
     	    crabExt=$(ls $inputFolder/${name}_ext/)
@@ -350,7 +381,6 @@ do
 
     numFiles=$(wc -l inputChunkList.txt | awk '{print $1}')
     echo "number of files = " $numFiles
-
 
     maxNfiles=1000
     counter=-1
@@ -374,7 +404,11 @@ do
 	if [[ $counter -gt -1 ]]; then
 	    echo "running on chunks $((counter*maxNfiles+1)) to $(((counter+1)*maxNfiles))"
  	    sed -n $((counter*maxNfiles+1)),$(((counter+1)*maxNfiles))p  inputChunkList.txt > chunkPart_${name}_${counter}.txt
-	    awk '$0="dcap://t3se01.psi.ch:22125/"$0' chunkPart_${name}_$counter.txt > chunkPart_${name}_${counter}_dcap.txt
+	    if [ "$site" == "psi.ch" ]; then
+		sed -e "s#^#dcap://t3se01.psi.ch:22125/#" chunkPart_${name}_$counter.txt > chunkPart_${name}_${counter}_dcap.txt
+	    else
+		sed -e "s#^#root://$host/#" chunkPart_${name}_$counter.txt > chunkPart_${name}_${counter}_dcap.txt
+	    fi
 	    mv chunkPart_${name}_${counter}_dcap.txt chunkPart_${name}_${counter}.txt
 	fi;
 
@@ -382,7 +416,11 @@ do
 
 	#if [[ ${doPreProc} == 0 ]]; then
 	if [[ $counter == -1 ]]; then
-    	    awk '$0="dcap://t3se01.psi.ch:22125/"$0' inputChunkList.txt > temp_${name}_${counter}_dcap.txt
+	    if [ "$site" == "psi.ch" ]; then
+		sed -e "s#^#dcap://t3se01.psi.ch:22125/#" inputChunkList.txt > temp_${name}_${counter}_dcap.txt
+	    else
+    		sed -e "s#^#root://$host/#" inputChunkList.txt > temp_${name}_${counter}_dcap.txt
+	    fi
 	    mv temp_${name}_${counter}_dcap.txt chunkPart_${name}_${counter}.txt
 	fi;
 
@@ -399,7 +437,6 @@ do
 		outputFilteredFile=${workingFolder}/${counterName}_filtered$fileExt;
 	    fi;
 	fi;
-
 
 	cat <<EOF > $scriptName
 #!/bin/bash
@@ -525,9 +562,7 @@ if [[ "$1" = "postCheck" ]]; then
     #logsErr=`cat ${jobsLogsFolder}/*.err`
     # use the following until a solution is found to remove dictionary warning messages, 
     # which appear only when running skimming/pruning:
-    logsErr=`cat ${jobsLogsFolder}/*.err | \
-	grep -v "found in libCore.so  is already in libDataFormatsStdDictionaries.so | \
-	grep -v "BTagCalibrationReader found in libCondToolsBTau.so  is already in libCondFormatsBTauObjects.so`
+    logsErr=`cat ${jobsLogsFolder}/*.err | grep -v "found in libCore.so  is already in libDataFormatsStdDictionaries.so | grep -v "BTagCalibrationReader found in libCondToolsBTau.so  is already in libCondFormatsBTauObjects.so`
     if [[ -z $logsErr ]]; then
 	echo "there were no errors. Zipping all logs and copying them to the SE"	 
 	cd $jobsLogsFolder
