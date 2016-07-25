@@ -1,22 +1,25 @@
 #!/bin/bash
 
 # --- configuration (consider to move this into a separate file) ---
-inputProductionFolder="/store/user/mangano/crab/MT2_8_0_11/prodJuly23_runD_forZll_v1/"
+#inputProductionFolder="/store/user/mangano/crab/MT2_8_0_11/prodJuly23_runD_forZll_v1/"
 #inputProductionFolder="/store/user/mangano/crab/MT2_8_0_11/prodJuly21_runD_forZll_v1/"
+
+# NB: Insert path starting from /store/user/... The rest will be added automatically
+inputProductionFolder="/store/user/mangano/crab/MT2_8_0_11/prodJuly19_runD_276311-276811_v1/"
 
 
 #postFix=""
-postFix="_testNewSeAccess_v6"
+postFix="_checkLostFiles_v2"
 
 treeName="mt2"
 
 # For T2
-site="lcg.cscs.ch"
-se="storage01"
+#site="lcg.cscs.ch"
+#se="storage01"
 
 # For T3
-#site="psi.ch"
-#se="t3dcachedb03"
+site="psi.ch"
+se="t3dcachedb03"
 
 listOfSamplesFile="postProcessing2016-Data.cfg"
 #listOfSamplesFile="postProcessing2016-MC.cfg"
@@ -321,9 +324,10 @@ do
     crabExt=""
     if [ ${isCrab} = 1 ]; then
 	#crabExt=$(ls $inputFolder/$name/)
+	echo "input to xrdfs: " xrdfs $host ls $inputFolder/$name/
 	crabExt=$(xrdfs $host ls $inputFolder/$name/)
     fi;
-    #echo "crabExt: " $crabExt;
+    echo "crabExt: " $crabExt;
 
     
     #default is to not do the splitting into 10 files
@@ -562,8 +566,8 @@ if [[ "$1" = "postCheck" ]]; then
     #logsErr=`cat ${jobsLogsFolder}/*.err`
     # use the following until a solution is found to remove dictionary warning messages, 
     # which appear only when running skimming/pruning:
-    logsErr=`cat ${jobsLogsFolder}/*.err | grep -v "found in libCore.so  is already in libDataFormatsStdDictionaries.so | grep -v "BTagCalibrationReader found in libCondToolsBTau.so  is already in libCondFormatsBTauObjects.so`
-    if [[ -z $logsErr ]]; then
+    logsErr=`cat ${jobsLogsFolder}/*.err | grep -v "found in libCore.so  is already in libDataFormatsStdDictionaries.so" | grep -v "BTagCalibrationReader found in libCondToolsBTau.so  is already in libCondFormatsBTauObjects.so"`    
+    if [[ -z "$logsErr" ]]; then
 	echo "there were no errors. Zipping all logs and copying them to the SE"	 
 	cd $jobsLogsFolder
 	tar -czvf logs.tgz  *
