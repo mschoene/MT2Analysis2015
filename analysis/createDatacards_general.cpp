@@ -505,7 +505,6 @@ int main( int argc, char* argv[] ) {
 	  datacard << "sig_syst_" << binName << " lnN 1.2 - - - - -" << std::endl;
 	else{
 	  datacard << "sig_isrSyst lnN III - - - - -" << std::endl;
-
 	  datacard << "sig_bTagHeavySyst lnN HHH - - - - -" << std::endl;
 	  datacard << "sig_bTagLightSyst lnN LLL - - - - -" << std::endl;
 	  if( addSigLepSF && (model=="T2tt" || model=="T1tttt") )
@@ -1154,7 +1153,6 @@ int main( int argc, char* argv[] ) {
   std::vector<MT2Analysis<MT2EstimateSigSyst>*> signals_bTagLight;
   std::vector<MT2Analysis<MT2EstimateSigSyst>*> signals_lepEff;
 
-
   std::string modelName = model;
   if( model == "T2tt" || model == "T1tttt" )
     modelName += "_sigcontam";
@@ -1163,8 +1161,8 @@ int main( int argc, char* argv[] ) {
 
   if( includeSignalUnc ){
     signals_isr       = MT2Analysis<MT2EstimateSigSyst>::readAllSystFromFile( "./signalScansFromDominick/"+modelName+"_eth.root", modelName, "isr" );
-    // signals_bTagHeavy = MT2Analysis<MT2EstimateSigSyst>::readAllSystFromFile( "./signalScansFromDominick/"+modelName+"_eth.root", modelName, "btagsf_heavy" );
-    // signals_bTagLight = MT2Analysis<MT2EstimateSigSyst>::readAllSystFromFile( "./signalScansFromDominick/"+modelName+"_eth.root", modelName, "btagsf_light" );
+    signals_bTagHeavy = MT2Analysis<MT2EstimateSigSyst>::readAllSystFromFile( "./signalScansFromDominick/"+modelName+"_eth.root", modelName, "btagsf_heavy" );
+    signals_bTagLight = MT2Analysis<MT2EstimateSigSyst>::readAllSystFromFile( "./signalScansFromDominick/"+modelName+"_eth.root", modelName, "btagsf_light" );
     
     if( addSigLepSF && (( model == "T2tt" || model == "T1tttt" )) )
       signals_lepEff = MT2Analysis<MT2EstimateSigSyst>::readAllSystFromFile( "./signalScansFromDominick/"+modelName+"_eth.root", modelName, "lepeff" );
@@ -1240,8 +1238,8 @@ int main( int argc, char* argv[] ) {
       this_signalParent = this_signal3d_central->ProjectionY("mParent");
       
       // Initialize histograms for signal systematics
-      // TH3D* this_signal3d_bTagHeavy_Up;
-      // TH3D* this_signal3d_bTagLight_Up;
+      TH3D* this_signal3d_bTagHeavy_Up;
+      TH3D* this_signal3d_bTagLight_Up;
       TH3D* this_signal3d_isr_Up;
       TH3D* this_signal3d_lepEff_Up;
       
@@ -1259,17 +1257,17 @@ int main( int argc, char* argv[] ) {
 	else
 	  this_signal3d_isr_Up       = (TH3D*) signals[isig]->get(*iR)->yield3d->Clone();
 
-	// thisSigSyst_bTagHeavy = signals_bTagHeavy[isig]->get(*iR);
-	// if( thisSigSyst_bTagHeavy->yield3d_systUp!=0 )
-	//   this_signal3d_bTagHeavy_Up       = (TH3D*) signals_bTagHeavy[isig]->get(*iR)->yield3d_systUp->Clone();
-	// else
-	//   this_signal3d_bTagHeavy_Up = (TH3D*) signals[isig]->get(*iR)->yield3d->Clone(); 
+	thisSigSyst_bTagHeavy = signals_bTagHeavy[isig]->get(*iR);
+	if( thisSigSyst_bTagHeavy->yield3d_systUp!=0 )
+	  this_signal3d_bTagHeavy_Up       = (TH3D*) signals_bTagHeavy[isig]->get(*iR)->yield3d_systUp->Clone();
+	else
+	  this_signal3d_bTagHeavy_Up = (TH3D*) signals[isig]->get(*iR)->yield3d->Clone(); 
 
-	// thisSigSyst_bTagLight = signals_bTagLight[isig]->get(*iR);
-	// if( thisSigSyst_bTagLight->yield3d_systUp!=0 )
-	//   this_signal3d_bTagLight_Up       = (TH3D*) signals_bTagLight[isig]->get(*iR)->yield3d_systUp->Clone();
-	// else
-	//   this_signal3d_bTagLight_Up = (TH3D*) signals[isig]->get(*iR)->yield3d->Clone();
+	thisSigSyst_bTagLight = signals_bTagLight[isig]->get(*iR);
+	if( thisSigSyst_bTagLight->yield3d_systUp!=0 )
+	  this_signal3d_bTagLight_Up       = (TH3D*) signals_bTagLight[isig]->get(*iR)->yield3d_systUp->Clone();
+	else
+	  this_signal3d_bTagLight_Up = (TH3D*) signals[isig]->get(*iR)->yield3d->Clone();
 	
 	if( addSigLepSF && (( model == "T2tt" || model == "T1tttt" ))){
 	  thisSigSyst_lepEff = signals_lepEff[isig]->get(*iR);
@@ -1300,7 +1298,7 @@ int main( int argc, char* argv[] ) {
 	  TH1D* this_signal      = this_signal3d_central->ProjectionX("mt2"     , iBinY, iBinY, iBinZ, iBinZ);
 	  TH1D* this_signal_syst = this_signal3d_central->ProjectionX("mt2_syst", iBinY, iBinY, iBinZ, iBinZ);
 	  
-	  if (doGenAverage) {
+	  if (doGenAverage && signals[isig]->get(*iR)->yield3d_genmet!=0) {
 	    TH3D* this_signal3d_central_genmet = signals[isig]->get(*iR)->yield3d_genmet;
 	    TH1D* this_signal_genmet = this_signal3d_central_genmet->ProjectionX("mt2_genmet", iBinY, iBinY, iBinZ, iBinZ);
 	    this_signal->Add(this_signal_genmet);
@@ -1332,7 +1330,7 @@ int main( int argc, char* argv[] ) {
 	    this_signal_crsl        = this_signal3d_crsl       ->ProjectionX("mt2_crsl", iBinY, iBinY, iBinZ, iBinZ);
 	    this_signal_alpha  = (TH1D*) signals[isig]->get(*iR)->yield_alpha->Clone();
 
-	    if (doGenAverage){
+	    if (doGenAverage && signals[isig]->get(*iR)->yield3d_crsl_genmet!=0){
 	      TH3D *this_signal3d_crsl_genmet = (TH3D*) signals[isig]->get(*iR)->yield3d_crsl_genmet->Clone();
 	      TH1D *this_signal_crsl_genmet = this_signal3d_crsl_genmet->ProjectionX("mt2_crsl", iBinY, iBinY, iBinZ, iBinZ);
 	      this_signal_crsl->Add(this_signal_crsl_genmet);
@@ -1468,8 +1466,8 @@ int main( int argc, char* argv[] ) {
 		//isrErr = 2 - isrErr/sig;
 		isrErr = isrErr/sig;
 	      
-		// bTagErr_heavy = this_signal3d_bTagHeavy_Up->GetBinContent(iBin, iBinY, iBinZ);
-		// bTagErr_heavy = bTagErr_heavy/sig;
+		bTagErr_heavy = this_signal3d_bTagHeavy_Up->GetBinContent(iBin, iBinY, iBinZ);
+		bTagErr_heavy = bTagErr_heavy/sig;
 	      
 		bTagErr_light = this_signal3d_bTagLight_Up->GetBinContent(iBin, iBinY, iBinZ);
 		bTagErr_light = bTagErr_light/sig;
@@ -1526,11 +1524,12 @@ int main( int argc, char* argv[] ) {
 	      if (doGenAverage)
 		system( sedCommand_genErr.c_str() );
 
+
 	      if( includeSignalUnc ){
 		
 		system( sedCommand_isrErr.c_str() );
-		// system( sedCommand_bTagHErr.c_str() );
-		// system( sedCommand_bTagLErr.c_str() );
+		system( sedCommand_bTagHErr.c_str() );
+		system( sedCommand_bTagLErr.c_str() );
 		
 		if( addSigLepSF && (( model == "T2tt" || model == "T1tttt" )))
 		  system( sedCommand_lepEffErr.c_str() );

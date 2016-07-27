@@ -51,7 +51,7 @@ struct BGTable {
 
 };
 
-bool drawSignals=true;
+bool drawSignals=false;
 float lumi; //fb-1 
 
 BGTable getTable( const std::string& tableFileName );
@@ -1172,7 +1172,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
   labelTop->Draw("same");
 
   //  TPaveText* labelCMS = MT2DrawTools::getLabelCMS("CMS Supplementary");
-  TPaveText* labelCMS = MT2DrawTools::getLabelCMS();
+  TPaveText* labelCMS = MT2DrawTools::getLabelCMS("CMS Preliminary");
   labelCMS->Draw("same");
   
   int nHTRegions = 6;

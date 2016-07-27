@@ -217,7 +217,8 @@ int main(int argc, char* argv[]){
 
     
     //WITH THE loose electron ID // HLT and lepton scale factors are handled in the loop
-    std::string cut_incl = "weight*(abs(Z_mass-91.19)<10 && met>200 && mt2>200 && ht>200 && nJets>0 && (Z_lepId==13 || (Z_lepId==11 && lep_tightId0>0 && lep_tightId1>0)))";
+    std::string cut_incl = "weight*(abs(Z_mass-91.19)<10 && ((ht>200 && met>200)||(ht>1000. && met>30.)) && mt2>200 && ht>200 && nJets>0 && (Z_lepId==13 || (Z_lepId==11 && lep_tightId0>0 && lep_tightId1>0)))";
+    //    std::string cut_incl = "weight*(abs(Z_mass-91.19)<10 && met>200 && mt2>200 && ht>200 && nJets>0 && (Z_lepId==13 || (Z_lepId==11 && lep_tightId0>0 && lep_tightId1>0)))";
     std::string cut_incl_data = cut_incl;
 
     std::string cut_multijet = "weight*(abs(Z_mass-91.19)<10 && met>200 && mt2>200 && ht>200 && nJets>1 && (Z_lepId==13 || (Z_lepId==11 && lep_tightId0>0 && lep_tightId1>0)))";
@@ -226,6 +227,15 @@ int main(int argc, char* argv[]){
     std::string cut_multijet_gamma_data = "weight*( iso<2.5 && ptGamma>180  && met>200 && nJets>0 && mt2>200 && ht>200 )";
   
 
+    std::string cut_incl_gamma = "weight*(prompt==2 && iso<2.5  && ((ht>200 && met>200)||(ht>1000. && met>30.)) &&  ptGamma>180 && nJets>0 && mt2>200 && ht>200 )*1.23";
+    std::string cut_incl_gamma_data = "weight*( iso<2.5 && ptGamma>180 && ((ht>200 && met>200)||(ht>1000. && met>30.)) && nJets>0 && mt2>200 && ht>200 )";
+    std::string cut_incl_el = "weight*(abs(Z_mass-91.19)<10 && ((ht>200 && met>200)||(ht>1000. && met>30.)) && mt2>200 && ht>200 && nJets>0 && lep_tightId0>0 && lep_tightId1>0 && Z_lepId==11 )";
+    std::string cut_incl_data_el = cut_incl_el;
+
+    std::string cut_incl_mu = "weight*(abs(Z_mass-91.19)<10 && ((ht>200 && met>200)||(ht>1000. && met>30.)) && mt2>200 && ht>200 && nJets>0 && Z_lepId==13 )";
+    std::string cut_incl_data_mu = cut_incl_mu;
+  
+    /*
     std::string cut_incl_gamma = "weight*(prompt==2 && iso<2.5  && met>200&&  ptGamma>180 && nJets>0 && mt2>200 && ht>200 )*1.23";
     std::string cut_incl_gamma_data = "weight*( iso<2.5 && ptGamma>180  && met>200 && nJets>0 && mt2>200 && ht>200 )";
   
@@ -234,7 +244,7 @@ int main(int argc, char* argv[]){
 
     std::string cut_incl_mu = "weight*(abs(Z_mass-91.19)<10 && met>200 && mt2>200 && ht>200 && nJets>0 && Z_lepId==13 )";
     std::string cut_incl_data_mu = cut_incl_mu;
-    
+    */ 
 
 
 
@@ -304,7 +314,7 @@ int main(int argc, char* argv[]){
      drawRatios( outputdir, bins_ht, size_ht , "ht",   zllG_ht,   gamma_mc, gamma_data, purity_incl_ht,  zll_mc, zll_data, top, zll_ht, zllG_data_ht, zllG_mc_ht , thisRegion, cut_incl_mu, cut_incl_gamma, cut_incl_data_mu,  cut_incl_gamma_data, lumi,"ht_incl_mu" , onlyMC, scaleFactor, 1 ,"#geq1j, #geq0b");
 
     //DATA DRIVEN TOP ESTIMATE
-    drawRatiosTopHisto( outputdir, bins_ht, size_ht , "ht",   zllG_ht,   gamma_mc, gamma_data, purity_incl_ht,  zll_mc, zll_data, top_ht, zll_ht, zllG_data_ht, zllG_mc_ht , thisRegion, cut_incl, cut_incl_gamma, cut_incl_data,  cut_incl_gamma_data, lumi,"ht_incl_dd" , onlyMC, scaleFactor, 1 ,"#geq1j, #geq0b");
+     // drawRatiosTopHisto( outputdir, bins_ht, size_ht , "ht",   zllG_ht,   gamma_mc, gamma_data, purity_incl_ht,  zll_mc, zll_data, top_ht, zll_ht, zllG_data_ht, zllG_mc_ht , thisRegion, cut_incl, cut_incl_gamma, cut_incl_data,  cut_incl_gamma_data, lumi,"ht_incl_dd" , onlyMC, scaleFactor, 1 ,"#geq1j, #geq0b");
     //SIMULATION TOP ESTIMATE
     drawRatios( outputdir, bins_ht, size_ht , "ht",   zllG_ht,   gamma_mc, gamma_data, purity_incl_ht,  zll_mc, zll_data, top, zll_ht, zllG_data_ht, zllG_mc_ht , thisRegion, cut_incl, cut_incl_gamma, cut_incl_data,  cut_incl_gamma_data, lumi,"ht_incl" , onlyMC, scaleFactor, 1 ,"#geq1j, #geq0b");
     drawRatios( outputdir, bins_ht, size_ht , "ht",   zllG_ht,   gamma_mc, gamma_data, purity_incl_ht,  zll_mc, zll_data, top, zll_ht, zllG_data_ht, zllG_mc_ht , thisRegion, cut_incl, cut_incl_gamma, cut_incl_data,  cut_incl_gamma_data, lumi,"ht_incl_noPFU" , onlyMC, scaleFactor, 0 ,"#geq1j, #geq0b");
@@ -316,7 +326,7 @@ int main(int argc, char* argv[]){
   
 
       //DATA DRIVEN TOP ESTIMATE
-      drawRatiosTopHisto( outputdir, bins_mono_ht, size_mono_ht , "ht",   zllG_mono_ht,   gamma_mc, gamma_data, purity_mono_ht,  zll_mc, zll_data, top_mono_ht, zll_mono_ht, zllG_data_mono_ht, zllG_mc_mono_ht , thisRegion, cut_incl, cut_incl_gamma, cut_incl_data,  cut_incl_gamma_data, lumi,"ht_mono_dd" , onlyMC, scaleFactor, 1 ,"#geq1j, #geq0b");
+      // drawRatiosTopHisto( outputdir, bins_mono_ht, size_mono_ht , "ht",   zllG_mono_ht,   gamma_mc, gamma_data, purity_mono_ht,  zll_mc, zll_data, top_mono_ht, zll_mono_ht, zllG_data_mono_ht, zllG_mc_mono_ht , thisRegion, cut_incl, cut_incl_gamma, cut_incl_data,  cut_incl_gamma_data, lumi,"ht_mono_dd" , onlyMC, scaleFactor, 1 ,"#geq1j, #geq0b");
       //SIMULATION TOP ESTIMATE
       drawRatios( outputdir, bins_mono_ht, size_mono_ht , "ht",   zllG_mono_ht,   gamma_mc, gamma_data, purity_mono_ht,  zll_mc, zll_data, top, zll_mono_ht, zllG_data_mono_ht, zllG_mc_mono_ht , thisRegion, cut_incl, cut_incl_gamma, cut_incl_data,  cut_incl_gamma_data, lumi,"ht_mono" , onlyMC, scaleFactor, 1 ,"#geq1j, #geq0b");
       drawRatios( outputdir, bins_mono_ht, size_mono_ht , "ht",   zllG_mono_ht,   gamma_mc, gamma_data, purity_mono_ht,  zll_mc, zll_data, top, zll_mono_ht, zllG_data_mono_ht, zllG_mc_mono_ht , thisRegion, cut_incl, cut_incl_gamma, cut_incl_data,  cut_incl_gamma_data, lumi,"ht_mono_noPFU" , onlyMC, scaleFactor, 0 ,"#geq1j, #geq0b");
@@ -330,7 +340,7 @@ int main(int argc, char* argv[]){
     drawRatios( outputdir, bins_nJets, size_nJets , "nJets",   zllG_nJets,   gamma_mc, gamma_data, purity_incl_njets,  zll_mc, zll_data,top,  zll_nJets, zllG_data_nJets, zllG_mc_nJets ,  thisRegion,cut_incl_mu, cut_incl_gamma, cut_incl_data_mu,  cut_incl_gamma_data, lumi, "nJets_incl_mu" , onlyMC, scaleFactor, 1 ,"#geq1j, #geq0b");
 
     //DATA DRIVEN TOP ESTIMATE
-    drawRatiosTopHisto( outputdir, bins_nJets, size_nJets , "nJets",   zllG_nJets,   gamma_mc, gamma_data, purity_incl_njets,  zll_mc, zll_data, top_nJets,  zll_nJets, zllG_data_nJets, zllG_mc_nJets ,  thisRegion,cut_incl, cut_incl_gamma, cut_incl_data,  cut_incl_gamma_data, lumi, "nJets_incl_dd" , onlyMC, scaleFactor, 1 ,"#geq1j, #geq0b");
+    //drawRatiosTopHisto( outputdir, bins_nJets, size_nJets , "nJets",   zllG_nJets,   gamma_mc, gamma_data, purity_incl_njets,  zll_mc, zll_data, top_nJets,  zll_nJets, zllG_data_nJets, zllG_mc_nJets ,  thisRegion,cut_incl, cut_incl_gamma, cut_incl_data,  cut_incl_gamma_data, lumi, "nJets_incl_dd" , onlyMC, scaleFactor, 1 ,"#geq1j, #geq0b");
     //SIMULATION TOP ESTIMATE
     drawRatios( outputdir, bins_nJets, size_nJets , "nJets",   zllG_nJets,   gamma_mc, gamma_data, purity_incl_njets,  zll_mc, zll_data,top,  zll_nJets, zllG_data_nJets, zllG_mc_nJets ,  thisRegion,cut_incl, cut_incl_gamma, cut_incl_data,  cut_incl_gamma_data, lumi, "nJets_incl" , onlyMC, scaleFactor, 1 ,"#geq1j, #geq0b");
     drawRatios( outputdir, bins_nJets, size_nJets , "nJets",   zllG_nJets,   gamma_mc, gamma_data, purity_incl_njets,  zll_mc, zll_data,top,  zll_nJets, zllG_data_nJets, zllG_mc_nJets ,  thisRegion,cut_incl, cut_incl_gamma, cut_incl_data,  cut_incl_gamma_data, lumi, "nJets_incl_noPFU" , onlyMC, scaleFactor, 0 ,"#geq1j, #geq0b");
@@ -342,7 +352,7 @@ int main(int argc, char* argv[]){
     drawRatios( outputdir, bins_nBJets, size_nBJets , "nBJets",  zllG_nBJets,   gamma_mc, gamma_data, purity_incl_nbjets,  zll_mc, zll_data, top, zll_nBJets,zllG_data_nBJets, zllG_mc_nBJets ,   thisRegion, cut_incl_mu, cut_incl_gamma ,  cut_incl_data_mu,  cut_incl_gamma_data, lumi, "nBJets_incl_mu" , onlyMC, scaleFactor, 1 ,"#geq1j, #geq0b");
 
     //DATA DRIVEN TOP ESTIMATE
-    drawRatiosTopHisto( outputdir, bins_nBJets, size_nBJets , "nBJets",  zllG_nBJets,   gamma_mc, gamma_data, purity_incl_nbjets,  zll_mc, zll_data, top_nBJets, zll_nBJets,zllG_data_nBJets, zllG_mc_nBJets ,   thisRegion, cut_incl, cut_incl_gamma ,  cut_incl_data,  cut_incl_gamma_data, lumi, "nBJets_incl_dd" , onlyMC, scaleFactor, 1 ,"#geq1j, #geq0b");
+    //drawRatiosTopHisto( outputdir, bins_nBJets, size_nBJets , "nBJets",  zllG_nBJets,   gamma_mc, gamma_data, purity_incl_nbjets,  zll_mc, zll_data, top_nBJets, zll_nBJets,zllG_data_nBJets, zllG_mc_nBJets ,   thisRegion, cut_incl, cut_incl_gamma ,  cut_incl_data,  cut_incl_gamma_data, lumi, "nBJets_incl_dd" , onlyMC, scaleFactor, 1 ,"#geq1j, #geq0b");
     //SIMULATION TOP ESTIMATE
     drawRatios( outputdir, bins_nBJets, size_nBJets , "nBJets",  zllG_nBJets,   gamma_mc, gamma_data, purity_incl_nbjets,  zll_mc, zll_data, top, zll_nBJets,zllG_data_nBJets, zllG_mc_nBJets ,   thisRegion, cut_incl, cut_incl_gamma ,  cut_incl_data,  cut_incl_gamma_data, lumi, "nBJets_incl" , onlyMC, scaleFactor, 1 ,"#geq1j, #geq0b");
     drawRatios( outputdir, bins_nBJets, size_nBJets , "nBJets",  zllG_nBJets,   gamma_mc, gamma_data, purity_incl_nbjets,  zll_mc, zll_data, top, zll_nBJets,zllG_data_nBJets, zllG_mc_nBJets ,   thisRegion, cut_incl, cut_incl_gamma ,  cut_incl_data,  cut_incl_gamma_data, lumi, "nBJets_incl_noPFU" , onlyMC, scaleFactor, 0 ,"#geq1j, #geq0b");
@@ -547,25 +557,30 @@ void drawRatios(std::string fullPath, double *binss, unsigned int size,  std::st
     double lepSF = h_lepSF->GetBinContent(bi)/value;
     double lepSF_err = h_lepSF_err->GetBinContent(bi)/value;
 
+    lepSF_err -=lepSF;
+
     std::cout << "MC Zll = " << value  << " +- " << value_err << std::endl;
     std::cout << "MC Gamma= " << g_mt2_mc->GetBinContent(bi) << std::endl;
 
-    hlt=0.93;
+    // hlt=0.93;
     std::cout << "HTL corr = " << hlt << std::endl;
+    std::cout << "id sf = " << lepSF << " +- " << lepSF_err << std::endl;
+
     //change baaaack
-    h_mt2_mc->SetBinContent(bi, value* hlt ); //LEPTON TRIGGER EFF of 0.92
-    //    h_mt2_mc->SetBinContent(bi, value * hlt ); //LEPTON TRIGGER EFF of 0.92
+    //h_mt2_mc->SetBinContent(bi, value* hlt ); //LEPTON TRIGGER EFF of 0.92
+    //h_mt2_mc->SetBinContent(bi, value * hlt ); //LEPTON TRIGGER EFF of 0.92
     //h_mt2_mc->SetBinError(bi, sqrt( value_err*value_err* 0.92*0.92 +  value*value* 0.05*0.05 ) ); //tempororaa 5% for the trigger eff
 
     // h_mt2_mc->SetBinError(bi, sqrt( value_err*value_err ) ); //3% for the trigger eff
   
-    h_mt2_mc->SetBinError(bi, sqrt( value_err*value_err* hlt* hlt +  value*value* 0.05*0.05 ) ); //3% for the trigger eff
+    //h_mt2_mc->SetBinError(bi, sqrt( value_err*value_err* hlt* hlt +  value*value* 0.05*0.05 ) ); //3% for the trigger eff
   
   
+    //    h_mt2_mc->SetBinError(bi, sqrt( value_err*value_err* 0.92*0.92 +  value*value* 0.05*0.05 ) ); //tempororaa 5% for the trigger eff
   
-   //change back to this:::  
-   // h_mt2_mc->SetBinContent(bi, value * hlt * lepSF );
-   //h_mt2_mc->SetBinError(bi, sqrt( value_err*value_err* hlt * lepSF* hlt * lepSF  + value*value*lepSF_err*lepSF_err*hlt*hlt +  value*value* lepSF*lepSF * 0.03*0.03 ) ); //3% for the trigger eff
+    //change back to this:::  
+    h_mt2_mc->SetBinContent(bi, value * hlt * lepSF );
+    h_mt2_mc->SetBinError(bi, sqrt( value_err*value_err* hlt * lepSF* hlt * lepSF  + value*value*lepSF_err*lepSF_err*hlt*hlt +  value*value* lepSF*lepSF * 0.03*0.03 ) ); //3% for the trigger eff
   } 
 
   h_mt2_mc->Divide(g_mt2_mc);
@@ -677,13 +692,40 @@ void drawRatios(std::string fullPath, double *binss, unsigned int size,  std::st
     pad2->Draw();
     pad2->cd();
  
+
     float grMax = h_mt2->GetBinLowEdge(size+1);
     float grMin = h_mt2->GetBinLowEdge(1);
-    TF1* fSF = MT2DrawTools::getSFFit(gr_ratio, grMin, grMax  );
+
+
+    
+    double sf = 0.902279;
+    double sfErr = 0.102958;//0.109381;
+
+    TF1* fSF=new TF1("fSF", "[0]", grMin, grMax);
+    fSF->SetLineColor(kRed);
+    fSF->SetParameter(0, sf );
+    fSF->SetParError(0, sfErr );
+    //   g_ratio->Fit(fSF, "0");
+
+
+    double x[2]    ={grMin, grMax};
+    double y[2]    ={sf, sf};
+
+    double xerr[2] ={0., 0.};
+    double yerr[2] ={sfErr, sfErr};
+    TGraphErrors* SFFitBand = new TGraphErrors(2, x, y, xerr, yerr);
+    SFFitBand->SetLineColor(0);
+    SFFitBand->SetFillColor(kRed);
+    SFFitBand->SetFillStyle(3244);
   
     TPaveText* fitText = MT2DrawTools::getFitText( fSF );
-    TGraphErrors* SFFitBand =  MT2DrawTools::getSFFitBand(fSF, xMin, xMax);
     
+
+    /*
+    TF1* fSF = MT2DrawTools::getSFFit(gr_ratio, grMin, grMax  );
+    TPaveText* fitText = MT2DrawTools::getFitText( fSF );
+    TGraphErrors* SFFitBand =  MT2DrawTools::getSFFitBand(fSF, xMin, xMax);
+    */  
 
     h2_axes_rat->SetYTitle("Data / MC");
     h2_axes_rat->GetXaxis()->SetTitleSize(0.2);

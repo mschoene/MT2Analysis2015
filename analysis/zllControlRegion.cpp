@@ -34,6 +34,8 @@ int round(float d) {
 bool do_bg = true;
 
 
+TH1D*  h_muTrk_hi = 0;
+
 
 void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,   
 		      MT2Analysis<MT2EstimateTree>* anaTree,  
@@ -91,30 +93,50 @@ int main(int argc, char* argv[]) {
 
   //Getting the scale factor histogram/////////////////
   //Electrons//
-  std::string filename = "kinematicBinSFele.root";
-  TFile * f = new TFile(filename.c_str() );
-  if (!f->IsOpen()) std::cout << " ERROR: Could not find scale factor file " << filename << std::endl;
-  TH2D* h_id = (TH2D*) f->Get("CutBasedLoose");
-  //TH2D* h_id = (TH2D*) f->Get("CutBasedVeto");
-  TH2D* h_iso = (TH2D*) f->Get("MiniIso0p1_vs_AbsEta");
+  std::string filename = "/mnt/t3nfs01/data01/shome/mschoene/lepSF/scaleFactors.root";
+  TFile * f_ele = new TFile(filename.c_str() );
+  if (!f_ele->IsOpen()) std::cout << " ERROR: Could not find scale factor file " << filename << std::endl; 
+  //Uncomment for loose Id
+  //TH2D* h_id = (TH2D*) f_ele->Get("CutBasedLoose");
+  //(TH2D*) f_ele->Get("CutBasedVeto");
+  TH2D* h_id = (TH2D*) f_ele->Get("GsfElectronToVeto");
+  TH2D* h_iso = (TH2D*) f_ele->Get("MVAVLooseElectronToMini");
   if (!h_id || !h_iso) std::cout << "ERROR: Could not find scale factor histogram"<< std::endl;
   TH2D* h_elSF = (TH2D*) h_id->Clone("h_elSF");
   h_elSF->SetDirectory(0);
   h_elSF->Multiply(h_iso);
 
   //Muons//
-  std::string filenameID = "TnP_MuonID_NUM_LooseID_DENOM_generalTracks_VAR_map_pt_eta.root";
-  std::string filenameISO = "TnP_MuonID_NUM_MiniIsoTight_DENOM_LooseID_VAR_map_pt_eta.root";
+  std::string filenameID = "/mnt/t3nfs01/data01/shome/mschoene/lepSF/TnP_MuonID_NUM_LooseID_DENOM_generalTracks_VAR_map_pt_eta.root";
+  std::string filenameISO = "/mnt/t3nfs01/data01/shome/mschoene/lepSF/TnP_MuonID_NUM_MiniIsoTight_DENOM_LooseID_VAR_map_pt_eta.root";
+  std::string filenamedxyz = "/mnt/t3nfs01/data01/shome/mschoene/lepSF/TnP_MuonID_NUM_MediumIP2D_DENOM_LooseID_VAR_map_pt_eta.root";
   TFile * f1 = new TFile(filenameID.c_str() );
   TFile * f2 = new TFile(filenameISO.c_str() );
+  TFile * f3 = new TFile(filenamedxyz.c_str() );
   if (!f1->IsOpen()) { std::cout<<" ERROR: Could not find ID scale factor file "<<filenameID<<std::endl; return 0;}
   if (!f2->IsOpen()) { std::cout<<"ERROR: Could not find ISO scale factor file "<<filenameISO<<std::endl; return 0;}
-  TH2D* h_id_mu = (TH2D*) f1->Get("pt_abseta_PLOT_pair_probeMultiplicity_bin0_&_tag_combRelIsoPF04dBeta_bin0_&_tag_pt_bin0_&_tag_IsoMu20_pass");
-  TH2D* h_iso_mu = (TH2D*) f2->Get("pt_abseta_PLOT_pair_probeMultiplicity_bin0_&_tag_combRelIsoPF04dBeta_bin0_&_tag_pt_bin0_&_PF_pass_&_tag_IsoMu20_pass");
-  if (!h_id_mu || !h_iso_mu) { std::cout<<"ERROR: Could not find scale factor histogram"<<std::endl; return 0;}
+  if (!f3->IsOpen()) { std::cout<<"ERROR: Could not find dxy dz scale factor file "<<filenamedxyz<<std::endl; return 0;}
+  TH2D* h_id_mu = (TH2D*) f1->Get("pt_abseta_PLOT_pair_probeMultiplicity_bin0");
+  TH2D* h_iso_mu = (TH2D*) f2->Get("pt_abseta_PLOT_pair_probeMultiplicity_bin0_&_PF_pass");
+  TH2D* h_dxyz_mu = (TH2D*) f3->Get("pt_abseta_PLOT_pair_probeMultiplicity_bin0_&_PF_pass");
+  if (!h_id_mu || !h_iso_mu  || !h_dxyz_mu) { std::cout<<"ERROR: Could not find scale factor histogram"<<std::endl; return 0;}
   TH2D* h_muSF = (TH2D*) h_id_mu->Clone("h_muSF");
   h_muSF->SetDirectory(0);
   h_muSF->Multiply(h_iso_mu);
+  h_muSF->Multiply(h_dxyz_mu);
+ 
+
+
+  TH1D* h_trk_mu_hi = 0;
+
+  std::string filenameTrk = "/mnt/t3nfs01/data01/shome/mschoene/lepSF/general_tracks_and_early_general_tracks_corr_ratio.root";
+  TFile * fTrk = new TFile(filenameTrk.c_str() );
+  if (!fTrk->IsOpen()) { std::cout<<" ERROR: Could not find track ineff scale factor file "<<filenameTrk<<std::endl; return 0;}
+  h_trk_mu_hi = (TH1D*) fTrk->Get("mutrksfptg10");
+  if (!h_trk_mu_hi) { std::cout<<"ERROR: Could not find trk sf histogram"<<std::endl; return 0;}
+  h_muTrk_hi = (TH1D*) h_trk_mu_hi->Clone("h_muTrk_hi");
+  h_muTrk_hi->SetDirectory(0);
+  // fTrk->Close(); delete fTrk;
 
 
 
@@ -392,13 +414,83 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
 
 
 
+
+
     if( !myTree.isData ){ //temporarily scaling by hand the cross sections
       weight *= myTree.weight_btagsf;
       
       // weight *= 0.92;
       //temp lep trigger eff
       //weight *= myTree.weight_toppt;
-    }
+    
+    /////////Add lepton scale factor//////////
+    Float_t central = 1; 
+    Float_t err = 0;
+    Float_t uncert_UP = 0; //	Float_t uncert_DN = 0; 
+
+    Float_t weight_lepsf = 1.;
+    Float_t weight_lepsf_UP = 1.;
+
+    for(int o=0; o < 2; ++o){
+
+      float pt = myTree.lep_pt[o];
+      float eta = fabs( myTree.lep_eta[o] );
+      int pdgId = abs( myTree.lep_pdgId[o] );
+
+      float pt_cutoff = std::max( 10.1, std::min( 100., double(pt) ) );
+ 
+      //Electrons
+      if( pdgId == 11) {
+	Int_t binx = h_elSF->GetXaxis()->FindBin(pt_cutoff);
+	Int_t biny = h_elSF->GetYaxis()->FindBin(eta);
+	central = h_elSF->GetBinContent(binx,biny);
+	err  = h_elSF->GetBinError(binx,biny);
+	if (central > 1.2 || central < 0.8) 
+	  std::cout<<"STRANGE: Electron with pT/eta of "<< pt <<"/"<< eta <<". SF is "<< central <<std::endl;
+	uncert_UP = central + err;
+	//	uncert_DN = central - err;
+
+      } //else Muons
+      else if ( pdgId == 13) {
+	Int_t binx = h_muSF->GetXaxis()->FindBin(pt);
+	Int_t biny = h_muSF->GetYaxis()->FindBin(fabs(eta));
+	if ( binx >7 ) binx = 7; //overflow bin empty for the muons...
+	central = h_muSF->GetBinContent(binx,biny);
+	err  = 0.03; // adding in quadrature 1% unc. on ID and 1% unc. on ISO
+	if (central > 1.3 || central < 0.7) 
+	  std::cout<<"STRANGE: Muon with pT/eta of "<<pt<<"/"<< fabs(eta) <<". SF is "<< central <<std::endl;
+
+	float central_trk = 1;
+	Int_t binx_trk = h_muTrk_hi->GetXaxis()->FindBin(  myTree.lep_eta[o] );
+	if( binx_trk>10 ) binx_trk = 10;
+	else if( binx_trk<1 ) binx_trk = 1;
+	central_trk = h_muTrk_hi->GetBinContent( binx_trk );
+
+	central *= central_trk;
+
+	uncert_UP = central + err;
+	//	uncert_DN = central - err;
+
+      }//done with one  electron/muon 
+      weight_lepsf    *= central;
+      weight_lepsf_UP *= uncert_UP;
+      //  weight_lepsf_DN *= uncert_DN;	
+
+      //Backwards compatible, don't make me think now, it's too warm
+      weight_lep0 = central;
+      weight_lep_err = uncert_UP;
+      weight_lep1 = 1;  	
+    }//end of loop over objects
+
+    }//end of applying SF
+
+
+
+
+
+
+
+    /*
 
     if( myTree.isData == 0 ){
      
@@ -441,7 +533,7 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
       //  weight_lep_err *= weight;
 
     }//end of if data
-
+    */
 
     bool isSF = false;
     bool isOF = false;
@@ -453,11 +545,15 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
     if(isSF){ //////////SAME FLAVOR//////////////////////////////////////////
       //if(  myTree.isData && !( ( sample.id==5  && myTree.HLT_DoubleMu_NonIso ) || ( myTree.HLT_DoubleEl33 && sample.id==4) )  ) continue;
 
-      if(  myTree.isData && !( ( sample.id==5  && (myTree.HLT_DoubleMu || myTree.HLT_DoubleMu_NonIso)  ) ||   ( sample.id==8  && (myTree.HLT_SingleMu_NonIso && !myTree.HLT_DoubleMu && !myTree.HLT_DoubleMu_NonIso )  ) || ( myTree.HLT_DoubleEl && sample.id==4  )   ||  ( sample.id==7 && !myTree.HLT_DoubleEl && !myTree.HLT_DoubleMu && !myTree.HLT_DoubleMu_NonIso && !myTree.HLT_SingleMu_NonIso && myTree.HLT_Photon165_HE10 ) )  ) continue;
+      //  if( myTree.isData && (sample.id==9 || sample.id==6) ) continue;
+
+      if(  myTree.isData && !( ( myTree.evt_id==5  && (myTree.HLT_DoubleMu || myTree.HLT_DoubleMu_NonIso)  ) ||   ( myTree.evt_id==8  && (myTree.HLT_SingleMu_NonIso && !myTree.HLT_DoubleMu && !myTree.HLT_DoubleMu_NonIso )  ) || ( myTree.HLT_DoubleEl && myTree.evt_id==4  )   ||  ( myTree.evt_id==7 && !myTree.HLT_DoubleEl && !myTree.HLT_DoubleMu && !myTree.HLT_DoubleMu_NonIso && !myTree.HLT_SingleMu_NonIso && myTree.HLT_Photon165_HE10 ) )  ) continue;
+      //     if(  myTree.isData && !( ( sample.id==5  && (myTree.HLT_DoubleMu || myTree.HLT_DoubleMu_NonIso)  ) ||   ( sample.id==8  && (myTree.HLT_SingleMu_NonIso && !myTree.HLT_DoubleMu && !myTree.HLT_DoubleMu_NonIso )  ) || ( myTree.HLT_DoubleEl && sample.id==4  )   ||  ( sample.id==7 && !myTree.HLT_DoubleEl && !myTree.HLT_DoubleMu && !myTree.HLT_DoubleMu_NonIso && !myTree.HLT_SingleMu_NonIso && myTree.HLT_Photon165_HE10 ) )  ) continue;
+
+
+
 
       //      if(  myTree.isData && !( ( sample.id==5  && (myTree.HLT_DoubleMu || myTree.HLT_DoubleMu_NonIso)  ) ||   ( sample.id==8  && (myTree.HLT_SingleMu && !myTree.HLT_DoubleMu && !myTree.HLT_DoubleMu_NonIso )  ) || ( myTree.HLT_DoubleEl && sample.id==4  )   ||  ( sample.id==7 && !myTree.HLT_DoubleEl && !myTree.HLT_DoubleMu && !myTree.HLT_DoubleMu_NonIso && !myTree.HLT_SingleMu && myTree.HLT_Photon165_HE10 ) )  ) continue;
-
-
 
       // if(  myTree.isData && !( ( sample.id==5  && (myTree.HLT_DoubleMu || myTree.HLT_DoubleMu_NonIso)) || ( myTree.HLT_DoubleEl && sample.id==4  )   ||  ( sample.id==7 && !myTree.HLT_DoubleEl && !myTree.HLT_DoubleMu && !myTree.HLT_DoubleMu_NonIso && myTree.HLT_Photon165_HE10 ) )  ) continue;
 
@@ -476,13 +572,13 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
       float HLT_weight = 1;
       if( !myTree.isData){
 	//	weight *= 0.93;
-	HLT_weight = 0.93;
-	/*
+	//	HLT_weight = 0.93;
+	
 	if( abs(myTree.lep_pdgId[0])==11 )
-	  HLT_weight = 1.02;
+	  HLT_weight = 0.993;
 	else if(abs(myTree.lep_pdgId[0])==13 )
-	  HLT_weight = 0.94;
-	*/
+	  HLT_weight = 0.965;
+	
       }
       
       thisTree->assignVar("ID", sample.id );

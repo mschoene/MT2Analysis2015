@@ -408,7 +408,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
       
       TPaveText* labelTop = MT2DrawTools::getLabelTop(lumi);
       labelTop->Draw("same");
-      TPaveText* labelCMS = MT2DrawTools::getLabelCMS();
+      TPaveText* labelCMS = MT2DrawTools::getLabelCMS("CMS Preliminary");
       labelCMS->Draw("same");
 
       gPad->RedrawAxis();
@@ -641,7 +641,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   //  TPaveText* labelTop = MT2DrawTools::getLabelTopSimulation(lumi);
   TPaveText* labelTop = MT2DrawTools::getLabelTop(lumi);
   labelTop->Draw("same");
-  TPaveText* labelCMS = MT2DrawTools::getLabelCMS();
+  TPaveText* labelCMS = MT2DrawTools::getLabelCMS("CMS Preliminary");
   labelCMS->Draw("same");
   
   int nHTRegions = 6;

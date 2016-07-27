@@ -125,7 +125,7 @@ int main( int argc, char* argv[] ) {
     std::cout << "     merging Top..." << std::endl;
     MT2Analysis<MT2EstimateTree>* EventYield_top   = mergeYields<MT2EstimateTree>( EventYield, cfg.regionsSet(), "Top", 300, 499 ); // ttbar, single top, ttW, ttZ...
     std::cout << "     merging QCD..." << std::endl;
-    MT2Analysis<MT2EstimateTree>* EventYield_qcd   = mergeYields<MT2EstimateTree>( EventYield, cfg.regionsSet(), "QCD", 101, 199 );
+    MT2Analysis<MT2EstimateTree>* EventYield_qcd   = mergeYields<MT2EstimateTree>( EventYield, cfg.regionsSet(), "QCD", 100, 199 );
     std::cout << "     merging WJets..." << std::endl;
     MT2Analysis<MT2EstimateTree>* EventYield_wjets = mergeYields<MT2EstimateTree>( EventYield, cfg.regionsSet(), "WJets", 500, 599, "W+jets" );
     std::cout << "     merging ZJets..." << std::endl;
