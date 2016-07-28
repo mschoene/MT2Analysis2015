@@ -92,7 +92,7 @@ int main( int argc, char* argv[] ) {
   std::string mc_fileName = dir + "/analyses.root";
   std::string data_fileName = dir + "/analyses.root";
 
-  bool addSigLepSF= false;
+  bool addSigLepSF= true;
 
   bool useMC_qcd  = false;
   bool useMC_zinv = false;
