@@ -156,27 +156,6 @@ void MT2EstimateSigContSyst::write() const {
 
 void MT2EstimateSigContSyst::print( std::ofstream& ofs_file, Float_t m1, Float_t m2, Int_t mt2_bin, float k, bool doGenAverage ){
 
-  TH1D* h_sig;
-  TH3D* h_sig3d;
-  h_sig3d = this->yield3d;
-  
-  if(doGenAverage){
-    h_sig3d->Add( (this->yield3d_genmet) );
-    h_sig3d->Scale(0.5);
-  }
-
-  TH1D* h_sigCont;
-  TH3D* h_sig3d_crsl;
-  h_sig3d_crsl = this->yield3d_crsl;
-  
-  if(doGenAverage){
-    h_sig3d_crsl->Add( (this->yield3d_crsl_genmet) );
-    h_sig3d_crsl->Scale(0.5);
-  }
-
-  TH1D* h_alpha;
-  h_alpha = this->yield_alpha;
-
 //  int nBinsM=81;
 //  double binWidthM=25.;
 //  double binsM[nBinsM+1];
@@ -189,29 +168,72 @@ void MT2EstimateSigContSyst::print( std::ofstream& ofs_file, Float_t m1, Float_t
   for (int b=0; b<=nBinsM; ++b)
     binsM[b]=b*binWidthM;
 
-  std::cout << "Printing for m1 = " << m1 << ", m2 = " << m2 << std::endl;
+  int binY, binZ;
+
+  TH1D* h_sig;
+  TH3D* h_sig3d;
+  
+  TH1D* h_sigCont;
+  TH3D* h_sig3d_crsl;
+  
+  TH1D* htempCont;
+
+  TH3D* h_sig3d_genmet; 
+  TH1D* h_sig_genmet;
+
+  TH3D* h_sig3d_genmet_crsl;
+  TH1D* h_sig_genmet_crsl;
+
+  TH1D* h_alpha;
+  
+  h_sig3d = this->yield3d;
 
   if( h_sig3d == 0 ){
 
     std::cout << "3d histogram does not exist, initializing empty histogram..." << std::endl;
-    h_sig3d = new TH3D("emptyHisto", "", nBinsM, binsM, nBinsM, binsM, nBinsM, binsM);
+    h_sig = new TH1D("emptyHisto", "", nBinsM, binsM);
+    h_sigCont = new TH1D("emptyHisto_crsl", "", nBinsM, binsM);
 
-    h_sig3d_crsl = new TH3D("emptyHisto_crsl", "", nBinsM, binsM, nBinsM, binsM, nBinsM, binsM);
+  }
+  else{
+    binY = h_sig3d->GetYaxis()->FindBin(m1);
+    binZ = h_sig3d->GetZaxis()->FindBin(m2);
+    
+    h_sig = h_sig3d->ProjectionX("mt2_0", binY, binY, binZ, binZ);
+    
+
+    h_sig3d_crsl = this->yield3d_crsl;
+    htempCont = h_sig3d_crsl->ProjectionX("mt2_crsl_integral", binY, binY, binZ, binZ);
+    
+    if(doGenAverage && this->yield3d_genmet != 0){
+      h_sig3d_genmet = this->yield3d_genmet;
+      h_sig_genmet = h_sig3d_genmet->ProjectionX("mt2_genmet", binY, binY, binZ, binZ);
+      h_sig->Add( h_sig_genmet );
+      h_sig->Scale(0.5);
+    }
+    
+    if(doGenAverage && this->yield3d_crsl_genmet != 0){
+      h_sig3d_genmet_crsl = this->yield3d_crsl_genmet;
+      h_sig_genmet_crsl = h_sig3d_genmet_crsl->ProjectionX("mt2_genmet_crsl", binY, binY, binZ, binZ);
+      htempCont->Add( (h_sig_genmet_crsl) );
+      htempCont->Scale(0.5);
+    }
+    
+    h_alpha = (TH1D*) this->yield_alpha->Clone("h_alpha");
+    
+    h_sigCont = (TH1D*) h_alpha->Clone("mt2_crsl");
+    h_sigCont->Scale(htempCont->Integral());  
+    
+    h_sig->Add(h_sigCont, -1);
+    
+    
+    std::cout << "Printing for m1 = " << m1 << ", m2 = " << m2 << std::endl;
     
   }
-
-  int binY, binZ;
-  binY = h_sig3d->GetYaxis()->FindBin(m1);
-  binZ = h_sig3d->GetYaxis()->FindBin(m2);
-  h_sig = h_sig3d->ProjectionX("mt2_0", binY, binY, binZ, binZ);
-
-  h_sigCont = h_sig3d_crsl->ProjectionX("mt2_crsl", binY, binY, binZ, binZ);
-  h_sigCont->Multiply(h_alpha);  
-  h_sig->Add(h_sigCont, -1);
-  
-  Double_t error;
-  Double_t integral = h_sig->IntegralAndError(mt2_bin, mt2_bin, error);
-  
+    
+  Double_t error = h_sig->GetBinError(mt2_bin);
+  Double_t integral = h_sig->GetBinContent(mt2_bin);
+    
   if(integral<0){
     
     integral=0.;
@@ -221,6 +243,17 @@ void MT2EstimateSigContSyst::print( std::ofstream& ofs_file, Float_t m1, Float_t
   
   integral*=k;
   error*=k;
+  
+  if(m1==350 && m2==150){
+    std::cout << mt2_bin << "\t" << binY << "\t" << binZ << std::endl;
+    std::cout <<"Integral "<< integral << std::endl;
+    std::cout <<"htempCont integral "<< htempCont->Integral() << std::endl;
+    std::cout <<"Contamination " <<   h_sig3d_crsl->GetBinContent(mt2_bin, binY, binZ) << std::endl;
+    std::cout <<"genMET " <<   h_sig3d_genmet->GetBinContent(mt2_bin, binY, binZ) << std::endl;
+    std::cout <<"Alpha "<< h_alpha->GetBinContent(mt2_bin) << std::endl;
+    std::cout <<"Cont "<< h_sigCont->GetBinContent(mt2_bin) << std::endl;
+    std::cout <<"genMET " <<   h_sig3d_genmet_crsl->GetBinContent(mt2_bin, binY, binZ) << std::endl;
+  }
   
   if(integral >= 10)
     ofs_file << std::fixed << std::setprecision(1) << " & " << integral << " $\\pm$ " << error;

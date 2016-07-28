@@ -96,6 +96,7 @@ class MT2Analysis {
   void print( std::ofstream& ofs_file, MT2Region* matchRegion=0 ) const;
   void printData( std::ofstream& ofs_file, MT2Region* matchRegion=0 ) const;
   void print( std::ofstream& ofs_file, Float_t m1, Float_t m2, MT2Region* matchRegion=0, float k=1.0 ) const;
+  void print( std::ofstream& ofs_file, Float_t m1, Float_t m2, MT2Region* matchRegion=0, float k=1.0, bool doGenAverage=true ) const;
   void print( std::ofstream& ofs_file, MT2HTRegion* thisHTRegion=0 ) const;
 
   void printRegions() const;
@@ -2202,6 +2203,25 @@ void MT2Analysis<T>::print( std::ofstream& ofs_file, Float_t m1, Float_t m2, MT2
 
   for(int i=1; i < nBins+1; ++i){ 
     thisT->print( ofs_file, m1, m2, i, k );
+  }
+  
+  ofs_file << "\\\\" << std::endl;
+  
+  //std::cout << "-> Printed analysis '" << name << "', HT region '"<< HTname << "' to: " << ofs << std::endl;
+  
+}
+
+template<class T>
+void MT2Analysis<T>::print( std::ofstream& ofs_file, Float_t m1, Float_t m2, MT2Region* thisRegion, float k, bool doGenAverage ) const {
+
+  int nBins;
+  double* bins;
+  thisRegion->getBins(nBins, bins);
+  
+  T* thisT = this->get(*thisRegion);
+
+  for(int i=1; i < nBins+1; ++i){ 
+    thisT->print( ofs_file, m1, m2, i, k, doGenAverage );
   }
   
   ofs_file << "\\\\" << std::endl;

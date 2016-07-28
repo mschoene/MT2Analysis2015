@@ -51,7 +51,7 @@ struct BGTable {
 
 };
 
-bool drawSignals=true;
+bool drawSignals=false;
 float lumi; //fb-1 
 
 BGTable getTable( const std::string& tableFileName );
@@ -146,39 +146,39 @@ int main( int argc, char* argv[] ) {
   analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( sigPath + "/T1bbbb_eth.root", "T1bbbb") );
   //  analysesSignal[0]->setName("T1bbbb 1500, 100");
   analysesSignal[0]->setName("pp #rightarrow #tilde{g}#tilde{g}, #tilde{g} #rightarrow b#bar{b}#tilde{#chi}_{1}^{0}");
-  (*analysesSignal[0]) *= 2.26355/2.155;
+  //  (*analysesSignal[0]) *= 2.26355/2.155;
 
   analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( sigPath + "/T1bbbb_eth.root", "T1bbbb") );
   analysesSignal[1]->setName("T1bbbb 700, 600");
-  (*analysesSignal[1]) *= 2.26355/2.155;
+  //  (*analysesSignal[1]) *= 2.26355/2.155;
 
   analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( sigPath + "/T1qqqq_eth.root", "T1qqqq") );
   analysesSignal[2]->setName("pp #rightarrow #tilde{g}#tilde{g}, #tilde{g} #rightarrow q#bar{q}#tilde{#chi}_{1}^{0}");
-  (*analysesSignal[2]) *= 2.26355/2.155;
+  //  (*analysesSignal[2]) *= 2.26355/2.155;
 
   analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( sigPath + "/T1qqqq_eth.root", "T1qqqq") );
   analysesSignal[3]->setName("T1qqqq 700, 600");
-  (*analysesSignal[3]) *= 2.26355/2.155;
+  //  (*analysesSignal[3]) *= 2.26355/2.155;
 
   analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( sigPath + "/T2bb_eth.root", "T2bb") );
   analysesSignal[4]->setName("pp #rightarrow #tilde{b}#bar{#tilde{b}}, #tilde{b} #rightarrow b#tilde{#chi}_{1}^{0}");
-  (*analysesSignal[4]) *= 2.26355/2.26;
+  //  (*analysesSignal[4]) *= 2.26355/2.26;
 
   analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( sigPath + "/T2bb_eth.root", "T2bb") );
   analysesSignal[5]->setName("T2bb 400, 200");
-  (*analysesSignal[5]) *= 2.26355/2.26;
+  //  (*analysesSignal[5]) *= 2.26355/2.26;
 
-  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( sigPath + "/T2qq_eth.root", "T2qq") );
-  analysesSignal[6]->setName("pp #rightarrow #tilde{q}#bar{#tilde{q}}, #tilde{q} #rightarrow q#tilde{#chi}_{1}^{0}");
-  (*analysesSignal[6]) *= 2.26355/2.26;
-
-  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( sigPath + "/T2qq_eth.root", "T2qq") );
-  analysesSignal[7]->setName("T2qq 600, 0");
-  (*analysesSignal[7]) *= 2.26355/2.26;
-
-  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( sigPath + "/T2qq_eth.root", "T2qq") );
-  analysesSignal[8]->setName("T2qq 500, 300");
-  (*analysesSignal[8]) *= 2.26355/2.26;
+//  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( sigPath + "/T2qq_eth.root", "T2qq") );
+//  analysesSignal[6]->setName("pp #rightarrow #tilde{q}#bar{#tilde{q}}, #tilde{q} #rightarrow q#tilde{#chi}_{1}^{0}");
+//  (*analysesSignal[6]) *= 2.26355/2.26;
+//
+//  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( sigPath + "/T2qq_eth.root", "T2qq") );
+//  analysesSignal[7]->setName("T2qq 600, 0");
+//  (*analysesSignal[7]) *= 2.26355/2.26;
+//
+//  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( sigPath + "/T2qq_eth.root", "T2qq") );
+//  analysesSignal[8]->setName("T2qq 500, 300");
+//  (*analysesSignal[8]) *= 2.26355/2.26;
 
 
   analysesSignalCont.push_back( MT2Analysis<MT2EstimateSigContSyst>::readSystFromFile( sigPath + "/T1tttt_sigcontam_eth.root", "T1tttt_sigcontam", "isr") );
@@ -218,9 +218,9 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
   sigName.push_back("T1qqqq_700_600");
   sigName.push_back("T2bb_700_100");
   sigName.push_back("T2bb_400_200");
-  sigName.push_back("T2qq_1000_100");
-  sigName.push_back("T2qq_600_0");
-  sigName.push_back("T2qq_500_300");
+//  sigName.push_back("T2qq_1000_100");
+//  sigName.push_back("T2qq_600_0");
+//  sigName.push_back("T2qq_500_300");
   sigName.push_back("T1tttt_1200_100");
   sigName.push_back("T1tttt_700_400");
   sigName.push_back("T2tt_650_100");
@@ -243,9 +243,9 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
   colorsSig.push_back(kAzure+10);
   colorsSig.push_back(2);
   colorsSig.push_back(2);
-  colorsSig.push_back(kAzure+10);
-  colorsSig.push_back(kAzure+10);
-  colorsSig.push_back(kAzure+10);
+//  colorsSig.push_back(kAzure+10);
+//  colorsSig.push_back(kAzure+10);
+//  colorsSig.push_back(kAzure+10);
   colorsSig.push_back(6);
   colorsSig.push_back(6);
   colorsSig.push_back(6);
@@ -258,9 +258,9 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
   styleSig.push_back(1);
   styleSig.push_back(1);
   styleSig.push_back(1);
-  styleSig.push_back(1);
-  styleSig.push_back(1);
-  styleSig.push_back(1);
+//  styleSig.push_back(1);
+//  styleSig.push_back(1);
+//  styleSig.push_back(1);
   styleSig.push_back(1);
   styleSig.push_back(1);
   styleSig.push_back(1);
@@ -269,14 +269,14 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
   styleSig.push_back(1);
 
   int bgSize = 3;
-  int sigSize = 9;
+  int sigSize = 6;//9;
   int sigContSize = 5;
 
   int S=0;
 
   std::set<MT2Region> MT2Regions = data->getRegions();
   
-  TH1D* hdata = new TH1D("hdata", "", 172, 0, 172);
+  TH1D* hdata = new TH1D("hdata", "", 174, 0, 174);
   hdata->Sumw2();
   hdata->GetYaxis()->SetTitle("Entries");
   hdata->SetMarkerStyle(20);
@@ -287,7 +287,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
   TH1D* hsig[sigSize+sigContSize];
   for(int s=0; s<sigSize+sigContSize; ++s){
     std::string thisNameS( Form("hsig_%d", s) );
-    hsig[s] = new TH1D(thisNameS.c_str(), "", 172, 0, 172);
+    hsig[s] = new TH1D(thisNameS.c_str(), "", 174, 0, 174);
     hsig[s]->Sumw2();
     hsig[s]->GetYaxis()->SetTitle("Entries");
     hsig[s]->SetLineColor( colorsSig[s] );
@@ -295,26 +295,26 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
     hsig[s]->SetLineStyle( styleSig[s] );
   }
 
-  TH1D* hestimate_all = new TH1D(Form("hestimate_all"), "", 172, 0, 172);
+  TH1D* hestimate_all = new TH1D(Form("hestimate_all"), "", 174, 0, 174);
   hestimate_all->Sumw2();
   hestimate_all->GetYaxis()->SetTitle("Entries");
   
   TH1D* hestimate[bgSize];
 
-  TH1D* hestimate_all_forRatio = new TH1D(Form("hestimate_all_forRatio"), "", 172, 0, 172);
+  TH1D* hestimate_all_forRatio = new TH1D(Form("hestimate_all_forRatio"), "", 174, 0, 174);
   hestimate_all_forRatio->Sumw2();
 
   TH1D* hestimate_forRatio[bgSize];
   
   for(int b=0; b<bgSize; ++b){
   
-    hestimate[b]= new TH1D(Form("hestimate_%d", b), "", 172, 0, 172);
+    hestimate[b]= new TH1D(Form("hestimate_%d", b), "", 174, 0, 174);
     hestimate[b]->Sumw2();
     hestimate[b]->GetYaxis()->SetTitle("Entries");
     hestimate[b]->SetFillColor(colors[b]);
     hestimate[b]->SetLineColor(1);
 
-    hestimate_forRatio[b]= new TH1D(Form("hestimate_forRatio%d", b), "", 172, 0, 172);
+    hestimate_forRatio[b]= new TH1D(Form("hestimate_forRatio%d", b), "", 174, 0, 174);
     hestimate_forRatio[b]->Sumw2();
     hestimate_forRatio[b]->GetYaxis()->SetTitle("Entries");
     hestimate_forRatio[b]->SetFillColor(colors[b]);
@@ -382,7 +382,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
         if( h_sig3d[s] == 0 )
           h_sig3d[s] = new TH3D("emptyHisto", "", nBinsMT2, binsMT2, nBinsM, binsM, nBinsM, binsM);
 
-      float m1[]={1500., 700., 1300., 700., 700., 400., 1000., 600., 500., 1200., 700., 650., 600., 200.};
+      float m1[]={1800., 700., 1300., 700., 700., 400., 1000., 600., 500., 1200., 700., 650., 600., 200.};
       float m2[]={100., 600., 100., 600., 100., 200., 100., 100., 300., 100., 400., 100., 200., 100.};
 
       int binY, binZ;
@@ -416,7 +416,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
 	  this_signalContamination->Multiply(this_signal_alpha);
 	
 	  h_sig[sigSize+s]->Add(this_signalContamination, -1.0);
-	  h_sig[sigSize+s]->Scale(2.26355/2.26);
+	  //	  h_sig[sigSize+s]->Scale(2.26355/2.26);
 
 	}
       
@@ -1070,7 +1070,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
   else
     yMax*=20;
 
-  int thisBin=172;
+  int thisBin=174;
   
   hestimate_all->GetXaxis()->SetRangeUser(0, thisBin);  
   gdata->GetXaxis()->SetRangeUser(0, thisBin);
@@ -1124,7 +1124,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
 
   TLegend* legend;// = new TLegend( 0.8, 0.9-(bgSize+1-1)*0.06-0.06+0.02, 0.93, 0.9-0.06+0.02 );
   if(drawSignals)
-    legend = new TLegend( 0.75, 0.9-(bgSize+1-1)*0.06-0.06+0.02-0.06-0.01, 0.88, 0.9-0.06+0.02+0.02+0.04 );
+    legend = new TLegend( 0.7, 0.9-(bgSize+1-1)*0.06-0.06+0.02-0.06-0.01, 0.85, 0.9-0.06+0.02+0.02+0.04 );
   else
     legend = new TLegend( 0.8, 0.9-(bgSize+1-1)*0.06-0.06+0.02+0.02, 0.93, 0.9-0.06+0.02+0.02 );
   legend->SetTextSize(0.038);
@@ -1143,7 +1143,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
   labelTop->Draw("same");
 
   //  TPaveText* labelCMS = MT2DrawTools::getLabelCMS("CMS Supplementary");
-  TPaveText* labelCMS = MT2DrawTools::getLabelCMS();
+  TPaveText* labelCMS = MT2DrawTools::getLabelCMS("CMS Preliminary");
   labelCMS->Draw("same");
   
   int nHTRegions = 6;
@@ -1291,7 +1291,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
   pad2_0->Draw();
   pad2_0->cd();
 
-  bool doLogRatio=true;
+  bool doLogRatio=false;
 
   TH2D* h2_axes_ratio_0;
   if(doLogRatio){
@@ -1357,7 +1357,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
       legend->AddEntry( hsig[S], analysesSignalCont[S-sigSize]->getName().c_str(), "F" );
 
     if(sigName[S]=="T1bbbb_1500_100"){
-      legend->AddEntry( postfit, "m_{#tilde{g}}=1500 GeV", "F");
+      legend->AddEntry( postfit, "m_{#tilde{g}}=1800 GeV", "F");
       legend->AddEntry( postfit, "m_{#tilde{#chi}_{1}^{0}}=100 GeV", "F");
     }
     else if(sigName[S]=="T1qqqq_1300_100"){
@@ -1445,8 +1445,8 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
     h2_axes_ratio_1 = new TH2D("axes_ratio_1", "", 10, oldBin, thisBin, 10, 0.1, 10.0 );
   }
   else
-    //    h2_axes_ratio_1 = new TH2D("axes_ratio_1", "", 10, oldBin, thisBin, 10, 0., 7.5 );
-    h2_axes_ratio_1 = new TH2D("axes_ratio_1", "", 10, oldBin, thisBin, 10, 0., 2.0 );
+    h2_axes_ratio_1 = new TH2D("axes_ratio_1", "", 10, oldBin, thisBin, 10, 0., 4.0 );
+  //h2_axes_ratio_1 = new TH2D("axes_ratio_1", "", 10, oldBin, thisBin, 10, 0., 2.0 );
 
   //TH2D* h2_axes_ratio_1 = new TH2D("axes_ratio_1", "", 10, oldBin, thisBin, 10, 0., 3.0 );
   h2_axes_ratio_1->SetStats(0);
@@ -1552,7 +1552,8 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
     h2_axes_ratio_2 = new TH2D("axes_ratio_2", "", 10, oldBin, thisBin, 10, 0.1, 10.0 );
   }
   else
-    h2_axes_ratio_2 = new TH2D("axes_ratio_2", "", 10, oldBin, thisBin, 10, 0., 2.0 );
+    h2_axes_ratio_2 = new TH2D("axes_ratio_2", "", 10, oldBin, thisBin, 10, 0., 4.0 );
+  //    h2_axes_ratio_2 = new TH2D("axes_ratio_2", "", 10, oldBin, thisBin, 10, 0., 2.0 );
 
   //  TH2D* h2_axes_ratio_2 = new TH2D("axes_ratio_2", "", 10, oldBin, thisBin, 10, 0., 3.0 );
   h2_axes_ratio_2->SetStats(0);
@@ -1658,8 +1659,8 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
     h2_axes_ratio_3 = new TH2D("axes_ratio_3", "", 10, oldBin, thisBin, 10, 0.1, 10.0 );
   }
   else
-    //    h2_axes_ratio_3 = new TH2D("axes_ratio_3", "", 10, oldBin, thisBin, 10, 0., 4.0 );
-    h2_axes_ratio_3 = new TH2D("axes_ratio_3", "", 10, oldBin, thisBin, 10, 0., 2.0 );
+    h2_axes_ratio_3 = new TH2D("axes_ratio_3", "", 10, oldBin, thisBin, 10, 0., 2.5 );
+  //h2_axes_ratio_3 = new TH2D("axes_ratio_3", "", 10, oldBin, thisBin, 10, 0., 2.0 );
 
   //  TH2D* h2_axes_ratio_3 = new TH2D("axes_ratio_3", "", 10, oldBin, thisBin, 10, 0., 3.0 );
   h2_axes_ratio_3->SetStats(0);
@@ -1767,8 +1768,8 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
     h2_axes_ratio_4 = new TH2D("axes_ratio_4", "", 10, oldBin, thisBin, 10, 0.1, 10.0 );
   }
   else
-    //    h2_axes_ratio_4 = new TH2D("axes_ratio_4", "", 10, oldBin, thisBin, 10, 0., 6.0 );
-    h2_axes_ratio_4 = new TH2D("axes_ratio_4", "", 10, oldBin, thisBin, 10, 0., 2.0 );
+    h2_axes_ratio_4 = new TH2D("axes_ratio_4", "", 10, oldBin, thisBin, 10, 0., 2.5 );
+  //h2_axes_ratio_4 = new TH2D("axes_ratio_4", "", 10, oldBin, thisBin, 10, 0., 2.0 );
 
   //  TH2D* h2_axes_ratio_4 = new TH2D("axes_ratio_4", "", 10, oldBin, thisBin, 10, 0., 3.0 );
   h2_axes_ratio_4->SetStats(0);
@@ -1823,8 +1824,8 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
 
 
 
-  //  TCanvas* c2_5 = new TCanvas("c2_5", "", 1100, 600);
-  TCanvas* c2_5 = new TCanvas("c2_5", "", 1300, 800);
+  TCanvas* c2_5 = new TCanvas("c2_5", "", 1100, 600);
+  //TCanvas* c2_5 = new TCanvas("c2_5", "", 1300, 800);
   c2_5->cd();
   
   TPad *pad1_5 = new TPad("pad1_5","pad1_5",0,0.3-0.1,1,1);
@@ -1835,7 +1836,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
   pad1_5->SetLogy();
     
   oldBin=thisBin;
-  thisBin=172;
+  thisBin=174;
   hestimate_all->GetXaxis()->SetRangeUser(oldBin, thisBin);
   hdata->GetXaxis()->SetRangeUser(oldBin, thisBin);
   gdata->GetXaxis()->SetRangeUser(oldBin, thisBin);
@@ -1877,7 +1878,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
     h2_axes_ratio_5 = new TH2D("axes_ratio_5", "", 10, oldBin, thisBin, 10, 0.1, 10.0 );
   }
   else
-    h2_axes_ratio_5 = new TH2D("axes_ratio_5", "", 10, oldBin, thisBin, 10, 0., 6.0 );
+    h2_axes_ratio_5 = new TH2D("axes_ratio_5", "", 10, oldBin, thisBin, 10, 0., 5.0 );
     //h2_axes_ratio_5 = new TH2D("axes_ratio_5", "", 10, oldBin, thisBin, 10, 0., 2.0 );
 
   //  TH2D* h2_axes_ratio_5 = new TH2D("axes_ratio_5", "", 10, oldBin, thisBin, 10, 0., 3.0 );
@@ -1956,7 +1957,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
   c4->SaveAs( Form("%s/PvalueDistribution.pdf", fullPath.c_str()) );
   c4->SaveAs( Form("%s/PvalueDistribution.png", fullPath.c_str()) );
 
-//  TH1D* hNobs08 = new TH1D("hNobs08", "", 172, 0, 172);
+//  TH1D* hNobs08 = new TH1D("hNobs08", "", 174, 0, 174);
 //  for(int t=0; t<100; ++t)
 //    hNobs08->Fill(Nobs08[t]);
 //  

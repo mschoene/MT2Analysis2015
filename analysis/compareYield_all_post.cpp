@@ -89,7 +89,7 @@ int main( int argc, char* argv[] ) {
   TH1::AddDirectory(kTRUE);
   
   std::string dir = cfg.getEventYieldDir();
-  std::string outputdir = cfg.getEventYieldDir() + "/YieldComparison_dataMC_post";
+  std::string outputdir = cfg.getEventYieldDir() + "/YieldComparison_dataMC_post_plusSignal";
  
  
   MT2Analysis<MT2Estimate>* analysis = MT2Analysis<MT2Estimate>::readFromFile( dir + "/analyses.root", "data" ); // any one is good, just need to know the regions                                                                    
@@ -157,7 +157,7 @@ int main( int argc, char* argv[] ) {
   analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( sigPath + "/T1bbbb_eth.root", "T1bbbb") );
   //  analysesSignal[1]->setName("T1bbbb 700, 600");
   analysesSignal[1]->setName("pp #rightarrow #tilde{g}#tilde{g}, #tilde{g} #rightarrow b#bar{b}#tilde{#chi}_{1}^{0}");
-  (*analysesSignal[1]) *= 2.26355/2.155;
+  //  (*analysesSignal[1]) *= 2.26355/2.155;
 
   analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( sigPath + "/T1qqqq_eth.root", "T1qqqq") );
   analysesSignal[2]->setName("T1qqqq 1300, 100");
@@ -175,17 +175,17 @@ int main( int argc, char* argv[] ) {
   analysesSignal[5]->setName("pp #rightarrow #tilde{b}#bar{#tilde{b}}, #tilde{b} #rightarrow b#tilde{#chi}_{1}^{0}");
   (*analysesSignal[5]) *= 2.26355/2.26;
 
-  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( sigPath + "/T2qq_eth.root", "T2qq") );
-  analysesSignal[6]->setName("T2qq 1000, 0");
-  (*analysesSignal[6]) *= 2.26355/2.26;
-
-  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( sigPath + "/T2qq_eth.root", "T2qq") );
-  analysesSignal[7]->setName("T2qq 600, 0");
-  (*analysesSignal[7]) *= 2.26355/2.26;
-
-  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( sigPath + "/T2qq_eth.root", "T2qq") );
-  analysesSignal[8]->setName("pp #rightarrow #tilde{q}#bar{#tilde{q}}, #tilde{q} #rightarrow q#tilde{#chi}_{1}^{0}");
-  (*analysesSignal[8]) *= 2.26355/2.26;
+//  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( sigPath + "/T2qq_eth.root", "T2qq") );
+//  analysesSignal[6]->setName("T2qq 1000, 0");
+//  (*analysesSignal[6]) *= 2.26355/2.26;
+//
+//  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( sigPath + "/T2qq_eth.root", "T2qq") );
+//  analysesSignal[7]->setName("T2qq 600, 0");
+//  (*analysesSignal[7]) *= 2.26355/2.26;
+//
+//  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( sigPath + "/T2qq_eth.root", "T2qq") );
+//  analysesSignal[8]->setName("pp #rightarrow #tilde{q}#bar{#tilde{q}}, #tilde{q} #rightarrow q#tilde{#chi}_{1}^{0}");
+//  (*analysesSignal[8]) *= 2.26355/2.26;
 
 
   analysesSignalCont.push_back( MT2Analysis<MT2EstimateSigContSyst>::readSystFromFile( sigPath + "/T1tttt_sigcontam_eth.root", "T1tttt_sigcontam", "isr") );
@@ -226,9 +226,9 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
   sigName.push_back("T1qqqq_700_600");
   sigName.push_back("T2bb_700_0");
   sigName.push_back("T2bb_400_200");
-  sigName.push_back("T2qq_1000_0");
-  sigName.push_back("T2qq_600_0");
-  sigName.push_back("T2qq_500_300");
+//  sigName.push_back("T2qq_1000_0");
+//  sigName.push_back("T2qq_600_0");
+//  sigName.push_back("T2qq_500_300");
   sigName.push_back("T1tttt_1200_100");
   sigName.push_back("T1tttt_700_400");
   sigName.push_back("T2tt_650_0");
@@ -252,9 +252,9 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
   colorsSig.push_back(kAzure+10);
   colorsSig.push_back(2);
   colorsSig.push_back(2);
-  colorsSig.push_back(kAzure+10);
-  colorsSig.push_back(kAzure+10);
-  colorsSig.push_back(kAzure+10);
+//  colorsSig.push_back(kAzure+10);
+//  colorsSig.push_back(kAzure+10);
+//  colorsSig.push_back(kAzure+10);
   colorsSig.push_back(6);
   colorsSig.push_back(6);
   colorsSig.push_back(6);
@@ -268,9 +268,9 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
   styleSig.push_back(1);
   styleSig.push_back(1);
   styleSig.push_back(1);
-  styleSig.push_back(1);
-  styleSig.push_back(1);
-  styleSig.push_back(1);
+//  styleSig.push_back(1);
+//  styleSig.push_back(1);
+//  styleSig.push_back(1);
   styleSig.push_back(1);
   styleSig.push_back(1);
   styleSig.push_back(1);
@@ -278,10 +278,10 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
   styleSig.push_back(1);
 
   int bgSize = 3;
-  int sigSize = 9;
+  int sigSize = 6;//9;
   int sigContSize = 5;
 
-  int S=10;
+  int S=1;
 
   std::set<MT2Region> MT2Regions = data->getRegions();
   
@@ -389,8 +389,8 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
 	  h_sig3d[s] = new TH3D("emptyHisto", "", nBinsMT2, binsMT2, nBinsM, binsM, nBinsM, binsM);
       
 
-      float m1[]={1500., 700., 1300., 700., 700., 400., 1000., 600., 500., 1200., 700., 650., 600., 200.};
-      float m2[]={100., 600., 100., 600., 0., 200., 0., 0., 300., 100., 400., 0., 200., 100.};
+      float m1[]={1500., 1000., 1300., 700., 700., 400., 1000., 600., 500., 1200., 700., 650., 600., 200.};
+      float m2[]={100., 800., 100., 600., 0., 200., 0., 0., 300., 100., 400., 0., 200., 100.};
 
       int binY, binZ;
 
@@ -1020,7 +1020,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
 
   TCanvas* c2;
   if(drawSignals) c2 = new TCanvas("c2", "", 1200, 600);
-  //if(drawSignals) c2 = new TCanvas("c2", "", 1300, 700);
+  //if(drawSignals) c2 = new TCanvas("c2", "", 1300, 800);
   else c2 = new TCanvas("c2", "", 1100, 600);
 
   c2->cd();
@@ -1060,7 +1060,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
   float yMin;
   if(drawSignals){
     yMin = 1e-2;
-    yMax*=75;
+    yMax*=1000;
   }
 //  if(drawSignals){
 //    yMin = 1e-1;
@@ -1130,7 +1130,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
 
   TLegend* legend;
   if(drawSignals)
-    legend = new TLegend( 0.75, 0.9-(bgSize+1-1)*0.06-0.06-0.06-0.06-0.03, 0.88, 0.9-0.06 );
+    legend = new TLegend( 0.7, 0.9-(bgSize+1-1)*0.06-0.06-0.06-0.06-0.03, 0.85, 0.9-0.06 );
   else
     legend = new TLegend( 0.8, 0.9-(bgSize+1-1)*0.06-0.06-0.02, 0.93, 0.9-0.06 );
   legend->SetTextSize(0.038);
@@ -1199,7 +1199,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
   labelTop->Draw("same");
   
   //  TPaveText* labelCMS = MT2DrawTools::getLabelCMS("CMS Supplementary");
-  TPaveText* labelCMS = MT2DrawTools::getLabelCMS();
+  TPaveText* labelCMS = MT2DrawTools::getLabelCMS("CMS Preliminary");
   labelCMS->Draw("same");
   
 
@@ -1389,8 +1389,8 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
       legend->AddEntry( hsig[S], analysesSignalCont[S-sigSize]->getName().c_str(), "F" );
     
     if(sigName[S]=="T1bbbb_700_600"){
-      legend->AddEntry( postfit, "m_{#tilde{g}} = 700 GeV", "F" );
-      legend->AddEntry( postfit, "m_{#tilde{#chi}_{1}^{0}}= 600 GeV", "F" );
+      legend->AddEntry( postfit, "m_{#tilde{g}} = 1000 GeV", "F" );
+      legend->AddEntry( postfit, "m_{#tilde{#chi}_{1}^{0}}= 800 GeV", "F" );
     }
     else if(sigName[S]=="T1qqqq_700_600"){
       legend->AddEntry( postfit, "m_{#tilde{g}} = 700 GeV", "F" );
