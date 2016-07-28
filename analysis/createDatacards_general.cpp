@@ -108,7 +108,7 @@ int main( int argc, char* argv[] ) {
 
   float err_zinv_puritySyst = 0.1; // 10%, including 5% on purity + 8% on fragmentation
   float err_zinv_doubleRatioOffset = 0.11; // 10%, fully correlated, on zinv + 5% in quadrature from trigger// TO BE UPDATED IN CASE IT CHANGES WITH FULL LUMI
-  float zinv_doubleRatioOffset = 0.90; // 90%, used to correct the Z/G ratio in zinv estimate // TO BE UPDATED IN CASE IT CHANGES WITH FULL LUMI
+  float zinv_doubleRatioOffset = 0.89; // 89%, used to correct the Z/G ratio in zinv estimate // TO BE UPDATED IN CASE IT CHANGES WITH FULL LUMI
   
   float err_lumi_corr   = 0.062; // Uncertainty on luminosity (6.2% for 2016 public results)
 
