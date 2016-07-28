@@ -180,7 +180,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
 
   TH1D* hPull = new TH1D("hPull", "", 101, -5.05, 5.05);
   hPull->Sumw2();
-  hPull->GetXaxis()->SetTitle("(Est. - Data)/#sigma");
+  hPull->GetXaxis()->SetTitle("(Data - Est.)/#sigma");
   hPull->GetYaxis()->SetTitle("Entries");
   
   std::string fullPath = outputdir;
@@ -532,7 +532,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
     float thisEstErr  = hestimate_all->GetBinError(iBin);
     
     
-    hPull->Fill( (thisEst-thisData)/( TMath::Sqrt( thisDataErr*thisDataErr + thisEstErr*thisEstErr ) ) );
+    hPull->Fill( (-thisEst+thisData)/( TMath::Sqrt( thisDataErr*thisDataErr + thisEstErr*thisEstErr ) ) );
     
   }
 
@@ -641,7 +641,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   //  TPaveText* labelTop = MT2DrawTools::getLabelTopSimulation(lumi);
   TPaveText* labelTop = MT2DrawTools::getLabelTop(lumi);
   labelTop->Draw("same");
-  TPaveText* labelCMS = MT2DrawTools::getLabelCMS();
+  TPaveText* labelCMS = MT2DrawTools::getLabelCMS("CMS Preliminary");
   labelCMS->Draw("same");
   
   int nHTRegions = 6;
@@ -885,8 +885,8 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
     h2_axes_ratio_1 = new TH2D("axes_ratio_1", "", 10, oldBin, thisBin, 10, 0.1, 10.0 );
   }
   else
-    //    h2_axes_ratio_1 = new TH2D("axes_ratio_1", "", 10, oldBin, thisBin, 10, 0., 7.5 );
-    h2_axes_ratio_1 = new TH2D("axes_ratio_1", "", 10, oldBin, thisBin, 10, 0., 2.0 );
+    h2_axes_ratio_1 = new TH2D("axes_ratio_1", "", 10, oldBin, thisBin, 10, 0., 4.0 );
+  //h2_axes_ratio_1 = new TH2D("axes_ratio_1", "", 10, oldBin, thisBin, 10, 0., 2.0 );
 
   h2_axes_ratio_1->SetStats(0);
   h2_axes_ratio_1->GetXaxis()->SetLabelSize(0.00);
@@ -966,7 +966,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
     h2_axes_ratio_2 = new TH2D("axes_ratio_2", "", 10, oldBin, thisBin, 10, 0.1, 10.0 );
   }
   else
-    h2_axes_ratio_2 = new TH2D("axes_ratio_2", "", 10, oldBin, thisBin, 10, 0., 2.0 );
+    h2_axes_ratio_2 = new TH2D("axes_ratio_2", "", 10, oldBin, thisBin, 10, 0., 4.0 );
 
   h2_axes_ratio_2->SetStats(0);
   h2_axes_ratio_2->GetXaxis()->SetLabelSize(0.00);
@@ -1047,8 +1047,8 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
     h2_axes_ratio_3 = new TH2D("axes_ratio_3", "", 10, oldBin, thisBin, 10, 0.1, 10.0 );
   }
   else
-    //    h2_axes_ratio_3 = new TH2D("axes_ratio_3", "", 10, oldBin, thisBin, 10, 0., 4.0 );
-    h2_axes_ratio_3 = new TH2D("axes_ratio_3", "", 10, oldBin, thisBin, 10, 0., 2.0 );
+    h2_axes_ratio_3 = new TH2D("axes_ratio_3", "", 10, oldBin, thisBin, 10, 0., 2.5 );
+  //h2_axes_ratio_3 = new TH2D("axes_ratio_3", "", 10, oldBin, thisBin, 10, 0., 2.0 );
 
   h2_axes_ratio_3->SetStats(0);
   h2_axes_ratio_3->GetXaxis()->SetLabelSize(0.00);
@@ -1129,8 +1129,8 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
     h2_axes_ratio_4 = new TH2D("axes_ratio_4", "", 10, oldBin, thisBin, 10, 0.1, 10.0 );
   }
   else
-    //    h2_axes_ratio_4 = new TH2D("axes_ratio_4", "", 10, oldBin, thisBin, 10, 0., 6.0 );
-    h2_axes_ratio_4 = new TH2D("axes_ratio_4", "", 10, oldBin, thisBin, 10, 0., 2.0 );
+    h2_axes_ratio_4 = new TH2D("axes_ratio_4", "", 10, oldBin, thisBin, 10, 0., 2.5 );
+  //h2_axes_ratio_4 = new TH2D("axes_ratio_4", "", 10, oldBin, thisBin, 10, 0., 2.0 );
 
 
   h2_axes_ratio_4->SetStats(0);
@@ -1212,8 +1212,8 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
     h2_axes_ratio_5 = new TH2D("axes_ratio_5", "", 10, oldBin, thisBin, 10, 0.1, 10.0 );
   }
   else
-    //    h2_axes_ratio_5 = new TH2D("axes_ratio_5", "", 10, oldBin, thisBin, 10, 0., 6.0 );
-    h2_axes_ratio_5 = new TH2D("axes_ratio_5", "", 10, oldBin, thisBin, 10, 0., 2.0 );
+    h2_axes_ratio_5 = new TH2D("axes_ratio_5", "", 10, oldBin, thisBin, 10, 0., 5.0 );
+  //h2_axes_ratio_5 = new TH2D("axes_ratio_5", "", 10, oldBin, thisBin, 10, 0., 2.0 );
 
   h2_axes_ratio_5->SetStats(0);
   h2_axes_ratio_5->GetXaxis()->SetLabelSize(0.00);
