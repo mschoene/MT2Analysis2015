@@ -493,42 +493,42 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
     
     if( !myTree.isData ){
       weight *= myTree.weight_btagsf;
+      weight *= myTree.weight_lepsf;
 
       float SF = 1.0;
       float pt = myTree.gamma_pt[0];
-      
+
       if ( fabs(myTree.gamma_eta[0])<1.479 ) {
-	if (pt > 150 && pt < 160) SF = 0.03576134;
-	else if (pt < 170.) SF = 0.2844761;
-	else if (pt < 180.) SF = 0.9541034;
-	else if (pt < 200.) SF = 0.9432587;
-	else if (pt < 250.) SF = 0.9998274;
-	else if (pt < 300.) SF = 0.9997936;
-	else if (pt < 350.) SF = 0.9997995;
-	else if (pt < 400.) SF = 0.9727327;
-	else if (pt < 450.) SF = 0.9686112;
-	else if (pt < 500.) SF = 0.9689014;
-	else if (pt < 600.) SF = 0.965793;
-	else if (pt < 700.) SF = 0.9734969;
-	else if (pt < 800.) SF = 0.9776452;
-	else SF = 0.9367322;
-      }else {
-	if (pt > 150 && pt < 160) SF = 0.02972659;
-	else if (pt < 170.) SF = 0.1191435;
-	else if (pt < 180.) SF = 0.5990605;
-	else if (pt < 200.) SF = 0.9105484;
-	else if (pt < 250.) SF = 0.9995712;
-	else if (pt < 300.) SF = 0.9915838;
-	else if (pt < 350.) SF = 0.9545882;
-	else if (pt < 400.) SF = 0.9673124;
-	else if (pt < 450.) SF = 0.960792;
-	else if (pt < 500.) SF = 0.9519475;
-	else if (pt < 600.) SF = 0.950766;
-	else if (pt < 700.) SF = 0.9538072;
-	else if (pt < 800.) SF = 0.9777396;
-	else SF = 0.9862047;
+	if (pt > 150 && pt < 160) SF = 0.02913004;
+	else if (pt < 170) SF = 0.2979024;
+	else if (pt < 180) SF = 0.9168265;
+	else if (pt < 200) SF = 0.9346871;
+	else if (pt < 250) SF = 0.9498014;
+	else if (pt < 300) SF = 0.9503671;
+	else if (pt < 350) SF = 0.9266015;
+	else if (pt < 400) SF = 0.9366893;
+	else if (pt < 450) SF = 0.9451516;
+	else if (pt < 500) SF = 0.9467028;
+	else if (pt < 600) SF = 0.9480487;
+	else if (pt < 700) SF = 0.9501481;
+	else if (pt < 800) SF = 0.9634304;
+	else SF = 0.9398705;
+      }      else {
+	if (pt > 150 && pt < 160) SF = 0.02942861;
+	else if (pt < 170) SF = 0.1139842;
+	else if (pt < 180) SF = 0.6114576;
+	else if (pt < 200) SF = 0.8858802;
+	else if (pt < 250) SF = 0.9609917;
+	else if (pt < 300) SF = 0.9371325;
+	else if (pt < 350) SF = 0.9273918;
+	else if (pt < 400) SF = 0.9442088;
+	else if (pt < 450) SF = 0.9526445;
+	else if (pt < 500) SF = 0.9331003;
+	else if (pt < 600) SF = 0.9604496;
+	else if (pt < 700) SF = 0.9525379;
+	else if (pt < 800) SF = 0.9785377;
+	else SF = 0.9763883;
       }
-    
       weight *= SF;
       
     }

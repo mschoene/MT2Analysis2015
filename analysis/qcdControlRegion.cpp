@@ -330,7 +330,10 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
 
     Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb;//*cfg.lumi(); 
 
-    if(!myTree.isData) weight *= myTree.weight_btagsf;
+    if(!myTree.isData){
+      weight *= myTree.weight_btagsf;
+      weight *= myTree.weight_lepsf;
+    }
     //float myht = njets==1 ? 201. : ht; // let everything (mt2=ht>40) pass for monojet
     MT2EstimateTree* thisTree = anaTree->get( ht, njets, nbjets, minMTBmet, mt2 );
     if( thisTree==0 ) continue;

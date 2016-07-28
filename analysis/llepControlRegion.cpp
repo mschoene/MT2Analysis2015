@@ -195,7 +195,10 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
     
     Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb;//*cfg.lumi();
     //Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi();
-    if(!myTree.isData) weight *= myTree.weight_btagsf;
+    if(!myTree.isData) {
+      weight *= myTree.weight_btagsf;
+      weight *= myTree.weight_lepsf;
+    }
 
     if (myTree.isData) {
 

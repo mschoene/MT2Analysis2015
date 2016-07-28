@@ -371,10 +371,10 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg ) {
     //Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi();
     Double_t weight_syst = 1.;
 
-    if( !myTree.isData )
+    if( !myTree.isData ){
       weight *= myTree.weight_btagsf;
-    
-
+      weight *= myTree.weight_lepsf;
+    }
 
     if( myTree.evt_id > 1000 )
       weight_syst = myTree.weight_isr;

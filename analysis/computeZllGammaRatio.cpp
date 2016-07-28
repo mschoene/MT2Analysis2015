@@ -579,6 +579,9 @@ void drawRatios(std::string fullPath, double *binss, unsigned int size,  std::st
     //    h_mt2_mc->SetBinError(bi, sqrt( value_err*value_err* 0.92*0.92 +  value*value* 0.05*0.05 ) ); //tempororaa 5% for the trigger eff
   
     //change back to this:::  
+    //h_mt2_mc->SetBinContent(bi, value * hlt );
+    //h_mt2_mc->SetBinError(bi, sqrt( value_err*value_err* hlt* hlt +  value*value* 0.03*0.03 ) ); //3% for the trigger eff
+
     h_mt2_mc->SetBinContent(bi, value * hlt * lepSF );
     h_mt2_mc->SetBinError(bi, sqrt( value_err*value_err* hlt * lepSF* hlt * lepSF  + value*value*lepSF_err*lepSF_err*hlt*hlt +  value*value* lepSF*lepSF * 0.03*0.03 ) ); //3% for the trigger eff
   } 
@@ -697,7 +700,7 @@ void drawRatios(std::string fullPath, double *binss, unsigned int size,  std::st
     float grMin = h_mt2->GetBinLowEdge(1);
 
 
-    
+    /*
     double sf = 0.902279;
     double sfErr = 0.102958;//0.109381;
 
@@ -707,7 +710,7 @@ void drawRatios(std::string fullPath, double *binss, unsigned int size,  std::st
     fSF->SetParError(0, sfErr );
     //   g_ratio->Fit(fSF, "0");
 
-
+    
     double x[2]    ={grMin, grMax};
     double y[2]    ={sf, sf};
 
@@ -719,13 +722,13 @@ void drawRatios(std::string fullPath, double *binss, unsigned int size,  std::st
     SFFitBand->SetFillStyle(3244);
   
     TPaveText* fitText = MT2DrawTools::getFitText( fSF );
-    
+    */
 
-    /*
+    
     TF1* fSF = MT2DrawTools::getSFFit(gr_ratio, grMin, grMax  );
     TPaveText* fitText = MT2DrawTools::getFitText( fSF );
     TGraphErrors* SFFitBand =  MT2DrawTools::getSFFitBand(fSF, xMin, xMax);
-    */  
+    
 
     h2_axes_rat->SetYTitle("Data / MC");
     h2_axes_rat->GetXaxis()->SetTitleSize(0.2);

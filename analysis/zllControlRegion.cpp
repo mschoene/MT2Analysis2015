@@ -35,6 +35,7 @@ bool do_bg = true;
 
 
 TH1D*  h_muTrk_hi = 0;
+TH2D*  h_elTrk = 0;
 
 
 void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,   
@@ -105,6 +106,16 @@ int main(int argc, char* argv[]) {
   TH2D* h_elSF = (TH2D*) h_id->Clone("h_elSF");
   h_elSF->SetDirectory(0);
   h_elSF->Multiply(h_iso);
+
+  std::string filenameElTrk = "/mnt/t3nfs01/data01/shome/mschoene/lepSF/egammaEffi_SF2D.root";
+  TFile * f_eleTrk = new TFile(filenameElTrk.c_str() );
+  if (!f_eleTrk->IsOpen()) std::cout << " ERROR: Could not find scale factor file " << filenameElTrk << std::endl; 
+  h_elTrk = (TH2D*) f_eleTrk->Get("EGamma_SF2D");
+  h_elTrk->SetDirectory(0);
+  f_eleTrk->Close(); delete f_eleTrk; 
+
+
+
 
   //Muons//
   std::string filenameID = "/mnt/t3nfs01/data01/shome/mschoene/lepSF/TnP_MuonID_NUM_LooseID_DENOM_generalTracks_VAR_map_pt_eta.root";
@@ -419,121 +430,87 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
     if( !myTree.isData ){ //temporarily scaling by hand the cross sections
       weight *= myTree.weight_btagsf;
       
+      if( myTree.evt_id == 702) weight = weight * 1.0573;
+      if( myTree.evt_id == 703) weight = weight * 0.9588;
+      if( myTree.evt_id == 704) weight = weight * 1.0329;
+      if( myTree.evt_id == 705) weight = weight * 0.9945;
       // weight *= 0.92;
       //temp lep trigger eff
       //weight *= myTree.weight_toppt;
     
-    /////////Add lepton scale factor//////////
-    Float_t central = 1; 
-    Float_t err = 0;
-    Float_t uncert_UP = 0; //	Float_t uncert_DN = 0; 
+      /////////Add lepton scale factor//////////
+      Float_t central = 1; 
+      Float_t err = 0;
+      Float_t uncert_UP = 0; //	Float_t uncert_DN = 0; 
 
-    Float_t weight_lepsf = 1.;
-    Float_t weight_lepsf_UP = 1.;
+      Float_t weight_lepsf = 1.;
+      Float_t weight_lepsf_UP = 1.;
 
-    for(int o=0; o < 2; ++o){
+      for(int o=0; o < 2; ++o){
 
-      float pt = myTree.lep_pt[o];
-      float eta = fabs( myTree.lep_eta[o] );
-      int pdgId = abs( myTree.lep_pdgId[o] );
+	float pt = myTree.lep_pt[o];
+	float eta = fabs( myTree.lep_eta[o] );
+	int pdgId = abs( myTree.lep_pdgId[o] );
 
-      float pt_cutoff = std::max( 10.1, std::min( 100., double(pt) ) );
+	float pt_cutoff = std::max( 10.1, std::min( 100., double(pt) ) );
  
-      //Electrons
-      if( pdgId == 11) {
-	Int_t binx = h_elSF->GetXaxis()->FindBin(pt_cutoff);
-	Int_t biny = h_elSF->GetYaxis()->FindBin(eta);
-	central = h_elSF->GetBinContent(binx,biny);
-	err  = h_elSF->GetBinError(binx,biny);
-	if (central > 1.2 || central < 0.8) 
-	  std::cout<<"STRANGE: Electron with pT/eta of "<< pt <<"/"<< eta <<". SF is "<< central <<std::endl;
-	uncert_UP = central + err;
-	//	uncert_DN = central - err;
+	//Electrons
+	if( pdgId == 11) {
+	  Int_t binx = h_elSF->GetXaxis()->FindBin(pt_cutoff);
+	  Int_t biny = h_elSF->GetYaxis()->FindBin(eta);
+	  central = h_elSF->GetBinContent(binx,biny);
+	  err  = h_elSF->GetBinError(binx,biny);
+	  if (central > 1.2 || central < 0.8) 
+	    std::cout<<"STRANGE: Electron with pT/eta of "<< pt <<"/"<< eta <<". SF is "<< central <<std::endl;
 
-      } //else Muons
-      else if ( pdgId == 13) {
-	Int_t binx = h_muSF->GetXaxis()->FindBin(pt);
-	Int_t biny = h_muSF->GetYaxis()->FindBin(fabs(eta));
-	if ( binx >7 ) binx = 7; //overflow bin empty for the muons...
-	central = h_muSF->GetBinContent(binx,biny);
-	err  = 0.03; // adding in quadrature 1% unc. on ID and 1% unc. on ISO
-	if (central > 1.3 || central < 0.7) 
-	  std::cout<<"STRANGE: Muon with pT/eta of "<<pt<<"/"<< fabs(eta) <<". SF is "<< central <<std::endl;
+	  float central_trk = 1;
+	  Int_t binx_trk = h_elTrk->GetXaxis()->FindBin(  myTree.lep_eta[o] );
+	  if( binx_trk>28 ) binx_trk = 28; //though we shouldn't really get many electrons with eta = 2.5
+	  else if( binx_trk<1 ) binx_trk = 1;
+	  central_trk = h_elTrk->GetBinContent( binx_trk,1  ); // y=pT range of 20-200
 
-	float central_trk = 1;
-	Int_t binx_trk = h_muTrk_hi->GetXaxis()->FindBin(  myTree.lep_eta[o] );
-	if( binx_trk>10 ) binx_trk = 10;
-	else if( binx_trk<1 ) binx_trk = 1;
-	central_trk = h_muTrk_hi->GetBinContent( binx_trk );
+	  central *= central_trk;
 
-	central *= central_trk;
+	  uncert_UP = central + err;
+	  //	uncert_DN = central - err;
 
-	uncert_UP = central + err;
-	//	uncert_DN = central - err;
+	} //else Muons
+	else if ( pdgId == 13) {
+	  Int_t binx = h_muSF->GetXaxis()->FindBin(pt);
+	  Int_t biny = h_muSF->GetYaxis()->FindBin(fabs(eta));
+	  if ( binx >7 ) binx = 7; //overflow bin empty for the muons...
+	  central = h_muSF->GetBinContent(binx,biny);
+	  err  = 0.03; // adding in quadrature 1% unc. on ID and 1% unc. on ISO
+	  if (central > 1.3 || central < 0.7) 
+	    std::cout<<"STRANGE: Muon with pT/eta of "<<pt<<"/"<< fabs(eta) <<". SF is "<< central <<std::endl;
 
-      }//done with one  electron/muon 
-      weight_lepsf    *= central;
-      weight_lepsf_UP *= uncert_UP;
-      //  weight_lepsf_DN *= uncert_DN;	
+	  float central_trk = 1;
+	  Int_t binx_trk = h_muTrk_hi->GetXaxis()->FindBin(  myTree.lep_eta[o] );
+	  if( binx_trk>10 ) binx_trk = 10;
+	  else if( binx_trk<1 ) binx_trk = 1;
+	  central_trk = h_muTrk_hi->GetBinContent( binx_trk );
 
-      //Backwards compatible, don't make me think now, it's too warm
-      weight_lep0 = central;
-      weight_lep_err = uncert_UP;
-      weight_lep1 = 1;  	
-    }//end of loop over objects
+	  central *= central_trk;
+
+	  uncert_UP = central + err;
+	  //	uncert_DN = central - err;
+
+	}//done with one  electron/muon 
+	weight_lepsf    *= central;
+	weight_lepsf_UP *= uncert_UP;
+	//  weight_lepsf_DN *= uncert_DN;	
+
+	//Backwards compatible, don't make me think now, it's too warm
+	weight_lep0 = central;
+	weight_lep_err = uncert_UP;
+	weight_lep1 = 1;  	
+      }//end of loop over objects
 
     }//end of applying SF
 
 
 
 
-
-
-
-    /*
-
-    if( myTree.isData == 0 ){
-     
-      for(int i = 0; i<2; i++){
-	float central = 1; 
-	float err = 0;
-	if (abs(myTree.lep_pdgId[i]) == 11) {
-	  int binx = h_elSF->GetXaxis()->FindBin(myTree.lep_pt[i]);
-	  int biny = h_elSF->GetYaxis()->FindBin(fabs(myTree.lep_eta[i]));
-	  central = h_elSF->GetBinContent(binx,biny);
-          err  = h_elSF->GetBinError(binx,biny);
-	  if (central > 1.2 || central < 0.8) 
-	    std::cout<<"STRANGE: Electron with pT/eta of "<<myTree.lep_pt[i]<<"/"<<myTree.lep_eta[i]<<". SF is "<< central <<std::endl;
-	}
-	else if (abs(myTree.lep_pdgId[i]) == 13) {
-	  int binx = h_muSF->GetXaxis()->FindBin(myTree.lep_pt[i]);
-	  int biny = h_muSF->GetYaxis()->FindBin(fabs(myTree.lep_eta[i]));
-	  if ( binx >7 ) binx = 7; //overflow bin empty for the muons...
-	  central = h_muSF->GetBinContent(binx,biny);
-	  err  = 0.014; // adding in quadrature 1% unc. on ID and 1% unc. on ISO
-	  if (central > 1.2 || central < 0.8) {
-	    std::cout<<"STRANGE: Muon with pT/eta of "<<myTree.lep_pt[i]<<"/"<< fabs(myTree.lep_eta[i]) <<". SF is "<< central <<std::endl;
-	    //	std::cout << "lepton pt = " << myTree.lep_pt[i] << std::endl;
-	    //	std::cout << "bin y is  = " << h_muSF->GetXaxis()->GetBinLowEdge(biny) << " up to " << h_muSF->GetXaxis()->GetBinLowEdge(biny+1) << std::endl;
-	  }
-	}
-	if ( i == 0 ){
-	  weight_lep0 = central;
-	  weight_lep_err = err;
-
-	}
-	else{
-	  weight_lep1 = central;
-	  weight_lep_err += err;
-	}
-
-      }//end loop over leptons
-
-      //     weight = weight * weight_lep0 * weight_lep1;      
-      //  weight_lep_err *= weight;
-
-    }//end of if data
-    */
 
     bool isSF = false;
     bool isOF = false;
@@ -554,9 +531,7 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
 
 
       //      if(  myTree.isData && !( ( sample.id==5  && (myTree.HLT_DoubleMu || myTree.HLT_DoubleMu_NonIso)  ) ||   ( sample.id==8  && (myTree.HLT_SingleMu && !myTree.HLT_DoubleMu && !myTree.HLT_DoubleMu_NonIso )  ) || ( myTree.HLT_DoubleEl && sample.id==4  )   ||  ( sample.id==7 && !myTree.HLT_DoubleEl && !myTree.HLT_DoubleMu && !myTree.HLT_DoubleMu_NonIso && !myTree.HLT_SingleMu && myTree.HLT_Photon165_HE10 ) )  ) continue;
-
       // if(  myTree.isData && !( ( sample.id==5  && (myTree.HLT_DoubleMu || myTree.HLT_DoubleMu_NonIso)) || ( myTree.HLT_DoubleEl && sample.id==4  )   ||  ( sample.id==7 && !myTree.HLT_DoubleEl && !myTree.HLT_DoubleMu && !myTree.HLT_DoubleMu_NonIso && myTree.HLT_Photon165_HE10 ) )  ) continue;
-
       //NOMINAL     if(  myTree.isData && !( ( sample.id==5  && myTree.HLT_DoubleMu ) || ( myTree.HLT_DoubleEl && sample.id==4  )   ||  ( sample.id==7 && !myTree.HLT_DoubleEl && !myTree.HLT_DoubleMu && myTree.HLT_Photon165_HE10 ) )  ) continue;
       // if( !myTree.isData && !( myTree.HLT_DoubleEl || myTree.HLT_DoubleMu || myTree.HLT_Photon165_HE10)) continue;
 
