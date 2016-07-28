@@ -27,7 +27,7 @@ bool use_extrapolation = true;
 bool doSignalContamination = true;
 bool doSimultaneousFit = false;
 bool includeSignalUnc = true; // signal lep eff commented out till available
-bool copy2SE = false; // copy datacards to SE
+bool copy2SE = true; // copy datacards to SE
 bool doGenAverage = true;
 
 int round(float d) {
@@ -101,7 +101,7 @@ int main( int argc, char* argv[] ) {
   //  float err_qcd_uncorr  = 1.0; // 100% of QCD MC yield, if use MC for QCD
 
   float err_llep_shape = 0.40;
-  float err_llep_lepEff = 0.07; // Uncertainty on llep estimate from lepton efficiency (7%)
+  float err_llep_lepEff = 0.12; // Uncertainty on llep estimate from lepton efficiency (12%)
 
   float err_zinv_shape = 0.40;
   float err_zinv_uncorr_2b = 1.0;
@@ -946,11 +946,11 @@ int main( int argc, char* argv[] ) {
 	   } else if( iR->nJetsMin()>=7 && iR->nBJetsMin()>=3 ){ // 15% for NJ>=7 and NB>=3 (due to b-tag SF)
 
 	     if(doSimultaneousFit && includeCR)
-	       datacard << "llep_alpha_" << llepCR_name << " lnN - - " << 1.+0.15 << " - - -" << std::endl;
+	       datacard << "llep_alpha_" << llepCR_name << " lnN - - " << 1.+0.18 << " - - -" << std::endl;
 	     else
-	       datacard << "llep_alpha_" << llepCR_name << " lnN - - " << 1.+0.15 << " - " << std::endl;
-             llep_systUp += 0.15*0.15;
-             llep_systDn += 0.15*0.15;
+	       datacard << "llep_alpha_" << llepCR_name << " lnN - - " << 1.+0.18 << " - " << std::endl;
+             llep_systUp += 0.18*0.18;
+             llep_systDn += 0.18*0.18;
 
 	   } else{ // 10% elsewhere
 	     
