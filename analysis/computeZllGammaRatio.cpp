@@ -1048,7 +1048,10 @@ void drawRatiosTopHisto(std::string fullPath, double *binss, unsigned int size, 
 
   canny->cd();
 
-  TH2D* h2_axes_rat = new TH2D("axes_rat", "", 10, xMin, xMax, 5 , 0.3, 1.7 );
+  float rangeYLow = 0.3;
+  if( selection == "nBJets") rangeYLow = 0;
+
+  TH2D* h2_axes_rat = new TH2D("axes_rat", "", 10, xMin, xMax, 5 , rangeYLow, 1.7 );
  
 
   if( !onlyMC){

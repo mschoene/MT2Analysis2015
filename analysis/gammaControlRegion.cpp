@@ -435,6 +435,7 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
    
     if( !( myTree.HLT_Photon165_HE10 ) ) continue; 
 
+
     if( cfg.additionalStuff()=="gammaNoSietaieta" ) {
       //if( myTree.gamma_hOverE[0]>0.1 ) continue;
     } else {
@@ -499,6 +500,39 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
       float pt = myTree.gamma_pt[0];
 
       if ( fabs(myTree.gamma_eta[0])<1.479 ) {
+	/*old ones
+	if (pt > 150 && pt < 160) SF = 0.03576134;
+	else if (pt < 170.) SF = 0.2844761;
+	else if (pt < 180.) SF = 0.9541034;
+	else if (pt < 200.) SF = 0.9432587;
+	else if (pt < 250.) SF = 0.9998274;
+	else if (pt < 300.) SF = 0.9997936;
+	else if (pt < 350.) SF = 0.9997995;
+	else if (pt < 400.) SF = 0.9727327;
+	else if (pt < 450.) SF = 0.9686112;
+	else if (pt < 500.) SF = 0.9689014;
+	else if (pt < 600.) SF = 0.965793;
+	else if (pt < 700.) SF = 0.9734969;
+	else if (pt < 800.) SF = 0.9776452;
+	else SF = 0.9367322;
+      }else {
+	if (pt > 150 && pt < 160) SF = 0.02972659;
+	else if (pt < 170.) SF = 0.1191435;
+	else if (pt < 180.) SF = 0.5990605;
+	else if (pt < 200.) SF = 0.9105484;
+	else if (pt < 250.) SF = 0.9995712;
+	else if (pt < 300.) SF = 0.9915838;
+	else if (pt < 350.) SF = 0.9545882;
+	else if (pt < 400.) SF = 0.9673124;
+	else if (pt < 450.) SF = 0.960792;
+	else if (pt < 500.) SF = 0.9519475;
+	else if (pt < 600.) SF = 0.950766;
+	else if (pt < 700.) SF = 0.9538072;
+	else if (pt < 800.) SF = 0.9777396;
+	else SF = 0.9862047;
+	}
+	*/
+	
 	if (pt > 150 && pt < 160) SF = 0.02913004;
 	else if (pt < 170) SF = 0.2979024;
 	else if (pt < 180) SF = 0.9168265;

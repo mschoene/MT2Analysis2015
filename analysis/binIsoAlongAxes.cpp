@@ -44,7 +44,7 @@ int main( int argc, char* argv[] ) {
   Double_t bins_central[] = {200,3000};
   int size_central = sizeof(bins_central)/sizeof(double)-1;
 
-  MT2Analysis<MT2EstimateZinvGamma>* mc_central = MT2EstimateZinvGamma::makeInclusiveAnalysisFromInclusiveTree( "iso_central", data, cfg.crRegionsSet() , "nJets>1" , "ht" , size_central, bins_central ); 
+  MT2Analysis<MT2EstimateZinvGamma>* mc_central = MT2EstimateZinvGamma::makeInclusiveAnalysisFromInclusiveTree( "iso_central", data, cfg.crRegionsSet() , "nJets>0." , "ht" , size_central, bins_central ); 
   std::string outFile_central = cfg.getGammaCRdir() + "/iso_central.root";
   mc_central->writeToFile(outFile_central, "recreate");
 
@@ -69,12 +69,13 @@ int main( int argc, char* argv[] ) {
   int size_incl_njets = sizeof(bins_incl_njets)/sizeof(double)-1;
 
 
-  MT2Analysis<MT2EstimateZinvGamma>* mc_mt2 = MT2EstimateZinvGamma::makeInclusiveAnalysisFromInclusiveTree( "iso_mt2", data, "zurichPlus" ,"nJets>0", "mt2" , size_mt2, bins_mt2 ); 
+
+  MT2Analysis<MT2EstimateZinvGamma>* mc_mt2 = MT2EstimateZinvGamma::makeInclusiveAnalysisFromInclusiveTree( "iso_mt2", data, "zurichPlus" ,"nJets>0.", "mt2" , size_mt2, bins_mt2 ); 
   std::string outFile_mt2 = cfg.getGammaCRdir() + "/iso_mt2.root";
   mc_mt2->writeToFile(outFile_mt2, "recreate");
 
 
-  MT2Analysis<MT2EstimateZinvGamma>* mono_ht = MT2EstimateZinvGamma::makeInclusiveAnalysisFromInclusiveTree( "iso_mono_ht", data, cfg.crRegionsSet() , "nJets>0" , "ht" , size_mono_ht, bins_mono_ht ); 
+  MT2Analysis<MT2EstimateZinvGamma>* mono_ht = MT2EstimateZinvGamma::makeInclusiveAnalysisFromInclusiveTree( "iso_mono_ht", data, cfg.crRegionsSet() , "nJets>0." , "ht" , size_mono_ht, bins_mono_ht ); 
   std::string outFile_mono_ht = cfg.getGammaCRdir() + "/iso_mono_ht.root";
   mono_ht->writeToFile(outFile_mono_ht, "recreate");
   

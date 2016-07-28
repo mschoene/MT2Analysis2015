@@ -153,6 +153,9 @@ compareYield_bins: compareYield_bins.cpp MT2Region.o MT2Sample.o MT2Estimate.o M
 compareYield_bins_all: compareYield_bins_all.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateTree.o MT2EstimateSyst.o MT2DrawTools.o MT2Config.o
 	$(CC) -Wall $(INCLUDES) -o compareYield_bins_all compareYield_bins_all.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateTree.o MT2EstimateSyst.o MT2DrawTools.o MT2Config.o $(ROOTFLAG) $(EXTRALIBS)
 
+compareYield_bins_all_pull: compareYield_bins_all_pull.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateTree.o MT2EstimateSyst.o MT2DrawTools.o MT2Config.o
+	$(CC) -Wall $(INCLUDES) -o compareYield_bins_all_pull compareYield_bins_all_pull.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateTree.o MT2EstimateSyst.o MT2DrawTools.o MT2Config.o $(ROOTFLAG) $(EXTRALIBS)
+
 compareYield_all_post: compareYield_all_post.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateTree.o MT2EstimateSyst.o MT2EstimateSigContSyst.o MT2DrawTools.o MT2Config.o
 	$(CC) -Wall $(INCLUDES) -o compareYield_all_post compareYield_all_post.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateTree.o MT2EstimateSyst.o MT2EstimateSigContSyst.o MT2DrawTools.o MT2Config.o $(ROOTFLAG) $(EXTRALIBS)
 
@@ -282,8 +285,8 @@ printPurity: printPurity.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateZi
 printLatexBGTable_2016: printLatexBGTable_2016.cpp MT2Region.o MT2Estimate.o  MT2EstimateSigContSyst.o MT2DrawTools.o
 	$(CC) -Wall $(INCLUDES) -o printLatexBGTable_2016 printLatexBGTable_2016.cpp MT2Region.o MT2Estimate.o MT2EstimateSigContSyst.o MT2DrawTools.o $(ROOTFLAG) $(EXTRALIBS)
 
-printLatexBGandSIGTable_2016: printLatexBGandSIGTable_2016.cpp MT2Region.o MT2Estimate.o  MT2EstimateSigContSyst.o MT2DrawTools.o
-	$(CC) -Wall $(INCLUDES) -o printLatexBGandSIGTable_2016 printLatexBGandSIGTable_2016.cpp MT2Region.o MT2Estimate.o MT2EstimateSigContSyst.o MT2DrawTools.o $(ROOTFLAG) $(EXTRALIBS)
+printLatexBGandSIGTable_2016: printLatexBGandSIGTable_2016.cpp MT2Region.o MT2Estimate.o MT2EstimateSigSyst.o MT2EstimateSigContSyst.o MT2DrawTools.o
+	$(CC) -Wall $(INCLUDES) -o printLatexBGandSIGTable_2016 printLatexBGandSIGTable_2016.cpp MT2Region.o MT2Estimate.o MT2EstimateSigSyst.o MT2EstimateSigContSyst.o MT2DrawTools.o $(ROOTFLAG) $(EXTRALIBS)
 
 printLatexBGTable: printLatexBGTable.cpp MT2Region.o MT2Estimate.o MT2DrawTools.o
 	$(CC) -Wall $(INCLUDES) -o printLatexBGTable printLatexBGTable.cpp MT2Region.o MT2Estimate.o MT2DrawTools.o $(ROOTFLAG) $(EXTRALIBS)

@@ -309,10 +309,10 @@ void MT2DrawTools::addLabels( TCanvas* c1, float lumi, const std::string& text  
 
 
 
-
-
 TGraphAsymmErrors* MT2DrawTools::getPoissonGraph( TH1D* histo, bool drawZeros, const std::string& xerrType, float nSigma ) {
 
+  //  histo->SetBinErrorOption(TH1::kPoisson);
+  const double alpha = 1 - 0.6827;
 
   unsigned int nBins = histo->GetNbinsX();
   int emptyBins=0;
@@ -341,12 +341,22 @@ TGraphAsymmErrors* MT2DrawTools::getPoissonGraph( TH1D* histo, bool drawZeros, c
 
     y = (int)histo->GetBinContent(iBin);
 
-    if( y==0 && !drawZeros ) continue;
-
-    double ym, yp;
-    RooHistError::instance().getPoissonInterval(y,ym,yp,nSigma);
+    if( y==0 && !drawZeros ) continue;     
+    
+    double ym =  (y==0) ? 0  : (ROOT::Math::gamma_quantile(alpha/2,y,1.));
+    double yp =  ROOT::Math::gamma_quantile_c(alpha/2,y+1,1) ;
+    
+    //    yerrminus = histo->GetBinErrorLow(iBin);
+    //    yerrplus = histo->GetBinErrorUp(iBin);
+    
+    //double ym, yp;
+    //RooHistError::instance().getPoissonInterval(y,ym,yp,nSigma);
+    
     yerrplus = yp - y;
     yerrminus = y - ym;
+
+    if(y==0)
+      std::cout << yerrplus << "\t" << yerrminus << std::endl;
 
     int thisPoint = graph->GetN();
     graph->SetPoint( thisPoint, x, y );
@@ -357,6 +367,7 @@ TGraphAsymmErrors* MT2DrawTools::getPoissonGraph( TH1D* histo, bool drawZeros, c
   return graph;
 
 }
+
 
 
 TGraphAsymmErrors* MT2DrawTools::getRatioGraph( TH1D* histo_data, TH1D* histo_mc, const std::string& xerrType){

@@ -122,7 +122,7 @@ int main( int argc, char* argv[] ) {
   //MT2Analysis<MT2Estimate>* ZgammaRatio = MT2EstimateSyst::makeAnalysisFromEstimate( "ZgammaRatio", regionsSet, ZgammaRatioMC );
   MT2Analysis<MT2Estimate>* ZgammaRatio = new MT2Analysis<MT2Estimate>( "ZgammaRatio", cfg.regionsSet() );
   (*ZgammaRatio) = (*ZgammaRatioMC)/1.23;
-  (*ZgammaRatio) = (*ZgammaRatio)*0.90; //from Zll Gamma ratio
+  (*ZgammaRatio) = (*ZgammaRatio)*0.89; //from Zll Gamma ratio
   //  MT2Analysis<MT2EstimateSyst>* purity;
   //if( type > 0 ) {
   //  purity = MT2Analysis<MT2EstimateSyst>::readFromFile( gammaControlRegionDir + "/PurityFitsRC/purityFit_mt2_data.root", "purity" );   

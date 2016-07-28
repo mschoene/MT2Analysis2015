@@ -552,7 +552,7 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
 	if( abs(myTree.lep_pdgId[0])==11 )
 	  HLT_weight = 0.993;
 	else if(abs(myTree.lep_pdgId[0])==13 )
-	  HLT_weight = 0.965;
+	  HLT_weight = 0.969;
 	
       }
       

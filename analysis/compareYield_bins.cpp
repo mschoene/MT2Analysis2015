@@ -23,7 +23,9 @@
 
 #include "RooHistError.h"
 
-float lumi =4.4; //fb-1 
+
+float lumi =12.9; //fb-1 
+
 
 void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data_ext, MT2Analysis<MT2Estimate>* data_bin, std::vector<MT2Analysis<MT2Estimate>* > bgYields );
 
@@ -31,13 +33,14 @@ int main() {
 
   TH1::AddDirectory(kFALSE); // stupid ROOT memory allocation needs this
 
-  std::string outputdir = "./YieldComparison_lostLepton_binned_4p4ifb_linearRatio/";
+
+  std::string outputdir = "./YieldComparison_lostLepton_binned_12p9ifb/";
 
 //  std::string firstInputFile  = "./EventYields_data_Run2015_25nsGolden_2p3ifb/llepEstimate_binbybin.root";
 //  std::string secondInputFile = "./EventYields_data_Run2015_25nsGolden_2p3ifb/llepEstimate_extrapolation.root";
-  std::string firstInputFile  = "./EventYields_data_Run2016B_4ifb_new_bBb/llepEstimate.root";
-  std::string secondInputFile = "./EventYields_data_Run2016B_4ifb_new/llepEstimate.root";
-  
+  std::string firstInputFile  = "./EventYields_data_Run2016_12p9ifb/llepEstimate_binbybin.root";
+  std::string secondInputFile = "./EventYields_data_Run2016_12p9ifb/llepEstimate_extrapolation.root";
+
   MT2Analysis<MT2Estimate>* analysisFirst_ext = MT2Analysis<MT2Estimate>::readFromFile( secondInputFile.c_str(), "llepEstimate" ); 
   analysisFirst_ext->setName("Data-drien (Std.)");
   MT2Analysis<MT2Estimate>* analysisFirst_bin = MT2Analysis<MT2Estimate>::readFromFile( firstInputFile.c_str(), "llepEstimate" );
