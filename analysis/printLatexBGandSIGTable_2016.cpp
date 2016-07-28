@@ -5,6 +5,7 @@
 #include "interface/MT2Analysis.h"
 #include "interface/MT2Estimate.h"
 #include "interface/MT2EstimateSyst.h"
+#include "interface/MT2EstimateSigSyst.h"
 #include "interface/MT2EstimateSigContSyst.h"
 #include "TMath.h"
 
@@ -65,19 +66,19 @@ int main( int argc, char* argv[] ) {
   //std::vector < MT2Analysis<MT2Estimate>* > analysesSignal;
   //std::vector < MT2Analysis<MT2EstimateSigContSyst>* > analysesSignalCont;
 
-  MT2Analysis<MT2Estimate>            *analysesT1qqqq;
-  MT2Analysis<MT2Estimate>            *analysesT1bbbb;
-  MT2Analysis<MT2Estimate>            *analysesT2bb  ;
+  MT2Analysis<MT2EstimateSigSyst>            *analysesT1qqqq;
+  MT2Analysis<MT2EstimateSigSyst>            *analysesT1bbbb;
+  MT2Analysis<MT2EstimateSigSyst>            *analysesT2bb  ;
   //MT2Analysis<MT2Estimate>            *analysesT2qq  ;
   MT2Analysis<MT2EstimateSigContSyst> *analysesT1tttt;
   MT2Analysis<MT2EstimateSigContSyst> *analysesT2tt  ;
 
-  //std::string sigPath="./signalScansFromDominick";
-  std::string sigPath="./sig_7p65fb";
+  std::string sigPath="./signalScansFromDominick";
+  //std::string sigPath="./sig_7p65fb";
 
-  analysesT1qqqq = MT2Analysis<MT2Estimate>::readFromFile( sigPath + "/T1qqqq_eth.root", "T1qqqq");
-  analysesT1bbbb = MT2Analysis<MT2Estimate>::readFromFile( sigPath + "/T1bbbb_eth.root", "T1bbbb");
-  analysesT2bb   = MT2Analysis<MT2Estimate>::readFromFile( sigPath + "/T2bb_eth.root"  , "T2bb"  );
+  analysesT1qqqq = MT2Analysis<MT2EstimateSigSyst>::readSystFromFile( sigPath + "/T1qqqq_eth.root", "T1qqqq", "isr");
+  analysesT1bbbb = MT2Analysis<MT2EstimateSigSyst>::readSystFromFile( sigPath + "/T1bbbb_eth.root", "T1bbbb", "isr");
+  analysesT2bb   = MT2Analysis<MT2EstimateSigSyst>::readSystFromFile( sigPath + "/T2bb_eth.root"  , "T2bb"  , "isr");
   //analysesT2qq   = MT2Analysis<MT2Estimate>::readFromFile( sigPath + "/T2qq_eth.root"  , "T2qq"  );
 
   analysesT1tttt = MT2Analysis<MT2EstimateSigContSyst>::readSystFromFile( sigPath + "/T1tttt_sigcontam_eth.root", "T1tttt_sigcontam", "isr");
@@ -161,9 +162,9 @@ int main( int argc, char* argv[] ) {
 
     ofs << "\\begin{table}[htbp]" << std::endl; 
     if( iR->nJetsMin() > 1 )
-      ofs << "\\caption{Background estimate, observation, and signal yields in bins of \\mttwo for " << names[0].c_str() << ", " << names[1].c_str() << ". The yields are normalized to $7.7~\\mathrm{fb}^{-1}$.}" << std::endl;
+      ofs << "\\caption{Background estimate, observation, and signal yields in bins of \\mttwo for " << names[0].c_str() << ", " << names[1].c_str() << ". The yields are normalized to $12.9~\\mathrm{fb}^{-1}$.}" << std::endl;
     else
-      ofs << "\\caption{Background estimate, observation, and signal yields for " << names[0].c_str() << ", " << names[1].c_str() << ". The yields are normalized to $7.7~\\mathrm{fb}^{-1}$.}" << std::endl;
+      ofs << "\\caption{Background estimate, observation, and signal yields for " << names[0].c_str() << ", " << names[1].c_str() << ". The yields are normalized to $12.9~\\mathrm{fb}^{-1}$.}" << std::endl;
     ofs << "\\scriptsize" << std::endl;
     ofs << "\\centering" << std::endl;
     ofs << "\\makebox[\\textwidth][c]{" << std::endl;
@@ -1051,7 +1052,7 @@ int main( int argc, char* argv[] ) {
     Float_t m2T1bbbb[scanPointsT1bbbb]={ 100.,  900.};
     for(int a=0;  a < scanPointsT1bbbb; ++a) {
       ofs << "T1bbbb " << (int)m1T1bbbb[a] << ", " << (int)m2T1bbbb[a];
-      analysesT1bbbb->print(ofs, m1T1bbbb[a], m2T1bbbb[a], thisRegion, 1.0 );
+      analysesT1bbbb->print(ofs, m1T1bbbb[a], m2T1bbbb[a], thisRegion, 1.0, true );
     }
 
     int scanPointsT1qqqq=2;
@@ -1059,7 +1060,7 @@ int main( int argc, char* argv[] ) {
     Float_t m2T1qqqq[scanPointsT1qqqq]={ 100.,  800.};
     for(int a=0;  a < scanPointsT1qqqq; ++a) {
       ofs << "T1qqqq " << (int)m1T1qqqq[a] << ", " << (int)m2T1qqqq[a];
-      analysesT1qqqq->print(ofs, m1T1qqqq[a], m2T1qqqq[a], thisRegion, 1.0 );
+      analysesT1qqqq->print(ofs, m1T1qqqq[a], m2T1qqqq[a], thisRegion, 1.0, true );
     }
 
     int scanPointsT1tttt=2;
@@ -1067,7 +1068,7 @@ int main( int argc, char* argv[] ) {
     Float_t m2T1tttt[scanPointsT1tttt]={ 100.,  800.};
     for(int a=0;  a < scanPointsT1tttt; ++a) {
       ofs << "T1tttt " << (int)m1T1tttt[a] << ", " << (int)m2T1tttt[a];
-      analysesT1tttt->print(ofs, m1T1tttt[a], m2T1tttt[a], thisRegion, 1.0 );
+      analysesT1tttt->print(ofs, m1T1tttt[a], m2T1tttt[a], thisRegion, 1.0, true );
     }
 
     int scanPointsT2bb=2;
@@ -1075,7 +1076,7 @@ int main( int argc, char* argv[] ) {
     Float_t m2T2bb[scanPointsT2bb]={  0., 350.};
     for(int a=0;  a < scanPointsT2bb; ++a) {
       ofs << "T2bb " << (int)m1T2bb[a] << ", " << (int)m2T2bb[a];
-      analysesT2bb->print(ofs, m1T2bb[a], m2T2bb[a], thisRegion, 1.0 );
+      analysesT2bb->print(ofs, m1T2bb[a], m2T2bb[a], thisRegion, 1.0, true );
     }
 
     int scanPointsT2tt=5;
@@ -1083,7 +1084,7 @@ int main( int argc, char* argv[] ) {
     Float_t m2T2tt[scanPointsT2tt]={   0., 250., 150., 125., 175.};
     for(int a=0;  a < scanPointsT2tt; ++a) {
       ofs << "T2tt " << (int)m1T2tt[a] << ", " << (int)m2T2tt[a];
-      analysesT2tt->print(ofs, m1T2tt[a], m2T2tt[a], thisRegion, 1.0 );
+      analysesT2tt->print(ofs, m1T2tt[a], m2T2tt[a], thisRegion, 1.0, true );
     }
 
     // int scanPointsT2qq=3;
