@@ -933,17 +933,19 @@ int main( int argc, char* argv[] ) {
 	   }
 
 	   
-	   // TF uncertainty
-	   if( iR->htMin()==200 && iR->nJetsMin()>=7 ){ // 40% for very-low-HT and NJ>=7 (due to JECs)
-	     
-	     if(doSimultaneousFit && includeCR)
-	       datacard << "llep_alpha_" << llepCR_name << " lnN - - " << 1.+0.4 << " - - -" << std::endl; 
-	     else
-	       datacard << "llep_alpha_" << llepCR_name << " lnN - - " << 1.+0.4 << " - " << std::endl;
-	     llep_systUp += 0.4*0.4;
-	     llep_systDn += 0.4*0.4;
-	   
-	   } else if( iR->nJetsMin()>=7 && iR->nBJetsMin()>=3 ){ // 15% for NJ>=7 and NB>=3 (due to b-tag SF)
+//	   // TF uncertainty
+//	   if( iR->htMin()==200 && iR->nJetsMin()>=7 ){ // 40% for very-low-HT and NJ>=7 (due to JECs)
+//	     
+//	     if(doSimultaneousFit && includeCR)
+//	       datacard << "llep_alpha_" << llepCR_name << " lnN - - " << 1.+0.4 << " - - -" << std::endl; 
+//	     else
+//	       datacard << "llep_alpha_" << llepCR_name << " lnN - - " << 1.+0.4 << " - " << std::endl;
+//	     llep_systUp += 0.4*0.4;
+//	     llep_systDn += 0.4*0.4;
+//	   
+//	   } else if( iR->nJetsMin()>=7 && iR->nBJetsMin()>=3 ){ // 15% for NJ>=7 and NB>=3 (due to b-tag SF)
+
+	   if( iR->nJetsMin()>=7 && iR->nBJetsMin()>=3 ){ // 18% for NJ>=7 and NB>=3 (due to b-tag SF)
 
 	     if(doSimultaneousFit && includeCR)
 	       datacard << "llep_alpha_" << llepCR_name << " lnN - - " << 1.+0.18 << " - - -" << std::endl;
