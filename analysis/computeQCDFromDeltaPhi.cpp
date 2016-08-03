@@ -27,7 +27,7 @@
 
 bool closureTest = false;
 
-bool macroPlots = true; // to make macro QCD estimate for Gio
+bool macroPlots = true; // to make macro QCD estimate for Gio. Use convert2Gio.py after this
 
 float scaleMC = 0.; // simulate stats for the given lumi [0 means MC stats]
 
