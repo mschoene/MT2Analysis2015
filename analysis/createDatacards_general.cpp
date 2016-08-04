@@ -27,7 +27,7 @@ bool use_extrapolation = true;
 bool doSignalContamination = true;
 bool doSimultaneousFit = false;
 bool includeSignalUnc = true; // signal lep eff commented out till available
-bool copy2SE = true; // copy datacards to SE
+bool copy2SE = false; // copy datacards to SE
 bool doGenAverage = true;
 
 int round(float d) {
@@ -655,20 +655,25 @@ int main( int argc, char* argv[] ) {
 	  thisCentralHT_mc *= zinv_doubleRatioOffset;
 	  
 	  if( thisCentralNJ_mc > thisCentralNJ*(1+thisErrNJUp) ) 
-	    thisErrNJUp = (thisCentralNJ>0) ? (thisCentralNJ_mc - thisCentralNJ)/thisCentralNJ : 1.0;
+	    thisErrNJDn = (thisCentralNJ>0) ? (thisCentralNJ_mc - thisCentralNJ)/thisCentralNJ : 1.0;
 	  else if ( thisCentralNJ_mc < thisCentralNJ*(1-thisErrNJDn) ) 
-	    thisErrNJDn = (thisCentralNJ>0) ? (thisCentralNJ - thisCentralNJ_mc)/thisCentralNJ : 1.0;
+	    thisErrNJUp = (thisCentralNJ>0) ? (thisCentralNJ - thisCentralNJ_mc)/thisCentralNJ : 1.0;
 
 	  if( thisCentralNB_mc > thisCentralNB*(1+thisErrNBUp) ) 
-	    thisErrNBUp = (thisCentralNB>0) ? (thisCentralNB_mc - thisCentralNB)/thisCentralNB : 1.0;
+	    thisErrNBDn = (thisCentralNB>0) ? (thisCentralNB_mc - thisCentralNB)/thisCentralNB : 1.0;
 	  else if ( thisCentralNB_mc < thisCentralNB*(1-thisErrNBDn) ) 
-	    thisErrNBDn = (thisCentralNB>0) ? (thisCentralNB - thisCentralNB_mc)/thisCentralNB : 1.0;
+	    thisErrNBUp = (thisCentralNB>0) ? (thisCentralNB - thisCentralNB_mc)/thisCentralNB : 1.0;
 
 	  if( thisCentralHT_mc > thisCentralHT*(1+thisErrHTUp) ) 
-	    thisErrHTUp = (thisCentralHT>0) ? (thisCentralHT_mc - thisCentralHT)/thisCentralHT : 1.0;
+	    thisErrHTDn = (thisCentralHT>0) ? (thisCentralHT_mc - thisCentralHT)/thisCentralHT : 1.0;
 	  else if ( thisCentralHT_mc < thisCentralHT*(1-thisErrHTDn) ) 
-	    thisErrHTDn = (thisCentralHT>0) ? (thisCentralHT - thisCentralHT_mc)/thisCentralHT : 1.0;
+	    thisErrHTUp = (thisCentralHT>0) ? (thisCentralHT - thisCentralHT_mc)/thisCentralHT : 1.0;
 	  //////
+	  
+	  // If we want error to be symmetric
+	  float thisErrHT = (thisErrHTUp > thisErrHTDn) ? thisErrHTUp : thisErrHTDn;
+	  float thisErrNJ = (thisErrNJUp > thisErrNJDn) ? thisErrNJUp : thisErrNJDn;
+	  float thisErrNB = (thisErrNBUp > thisErrNBDn) ? thisErrNBUp : thisErrNBDn;
 
 	  if(doSimultaneousFit && includeCR)
 	    datacard << "zinv_doubleRatioOffset lnN   - " << 1.+err_zinv_doubleRatioOffset << " - - - -" << std::endl;
@@ -692,12 +697,23 @@ int main( int argc, char* argv[] ) {
 	    datacard << "zinv_ZGratio_" << jName << " lnN   - " << 1.+thisErrNJUp << "/" << 1.-thisErrNJDn << " - - - -" << std::endl;
 	    datacard << "zinv_ZGratio_" << bName << " lnN   - " << 1.+thisErrNBUp << "/" << 1.-thisErrNBDn << " - - - -" << std::endl;
 	    
+//	    // If we want error to be symmetric, uncomment the following 3 lines and comment out the 3 lines above
+//	    datacard << "zinv_ZGratio_" << htName << " lnN   - " << 1.+thisErrHT << " - -" << std::endl;
+//	    datacard << "zinv_ZGratio_" << jName << " lnN   - "  << 1.+thisErrNJ << " - -" << std::endl;
+//	    datacard << "zinv_ZGratio_" << bName << " lnN   - "  << 1.+thisErrNB << " - -" << std::endl;
+
+	    
 	  }
 	  else{
 	    
 	    datacard << "zinv_ZGratio_" << htName << " lnN   - " << 1.+thisErrHTUp << "/" << 1.-thisErrHTDn << " - -" << std::endl;
 	    datacard << "zinv_ZGratio_" << jName << " lnN   - " << 1.+thisErrNJUp << "/" << 1.-thisErrNJDn << " - -" << std::endl;
 	    datacard << "zinv_ZGratio_" << bName << " lnN   - " << 1.+thisErrNBUp << "/" << 1.-thisErrNBDn << " - -" << std::endl;
+	    
+//	    // If we want error to be symmetric, uncomment the following 3 lines and comment out the 3 lines above
+//	    datacard << "zinv_ZGratio_" << htName << " lnN   - " << 1.+thisErrHT << " - -" << std::endl;
+//	    datacard << "zinv_ZGratio_" << jName << " lnN   - "  << 1.+thisErrNJ << " - -" << std::endl;
+//	    datacard << "zinv_ZGratio_" << bName << " lnN   - "  << 1.+thisErrNB << " - -" << std::endl;
 	    
 	   }
 	  

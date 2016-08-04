@@ -4,23 +4,23 @@
   std::cout << "Reading in all input trees..." << std::endl;
   
   // Photon data
-  TFile* fGdata = TFile::Open("EventYields_data_Run2016_12p9ifb/gammaControlRegion/data.root");
+  TFile* fGdata = TFile::Open("EventYields_data_Run2016_12p9ifb_ICHEP/gammaControlRegion/data.root");
   TTree* tGdata = (TTree*) fGdata->Get("gammaCRtree/HT200toInf_j1toInf_b0toInf/tree_gammaCRtree_HT200toInf_j1toInf_b0toInf");
 
   // Photon MC
-  TFile* fGmc = TFile::Open("EventYields_data_Run2016_12p9ifb/gammaControlRegion/mc.root");
+  TFile* fGmc = TFile::Open("EventYields_data_Run2016_12p9ifb_ICHEP/gammaControlRegion/mc.root");
   TTree* tGmc = (TTree*) fGmc->Get("gammaCRtree/HT200toInf_j1toInf_b0toInf/tree_gammaCRtree_HT200toInf_j1toInf_b0toInf");
 
   // Zll data
-  TFile* fZdata = TFile::Open("EventYields_data_Run2016_12p9ifb/zllControlRegion/data.root");
+  TFile* fZdata = TFile::Open("EventYields_data_Run2016_12p9ifb_ICHEP/zllControlRegion/data.root");
   TTree* tZdata = (TTree*) fZdata->Get("data/HT200toInf_j1toInf_b0toInf/tree_data_HT200toInf_j1toInf_b0toInf");
 
   // Zll MC
-  TFile* fZmc = TFile::Open("EventYields_data_Run2016_12p9ifb/zllControlRegion/mc.root");
+  TFile* fZmc = TFile::Open("EventYields_data_Run2016_12p9ifb_ICHEP/zllControlRegion/mc.root");
   TTree* tZmc = (TTree*) fZmc->Get("zllCR/HT200toInf_j1toInf_b0toInf/tree_zllCR_HT200toInf_j1toInf_b0toInf");
   
   // Zll Purity (top)
-  TFile* fZtop = TFile::Open("EventYields_data_Run2016_12p9ifb/zllControlRegion/ZllPurityTrees.root");
+  TFile* fZtop = TFile::Open("EventYields_data_Run2016_12p9ifb_ICHEP/zllControlRegion/ZllPurityTrees.root");
   TTree* tZtop = (TTree*) fZtop->Get("Top/HT200toInf_j1toInf_b0toInf/tree_Top_HT200toInf_j1toInf_b0toInf");
 
   std::cout << "All the trees have been read." << std::endl;
@@ -178,7 +178,7 @@
       if (value>0) error /= value;
       error = TMath::Sqrt(0.1*0.1+error*error);
       error *= value;
-      
+
       hzllData_bj->SetBinError(x,y, error);
       
     }
@@ -211,7 +211,7 @@
   hzllData_jht->GetXaxis()->SetTitle("H_{T} [GeV]");
   hzllData_jht->GetYaxis()->SetTitle("Jet Multiplicity");
   hzllData_jht->GetZaxis()->SetTitle("Data / MC");
-  hzllData_jht->SetMarkerColor(kWhite);
+  hzllData_jht->SetMarkerColor(kGray);
   hzllData_jht->GetZaxis()->SetRangeUser(0.1,1.25);
   hzllData_jht->GetZaxis()->SetTitleOffset(0.6);
   hzllData_jht->GetZaxis()->SetLabelSize(0.02);
@@ -222,7 +222,7 @@
   hzllData_bj->GetXaxis()->SetTitle("Jet Multiplicity");
   hzllData_bj->GetYaxis()->SetTitle("b-jet Multiplicity");
   hzllData_bj->GetZaxis()->SetTitle("Data / MC");
-  hzllData_bj->SetMarkerColor(kWhite);
+  hzllData_bj->SetMarkerColor(kGray);
   hzllData_bj->GetZaxis()->SetRangeUser(0.1,1.25);
   hzllData_bj->GetZaxis()->SetTitleOffset(0.6);
   hzllData_bj->GetZaxis()->SetLabelSize(0.02);
