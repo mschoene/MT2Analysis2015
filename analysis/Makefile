@@ -285,6 +285,9 @@ printLatexBGandSIGTable_2016: printLatexBGandSIGTable_2016.cpp MT2Region.o MT2Es
 printLatexBGTable: printLatexBGTable.cpp MT2Region.o MT2Estimate.o MT2DrawTools.o
 	$(CC) -Wall $(INCLUDES) -o printLatexBGTable printLatexBGTable.cpp MT2Region.o MT2Estimate.o MT2DrawTools.o $(ROOTFLAG) $(EXTRALIBS)
 
+printLatexBGBIGTable: printLatexBGBIGTable.cpp MT2Region.o MT2Estimate.o MT2DrawTools.o
+	$(CC) -Wall $(INCLUDES) -o printLatexBGBIGTable printLatexBGBIGTable.cpp MT2Region.o MT2Estimate.o MT2DrawTools.o $(ROOTFLAG) $(EXTRALIBS)
+
 printBinning: printBinning.cpp MT2Region.o MT2Estimate.o 
 	$(CC) -Wall $(INCLUDES) -o printBinning printBinning.cpp MT2Region.o MT2Estimate.o $(ROOTFLAG) $(EXTRALIBS)
 
