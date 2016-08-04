@@ -73,8 +73,8 @@ void MT2EstimateTree::initTree( ) {
   tree->Branch( "nPFLep", &nPFLep, "nPFLep/I");
   tree->Branch( "nPFHad", &nPFHad, "nPFHad/I");
 
-  tree->Branch( "GenSusyMScan1", &GenSusyMScan1, "GenSusyMScan1/I");
-  tree->Branch( "GenSusyMScan2", &GenSusyMScan2, "GenSusyMScan2/I");
+  //tree->Branch( "GenSusyMScan1", &GenSusyMScan1, "GenSusyMScan1/I");
+  //tree->Branch( "GenSusyMScan2", &GenSusyMScan2, "GenSusyMScan2/I");
 
   //  tree->Branch( "weight_isr", &weight_isr, "weight_isr/F" );
   
@@ -209,7 +209,7 @@ void MT2EstimateTree::projectFromTree( const MT2EstimateTree* treeEst, const std
 
 
 
-/*
+
 MT2Analysis<MT2EstimateTree>* MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( const std::string& aname, const std::string& regionsSet, MT2Analysis<MT2EstimateTree>* estimate, int nBins, float xMin, float xMax, const std::string& selection, const std::string& variable ) {
 
   std::set<MT2Region> regions = estimate->getRegions();
@@ -226,7 +226,7 @@ MT2Analysis<MT2EstimateTree>* MT2EstimateTree::makeRebinnedAnalysisFromInclusive
   std::set<MT2Region> newRegions = analysis->getRegions();
   
   if ( nBins > 0 )
-    MT2Estimate::rebinYields( (MT2Analysis<MT2Estimate>*) analysis, nBins, bins );
+    MT2Estimate::rebinYields( (MT2Analysis<MT2Estimate>*) analysis, nBins, xMin, xMax );
   
   for( std::set<MT2Region>::iterator iR=newRegions.begin(); iR!=newRegions.end(); ++iR ) {
    
@@ -238,7 +238,7 @@ MT2Analysis<MT2EstimateTree>* MT2EstimateTree::makeRebinnedAnalysisFromInclusive
   return analysis;
 
 }
-*/
+
 
 
 MT2Analysis<MT2EstimateTree>* MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( const std::string& aname, const std::string& regionsSet, MT2Analysis<MT2EstimateTree>* estimate, const std::string& selection, int nBins, double* bins, const std::string& variable ) {
@@ -410,8 +410,8 @@ void MT2EstimateTree::assignTree( const MT2Tree& mt2tree, float w  ) {
 
   nJetHF = mt2tree.get_nJetHF();
     
-  GenSusyMScan1 = mt2tree.GenSusyMGluino;
-  GenSusyMScan2 = mt2tree.GenSusyMNeutralino;
+  //GenSusyMScan1 = mt2tree.GenSusyMGluino;
+  //GenSusyMScan2 = mt2tree.GenSusyMNeutralino;
  
   //  weight_isr = mt2tree.weight_isr;
 //  for (int i=0; i < 111; ++i){
@@ -535,7 +535,7 @@ void MT2EstimateTree::getShit( TFile* file, const std::string& path ) {
 
   tree = (TTree*)file->Get(Form("%s/%s", path.c_str(), tree->GetName()));
 
-  this->initTree();
+  //this->initTree();
 
 }
 

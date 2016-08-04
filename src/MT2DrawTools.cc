@@ -470,21 +470,21 @@ TGraphAsymmErrors* MT2DrawTools::getRatioGraph( TH1D* histo_data, TH1D* histo_mc
 
 // }
 
-// TH1D* MT2DrawTools::getBandAtOne( TH1D* h ){
+TH1D* MT2DrawTools::getBandAtOne( TH1D* h ){
 
-//   TH1D* h_band = (TH1D*)h->Clone( Form("%s_band", h->GetName()) );
-//   h_band->SetMarkerSize(0);
-//   h_band->SetFillColor ( h->GetLineColor()-4 );
-//   h_band->SetFillStyle (3001);
-//   for ( int iBin=1; iBin <= h->GetNbinsX(); iBin++){
-//     h_band->SetBinContent(iBin,1);
-//     double error = h->GetBinContent(iBin) ? h->GetBinError(iBin)/h->GetBinContent(iBin) : 0.0;
-//     h_band->SetBinError(iBin, error);
-//   }
+  TH1D* h_band = (TH1D*)h->Clone( Form("%s_band", h->GetName()) );
+  h_band->SetMarkerSize(0);
+  h_band->SetFillColor ( h->GetLineColor()-4 );
+  h_band->SetFillStyle (3001);
+  for ( int iBin=1; iBin <= h->GetNbinsX(); iBin++){
+    h_band->SetBinContent(iBin,1);
+    double error = h->GetBinContent(iBin) ? h->GetBinError(iBin)/h->GetBinContent(iBin) : 0.0;
+    h_band->SetBinError(iBin, error);
+  }
   
-//   return h_band;
+  return h_band;
 
-// }
+}
 
 
 TPad* MT2DrawTools::getCanvasMainPad( bool logY ){
