@@ -1484,7 +1484,7 @@ Bool_t MT2Tree::passIsoTrackVeto() const {
 }
 
 Bool_t MT2Tree::passFilters() const {
-  
+
   return Flag_HBHENoiseFilter==1 && Flag_HBHENoiseIsoFilter==1 && Flag_globalTightHalo2016Filter==1 && Flag_EcalDeadCellTriggerPrimitiveFilter==1 && Flag_goodVertices==1 && Flag_eeBadScFilter==1 && Flag_badMuonFilter==1 && Flag_badChargedHadronFilter==1 ;
 
 }
