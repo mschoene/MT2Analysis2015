@@ -183,6 +183,19 @@ MT2Analysis<MT2EstimateSyst>* MT2EstimateSyst::makeIntegralAnalysisFromEstimate(
 
 
 
+void MT2EstimateSyst::rebinYields( MT2Analysis<MT2EstimateSyst>* analysis, int nBins, float xMin, float xMax ) {
+
+  double bins[nBins+1];
+  double step = (xMax-xMin)/(double)nBins;
+
+  for(int i=0; i <= nBins; i++)
+    bins[i] = xMin + ((double)i )* step;
+  
+
+  MT2EstimateSyst::rebinYields( analysis, nBins, bins);
+
+}
+
 void MT2EstimateSyst::rebinYields( MT2Analysis<MT2EstimateSyst>* analysis, int nBins, double* bins) {
 
   std::set<MT2Region> regions = analysis->getRegions();

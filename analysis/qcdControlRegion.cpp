@@ -194,6 +194,10 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
       if (  myTree.isGolden == 0 ) continue;
       if ( !myTree.passFilters() ) continue;
     }
+    else {
+      if ( !(myTree.Flag_badMuonFilter>0 && myTree.Flag_badChargedHadronFilter>0 && myTree.Flag_EcalDeadCellTriggerPrimitiveFilter>0) ) continue;
+      if (myTree.met_pt/myTree.met_caloPt > 5.0) continue; // RA2 filter for QCD MC
+    }
     
 
     if( !myTree.passSelection("qcd") ) continue;
@@ -203,6 +207,8 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
     //float met       = myTree.met_pt;
     int njets       = myTree.nJet30;
     int nbjets      = myTree.nBJet20;    
+    //int nbjets      = (sample.id>=600&&sample.id<=610) ? myTree.nBJet20 : myTree.nBJet20csv;
+    //myTree.nBJet20 = nbjets; // this is becuase we are still using 2015 Zinv 
     float mt2       = (njets>1) ? myTree.mt2 : myTree.jet1_pt;
     float ht        = myTree.ht;
 
@@ -218,18 +224,18 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
 
       if( njets==1 ) {
 
-        if( !( id==3 && myTree.HLT_PFMETNoMu90_PFMHTNoMu90) ) continue;
+        if( !( id==3 && myTree.HLT_PFMET100_PFMHT100) ) continue;
 
       } else { // njets>=2
 
         if( ht>1000. ) {
           if( !( id==1 && myTree.HLT_PFHT800) ) continue;
         } else if( ht>575. ) {
-          if( !( (id==2 && myTree.HLT_PFHT350_PFMET100 ) || (id==1 && myTree.HLT_PFHT475_Prescale))  ) continue;
+          if( !( (id==2 && myTree.HLT_PFHT300_PFMET100 ) || (id==1 && myTree.HLT_PFHT475_Prescale))  ) continue;
         } else if( ht>450. ) {
-          if( !( (id==2 && myTree.HLT_PFHT350_PFMET100 ) || (id==1 && myTree.HLT_PFHT350_Prescale))  ) continue;
+          if( !( (id==2 && myTree.HLT_PFHT300_PFMET100 ) || (id==1 && myTree.HLT_PFHT350_Prescale))  ) continue;
         } else if( ht>200. ) {
-          if( !( id==3 && myTree.HLT_PFMETNoMu90_PFMHTNoMu90) ) continue;
+          if( !( (id==3 && myTree.HLT_PFMET100_PFMHT100) || (id==1 && (myTree.HLT_PFHT125_Prescale)))  ) continue;
         }
 
       }
