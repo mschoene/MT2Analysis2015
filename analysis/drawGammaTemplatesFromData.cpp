@@ -5,6 +5,7 @@
 #include "TH2D.h"
 #include "TH1D.h"
 #include "TFile.h"
+#include "TGaxis.h"
 
 #include "../interface/MT2Analysis.h"
 #include "../interface/MT2Region.h"
@@ -27,6 +28,10 @@ int main( int argc, char* argv[] ) {
 
   MT2DrawTools::setStyle();
 
+  TGaxis::SetExponentOffset( -0.085, -0.04 );
+  TGaxis::SetMaxDigits(3);
+
+  gStyle->SetTitleYOffset(1.5); 
 
   std::string configFileName(argv[1]);
   MT2Config cfg(configFileName);
@@ -99,7 +104,7 @@ void drawSinglePlot( const MT2Config& cfg, const std::string& name, const MT2Reg
   c1_log->SetLogy();
 
   float yMinLegend = 0.9 - (histosData.size()+1)*0.065;
-  float yMaxScale = (name=="Fake") ? 1.6 : 1.25;
+  float yMaxScale = (name=="Fake") ? 1.5 : 1.25;
   float xMax = histoMC->GetXaxis()->GetXmax();
 
   //if( name=="Fake" ) {

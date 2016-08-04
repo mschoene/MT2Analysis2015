@@ -132,7 +132,7 @@ int main( int argc, char* argv[] ) {
   std::string outputdir = gammaCRdir + "/PurityFits" + cfg.gammaTemplateType();
   system( Form( "mkdir -p %s/singleFits", outputdir.c_str()) );
 
-  makePurity( cfg, outputdir,  gammaJet_data, templates_prompt, templates_fake, useMC, "");
+  // makePurity( cfg, outputdir,  gammaJet_data, templates_prompt, templates_fake, useMC, "");
 
 
   if(doAxes){
@@ -220,6 +220,7 @@ void makePurity( const MT2Config& cfg, std::string outputdir,MT2Analysis<MT2Esti
   tempEstimate->MT2Estimate::getYieldBins(nBins, bins);
 
   if( var != ""  && var!="central_" && var!="mt2_" ){
+  // if( var != ""  && var!="central_"  ){
     //MT2Estimate::rebinYields( (MT2Analysis<MT2Estimate>*)purityLoose,nBins,bins);
     //MT2Estimate::rebinYields( (MT2Analysis<MT2Estimate>*)purityTight,nBins,bins);
     MT2EstimateSyst::rebinYields( (MT2Analysis<MT2EstimateSyst>*)purityLoose,nBins,bins);

@@ -4,6 +4,7 @@
 #include "TLegend.h"
 #include "THStack.h"
 #include "TMinuit.h"
+#include "TGaxis.h"
 
 #include "../interface/MT2EstimateTree.h"
 
@@ -1007,6 +1008,8 @@ std::vector<TCanvas*> MT2DrawTools::drawRegionYields_fromTree( const std::string
       else
 	yAxisTitle = (std::string)(Form("Events / (%.4f)", binWidth));
     }
+
+    TGaxis::SetExponentOffset( -0.07, -0.05 );
 
     TH2D* h2_axes = new TH2D("axes", "", 10, xMin, xMax, 10, 0., yMax );
     h2_axes->SetXTitle(xAxisTitle.c_str());

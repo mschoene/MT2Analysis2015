@@ -685,7 +685,10 @@ void drawRatios(std::string fullPath, double *binss, unsigned int size,  std::st
 
   canny->cd();
 
-  TH2D* h2_axes_rat = new TH2D("axes_rat", "", 10, xMin, xMax, 5 , 0.3, 1.7 );
+  float rangeYLow = 0.3;
+  if( selection == "nBJets") rangeYLow = 0;
+
+  TH2D* h2_axes_rat = new TH2D("axes_rat", "", 10, xMin, xMax, 5 , rangeYLow , 1.7 );
  
 
   if( !onlyMC){
@@ -700,9 +703,9 @@ void drawRatios(std::string fullPath, double *binss, unsigned int size,  std::st
     float grMin = h_mt2->GetBinLowEdge(1);
 
 
-    /*
-    double sf = 0.902279;
-    double sfErr = 0.102958;//0.109381;
+    
+    double sf = 0.885883;
+    double sfErr =  0.102277;//0.109381;
 
     TF1* fSF=new TF1("fSF", "[0]", grMin, grMax);
     fSF->SetLineColor(kRed);
@@ -722,13 +725,13 @@ void drawRatios(std::string fullPath, double *binss, unsigned int size,  std::st
     SFFitBand->SetFillStyle(3244);
   
     TPaveText* fitText = MT2DrawTools::getFitText( fSF );
-    */
-
     
+
+    /*
     TF1* fSF = MT2DrawTools::getSFFit(gr_ratio, grMin, grMax  );
     TPaveText* fitText = MT2DrawTools::getFitText( fSF );
     TGraphErrors* SFFitBand =  MT2DrawTools::getSFFitBand(fSF, xMin, xMax);
-    
+    */
 
     h2_axes_rat->SetYTitle("Data / MC");
     h2_axes_rat->GetXaxis()->SetTitleSize(0.2);

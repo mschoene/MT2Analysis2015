@@ -27,7 +27,7 @@ bool use_extrapolation = true;
 bool doSignalContamination = true;
 bool doSimultaneousFit = false;
 bool includeSignalUnc = true; // signal lep eff commented out till available
-bool copy2SE = false; // copy datacards to SE
+bool copy2SE = true; // copy datacards to SE
 bool doGenAverage = true;
 
 int round(float d) {
@@ -664,10 +664,20 @@ int main( int argc, char* argv[] ) {
 	  else if ( thisCentralNB_mc < thisCentralNB*(1-thisErrNBDn) ) 
 	    thisErrNBDn = (thisCentralNB>0) ? (thisCentralNB - thisCentralNB_mc)/thisCentralNB : 1.0;
 
-	  if( thisCentralHT_mc > thisCentralHT*(1+thisErrHTUp) ) 
+	  if( thisCentralHT_mc > thisCentralHT*(1+thisErrHTUp) ) {
+	    std::cout << "thisCentralHT_mc = " << thisCentralHT_mc << std::endl;
+	    std::cout << "thisCentralHT = " << thisCentralHT << std::endl;
+	    std::cout << "with uncert Up = " << thisCentralHT*(1+thisErrHTUp) << std::endl;
 	    thisErrHTUp = (thisCentralHT>0) ? (thisCentralHT_mc - thisCentralHT)/thisCentralHT : 1.0;
-	  else if ( thisCentralHT_mc < thisCentralHT*(1-thisErrHTDn) ) 
+
+	  }else if ( thisCentralHT_mc < thisCentralHT*(1-thisErrHTDn) ) {
+	    std::cout << "thisCentralHT_mc = " << thisCentralHT_mc << std::endl;
+	    std::cout << "thisCentralHT = " << thisCentralHT << std::endl;
+	    std::cout << "with uncert Dn = " << thisCentralHT*(1-thisErrHTDn) << std::endl;
 	    thisErrHTDn = (thisCentralHT>0) ? (thisCentralHT - thisCentralHT_mc)/thisCentralHT : 1.0;
+
+	  }
+
 	  //////
 
 	  if(doSimultaneousFit && includeCR)

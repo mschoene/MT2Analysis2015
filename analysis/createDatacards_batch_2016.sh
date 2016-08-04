@@ -33,7 +33,7 @@ echo "Copying all needed stuff..."
 
 mkdir -p $JOBDIR/analysis/
 cp -r /mnt/t3nfs01/data01/shome/mschoene/80X/src/myMT2Analysis/analysis/signalScansFromDominick $JOBDIR/analysis/
-cp -r /mnt/t3nfs01/data01/shome/mschoene/80X/src/myMT2Analysis/analysis/EventYields_data_Run2016_12p9ifb $JOBDIR/analysis/
+cp -r /mnt/t3nfs01/data01/shome/mschoene/80X/src/myMT2Analysis/analysis/EventYields_data_Run2016_12p9ifb_ICHEP_metOpfMet $JOBDIR/analysis/
 cp -r /mnt/t3nfs01/data01/shome/mschoene/80X/src/myMT2Analysis/analysis/cfgs $JOBDIR/analysis/
 cp -r /mnt/t3nfs01/data01/shome/mschoene/80X/src/myMT2Analysis/samples/ $JOBDIR
 

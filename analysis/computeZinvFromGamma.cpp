@@ -141,7 +141,7 @@ int main( int argc, char* argv[] ) {
 
   MT2Analysis<MT2EstimateSyst>* purity;
   //if( use_extrapolation ) //Change this!!!
-  if( use_extrapolation || !use_extrapolation)
+  if( use_extrapolation || !use_extrapolation )
     purity = MT2EstimateSyst::makeIntegralAnalysisFromEstimate( "purity", cfg.regionsSet(), purity_ );
   else
     purity = MT2Analysis<MT2EstimateSyst>::readFromFile( gammaControlRegionDir + "/PurityFitsRC/purityFit_mt2_data.root", "purity" );

@@ -397,6 +397,8 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg ) {
 
     }
 
+    if( myTree.met_pt/myTree.met_caloPt > 5.0 ) continue;
+
     if (myTree.isData) {
 
       int id = sample.id;
