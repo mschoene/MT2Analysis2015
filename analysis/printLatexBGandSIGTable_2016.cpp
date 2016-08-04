@@ -69,7 +69,7 @@ int main( int argc, char* argv[] ) {
   MT2Analysis<MT2EstimateSigSyst>            *analysesT1qqqq;
   MT2Analysis<MT2EstimateSigSyst>            *analysesT1bbbb;
   MT2Analysis<MT2EstimateSigSyst>            *analysesT2bb  ;
-  //MT2Analysis<MT2Estimate>            *analysesT2qq  ;
+  MT2Analysis<MT2EstimateSigSyst>            *analysesT2qq  ;
   MT2Analysis<MT2EstimateSigContSyst> *analysesT1tttt;
   MT2Analysis<MT2EstimateSigContSyst> *analysesT2tt  ;
 
@@ -79,7 +79,7 @@ int main( int argc, char* argv[] ) {
   analysesT1qqqq = MT2Analysis<MT2EstimateSigSyst>::readSystFromFile( sigPath + "/T1qqqq_eth.root", "T1qqqq", "isr");
   analysesT1bbbb = MT2Analysis<MT2EstimateSigSyst>::readSystFromFile( sigPath + "/T1bbbb_eth.root", "T1bbbb", "isr");
   analysesT2bb   = MT2Analysis<MT2EstimateSigSyst>::readSystFromFile( sigPath + "/T2bb_eth.root"  , "T2bb"  , "isr");
-  //analysesT2qq   = MT2Analysis<MT2Estimate>::readFromFile( sigPath + "/T2qq_eth.root"  , "T2qq"  );
+  analysesT2qq   = MT2Analysis<MT2EstimateSigSyst>::readFromFile( sigPath + "/T2qq_eth.root"  , "T2qq"  );
 
   analysesT1tttt = MT2Analysis<MT2EstimateSigContSyst>::readSystFromFile( sigPath + "/T1tttt_sigcontam_eth.root", "T1tttt_sigcontam", "isr");
   analysesT2tt   = MT2Analysis<MT2EstimateSigContSyst>::readSystFromFile( sigPath + "/T2tt_sigcontam_eth.root", "T2tt_sigcontam", "isr");
@@ -1087,16 +1087,16 @@ int main( int argc, char* argv[] ) {
       analysesT2tt->print(ofs, m1T2tt[a], m2T2tt[a], thisRegion, 1.0, true );
     }
 
-    // int scanPointsT2qq=3;
-    // Float_t m1T2qq[scanPointsT2qq]={ 1200., 600., 700.};
-    // Float_t m2T2qq[scanPointsT2qq]={    0.,   0., 500.};
-    // for(int a=0;  a < scanPointsT2qq; ++a) {
-    //   ofs << "T2qq " << (int)m1T2qq[a] << ", " << (int)m2T2qq[a];
-    //   analysesT2qq->print(ofs, m1T2qq[a], m2T2qq[a], thisRegion, 1.0 );
-    // }
-
+    int scanPointsT2qq=3;
+    Float_t m1T2qq[scanPointsT2qq]={ 1200., 600., 700.};
+    Float_t m2T2qq[scanPointsT2qq]={    0.,   0., 500.};
+    for(int a=0;  a < scanPointsT2qq; ++a) {
+      ofs << "T2qq " << (int)m1T2qq[a] << ", " << (int)m2T2qq[a];
+      analysesT2qq->print(ofs, m1T2qq[a], m2T2qq[a], thisRegion, 1.0, true );
+    }
+    
     ofs << "\\hline" << std::endl;
-
+    
     ofs << "\\end{tabular}}" << std::endl;
     ofs << "\\end{table}" << std::endl;
   
