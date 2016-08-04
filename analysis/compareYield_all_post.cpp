@@ -89,7 +89,7 @@ int main( int argc, char* argv[] ) {
   TH1::AddDirectory(kTRUE);
   
   std::string dir = cfg.getEventYieldDir();
-  std::string outputdir = cfg.getEventYieldDir() + "/YieldComparison_dataMC_post_plusSignal";
+  std::string outputdir = cfg.getEventYieldDir() + "/YieldComparison_dataMC_post";
  
  
   MT2Analysis<MT2Estimate>* analysis = MT2Analysis<MT2Estimate>::readFromFile( dir + "/analyses.root", "data" ); // any one is good, just need to know the regions                                                                    
@@ -1272,7 +1272,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
     g_Ratio->GetYaxis()->SetRangeUser(0.1, 10.0);
   }
   else{
-    h2_axes_ratio = new TH2D("axes_ratio", "", 10, 0, thisBin, 10, 0., 2.0 );
+    h2_axes_ratio = new TH2D("axes_ratio", "", 10, 0, thisBin, 10, 0., 1.5 );
   }
 
   h2_axes_ratio->SetStats(0);

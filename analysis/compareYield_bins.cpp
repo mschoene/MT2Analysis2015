@@ -31,12 +31,12 @@ int main() {
 
   TH1::AddDirectory(kFALSE); // stupid ROOT memory allocation needs this
 
-  std::string outputdir = "./YieldComparison_lostLepton_binned_12p9ifb/";
+  std::string outputdir = "./YieldComparison_lostLepton_binned_12p9ifb_ICHEP/";
 
 //  std::string firstInputFile  = "./EventYields_data_Run2015_25nsGolden_2p3ifb/llepEstimate_binbybin.root";
 //  std::string secondInputFile = "./EventYields_data_Run2015_25nsGolden_2p3ifb/llepEstimate_extrapolation.root";
-  std::string firstInputFile  = "./EventYields_data_Run2016_12p9ifb/llepEstimate_binbybin.root";
-  std::string secondInputFile = "./EventYields_data_Run2016_12p9ifb/llepEstimate_extrapolation.root";
+  std::string firstInputFile  = "./EventYields_data_Run2016_12p9ifb_ICHEP/llepEstimate_binbybin.root";
+  std::string secondInputFile = "./EventYields_data_Run2016_12p9ifb_ICHEP/llepEstimate_extrapolation.root";
   
   MT2Analysis<MT2Estimate>* analysisFirst_ext = MT2Analysis<MT2Estimate>::readFromFile( secondInputFile.c_str(), "llepEstimate" ); 
   analysisFirst_ext->setName("Data-drien (Std.)");

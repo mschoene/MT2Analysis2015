@@ -1301,7 +1301,8 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
     g_Ratio->GetYaxis()->SetRangeUser(0.1, 10.0);
   }
   else
-    h2_axes_ratio_0 = new TH2D("axes_ratio_0", "", 10, oldBin, thisBin, 10, 0., 2.0 );
+    //    h2_axes_ratio_0 = new TH2D("axes_ratio_0", "", 10, oldBin, thisBin, 10, 0., 2.0 );
+    h2_axes_ratio_0 = new TH2D("axes_ratio_0", "", 10, oldBin, thisBin, 10, 0., 1.5 );
 
   //  TH2D* h2_axes_ratio_0 = new TH2D("axes_ratio_0", "", 10, oldBin, thisBin, 10, 0., 3.0 );
   h2_axes_ratio_0->SetStats(0);
@@ -1445,7 +1446,8 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
     h2_axes_ratio_1 = new TH2D("axes_ratio_1", "", 10, oldBin, thisBin, 10, 0.1, 10.0 );
   }
   else
-    h2_axes_ratio_1 = new TH2D("axes_ratio_1", "", 10, oldBin, thisBin, 10, 0., 4.0 );
+    //  h2_axes_ratio_1 = new TH2D("axes_ratio_1", "", 10, oldBin, thisBin, 10, 0., 4.0 );
+    h2_axes_ratio_1 = new TH2D("axes_ratio_1", "", 10, oldBin, thisBin, 10, 0., 2.5 );
   //h2_axes_ratio_1 = new TH2D("axes_ratio_1", "", 10, oldBin, thisBin, 10, 0., 2.0 );
 
   //TH2D* h2_axes_ratio_1 = new TH2D("axes_ratio_1", "", 10, oldBin, thisBin, 10, 0., 3.0 );
@@ -1552,7 +1554,8 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
     h2_axes_ratio_2 = new TH2D("axes_ratio_2", "", 10, oldBin, thisBin, 10, 0.1, 10.0 );
   }
   else
-    h2_axes_ratio_2 = new TH2D("axes_ratio_2", "", 10, oldBin, thisBin, 10, 0., 4.0 );
+    //  h2_axes_ratio_2 = new TH2D("axes_ratio_2", "", 10, oldBin, thisBin, 10, 0., 4.0 );
+    h2_axes_ratio_2 = new TH2D("axes_ratio_2", "", 10, oldBin, thisBin, 10, 0., 2.5 );
   //    h2_axes_ratio_2 = new TH2D("axes_ratio_2", "", 10, oldBin, thisBin, 10, 0., 2.0 );
 
   //  TH2D* h2_axes_ratio_2 = new TH2D("axes_ratio_2", "", 10, oldBin, thisBin, 10, 0., 3.0 );
@@ -1659,7 +1662,8 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
     h2_axes_ratio_3 = new TH2D("axes_ratio_3", "", 10, oldBin, thisBin, 10, 0.1, 10.0 );
   }
   else
-    h2_axes_ratio_3 = new TH2D("axes_ratio_3", "", 10, oldBin, thisBin, 10, 0., 2.5 );
+    //    h2_axes_ratio_3 = new TH2D("axes_ratio_3", "", 10, oldBin, thisBin, 10, 0., 2.5 );
+    h2_axes_ratio_3 = new TH2D("axes_ratio_3", "", 10, oldBin, thisBin, 10, 0., 2.0 );
   //h2_axes_ratio_3 = new TH2D("axes_ratio_3", "", 10, oldBin, thisBin, 10, 0., 2.0 );
 
   //  TH2D* h2_axes_ratio_3 = new TH2D("axes_ratio_3", "", 10, oldBin, thisBin, 10, 0., 3.0 );
@@ -1768,7 +1772,8 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
     h2_axes_ratio_4 = new TH2D("axes_ratio_4", "", 10, oldBin, thisBin, 10, 0.1, 10.0 );
   }
   else
-    h2_axes_ratio_4 = new TH2D("axes_ratio_4", "", 10, oldBin, thisBin, 10, 0., 2.5 );
+    //  h2_axes_ratio_4 = new TH2D("axes_ratio_4", "", 10, oldBin, thisBin, 10, 0., 2.5 );
+    h2_axes_ratio_4 = new TH2D("axes_ratio_4", "", 10, oldBin, thisBin, 10, 0., 2.0 );
   //h2_axes_ratio_4 = new TH2D("axes_ratio_4", "", 10, oldBin, thisBin, 10, 0., 2.0 );
 
   //  TH2D* h2_axes_ratio_4 = new TH2D("axes_ratio_4", "", 10, oldBin, thisBin, 10, 0., 3.0 );
@@ -1825,7 +1830,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
 
 
   TCanvas* c2_5 = new TCanvas("c2_5", "", 1100, 600);
-  //TCanvas* c2_5 = new TCanvas("c2_5", "", 1300, 800);
+  //  TCanvas* c2_5 = new TCanvas("c2_5", "", 1300, 800);
   c2_5->cd();
   
   TPad *pad1_5 = new TPad("pad1_5","pad1_5",0,0.3-0.1,1,1);
@@ -1878,7 +1883,8 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
     h2_axes_ratio_5 = new TH2D("axes_ratio_5", "", 10, oldBin, thisBin, 10, 0.1, 10.0 );
   }
   else
-    h2_axes_ratio_5 = new TH2D("axes_ratio_5", "", 10, oldBin, thisBin, 10, 0., 5.0 );
+    //    h2_axes_ratio_5 = new TH2D("axes_ratio_5", "", 10, oldBin, thisBin, 10, 0., 5.0 );
+    h2_axes_ratio_5 = new TH2D("axes_ratio_5", "", 10, oldBin, thisBin, 10, 0., 3.25 );
     //h2_axes_ratio_5 = new TH2D("axes_ratio_5", "", 10, oldBin, thisBin, 10, 0., 2.0 );
 
   //  TH2D* h2_axes_ratio_5 = new TH2D("axes_ratio_5", "", 10, oldBin, thisBin, 10, 0., 3.0 );
