@@ -75,7 +75,6 @@ public :
    Int_t         Flag_CSCTightHalo2015Filter;
    Int_t         Flag_CSCTightHalo2016Filter;
    Int_t         Flag_HBHENoiseFilter;
-   Int_t         Flag_HBHEIsoNoiseFilter;
    Int_t         Flag_HBHENoiseIsoFilter;
    Int_t         Flag_goodVertices;
    Int_t         Flag_METFilters;
@@ -521,7 +520,6 @@ public :
    TBranch        *b_Flag_CSCTightHalo2015Filter;   //!
    TBranch        *b_Flag_CSCTightHalo2016Filter;   //!
    TBranch        *b_Flag_HBHENoiseFilter;   //!
-   TBranch        *b_Flag_HBHEIsoNoiseFilter;   //!
    TBranch        *b_Flag_HBHENoiseIsoFilter;   //!
    TBranch        *b_Flag_goodVertices;   //!
    TBranch        *b_Flag_METFilters;   //!
@@ -1037,7 +1035,6 @@ void MT2Tree::Init(TTree *tree)
    fChain->SetBranchAddress("Flag_CSCTightHalo2015Filter", &Flag_CSCTightHalo2015Filter, &b_Flag_CSCTightHalo2015Filter);
    fChain->SetBranchAddress("Flag_CSCTightHalo2016Filter", &Flag_CSCTightHalo2016Filter, &b_Flag_CSCTightHalo2016Filter);
    fChain->SetBranchAddress("Flag_HBHENoiseFilter", &Flag_HBHENoiseFilter, &b_Flag_HBHENoiseFilter);
-   fChain->SetBranchAddress("Flag_HBHEIsoNoiseFilter", &Flag_HBHEIsoNoiseFilter, &b_Flag_HBHEIsoNoiseFilter);
    fChain->SetBranchAddress("Flag_HBHENoiseIsoFilter", &Flag_HBHENoiseIsoFilter, &b_Flag_HBHENoiseIsoFilter);
    fChain->SetBranchAddress("Flag_goodVertices", &Flag_goodVertices, &b_Flag_goodVertices);
    fChain->SetBranchAddress("Flag_METFilters", &Flag_METFilters, &b_Flag_METFilters);
@@ -1478,8 +1475,6 @@ Bool_t MT2Tree::passIsoTrackVeto() const {
 
 Bool_t MT2Tree::passFilters() const {
   return Flag_goodVertices>0 && Flag_HBHENoiseFilter>0 && Flag_HBHENoiseIsoFilter>0 && Flag_eeBadScFilter && Flag_CSCTightHalo2016Filter>0 && Flag_EcalDeadCellTriggerPrimitiveFilter>0 && Flag_badMuonFilter && Flag_badChargedHadronFilter;
-  //return Flag_goodVertices>0 && Flag_HBHENoiseFilter>0 && Flag_HBHENoiseIsoFilter>0 && Flag_eeBadScFilter && Flag_CSCTightHalo2015Filter>0 && Flag_EcalDeadCellTriggerPrimitiveFilter>0;
-  //return nVert>0 && Flag_HBHENoiseFilter && Flag_HBHEIsoNoiseFilter && Flag_eeBadScFilter; // Beam halo from txt file
 }
 
 Bool_t MT2Tree::passMonoJetId( int j ) const {
