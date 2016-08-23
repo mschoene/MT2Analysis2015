@@ -29,6 +29,7 @@ class MT2EstimateSyst : public MT2Estimate {
   static MT2Analysis<MT2EstimateSyst>* makeIntegralAnalysisFromEstimate( const std::string& aname, const std::string& regionsSet, MT2Analysis<MT2EstimateSyst>* analysis );
 
   static void rebinYields( MT2Analysis<MT2EstimateSyst>* analysis, int nBins, double* bins);
+  static void rebinYields( MT2Analysis<MT2EstimateSyst>* analysis, int nBins, float xMin, float xMax );
 
 
   TGraphAsymmErrors* getGraph() const;

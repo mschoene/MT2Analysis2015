@@ -309,10 +309,10 @@ void MT2DrawTools::addLabels( TCanvas* c1, float lumi, const std::string& text  
 
 
 
-
-
 TGraphAsymmErrors* MT2DrawTools::getPoissonGraph( TH1D* histo, bool drawZeros, const std::string& xerrType, float nSigma ) {
 
+  //  histo->SetBinErrorOption(TH1::kPoisson);
+  const double alpha = 1 - 0.6827;
 
   unsigned int nBins = histo->GetNbinsX();
   int emptyBins=0;
@@ -341,12 +341,22 @@ TGraphAsymmErrors* MT2DrawTools::getPoissonGraph( TH1D* histo, bool drawZeros, c
 
     y = (int)histo->GetBinContent(iBin);
 
-    if( y==0 && !drawZeros ) continue;
-
-    double ym, yp;
-    RooHistError::instance().getPoissonInterval(y,ym,yp,nSigma);
+    if( y==0 && !drawZeros ) continue;     
+    
+    double ym =  (y==0) ? 0  : (ROOT::Math::gamma_quantile(alpha/2,y,1.));
+    double yp =  ROOT::Math::gamma_quantile_c(alpha/2,y+1,1) ;
+    
+    //    yerrminus = histo->GetBinErrorLow(iBin);
+    //    yerrplus = histo->GetBinErrorUp(iBin);
+    
+    //double ym, yp;
+    //RooHistError::instance().getPoissonInterval(y,ym,yp,nSigma);
+    
     yerrplus = yp - y;
     yerrminus = y - ym;
+
+    if(y==0)
+      std::cout << yerrplus << "\t" << yerrminus << std::endl;
 
     int thisPoint = graph->GetN();
     graph->SetPoint( thisPoint, x, y );
@@ -359,14 +369,15 @@ TGraphAsymmErrors* MT2DrawTools::getPoissonGraph( TH1D* histo, bool drawZeros, c
 }
 
 
+
 TGraphAsymmErrors* MT2DrawTools::getRatioGraph( TH1D* histo_data, TH1D* histo_mc, const std::string& xerrType){
 
   if( !histo_data || !histo_mc ) return 0;
 
   TGraphAsymmErrors* graph  = new TGraphAsymmErrors();
   
-  TGraphAsymmErrors* graph_data = MT2DrawTools::getPoissonGraph(histo_data, false);
-  //TGraphAsymmErrors* graph_data = MT2DrawTools::getPoissonGraph(histo_data, true);
+  //  TGraphAsymmErrors* graph_data = MT2DrawTools::getPoissonGraph(histo_data, false);
+  TGraphAsymmErrors* graph_data = MT2DrawTools::getPoissonGraph(histo_data, true);
   
   for( int i=0; i < graph_data->GetN(); ++i){
     
@@ -458,21 +469,21 @@ TGraphAsymmErrors* MT2DrawTools::getRatioGraph( TH1D* histo_data, TH1D* histo_mc
 
 // }
 
-// TH1D* MT2DrawTools::getBandAtOne( TH1D* h ){
+TH1D* MT2DrawTools::getBandAtOne( TH1D* h ){
 
-//   TH1D* h_band = (TH1D*)h->Clone( Form("%s_band", h->GetName()) );
-//   h_band->SetMarkerSize(0);
-//   h_band->SetFillColor ( h->GetLineColor()-4 );
-//   h_band->SetFillStyle (3001);
-//   for ( int iBin=1; iBin <= h->GetNbinsX(); iBin++){
-//     h_band->SetBinContent(iBin,1);
-//     double error = h->GetBinContent(iBin) ? h->GetBinError(iBin)/h->GetBinContent(iBin) : 0.0;
-//     h_band->SetBinError(iBin, error);
-//   }
+  TH1D* h_band = (TH1D*)h->Clone( Form("%s_band", h->GetName()) );
+  h_band->SetMarkerSize(0);
+  h_band->SetFillColor ( h->GetLineColor()-4 );
+  h_band->SetFillStyle (3001);
+  for ( int iBin=1; iBin <= h->GetNbinsX(); iBin++){
+    h_band->SetBinContent(iBin,1);
+    double error = h->GetBinContent(iBin) ? h->GetBinError(iBin)/h->GetBinContent(iBin) : 0.0;
+    h_band->SetBinError(iBin, error);
+  }
   
-//   return h_band;
+  return h_band;
 
-// }
+}
 
 
 TPad* MT2DrawTools::getCanvasMainPad( bool logY ){

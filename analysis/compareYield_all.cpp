@@ -729,7 +729,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   TPaveText* labelTop = MT2DrawTools::getLabelTop(lumi);
   labelTop->Draw("same");
 
-  TPaveText* labelCMS = MT2DrawTools::getLabelCMS();
+  TPaveText* labelCMS = MT2DrawTools::getLabelCMS("CMS Preliminary");
   labelCMS->Draw("same");
 
 //  TLine* lHT[5];
@@ -814,7 +814,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
     
   }
   else
-    h2_axes_ratio = new TH2D("axes_ratio", "", 10, 0, thisBin, 10, 0., 2.0 );
+    h2_axes_ratio = new TH2D("axes_ratio", "", 10, 0, thisBin, 10, 0., 3.5 );
   
   //  TH2D* h2_axes_ratio = new TH2D("axes_ratio", "", 10, 0, thisBin, 10, 0., 3.0 );
   h2_axes_ratio->SetStats(0);

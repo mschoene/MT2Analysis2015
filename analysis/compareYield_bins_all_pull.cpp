@@ -85,7 +85,7 @@ int main( int argc, char* argv[] ) {
   TH1::AddDirectory(kTRUE);
   
   std::string dir = cfg.getEventYieldDir();
-  std::string outputdir = cfg.getEventYieldDir() + "/YieldComparison_dataMC_binned";
+  std::string outputdir = cfg.getEventYieldDir() + "/YieldComparison_dataMC_binned_pull";
  
  
   MT2Analysis<MT2Estimate>* analysis = MT2Analysis<MT2Estimate>::readFromFile( dir + "/analyses.root", "data" ); // any one is good, just need to know the regions                                                                    
@@ -180,7 +180,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
 
   TH1D* hPull = new TH1D("hPull", "", 101, -5.05, 5.05);
   hPull->Sumw2();
-  hPull->GetXaxis()->SetTitle("(Data - Est.)/#sigma");
+  hPull->GetXaxis()->SetTitle("(Est. - Data)/#sigma");
   hPull->GetYaxis()->SetTitle("Entries");
   
   std::string fullPath = outputdir;
@@ -440,7 +440,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
       TH2D* h2_axes_ratio = MT2DrawTools::getRatioAxes( xMin, xMax, 0.0, 2.0 );
       h2_axes_ratio->GetYaxis()->SetTitle("Ratio");
       
-      TLine* lineCentral = new TLine(xMin, 1.0, xMax, 1.0);
+      TLine* lineCentral = new TLine(xMin, 0.0, xMax, 0.0);
       lineCentral->SetLineColor(1);
 
       h2_axes_ratio->Draw("");
@@ -488,7 +488,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
 
   }
 
-
+  /*
   TGraphAsymmErrors* g_Ratio = MT2DrawTools::getRatioGraph(hdata, hestimate_all_forRatio, "binWidth");  
   g_Ratio->SetMarkerStyle(20);
   g_Ratio->SetMarkerSize(1.6);
@@ -507,7 +507,8 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   g_Ratio_zero->SetMarkerSize(0);
   g_Ratio_zero->SetLineColor( 1 );
   g_Ratio_zero->SetMarkerColor( 1 );
-  
+  */
+
   TGraphAsymmErrors* gdata = MT2DrawTools::getPoissonGraph(hdata, true, "binWidth");
   gdata->GetYaxis()->SetTitle("Entries");
   gdata->SetMarkerStyle(20); 
@@ -521,43 +522,58 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   gdata_zero->SetMarkerColor( 1 );
 
   
+  std::string thisName = Form("%s_ratio", hdata->GetName());
+  TH1D* h_Ratio = (TH1D*) hdata->Clone(thisName.c_str());
+  
   for(int iBin=1; iBin<=hestimate_all->GetNbinsX(); ++iBin){
     
     float thisData    = hdata->GetBinContent(iBin);
     float thisDataErr = gdata->GetErrorY(iBin-1);
-    std::cout << "TEST!" << std::endl;
-    std::cout << thisData << "\t" << gdata->GetY()[iBin-1] << "\t" << thisDataErr << std::endl;
-    
     float thisEst     = hestimate_all->GetBinContent(iBin);
     float thisEstErr  = hestimate_all->GetBinError(iBin);
     
+    std::cout << "TEST!" << std::endl;
+    std::cout << "BIN NUMBER = " << iBin << std::endl;
+    std::cout << thisData << "\t" << gdata->GetY()[iBin-1] << "\t" << thisDataErr << std::endl;
+    std::cout << thisEst << "\t" << thisEstErr << std::endl;
     
-    hPull->Fill( (-thisEst+thisData)/( TMath::Sqrt( thisDataErr*thisDataErr + thisEstErr*thisEstErr ) ) );
+
     
+    hPull->Fill( (thisEst-thisData)/( TMath::Sqrt( thisDataErr*thisDataErr + thisEstErr*thisEstErr ) ) );
+    
+    // std::cout << (thisEst-thisData)/( TMath::Sqrt( thisDataErr*thisDataErr + thisEstErr*thisEstErr ) ) << std::endl;
+
+
+    h_Ratio->SetBinContent( iBin, (thisData - thisEst)/( TMath::Sqrt( thisDataErr*thisDataErr + thisEstErr*thisEstErr ) ));
+    //   h_Ratio->SetBinContent( iBin, (thisEst-thisData)/( TMath::Sqrt( thisDataErr*thisDataErr + thisEstErr*thisEstErr ) ));
+
   }
+
 
 
   //  gdata->GetXaxis()->SetRangeUser(0, thisBin);
 
   TCanvas* c2 = new TCanvas("c2", "", 1100, 600);
   c2->cd();
-  
-  std::string thisName = Form("%s_ratio", hdata->GetName());
-  TH1D* h_Ratio = (TH1D*) hdata->Clone(thisName.c_str());
-  h_Ratio->Divide(hestimate_all_forRatio);
-  h_Ratio->Write();
+
+
+  //  std::string thisName = Form("%s_ratio", hdata->GetName());
+  //  TH1D* h_Ratio = (TH1D*) hdata->Clone(thisName.c_str());
+  //  h_Ratio->Divide(hestimate_all_forRatio);
+  //h_Ratio->Write();
   h_Ratio->SetStats(0);
   h_Ratio->SetMarkerStyle(20);
   h_Ratio->SetLineColor(1);
   h_Ratio->GetXaxis()->SetLabelSize(0.00);
   h_Ratio->GetXaxis()->SetTickLength(0.09);
   h_Ratio->GetYaxis()->SetNdivisions(5,5,0);
-  h_Ratio->GetYaxis()->SetRangeUser(0.0,2.0);
+  h_Ratio->GetYaxis()->SetRangeUser(-5, 5);
   h_Ratio->GetYaxis()->SetTitleSize(0.17);
   h_Ratio->GetYaxis()->SetTitleOffset(0.4);
   h_Ratio->GetYaxis()->SetLabelSize(0.17);
+  //h_Ratio->GetYaxis()->SetTitle("Pull");
   h_Ratio->GetYaxis()->SetTitle("Ratio");
-
+  
   
 
   TPad *pad1 = new TPad("pad1","pad1",0,0.3-0.1,1,1);
@@ -688,7 +704,8 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   pad2->Draw();
   pad2->cd();  
 
-  TH2D* h2_axes_ratio = new TH2D("axes_ratio", "", 10, 0, thisBin, 10, 0., 2.0 );
+  TH2D* h2_axes_ratio = new TH2D("axes_ratio", "", 10, 0, thisBin, 10, -3, 3);
+  // TH2D* h2_axes_ratio = new TH2D("axes_ratio", "", 10, 0, thisBin, 10, 0., 2.0 );
   h2_axes_ratio->SetStats(0);
   h2_axes_ratio->GetXaxis()->SetLabelSize(0.00);
   h2_axes_ratio->GetXaxis()->SetTickLength(0.09);
@@ -698,7 +715,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   h2_axes_ratio->GetYaxis()->SetLabelSize(0.17);
   h2_axes_ratio->GetYaxis()->SetTitle("Ratio");
   
-  TLine* LineCentral = new TLine(0, 1.0, thisBin, 1.0);
+  TLine* LineCentral = new TLine(0, 0.0, thisBin, 0.0);
   LineCentral->SetLineColor(1);
 
   
@@ -723,14 +740,15 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
 
 
   h2_axes_ratio->Draw("");
-  h_band->Draw("E2same");
+  //  h_band->Draw("E2same");
   LineCentral->Draw("same");
   h_Ratio->Draw("pe,same");
-  
+ 
+
   gPad->RedrawAxis();
 
   c2->cd();
-  //  c2->SaveAs( Form("%s/mt2_ALL_fullEstimate.pdf", fullPath.c_str()) );
+  c2->SaveAs( Form("%s/mt2_ALL_fullEstimate.pdf", fullPath.c_str()) );
   c2->SaveAs( Form("%s/mt2_ALL_fullEstimate.png", fullPath.c_str()) );
   c2->SaveAs( Form("%s/mt2_ALL_fullEstimate.eps", fullPath.c_str()) );
 
@@ -761,7 +779,8 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   h_Ratio->GetXaxis()->SetRangeUser(oldBin, thisBin);
   gdata->GetXaxis()->SetRangeUser(oldBin, thisBin);
   gdata_zero->GetXaxis()->SetRangeUser(oldBin, thisBin);
-  g_Ratio->GetXaxis()->SetRangeUser(oldBin, thisBin);
+
+  //  g_Ratio->GetXaxis()->SetRangeUser(oldBin, thisBin);
   hestimate_all->GetYaxis()->SetRangeUser(yMin, yMax);
   //  gdata->GetYaxis()->SetRangeUser(yMin, yMax);
   hestimate_all->GetXaxis()->LabelsOption("v");
@@ -803,7 +822,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
     h_Ratio->GetYaxis()->SetRangeUser(0.1, 10.0);
   }
   else
-    h2_axes_ratio_0 = new TH2D("axes_ratio_0", "", 10, oldBin, thisBin, 10, 0., 2.0 );
+    h2_axes_ratio_0 = new TH2D("axes_ratio_0", "", 10, oldBin, thisBin, 10, -3., 3);
 
 
 
@@ -814,16 +833,16 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   h2_axes_ratio_0->GetYaxis()->SetTitleSize(0.18);
   h2_axes_ratio_0->GetYaxis()->SetTitleOffset(0.26);
   h2_axes_ratio_0->GetYaxis()->SetLabelSize(0.17);
-  h2_axes_ratio_0->GetYaxis()->SetTitle("Data/Est.");
+  h2_axes_ratio_0->GetYaxis()->SetTitle("Pull");
   
-  TLine* LineCentral_0 = new TLine(oldBin, 1.0, thisBin, 1.0);
+  TLine* LineCentral_0 = new TLine(oldBin, 0.0, thisBin, 0.0);
   LineCentral_0->SetLineColor(1);
 
   h2_axes_ratio_0->Draw("");
-  h_band->Draw("E2same");
+  //h_band->Draw("E2same");
   LineCentral_0->Draw("same");
-  //h_Ratio->Draw("pe,same");
-  g_Ratio->Draw("pe,same");
+  h_Ratio->Draw("pe,same");
+  //  g_Ratio->Draw("pe,same");
   
   gPad->RedrawAxis();
 
@@ -851,7 +870,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   h_Ratio->GetXaxis()->SetRangeUser(oldBin, thisBin);
   gdata->GetXaxis()->SetRangeUser(oldBin, thisBin);
   gdata_zero->GetXaxis()->SetRangeUser(oldBin, thisBin);
-  g_Ratio->GetXaxis()->SetRangeUser(oldBin, thisBin);
+  //  g_Ratio->GetXaxis()->SetRangeUser(oldBin, thisBin);
   hestimate_all->GetYaxis()->SetRangeUser(yMin, yMax);
   hestimate_all->GetXaxis()->LabelsOption("v");
   hestimate_all->GetXaxis()->SetLabelSize(0.042);
@@ -885,8 +904,8 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
     h2_axes_ratio_1 = new TH2D("axes_ratio_1", "", 10, oldBin, thisBin, 10, 0.1, 10.0 );
   }
   else
-    h2_axes_ratio_1 = new TH2D("axes_ratio_1", "", 10, oldBin, thisBin, 10, 0., 4.0 );
-  //h2_axes_ratio_1 = new TH2D("axes_ratio_1", "", 10, oldBin, thisBin, 10, 0., 2.0 );
+    //    h2_axes_ratio_1 = new TH2D("axes_ratio_1", "", 10, oldBin, thisBin, 10, 0., 7.5 );
+    h2_axes_ratio_1 = new TH2D("axes_ratio_1", "", 10, oldBin, thisBin, 10, -3., 3);
 
   h2_axes_ratio_1->SetStats(0);
   h2_axes_ratio_1->GetXaxis()->SetLabelSize(0.00);
@@ -895,16 +914,16 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   h2_axes_ratio_1->GetYaxis()->SetTitleSize(0.18);
   h2_axes_ratio_1->GetYaxis()->SetTitleOffset(0.26);
   h2_axes_ratio_1->GetYaxis()->SetLabelSize(0.17);
-  h2_axes_ratio_1->GetYaxis()->SetTitle("Data/Est.");
+  h2_axes_ratio_1->GetYaxis()->SetTitle("Pull");
   
-  TLine* LineCentral_1 = new TLine(oldBin, 1.0, thisBin, 1.0);
+  TLine* LineCentral_1 = new TLine(oldBin, 0.0, thisBin, 0.0);
   LineCentral_1->SetLineColor(1);
 
   h2_axes_ratio_1->Draw("");
-  h_band->Draw("E2same");
+  //h_band->Draw("E2same");
   LineCentral_1->Draw("same");
-  //h_Ratio->Draw("pe,same");
-  g_Ratio->Draw("pe,same");
+  h_Ratio->Draw("pe,same");
+  //  g_Ratio->Draw("pe,same");
 
   gPad->RedrawAxis();
 
@@ -932,7 +951,8 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   h_Ratio->GetXaxis()->SetRangeUser(oldBin, thisBin);
   gdata->GetXaxis()->SetRangeUser(oldBin, thisBin);
   gdata_zero->GetXaxis()->SetRangeUser(oldBin, thisBin);
-  g_Ratio->GetXaxis()->SetRangeUser(oldBin, thisBin);
+  hPull->GetXaxis()->SetRangeUser(oldBin, thisBin);
+  //  g_Ratio->GetXaxis()->SetRangeUser(oldBin, thisBin);
   hestimate_all->GetYaxis()->SetRangeUser(yMin, yMax);
   hestimate_all->GetXaxis()->LabelsOption("v");
   hestimate_all->GetXaxis()->SetLabelSize(0.042);
@@ -966,7 +986,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
     h2_axes_ratio_2 = new TH2D("axes_ratio_2", "", 10, oldBin, thisBin, 10, 0.1, 10.0 );
   }
   else
-    h2_axes_ratio_2 = new TH2D("axes_ratio_2", "", 10, oldBin, thisBin, 10, 0., 4.0 );
+    h2_axes_ratio_2 = new TH2D("axes_ratio_2", "", 10, oldBin, thisBin, 10, -3., 3);
 
   h2_axes_ratio_2->SetStats(0);
   h2_axes_ratio_2->GetXaxis()->SetLabelSize(0.00);
@@ -975,16 +995,17 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   h2_axes_ratio_2->GetYaxis()->SetTitleSize(0.18);
   h2_axes_ratio_2->GetYaxis()->SetTitleOffset(0.26);
   h2_axes_ratio_2->GetYaxis()->SetLabelSize(0.17);
-  h2_axes_ratio_2->GetYaxis()->SetTitle("Data/Est.");
+  h2_axes_ratio_2->GetYaxis()->SetTitle("Pull");
   
-  TLine* LineCentral_2 = new TLine(oldBin, 1.0, thisBin, 1.0);
+  TLine* LineCentral_2 = new TLine(oldBin, 0.0, thisBin, 0.0);
   LineCentral_2->SetLineColor(1);
 
   h2_axes_ratio_2->Draw("");
-  h_band->Draw("E2same");
+  //h_band->Draw("E2same");
   LineCentral_2->Draw("same");
-  //h_Ratio->Draw("pe,same");
-  g_Ratio->Draw("pe,same");
+  h_Ratio->Draw("pe,same");
+  hPull->Draw("pe,same");
+  // g_Ratio->Draw("pe,same");
   
   gPad->RedrawAxis();
 
@@ -1013,7 +1034,8 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   h_Ratio->GetXaxis()->SetRangeUser(oldBin, thisBin);
   gdata->GetXaxis()->SetRangeUser(oldBin, thisBin);
   gdata_zero->GetXaxis()->SetRangeUser(oldBin, thisBin);
-  g_Ratio->GetXaxis()->SetRangeUser(oldBin, thisBin);
+  hPull->GetXaxis()->SetRangeUser(oldBin, thisBin);
+  //  g_Ratio->GetXaxis()->SetRangeUser(oldBin, thisBin);
   hestimate_all->GetYaxis()->SetRangeUser(yMin, yMax);
   hestimate_all->GetXaxis()->LabelsOption("v");
   hestimate_all->GetXaxis()->SetLabelSize(0.042);
@@ -1047,8 +1069,8 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
     h2_axes_ratio_3 = new TH2D("axes_ratio_3", "", 10, oldBin, thisBin, 10, 0.1, 10.0 );
   }
   else
-    h2_axes_ratio_3 = new TH2D("axes_ratio_3", "", 10, oldBin, thisBin, 10, 0., 2.5 );
-  //h2_axes_ratio_3 = new TH2D("axes_ratio_3", "", 10, oldBin, thisBin, 10, 0., 2.0 );
+    //    h2_axes_ratio_3 = new TH2D("axes_ratio_3", "", 10, oldBin, thisBin, 10, 0., 4.0 );
+    h2_axes_ratio_3 = new TH2D("axes_ratio_3", "", 10, oldBin, thisBin, 10, -3., 3);
 
   h2_axes_ratio_3->SetStats(0);
   h2_axes_ratio_3->GetXaxis()->SetLabelSize(0.00);
@@ -1057,16 +1079,17 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   h2_axes_ratio_3->GetYaxis()->SetTitleSize(0.18);
   h2_axes_ratio_3->GetYaxis()->SetTitleOffset(0.26);
   h2_axes_ratio_3->GetYaxis()->SetLabelSize(0.17);
-  h2_axes_ratio_3->GetYaxis()->SetTitle("Data/Est.");
+  h2_axes_ratio_3->GetYaxis()->SetTitle("Pull");
   
-  TLine* LineCentral_3 = new TLine(oldBin, 1.0, thisBin, 1.0);
+  TLine* LineCentral_3 = new TLine(oldBin, 0.0, thisBin, 0.0);
   LineCentral_3->SetLineColor(1);
 
   h2_axes_ratio_3->Draw("");
-  h_band->Draw("E2same");
+  //h_band->Draw("E2same");
   LineCentral_3->Draw("same");
-  //h_Ratio->Draw("pe,same");
-  g_Ratio->Draw("pe,same");
+  h_Ratio->Draw("pe,same");
+  hPull->Draw("pe,same");
+  //g_Ratio->Draw("pe,same");
   
   gPad->RedrawAxis();
 
@@ -1095,7 +1118,8 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   h_Ratio->GetXaxis()->SetRangeUser(oldBin, thisBin);
   gdata->GetXaxis()->SetRangeUser(oldBin, thisBin);
   gdata_zero->GetXaxis()->SetRangeUser(oldBin, thisBin);
-  g_Ratio->GetXaxis()->SetRangeUser(oldBin, thisBin);
+  hPull->GetXaxis()->SetRangeUser(oldBin, thisBin);
+  //g_Ratio->GetXaxis()->SetRangeUser(oldBin, thisBin);
   hestimate_all->GetYaxis()->SetRangeUser(yMin, yMax);
   hestimate_all->GetXaxis()->LabelsOption("v");
   hestimate_all->GetXaxis()->SetLabelSize(0.042);
@@ -1129,8 +1153,8 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
     h2_axes_ratio_4 = new TH2D("axes_ratio_4", "", 10, oldBin, thisBin, 10, 0.1, 10.0 );
   }
   else
-    h2_axes_ratio_4 = new TH2D("axes_ratio_4", "", 10, oldBin, thisBin, 10, 0., 2.5 );
-  //h2_axes_ratio_4 = new TH2D("axes_ratio_4", "", 10, oldBin, thisBin, 10, 0., 2.0 );
+    //    h2_axes_ratio_4 = new TH2D("axes_ratio_4", "", 10, oldBin, thisBin, 10, 0., 6.0 );
+    h2_axes_ratio_4 = new TH2D("axes_ratio_4", "", 10, oldBin, thisBin, 10, -3., 3);
 
 
   h2_axes_ratio_4->SetStats(0);
@@ -1140,16 +1164,17 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   h2_axes_ratio_4->GetYaxis()->SetTitleSize(0.18);
   h2_axes_ratio_4->GetYaxis()->SetTitleOffset(0.26);
   h2_axes_ratio_4->GetYaxis()->SetLabelSize(0.17);
-  h2_axes_ratio_4->GetYaxis()->SetTitle("Data/Est.");
+  h2_axes_ratio_4->GetYaxis()->SetTitle("Pull");
   
-  TLine* LineCentral_4 = new TLine(oldBin, 1.0, thisBin, 1.0);
+  TLine* LineCentral_4 = new TLine(oldBin, 0.0, thisBin, 0.0);
   LineCentral_4->SetLineColor(1);
 
   h2_axes_ratio_4->Draw("");
-  h_band->Draw("E2same");
+  //h_band->Draw("E2same");
   LineCentral_4->Draw("same");
-  //h_Ratio->Draw("pe,same");
-  g_Ratio->Draw("pe,same");
+  h_Ratio->Draw("pe,same");
+  hPull->Draw("pe,same");
+  // g_Ratio->Draw("pe,same");
   
   gPad->RedrawAxis();
 
@@ -1178,7 +1203,8 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   gdata->GetXaxis()->SetRangeUser(oldBin, thisBin);
   gdata_zero->GetXaxis()->SetRangeUser(oldBin, thisBin);
   h_Ratio->GetXaxis()->SetRangeUser(oldBin, thisBin);
-  g_Ratio->GetXaxis()->SetRangeUser(oldBin, thisBin);
+  hPull->GetXaxis()->SetRangeUser(oldBin, thisBin);
+  //  g_Ratio->GetXaxis()->SetRangeUser(oldBin, thisBin);
   hestimate_all->GetYaxis()->SetRangeUser(yMin, yMax);
   hestimate_all->GetXaxis()->LabelsOption("v");
   hestimate_all->GetXaxis()->SetLabelSize(0.042);
@@ -1212,8 +1238,8 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
     h2_axes_ratio_5 = new TH2D("axes_ratio_5", "", 10, oldBin, thisBin, 10, 0.1, 10.0 );
   }
   else
-    h2_axes_ratio_5 = new TH2D("axes_ratio_5", "", 10, oldBin, thisBin, 10, 0., 5.0 );
-  //h2_axes_ratio_5 = new TH2D("axes_ratio_5", "", 10, oldBin, thisBin, 10, 0., 2.0 );
+    //    h2_axes_ratio_5 = new TH2D("axes_ratio_5", "", 10, oldBin, thisBin, 10, 0., 6.0 );
+    h2_axes_ratio_5 = new TH2D("axes_ratio_5", "", 10, oldBin, thisBin, 10, -3., 3);
 
   h2_axes_ratio_5->SetStats(0);
   h2_axes_ratio_5->GetXaxis()->SetLabelSize(0.00);
@@ -1222,16 +1248,16 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   h2_axes_ratio_5->GetYaxis()->SetTitleSize(0.18);
   h2_axes_ratio_5->GetYaxis()->SetTitleOffset(0.26);
   h2_axes_ratio_5->GetYaxis()->SetLabelSize(0.17);
-  h2_axes_ratio_5->GetYaxis()->SetTitle("Data/Est.");
+  h2_axes_ratio_5->GetYaxis()->SetTitle("Pull");
   
-  TLine* LineCentral_5 = new TLine(oldBin, 1.0, thisBin, 1.0);
+  TLine* LineCentral_5 = new TLine(oldBin, 0.0, thisBin, 0.0);
   LineCentral_5->SetLineColor(1);
 
   h2_axes_ratio_5->Draw("");
-  h_band->Draw("E2same");
+  //h_band->Draw("E2same");
   LineCentral_5->Draw("same");
-  //  h_Ratio->Draw("pe,same");
-  g_Ratio->Draw("pe,same");
+  h_Ratio->Draw("pe,same");
+  //  g_Ratio->Draw("pe,same");
   
   gPad->RedrawAxis();
 

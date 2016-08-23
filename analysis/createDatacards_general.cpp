@@ -92,7 +92,7 @@ int main( int argc, char* argv[] ) {
   std::string mc_fileName = dir + "/analyses.root";
   std::string data_fileName = dir + "/analyses.root";
 
-  bool addSigLepSF= false;
+  bool addSigLepSF= true;
 
   bool useMC_qcd  = false;
   bool useMC_zinv = false;
@@ -101,14 +101,14 @@ int main( int argc, char* argv[] ) {
   //  float err_qcd_uncorr  = 1.0; // 100% of QCD MC yield, if use MC for QCD
 
   float err_llep_shape = 0.40;
-  float err_llep_lepEff = 0.07; // Uncertainty on llep estimate from lepton efficiency (7%)
+  float err_llep_lepEff = 0.12; // Uncertainty on llep estimate from lepton efficiency (12%)
 
   float err_zinv_shape = 0.40;
   float err_zinv_uncorr_2b = 1.0;
 
   float err_zinv_puritySyst = 0.1; // 10%, including 5% on purity + 8% on fragmentation
-  float err_zinv_doubleRatioOffset = 0.10; // 10%, fully correlated, on zinv // TO BE UPDATED IN CASE IT CHANGES WITH FULL LUMI
-  float zinv_doubleRatioOffset = 0.90; // 90%, used to correct the Z/G ratio in zinv estimate // TO BE UPDATED IN CASE IT CHANGES WITH FULL LUMI
+  float err_zinv_doubleRatioOffset = 0.11; // 10%, fully correlated, on zinv + 5% in quadrature from trigger// TO BE UPDATED IN CASE IT CHANGES WITH FULL LUMI
+  float zinv_doubleRatioOffset = 0.89; // 89%, used to correct the Z/G ratio in zinv estimate // TO BE UPDATED IN CASE IT CHANGES WITH FULL LUMI
   
   float err_lumi_corr   = 0.062; // Uncertainty on luminosity (6.2% for 2016 public results)
 
@@ -655,20 +655,25 @@ int main( int argc, char* argv[] ) {
 	  thisCentralHT_mc *= zinv_doubleRatioOffset;
 	  
 	  if( thisCentralNJ_mc > thisCentralNJ*(1+thisErrNJUp) ) 
-	    thisErrNJUp = (thisCentralNJ>0) ? (thisCentralNJ_mc - thisCentralNJ)/thisCentralNJ : 1.0;
+	    thisErrNJDn = (thisCentralNJ>0) ? (thisCentralNJ_mc - thisCentralNJ)/thisCentralNJ : 1.0;
 	  else if ( thisCentralNJ_mc < thisCentralNJ*(1-thisErrNJDn) ) 
-	    thisErrNJDn = (thisCentralNJ>0) ? (thisCentralNJ - thisCentralNJ_mc)/thisCentralNJ : 1.0;
+	    thisErrNJUp = (thisCentralNJ>0) ? (thisCentralNJ - thisCentralNJ_mc)/thisCentralNJ : 1.0;
 
 	  if( thisCentralNB_mc > thisCentralNB*(1+thisErrNBUp) ) 
-	    thisErrNBUp = (thisCentralNB>0) ? (thisCentralNB_mc - thisCentralNB)/thisCentralNB : 1.0;
+	    thisErrNBDn = (thisCentralNB>0) ? (thisCentralNB_mc - thisCentralNB)/thisCentralNB : 1.0;
 	  else if ( thisCentralNB_mc < thisCentralNB*(1-thisErrNBDn) ) 
-	    thisErrNBDn = (thisCentralNB>0) ? (thisCentralNB - thisCentralNB_mc)/thisCentralNB : 1.0;
+	    thisErrNBUp = (thisCentralNB>0) ? (thisCentralNB - thisCentralNB_mc)/thisCentralNB : 1.0;
 
 	  if( thisCentralHT_mc > thisCentralHT*(1+thisErrHTUp) ) 
-	    thisErrHTUp = (thisCentralHT>0) ? (thisCentralHT_mc - thisCentralHT)/thisCentralHT : 1.0;
+	    thisErrHTDn = (thisCentralHT>0) ? (thisCentralHT_mc - thisCentralHT)/thisCentralHT : 1.0;
 	  else if ( thisCentralHT_mc < thisCentralHT*(1-thisErrHTDn) ) 
-	    thisErrHTDn = (thisCentralHT>0) ? (thisCentralHT - thisCentralHT_mc)/thisCentralHT : 1.0;
+	    thisErrHTUp = (thisCentralHT>0) ? (thisCentralHT - thisCentralHT_mc)/thisCentralHT : 1.0;
 	  //////
+	  
+	  // If we want error to be symmetric
+	  float thisErrHT = (thisErrHTUp > thisErrHTDn) ? thisErrHTUp : thisErrHTDn;
+	  float thisErrNJ = (thisErrNJUp > thisErrNJDn) ? thisErrNJUp : thisErrNJDn;
+	  float thisErrNB = (thisErrNBUp > thisErrNBDn) ? thisErrNBUp : thisErrNBDn;
 
 	  if(doSimultaneousFit && includeCR)
 	    datacard << "zinv_doubleRatioOffset lnN   - " << 1.+err_zinv_doubleRatioOffset << " - - - -" << std::endl;
@@ -692,12 +697,23 @@ int main( int argc, char* argv[] ) {
 	    datacard << "zinv_ZGratio_" << jName << " lnN   - " << 1.+thisErrNJUp << "/" << 1.-thisErrNJDn << " - - - -" << std::endl;
 	    datacard << "zinv_ZGratio_" << bName << " lnN   - " << 1.+thisErrNBUp << "/" << 1.-thisErrNBDn << " - - - -" << std::endl;
 	    
+//	    // If we want error to be symmetric, uncomment the following 3 lines and comment out the 3 lines above
+//	    datacard << "zinv_ZGratio_" << htName << " lnN   - " << 1.+thisErrHT << " - -" << std::endl;
+//	    datacard << "zinv_ZGratio_" << jName << " lnN   - "  << 1.+thisErrNJ << " - -" << std::endl;
+//	    datacard << "zinv_ZGratio_" << bName << " lnN   - "  << 1.+thisErrNB << " - -" << std::endl;
+
+	    
 	  }
 	  else{
 	    
 	    datacard << "zinv_ZGratio_" << htName << " lnN   - " << 1.+thisErrHTUp << "/" << 1.-thisErrHTDn << " - -" << std::endl;
 	    datacard << "zinv_ZGratio_" << jName << " lnN   - " << 1.+thisErrNJUp << "/" << 1.-thisErrNJDn << " - -" << std::endl;
 	    datacard << "zinv_ZGratio_" << bName << " lnN   - " << 1.+thisErrNBUp << "/" << 1.-thisErrNBDn << " - -" << std::endl;
+	    
+//	    // If we want error to be symmetric, uncomment the following 3 lines and comment out the 3 lines above
+//	    datacard << "zinv_ZGratio_" << htName << " lnN   - " << 1.+thisErrHT << " - -" << std::endl;
+//	    datacard << "zinv_ZGratio_" << jName << " lnN   - "  << 1.+thisErrNJ << " - -" << std::endl;
+//	    datacard << "zinv_ZGratio_" << bName << " lnN   - "  << 1.+thisErrNB << " - -" << std::endl;
 	    
 	   }
 	  
@@ -933,24 +949,26 @@ int main( int argc, char* argv[] ) {
 	   }
 
 	   
-	   // TF uncertainty
-	   if( iR->htMin()==200 && iR->nJetsMin()>=7 ){ // 40% for very-low-HT and NJ>=7 (due to JECs)
-	     
-	     if(doSimultaneousFit && includeCR)
-	       datacard << "llep_alpha_" << llepCR_name << " lnN - - " << 1.+0.4 << " - - -" << std::endl; 
-	     else
-	       datacard << "llep_alpha_" << llepCR_name << " lnN - - " << 1.+0.4 << " - " << std::endl;
-	     llep_systUp += 0.4*0.4;
-	     llep_systDn += 0.4*0.4;
-	   
-	   } else if( iR->nJetsMin()>=7 && iR->nBJetsMin()>=3 ){ // 15% for NJ>=7 and NB>=3 (due to b-tag SF)
+//	   // TF uncertainty
+//	   if( iR->htMin()==200 && iR->nJetsMin()>=7 ){ // 40% for very-low-HT and NJ>=7 (due to JECs)
+//	     
+//	     if(doSimultaneousFit && includeCR)
+//	       datacard << "llep_alpha_" << llepCR_name << " lnN - - " << 1.+0.4 << " - - -" << std::endl; 
+//	     else
+//	       datacard << "llep_alpha_" << llepCR_name << " lnN - - " << 1.+0.4 << " - " << std::endl;
+//	     llep_systUp += 0.4*0.4;
+//	     llep_systDn += 0.4*0.4;
+//	   
+//	   } else if( iR->nJetsMin()>=7 && iR->nBJetsMin()>=3 ){ // 15% for NJ>=7 and NB>=3 (due to b-tag SF)
+
+	   if( iR->nJetsMin()>=7 && iR->nBJetsMin()>=3 ){ // 18% for NJ>=7 and NB>=3 (due to b-tag SF)
 
 	     if(doSimultaneousFit && includeCR)
-	       datacard << "llep_alpha_" << llepCR_name << " lnN - - " << 1.+0.15 << " - - -" << std::endl;
+	       datacard << "llep_alpha_" << llepCR_name << " lnN - - " << 1.+0.18 << " - - -" << std::endl;
 	     else
-	       datacard << "llep_alpha_" << llepCR_name << " lnN - - " << 1.+0.15 << " - " << std::endl;
-             llep_systUp += 0.15*0.15;
-             llep_systDn += 0.15*0.15;
+	       datacard << "llep_alpha_" << llepCR_name << " lnN - - " << 1.+0.18 << " - " << std::endl;
+             llep_systUp += 0.18*0.18;
+             llep_systDn += 0.18*0.18;
 
 	   } else{ // 10% elsewhere
 	     
@@ -1298,7 +1316,7 @@ int main( int argc, char* argv[] ) {
 	  TH1D* this_signal      = this_signal3d_central->ProjectionX("mt2"     , iBinY, iBinY, iBinZ, iBinZ);
 	  TH1D* this_signal_syst = this_signal3d_central->ProjectionX("mt2_syst", iBinY, iBinY, iBinZ, iBinZ);
 	  
-	  if (doGenAverage) {
+	  if (doGenAverage && signals[isig]->get(*iR)->yield3d_genmet!=0) {
 	    TH3D* this_signal3d_central_genmet = signals[isig]->get(*iR)->yield3d_genmet;
 	    TH1D* this_signal_genmet = this_signal3d_central_genmet->ProjectionX("mt2_genmet", iBinY, iBinY, iBinZ, iBinZ);
 	    this_signal->Add(this_signal_genmet);
@@ -1330,7 +1348,7 @@ int main( int argc, char* argv[] ) {
 	    this_signal_crsl        = this_signal3d_crsl       ->ProjectionX("mt2_crsl", iBinY, iBinY, iBinZ, iBinZ);
 	    this_signal_alpha  = (TH1D*) signals[isig]->get(*iR)->yield_alpha->Clone();
 
-	    if (doGenAverage){
+	    if (doGenAverage && signals[isig]->get(*iR)->yield3d_crsl_genmet!=0){
 	      TH3D *this_signal3d_crsl_genmet = (TH3D*) signals[isig]->get(*iR)->yield3d_crsl_genmet->Clone();
 	      TH1D *this_signal_crsl_genmet = this_signal3d_crsl_genmet->ProjectionX("mt2_crsl", iBinY, iBinY, iBinZ, iBinZ);
 	      this_signal_crsl->Add(this_signal_crsl_genmet);

@@ -137,37 +137,47 @@ void MT2EstimateSigSyst::getShit( TFile* file, const std::string& path ) {
 
 void MT2EstimateSigSyst::print( std::ofstream& ofs_file, Float_t m1, Float_t m2, Int_t mt2_bin, float k, bool doGenAverage ){
 
-  TH1D* h_sig;
-  TH3D* h_sig3d;
-  h_sig3d = this->yield3d;
-  
-  if(doGenAverage){
-    h_sig3d->Add( (this->yield3d_genmet) );
-    h_sig3d->Scale(0.5);
-  }
-  
   int nBinsM=93;
   double binWidthM=25.;
   double binsM[nBinsM+1];
   for (int b=0; b<=nBinsM; ++b)
     binsM[b]=b*binWidthM;
 
-  std::cout << "Printing for m1 = " << m1 << ", m2 = " << m2 << std::endl;
+  int binY, binZ;
+
+  TH1D* h_sig;
+  TH3D* h_sig3d;
+
+  TH3D* h_sig3d_genmet;
+  TH1D* h_sig_genmet;
+
+  h_sig3d = this->yield3d;
 
   if( h_sig3d == 0 ){
 
     std::cout << "3d histogram does not exist, initializing empty histogram..." << std::endl;
-    h_sig3d = new TH3D("emptyHisto", "", nBinsM, binsM, nBinsM, binsM, nBinsM, binsM);
+    h_sig = new TH1D("emptyHisto", "", nBinsM, binsM);
+
+  }
+  else{
+    binY = h_sig3d->GetYaxis()->FindBin(m1);
+    binZ = h_sig3d->GetZaxis()->FindBin(m2);
+
+    h_sig = h_sig3d->ProjectionX("mt2_0", binY, binY, binZ, binZ);
+
+    if(doGenAverage && this->yield3d_genmet != 0){
+      h_sig3d_genmet = this->yield3d_genmet;
+      h_sig_genmet = h_sig3d_genmet->ProjectionX("mt2_genmet", binY, binY, binZ, binZ);
+      h_sig->Add( h_sig_genmet );
+      h_sig->Scale(0.5);
+    }
+
+    std::cout << "Printing for m1 = " << m1 << ", m2 = " << m2 << std::endl;
 
   }
 
-  int binY, binZ;
-  binY = h_sig3d->GetYaxis()->FindBin(m1);
-  binZ = h_sig3d->GetYaxis()->FindBin(m2);
-  h_sig = h_sig3d->ProjectionX("mt2_0", binY, binY, binZ, binZ);
-
-  Double_t error;
-  Double_t integral = h_sig->IntegralAndError(mt2_bin, mt2_bin, error);
+  Double_t error = h_sig->GetBinError(mt2_bin);
+  Double_t integral = h_sig->GetBinContent(mt2_bin);
 
   if(integral<0){
 

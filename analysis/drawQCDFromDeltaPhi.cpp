@@ -8,11 +8,13 @@
 #include "THStack.h"
 #include "TFile.h"
 #include "TGraphErrors.h"
+#include "TLatex.h"
 
 #include "../interface/MT2Config.h"
 #include "../interface/MT2Analysis.h"
 #include "../interface/MT2Region.h"
 #include "../interface/MT2Estimate.h"
+#include "../interface/MT2EstimateSyst.h"
 #include "../interface/MT2EstimateTree.h"
 #include "../interface/MT2DrawTools.h"
 
@@ -20,6 +22,17 @@
 
 bool closureTest = false;
 
+//float prescales[3] = {7000., 180.0, 60.0}; // 2015
+//float prescales[3] = { 973., 125.0, 31.5}; // 211/ipb
+//float prescales[3] = {1046., 137.9, 34.7}; // 589/ipb
+//float prescales[3] = {1198., 160.8, 40.5}; // 804/ipb
+//float prescales[3] = {2100., 246., 61.5}; // 2.1 /fb
+//float prescales[3] = {2644., 298., 74.7}; // 4.0/fb
+//float prescales[3] = {1534., 298., 74.7}; // 4.0/fb (HLT_HT 125 OR 200)
+//float prescales[3] = {2868., 321., 80.4}; // all RunB 5.4/fb
+//float prescales[3] = {3484., 344.6, 86.2}; // 5.89 (B) + 1.76 (C) fb-1 (JECv6, eta2.4)
+//float prescales[3] = {3721., 353.0, 88.3}; // 5.89 (B) + 2.65 (C) + 0.65 (D) fb-1
+float prescales[3] = {3753., 354.4, 88.6}; // 5.94 (B) + 2.65 (C) + 4.33 (D) fb-1
 
 
 void compareFractions( const MT2Config& cfg, const std::string& outputdir, const std::string& dataFile, const std::string& analysisName, const std::string& xaxisName, const std::string& yaxisName, bool logPlot, const std::string& postfix="" );
@@ -30,7 +43,7 @@ int main( int argc, char* argv[] ) {
 
 
   if( argc<2 ) {
-    std::cout << "USAGE: ./drawQCDFromDeltaPhi [configFileName]" << std::endl;
+    std::cout << "USAGE: ./drawQCDFromDeltaPhi [configFileName] [closureTest=true]" << std::endl;
     std::cout << "Exiting." << std::endl;
     exit(11);
   }
@@ -42,15 +55,13 @@ int main( int argc, char* argv[] ) {
   MT2Config cfg(configFileName);
 
 
-  bool useMC = true;
 
   if( argc>2 ) {
-
-    std::string mc_or_data = std::string(argv[2]); 
-    if( mc_or_data=="mc" ) mc_or_data="MC";
-    if( mc_or_data=="MC" ) useMC = true;
-    else useMC=false;
-
+    std::string closurestr(argv[2]);
+    if( closurestr=="closureTest" || closurestr=="true" ) {
+      closureTest=true;
+      std::cout << "-> Running closure test in validation region" << std::endl;
+    }
   } 
 
 
@@ -59,19 +70,14 @@ int main( int argc, char* argv[] ) {
   if( closureTest ) qcdESTdir += "/test";
   std::string outputdir = qcdCRdir;
   if( closureTest ) outputdir += "/test";
-  std::string fitsDir = outputdir;
-  if( useMC ) fitsDir = fitsDir + "/fitsMC";
-  else        fitsDir = fitsDir + "/fitsData";
-  system( Form("mkdir -p %s", fitsDir.c_str() ));
-
 
   std::string mcFile   = qcdESTdir + "/qcdEstimateMC.root";
   std::string dataFile = qcdESTdir + "/qcdEstimateData.root";
 
 
-  compareFractions( cfg, outputdir, dataFile, "f_jets", "Number of Jets"  , "F_{jets}"   , false           );
-  compareFractions( cfg, outputdir, dataFile, "f_jets", "Number of Jets"  , "F_{jets}"   , false , "_noPS" );
-  compareFractions( cfg, outputdir, dataFile, "r_hat" , "Number of b-Jets", "#hat{r}_{b}", true            );
+  compareFractions( cfg, outputdir, dataFile, "f_jets", "N_{j}"  , "f_{j}", false           );
+  compareFractions( cfg, outputdir, dataFile, "f_jets", "N_{j}"  , "f_{j}", false , "_noPS" );
+  compareFractions( cfg, outputdir, dataFile, "r_hat" , "N_{b}"  , "r_{b}", true            );
 
 
   MT2Analysis<MT2EstimateTree>* qcdTree_mc   = MT2Analysis<MT2EstimateTree>::readFromFile( qcdCRdir + "/mc.root",   "qcdCRtree" );
@@ -83,12 +89,12 @@ int main( int argc, char* argv[] ) {
   MT2Analysis<MT2EstimateTree>* data  ;
   MT2Analysis<MT2EstimateTree>* nonQCD;
   if( closureTest ) { // in validation region we also use id==152
-    mcTruth = MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( "mcTruth", cfg.regionsSet(), qcdTree_mc  , "id>=152 && id<200 && mt2>100 && mt2<200. && deltaPhiMin>0.3", 4, 100, 200 ); // signal region for mcTruth
-    data    = MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( "data"   , cfg.regionsSet(), qcdTree_data, "id==1   && mt2>100. && mt2<200. && deltaPhiMin>0.3"         , 4, 100, 200 ); // signal region for data
-    nonQCD  = MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( "nonQCD" , cfg.regionsSet(), qcdTree_mc  , "id>=300 && mt2>100. && mt2<200. && deltaPhiMin>0.3"         , 4, 100, 200 ); // signal region for nonQCD mcTruth
+    mcTruth = MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( "mcTruth", cfg.regionsSet(), qcdTree_mc  , 1, 100, 200 , "(id>150&&(id>151||ht<450)&&(id>152||ht<575)&&(id>153||ht<1000)&&(id>154||ht<1500)) && id<200 && mt2>100 && mt2<200. && deltaPhiMin>0.3"); // signal region for mcTruth
+    data    = MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( "data"   , cfg.regionsSet(), qcdTree_data, 1, 100, 200 , "id==1   && mt2>100. && mt2<200. && deltaPhiMin>0.3"         ); // signal region for data
+    nonQCD  = MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( "nonQCD" , cfg.regionsSet(), qcdTree_mc  , 1, 100, 200 , "id>=300 && mt2>100. && mt2<200. && deltaPhiMin>0.3"         ); // signal region for nonQCD mcTruth
   }
   else
-    mcTruth = MT2EstimateTree::makeAnalysisFromInclusiveTree( "mcTruth", cfg.regionsSet(), qcdTree_mc  , "id>=153 && id<200 && mt2>200. && deltaPhiMin>0.3" ); // signal region for mcTruth
+    mcTruth = MT2EstimateTree::makeAnalysisFromInclusiveTree( "mcTruth", cfg.regionsSet(), qcdTree_mc  , "(id>150&&(id>151||ht<450)&&(id>152||ht<575)&&(id>153||ht<1000)&&(id>154||ht<1500)) && id<200 && mt2>200. && deltaPhiMin>0.3" ); // signal region for mcTruth
 
 
   MT2Analysis<MT2Estimate>* estimateMC     = MT2Analysis<MT2Estimate>::readFromFile( mcFile  , "qcdEstimate" );
@@ -143,19 +149,33 @@ void compareFractions( const MT2Config& cfg, const std::string& outputdir, const
     c1->cd();
     if( logPlot ) c1->SetLogy();
 
-    //float yMax_data = h1_data->GetMaximum()/h1_data->Integral();
-    //float yMax = 1.6*yMax_data;
     float yMin = (logPlot) ? h1_mc->GetMinimum()/7. : 0.;
     float yMax = 1.2;
     TH2D* h2_axes = new TH2D( "axes", "", 10, h1_mc->GetXaxis()->GetXmin(), h1_mc->GetXaxis()->GetXmax(), 10, yMin, yMax );
+    h2_axes->GetXaxis()->SetTitleSize(0.06);
     h2_axes->SetXTitle( xaxisName.c_str() );
-    h2_axes->SetYTitle( yaxisName.c_str() );
+    h2_axes->SetYTitle( "" );
     h2_axes->Draw();
+    TLatex *ytitle = new TLatex(0.02,0.92,yaxisName.c_str());
+    ytitle->SetNDC();
+    ytitle->SetTextFont(42);
+    ytitle->SetTextSize(0.065);
+    if (yaxisName!="f_{j}"){
+      ytitle->Draw();
+    }
+    else{
+      ytitle->SetTextFont(12);
+      ytitle->DrawLatexNDC(0.026,0.92, "f");
+      ytitle->SetTextFont(42);
+      ytitle->DrawLatexNDC(0.04,0.92, "_{j}");
+    }
 
     h1_mc->SetLineColor(kRed);
     h1_mc->SetLineWidth(2);
 
     TH1D* h1_mcBand = MT2DrawTools::getMCBandHisto( h1_mc );
+    h1_mcBand->SetLineColor(kRed);
+    h1_mcBand->SetLineWidth(2);
 
     h1_data->SetMarkerStyle(20);
     h1_data->SetMarkerSize(1.6);
@@ -168,20 +188,36 @@ void compareFractions( const MT2Config& cfg, const std::string& outputdir, const
 
     TPaveText* labelTop = MT2DrawTools::getLabelTop( cfg.lumi() );
     labelTop->Draw("same");
+    // //TPaveText* labelCMS = MT2DrawTools::getLabelCMS();
+    // //TPaveText* labelCMS = MT2DrawTools::getLabelCMS("CMS Unpublished");
+    // TPaveText* labelCMS = MT2DrawTools::getLabelCMS("CMS Supplementary");
+    // labelCMS->Draw("same");
+    TPaveText* labelCMS = MT2DrawTools::getLabelCMS("CMS Preliminary");
+    labelCMS->Draw("same");
+
+    // TLatex *arxiv = new TLatex(); arxiv->SetNDC();
+    // arxiv->SetTextSize(0.035); arxiv->SetTextFont(42);
+    // if (analysisName=="f_jets")
+    //   arxiv->DrawLatex(0.18,0.88,"arXiv:1603.04053");
+    // else
+    //   arxiv->DrawLatex(0.18,0.2,"arXiv:1603.04053");
+
+    // // TPaveText* labelTop = MT2DrawTools::getLabelTop( "CMS Preliminary, 2.2 fb^{-1} at #sqrt{s} = 13 TeV" );
+    // // labelTop->Draw("same");
 
     std::vector<std::string> regionNiceNames = iR->getNiceNames();
     std::string niceJetName;
     if( iR->nJetsMax()<0 ) 
-      niceJetName = std::string( Form( "N(jets) #geq %d", iR->nJetsMin() ) );
+      niceJetName = std::string( Form( "N_{j} #geq %d", iR->nJetsMin() ) );
     else 
-      niceJetName = std::string( Form( "%d #leq N(jets) #leq %d", iR->nJetsMin(), iR->nJetsMax() ) );
+      niceJetName = std::string( Form( "%d #leq N_{j} #leq %d", iR->nJetsMin(), iR->nJetsMax() ) );
 
     std::string legendTitle = (analysisName=="f_jets") ? regionNiceNames[0].c_str() : niceJetName;
-    TLegend* legend = new TLegend( 0.55, 0.7, 0.9, 0.9, legendTitle.c_str() );
+    TLegend* legend = new TLegend( 0.55, 0.72, 0.9, 0.92, legendTitle.c_str() );
     legend->SetFillColor(0);
     legend->SetTextSize(0.038);
     legend->AddEntry( h1_data, "Data", "PL");
-    legend->AddEntry( h1_mc, "MC", "L");
+    legend->AddEntry( h1_mcBand, "Simulation", "FL");
     legend->Draw("same");
 
     gPad->RedrawAxis();
@@ -189,6 +225,7 @@ void compareFractions( const MT2Config& cfg, const std::string& outputdir, const
     c1->SaveAs( Form("%s/%s_%s%s.eps", outputdir.c_str(), analysisName.c_str(), iR->getName().c_str(), postfix.c_str()) );
     c1->SaveAs( Form("%s/%s_%s%s.pdf", outputdir.c_str(), analysisName.c_str(), iR->getName().c_str(), postfix.c_str()) );
     c1->SaveAs( Form("%s/%s_%s%s.png", outputdir.c_str(), analysisName.c_str(), iR->getName().c_str(), postfix.c_str()) );
+    c1->SaveAs( Form("%s/%s_%s%s.C"  , outputdir.c_str(), analysisName.c_str(), iR->getName().c_str(), postfix.c_str()) );
 
     delete c1;
     delete h2_axes;
@@ -278,12 +315,19 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
       TH1D* h_nonQCD;
       if ( doClosureTestData ){ 
 	float ps = 1.;
-	if     ( iMT2->htMin() < 300. ) ps = 7000.; // prescale
-	else if( iMT2->htMin() < 500. ) ps =  180.;
-	else if( iMT2->htMin() < 600. ) ps =   60.;
+	if     ( iMT2->htMin() < 300. ) ps = prescales[0];
+	else if( iMT2->htMin() < 500. ) ps = prescales[1];
+	else if( iMT2->htMin() < 600. ) ps = prescales[2];
+
+	// apply scale factors
+	float sf = 1.;  // 2015 numbers from lost lepton from Dominick. Confirmed in zll from Myriam
+	if     ( iMT2->htMin() < 500.  ) sf = 0.97; // prescale
+	else if( iMT2->htMin() < 1000. ) sf = 0.85;
+	else if( iMT2->htMin() < 1500. ) sf = 0.82;
+	else                             sf = 0.57;
 
 	h_nonQCD = nonQCD->get(*iMT2)->yield;
-	h_nonQCD->Scale(lumi/ps);
+	h_nonQCD->Scale(lumi/ps*sf);
 	//h_estimate->Add(nonQCD->get(*iMT2)->yield); // add non-QCD mc to estimate. todo: make stack
 
 	h_estimate->SetMarkerStyle(1);
@@ -291,8 +335,7 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
 	h_nonQCD  ->SetLineColor  (nonQCD  ->getColor());
 	h_nonQCD  ->SetFillColor  (nonQCD  ->getColor());
 	h_nonQCD  ->SetMarkerSize (0);
-	if ( iMT2->htMin() >300 ) // don't fill for the VLHT
-	  stack->Add(h_nonQCD);
+	stack->Add(h_nonQCD);
 	stack->Add(h_estimate);
       }
 
@@ -310,11 +353,13 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
       double int_nonQCD=0., err_nonQCD=0.;
       if ( doClosureTestData ) {
 	int_nonQCD = h_nonQCD->IntegralAndError(1, nBins+1, err_nonQCD);
+
+	// add 50% uncertainty on MC
+	err_nonQCD += 0.5 * int_nonQCD; 
  
-	if ( iMT2->htMin()>300 ){
-	  h_nonQCD_tot->SetBinContent(iRegion, int_nonQCD);
-	  h_nonQCD_tot->SetBinError  (iRegion, err_nonQCD);
-	}
+	h_nonQCD_tot->SetBinContent(iRegion, int_nonQCD);
+	h_nonQCD_tot->SetBinError  (iRegion, err_nonQCD);
+
 	h_nonQCD_tot->GetXaxis()->SetBinLabel( iRegion, niceNames[1].c_str() );
       }
 
@@ -411,7 +456,6 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
       else
 	h_estimate->Draw("Pe same");
       h_mcTruth->Draw("Pe same");
-      //      bgStack.Draw("histoE, same");
 
 
       TPaveText* labelTop;
@@ -420,6 +464,11 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
       else
 	labelTop = MT2DrawTools::getLabelTopSimulation();
       labelTop->Draw("same");
+      TPaveText* labelCMS = MT2DrawTools::getLabelCMS("CMS Preliminary");
+      labelCMS->Draw("same");
+
+      //TPaveText* labelCMS = MT2DrawTools::getLabelCMS();
+      //labelCMS->Draw("same");
 
       gPad->RedrawAxis();
 
@@ -497,7 +546,7 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
     stack_tot->Add( h_estimate_tot );
   }
   
-  TCanvas* c2 = new TCanvas("c2", "", 1200, 600);
+  TCanvas* c2 = new TCanvas("c2", "", 1100, 600);
   c2->cd();
   
   TPad *pad1 = new TPad("pad1","pad1",0,0.3-0.1,1,1);
@@ -528,8 +577,7 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
   h_mcTruth_tot->GetYaxis()->SetRangeUser(yMin, yMax);
   h_mcTruth_tot->GetXaxis()->LabelsOption("v");
 
-  if ( doClosureTestData )
-    h_mcTruth_tot->GetXaxis()->SetRange(12,55);
+  h_mcTruth_tot->GetYaxis()->SetTitleOffset(0.95);   h_mcTruth_tot->GetYaxis()->SetLabelSize(0.042); 
 
   h_mcTruth_tot->Draw("PE");
 
@@ -541,18 +589,19 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
   else
     h_estimate_tot->Draw( "pe,same" );
 
-  TLegend* legend = new TLegend( 0.18, 0.7, 0.32, 0.82 );
+  TLegend* legend = new TLegend( 0.163, 0.67, 0.3, 0.79 );
   legend->SetTextSize(0.038);
   legend->SetTextFont(42);
   legend->SetFillColor(0);
   if ( doClosureTestData ) {
-    legend->AddEntry( h_nonQCD_tot  , "non-QCD MC" , "F" );
-    legend->AddEntry( h_estimate_tot, "data-driven", "F" );
-    legend->AddEntry( h_mcTruth_tot , "data"       , "PL" );
+    legend->AddEntry( h_nonQCD_tot  , "Non-multijet simulation" , "F" );
+    //legend->AddEntry( h_estimate_tot, "Data-driven", "F" );
+    legend->AddEntry( h_estimate_tot, "Multijet prediction", "F" );
+    legend->AddEntry( h_mcTruth_tot , "Data"       , "PL" );
   }
   else{
-    legend->AddEntry( h_estimate_tot, "data-driven", "PL" );
-    legend->AddEntry( h_mcTruth_tot , "QCD MC"     , "PL" );
+    legend->AddEntry( h_estimate_tot, "Data-driven", "PL" );
+    legend->AddEntry( h_mcTruth_tot , "Multijet simulation"     , "PL" );
   }
 
   legend->Draw("same");
@@ -564,6 +613,15 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
   else
     labelTop = MT2DrawTools::getLabelTopSimulation();
   labelTop->Draw("same");
+  // //TPaveText* labelCMS = MT2DrawTools::getLabelCMS();
+  // //TPaveText* labelCMS = MT2DrawTools::getLabelCMS("CMS Unpublished");
+  // TPaveText* labelCMS = MT2DrawTools::getLabelCMS("CMS Supplementary");
+  TPaveText* labelCMS = MT2DrawTools::getLabelCMS("CMS Preliminary");
+  labelCMS->Draw("same");
+
+  // TLatex *arxiv = new TLatex(); arxiv->SetNDC();
+  // arxiv->SetTextSize(0.035); arxiv->SetTextFont(42);
+  // arxiv->DrawLatex(0.17,0.81,"arXiv:1603.04053");
   
   TLine* lHT[4];
   for( int iHT=1; iHT < 5; iHT++ ){
@@ -572,28 +630,21 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
     lHT[iHT-1]->SetLineStyle(3);
     lHT[iHT-1]->SetLineWidth(2);
 
-    if ( doClosureTestData && iHT==1) continue;
     lHT[iHT-1]->Draw("same");
   }
 
   int nHTRegions = 5;
   std::vector< std::string > htRegions;
-  if ( !doClosureTestData )
-    htRegions.push_back("very low H_{T}");
-  htRegions.push_back("low H_{T}");
-  htRegions.push_back("medium H_{T}");
-  htRegions.push_back("high H_{T}");
-  htRegions.push_back("extreme H_{T}");
+  htRegions.push_back("H_{T} [200,450] GeV");
+  htRegions.push_back("H_{T} [450,575] GeV");
+  htRegions.push_back("H_{T} [575,100] GeV");
+  htRegions.push_back("H_{T} [1000,1500] GeV");
+  htRegions.push_back("H_{T} > 1500 GeV");
   
   TPaveText* htBox[nHTRegions];
   for( int iHT = 0; iHT < nHTRegions; ++iHT){
     
-    if ( !doClosureTestData )
-      htBox[iHT] = new TPaveText(0.20+0.15*iHT, 0.9-0.06, 0.32+0.15*iHT, 0.9, "brNDC");
-    else {
-      htBox[iHT] = new TPaveText(0.16+0.2*iHT, 0.9-0.06, 0.34+0.2*iHT, 0.9, "brNDC");
-      if ( iHT==nHTRegions-1 ) continue;
-    }
+    htBox[iHT] = new TPaveText(0.17+0.16*iHT, 0.9-0.06, 0.3+0.16*iHT, 0.9, "brNDC");
 
     htBox[iHT]->AddText( htRegions[iHT].c_str() );
     
@@ -636,18 +687,14 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
   TH2D* h2_axes_ratio = MT2DrawTools::getRatioAxes( 0, MT2Regions.size(), -3., 3.);
   h2_axes_ratio->SetYTitle("Pull");
 
-  TLine* LineCentral = new TLine(!doClosureTestData ? 0 : 11, 0, MT2Regions.size(), 0);
+  TLine* LineCentral = new TLine(0, 0, MT2Regions.size(), 0);
   LineCentral->SetLineColor(1);
-
-  if ( doClosureTestData )
-    h2_axes_ratio->GetXaxis()->SetRangeUser(12,55);
 
   h2_axes_ratio->Draw("");
   LineCentral->Draw("same");
   h_Ratio->Draw("pe,same");
 
   for( int iHT=1; iHT < 5; iHT++ ){
-    if ( doClosureTestData && iHT==1) continue;
     lHT[iHT-1]->Draw("same");
   }
 
@@ -665,18 +712,22 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
   pad2->cd();
   pad2->Clear();
 
+  float yMax_ratio = 2.0;
+  float yMin_ratio = 0.;
+
   delete h2_axes_ratio;
-  h2_axes_ratio = MT2DrawTools::getRatioAxes( 0, MT2Regions.size(), 0., 2.);
+  h2_axes_ratio = MT2DrawTools::getRatioAxes( 0, MT2Regions.size(),  yMin_ratio, yMax_ratio);
   h2_axes_ratio->SetYTitle(!doClosureTestData ? "Pred. / MC" : "Data / Pred.");
-  if ( doClosureTestData )
-    h2_axes_ratio->GetXaxis()->SetRangeUser(12,55);
+  h2_axes_ratio->GetYaxis()->SetTitleSize(0.18);
+  h2_axes_ratio->GetYaxis()->SetTitleOffset(0.26);
+  h2_axes_ratio->GetYaxis()->SetLabelSize(0.17);
   h2_axes_ratio->Draw("");
 
   TH1D *h_Band = MT2DrawTools::getBandAtOne( doClosureTestData ? ((TH1D*)stack_tot->GetStack()->Last()) : h_mcTruth_tot );
 
   h_Band->Draw("e2same");
 
-  TLine* lineOne = new TLine(!doClosureTestData ? 0 : 11, 1., MT2Regions.size(), 1.);
+  TLine* lineOne = new TLine(0, 1., MT2Regions.size(), 1.);
   lineOne->SetLineColor(1);
   lineOne->Draw("same");
 
@@ -697,7 +748,6 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
 
 
   for( int iHT=1; iHT < 5; iHT++ ){
-    if ( doClosureTestData && iHT==1) continue;
     lHT[iHT-1]->Draw("same");
   }
 
@@ -710,11 +760,6 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
   c2->SaveAs( Form("%s/C/%s.C"      , outputdir.c_str(), filename.Data()) );
   c2->SaveAs( Form("%s/root/%s.root", outputdir.c_str(), filename.Data()) );
 
-
-  // if ( scaleEst==1.0 )
-  //   h_estimate_tot->SaveAs("QCDdataDriven_estimate_dPhi_data.root");
-  // else 
-  //   h_estimate_tot->SaveAs("QCDdataDriven_estimate_dPhi_mc.root");
 
   TCanvas* c3 = new TCanvas("c3", "", 600, 600);
   c3->cd();
