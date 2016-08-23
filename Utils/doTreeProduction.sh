@@ -6,7 +6,7 @@
 # env -i X509_USER_PROXY=~/.x509up_u`id -u` gfal-ls gsiftp://storage01.lcg.cscs.ch/pnfs/lcg.cscs.ch/cms/trivcat/store/user/mangano
 
 # NB: Insert path starting from /store/user/... The rest will be added automatically
-inputProductionFolder="/store/user/mangano/crab/MT2_8_0_12/prodAug20_runF_v1/"
+inputProductionFolder="/store/user/mangano/crab/MT2_8_0_12/prodAug20_runF_forQCD_v1/"
 
 
 postFix=""
@@ -38,7 +38,7 @@ inputPU="MyDataPileupHistogram.root"
 PUvar="nTrueInt"
 GoldenJSON="$PWD/gold_runF.txt"  #produced, for example for runE, with: filterJSON.py --min=276831 --max=277420 --output=gold_runE.txt gold_json.txt
 SilverJSON=$GoldenJSON
-doSkimmingPruning=1 #1 as default; 0 for QCD-specific datasets, which are already skimmed at heppy level
+doSkimmingPruning=0 #1 as default; 0 for QCD-specific datasets, which are already skimmed at heppy level
 applyJSON=1     #0 for MC
 doSilver=0      #0 for MC
 doFilterTxt=0   #0 for MC
