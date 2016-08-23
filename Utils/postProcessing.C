@@ -42,6 +42,8 @@ int postProcessing(std::string inputString="input",
 		   std::string crabExt="",
 		   std::string inputPU="",
 		   std::string PUvar="nTrueInt",
+		   std::string goldenjson_file="goodruns_golden.txt",
+		   std::string silverjson_file="goodruns_silver.txt",
 		   bool applyJSON=true,
 		   bool applySF=true,
 		   bool doSilver=false,
@@ -115,6 +117,8 @@ int postProcessing(std::string inputString,
 		   std::string crabExt,
 		   std::string inputPU,
 		   std::string PUvar,
+		   std::string goldenjson_file,
+		   std::string silverjson_file,
 		   bool applyJSON,
 		   bool applySF,
 		   bool doSilver,
@@ -142,9 +146,6 @@ int postProcessing(std::string inputString,
     }
   }
 
-  //bool applyJSON=true;
-  const char* goldenjson_file = "goodruns_golden.txt";
-  const char* silverjson_file = "goodruns_silver.txt";
 
   GoodRun golden;
   GoodRun silver;
@@ -153,10 +154,10 @@ int postProcessing(std::string inputString,
     //std::cout << gSystem->pwd() << std::endl;
     //gSystem->Load("goodrun_cc");
     std::cout << "Loading golden json file: " << goldenjson_file << std::endl;
-    golden.set_goodrun_file(goldenjson_file);
+    golden.set_goodrun_file(goldenjson_file.c_str());
     if (doSilver) {
       std::cout << "Loading silver json file: " << silverjson_file << std::endl;
-      silver.set_goodrun_file(silverjson_file);
+      silver.set_goodrun_file(silverjson_file.c_str());
     }
   }
 
