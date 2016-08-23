@@ -1,25 +1,26 @@
 #!/bin/bash
 
 # --- configuration (consider to move this into a separate file) ---
-#inputProductionFolder="/store/user/mangano/crab/MT2_8_0_11/prodJuly23_runD_forZll_v1/"
-#inputProductionFolder="/store/user/mangano/crab/MT2_8_0_11/prodJuly21_runD_forZll_v1/"
+
+#to list files on T2: 
+# env -i X509_USER_PROXY=~/.x509up_u`id -u` gfal-ls gsiftp://storage01.lcg.cscs.ch/pnfs/lcg.cscs.ch/cms/trivcat/store/user/mangano
 
 # NB: Insert path starting from /store/user/... The rest will be added automatically
-inputProductionFolder="/store/user/mangano/crab/MT2_8_0_11/prodJuly19_runD_276311-276811_v1/"
+inputProductionFolder="/store/user/mangano/crab/MT2_8_0_12/prodAug20_runF_v1/"
 
 
-#postFix=""
-postFix="_checkLostFiles_v2"
+postFix=""
+#postFix="_chunksCreationFixed"
 
 treeName="mt2"
 
-# For T2
-#site="lcg.cscs.ch"
-#se="storage01"
-
-# For T3
-site="psi.ch"
-se="t3dcachedb03"
+# For T2/T3 inputs:
+#
+site="lcg.cscs.ch"
+se="storage01"
+# or alternatively:
+#site="psi.ch"
+#se="t3dcachedb03"
 
 listOfSamplesFile="postProcessing2016-Data.cfg"
 #listOfSamplesFile="postProcessing2016-MC.cfg"
@@ -35,7 +36,7 @@ fileExt="_post.root"
 isCrab=1
 inputPU="MyDataPileupHistogram.root"
 PUvar="nTrueInt"
-GoldenJSON="$PWD/gold_runD.txt"
+GoldenJSON="$PWD/gold_runF.txt"  #produced, for example for runE, with: filterJSON.py --min=276831 --max=277420 --output=gold_runE.txt gold_json.txt
 SilverJSON=$GoldenJSON
 doSkimmingPruning=1 #1 as default; 0 for QCD-specific datasets, which are already skimmed at heppy level
 applyJSON=1     #0 for MC
@@ -236,10 +237,10 @@ if [[ "$1" = "post" ]]; then
 
 
 #xrdfs t3dcachedb.psi.ch ls $outputFolder &> ./checkOutputDir
-env -i X509_USER_PROXY=~/.x509up_u`id -u` gfal-ls ${gfalProtocol}://t3se01.psi.ch$outputFolder &> ./checkOutputDir
+env -i X509_USER_PROXY=~/.x509up_u`id -u` gfal-ls ${gfalProtocol}://t3se01.psi.ch$outputFolder &> /tmp/checkOutputDir
 
 # --- check the existence of outputFolder on SE ---
-if [ -n "`cat ./checkOutputDir|grep 'No such file or directory'`"  ]; then
+if [ -n "`cat /tmp/checkOutputDir|grep 'No such file or directory'`"  ]; then
     :
 else
     echo "WARNING: output directory " $outputFolder "already exists."
@@ -265,12 +266,12 @@ fi
 
 
 semkdir ${gfalProtocol}://t3se01.psi.ch/$outputFolder
-python $PWD/convertGoodRunsList_JSON.py $GoldenJSON >& goodruns_golden.txt
+python $PWD/convertGoodRunsList_JSON.py $GoldenJSON >& $jobsLogsFolder/goodruns_golden.txt
 secp file://$GoldenJSON ${gfalProtocol}://t3se01.psi.ch/$outputFolder/
 
 if [ $doSilver -eq 1 ]; then
     secp file://$SilverJSON ${gfalProtocol}://t3se01.psi.ch/$outputFolder/
-    python $PWD/convertGoodRunsList_JSON.py $SilverJSON >& goodruns_silver.txt
+    python $PWD/convertGoodRunsList_JSON.py $SilverJSON >& $jobsLogsFolder/goodruns_silver.txt
 fi
 
 echo "Location of log files is: " $jobsLogsFolder
@@ -334,9 +335,9 @@ do
     #also this should NEVER be done for MC as some scale factors need normalization
     #unless you did the preprocessing
 
-    fileList=inputChunkList.txt
+    fileList=$jobsLogsFolder/inputChunkList.txt
 
-    if [ -e  inputChunkList.txt ]; then
+    if [ -e  $fileList ]; then
 	echo "deleting the old file list"
 	rm $fileList
     fi;
@@ -362,7 +363,7 @@ do
     fi;
     
 
-    numFiles=$(wc -l inputChunkList.txt | awk '{print $1}')
+    numFiles=$(wc -l $fileList | awk '{print $1}')
     echo "number of files = " $numFiles
     
     #BM: this is only for MC with extension. I've not fixed this for T2 yet. Do the same as lines above
@@ -383,7 +384,8 @@ do
 	fi;
     fi;
 
-    numFiles=$(wc -l inputChunkList.txt | awk '{print $1}')
+    #numFiles=$(wc -l inputChunkList.txt | awk '{print $1}')
+    numFiles=$(wc -l $fileList | awk '{print $1}')
     echo "number of files = " $numFiles
 
     maxNfiles=1000
@@ -400,20 +402,20 @@ do
     fi;
     
 
-    while (( (( (( $numFiles + 1 )) > (($counter * $maxNfiles)) )) || $(($counter < 0 )) )); do 
+    while (( (( (( $numFiles  )) > (($counter * $maxNfiles)) )) || $(($counter < 0 )) )); do 
 
-        counterFile=chunkPart_${name}_${counter}.txt
+        counterFile=$jobsLogsFolder/chunkPart_${name}_${counter}.txt
 
         ##the input file list for the current range
 	if [[ $counter -gt -1 ]]; then
 	    echo "running on chunks $((counter*maxNfiles+1)) to $(((counter+1)*maxNfiles))"
- 	    sed -n $((counter*maxNfiles+1)),$(((counter+1)*maxNfiles))p  inputChunkList.txt > chunkPart_${name}_${counter}.txt
+ 	    sed -n $((counter*maxNfiles+1)),$(((counter+1)*maxNfiles))p  $fileList > $jobsLogsFolder/chunkPart_${name}_${counter}.txt
 	    if [ "$site" == "psi.ch" ]; then
-		sed -e "s#^#dcap://t3se01.psi.ch:22125/#" chunkPart_${name}_$counter.txt > chunkPart_${name}_${counter}_dcap.txt
+		sed -e "s#^#dcap://t3se01.psi.ch:22125/#" $jobsLogsFolder/chunkPart_${name}_$counter.txt > $jobsLogsFolder/chunkPart_${name}_${counter}_dcap.txt
 	    else
-		sed -e "s#^#root://$host/#" chunkPart_${name}_$counter.txt > chunkPart_${name}_${counter}_dcap.txt
+		sed -e "s#^#root://$host/#" $jobsLogsFolder/chunkPart_${name}_$counter.txt > $jobsLogsFolder/chunkPart_${name}_${counter}_dcap.txt
 	    fi
-	    mv chunkPart_${name}_${counter}_dcap.txt chunkPart_${name}_${counter}.txt
+	    mv $jobsLogsFolder/chunkPart_${name}_${counter}_dcap.txt $jobsLogsFolder/chunkPart_${name}_${counter}.txt
 	fi;
 
 	echo "Submitting the job for part" $counter; 
@@ -421,11 +423,11 @@ do
 	#if [[ ${doPreProc} == 0 ]]; then
 	if [[ $counter == -1 ]]; then
 	    if [ "$site" == "psi.ch" ]; then
-		sed -e "s#^#dcap://t3se01.psi.ch:22125/#" inputChunkList.txt > temp_${name}_${counter}_dcap.txt
+		sed -e "s#^#dcap://t3se01.psi.ch:22125/#" $jobsLogsFolder/inputChunkList.txt > $jobsLogsFolder/temp_${name}_${counter}_dcap.txt
 	    else
-    		sed -e "s#^#root://$host/#" inputChunkList.txt > temp_${name}_${counter}_dcap.txt
+    		sed -e "s#^#root://$host/#" $jobsLogsFolder/inputChunkList.txt > $jobsLogsFolder/temp_${name}_${counter}_dcap.txt
 	    fi
-	    mv temp_${name}_${counter}_dcap.txt chunkPart_${name}_${counter}.txt
+	    mv $jobsLogsFolder/temp_${name}_${counter}_dcap.txt $jobsLogsFolder/chunkPart_${name}_${counter}.txt
 	fi;
 
 	counterName=${name}_${counter};
@@ -490,9 +492,9 @@ mkdir -p $workingFolder
 
 semkdir ${gfalProtocol}://t3se01.psi.ch/$outputFolder
 
-echo "postProcessing(\"$name\",\"$counterFile\",\"$outputFile\",\"$treeName\",$filter,$kfactor,$xsec,$id,\"$crabExt\",\"$inputPU\",\"$PUvar\",$applyJSON,$doAllSF,$doSilver,\"$preProcFile\"); gSystem->Exit(0);"
+echo "postProcessing(\"$name\",\"$counterFile\",\"$outputFile\",\"$treeName\",$filter,$kfactor,$xsec,$id,\"$crabExt\",\"$inputPU\",\"$PUvar\",\"$jobsLogsFolder/goodruns_golden.txt\",\"$jobsLogsFolder/goodruns_silver.txt\",$applyJSON,$doAllSF,$doSilver,\"$preProcFile\"); gSystem->Exit(0);"
 
-echo "gSystem->Load(\"goodrunClass_cc.so\");  gSystem->Load(\"BTagCalibrationStandalone_cc.so\"); gROOT->LoadMacro(\"postProcessing.C\"); postProcessing(\"$name\",\"$counterFile\",\"$outputFile\",\"$treeName\",$filter,$kfactor,$xsec,$id,\"$crabExt\",\"$inputPU\",\"$PUvar\",$applyJSON,$doAllSF,$doSilver,\"$preProcFile\"); gSystem->Exit(0);" |root.exe -b -l ;
+echo "gSystem->Load(\"goodrunClass_cc.so\");  gSystem->Load(\"BTagCalibrationStandalone_cc.so\"); gROOT->LoadMacro(\"postProcessing.C\"); postProcessing(\"$name\",\"$counterFile\",\"$outputFile\",\"$treeName\",$filter,$kfactor,$xsec,$id,\"$crabExt\",\"$inputPU\",\"$PUvar\",\"$jobsLogsFolder/goodruns_golden.txt\",\"$jobsLogsFolder/goodruns_silver.txt\",$applyJSON,$doAllSF,$doSilver,\"$preProcFile\"); gSystem->Exit(0);" |root.exe -b -l ;
 
 
 
@@ -553,6 +555,14 @@ EOF
 
     done;
 
+    ### BM: re-check logic of chunks creation. 
+    #rm -f /tmp/testChunks
+    #for x in $jobsLogsFolder/chunkPart_${name}_*.txt; do cat $x >> /tmp/testChunks; done;    
+    #echo "number files in inputList, sum of chuncks: "
+    #cat $fileList |wc -l
+    #cat /tmp/testChunks |wc -l
+
+
 done < $listOfSamplesFile
 
 
@@ -605,15 +615,10 @@ if [[ "$1" = "addISR" ]]; then
 fi
 
 if [[ "$1" = "clean" ]]; then
-    rm -f inputChunkList.txt;
     rm -f postProcessing_C*;
-    rm -f chunkPart_*.txt;
-    rm -f inputChunkList.txt;
-    rm -f goodruns_golden.txt;
     rm -f goodrun_cc*;
     rm -f goodrunClass_cc*;
     rm -f BTagCalibrationStandalone_cc*;
-    rm -f checkOutputDir
 fi
 
 
