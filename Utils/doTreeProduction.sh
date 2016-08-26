@@ -6,7 +6,8 @@
 # env -i X509_USER_PROXY=~/.x509up_u`id -u` gfal-ls gsiftp://storage01.lcg.cscs.ch/pnfs/lcg.cscs.ch/cms/trivcat/store/user/mangano
 
 # NB: Insert path starting from /store/user/... The rest will be added automatically
-inputProductionFolder="/store/user/mangano/crab/MT2_8_0_12/prodAug20_runF_forQCD_v1/"
+inputProductionFolder="/store/user/mangano/crab/MT2_8_0_12/prodAug18_runE_v1/"
+
 
 
 postFix=""
@@ -84,8 +85,8 @@ if [[ "$#" -eq 0 ]]; then
     echo "Relaunch the script with one of the following options: "
     echo "./doTreeProduction.sh pre       # pre-processing"
     echo "./doTreeProduction.sh post      # post-processing"
-    echo "./doTreeProduction.sh postCheck # check post-processing"
     echo "./doTreeProduction.sh mergeData # merge data and remove duplicates (not implemented yet)"
+    echo "./doTreeProduction.sh postCheck # check post-processing"
     echo "./doTreeProduction.sh addAllSF  # add all scale factor weights"
     echo "./doTreeProduction.sh addISR    # add isr weights variables(not fully implemented yet for the standalone version)"
     echo "./doTreeProduction.sh addBtag   # add b-tagg weights variables"
@@ -593,8 +594,36 @@ if [[ "$1" = "postCheck" ]]; then
 fi
 
 if [[ "$1" = "mergeData" ]]; then
-    echo "need to implement the data merging + duplicate removal"
+    seString="root://t3se01.psi.ch/"
+    input="${outputFolder}/skimAndPrune/"
+    echo "InputFolder for mergeData script: " $input
+
+    tmpOutputDir="/scratch/$USER/$RANDOM/"
+    mkdir $tmpOutputDir
+    inputFilesList="${tmpOutputDir}/fileList.txt"
+
+
+    rootFileName="mergedMET_HTMHT_JetHT.root"
+    tmpOutputFile=$tmpOutputDir/$rootFileName
+    outputFile=$input/$rootFileName
+
+    for x in "MET" "HTMHT" "JetHT"; do
+	prefix=$x
+	for x in $input/${prefix}_*.root; do echo $seString$x >> $inputFilesList ; done;
+    done
+    sed -i 's#pnfs/psi.ch/cms/trivcat/##g' $inputFilesList
+
+    echo "merged file will be: " $outputFile
+    echo "gROOT->LoadMacro(\"removeDuplicates.C\"); removeDuplicatesFromChain(\"$inputFilesList\",1,\"$tmpOutputFile\"); gSystem->Exit(0);" |root.exe -b -l ;
+
+    xrdcp -vf $tmpOutputFile root://t3dcachedb.psi.ch:1094//$input/$rootFileName
+    rm $tmpOutputFile
+    rm $inputFilesList
+    rmdir $tmpOutputDir
 fi
+
+
+
 
 if [[ "$1" = "addLepSF" ]]; then
 #the outputfolder of postprocessing is the input file for the adding of the scale factors
