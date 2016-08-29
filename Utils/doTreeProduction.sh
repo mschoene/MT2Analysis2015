@@ -1,50 +1,56 @@
 #!/bin/bash
 
-# --- configuration (consider to move this into a separate file) ---
+############################## configuration lines (TO DO: consider to move this into a separate file) #################################
 
-#to list files on T2: 
+#MEMO of the command necesasry to list files on T2: 
 # env -i X509_USER_PROXY=~/.x509up_u`id -u` gfal-ls gsiftp://storage01.lcg.cscs.ch/pnfs/lcg.cscs.ch/cms/trivcat/store/user/mangano
 
 # NB: Insert path starting from /store/user/... The rest will be added automatically
-inputProductionFolder="/store/user/mangano/crab/MT2_8_0_12/prodAug18_runE_v1/"
+inputProductionFolder="/store/user/mangano/crab/MT2_8_0_12/prodJuly19_runD_276311-276811_v1"
 
-
-
+# In case you want to run the same production twice, adding a post-fix may help
 postFix=""
 #postFix="_chunksCreationFixed"
+ 
 
-treeName="mt2"
 
-# For T2/T3 inputs:
-#
+# For reading input from T2 (default):
 site="lcg.cscs.ch"
 se="storage01"
-# or alternatively:
+# or alternatively for reading from T3 (for legacy)
 #site="psi.ch"
 #se="t3dcachedb03"
 
-listOfSamplesFile="postProcessing2016-Data.cfg"
-#listOfSamplesFile="postProcessing2016-MC.cfg"
+# You should uncomment only one of the two, because data and MC production usually require different settings 
+listOfSamplesFile="postProcessing2016-Data.cfg"  #for data inputs
+#listOfSamplesFile="postProcessing2016-MC.cfg"   # for MC inputs
+
+
+isCrab=1
+inputPU="MyDataPileupHistogram.root"
+GoldenJSON="$PWD/gold_runF.txt"  #produced, for example for runE, with: filterJSON.py --min=276831 --max=277420 --output=gold_runE.txt gold_json.txt
+doSkimmingPruning=0 #1 as default; 0 for *_forQCD datasets (in data), which don't contain the necessary info to run the skimming and which are already pruned
+applyJSON=1     #0 for MC
+doFilterTxt=0   #0 for MC
+doAllSF=0       #1 for MC
+doPreProc=0     #0 (only 1 for TTJets or if you want to split MC samples, then run ./doTreeProduction pre first)
+
+
+
+
+# You rarely need to edit the following cfg parameters
+doSilver=0      #0 for MC
+SilverJSON=$GoldenJSON
+treeName="mt2"
+fileExt="_post.root"
+PUvar="nTrueInt"
 
 # --- in current implementation one also needs to change this in runSkimmingPruning.sh ------
+# current default values should be ok and you shouldn't need to touch anything here
 useXRD="false"
 gfalProtocol="gsiftp" # if useXRD disabled, use gfal via the given protocol
 #gfalProtocol="srm" # alternative to gsiftp (gsiftp supposed to be more stable)
 # -------------------------------------------------------------------------------------------
-
-
-fileExt="_post.root"
-isCrab=1
-inputPU="MyDataPileupHistogram.root"
-PUvar="nTrueInt"
-GoldenJSON="$PWD/gold_runF.txt"  #produced, for example for runE, with: filterJSON.py --min=276831 --max=277420 --output=gold_runE.txt gold_json.txt
-SilverJSON=$GoldenJSON
-doSkimmingPruning=0 #1 as default; 0 for QCD-specific datasets, which are already skimmed at heppy level
-applyJSON=1     #0 for MC
-doSilver=0      #0 for MC
-doFilterTxt=0   #0 for MC
-doAllSF=0       #1 for MC
-doPreProc=0     #0 (only 1 for TTJets or if you want to split MC samples, then run ./doTreeProduction pre first)
 
 
 # ------------------------------------------------------------------------------
@@ -56,6 +62,11 @@ doPreProc=0     #0 (only 1 for TTJets or if you want to split MC samples, then r
 #
 # TO DO: add switches here in doTreeProduction.sh instead of force editing by hand
 # ------------------------------------------------------------------------------
+
+
+######################################### END OF CONFIGURATION PART #########################################################################
+
+
 
 
 
@@ -595,9 +606,15 @@ fi
 
 if [[ "$1" = "mergeData" ]]; then
     seString="root://t3se01.psi.ch/"
+
+    # It assumes that the 'doTreeProduction mergeData' script is run after the 'doTreeProduction post' step.
+    # If this is not the case, the 'input' variable here may need to be set properly by hand
     input="${outputFolder}/skimAndPrune/"
+
+
     echo "InputFolder for mergeData script: " $input
 
+    # create tmp folder in the scratch area before copying everything to the SE
     tmpOutputDir="/scratch/$USER/$RANDOM/"
     mkdir $tmpOutputDir
     inputFilesList="${tmpOutputDir}/fileList.txt"
@@ -607,6 +624,7 @@ if [[ "$1" = "mergeData" ]]; then
     tmpOutputFile=$tmpOutputDir/$rootFileName
     outputFile=$input/$rootFileName
 
+    # Add other relevant strings here if you want to merge more than these 3 datasets
     for x in "MET" "HTMHT" "JetHT"; do
 	prefix=$x
 	for x in $input/${prefix}_*.root; do echo $seString$x >> $inputFilesList ; done;
