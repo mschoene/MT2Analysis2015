@@ -6,7 +6,7 @@
 # env -i X509_USER_PROXY=~/.x509up_u`id -u` gfal-ls gsiftp://storage01.lcg.cscs.ch/pnfs/lcg.cscs.ch/cms/trivcat/store/user/mangano
 
 # NB: Insert path starting from /store/user/... The rest will be added automatically
-inputProductionFolder="/store/user/mangano/crab/MT2_8_0_12/prodJuly19_runD_276311-276811_v1"
+inputProductionFolder="/store/user/casal/crab/MT2_8_0_12/prodSept13_all/"
 
 # In case you want to run the same production twice, adding a post-fix may help
 postFix=""
@@ -28,8 +28,9 @@ listOfSamplesFile="postProcessing2016-Data.cfg"  #for data inputs
 
 isCrab=1
 inputPU="MyDataPileupHistogram.root"
-GoldenJSON="$PWD/gold_runF.txt"  #produced, for example for runE, with: filterJSON.py --min=276831 --max=277420 --output=gold_runE.txt gold_json.txt
-doSkimmingPruning=0 #1 as default; 0 for *_forQCD datasets (in data), which don't contain the necessary info to run the skimming and which are already pruned
+#GoldenJSON="$PWD/gold_runF.txt"  #produced, for example for runE, with: filterJSON.py --min=276831 --max=277420 --output=gold_runE.txt gold_json.txt
+GoldenJSON="$PWD/Cert_271036-279931_13TeV_PromptReco_Collisions16_JSON_NoL1T.txt"
+doSkimmingPruning=1 #1 as default; 0 for *_forQCD datasets (in data), which don't contain the necessary info to run the skimming and which are already pruned
 applyJSON=1     #0 for MC
 doFilterTxt=0   #0 for MC
 doAllSF=0       #1 for MC
