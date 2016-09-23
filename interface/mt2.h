@@ -1485,7 +1485,7 @@ Bool_t MT2Tree::passIsoTrackVeto() const {
 
 Bool_t MT2Tree::passFilters() const {
 
-  return Flag_HBHENoiseFilter==1 && Flag_HBHENoiseIsoFilter==1 && Flag_globalTightHalo2016Filter==1 && Flag_EcalDeadCellTriggerPrimitiveFilter==1 && Flag_goodVertices==1 && Flag_eeBadScFilter==1 && Flag_badMuonFilter==1 && Flag_badChargedHadronFilter==1 ;
+  return nVert>0 && Flag_HBHENoiseFilter==1 && Flag_HBHENoiseIsoFilter==1 && Flag_globalTightHalo2016Filter==1 && Flag_EcalDeadCellTriggerPrimitiveFilter==1 && Flag_goodVertices==1 && Flag_eeBadScFilter==1 && Flag_badMuonFilter==1 && Flag_badChargedHadronFilter==1 ;
 
 }
 
@@ -1523,7 +1523,8 @@ Bool_t MT2Tree::passBaseline(TString sel) const
       nJet30 >=1 &&
       nJet30FailId == 0 &&
       deltaPhiMin > 0.3 && 
-      ( (ht<1000. && met_pt>200.) || (ht>=1000. && met_pt>30.) || (nJet30==1 && met_pt>200.) ) && 
+      ( ( nJet30>1 && ht<1000. && met_pt>200.) || ( nJet30>1 && ht>=1000. && met_pt>30.) || (nJet30==1 && met_pt>200.) ) && 
+      //      ( (ht<1000. && met_pt>200.) || (ht>=1000. && met_pt>30.) || (nJet30==1 && met_pt>200.) ) && 
       diffMetMht < 0.5*met_pt;
   //    return nVert > 0; 
   

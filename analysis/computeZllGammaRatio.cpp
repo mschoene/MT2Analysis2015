@@ -702,10 +702,13 @@ void drawRatios(std::string fullPath, double *binss, unsigned int size,  std::st
     float grMax = h_mt2->GetBinLowEdge(size+1);
     float grMin = h_mt2->GetBinLowEdge(1);
 
-
     
-    double sf = 0.885883;
-    double sfErr =  0.102277;//0.109381;
+    //80X values at 12.9ifb
+    double sf = 0.903641;
+    double sfErr = 0.104239;
+
+   // double sf = 0.885883;
+ //   double sfErr =  0.102277;//0.109381;
 
     TF1* fSF=new TF1("fSF", "[0]", grMin, grMax);
     fSF->SetLineColor(kRed);
@@ -716,7 +719,7 @@ void drawRatios(std::string fullPath, double *binss, unsigned int size,  std::st
     
     double x[2]    ={grMin, grMax};
     double y[2]    ={sf, sf};
-
+   
     double xerr[2] ={0., 0.};
     double yerr[2] ={sfErr, sfErr};
     TGraphErrors* SFFitBand = new TGraphErrors(2, x, y, xerr, yerr);
@@ -725,9 +728,9 @@ void drawRatios(std::string fullPath, double *binss, unsigned int size,  std::st
     SFFitBand->SetFillStyle(3244);
   
     TPaveText* fitText = MT2DrawTools::getFitText( fSF );
-    
-
+      
     /*
+    
     TF1* fSF = MT2DrawTools::getSFFit(gr_ratio, grMin, grMax  );
     TPaveText* fitText = MT2DrawTools::getFitText( fSF );
     TGraphErrors* SFFitBand =  MT2DrawTools::getSFFitBand(fSF, xMin, xMax);

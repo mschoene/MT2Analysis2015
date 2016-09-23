@@ -90,6 +90,8 @@ int main( int argc, char* argv[] ) {
     
     //std::vector<MT2Sample> samples_gammaJet = MT2Sample::loadSamples(samplesFile, "gjet");
     //std::vector<MT2Sample> samples_gammaJet = MT2Sample::loadSamples(samplesFile, 200, 299);
+
+    // std::vector<MT2Sample> samples_gammaJet = MT2Sample::loadSamples(samplesFile, "mergedMET_HTMHT_JetHT" );
     std::vector<MT2Sample> samples_gammaJet = MT2Sample::loadSamples(samplesFile, "GJets");
     if( samples_gammaJet.size()==0 ) {
       std::cout << "There must be an error: didn't find any gamma+jet files in " << samplesFile << "!" << std::endl;
@@ -261,7 +263,8 @@ int main( int argc, char* argv[] ) {
     std::cout << std::endl << std::endl;
     std::cout << "-> Loading data from file: " << samplesFile_data << std::endl;
 
-    std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, "SinglePhoton");
+    std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, "mergedMET_HTMHT_JetHT");
+    //    std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, "SinglePhoton");
 
     if( samples_data.size()==0 ) {
 
@@ -433,7 +436,7 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
     
   
    
-    if( !( myTree.HLT_Photon165_HE10 ) ) continue; 
+    // if( !( myTree.HLT_Photon165_HE10 ) ) continue; 
 
 
     if( cfg.additionalStuff()=="gammaNoSietaieta" ) {
@@ -442,6 +445,9 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
       if( myTree.gamma_idCutBased[0]==0 ) continue;
     }
 
+
+    if(myTree.jet_pt[0]>13000) continue; //fuck those crazy events!
+   
      
     if( myTree.isData ) {
       
@@ -456,6 +462,9 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
       //if( !(myTree.nVert>0. && myTree.Flag_HBHENoiseFilter==1 ) ) continue;
 
     }
+
+    if( !(myTree.nVert>0 && myTree.Flag_HBHENoiseFilter==1 && myTree.Flag_HBHENoiseIsoFilter==1 && myTree.Flag_EcalDeadCellTriggerPrimitiveFilter==1 && myTree.Flag_goodVertices==1 && myTree.Flag_eeBadScFilter==1 && myTree.Flag_badChargedHadronFilter==1)) continue;
+
 
 
     TLorentzVector gamma;
@@ -473,8 +482,8 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
     float minMTBmet = myTree.gamma_minMTBMet;
     float met       = myTree.gamma_met_pt;
     int njets       = myTree.gamma_nJet30;
-    int nbjets      = (sample.id>10) ?  myTree.gamma_nBJet20 :  myTree.gamma_nBJet20csv;    
-    //int nbjets      = myTree.gamma_nBJet20csv;    
+    // int nbjets      = (sample.id>10) ?  myTree.gamma_nBJet20 :  myTree.gamma_nBJet20csv;    
+    int nbjets      = myTree.gamma_nBJet20;    
     float ht        = myTree.gamma_ht;
     float mt2       = (njets>1) ? myTree.gamma_mt2 : ht;
     //float mt2       = myTree.gamma_mt2;
@@ -483,7 +492,7 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
     //    if( myTree.isData && myTree.run>275125.) continue;
 
     //temp fix
-    myTree.nBJet20csv=nbjets;
+    // myTree.nBJet20csv=nbjets;
 
     if( cfg.gamma2bMethod()=="2b1bRatio" && nbjets==2 )
       continue; // will take 2b from reweighted 1b so skip
@@ -491,48 +500,47 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
     //    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi()*myTree.puWeight; 
     Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb;//*cfg.lumi(); 
     //  Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi(); 
-    
+    /*
     if( !myTree.isData ){
-      weight *= myTree.weight_btagsf;
-      weight *= myTree.weight_lepsf;
-
+      // weight *= myTree.weight_btagsf;
+      // weight *= myTree.weight_lepsf;
+    
       float SF = 1.0;
       float pt = myTree.gamma_pt[0];
 
       if ( fabs(myTree.gamma_eta[0])<1.479 ) {
-	/*old ones
-	if (pt > 150 && pt < 160) SF = 0.03576134;
-	else if (pt < 170.) SF = 0.2844761;
-	else if (pt < 180.) SF = 0.9541034;
-	else if (pt < 200.) SF = 0.9432587;
-	else if (pt < 250.) SF = 0.9998274;
-	else if (pt < 300.) SF = 0.9997936;
-	else if (pt < 350.) SF = 0.9997995;
-	else if (pt < 400.) SF = 0.9727327;
-	else if (pt < 450.) SF = 0.9686112;
-	else if (pt < 500.) SF = 0.9689014;
-	else if (pt < 600.) SF = 0.965793;
-	else if (pt < 700.) SF = 0.9734969;
-	else if (pt < 800.) SF = 0.9776452;
-	else SF = 0.9367322;
-      }else {
-	if (pt > 150 && pt < 160) SF = 0.02972659;
-	else if (pt < 170.) SF = 0.1191435;
-	else if (pt < 180.) SF = 0.5990605;
-	else if (pt < 200.) SF = 0.9105484;
-	else if (pt < 250.) SF = 0.9995712;
-	else if (pt < 300.) SF = 0.9915838;
-	else if (pt < 350.) SF = 0.9545882;
-	else if (pt < 400.) SF = 0.9673124;
-	else if (pt < 450.) SF = 0.960792;
-	else if (pt < 500.) SF = 0.9519475;
-	else if (pt < 600.) SF = 0.950766;
-	else if (pt < 700.) SF = 0.9538072;
-	else if (pt < 800.) SF = 0.9777396;
-	else SF = 0.9862047;
-	}
-	*/
-	
+	// old ones
+      // 	if (pt > 150 && pt < 160) SF = 0.03576134;
+      // 	else if (pt < 170.) SF = 0.2844761;
+      // 	else if (pt < 180.) SF = 0.9541034;
+      // 	else if (pt < 200.) SF = 0.9432587;
+      // 	else if (pt < 250.) SF = 0.9998274;
+      // 	else if (pt < 300.) SF = 0.9997936;
+      // 	else if (pt < 350.) SF = 0.9997995;
+      // 	else if (pt < 400.) SF = 0.9727327;
+      // 	else if (pt < 450.) SF = 0.9686112;
+      // 	else if (pt < 500.) SF = 0.9689014;
+      // 	else if (pt < 600.) SF = 0.965793;
+      // 	else if (pt < 700.) SF = 0.9734969;
+      // 	else if (pt < 800.) SF = 0.9776452;
+      // 	else SF = 0.9367322;
+      // }else {
+      // 	if (pt > 150 && pt < 160) SF = 0.02972659;
+      // 	else if (pt < 170.) SF = 0.1191435;
+      // 	else if (pt < 180.) SF = 0.5990605;
+      // 	else if (pt < 200.) SF = 0.9105484;
+      // 	else if (pt < 250.) SF = 0.9995712;
+      // 	else if (pt < 300.) SF = 0.9915838;
+      // 	else if (pt < 350.) SF = 0.9545882;
+      // 	else if (pt < 400.) SF = 0.9673124;
+      // 	else if (pt < 450.) SF = 0.960792;
+      // 	else if (pt < 500.) SF = 0.9519475;
+      // 	else if (pt < 600.) SF = 0.950766;
+      // 	else if (pt < 700.) SF = 0.9538072;
+      // 	else if (pt < 800.) SF = 0.9777396;
+      // 	else SF = 0.9862047;
+      // 	}
+    
 	if (pt > 150 && pt < 160) SF = 0.02913004;
 	else if (pt < 170) SF = 0.2979024;
 	else if (pt < 180) SF = 0.9168265;
@@ -563,9 +571,10 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
 	else if (pt < 800) SF = 0.9785377;
 	else SF = 0.9763883;
       }
-      weight *= SF;
+      //weight *= SF;
       
     }
+*/
 
     bool passIso = iso<isoCut;
 

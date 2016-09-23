@@ -40,7 +40,6 @@ int main() {
   std::string firstInputFile  = "./EventYields_data_Run2016_12p9ifb_ICHEP/llepEstimate_binbybin.root";
   std::string secondInputFile = "./EventYields_data_Run2016_12p9ifb_ICHEP/llepEstimate_extrapolation.root";
   
->>>>>>> 1e26783bc38f51eef1352958015fd7c820c10d66
   MT2Analysis<MT2Estimate>* analysisFirst_ext = MT2Analysis<MT2Estimate>::readFromFile( secondInputFile.c_str(), "llepEstimate" ); 
   analysisFirst_ext->setName("Data-drien (Std.)");
   MT2Analysis<MT2Estimate>* analysisFirst_bin = MT2Analysis<MT2Estimate>::readFromFile( firstInputFile.c_str(), "llepEstimate" );

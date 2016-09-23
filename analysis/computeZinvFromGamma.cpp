@@ -77,14 +77,14 @@ int main( int argc, char* argv[] ) {
   std::string gammaControlRegionDir = cfg.getEventYieldDir() + "/gammaControlRegion"; //(Form("GammaControlRegion_%s_%s_%.0ffb", samples.c_str(), regionsSet.c_str(), lumi));
 
   MT2Analysis<MT2Estimate>* gammaCR = MT2Analysis<MT2Estimate>::readFromFile(gammaControlRegionDir + "/data.root", "gammaCR");
-  MT2Analysis<MT2Estimate>* gamma_prompt_ = MT2Analysis<MT2Estimate>::readFromFile(gammaControlRegionDir + "/mc.root", "prompt");
+  MT2Analysis<MT2Estimate>* gamma_prompt_ = MT2Analysis<MT2Estimate>::readFromFile(gammaControlRegionDir + "/mc.root", "prompt_pass");
 
   (*gamma_prompt_) = (*gamma_prompt_) * cfg.lumi();
 
   
   MT2Analysis<MT2Estimate>* gamma_prompt;
   if ( !use_extrapolation )  {
-    gamma_prompt = MT2Analysis<MT2Estimate>::readFromFile(gammaControlRegionDir + "/mc.root", "prompt");
+    gamma_prompt = MT2Analysis<MT2Estimate>::readFromFile(gammaControlRegionDir + "/mc.root", "prompt_pass");
     (*gamma_prompt) = (*gamma_prompt) * cfg.lumi(); 
   }
 
@@ -122,11 +122,47 @@ int main( int argc, char* argv[] ) {
   //MT2Analysis<MT2Estimate>* ZgammaRatio = MT2EstimateSyst::makeAnalysisFromEstimate( "ZgammaRatio", regionsSet, ZgammaRatioMC );
   MT2Analysis<MT2Estimate>* ZgammaRatio = new MT2Analysis<MT2Estimate>( "ZgammaRatio", cfg.regionsSet() );
   (*ZgammaRatio) = (*ZgammaRatioMC)/1.23;
-  (*ZgammaRatio) = (*ZgammaRatio)*0.89; //from Zll Gamma ratio
+ 
+
+  bool doInclusive=0;
+  if( doInclusive==1)
+    (*ZgammaRatio) = (*ZgammaRatio)*0.89; //from Zll Gamma ratio
+  else{
+    MT2Analysis<MT2EstimateSyst>* zllG_ht       = MT2Analysis<MT2EstimateSyst>::readFromFile( cfg.getEventYieldDir() + "/zllGammaRatio/zll_ratio.root", "zllG_ht");
+   MT2Analysis<MT2EstimateSyst>* zllG_mono_ht       = MT2Analysis<MT2EstimateSyst>::readFromFile( cfg.getEventYieldDir() + "/zllGammaRatio/zll_ratio.root", "zllG_mono_ht");
+
+    std::set<MT2Region> regions = ZgammaRatio->getRegions();
+
+    // Getting inclusive region set (as used for Zll/Gamma ratio)
+    std::set<MT2Region> inclusiveRegions=  zllG_ht->getRegions();
+    MT2Region inclusiveRegion( (*inclusiveRegions.begin() ) );
+    TH1D* this_zllG_ht       = zllG_ht      ->get(inclusiveRegion)->yield;
+    TH1D* this_zllG_mono_ht  = zllG_mono_ht ->get(inclusiveRegion)->yield;
+
+
+    for( std::set<MT2Region>::iterator iR=regions.begin(); iR!=regions.end(); ++iR ) { 
+      TH1D* this_data = ZgammaRatio->get(*iR)->yield;
+      int thisBinHT=0;
+      float thisCentralHT=0;
+      if( iR->nJetsMax()==1 ){
+	thisBinHT = this_zllG_mono_ht->FindBin(iR->htMin()+1.);
+	thisCentralHT = this_zllG_mono_ht->GetBinContent(thisBinHT);
+      }else{
+	thisBinHT = this_zllG_ht->FindBin(iR->htMin()+1.);
+	thisCentralHT = this_zllG_ht->GetBinContent(thisBinHT);
+      }
+
+      std::cout << thisCentralHT << std::endl;
+      this_data->Scale( thisCentralHT );
+    }
+
+  }
+
+
   //  MT2Analysis<MT2EstimateSyst>* purity;
   //if( type > 0 ) {
   //  purity = MT2Analysis<MT2EstimateSyst>::readFromFile( gammaControlRegionDir + "/PurityFitsRC/purityFit_mt2_data.root", "purity" );   
-    //purity = MT2Analysis<MT2EstimateSyst>::readFromFile( gammaControlRegionDir + "/PurityFitsRC/purityFit_data.root", "purity" );
+  //purity = MT2Analysis<MT2EstimateSyst>::readFromFile( gammaControlRegionDir + "/PurityFitsRC/purityFit_data.root", "purity" );
     //purity = MT2Analysis<MT2EstimateSyst>::readFromFile( gammaControlRegionDir + "/PurityFitsRC/purityFit.root", "purity" );
     //purity = MT2Analysis<MT2EstimateSyst>::readFromFile( gammaControlRegionDir + "/PurityFitsMC/purityFit.root", "purity" );
     //purity = MT2Analysis<MT2EstimateSyst>::readFromFile( gammaControlRegionDir + "/purityMC.root", "purity" );
@@ -181,6 +217,7 @@ int main( int argc, char* argv[] ) {
   MT2Analysis<MT2EstimateSyst>* ZinvEstimate = combineDataAndMC( ZinvEstimateFromGamma, (MT2Analysis<MT2Estimate>*)Zinv );
 
   std::string outFile = cfg.getEventYieldDir() + "/zinvFromGamma";
+  if( doInclusive==0 )  outFile += "_HTbinnedZllDR";
   if( type==0 ) outFile += "_noPurity";
   outFile += ".root";
 
