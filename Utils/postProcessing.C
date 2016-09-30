@@ -166,8 +166,12 @@ int postProcessing(std::string inputString,
   TH2D* h_elSF = 0;
   TH2D* h_id_mu = 0;
   TH2D* h_iso_mu = 0;
+  TH2D* h_dxyz_mu = 0;
   TH2D* h_muSF = 0;
 
+  TH1D* h_muTrk_hi = 0;
+  TH1D* h_muTrk_lo = 0;
+ 
   TH2D* h_fast_muSF = 0;
   TH2D* h_fast_elSF = 0;
   TH2D* h_eff_full_mu = 0;
@@ -181,35 +185,57 @@ int postProcessing(std::string inputString,
 
     //Getting the lepton scale factor histograms/////////////////
     //Electrons//
-    std::string filename = "/mnt/t3nfs01/data01/shome/mschoene/CMSSW_7_4_12_pP/src/analysisCode/Utils/kinematicBinSFele.root";
+    std::string filename = "/mnt/t3nfs01/data01/shome/mschoene/lepSF/scaleFactors.root";
     TFile * f_ele = new TFile(filename.c_str() );
     if (!f_ele->IsOpen()) std::cout << " ERROR: Could not find scale factor file " << filename << std::endl; 
     //Uncomment for loose Id
     //TH2D* h_id = (TH2D*) f_ele->Get("CutBasedLoose");
     //(TH2D*) f_ele->Get("CutBasedVeto");
-    h_id = (TH2D*) f_ele->Get("CutBasedVeto");
-    h_iso = (TH2D*) f_ele->Get("MiniIso0p1_vs_AbsEta");
+    h_id = (TH2D*) f_ele->Get("GsfElectronToVeto");
+    h_iso = (TH2D*) f_ele->Get("MVAVLooseElectronToMini");
     if (!h_id || !h_iso) std::cout << "ERROR: Could not find scale factor histogram"<< std::endl;
     h_elSF = (TH2D*) h_id->Clone("h_elSF");
     h_elSF->SetDirectory(0);
     h_elSF->Multiply(h_iso);
 
     //Muons//
-    std::string filenameID = "/mnt/t3nfs01/data01/shome/mschoene/CMSSW_7_4_12_pP/src/analysisCode/Utils/TnP_MuonID_NUM_LooseID_DENOM_generalTracks_VAR_map_pt_eta.root";
-    std::string filenameISO = "/mnt/t3nfs01/data01/shome/mschoene/CMSSW_7_4_12_pP/src/analysisCode/Utils/TnP_MuonID_NUM_MiniIsoTight_DENOM_LooseID_VAR_map_pt_eta.root";
+    std::string filenameID = "/mnt/t3nfs01/data01/shome/mschoene/lepSF/TnP_MuonID_NUM_LooseID_DENOM_generalTracks_VAR_map_pt_eta.root";
+    std::string filenameISO = "/mnt/t3nfs01/data01/shome/mschoene/lepSF/TnP_MuonID_NUM_MiniIsoTight_DENOM_LooseID_VAR_map_pt_eta.root";
+    std::string filenamedxyz = "/mnt/t3nfs01/data01/shome/mschoene/lepSF/TnP_MuonID_NUM_MediumIP2D_DENOM_LooseID_VAR_map_pt_eta.root";
     TFile * f1 = new TFile(filenameID.c_str() );
     TFile * f2 = new TFile(filenameISO.c_str() );
+    TFile * f3 = new TFile(filenamedxyz.c_str() );
     if (!f1->IsOpen()) { std::cout<<" ERROR: Could not find ID scale factor file "<<filenameID<<std::endl; return 0;}
     if (!f2->IsOpen()) { std::cout<<"ERROR: Could not find ISO scale factor file "<<filenameISO<<std::endl; return 0;}
-    h_id_mu = (TH2D*) f1->Get("pt_abseta_PLOT_pair_probeMultiplicity_bin0_&_tag_combRelIsoPF04dBeta_bin0_&_tag_pt_bin0_&_tag_IsoMu20_pass");
-    h_iso_mu = (TH2D*) f2->Get("pt_abseta_PLOT_pair_probeMultiplicity_bin0_&_tag_combRelIsoPF04dBeta_bin0_&_tag_pt_bin0_&_PF_pass_&_tag_IsoMu20_pass");
-    if (!h_id_mu || !h_iso_mu) { std::cout<<"ERROR: Could not find scale factor histogram"<<std::endl; return 0;}
+    if (!f3->IsOpen()) { std::cout<<"ERROR: Could not find dxy dz scale factor file "<<filenamedxyz<<std::endl; return 0;}
+    h_id_mu = (TH2D*) f1->Get("pt_abseta_PLOT_pair_probeMultiplicity_bin0");
+    h_iso_mu = (TH2D*) f2->Get("pt_abseta_PLOT_pair_probeMultiplicity_bin0_&_PF_pass");
+    h_dxyz_mu = (TH2D*) f3->Get("pt_abseta_PLOT_pair_probeMultiplicity_bin0_&_PF_pass");
+    if (!h_id_mu || !h_iso_mu  || !h_dxyz_mu) { std::cout<<"ERROR: Could not find scale factor histogram"<<std::endl; return 0;}
     h_muSF = (TH2D*) h_id_mu->Clone("h_muSF");
     h_muSF->SetDirectory(0);
     h_muSF->Multiply(h_iso_mu);
+    h_muSF->Multiply(h_dxyz_mu);
 
     f_ele->Close();  f1->Close(); f2->Close();
     delete f_ele; delete f1; delete f2;
+
+    TH1D* h_trk_mu_hi = 0;
+    TH1D* h_trk_mu_lo = 0;
+
+    std::string filenameTrk = "/mnt/t3nfs01/data01/shome/mschoene/lepSF/general_tracks_and_early_general_tracks_corr_ratio.root";
+    TFile * fTrk = new TFile(filenameTrk.c_str() );
+    if (!fTrk->IsOpen()) { std::cout<<" ERROR: Could not find track ineff scale factor file "<<filenameTrk<<std::endl; return 0;}
+    h_trk_mu_hi = (TH1D*) fTrk->Get("mutrksfptg10");
+    if (!h_trk_mu_hi) { std::cout<<"ERROR: Could not find trk sf histogram"<<std::endl; return 0;}
+    h_muTrk_hi = (TH1D*) h_trk_mu_hi->Clone("h_muTrk_hi");
+    h_muTrk_hi->SetDirectory(0);
+    h_trk_mu_lo = (TH1D*) fTrk->Get("mutrksfptl10");
+    if (!h_trk_mu_lo) { std::cout<<"ERROR: Could not find trk sf histogram"<<std::endl; return 0;}
+    h_muTrk_lo = (TH1D*) h_trk_mu_lo->Clone("h_muTrk_lo");
+    h_muTrk_lo->SetDirectory(0);
+    fTrk->Close(); delete fTrk;
+
 
     std::cout << std::endl;
     std::cout << "Using Loose Muon ID, MiniIso 0.2 lepton scale factors" << std::endl;
@@ -789,6 +815,9 @@ int postProcessing(std::string inputString,
     weight_lepsf_DN = 1.;
     weight_toppt = 1.;
     weight_isr=1.;
+    weight_lepsf_0l = 1;
+    weight_lepsf_0l_UP = 1;
+    weight_lepsf_0l_DN = 1;
     
     for(int v=0; v<110; ++v){
       weight_scales[v]=1.;
@@ -948,9 +977,20 @@ int postProcessing(std::string inputString,
 	  else if (abs( lep_pdgId[o]) == 13) {
 	    Int_t binx = h_muSF->GetXaxis()->FindBin(pt);
 	    Int_t biny = h_muSF->GetYaxis()->FindBin(fabs(eta));
+
+	    float central_trk = 1;
+	    Int_t binx_trk = h_muTrk_hi->GetXaxis()->FindBin(  lep_eta[o] );
+	    if( binx_trk>10 ) binx_trk = 10;
+	    else if( binx_trk<1 ) binx_trk = 1;
+	    central_trk = h_muTrk_hi->GetBinContent( binx_trk );
+
+
 	    if ( binx >7 ) binx = 7; //overflow bin empty for the muons...
 	    central = h_muSF->GetBinContent(binx,biny);
-	    err  = 0.014; // adding in quadrature 1% unc. on ID and 1% unc. on ISO
+
+	    central *= central_trk;
+
+	    err  = 0.03; //current recomendation is 3% //   err  = 0.014; // adding in quadrature 1% unc. on ID and 1% unc. on ISO
 	    if (central > 1.3 || central < 0.7) 
 	      std::cout<<"STRANGE: Muon with pT/eta of "<<pt<<"/"<< fabs(eta) <<". SF is "<< central <<std::endl;
 	    uncert_UP = central + err;
@@ -990,10 +1030,10 @@ int postProcessing(std::string inputString,
 
 	for(int o=0; o < ngenLep+ngenLepFromTau; ++o){
 
-	  float central=1;
+	  float central=1.;
 	  float err=0;
 	  float uncert=0;
-	  float fast_central=1;
+	  float fast_central=1.;
 	  float fast_err=0.;
 	  float uncert_fast=0;
 
@@ -1032,7 +1072,21 @@ int postProcessing(std::string inputString,
 	    Int_t binx = h_muSF->GetXaxis()->FindBin(pt_cutoff);
 	    Int_t biny = h_muSF->GetYaxis()->FindBin( fabs(eta) );
 	    central = h_muSF->GetBinContent(binx,biny);
-	    uncert  = 0.014;   // adding in quadrature 1% unc. on ID and 1% unc. on ISO
+	    uncert = 0.03;// uncert  = 0.014;   // adding in quadrature 1% unc. on ID and 1% unc. on ISO
+
+	    float central_trk = 1;
+	    if( pt >= 10.){
+	      Int_t binx_trk = h_muTrk_hi->GetXaxis()->FindBin(  lep_eta[o] );
+	      if( binx_trk>10 ) binx_trk = 10;
+	      else if( binx_trk<1 ) binx_trk = 1;
+	      central_trk = h_muTrk_hi->GetBinContent( binx_trk );
+	    }else if( pt < 10 ){
+	      Int_t binx_trk = h_muTrk_lo->GetXaxis()->FindBin(  lep_eta[o] );
+	      if( binx_trk>10 ) binx_trk = 10;
+	      else if( binx_trk<1 ) binx_trk = 1;
+	      central_trk = h_muTrk_lo->GetBinContent( binx_trk );
+	    }
+	    central *= central_trk;
 
 	    Int_t binx_eff = h_eff_full_mu->GetXaxis()->FindBin( pt_cutoff_eff );
 	    Int_t biny_eff = h_eff_full_mu->GetYaxis()->FindBin( fabs(eta) );
@@ -1154,7 +1208,7 @@ int postProcessing(std::string inputString,
     }
     delete h_isr; delete h_counter;
   }
-  if(bTagSFHelper) delete bTagSFHelper;
+  //  if(bTagSFHelper) delete bTagSFHelper;
   delete chain; 
   hPU->Write();
   hPU_data->Write();
