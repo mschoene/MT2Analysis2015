@@ -83,7 +83,7 @@ int main( int argc, char* argv[] ) {
 
 
 
-  TH1::AddDirectory(kFALSE); // stupid ROOT memory allocation needs this
+  TH1::AddDirectory(kFALSE); // stupid ROOT memory allocation needs this 
 
   std::string outputdir = cfg.getEventYieldDir() + "/qcdControlRegion"; 
   system(Form("mkdir -p %s", outputdir.c_str()));
@@ -215,36 +215,45 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
 
     if (myTree.isData) {
 
-      int id = sample.id;
+      //int id = sample.id;
       // sample IDs for data:
       // JetHT = 1
       // HTMHT = 2
       // MET   = 3
       //myTree.evt_id = id; // useful when using american trees
 
-      if( njets==1 ) {
+      // if( njets==1 ) {
+      //   if( !( id==3 && myTree.HLT_PFMET100_PFMHT100) ) continue;
+      // } else { // njets>=2
+      //   if( ht>1000. ) {
+      //     if( !( id==1 && myTree.HLT_PFHT800) ) continue;
+      //   } else if( ht>575. ) {
+      //     if( !( (id==2 && myTree.HLT_PFHT300_PFMET100 ) || (id==1 && myTree.HLT_PFHT475_Prescale))  ) continue;
+      //   } else if( ht>450. ) {
+      //     if( !( (id==2 && myTree.HLT_PFHT300_PFMET100 ) || (id==1 && myTree.HLT_PFHT350_Prescale))  ) continue;
+      //   } else if( ht>200. ) {
+      //     if( !( (id==3 && myTree.HLT_PFMET100_PFMHT100) || (id==1 && (myTree.HLT_PFHT125_Prescale)))  ) continue;
+      //   }
 
-        if( !( id==3 && myTree.HLT_PFMET100_PFMHT100) ) continue;
+      // }
 
-      } else { // njets>=2
-
-        if( ht>1000. ) {
-          if( !( id==1 && myTree.HLT_PFHT800) ) continue;
-        } else if( ht>575. ) {
-          if( !( (id==2 && myTree.HLT_PFHT300_PFMET100 ) || (id==1 && myTree.HLT_PFHT475_Prescale))  ) continue;
-        } else if( ht>450. ) {
-          if( !( (id==2 && myTree.HLT_PFHT300_PFMET100 ) || (id==1 && myTree.HLT_PFHT350_Prescale))  ) continue;
-        } else if( ht>200. ) {
-          if( !( (id==3 && myTree.HLT_PFMET100_PFMHT100) || (id==1 && (myTree.HLT_PFHT125_Prescale)))  ) continue;
-        }
-
-      }
+      if( njets<2 ) continue; // qcd CRs never use 1jet events, not even for monojet CR
+      // don't bother about dataset of origin (OR of datasets)
+      // fill id with trigger bit logic (0b01 HT-only triggered, 0b10 signal triggered)
+      myTree.evt_id = 0;
+      if( (ht>1000.&&myTree.HLT_PFHT800) || (ht<1000.&&ht>575.&&myTree.HLT_PFHT475_Prescale) || (ht<575.&&ht>450.&&myTree.HLT_PFHT350_Prescale) || (ht<450.&&ht>200.&&myTree.HLT_PFHT125_Prescale) )
+	myTree.evt_id += 0b01;      // HT-only triggered -> turn bit 1 on
+      if(ht>200 && (myTree.HLT_PFHT800||myTree.HLT_PFHT300_PFMET100||myTree.HLT_PFMET100_PFMHT100) && (ht>1000 || myTree.met_pt>200) )
+	myTree.evt_id += 0b10;      // passes signal triggers -> turn bit 2 on
+      if( myTree.evt_id==0 )
+	continue;                   // doesn't pass any trigger
 
     } // if is data
 
 
     if( monojet ) {
-      if( !( (njets==2 && myTree.deltaPhiMin<0.3 && myTree.jet1_pt>200. && myTree.met_pt>200.) ) ) continue;
+      // only store signal triggered events for monojet CR
+      if( !( (njets==2 && myTree.deltaPhiMin<0.3 && myTree.jet1_pt>200. && myTree.met_pt>200. && (myTree.evt_id&0b10)==0b10) ) ) continue;
       if( !myTree.passMonoJetId(0) ) continue;
     } else {
       if( mt2<50. ) continue;
