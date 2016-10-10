@@ -146,7 +146,11 @@ int main( int argc, char* argv[] ) {
     MT2Estimate* thisNCR = nCRMonojet->get( *iR );
     MT2Estimate* thisR   = rMonojet  ->get( *iR );
 
-    std::string fullSelection(Form("%s && %s && jet1_pt>%f && jet1_pt<%f", selection.c_str(), iR->sigRegion()->getBJetCuts().c_str(), ptMin, ptMax ) );
+    if (ptMax!=-1)
+      std::string fullSelection(Form("%s && %s && jet1_pt>%f && jet1_pt<%f", selection.c_str(), iR->sigRegion()->getBJetCuts().c_str(), ptMin, ptMax ) );
+    else
+      std::string fullSelection(Form("%s && %s && jet1_pt>%f", selection.c_str(), iR->sigRegion()->getBJetCuts().c_str(), ptMin ) );
+      
 
     std::string bJetsLabel = (nBJets==0) ? "b = 0" : "b #geq 1";
     canvases = dt.drawRegionYields_fromTree( Form("jet2_pt_%s", iR->getName().c_str()), "jet2_pt", fullSelection, 20, 0., 300., "Subleading Jet p_{T}", "GeV", "p_{T}(jet1) > 200 GeV", bJetsLabel );
