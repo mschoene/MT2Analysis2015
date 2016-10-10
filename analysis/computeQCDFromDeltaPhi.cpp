@@ -43,7 +43,9 @@ float nonQCDunc = 0.20; // extra uncertainty on non-QCD subtraction (relative un
 //float prescales[3] = {2868., 321., 80.4}; // all RunB 5.4/fb
 //float prescales[3] = {3484., 344.6, 86.2}; // 5.89 (B) + 1.76 (C) fb-1 (JECv6, eta2.4)
 //float prescales[3] = {3721., 353.0, 88.3}; // 5.94 (B) + 2.65 (C) + 0.65 (D) fb-1
-float prescales[3] = {3753., 354.4, 88.6}; // 5.94 (B) + 2.65 (C) + 4.33 (D) = 12.9 fb-1 
+//float prescales[3] = {3753., 354.4, 88.6}; // 5.94 (B) + 2.65 (C) + 4.33 (D) = 12.9 fb-1  (wrong)
+//float prescales[3] = {4842., 384.5, 96.2}; // 5.94 (B) + 2.65 (C) + 4.33 (D) = 12.9 fb-1 
+float prescales[3] = {7575., 435.5, 108.9}; // 24.5 fb-1
 
 void projectFromInclusive( MT2Analysis<MT2Estimate>* analysis, MT2Analysis<MT2EstimateTree>* ana_inclusive, const std::string& selection );
 void fillFromTreeAndRatio( MT2Estimate* estimate, MT2Estimate* nCR, MT2EstimateSyst* r_effective, TTree* tree, TF1* f1_ratio, TH1D* h_band, float prescale=1. );
@@ -51,7 +53,7 @@ void fillFromTreeAndRatio( MT2Estimate* estimate, MT2Estimate* nCR, MT2EstimateS
 void get_rHat( const MT2Config& cfg, MT2Analysis<MT2Estimate>* rHat  , MT2Analysis<MT2EstimateTree>* analysis, MT2Analysis<MT2EstimateTree>* ana_rest=NULL );
 void get_fJets( const MT2Config& cfg, MT2Analysis<MT2Estimate>* fJets, MT2Analysis<MT2EstimateTree>* analysis, MT2Analysis<MT2EstimateTree>* ana_rest=NULL );
 void drawSingleFit( const MT2Config& cfg, bool useMC, const std::string& outdir, MT2EstimateQCD* qcd, MT2EstimateQCD* all, TF1* thisFitQCD, TH1D* h_band, float xMin_fit, float xMax_fit );
-void computePurity( TH1D* purity, TH1D* nonQCD, TH1D* all );
+void computePurity( TH1D* purity, TH1D* nonQCD, TH1D* all , float lumi);
 void multiplyHisto( TH1D* histo, TH1D* other );
 void scaleHisto( TH1D* histo, float val, float err );
 void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estimate, MT2Analysis<MT2Estimate>* mcTruth );
@@ -75,7 +77,7 @@ int main( int argc, char* argv[] ) {
 
 
   if( argc<2 ) {
-    std::cout << "USAGE: ./fitDeltaPhiQCD [configFileName] [data/MC] [closureTest=true]" << std::endl;
+    std::cout << "USAGE: ./fitDeltaPhiQCD [configFileName] [data/MC] [closureTest=false]" << std::endl;
     std::cout << "Exiting." << std::endl;
     exit(11);
   }
@@ -105,6 +107,8 @@ int main( int argc, char* argv[] ) {
       closureTest=true;
       std::cout << "-> Running closure test in validation region" << std::endl;
     }
+    else
+      closureTest=false;
   }
 
   TH1D::AddDirectory(kTRUE);
@@ -141,7 +145,7 @@ int main( int argc, char* argv[] ) {
   std::cout << "-> Making MT2EstimateTrees from inclusive tree...";
   MT2Analysis<MT2EstimateTree>* data_4rHat ;
   MT2Analysis<MT2EstimateTree>* data_4fJets;
-  MT2Analysis<MT2EstimateTree>* data_noPS_4fJets;
+  //MT2Analysis<MT2EstimateTree>* data_noPS_4fJets;
   MT2Analysis<MT2EstimateTree>* qcdmc_4rHat ;
   MT2Analysis<MT2EstimateTree>* qcdmc_4fJets;
   MT2Analysis<MT2EstimateTree>* rest_4rHat ;
@@ -149,9 +153,11 @@ int main( int argc, char* argv[] ) {
   qcdmc_4rHat  = MT2EstimateTree::makeAnalysisFromInclusiveTree( "qcdmc_4rHat"   , regionsSet_rHat  , qcdTree_mc, "((id>150&&(id>151||ht<450)&&(id>152||ht<575)&&(id>153||ht<1000)&&(id>154||ht<1500)) && id<200 && mt2>100. && mt2<200. && nJets>1 && deltaPhiMin<0.3)" ); // invert deltaPhi
   qcdmc_4fJets = MT2EstimateTree::makeAnalysisFromInclusiveTree( "qcdmc_4fJets"  , regionsSet_fJets , qcdTree_mc, "((id>150&&(id>151||ht<450)&&(id>152||ht<575)&&(id>153||ht<1000)&&(id>154||ht<1500)) && id<200 && mt2>100. && mt2<200. && nJets>1 && deltaPhiMin<0.3)" ); // invert deltaPhi ; id=152 plays a role for VLHT in 100<mt2<200
   if ( !useMC ) {
-    data_4rHat       = MT2EstimateTree::makeAnalysisFromInclusiveTree( "data_4rHat"      , regionsSet_rHat  , qcdTree_data, "(id==1 && ht>1000. &&  mt2>100. && mt2<200. && nJets>1 && deltaPhiMin<0.3)" ); // invert deltaPhi; ht>1000 unprescaled triggers
-    data_4fJets      = MT2EstimateTree::makeAnalysisFromInclusiveTree( "data_4fJets"     , regionsSet_fJets , qcdTree_data, "(id==1 &&              mt2>100. && mt2<200. && nJets>1 && deltaPhiMin<0.3)" ); // invert deltaPhi; HT-only triggers, ps'ed for HT<1000, empty for HT<450
-    data_noPS_4fJets = MT2EstimateTree::makeAnalysisFromInclusiveTree( "data_noPS_4fJets", regionsSet_fJets , qcdTree_data, "(((id==1&&ht>100)||(id==2&&ht>450&&ht<1000)||(id==3&&ht<450))&& mt2>100. && mt2<200. && nJets>1 && deltaPhiMin<0.3)" ); // invert deltaPhi; unprescaled triggers, HT-only for ht>100, HTMHT for450< ht<1000, MET for ht<450 (below ht<1000 we live in turnon, better not to subtract an unknown amount of non-QCD [smaller than 18% for VLHT])
+    //data_4rHat       = MT2EstimateTree::makeAnalysisFromInclusiveTree( "data_4rHat"      , regionsSet_rHat  , qcdTree_data, "(id==1 && ht>1000. &&  mt2>100. && mt2<200. && nJets>1 && deltaPhiMin<0.3)" ); // invert deltaPhi; ht>1000 unprescaled triggers --- old way
+    //data_4fJets      = MT2EstimateTree::makeAnalysisFromInclusiveTree( "data_4fJets"     , regionsSet_fJets , qcdTree_data, "(id==1 &&              mt2>100. && mt2<200. && nJets>1 && deltaPhiMin<0.3)" ); // invert deltaPhi; HT-only triggers, ps'ed for HT<1000, empty for HT<450 --- old way
+    data_4rHat       = MT2EstimateTree::makeAnalysisFromInclusiveTree( "data_4rHat"      , regionsSet_rHat  , qcdTree_data, "((id&1)==1 && ht>1000. &&  mt2>100. && mt2<200. && nJets>1 && deltaPhiMin<0.3)" ); // invert deltaPhi; ht>1000 unprescaled triggers
+    data_4fJets      = MT2EstimateTree::makeAnalysisFromInclusiveTree( "data_4fJets"     , regionsSet_fJets , qcdTree_data, "((id&1)==1 &&              mt2>100. && mt2<200. && nJets>1 && deltaPhiMin<0.3)" ); // invert deltaPhi; HT-only triggers, ps'ed for HT<1000, empty for HT<450
+    //data_noPS_4fJets = MT2EstimateTree::makeAnalysisFromInclusiveTree( "data_noPS_4fJets", regionsSet_fJets , qcdTree_data, "(((id==1&&ht>100)||(id==2&&ht>450&&ht<1000)||(id==3&&ht<450))&& mt2>100. && mt2<200. && nJets>1 && deltaPhiMin<0.3)" ); // invert deltaPhi; unprescaled triggers, HT-only for ht>100, HTMHT for450< ht<1000, MET for ht<450 (below ht<1000 we live in turnon, better not to subtract an unknown amount of non-QCD [smaller than 18% for VLHT])
     rest_4rHat       = MT2EstimateTree::makeAnalysisFromInclusiveTree( "rest_4rHat"      , regionsSet_rHat  , qcdTree_mc  , "(id>=300 && ht>1000. &&  mt2>100. && mt2<200. && nJets>1 && deltaPhiMin<0.3)" ); // invert deltaPhi
     rest_4fJets      = MT2EstimateTree::makeAnalysisFromInclusiveTree( "rest_4fJets"     , regionsSet_fJets , qcdTree_mc  , "(id>=300 &&              mt2>100. && mt2<200. && nJets>1 && deltaPhiMin<0.3)" ); // invert deltaPhi 
   }
@@ -183,7 +189,7 @@ int main( int argc, char* argv[] ) {
   MT2Analysis<MT2Estimate>* f_jets_mc        = new MT2Analysis<MT2Estimate>("f_jets_mc"       , regionsSet_fJets);
   MT2Analysis<MT2Estimate>* r_hat_data       = new MT2Analysis<MT2Estimate>("r_hat_data"      , regionsSet_rHat);
   MT2Analysis<MT2Estimate>* f_jets_data      = new MT2Analysis<MT2Estimate>("f_jets_data"     , regionsSet_fJets);
-  MT2Analysis<MT2Estimate>* f_jets_data_noPS = new MT2Analysis<MT2Estimate>("f_jets_data_noPS", regionsSet_fJets);
+  //MT2Analysis<MT2Estimate>* f_jets_data_noPS = new MT2Analysis<MT2Estimate>("f_jets_data_noPS", regionsSet_fJets);
   std::cout << " Done." << std::endl;
 
 
@@ -223,7 +229,7 @@ int main( int argc, char* argv[] ) {
   get_fJets( cfg, f_jets_mc, qcdmc_4fJets );
   if ( !useMC ) {
     get_fJets( cfg, f_jets_data     , data_4fJets     , rest_4fJets );    
-    get_fJets( cfg, f_jets_data_noPS, data_noPS_4fJets              ); // don't subtract an unknown amount (trigger turnon) small in any case
+    //get_fJets( cfg, f_jets_data_noPS, data_noPS_4fJets              ); // don't subtract an unknown amount (trigger turnon) small in any case
   }
   std::cout << " Done." << std::endl;
   std::cout << "-> Getting rHat...";
@@ -240,9 +246,11 @@ int main( int argc, char* argv[] ) {
     est_all  = MT2EstimateQCD::makeAnalysisFromInclusiveTree( "est", cfg.qcdRegionsSet(), qcdTree_mc , "(id>150&&(id>151||ht<450)&&(id>152||ht<575)&&(id>153||ht<1000)&&(id>154||ht<1500))", "(id>150&&(id>151||ht<450)&&(id>152||ht<575)&&(id>153||ht<1000)&&(id>154||ht<1500))" ); // 
   } else {
     if ( closureTest ) // fill tree with ht-only triggers
-      est_all  = MT2EstimateQCD::makeAnalysisFromInclusiveTree( "est", cfg.qcdRegionsSet(), qcdTree_data, "id==1", "id==1" ); //use HT-only triggers for dphi-ratio
+      //est_all  = MT2EstimateQCD::makeAnalysisFromInclusiveTree( "est", cfg.qcdRegionsSet(), qcdTree_data, "id==1", "id==1" ); //use HT-only triggers for dphi-ratio --- old way
+      est_all  = MT2EstimateQCD::makeAnalysisFromInclusiveTree( "est", cfg.qcdRegionsSet(), qcdTree_data, "(id&1)==1", "(id&1)==1" ); //use HT-only triggers for dphi-ratio --- new way
     else // fill tree with signal triggers
-      est_all  = MT2EstimateQCD::makeAnalysisFromInclusiveTree( "est", cfg.qcdRegionsSet(), qcdTree_data, "((id==1&&ht>1000)||(id==2&&ht>450&&ht<1000)||(id==3&&ht<450))", "id==1" ); //use HT-only triggers for dphi-ratio
+      //est_all  = MT2EstimateQCD::makeAnalysisFromInclusiveTree( "est", cfg.qcdRegionsSet(), qcdTree_data, "((id==1&&ht>1000)||(id==2&&ht>450&&ht<1000)||(id==3&&ht<450))", "id==1" ); //use HT-only triggers for dphi-ratio --- old way
+      est_all  = MT2EstimateQCD::makeAnalysisFromInclusiveTree( "est", cfg.qcdRegionsSet(), qcdTree_data, "(id&2)==2", "(id&1)==1" ); //use HT-only triggers for dphi-ratio --- new way, bit 2 on for signal triggers, bit 1 on for ht-only triggers
   }
   MT2Analysis<MT2EstimateQCD>* mc_rest = MT2EstimateQCD::makeAnalysisFromInclusiveTree( "mc_rest", cfg.qcdRegionsSet(), qcdTree_mc  , "id>=300", "id>=300" );
   //MT2Analysis<MT2EstimateQCD>* data    = MT2EstimateQCD::makeAnalysisFromInclusiveTree( "data"   , cfg.qcdRegionsSet(), qcdTree_data, "(ht>1000. && id==1) || (ht>450 && ht<1000. && id==2)" );
@@ -402,7 +410,7 @@ int main( int argc, char* argv[] ) {
     fillFromTreeAndRatio( this_est_mcRest, this_nCR_mcRest, this_r_eff_mcRest, matchedEstimate_rest->tree, fits[*fit_matchedRegion], bands[*fit_matchedRegion] , ps);
 
     
-    computePurity( this_qcdPurity->yield, this_est_mcRest->yield, this_estimate->yield );
+    computePurity( this_qcdPurity->yield, this_est_mcRest->yield, this_estimate->yield, cfg.lumi() );
     multiplyHisto( this_estimate->yield, this_qcdPurity->yield );
     //we want r_phi and purity uncertainties to be uncorrelated
     //multiplyHisto( this_r_effective->yield, this_qcdPurity->yield );
@@ -458,7 +466,7 @@ int main( int argc, char* argv[] ) {
   f_jets_mc       ->writeToFile( outfileName );
   r_hat_data      ->writeToFile( outfileName );
   f_jets_data     ->writeToFile( outfileName );
-  f_jets_data_noPS->writeToFile( outfileName );
+  //f_jets_data_noPS->writeToFile( outfileName );
   qcdPurity       ->writeToFile( outfileName );
   if ( !useMC ) {
     reffMC          ->writeToFile( outfileName );
@@ -926,13 +934,13 @@ void drawSingleFit( const MT2Config& cfg, bool useMC, const std::string& outdir,
 
 
 
-void computePurity( TH1D* purity, TH1D* nonQCD, TH1D* all ) {
+void computePurity( TH1D* purity, TH1D* nonQCD, TH1D* all ,float lumi ) {
 
 
   for( int iBin=1; iBin<nonQCD->GetXaxis()->GetNbins()+1; ++iBin ) {
 
-    float nonQCD_val = nonQCD->GetBinContent(iBin);
-    float nonQCD_err = nonQCD->GetBinError  (iBin);
+    float nonQCD_val = lumi * nonQCD->GetBinContent(iBin);
+    float nonQCD_err = lumi * nonQCD->GetBinError  (iBin);
     if( nonQCD_err>nonQCD_val ) nonQCD_err = nonQCD_val;
 
     float allCR_val  = all->GetBinContent(iBin);

@@ -39,7 +39,7 @@ class MT2EstimateTree : public MT2Estimate {
 
   int run;
   int lumi;
-  unsigned int evt;
+  unsigned long long evt;
   float weight; // = crossSecWeight * puWeight
   float puWeight; // the puWeight part of the above
   int id;

@@ -6,7 +6,7 @@ from math import sqrt
 ROOT.gSystem.Load("/mnt/t3nfs01/data01/shome/casal/ana743/src/MT2DrawTools_cc")
 from ROOT import MT2DrawTools
 
-lumi = 12.9
+lumi = 24.5
 
 MT2DrawTools.setStyle()
 lumilabel = MT2DrawTools.getLabelTop(lumi)
@@ -43,10 +43,13 @@ t = ROOT.TChain("mt2")
 #t.Add("dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/mangano/MT2production/80X/PostProcessed/prodJuly15_runD_276311-276384_forQCD_v1/JetHT_Run2016D*.root")
 
 # 5.940 (B) + 2.646 (C) + 4.330 (D) = 12.92/fb
-#t.Add("dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/mangano/MT2production/80X/PostProcessed/prodJuly15_runB_forQCD_v1/JetHT_Run2016B*.root") #one file missing
-t.Add("dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/mangano/MT2production/80X/PostProcessed/prodJuly08_runB_forQCD_v1/JetHT_Run2016B*.root")
-t.Add("dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/mangano/MT2production/80X/PostProcessed/prodJuly15_runC_all_forQCD_v1//JetHT_Run2016C*.root")
-t.Add("dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/mangano/crab/MT2_8_0_11/prodJuly19_runD_276311-276811_forQCD_v1/JetHT_Run2016D*.root")
+#t.Add("dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/mangano/MT2production/80X/PostProcessed/prodJuly08_runB_forQCD_v1/JetHT_Run2016B*.root")
+#t.Add("dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/mangano/MT2production/80X/PostProcessed/prodJuly15_runC_all_forQCD_v1//JetHT_Run2016C*.root")
+#t.Add("dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/mangano/MT2production/80X/PostProcessed/prodJuly19_runD_276311-276811_forQCD_v1/JetHT_Run2016D*.root")
+
+
+# 24.5/fb run G up to 279931
+t.Add("dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/casal/MT2production/80X/PostProcessed/prodSept13_all_forQCD/JetHT_Run2016*.root")
 
 
 ht800 = ROOT.TH1F("ht800","ht800",68,300,2000)
@@ -77,7 +80,7 @@ r475over125.SetLineWidth(2); r475over125.SetLineColor(51)
 r800over350.GetXaxis().SetTitle("H_{T} [GeV]")
 r800over350.GetYaxis().SetTitle("ratio of events")
 r800over350.GetXaxis().SetTitleSize(0.06); r800over350.GetYaxis().SetTitleSize(0.06); 
-r800over350.GetYaxis().SetRangeUser(0.1,6000)
+r800over350.GetYaxis().SetRangeUser(0.1,12000)
 can = ROOT.TCanvas()
 can.SetLogy()
 
