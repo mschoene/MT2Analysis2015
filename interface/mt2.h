@@ -73,7 +73,7 @@ public :
    Int_t         Flag_trackingFailureFilter;
    Int_t         Flag_CSCTightHaloFilter;
    Int_t         Flag_CSCTightHalo2015Filter;
-   Int_t         Flag_CSCTightHalo2016Filter;
+   Int_t         Flag_globalTightHalo2016Filter;
    Int_t         Flag_HBHENoiseFilter;
    Int_t         Flag_HBHENoiseIsoFilter;
    Int_t         Flag_goodVertices;
@@ -518,7 +518,7 @@ public :
    TBranch        *b_Flag_trackingFailureFilter;   //!
    TBranch        *b_Flag_CSCTightHaloFilter;   //!
    TBranch        *b_Flag_CSCTightHalo2015Filter;   //!
-   TBranch        *b_Flag_CSCTightHalo2016Filter;   //!
+   TBranch        *b_Flag_globalTightHalo2016Filter;   //!
    TBranch        *b_Flag_HBHENoiseFilter;   //!
    TBranch        *b_Flag_HBHENoiseIsoFilter;   //!
    TBranch        *b_Flag_goodVertices;   //!
@@ -1033,7 +1033,7 @@ void MT2Tree::Init(TTree *tree)
    fChain->SetBranchAddress("Flag_trackingFailureFilter", &Flag_trackingFailureFilter, &b_Flag_trackingFailureFilter);
    fChain->SetBranchAddress("Flag_CSCTightHaloFilter", &Flag_CSCTightHaloFilter, &b_Flag_CSCTightHaloFilter);
    fChain->SetBranchAddress("Flag_CSCTightHalo2015Filter", &Flag_CSCTightHalo2015Filter, &b_Flag_CSCTightHalo2015Filter);
-   fChain->SetBranchAddress("Flag_CSCTightHalo2016Filter", &Flag_CSCTightHalo2016Filter, &b_Flag_CSCTightHalo2016Filter);
+   fChain->SetBranchAddress("Flag_globalTightHalo2016Filter", &Flag_globalTightHalo2016Filter, &b_Flag_globalTightHalo2016Filter);
    fChain->SetBranchAddress("Flag_HBHENoiseFilter", &Flag_HBHENoiseFilter, &b_Flag_HBHENoiseFilter);
    fChain->SetBranchAddress("Flag_HBHENoiseIsoFilter", &Flag_HBHENoiseIsoFilter, &b_Flag_HBHENoiseIsoFilter);
    fChain->SetBranchAddress("Flag_goodVertices", &Flag_goodVertices, &b_Flag_goodVertices);
@@ -1474,7 +1474,7 @@ Bool_t MT2Tree::passIsoTrackVeto() const {
 
 
 Bool_t MT2Tree::passFilters() const {
-  return Flag_goodVertices>0 && Flag_HBHENoiseFilter>0 && Flag_HBHENoiseIsoFilter>0 && Flag_eeBadScFilter && Flag_CSCTightHalo2016Filter>0 && Flag_EcalDeadCellTriggerPrimitiveFilter>0 && Flag_badMuonFilter && Flag_badChargedHadronFilter;
+  return Flag_goodVertices>0 && Flag_HBHENoiseFilter>0 && Flag_HBHENoiseIsoFilter>0 && Flag_eeBadScFilter && Flag_globalTightHalo2016Filter>0 && Flag_EcalDeadCellTriggerPrimitiveFilter>0 && Flag_badMuonFilter && Flag_badChargedHadronFilter;
 }
 
 Bool_t MT2Tree::passMonoJetId( int j ) const {
