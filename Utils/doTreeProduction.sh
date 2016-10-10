@@ -610,7 +610,10 @@ if [[ "$1" = "mergeData" ]]; then
 
     # It assumes that the 'doTreeProduction mergeData' script is run after the 'doTreeProduction post' step.
     # If this is not the case, the 'input' variable here may need to be set properly by hand
+    # no automated yet to merge the three skim flavours... (un)comment out as necessary
     input="${outputFolder}/skimAndPrune/"
+    #input="${outputFolder}/QCDskimAndPrune/"
+    #input="${outputFolder}/QCDMonoJetSkimAndPrune/"
 
 
     echo "InputFolder for mergeData script: " $input
@@ -620,13 +623,19 @@ if [[ "$1" = "mergeData" ]]; then
     mkdir $tmpOutputDir
     inputFilesList="${tmpOutputDir}/fileList.txt"
 
+    # Add other relevant strings here if you want to merge more than these 3 datasets
+    #datasets="MET HTMHT JetHT"
+    datasets="MET HTMHT JetHT SingleElectron SingleMuon SinglePhoton DoubleEG DoubleMuon MuonEG"
 
-    rootFileName="mergedMET_HTMHT_JetHT.root"
+    rootFileName="merged"
+    for d in $datasets; do
+	rootFileName=${rootFileName}_$d
+    done
+    rootFileName=${rootFileName}.root
     tmpOutputFile=$tmpOutputDir/$rootFileName
     outputFile=$input/$rootFileName
 
-    # Add other relevant strings here if you want to merge more than these 3 datasets
-    for x in "MET" "HTMHT" "JetHT"; do
+    for x in $datasets; do
 	prefix=$x
 	for x in $input/${prefix}_*.root; do echo $seString$x >> $inputFilesList ; done;
     done
