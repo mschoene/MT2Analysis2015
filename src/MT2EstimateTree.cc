@@ -50,7 +50,7 @@ void MT2EstimateTree::initTree( ) {
 
   tree->Branch( "run", &run, "run/I");
   tree->Branch( "lumi", &lumi, "lumi/I");
-  tree->Branch( "evt", &evt, "evt/i");
+  tree->Branch( "evt", &evt, "evt/l");
   tree->Branch( "weight", &weight, "weight/F");
   tree->Branch( "puWeight", &puWeight, "puWeight/F");
   tree->Branch( "id", &id, "id/I");
