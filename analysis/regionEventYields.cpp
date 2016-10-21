@@ -231,7 +231,7 @@ int main( int argc, char* argv[] ) {
     //dataYield = EventYield_data[0];
     //dataYield->setName("data");
     //dataYield   = mergeYields<MT2EstimateTree>( EventYield_data, cfg.regionsSet(), "data", 1, 3 );
-    dataYield   = mergeYields<MT2EstimateTree>( EventYield_data, cfg.regionsSet(), "data", -1, 11 );
+    dataYield   = mergeYields<MT2EstimateTree>( EventYield_data, cfg.regionsSet(), "data", -1, 10 );
 
     yields.push_back( dataYield );
 
