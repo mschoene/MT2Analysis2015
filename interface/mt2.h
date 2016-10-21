@@ -1,4 +1,4 @@
-//////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////
 // This class has been automatically generated on
 // Fri Dec 12 23:39:08 2014 by ROOT version 5.34/10
 // from TTree mt2/treeProducerSusyFullHad
@@ -30,7 +30,6 @@ public :
    Int_t           isGolden;
    Int_t           isSilver;
    //Float_t         xsec;
-   //
    // 
    Int_t         HLT_PFMET170;
    Int_t         HLT_Photon90_R9Id90_HE10_IsoM;
@@ -51,6 +50,7 @@ public :
    Int_t         HLT_PFHT350_Prescale;
    Int_t         HLT_ht475prescale;
    Int_t         HLT_SingleMu;
+   Int_t         HLT_SingleMu_NonIso;
    Int_t         HLT_MuX_Ele12;
    Int_t         HLT_Mu8_EleX;
    Int_t         HLT_SingleEl;
@@ -63,6 +63,8 @@ public :
    Int_t         HLT_DiJet;
    Int_t         HLT_DoubleEl;
    Int_t         HLT_DoubleMu;
+   Int_t         HLT_DoubleEl33;
+   Int_t         HLT_DoubleMu_NonIso;
    Int_t         Flag_EcalDeadCellTriggerPrimitiveFilter;
    Int_t         Flag_trkPOG_manystripclus53X;
    Int_t         Flag_ecalLaserCorrFilter;
@@ -81,7 +83,7 @@ public :
    Int_t         Flag_eeBadScFilter;
    Int_t         Flag_badMuonFilter;
    Int_t         Flag_badChargedHadronFilter;
-   //
+
    Float_t         puWeight;
    Int_t           nTrueInt;
    Float_t         genWeight;
@@ -136,7 +138,6 @@ public :
    Float_t         met_rawPt;
    Float_t         met_rawPhi;
    Int_t           nBJet20;
-   Int_t           nBJet20csv;
    Int_t           nBJet25;
    Int_t           nBJet40;
    Int_t           nMuons10;
@@ -498,6 +499,7 @@ public :
    TBranch        *b_HLT_PFHT475_Prescale;   //!
    TBranch        *b_HLT_PFHT350_Prescale;   //!
    TBranch        *b_HLT_SingleMu;   //!
+   TBranch        *b_HLT_SingleMu_NonIso;   //!
    TBranch        *b_HLT_SingleEl;   //!
    TBranch        *b_HLT_MuX_Ele12;   //!
    TBranch        *b_HLT_Mu8_EleX;   //!
@@ -508,6 +510,8 @@ public :
    TBranch        *b_HLT_DiJet;   //!
    TBranch        *b_HLT_DoubleEl;   //!
    TBranch        *b_HLT_DoubleMu;   //!
+   TBranch        *b_HLT_DoubleEl33;   //!
+   TBranch        *b_HLT_DoubleMu_NonIso;   //!
    TBranch        *b_Flag_EcalDeadCellTriggerPrimitiveFilter;   //!
    TBranch        *b_Flag_trkPOG_manystripclus53X;   //!
    TBranch        *b_Flag_ecalLaserCorrFilter;   //!
@@ -580,7 +584,6 @@ public :
    TBranch        *b_met_rawPt;   //!
    TBranch        *b_met_rawPhi;   //!
    TBranch        *b_nBJet20;   //!
-   TBranch        *b_nBJet20csv;   //!
    TBranch        *b_nBJet25;   //!
    TBranch        *b_nBJet40;   //!
    TBranch        *b_nMuons10;   //!
@@ -1013,6 +1016,7 @@ void MT2Tree::Init(TTree *tree)
    fChain->SetBranchAddress("HLT_PFHT475_Prescale", &HLT_PFHT475_Prescale, &b_HLT_PFHT475_Prescale);
    fChain->SetBranchAddress("HLT_PFHT350_Prescale", &HLT_PFHT350_Prescale, &b_HLT_PFHT350_Prescale);
    fChain->SetBranchAddress("HLT_SingleMu", &HLT_SingleMu, &b_HLT_SingleMu);
+   fChain->SetBranchAddress("HLT_SingleMu_NonIso", &HLT_SingleMu_NonIso, &b_HLT_SingleMu_NonIso);
    fChain->SetBranchAddress("HLT_SingleEl", &HLT_SingleEl, &b_HLT_SingleEl);
    fChain->SetBranchAddress("HLT_Mu8_EleX", &HLT_Mu8_EleX, &b_HLT_Mu8_EleX);
    fChain->SetBranchAddress("HLT_MuX_Ele12", &HLT_MuX_Ele12, &b_HLT_MuX_Ele12);
@@ -1023,6 +1027,8 @@ void MT2Tree::Init(TTree *tree)
    fChain->SetBranchAddress("HLT_DiJet", &HLT_DiJet, &b_HLT_DiJet);
    fChain->SetBranchAddress("HLT_DoubleEl", &HLT_DoubleEl, &b_HLT_DoubleEl);
    fChain->SetBranchAddress("HLT_DoubleMu", &HLT_DoubleMu, &b_HLT_DoubleMu);
+   fChain->SetBranchAddress("HLT_DoubleEl33", &HLT_DoubleEl33, &b_HLT_DoubleEl33);
+   fChain->SetBranchAddress("HLT_DoubleMu_NonIso", &HLT_DoubleMu_NonIso, &b_HLT_DoubleMu_NonIso);
    fChain->SetBranchAddress("Flag_EcalDeadCellTriggerPrimitiveFilter", &Flag_EcalDeadCellTriggerPrimitiveFilter, &b_Flag_EcalDeadCellTriggerPrimitiveFilter);
    fChain->SetBranchAddress("Flag_trkPOG_manystripclus53X", &Flag_trkPOG_manystripclus53X, &b_Flag_trkPOG_manystripclus53X);
    fChain->SetBranchAddress("Flag_ecalLaserCorrFilter", &Flag_ecalLaserCorrFilter, &b_Flag_ecalLaserCorrFilter);
@@ -1095,7 +1101,6 @@ void MT2Tree::Init(TTree *tree)
    fChain->SetBranchAddress("met_rawPt", &met_rawPt, &b_met_rawPt);
    fChain->SetBranchAddress("met_rawPhi", &met_rawPhi, &b_met_rawPhi);
    fChain->SetBranchAddress("nBJet20", &nBJet20, &b_nBJet20);
-   fChain->SetBranchAddress("nBJet20csv", &nBJet20csv, &b_nBJet20csv);
    fChain->SetBranchAddress("nBJet25", &nBJet25, &b_nBJet25);
    fChain->SetBranchAddress("nBJet40", &nBJet40, &b_nBJet40);
    fChain->SetBranchAddress("nMuons10", &nMuons10, &b_nMuons10);
@@ -1472,9 +1477,10 @@ Bool_t MT2Tree::passIsoTrackVeto() const {
   return nPFLep5LowMT==0 && nPFHad10LowMT==0;
 }
 
-
 Bool_t MT2Tree::passFilters() const {
-  return Flag_goodVertices>0 && Flag_HBHENoiseFilter>0 && Flag_HBHENoiseIsoFilter>0 && Flag_eeBadScFilter && Flag_globalTightHalo2016Filter>0 && Flag_EcalDeadCellTriggerPrimitiveFilter>0 && Flag_badMuonFilter && Flag_badChargedHadronFilter;
+
+  return nVert>0 && Flag_HBHENoiseFilter>0 && Flag_HBHENoiseIsoFilter>0 && Flag_globalTightHalo2016Filter>0 && Flag_EcalDeadCellTriggerPrimitiveFilter>0 && Flag_goodVertices>0 && Flag_eeBadScFilter>0 && Flag_badMuonFilter>0 && Flag_badChargedHadronFilter>0 ;
+
 }
 
 Bool_t MT2Tree::passMonoJetId( int j ) const {
@@ -1490,14 +1496,14 @@ Bool_t MT2Tree::passBaseline(TString sel) const
       gamma_nJet30 >= 1 &&
       gamma_nJet30FailId == 0 &&
       gamma_deltaPhiMin > 0.3 && 
-      ( (gamma_ht<1000. && gamma_met_pt>200.) || (gamma_ht>=1000. && gamma_met_pt>30.) || (gamma_nJet30==1 && gamma_met_pt>200.)) &&
+      ( (gamma_nJet30 > 1 && gamma_ht<1000. && gamma_met_pt>200.) || (gamma_nJet30 > 1 && gamma_ht>=1000. && gamma_met_pt>30.) || (gamma_nJet30==1 && gamma_met_pt>200.)) &&
       gamma_diffMetMht < 0.5*gamma_met_pt;
   else if (sel=="zll")
     return nVert > 0 &&
       nJet30 >= 1 &&
       nJet30FailId == 0 &&
       zll_deltaPhiMin > 0.3 && 
-      ( (zll_ht<1000. && zll_met_pt>200.) || (zll_ht>=1000. && zll_met_pt>30.) || (nJet30==1 && zll_met_pt>200.)) && 
+      ( (nJet30>1 && zll_ht<1000. && zll_met_pt>200.) || (nJet30>1 && zll_ht>=1000. && zll_met_pt>30.) || (nJet30==1 && zll_met_pt>200.)) && 
       zll_diffMetMht < 0.5*zll_met_pt && 
       nlep > 1 ;
   else if (sel=="qcd")
@@ -1511,7 +1517,8 @@ Bool_t MT2Tree::passBaseline(TString sel) const
       nJet30 >=1 &&
       nJet30FailId == 0 &&
       deltaPhiMin > 0.3 && 
-      ( (ht<1000. && met_pt>200.) || (ht>=1000. && met_pt>30.) || (nJet30==1 && met_pt>200.) ) && 
+      ( ( nJet30>1 && ht<1000. && met_pt>200.) || ( nJet30>1 && ht>=1000. && met_pt>30.) || (nJet30==1 && met_pt>200.) ) && 
+      //      ( (ht<1000. && met_pt>200.) || (ht>=1000. && met_pt>30.) || (nJet30==1 && met_pt>200.) ) && 
       diffMetMht < 0.5*met_pt;
   //    return nVert > 0; 
   

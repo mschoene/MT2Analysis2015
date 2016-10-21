@@ -91,8 +91,9 @@ int main( int argc, char* argv[] ) {
 
   if( cfg.useMC() && !onlyData ) { // run on MC
 
-    std::string samplesFile = "../samples/samples_" + cfg.mcSamples() + ".dat";
-    
+    std::string samplesFile = "../samples/samples_" + cfg.qcdMCSamples() + ".dat";
+    if(monojet) samplesFile = "../samples/samples_" + cfg.qcdMonoJetMCSamples() + ".dat";
+
     std::vector<MT2Sample> samples_zinv = MT2Sample::loadSamples(samplesFile, 602, 699);
     std::vector<MT2Sample> samples_wjet = MT2Sample::loadSamples(samplesFile, 502, 599);
     std::vector<MT2Sample> samples_top  = MT2Sample::loadSamples(samplesFile, 300, 399); // ignore single top and rares: faster
@@ -123,10 +124,10 @@ int main( int argc, char* argv[] ) {
 
   }
 
+  if( !(cfg.dummyAnalysis()) && cfg.qcdDataSamples()!="" && !onlyMC  ) {
 
-  if( !(cfg.dummyAnalysis()) && cfg.dataSamples()!="" && !onlyMC  ) {
-
-    std::string samplesFile_data = "../samples/samples_" + cfg.dataSamples() + ".dat";
+    std::string samplesFile_data = "../samples/samples_" + cfg.qcdDataSamples() + ".dat";
+    if(monojet) samplesFile_data = "../samples/samples_" + cfg.qcdMonoJetDataSamples() + ".dat";
 
     std::cout << std::endl << std::endl;
     std::cout << "-> Loading data from file: " << samplesFile_data << std::endl;
@@ -207,10 +208,20 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
     //float met       = myTree.met_pt;
     int njets       = myTree.nJet30;
     int nbjets      = myTree.nBJet20;    
-    //int nbjets      = (sample.id>=600&&sample.id<=610) ? myTree.nBJet20 : myTree.nBJet20csv;
-    //myTree.nBJet20 = nbjets; // this is becuase we are still using 2015 Zinv 
     float mt2       = (njets>1) ? myTree.mt2 : myTree.jet1_pt;
     float ht        = myTree.ht;
+
+
+   //crazy events! To be piped into a separate txt file
+    if(myTree.jet_pt[0] > 13000){
+      std::cout << "Rejecting weird event at run:lumi:evt = " << myTree.run << ":" << myTree.lumi << ":" << myTree.evt << std::endl;
+      continue;
+    }
+    //NEW check if is there is a nan
+    if( isnan(myTree.ht) || isnan(myTree.met_pt) ||  isinf(myTree.ht) || isinf(myTree.met_pt)  ){
+      std::cout << "Rejecting nan/inf event at run:lumi:evt = " << myTree.run << ":" << myTree.lumi << ":" << myTree.evt << std::endl;
+      continue;
+    }
 
 
     if (myTree.isData) {
@@ -255,6 +266,13 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
       // only store signal triggered events for monojet CR
       if( !( (njets==2 && myTree.deltaPhiMin<0.3 && myTree.jet1_pt>200. && myTree.met_pt>200. && (myTree.evt_id&0b10)==0b10) ) ) continue;
       if( !myTree.passMonoJetId(0) ) continue;
+
+      //Fix for monojetCR for shape comparsion Data/MC
+      if( !myTree.Flag_EcalDeadCellTriggerPrimitiveFilter ) continue;
+
+      if( !myTree.isData && (myTree.met_pt/ myTree.met_caloPt > 5.0) ) continue;
+
+
     } else {
       if( mt2<50. ) continue;
     }
