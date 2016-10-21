@@ -118,8 +118,8 @@ int main( int argc, char* argv[] ) {
     std::cout << std::endl << std::endl;
     std::cout << "-> Loading data from file: " << samplesFile_data << std::endl;
 
-    //    std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, 1, 3 );
-    std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, -1, 0 );
+    std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, "merged" );
+    //    std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, "noDuplicates" );
     if( samples_data.size()==0 ) {
       std::cout << "There must be an error: samples_data is empty!" << std::endl;
       exit(1209);
@@ -181,49 +181,39 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
     int njets  = myTree.nJet30;
     int nbjets = myTree.nBJet20; 
     float ht   = myTree.ht;
-    float met  = myTree.met_pt;
+    //    float met  = myTree.met_pt;
     float mt2  = (njets>1) ? myTree.mt2 : ht;
     float minMTBmet = myTree.minMTBMet;
     
-    int nMuons10 = myTree.nMuons10;
-    int nElectrons10 = myTree.nElectrons10;
-    int nPFLep5LowMT = myTree.nPFLep5LowMT;
-    int nPFHad10LowMT = myTree.nPFHad10LowMT;
+    //    int nMuons10 = myTree.nMuons10;
+    //    int nElectrons10 = myTree.nElectrons10;
+    //    int nPFLep5LowMT = myTree.nPFLep5LowMT;
+    //    int nPFHad10LowMT = myTree.nPFHad10LowMT;
     
     Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb;//*cfg.lumi();
-    //Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi();
-
+    if(!myTree.isData) {
+      weight *= myTree.weight_btagsf;
+      weight *= myTree.weight_lepsf;
+    }
 
     if (myTree.isData) {
 
-      int id = sample.id;
-      // sample IDs for data:
-      // JetHT = 1
-      // HTMHT = 2
-      // MET   = 3
-
-//      if( njets==1 ) {
-//
-//        if( !( id==3 && myTree.HLT_PFMETNoMu90_PFMHTNoMu90) ) continue;
-//
-//      } else { // njets>=2
-//
-//	if( ht>1000. ) {
-//          if( !( id==1 && myTree.HLT_PFHT800) ) continue;
-//	} else if( ht>575. ) {
-//          if( !( id==2 && myTree.HLT_PFHT350_PFMET100 )  ) continue;
-//        } else if( ht>450. ) {
-//          if( !( id==2 && myTree.HLT_PFHT350_PFMET100 )  ) continue;
-//	} else if( ht>200. ) {
-//          if( !( id==3 && myTree.HLT_PFMETNoMu90_PFMHTNoMu90  )  ) continue;
-//	}
-//
-//      }
-
-      if( !(myTree.HLT_PFMETNoMu90_PFMHTNoMu90 || myTree.HLT_PFHT350_PFMET100 || myTree.HLT_PFHT800) ) continue;
+      if ( !(myTree.HLT_PFMET100_PFMHT100 || myTree.HLT_PFHT800 || myTree.HLT_PFHT300_PFMET100) ) continue;
+      //OLD if( !(myTree.HLT_PFMETNoMu90_PFMHTNoMu90 || myTree.HLT_PFHT350_PFMET100 || myTree.HLT_PFHT800) ) continue;
 
     } // if is data
 
+
+    //crazy events! To be piped into a separate txt file
+    if(myTree.jet_pt[0] > 13000){
+      std::cout << "Rejecting weird event at run:lumi:evt = " << myTree.run << ":" << myTree.lumi << ":" << myTree.evt << std::endl;
+      continue;
+    }
+    //NEW check if is there is a nan
+    if( isnan(myTree.ht) || isnan(myTree.met_pt) ||  isinf(myTree.ht) || isinf(myTree.met_pt)  ){
+      std::cout << "Rejecting nan/inf event at run:lumi:evt = " << myTree.run << ":" << myTree.lumi << ":" << myTree.evt << std::endl;
+      continue;
+    }
 
     MT2EstimateTree* thisEstimate;
 

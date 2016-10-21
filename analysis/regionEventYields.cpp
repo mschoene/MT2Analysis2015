@@ -216,9 +216,8 @@ int main( int argc, char* argv[] ) {
     std::cout << std::endl << std::endl;
     std::cout << "-> Loading data from file: " << samplesFile_data << std::endl;
 
-    //    std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, "JetHTMHT"); //, 1, 99 );
-    //    std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, 1, 3 );
-    std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, -1, 0 );
+    std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, "merged" );
+    //   std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, -1, 0 );
     if( samples_data.size()==0 ) {
       std::cout << "There must be an error: samples_data is empty!" << std::endl;
       exit(1209);
@@ -232,7 +231,7 @@ int main( int argc, char* argv[] ) {
     //dataYield = EventYield_data[0];
     //dataYield->setName("data");
     //dataYield   = mergeYields<MT2EstimateTree>( EventYield_data, cfg.regionsSet(), "data", 1, 3 );
-    dataYield   = mergeYields<MT2EstimateTree>( EventYield_data, cfg.regionsSet(), "data", -1, -1 );
+    dataYield   = mergeYields<MT2EstimateTree>( EventYield_data, cfg.regionsSet(), "data", -1, 11 );
 
     yields.push_back( dataYield );
 
@@ -343,7 +342,7 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg ) {
       
 
     float ht   = myTree.ht;
-    float met  = myTree.met_pt;
+    //    float met  = myTree.met_pt;
     float minMTBmet = myTree.minMTBMet;
     int njets  = myTree.nJet30;
     int nbjets = myTree.nBJet20;    
@@ -354,9 +353,14 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg ) {
     int GenSusyMScan2 = myTree.GenSusyMNeutralino;
     
     //Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi()*myTree.puWeight;
-    //Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb;//*cfg.lumi();
-    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi();
+    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb;//*cfg.lumi();
+    //    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi();
     Double_t weight_syst = 1.;
+
+    if( !myTree.isData ){
+      weight *= myTree.weight_btagsf;
+      weight *= myTree.weight_lepsf;
+    }
 
     if( myTree.evt_id > 1000 )
       weight_syst = myTree.weight_isr;
@@ -373,39 +377,53 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg ) {
   
     }
 
-    if( myTree.isData ) {
-      
-      if( !myTree.passFilters() ) continue;
+    //Only the filters to be applied to MC
+    if( !(myTree.nVert>0 && myTree.Flag_HBHENoiseFilter>0 && myTree.Flag_HBHENoiseIsoFilter>0 && myTree.Flag_EcalDeadCellTriggerPrimitiveFilter>0 && myTree.Flag_goodVertices>0 && myTree.Flag_eeBadScFilter>0 && myTree.Flag_badChargedHadronFilter>0 )) continue;
 
+    if( myTree.isData ) {
+      if( !myTree.passFilters() ) continue;
     }
+
+    //crazy events! To be piped into a separate txt file
+    if(myTree.jet_pt[0] > 13000){
+      std::cout << "Rejecting weird event at run:lumi:evt = " << myTree.run << ":" << myTree.lumi << ":" << myTree.evt << std::endl;
+      continue;
+    }
+    //NEW check if is there is a nan
+    if( isnan(myTree.ht) || isnan(myTree.met_pt) ||  isinf(myTree.ht) || isinf(myTree.met_pt)  ){
+      std::cout << "Rejecting nan/inf event at run:lumi:evt = " << myTree.run << ":" << myTree.lumi << ":" << myTree.evt << std::endl;
+      continue;
+    }
+
+    if( myTree.met_pt/myTree.met_caloPt > 5.0 ) continue;
 
     if (myTree.isData) {
 
-      int id = sample.id;
+      //int id = sample.id;
       // sample IDs for data:
       // JetHT = 1
       // HTMHT = 2
       // MET   = 3
 
-    //  if( njets==1 ) {
-    //
-    //    if( !( id==3 && myTree.HLT_PFMETNoMu90_PFMHTNoMu90) ) continue;
-    //
-    //  } else { // njets>=2
-    //
-    //    if( ht>1000. ) {
-    //      if( !( id==1 && myTree.HLT_PFHT800) ) continue;
-    //    } else if( ht>575. ) {
-    //      if( !( id==2 && myTree.HLT_PFHT350_PFMET100 )  ) continue;
-    //    } else if( ht>450. ) {
-    //      if( !( id==2 && myTree.HLT_PFHT350_PFMET100 )  ) continue;
-    //    } else if( ht>200. ) {
-    //      if( !( id==3 && myTree.HLT_PFMETNoMu90_PFMHTNoMu90  )  ) continue;
-    //    }
-    //
-    //  }
+      //  if( njets==1 ) {
+      //
+      //    if( !( id==3 && myTree.HLT_PFMETNoMu90_PFMHTNoMu90) ) continue;
+      //
+      //  } else { // njets>=2
+      //
+      //    if( ht>1000. ) {
+      //      if( !( id==1 && myTree.HLT_PFHT800) ) continue;
+      //    } else if( ht>575. ) {
+      //      if( !( id==2 && myTree.HLT_PFHT350_PFMET100 )  ) continue;
+      //    } else if( ht>450. ) {
+      //      if( !( id==2 && myTree.HLT_PFHT350_PFMET100 )  ) continue;
+      //    } else if( ht>200. ) {
+      //      if( !( id==3 && myTree.HLT_PFMETNoMu90_PFMHTNoMu90  )  ) continue;
+      //    }
+      //
+      //  }
 
-      if ( !(myTree.HLT_PFMETNoMu90_PFMHTNoMu90 || myTree.HLT_PFHT800 || myTree.HLT_PFHT350_PFMET100) ) continue;
+      if ( !(myTree.HLT_PFMET100_PFMHT100 || myTree.HLT_PFHT800 || myTree.HLT_PFHT300_PFMET100) ) continue;
 
     } // if is data
 
@@ -503,7 +521,7 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg ) {
 	float nTrueB=0.;
 	float nTrueC=0.;
 	
-	for( unsigned ipart=0; ipart<myTree.ngenPart; ++ipart ) {
+	for( int ipart=0; ipart<myTree.ngenPart; ++ipart ) {
 	  
 	  if( myTree.genPart_pt[ipart] < 20. ) continue;
 	  if( abs(myTree.genPart_eta[ipart])>2.5 ) continue;
@@ -519,7 +537,7 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg ) {
 	
 	float nTrueBJ=0.;
 	
-	for( unsigned ijet=0; ijet<myTree.njet; ++ijet ) {
+	for( int ijet=0; ijet<myTree.njet; ++ijet ) {
 	  
 	  if( myTree.jet_pt[ijet] <20. ) continue;
 	  if( abs(myTree.jet_eta[ijet])>2.5 ) continue;
@@ -605,7 +623,7 @@ MT2Analysis<T>* computeSigYield( const MT2Sample& sample, const MT2Config& cfg )
       
 
     float ht   = myTree.ht;
-    float met  = myTree.met_pt;
+    //    float met  = myTree.met_pt;
     float minMTBmet = myTree.minMTBMet;
     int njets  = myTree.nJet30;
     int nbjets = myTree.nBJet20;    
@@ -616,9 +634,14 @@ MT2Analysis<T>* computeSigYield( const MT2Sample& sample, const MT2Config& cfg )
     int GenSusyMScan2 = myTree.GenSusyMNeutralino;
     
     //Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi()*myTree.puWeight;
-    //Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb;//*cfg.lumi();
-    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi();
+    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb;//*cfg.lumi();
+    //  Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi();
     Double_t weight_syst = 1.;
+
+    if( !myTree.isData ){
+      weight *= myTree.weight_btagsf;
+      weight *= myTree.weight_lepsf;
+    }
 
     if( myTree.evt_id > 1000 )
       weight_syst = myTree.weight_isr;
@@ -643,31 +666,31 @@ MT2Analysis<T>* computeSigYield( const MT2Sample& sample, const MT2Config& cfg )
 
     if (myTree.isData) {
 
-      int id = sample.id;
+      //      int id = sample.id;
       // sample IDs for data:
       // JetHT = 1
       // HTMHT = 2
       // MET   = 3
 
-    //  if( njets==1 ) {
-    //
-    //    if( !( id==3 && myTree.HLT_PFMETNoMu90_PFMHTNoMu90) ) continue;
-    //
-    //  } else { // njets>=2
-    //
-    //    if( ht>1000. ) {
-    //      if( !( id==1 && myTree.HLT_PFHT800) ) continue;
-    //    } else if( ht>575. ) {
-    //      if( !( id==2 && myTree.HLT_PFHT350_PFMET100 )  ) continue;
-    //    } else if( ht>450. ) {
-    //      if( !( id==2 && myTree.HLT_PFHT350_PFMET100 )  ) continue;
-    //    } else if( ht>200. ) {
-    //      if( !( id==3 && myTree.HLT_PFMETNoMu90_PFMHTNoMu90  )  ) continue;
-    //    }
-    //
-    //  }
+      //  if( njets==1 ) {
+      //
+      //    if( !( id==3 && myTree.HLT_PFMETNoMu90_PFMHTNoMu90) ) continue;
+      //
+      //  } else { // njets>=2
+      //
+      //    if( ht>1000. ) {
+      //      if( !( id==1 && myTree.HLT_PFHT800) ) continue;
+      //    } else if( ht>575. ) {
+      //      if( !( id==2 && myTree.HLT_PFHT350_PFMET100 )  ) continue;
+      //    } else if( ht>450. ) {
+      //      if( !( id==2 && myTree.HLT_PFHT350_PFMET100 )  ) continue;
+      //    } else if( ht>200. ) {
+      //      if( !( id==3 && myTree.HLT_PFMETNoMu90_PFMHTNoMu90  )  ) continue;
+      //    }
+      //
+      //  }
 
-      if ( !(myTree.HLT_PFMETNoMu90_PFMHTNoMu90 || myTree.HLT_PFHT800 || myTree.HLT_PFHT350_PFMET100) ) continue;
+      if ( !(myTree.HLT_PFMET100_PFMHT100 || myTree.HLT_PFHT800 || myTree.HLT_PFHT300_PFMET100) ) continue;
 
     } // if is data
 
