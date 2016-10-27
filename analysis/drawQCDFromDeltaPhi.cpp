@@ -34,7 +34,7 @@ bool closureTest = false;
 //float prescales[3] = {3721., 353.0, 88.3}; // 5.89 (B) + 2.65 (C) + 0.65 (D) fb-1
 //float prescales[3] = {3753., 354.4, 88.6}; // 5.94 (B) + 2.65 (C) + 4.33 (D) fb-1  (wrong)
 //float prescales[3] = {4842., 384.5, 96.2}; // 5.94 (B) + 2.65 (C) + 4.33 (D) = 12.9 fb-1 
-float prescales[3] = {7575., 435.5, 108.9}; // 24.5 fb-1
+float prescales[3] = {7579., 434.9, 108.8}; // 24.5 fb-1
 
 
 void compareFractions( const MT2Config& cfg, const std::string& outputdir, const std::string& dataFile, const std::string& analysisName, const std::string& xaxisName, const std::string& yaxisName, bool logPlot, const std::string& postfix="" );
