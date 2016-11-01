@@ -138,7 +138,7 @@ int main( int argc, char* argv[] ) {
   MT2Analysis<MT2EstimateTree>* qcdTree_data = MT2Analysis<MT2EstimateTree>::readFromFile( qcdCRdir + "/data.root", "qcdCRtree" );
   
 
-  std::string regionsSet = cfg.regionsSet();
+  std::string regionsSet = cfg.qcdRegionsSet();
   std::string regionsSet_fJets = "zurich_onlyHT";
   std::string regionsSet_rHat  = "zurich_onlyJets_noB";
 
