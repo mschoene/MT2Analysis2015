@@ -457,8 +457,10 @@ public :
    Float_t weight_lepsf_UP;
    Float_t weight_lepsf_DN;
    Float_t weight_btagsf;
-   Float_t weight_btagsf_UP;
-   Float_t weight_btagsf_DN;
+   Float_t weight_btagsf_light_UP;
+   Float_t weight_btagsf_light_DN;
+   Float_t weight_btagsf_heavy_UP;
+   Float_t weight_btagsf_heavy_DN;
    Float_t weight_sigtrigsf;
    Float_t weight_dileptrigsf;
    Float_t weight_phottrigsf;
@@ -893,7 +895,7 @@ public :
    TBranch        *b_tau_isoCI3hit;   //!
    TBranch        *b_tau_mcMatchId;   //!
    TBranch        *b_evt_scale1fb;   //!
-   //TBranch        *b_evt_xsec;   //!
+   TBranch        *b_evt_xsec;   //!
    TBranch        *b_evt_kfactor;   //!
    TBranch        *b_evt_filter;   //!
    TBranch        *b_evt_nEvts;   //!
@@ -902,8 +904,10 @@ public :
    TBranch *b_weight_lepsf_UP;
    TBranch *b_weight_lepsf_DN;
    TBranch *b_weight_btagsf;
-   TBranch *b_weight_btagsf_UP;
-   TBranch *b_weight_btagsf_DN;
+   TBranch *b_weight_btagsf_light_UP;
+   TBranch *b_weight_btagsf_light_DN;
+   TBranch *b_weight_btagsf_heavy_UP;
+   TBranch *b_weight_btagsf_heavy_DN;
    TBranch *b_weight_sigtrigsf;
    TBranch *b_weight_dileptrigsf;
    TBranch *b_weight_phottrigsf;
@@ -1412,7 +1416,7 @@ void MT2Tree::Init(TTree *tree)
    fChain->SetBranchAddress("tau_isoCI3hit", tau_isoCI3hit, &b_tau_isoCI3hit);
    fChain->SetBranchAddress("tau_mcMatchId", tau_mcMatchId, &b_tau_mcMatchId);
    fChain->SetBranchAddress("evt_scale1fb", &evt_scale1fb, &b_evt_scale1fb);
-   //fChain->SetBranchAddress("evt_xsec", &evt_xsec, &b_evt_xsec);
+   fChain->SetBranchAddress("evt_xsec", &evt_xsec, &b_evt_xsec);
    fChain->SetBranchAddress("evt_kfactor", &evt_kfactor, &b_evt_kfactor);
    fChain->SetBranchAddress("evt_filter", &evt_filter, &b_evt_filter);
    fChain->SetBranchAddress("evt_nEvts", &evt_nEvts, &b_evt_nEvts);
@@ -1421,8 +1425,13 @@ void MT2Tree::Init(TTree *tree)
    fChain->SetBranchAddress("weight_lepsf_UP", &weight_lepsf_UP, &b_weight_lepsf_UP);
    fChain->SetBranchAddress("weight_lepsf_DN", &weight_lepsf_DN, &b_weight_lepsf_DN);
    fChain->SetBranchAddress("weight_btagsf", &weight_btagsf, &b_weight_btagsf);
-   fChain->SetBranchAddress("weight_btagsf_UP", &weight_btagsf_UP, &b_weight_btagsf_UP);
-   fChain->SetBranchAddress("weight_btagsf_DN", &weight_btagsf_DN, &b_weight_btagsf_DN);
+
+   fChain->SetBranchAddress("weight_btagsf_heavy_UP", &weight_btagsf_heavy_UP, &b_weight_btagsf_heavy_UP);
+   fChain->SetBranchAddress("weight_btagsf_heavy_DN", &weight_btagsf_heavy_DN, &b_weight_btagsf_heavy_DN);
+
+   fChain->SetBranchAddress("weight_btagsf_light_UP", &weight_btagsf_light_UP, &b_weight_btagsf_light_UP);
+   fChain->SetBranchAddress("weight_btagsf_light_DN", &weight_btagsf_light_DN, &b_weight_btagsf_light_DN);
+
    fChain->SetBranchAddress("weight_sigtrigsf", &weight_sigtrigsf, &b_weight_sigtrigsf);
    fChain->SetBranchAddress("weight_dileptrigsf", &weight_dileptrigsf, &b_weight_dileptrigsf);
    fChain->SetBranchAddress("weight_phottrigsf", &weight_phottrigsf, &b_weight_phottrigsf);

@@ -458,13 +458,15 @@ MT2Analysis<T>::MT2Analysis( const std::string& aname, const std::string& region
     regions_.insert(MT2Region(450., 575., 1, 1, 0, 0));
     regions_.insert(MT2Region(575., 700., 1, 1, 0, 0));
     regions_.insert(MT2Region(700.,1000., 1, 1, 0, 0));
-    regions_.insert(MT2Region(1000.,  -1, 1, 1, 0, 0));
+    regions_.insert(MT2Region(1000.,1200., 1, 1, 0, 0));
+    regions_.insert(MT2Region(1200.,  -1, 1, 1, 0, 0));
 
     regions_.insert(MT2Region(200., 250., 1, 1, 1, -1));
     regions_.insert(MT2Region(250., 350., 1, 1, 1, -1));
     regions_.insert(MT2Region(350., 450., 1, 1, 1, -1));
     regions_.insert(MT2Region(450., 575., 1, 1, 1, -1));
-    regions_.insert(MT2Region(575.,  -1, 1, 1, 1, -1));
+    regions_.insert(MT2Region(575., 700., 1, 1, 1, -1));
+    regions_.insert(MT2Region(700.,  -1, 1, 1, 1, -1));
 
   } else if( regionsSet=="alphaT" ){
 
