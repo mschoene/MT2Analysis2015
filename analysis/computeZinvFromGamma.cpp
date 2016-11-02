@@ -28,7 +28,7 @@
 
 
 
-bool do_dummyMC = true;
+bool do_dummyMC = false;
 
 int type = 0;
 //int type = 1;
@@ -75,7 +75,7 @@ int main( int argc, char* argv[] ) {
 
  
   float lumi = cfg.lumi();
-  std::cout << "CAREFULL, YOU'RE LOOKING AT THE ESTIMATE AT 'FAKE' 40ifb" << std::endl;
+
  
 
   std::string gammaControlRegionDir = cfg.getEventYieldDir() + "/gammaControlRegion"; //(Form("GammaControlRegion_%s_%s_%.0ffb", samples.c_str(), regionsSet.c_str(), lumi));

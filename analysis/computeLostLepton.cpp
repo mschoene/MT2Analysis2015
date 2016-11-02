@@ -28,7 +28,7 @@
 
 bool use_extrapolation = true;
 //bool use_extrapolation = false;
-bool do_dummyMC = true;
+bool do_dummyMC = false;
 
 int main( int argc, char* argv[] ) {
 

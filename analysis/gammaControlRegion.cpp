@@ -503,12 +503,13 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
     
     
     if( !myTree.isData ){
-      // weight *= myTree.weight_btagsf;
-      // weight *= myTree.weight_lepsf;
+      weight *= myTree.weight_btagsf;
+      weight *= myTree.weight_lepsf;
     
       float SF = 1.0;
       float pt = myTree.gamma_pt[0];
 
+      //Trigger eff corrections (status ICHEP 2016)
       if ( fabs(myTree.gamma_eta[0])<1.479 ) {
 	if (pt > 150 && pt < 160) SF = 0.02913004;
 	else if (pt < 170) SF = 0.2979024;
