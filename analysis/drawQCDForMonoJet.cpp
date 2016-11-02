@@ -17,6 +17,8 @@
 #include "../interface/MT2DrawTools.h"
 
 
+bool do_dummyMC = false;
+
 
 void getQCDMonojet( TCanvas* c1, const std::string& regionName, int &nCR, float &qcdFraction, float &qcdFractionError );
 
@@ -59,8 +61,6 @@ int main( int argc, char* argv[] ) {
 
   std::string qcdCRdir = cfg.getEventYieldDir() + "/qcdControlRegion";
 
-  MT2Analysis<MT2EstimateTree>* data   = MT2Analysis<MT2EstimateTree>::readFromFile(qcdCRdir+"/data_forMonojet.root", "qcdCRtree");
-
   MT2Analysis<MT2EstimateTree>* mcTree = MT2Analysis<MT2EstimateTree>::readFromFile(qcdCRdir+"/mc_forMonojet.root"  , "qcdCRtree");
   //MT2Analysis<MT2EstimateTree>* mcTree2= MT2Analysis<MT2EstimateTree>::readFromFile(qcdCRdir+"/mc_zinv.root"  , "qcdCRtree");
 
@@ -73,6 +73,18 @@ int main( int argc, char* argv[] ) {
   //std::cout << "    Top done." << std::endl;
   MT2Analysis<MT2EstimateTree>* zjets = MT2EstimateTree::makeAnalysisFromInclusiveTree( "ZJets", "13TeV_inclusive", mcTree, "id>=600 && id<700" ); 
   std::cout << "    ZJets done." << std::endl;
+
+
+
+  MT2Analysis<MT2EstimateTree>* data;
+  if( !do_dummyMC )
+    data   = MT2Analysis<MT2EstimateTree>::readFromFile(qcdCRdir+"/data_forMonojet.root", "qcdCRtree");
+  else{
+    data   = MT2Analysis<MT2EstimateTree>::readFromFile(qcdCRdir+"/mc_forMonojet.root", "qcdCRtree");
+    (*data) *= cfg.lumi(); //This is not exactly right
+    //(*data) = cfg.lumi() * ((*qcd)+(*wjets)+(*zjets));
+  }
+
 
   wjets->setFullName("W+Jets");
   wjets->setColor(kWJets);
@@ -102,6 +114,7 @@ int main( int argc, char* argv[] ) {
     dt.set_shapeNorm( shapeNorm );
     dt.set_lumiErr(0.);
   }
+
 
   dt.set_data( data );
   dt.set_mc( &mc );
@@ -146,14 +159,17 @@ int main( int argc, char* argv[] ) {
     MT2Estimate* thisNCR = nCRMonojet->get( *iR );
     MT2Estimate* thisR   = rMonojet  ->get( *iR );
 
+
+    TString fullSelection;
+
     if (ptMax!=-1)
-      std::string fullSelection(Form("%s && %s && jet1_pt>%f && jet1_pt<%f", selection.c_str(), iR->sigRegion()->getBJetCuts().c_str(), ptMin, ptMax ) );
+      fullSelection.Format("%s && %s && jet1_pt>%f && jet1_pt<%f", selection.c_str(), iR->sigRegion()->getBJetCuts().c_str(), ptMin, ptMax ) ;
     else
-      std::string fullSelection(Form("%s && %s && jet1_pt>%f", selection.c_str(), iR->sigRegion()->getBJetCuts().c_str(), ptMin ) );
+      fullSelection.Format("%s && %s && jet1_pt>%f", selection.c_str(), iR->sigRegion()->getBJetCuts().c_str(), ptMin ) ;
       
 
     std::string bJetsLabel = (nBJets==0) ? "b = 0" : "b #geq 1";
-    canvases = dt.drawRegionYields_fromTree( Form("jet2_pt_%s", iR->getName().c_str()), "jet2_pt", fullSelection, 20, 0., 300., "Subleading Jet p_{T}", "GeV", "p_{T}(jet1) > 200 GeV", bJetsLabel );
+    canvases = dt.drawRegionYields_fromTree( Form("jet2_pt_%s", iR->getName().c_str()), "jet2_pt", (std::string)fullSelection, 20, 0., 300., "Subleading Jet p_{T}", "GeV", "p_{T}(jet1) > 200 GeV", bJetsLabel );
 
     int nCR;
     float r, r_err;

@@ -28,6 +28,7 @@
 
 bool use_extrapolation = true;
 //bool use_extrapolation = false;
+bool do_dummyMC = false;
 
 int main( int argc, char* argv[] ) {
 
@@ -61,7 +62,14 @@ int main( int argc, char* argv[] ) {
 
 
   // Data Control Region
-  MT2Analysis<MT2Estimate>* llepCR = MT2Analysis<MT2Estimate>::readFromFile(llepControlRegionDir + "/data.root", "llepCR");
+  MT2Analysis<MT2Estimate>* llepCR;
+  if( !do_dummyMC )
+    llepCR  = MT2Analysis<MT2Estimate>::readFromFile(llepControlRegionDir + "/data.root", "llepCR");
+  else{
+    llepCR  = MT2Analysis<MT2Estimate>::readFromFile(llepControlRegionDir + "/mc.root", "llepCR");
+    (*llepCR) *= cfg.lumi();
+  }
+
   if( llepCR==0 ) {
     std::cout << "-> Please run llepControlRegion first. I need to get the llepCR yields from there." << std::endl;
     std::cout << "-> Thank you for your cooperation." << std::endl;
