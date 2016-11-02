@@ -30,8 +30,8 @@
 
 bool do_dummyMC = false;
 
-int type = 0;
-//int type = 1;
+//int type = 0;
+int type = 1;
 
 // 0: use bare MC for ratiopure GJet)
 // 1: use GJet+QCD and multiply by fitted purity
