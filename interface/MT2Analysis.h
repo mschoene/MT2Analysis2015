@@ -533,15 +533,13 @@ MT2Analysis<T>::MT2Analysis( const std::string& aname, const std::string& region
     signalRegions.insert(MT2SignalRegion( 2,  3, 0, -1));
     signalRegions.insert(MT2SignalRegion( 4,  6, 0, -1));
     signalRegions.insert(MT2SignalRegion( 7, -1, 0, -1));
-    signalRegions.insert(MT2SignalRegion( 2,  6, 0, -1));
 
     regions_ = multiplyHTandSignal( htRegions, signalRegions );
 
     regions_.insert(MT2Region(1500.,-1., 2, -1, 0, -1));
 
-    regions_.insert(MT2Region(250., 450., 2, 3, 0, -1));
+    regions_.insert(MT2Region(250., 450., 2,  3, 0, -1));
     regions_.insert(MT2Region(250., 450., 4, -1, 0, -1));
-    regions_.insert(MT2Region(250., 450., 2, -1, 0, -1));
 
     //    regions_.insert(MT2Region(200., 250., 1, 1, 0, 0));
     regions_.insert(MT2Region(250., 350., 1, 1, 0, 0));
