@@ -53,6 +53,7 @@ public :
    Int_t         HLT_SingleMu_NonIso;
    Int_t         HLT_MuX_Ele12;
    Int_t         HLT_Mu8_EleX;
+   Int_t         HLT_Mu33_Ele33_NonIso;
    Int_t         HLT_SingleEl;
    Int_t         HLT_PFHT800;
    Int_t         HLT_ht350prescale;
@@ -505,6 +506,7 @@ public :
    TBranch        *b_HLT_SingleEl;   //!
    TBranch        *b_HLT_MuX_Ele12;   //!
    TBranch        *b_HLT_Mu8_EleX;   //!
+   TBranch        *b_HLT_Mu33_Ele33_NonIso;   //!
    TBranch        *b_HLT_PFHT800;   //!
    TBranch        *b_HLT_Photon155;   //!
    TBranch        *b_HLT_PFHT900;   //!
@@ -1024,6 +1026,7 @@ void MT2Tree::Init(TTree *tree)
    fChain->SetBranchAddress("HLT_SingleEl", &HLT_SingleEl, &b_HLT_SingleEl);
    fChain->SetBranchAddress("HLT_Mu8_EleX", &HLT_Mu8_EleX, &b_HLT_Mu8_EleX);
    fChain->SetBranchAddress("HLT_MuX_Ele12", &HLT_MuX_Ele12, &b_HLT_MuX_Ele12);
+   fChain->SetBranchAddress("HLT_Mu33_Ele33_NonIso", &HLT_Mu33_Ele33_NonIso, &b_HLT_Mu33_Ele33_NonIso);
    fChain->SetBranchAddress("HLT_PFHT800", &HLT_PFHT800, &b_HLT_PFHT800);
    fChain->SetBranchAddress("HLT_Photon155", &HLT_Photon155, &b_HLT_Photon155);
    fChain->SetBranchAddress("HLT_PFHT900", &HLT_PFHT900, &b_HLT_PFHT900);
@@ -1505,14 +1508,14 @@ Bool_t MT2Tree::passBaseline(TString sel) const
       gamma_nJet30 >= 1 &&
       gamma_nJet30FailId == 0 &&
       gamma_deltaPhiMin > 0.3 && 
-      ( (gamma_nJet30 > 1 && gamma_ht<1000. && gamma_met_pt>200.) || (gamma_nJet30 > 1 && gamma_ht>=1000. && gamma_met_pt>30.) || (gamma_nJet30==1 && gamma_met_pt>200.)) &&
+      ( (gamma_nJet30 > 1 && gamma_ht<1000. && gamma_met_pt>250.) || (gamma_nJet30 > 1 && gamma_ht>=1000. && gamma_met_pt>30.) || (gamma_nJet30==1 && gamma_met_pt>250.)) &&
       gamma_diffMetMht < 0.5*gamma_met_pt;
   else if (sel=="zll")
     return nVert > 0 &&
       nJet30 >= 1 &&
       nJet30FailId == 0 &&
       zll_deltaPhiMin > 0.3 && 
-      ( (nJet30>1 && zll_ht<1000. && zll_met_pt>200.) || (nJet30>1 && zll_ht>=1000. && zll_met_pt>30.) || (nJet30==1 && zll_met_pt>200.)) && 
+      ( (nJet30>1 && zll_ht<1000. && zll_met_pt>250.) || (nJet30>1 && zll_ht>=1000. && zll_met_pt>30.) || (nJet30==1 && zll_met_pt>250.)) && 
       zll_diffMetMht < 0.5*zll_met_pt && 
       nlep > 1 ;
   else if (sel=="qcd")
@@ -1526,7 +1529,7 @@ Bool_t MT2Tree::passBaseline(TString sel) const
       nJet30 >=1 &&
       nJet30FailId == 0 &&
       deltaPhiMin > 0.3 && 
-      ( ( nJet30>1 && ht<1000. && met_pt>200.) || ( nJet30>1 && ht>=1000. && met_pt>30.) || (nJet30==1 && met_pt>200.) ) && 
+      ( ( nJet30>1 && ht<1000. && met_pt>250.) || ( nJet30>1 && ht>=1000. && met_pt>30.) || (nJet30==1 && met_pt>250.) ) && 
       //      ( (ht<1000. && met_pt>200.) || (ht>=1000. && met_pt>30.) || (nJet30==1 && met_pt>200.) ) && 
       diffMetMht < 0.5*met_pt;
   //    return nVert > 0; 
