@@ -475,7 +475,7 @@ MT2Analysis<T>::MT2Analysis( const std::string& aname, const std::string& region
   } else if( regionsSet=="zurich2016" ){
 
     std::set<MT2HTRegion> htRegions;
-    htRegions.insert(MT2HTRegion( 250.,   450.));//changed due to MET 250
+    //htRegions.insert(MT2HTRegion( 250.,   450.));//changed due to MET 250
     htRegions.insert(MT2HTRegion( 450.,   575.));
     htRegions.insert(MT2HTRegion( 575.,  1000.));
     htRegions.insert(MT2HTRegion(1000.,  1500.));
@@ -495,6 +495,15 @@ MT2Analysis<T>::MT2Analysis( const std::string& aname, const std::string& region
     signalRegions.insert(MT2SignalRegion(7, -1, 3,  -1));
 
     regions_ = multiplyHTandSignal( htRegions, signalRegions );
+    
+    //NEW very low HT binning
+    regions_.insert(MT2Region(250., 450., 2, 3, 0, 0));
+    regions_.insert(MT2Region(250., 450., 2, 3, 1, 1));
+    regions_.insert(MT2Region(250., 450., 2, 3, 2, 2));
+    regions_.insert(MT2Region(250., 450., 4, -1, 0, 0));
+    regions_.insert(MT2Region(250., 450., 4, -1, 1, 1));
+    regions_.insert(MT2Region(250., 450., 4, -1, 2, 2));
+    regions_.insert(MT2Region(250., 450., 2, -1, 3, -1));
 
     regions_.insert(MT2Region(250., 350., 1, 1, 0, 0));
     regions_.insert(MT2Region(350., 450., 1, 1, 0, 0));
@@ -513,8 +522,8 @@ MT2Analysis<T>::MT2Analysis( const std::string& aname, const std::string& region
   } else if( regionsSet=="zurich2016_forExtrapol" ){
 
     std::set<MT2HTRegion> htRegions;
-    //   htRegions.insert(MT2HTRegion( 200.,  450.));
-    htRegions.insert(MT2HTRegion( 250.,  450.));
+    //  htRegions.insert(MT2HTRegion( 200.,  450.));
+    //  htRegions.insert(MT2HTRegion( 250.,  450.));
     htRegions.insert(MT2HTRegion( 450.,   575.));
     htRegions.insert(MT2HTRegion( 575.,  1000.));
     htRegions.insert(MT2HTRegion(1000.,  1500.));
@@ -528,8 +537,11 @@ MT2Analysis<T>::MT2Analysis( const std::string& aname, const std::string& region
 
     regions_ = multiplyHTandSignal( htRegions, signalRegions );
 
-
     regions_.insert(MT2Region(1500.,-1., 2, -1, 0, -1));
+
+    regions_.insert(MT2Region(250., 450., 2, 3, 0, -1));
+    regions_.insert(MT2Region(250., 450., 4, -1, 0, -1));
+    regions_.insert(MT2Region(250., 450., 2, -1, 0, -1));
 
     //    regions_.insert(MT2Region(200., 250., 1, 1, 0, 0));
     regions_.insert(MT2Region(250., 350., 1, 1, 0, 0));

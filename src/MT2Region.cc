@@ -894,86 +894,48 @@ void MT2Region::getBins( int &nBins, double*& bins) const {
     nBins = nBins_tmp;
     
   } 
-  else if( regionName == "HT250to450_j4to6_b0toInf" ){ // for extrapolation
+  else if( regionName == "HT250to450_j4toInf_b0toInf" ){ // for extrapolation
     
     const int nBins_tmp                        = 3;
     bins = new double[nBins_tmp+1]{200., 300., 400., 1500.};   //NEW EOY 2016 binning (same)
     nBins = nBins_tmp;
     
   }  
-  else if( regionName == "HT250to450_j4to6_b0" ){ // new MT2 binning
+  else if( regionName == "HT250to450_j4toInf_b0" ){ // new MT2 binning
     
     const int nBins_tmp                        = 3;
     bins = new double[nBins_tmp+1]{200., 300., 400., 1500.};   //NEW EOY 2016 binning (same)
     nBins = nBins_tmp;
     
   } 
-  else if( regionName == "HT250to450_j4to6_b1" ){ // new MT2 binning
+  else if( regionName == "HT250to450_j4toInf_b1" ){ // new MT2 binning
     
     const int nBins_tmp                        = 3;
     bins = new double[nBins_tmp+1]{200., 300., 400., 1500.};   //NEW EOY 2016 binning (same)
     nBins = nBins_tmp;
     
   } 
-  else if( regionName == "HT250to450_j4to6_b2" ){ // new MT2 binning
+  else if( regionName == "HT250to450_j4toInf_b2" ){ // new MT2 binning
     
     const int nBins_tmp                        = 3;
     bins = new double[nBins_tmp+1]{200., 300., 400., 1500.};   //NEW EOY 2016 binning (same)
     nBins = nBins_tmp;
     
-  } 
-  else if( regionName == "HT250to450_j7toInf_b0toInf" ){ // for extrapolation
-    
-    const int nBins_tmp                        = 2;
-    bins = new double[nBins_tmp+1]{200., 300., 1500.};   //NEW EOY 2016 binning
-    nBins = nBins_tmp;
-    
-  } 
-  else if( regionName == "HT250to450_j7toInf_b0" ){ // new MT2 binning
-    
-    const int nBins_tmp                        = 2;
-    bins = new double[nBins_tmp+1]{200., 300., 1500.};   //NEW EOY 2016 binning
-    nBins = nBins_tmp;
-    
-  } 
-  else if( regionName == "HT250to450_j7toInf_b1" ){ // new MT2 binning
-    
-    const int nBins_tmp                        = 2;
-    bins = new double[nBins_tmp+1]{200., 300., 1500.};   //NEW EOY 2016 binning
-    nBins = nBins_tmp;
-    
-  } 
-  else if( regionName == "HT250to450_j7toInf_b2" ){ // new MT2 binning
-    
-    const int nBins_tmp                        = 2;
-    bins = new double[nBins_tmp+1]{200., 300., 1500.};   //NEW EOY 2016 binning
-    nBins = nBins_tmp;
-    
-  } 
-  else if( regionName == "HT250to450_j2to6_b0toInf" ){ // for extrapolation
+  }
+  else if( regionName == "HT250to450_j2toInf_b0toInf" ){ // for extrapolation
     
     const int nBins_tmp                        = 3;
     bins = new double[nBins_tmp+1]{200., 300., 400., 1500.};   //NEW EOY 2016 binning
     nBins = nBins_tmp;
     
   }  
-  else if( regionName == "HT250to450_j2to6_b3toInf" ){ // new MT2 binning
+  else if( regionName == "HT250to450_j2toInf_b3toInf" ){ // new MT2 binning
     
     const int nBins_tmp                        = 3;
     bins = new double[nBins_tmp+1]{200., 300., 400., 1500.};   //NEW EOY 2016 binning
     nBins = nBins_tmp;
     
   } 
-  else if( regionName == "HT250to450_j7toInf_b3toInf" ){ // new MT2 binning
-    
-    const int nBins_tmp                        = 2;
-    bins = new double[nBins_tmp+1]{200., 300., 1500.};  //NEW EOY 2016 binning
-    nBins = nBins_tmp;
-    
-  } 
-
-
-
 
 
 
