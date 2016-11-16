@@ -218,7 +218,7 @@ MT2Analysis<T>::MT2Analysis( const std::string& aname, const std::string& region
 
   } else if( regionsSet=="13TeV_2016_inclusive" ) {
 
-    regions_.insert(MT2Region( 250. )); // inclusive 200-inf at least one jet requirement
+    regions_.insert(MT2Region( 250. )); // inclusive 250-inf at least one jet requirement //new 2016 eoy 
 
   } else if( regionsSet=="13TeV_inclusive450" ) {
 
