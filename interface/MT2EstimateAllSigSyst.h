@@ -27,7 +27,7 @@ class MT2EstimateAllSigSyst : public MT2Estimate {
   TH3D* yield3d_systDown;
 
 
-  TH3D* yield3d;  
+  //  TH3D* yield3d;  
   TH3D* yield3d_genmet;
 
   TH3D* yield3d_btag_light_UP;
@@ -37,6 +37,9 @@ class MT2EstimateAllSigSyst : public MT2Estimate {
 
   TH3D* yield3d_isr_UP;
   TH3D* yield3d_isr_DN;
+  
+  TH3D* yield3d_lepsf_UP;
+  TH3D* yield3d_lepsf_DN;
   
   //For signal contamination
   TH3D* yield3d_crsl;
