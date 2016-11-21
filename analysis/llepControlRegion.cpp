@@ -67,14 +67,17 @@ int main( int argc, char* argv[] ) {
 
   bool onlyData = false;
   bool onlyMC   = false;
+  bool onlySignal = false;
   if( argc > 2 ) {
     std::string dataMC(argv[2]);
     if( dataMC=="data" ) onlyData = true;
     else if( dataMC=="MC" || dataMC=="mc" ) onlyMC = true;
+    else if( dataMC=="signal" ) onlySignal = true;
     else {
       std::cout << "-> You passed a second argument that isn't 'data', nor 'MC', nor 'signal', so I don't know what to do about it." << std::endl;
     }
   }
+  
 
   std::string outputdir = cfg.getEventYieldDir() + "/llepControlRegion";
   system(Form("mkdir -p %s", outputdir.c_str()));
@@ -82,7 +85,7 @@ int main( int argc, char* argv[] ) {
   std::string regionsSet = cfg.regionsSet();
   std::cout << "Using region set: " << regionsSet << std::endl;
 
-  if( cfg.useMC() && !onlyData ) { // use MC BG estimates 
+  if( cfg.useMC() && !onlyData && !onlySignal ) { // use MC BG estimates 
     
     std::string samplesFileName = "../samples/samples_" + cfg.mcSamples() + ".dat";
     std::cout << std::endl << std::endl;
@@ -161,7 +164,7 @@ int main( int argc, char* argv[] ) {
   } // if sig samples
   
 
-  if( !(cfg.dummyAnalysis()) && cfg.dataSamples()!="" && !onlyMC ) {
+  if( !(cfg.dummyAnalysis()) && cfg.dataSamples()!="" && !onlyMC && !onlySignal) {
 
     std::string samplesFile_data = "../samples/samples_" + cfg.dataSamples() + ".dat";
 
@@ -331,6 +334,8 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
 template <class T>
 MT2Analysis<T>* computeSigYield( const MT2Sample& sample, const MT2Config& cfg ) {
 
+  bool dogenmet = false;
+
   TString sigSampleName(sample.name);
   TFile* sigXSFile;
   if(sigSampleName.Contains("T1qqqq") || sigSampleName.Contains("T1bbbb") || sigSampleName.Contains("T1tttt"))
@@ -373,11 +378,17 @@ MT2Analysis<T>* computeSigYield( const MT2Sample& sample, const MT2Config& cfg )
     
     myTree.GetEntry(iEntry);
     
-    bool passGenMET =true;
+    bool passGenMET =false;
+    if(dogenmet)
+      passGenMET = true;
+
     bool passRecoMET=true;
 
     if( !myTree.passBaseline() ) passRecoMET=false;
-    if( !myTree.passBaseline("genmet") ) passGenMET=false;
+
+    if(dogenmet)
+      if( !myTree.passBaseline("genmet") ) passGenMET=false;
+
     if (!passGenMET && !passRecoMET) continue;
  
     if( myTree.nLepLowMT==1 ); 
@@ -392,7 +403,10 @@ MT2Analysis<T>* computeSigYield( const MT2Sample& sample, const MT2Config& cfg )
     int njets  = myTree.nJet30;
     int nbjets = myTree.nBJet20;
     float mt2  = (njets>1) ? myTree.mt2 : ht;
-    float mt2_genmet  = (njets>1) ? myTree.mt2_genmet : ht;
+
+    float mt2_genmet;
+    if(dogenmet)
+      mt2_genmet = (njets>1) ? myTree.mt2_genmet : ht;
     
     int GenSusyMScan1=0;
     int GenSusyMScan2=0;
@@ -435,6 +449,7 @@ MT2Analysis<T>* computeSigYield( const MT2Sample& sample, const MT2Config& cfg )
     if( !myTree.isData ){
       weight *= myTree.weight_btagsf;
       weight *= myTree.weight_lepsf;
+      weight *= myTree.weight_isr;
     }
 
     float sig_xs=0.;
@@ -466,7 +481,7 @@ MT2Analysis<T>* computeSigYield( const MT2Sample& sample, const MT2Config& cfg )
 	  
 	}
 	
-	if(passGenMET){
+	if(dogenmet && passGenMET){
 	  
 	  thisEstimate->yield3d_genmet->Fill( mt2_genmet, GenSusyMScan1, GenSusyMScan2, weight );
 	  
@@ -485,7 +500,7 @@ MT2Analysis<T>* computeSigYield( const MT2Sample& sample, const MT2Config& cfg )
 
         }
 	
-        if(passGenMET){
+        if(dogenmet && passGenMET){
 
           thisEstimate->yield3d_genmet->Fill( mt2_genmet, GenSusyMScan1, GenSusyMScan2, weight );
 
@@ -501,7 +516,7 @@ MT2Analysis<T>* computeSigYield( const MT2Sample& sample, const MT2Config& cfg )
 
         }
 
-        if(passGenMET){
+        if(dogenmet && passGenMET){
 
           thisEstimate->yield3d_genmet->Fill( mt2_genmet, GenSusyMScan1, GenSusyMScan2, weight );
 
@@ -517,7 +532,7 @@ MT2Analysis<T>* computeSigYield( const MT2Sample& sample, const MT2Config& cfg )
 
         }
 
-        if(passGenMET){
+        if(dogenmet && passGenMET){
 
           thisEstimate->yield3d_genmet->Fill( mt2_genmet, GenSusyMScan1, GenSusyMScan2, weight );
 
@@ -540,7 +555,7 @@ MT2Analysis<T>* computeSigYield( const MT2Sample& sample, const MT2Config& cfg )
 
       }
 
-      if(passGenMET){
+      if(dogenmet && passGenMET){
 
 	thisEstimate->yield3d_genmet->Fill( mt2_genmet, GenSusyMScan1, GenSusyMScan2, weight );
 

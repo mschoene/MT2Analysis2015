@@ -470,6 +470,8 @@ public :
    Float_t weight_phottrigsf;
    Float_t weight_pu;
    Float_t weight_isr;
+   Float_t weight_isr_UP;
+   Float_t weight_isr_DN;
    Float_t weight_scales[500];
    Float_t weight_scales_UP;
    Float_t weight_scales_DN;
@@ -921,6 +923,8 @@ public :
    TBranch *b_weight_phottrigsf;
    TBranch *b_weight_pu;
    TBranch *b_weight_isr;
+   TBranch *b_weight_isr_UP;
+   TBranch *b_weight_isr_DN;
    TBranch *b_weight_scales;
    TBranch *b_weight_scales_UP;
    TBranch *b_weight_scales_DN;
@@ -1449,6 +1453,8 @@ void MT2Tree::Init(TTree *tree)
    fChain->SetBranchAddress("weight_phottrigsf", &weight_phottrigsf, &b_weight_phottrigsf);
    fChain->SetBranchAddress("weight_pu", &weight_pu, &b_weight_pu);
    fChain->SetBranchAddress("weight_isr", &weight_isr, &b_weight_isr);
+   fChain->SetBranchAddress("weight_isr_UP", &weight_isr_UP, &b_weight_isr_UP);
+   fChain->SetBranchAddress("weight_isr_DN", &weight_isr_DN, &b_weight_isr_DN);
    fChain->SetBranchAddress("weight_scales", weight_scales, &b_weight_scales);
    fChain->SetBranchAddress("weight_scales_UP", &weight_scales_UP, &b_weight_scales_UP);
    fChain->SetBranchAddress("weight_scales_DN", &weight_scales_DN, &b_weight_scales_DN);
