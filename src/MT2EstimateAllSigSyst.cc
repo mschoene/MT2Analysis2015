@@ -51,6 +51,11 @@ MT2EstimateAllSigSyst::MT2EstimateAllSigSyst( const std::string& aname, const MT
   yield3d_isr_DN = new TH3D( this->getHistoName("yield3d_isr_DN").c_str(), "", nBins, bins, nBinsM, binsM, nBinsM, binsM);
   yield3d_isr_DN->Sumw2();
 
+  yield3d_lepsf_UP = new TH3D( this->getHistoName("yield3d_lepsf_UP").c_str(), "", nBins, bins, nBinsM, binsM, nBinsM, binsM);
+  yield3d_lepsf_UP->Sumw2();
+  yield3d_lepsf_DN = new TH3D( this->getHistoName("yield3d_lepsf_DN").c_str(), "", nBins, bins, nBinsM, binsM, nBinsM, binsM);
+  yield3d_lepsf_DN->Sumw2();
+
   yield3d_btag_light_UP = new TH3D( this->getHistoName("yield3d_btag_light_UP").c_str(), "", nBins, bins, nBinsM, binsM, nBinsM, binsM);
   yield3d_btag_light_UP->Sumw2();
   yield3d_btag_heavy_DN = new TH3D( this->getHistoName("yield3d_btag_heavy_DN").c_str(), "", nBins, bins, nBinsM, binsM, nBinsM, binsM);
@@ -97,6 +102,9 @@ MT2EstimateAllSigSyst::MT2EstimateAllSigSyst( const MT2EstimateAllSigSyst& rhs )
   this->yield3d_isr_UP = new TH3D(*(rhs.yield3d_isr_UP));
   this->yield3d_isr_DN = new TH3D(*(rhs.yield3d_isr_DN));
 
+  this->yield3d_lepsf_UP = new TH3D(*(rhs.yield3d_lepsf_UP));
+  this->yield3d_lepsf_DN = new TH3D(*(rhs.yield3d_lepsf_DN));
+
   this->yield3d_btag_light_UP = new TH3D(*(rhs.yield3d_btag_light_UP));
   this->yield3d_btag_light_DN = new TH3D(*(rhs.yield3d_btag_light_DN));
   this->yield3d_btag_heavy_UP = new TH3D(*(rhs.yield3d_btag_heavy_UP));
@@ -122,6 +130,9 @@ MT2EstimateAllSigSyst::~MT2EstimateAllSigSyst() {
 
   delete yield3d_isr_UP;
   delete yield3d_isr_DN;
+
+  delete yield3d_lepsf_UP;
+  delete yield3d_lepsf_DN;
 
   delete yield3d_btag_light_UP;
   delete yield3d_btag_light_DN;
@@ -151,6 +162,9 @@ void MT2EstimateAllSigSyst::setName( const std::string& newName ) {
   yield3d_isr_UP  ->SetName( this->getHistoName("yield3d_isr_UP").c_str() );
   yield3d_isr_DN  ->SetName( this->getHistoName("yield3d_isr_DN").c_str() );
 
+  yield3d_lepsf_UP  ->SetName( this->getHistoName("yield3d_lepsf_UP").c_str() );
+  yield3d_lepsf_DN  ->SetName( this->getHistoName("yield3d_lepsf_DN").c_str() );
+
   yield3d_btag_heavy_UP  ->SetName( this->getHistoName("yield3d_btag_heavy_UP").c_str() );
   yield3d_btag_heavy_DN  ->SetName( this->getHistoName("yield3d_btag_heavy_DN").c_str() );
 
@@ -174,6 +188,9 @@ void MT2EstimateAllSigSyst::setSystName( const std::string& newSystName ) {
 
   yield3d_isr_UP  ->SetName( this->getHistoName("yield3d_isr_UP").c_str() );
   yield3d_isr_DN  ->SetName( this->getHistoName("yield3d_isr_DN").c_str() );
+
+  yield3d_lepsf_UP  ->SetName( this->getHistoName("yield3d_lepsf_UP").c_str() );
+  yield3d_lepsf_DN  ->SetName( this->getHistoName("yield3d_lepsf_DN").c_str() );
 
   yield3d_btag_heavy_UP  ->SetName( this->getHistoName("yield3d_btag_heavy_UP").c_str() );
   yield3d_btag_heavy_DN  ->SetName( this->getHistoName("yield3d_btag_heavy_DN").c_str() );
@@ -209,6 +226,9 @@ void MT2EstimateAllSigSyst::getShit( TFile* file, const std::string& path ) {
 
   yield3d_isr_UP   = (TH3D*)file->Get(Form("%s/%s", path.c_str(), yield3d_isr_UP->GetName()));
   yield3d_isr_DN   = (TH3D*)file->Get(Form("%s/%s", path.c_str(), yield3d_isr_DN->GetName()));
+
+  yield3d_lepsf_UP   = (TH3D*)file->Get(Form("%s/%s", path.c_str(), yield3d_lepsf_UP->GetName()));
+  yield3d_lepsf_DN   = (TH3D*)file->Get(Form("%s/%s", path.c_str(), yield3d_lepsf_DN->GetName()));
 
   yield3d_btag_light_UP   = (TH3D*)file->Get(Form("%s/%s", path.c_str(), yield3d_btag_light_UP->GetName()));
   yield3d_btag_light_DN   = (TH3D*)file->Get(Form("%s/%s", path.c_str(), yield3d_btag_light_DN->GetName()));
@@ -293,6 +313,9 @@ void MT2EstimateAllSigSyst::write() const {
   yield3d_isr_UP->Write();
   yield3d_isr_DN->Write();
 
+  yield3d_lepsf_UP->Write();
+  yield3d_lepsf_DN->Write();
+
   yield3d_btag_light_UP->Write();
   yield3d_btag_light_DN->Write();
   yield3d_btag_heavy_UP->Write();
@@ -321,6 +344,9 @@ const MT2EstimateAllSigSyst& MT2EstimateAllSigSyst::operator=( const MT2Estimate
 
   this->yield3d_isr_UP   = new TH3D(*(rhs.yield3d_isr_UP));
   this->yield3d_isr_DN   = new TH3D(*(rhs.yield3d_isr_DN));
+
+  this->yield3d_lepsf_UP   = new TH3D(*(rhs.yield3d_lepsf_UP));
+  this->yield3d_lepsf_DN   = new TH3D(*(rhs.yield3d_lepsf_DN));
 
   this->yield3d_btag_light_UP   = new TH3D(*(rhs.yield3d_btag_light_UP));
   this->yield3d_btag_light_DN   = new TH3D(*(rhs.yield3d_btag_light_DN));
@@ -356,6 +382,9 @@ const MT2EstimateAllSigSyst& MT2EstimateAllSigSyst::operator=( const MT2Estimate
 
   this->yield3d_isr_UP   = new TH3D(*(rhs.yield3d));
   this->yield3d_isr_DN   = new TH3D(*(rhs.yield3d));
+
+  this->yield3d_lepsf_UP   = new TH3D(*(rhs.yield3d));
+  this->yield3d_lepsf_DN   = new TH3D(*(rhs.yield3d));
 
   this->yield3d_btag_light_UP   = new TH3D(*(rhs.yield3d));
   this->yield3d_btag_light_DN   = new TH3D(*(rhs.yield3d));
@@ -405,6 +434,11 @@ MT2EstimateAllSigSyst MT2EstimateAllSigSyst::operator*( float k ) const{
   result.yield3d_isr_DN   = new TH3D(*(this->yield3d_isr_DN));
   result.yield3d_isr_DN->Scale(k);
 
+  result.yield3d_lepsf_UP   = new TH3D(*(this->yield3d_lepsf_UP));
+  result.yield3d_lepsf_UP->Scale(k);
+  result.yield3d_lepsf_DN   = new TH3D(*(this->yield3d_lepsf_DN));
+  result.yield3d_lepsf_DN->Scale(k);
+
   result.yield3d_btag_light_UP   = new TH3D(*(this->yield3d_btag_light_UP));
   result.yield3d_btag_light_UP->Scale(k);
   result.yield3d_btag_light_DN   = new TH3D(*(this->yield3d_btag_light_DN));
@@ -450,6 +484,11 @@ MT2EstimateAllSigSyst MT2EstimateAllSigSyst::operator/( float k ) const{
   result.yield3d_isr_DN   = new TH3D(*(this->yield3d_isr_DN));
   result.yield3d_isr_DN->Scale(1./k);
 
+  result.yield3d_lepsf_UP   = new TH3D(*(this->yield3d_lepsf_UP));
+  result.yield3d_lepsf_UP->Scale(1./k);
+  result.yield3d_lepsf_DN   = new TH3D(*(this->yield3d_lepsf_DN));
+  result.yield3d_lepsf_DN->Scale(1./k);
+
   result.yield3d_btag_light_UP   = new TH3D(*(this->yield3d_btag_light_UP));
   result.yield3d_btag_light_UP->Scale(1./k);
   result.yield3d_btag_light_DN   = new TH3D(*(this->yield3d_btag_light_DN));
@@ -484,6 +523,9 @@ const MT2EstimateAllSigSyst& MT2EstimateAllSigSyst::operator*=( float k ) {
   this->yield3d_isr_UP->Scale(k);
   this->yield3d_isr_DN->Scale(k);
 
+  this->yield3d_lepsf_UP->Scale(k);
+  this->yield3d_lepsf_DN->Scale(k);
+
   this->yield3d_btag_light_UP->Scale(k);
   this->yield3d_btag_light_DN->Scale(k);
   this->yield3d_btag_heavy_UP->Scale(k);
@@ -506,6 +548,9 @@ const MT2EstimateAllSigSyst& MT2EstimateAllSigSyst::operator/=( float k ) {
 
   this->yield3d_isr_UP->Scale(1./k);
   this->yield3d_isr_DN->Scale(1./k);
+
+  this->yield3d_lepsf_UP->Scale(1./k);
+  this->yield3d_lepsf_DN->Scale(1./k);
 
   this->yield3d_btag_light_UP->Scale(1./k);
   this->yield3d_btag_light_DN->Scale(1./k);
