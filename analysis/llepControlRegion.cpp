@@ -4,28 +4,33 @@
 #include <iomanip>
 #include <string>
 
+#include "TMath.h"
 #include "TH1D.h"
 #include "TH2D.h"
-#include "TMath.h"
+#include "TH3D.h"
 #include "THStack.h"
 #include "TCanvas.h"
 #include "TLegend.h"
 #include "TPaveText.h"
 #include "TGraphAsymmErrors.h"
-#include "TVector2.h"
+#include "TLorentzVector.h"
 
-#include "interface/MT2Config.h"
 #include "interface/MT2Sample.h"
 #include "interface/MT2Region.h"
 #include "interface/MT2Analysis.h"
-#include "interface/MT2Estimate.h"
-#include "interface/MT2EstimateSyst.h"
 #include "interface/MT2EstimateTree.h"
+#include "interface/MT2EstimateSigSyst.h"
 #include "interface/MT2EstimateAllSigSyst.h"
 #include "interface/MT2DrawTools.h"
+#include "interface/MT2Config.h"
+
+#include "TRandom3.h"
+
 
 #define mt2_cxx
 #include "interface/mt2.h"
+
+
 
 int round(float d) {
   return (int)(floor(d + 0.5));
@@ -33,11 +38,12 @@ int round(float d) {
 
 void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT2EstimateTree>* anaTree );
 void roundLikeData( MT2Analysis<MT2EstimateTree>* data );
-template <class T>
-MT2Analysis<T>* computeSigYield( const MT2Sample& sample, const MT2Config& cfg );
 
 float DeltaR(float eta1, float eta2, float phi1, float phi2);
 float DeltaPhi(float phi1, float phi2);
+
+template <class T>
+MT2Analysis<T>* computeSigYield( const MT2Sample& sample, const MT2Config& cfg );
 
 
 
@@ -48,7 +54,7 @@ int main( int argc, char* argv[] ) {
   std::cout << "------------------------------------------------------" << std::endl;
   std::cout << "|                                                    |" << std::endl;
   std::cout << "|                                                    |" << std::endl;
-  std::cout << "|           Running computeLostLepton_CR             |" << std::endl;
+  std::cout << "|           Running llepControlRegion                |" << std::endl;
   std::cout << "|                                                    |" << std::endl;
   std::cout << "|                                                    |" << std::endl;
   std::cout << "------------------------------------------------------" << std::endl;
@@ -56,7 +62,7 @@ int main( int argc, char* argv[] ) {
 
 
   if( argc < 2 ) {
-    std::cout << "USAGE: ./computeLostLepton_CR [configFileName] [data/mc]" << std::endl;
+    std::cout << "USAGE: ./llepControlRegion [configFileName] [data/mc]" << std::endl;
     std::cout << "Exiting." << std::endl;
     exit(11);
   }
@@ -78,9 +84,10 @@ int main( int argc, char* argv[] ) {
     }
   }
   
-
   std::string outputdir = cfg.getEventYieldDir() + "/llepControlRegion";
   system(Form("mkdir -p %s", outputdir.c_str()));
+
+  TH1::AddDirectory(kFALSE); // stupid ROOT memory allocation needs this  
 
   std::string regionsSet = cfg.regionsSet();
   std::cout << "Using region set: " << regionsSet << std::endl;
@@ -96,9 +103,6 @@ int main( int argc, char* argv[] ) {
       std::cout << "There must be an error: samples is empty!" << std::endl;
       exit(1209);
     }
-    
-    
-    TH1::AddDirectory(kFALSE); // stupid ROOT memory allocation needs this
     
     MT2Analysis<MT2EstimateTree>* llepCR = new MT2Analysis<MT2EstimateTree> ( "llepCR", regionsSet );  
         
@@ -119,7 +123,8 @@ int main( int argc, char* argv[] ) {
 
 
   // load signal samples, if any
-  std::vector< MT2Analysis< MT2EstimateAllSigSyst>* > signals;
+  std::vector< MT2Analysis< MT2EstimateAllSigSyst >* > signals;
+
   if( cfg.mcSamples()!="" && cfg.additionalStuff()!="noSignals" && !onlyData ) {
 
     std::string samplesFileName = "../samples/samples_" + cfg.mcSamples() + ".dat";
@@ -137,7 +142,14 @@ int main( int argc, char* argv[] ) {
     
       for( unsigned i=0; i<fSamples.size(); ++i ) 
         signals.push_back( computeSigYield<MT2EstimateAllSigSyst>( fSamples[i], cfg ) );
-    
+
+      if( signals.size()>0 ){
+
+	signals[0]->writeToFile( outputdir + "/mc.root" );
+	for( unsigned i=1; i<signals.size(); ++i )
+	  signals[i]->writeToFile( outputdir + "/mc.root" );
+      }
+      
     } // if samples != 0
 
   } // if mc samples
@@ -158,6 +170,12 @@ int main( int argc, char* argv[] ) {
 
       for( unsigned i=0; i<fSamples.size(); ++i )
         signals.push_back( computeSigYield<MT2EstimateAllSigSyst>( fSamples[i], cfg ) );
+
+      if( signals.size()>0 ){
+	signals[0]->writeToFile(outputdir + "/mc.root");
+	for( unsigned i=1; i<signals.size(); ++i )
+	  signals[i]->writeToFile(outputdir + "/mc.root");
+      }
 
     } // if samples != 0
     
@@ -189,6 +207,7 @@ int main( int argc, char* argv[] ) {
     dataCR->writeToFile( outputdir + "/data.root" );
 
   }
+
 
   return 0;
   
@@ -353,22 +372,19 @@ MT2Analysis<T>* computeSigYield( const MT2Sample& sample, const MT2Config& cfg )
   std::string regionsSet = cfg.regionsSet();
 
   std::cout << std::endl << std::endl;
-  std::cout << "-> Starting computation for sample: " << sample.name << std::endl;
+  std::cout << "-> Starting computation for sample (computeSigYield): " << sample.name << std::endl;
 
   TFile* file = TFile::Open(sample.file.c_str());
   std::cout << "-> Getting mt2 tree from file: " << sample.file << std::endl;
 
   TTree* tree = (TTree*)file->Get("mt2");
   
-
   MT2Tree myTree;
   myTree.Init(tree);
 
 
-
   std::cout << "-> Setting up MT2Analysis with name: " << sample.sname << std::endl;
   MT2Analysis<T>* analysis = new MT2Analysis<T>( sample.sname, regionsSet, sample.id );
-  
  
   int nentries = tree->GetEntries();
   
@@ -378,7 +394,7 @@ MT2Analysis<T>* computeSigYield( const MT2Sample& sample, const MT2Config& cfg )
     
     myTree.GetEntry(iEntry);
     
-    bool passGenMET =false;
+    bool passGenMET = false;
     if(dogenmet)
       passGenMET = true;
 
@@ -464,7 +480,8 @@ MT2Analysis<T>* computeSigYield( const MT2Sample& sample, const MT2Config& cfg )
 
     }
 
-    T* thisEstimate;
+    T* thisEstimate = analysis->get( ht, njets, nbjets, minMTBmet, 201. );
+    if( thisEstimate==0 ) continue;
 
     if( regionsSet=="zurich" || regionsSet=="zurichPlus" || regionsSet=="zurich2016" ){ // To avoid signal contamination in 7j 2b and 7j 3b                                                                                
 
@@ -472,18 +489,21 @@ MT2Analysis<T>* computeSigYield( const MT2Sample& sample, const MT2Config& cfg )
 
       else if( njets<7 || nbjets<1) {
 	
-	thisEstimate  = analysis->get( ht, njets, nbjets, minMTBmet, mt2 );
-	if( thisEstimate==0 ) continue;
-	
 	if(passRecoMET){
-	  
+
+	  thisEstimate  = analysis->get( ht, njets, nbjets, minMTBmet, mt2 );
+	  if( thisEstimate==0 ) continue;
+		  
 	  thisEstimate->yield->Fill( mt2, weight );
 	  thisEstimate->yield3d->Fill( mt2, GenSusyMScan1, GenSusyMScan2, weight );
 	  
 	}
 	
 	if(dogenmet && passGenMET){
-	  
+
+	  thisEstimate  = analysis->get( ht, njets, nbjets, minMTBmet, mt2_genmet );
+	  if( thisEstimate==0 ) continue;
+		  	  
 	  thisEstimate->yield3d_genmet->Fill( mt2_genmet, GenSusyMScan1, GenSusyMScan2, weight );
 	  
 	}
@@ -491,11 +511,11 @@ MT2Analysis<T>* computeSigYield( const MT2Sample& sample, const MT2Config& cfg )
       }
       else {
 
-	thisEstimate  = analysis->get( ht, njets, 1, minMTBmet, mt2 );
-        if( thisEstimate==0 ) continue;
-	
         if(passRecoMET){
 
+	  thisEstimate  = analysis->get( ht, njets, 1, minMTBmet, mt2 );
+	  if( thisEstimate==0 ) continue;
+	
           thisEstimate->yield->Fill( mt2, weight );
           thisEstimate->yield3d->Fill( mt2, GenSusyMScan1, GenSusyMScan2, weight );
 
@@ -503,14 +523,17 @@ MT2Analysis<T>* computeSigYield( const MT2Sample& sample, const MT2Config& cfg )
 	
         if(dogenmet && passGenMET){
 
+	  thisEstimate  = analysis->get( ht, njets, 1, minMTBmet, mt2_genmet );
+	  if( thisEstimate==0 ) continue;
+	
           thisEstimate->yield3d_genmet->Fill( mt2_genmet, GenSusyMScan1, GenSusyMScan2, weight );
 
         }
 
-	thisEstimate  = analysis->get( ht, njets, 2, minMTBmet, mt2 );
-	if( thisEstimate==0 ) continue;
-
         if(passRecoMET){
+
+	  thisEstimate  = analysis->get( ht, njets, 2, minMTBmet, mt2 );
+	  if( thisEstimate==0 ) continue;
 
           thisEstimate->yield->Fill( mt2, weight );
           thisEstimate->yield3d->Fill( mt2, GenSusyMScan1, GenSusyMScan2, weight );
@@ -518,15 +541,18 @@ MT2Analysis<T>* computeSigYield( const MT2Sample& sample, const MT2Config& cfg )
         }
 
         if(dogenmet && passGenMET){
+
+	  thisEstimate  = analysis->get( ht, njets, 2, minMTBmet, mt2_genmet );
+	  if( thisEstimate==0 ) continue;
 
           thisEstimate->yield3d_genmet->Fill( mt2_genmet, GenSusyMScan1, GenSusyMScan2, weight );
 
         }
 	
-	thisEstimate  = analysis->get( ht, njets, 3, minMTBmet, mt2 );
-	if( thisEstimate==0 ) continue;
-
         if(passRecoMET){
+
+	  thisEstimate  = analysis->get( ht, njets, 3, minMTBmet, mt2 );
+	  if( thisEstimate==0 ) continue;
 
           thisEstimate->yield->Fill( mt2, weight );
           thisEstimate->yield3d->Fill( mt2, GenSusyMScan1, GenSusyMScan2, weight );
@@ -534,6 +560,9 @@ MT2Analysis<T>* computeSigYield( const MT2Sample& sample, const MT2Config& cfg )
         }
 
         if(dogenmet && passGenMET){
+
+	  thisEstimate  = analysis->get( ht, njets, 3, minMTBmet, mt2_genmet );
+	  if( thisEstimate==0 ) continue;
 
           thisEstimate->yield3d_genmet->Fill( mt2_genmet, GenSusyMScan1, GenSusyMScan2, weight );
 
@@ -546,11 +575,11 @@ MT2Analysis<T>* computeSigYield( const MT2Sample& sample, const MT2Config& cfg )
     else {
 
       
-      thisEstimate  = analysis->get( ht, njets, nbjets, minMTBmet, mt2 );
-      if( thisEstimate==0 ) continue;
-      
       if(passRecoMET){
 
+	thisEstimate  = analysis->get( ht, njets, nbjets, minMTBmet, mt2 );
+	if( thisEstimate==0 ) continue;
+      
 	thisEstimate->yield->Fill( mt2, weight );
 	thisEstimate->yield3d->Fill( mt2, GenSusyMScan1, GenSusyMScan2, weight );
 
@@ -558,27 +587,28 @@ MT2Analysis<T>* computeSigYield( const MT2Sample& sample, const MT2Config& cfg )
 
       if(dogenmet && passGenMET){
 
+	thisEstimate  = analysis->get( ht, njets, nbjets, minMTBmet, mt2_genmet );
+	if( thisEstimate==0 ) continue;
+      
 	thisEstimate->yield3d_genmet->Fill( mt2_genmet, GenSusyMScan1, GenSusyMScan2, weight );
 
       }
       
     }
 
-
   } // for entries
-    
-  //ofs.close();
 
   analysis->finalize();
-  
+
   delete tree;
 
   file->Close();
   delete file;
-  
+
   return analysis;
 
 }
+
 
 
 
