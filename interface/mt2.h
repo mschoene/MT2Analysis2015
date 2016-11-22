@@ -91,6 +91,7 @@ public :
    Float_t         rho;
    Int_t           nVert;
    Int_t           nJet20;
+   Int_t           nJet20BadFastsim;
    Int_t           nJet25;
    Int_t           nBJetLoose25;
    Int_t           nBJetMedium25;
@@ -545,6 +546,7 @@ public :
    TBranch        *b_rho;   //!
    TBranch        *b_nVert;   //!
    TBranch        *b_nJet20;   //!
+   TBranch        *b_nJet20BadFastsim;   //!
    TBranch        *b_nJet25;   //!
    TBranch        *b_nBJetLoose25;   //!
    TBranch        *b_nBJetMedium25;   //!
@@ -1070,6 +1072,7 @@ void MT2Tree::Init(TTree *tree)
    fChain->SetBranchAddress("rho", &rho, &b_rho);
    fChain->SetBranchAddress("nVert", &nVert, &b_nVert);
    fChain->SetBranchAddress("nJet20", &nJet20, &b_nJet20);
+   fChain->SetBranchAddress("nJet20BadFastsim", &nJet20BadFastsim, &b_nJet20BadFastsim);
    fChain->SetBranchAddress("nJet25", &nJet25, &b_nJet25);
    fChain->SetBranchAddress("nBJetLoose25", &nBJetLoose25, &b_nBJetLoose25);
    fChain->SetBranchAddress("nBJetMedium25", &nBJetMedium25, &b_nBJetMedium25);

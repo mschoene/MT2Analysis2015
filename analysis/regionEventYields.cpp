@@ -570,7 +570,7 @@ MT2Analysis<T>* computeSigYield( const MT2Sample& sample, const MT2Config& cfg )
   std::string regionsSet = cfg.regionsSet();
   
   std::cout << std::endl << std::endl;
-  std::cout << "-> Starting computation for sample: " << sample.name << std::endl;
+  std::cout << "-> Starting computation for sample (computeSigYield): " << sample.name << std::endl;
 
   TFile* file = TFile::Open(sample.file.c_str());
   std::cout << "-> Getting mt2 tree from file: " << sample.file << std::endl;
@@ -617,6 +617,7 @@ MT2Analysis<T>* computeSigYield( const MT2Sample& sample, const MT2Config& cfg )
       
 
     if ( myTree.nJet30==1 && !myTree.passMonoJetId(0) ) continue;
+    if ( myTree.nJet20BadFastsim > 0 ) continue;
 
     float ht   = myTree.ht;
     float met  = myTree.met_pt;
@@ -673,16 +674,19 @@ MT2Analysis<T>* computeSigYield( const MT2Sample& sample, const MT2Config& cfg )
       GenSusyMScan1 = myTree.GenSusyMGluino;
       GenSusyMScan2 = myTree.GenSusyMNeutralino;
       
+//      GenSusyMScan1 = myTree.GenSusyMScan1;
+//      GenSusyMScan2 = myTree.GenSusyMScan2;
+      
       }
 
     }
  
     //Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi()*myTree.puWeight;
-    //    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb;//*cfg.lumi();
-    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi(); //Keeping normalization to luminosity for signal?
+    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb;//*cfg.lumi();
+    //Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi(); //Keeping normalization to luminosity for signal?
     Double_t weight_syst = 1.;
 
-    //////    weight = 1000.* myTree.evt_xsec/nentries; //Exceptionally for signal from muricans 
+    //weight = 1000./nentries*cfg.lumi(); //Exceptionally for signal from muricans 
 
     if( !myTree.isData ){
       weight *= weight_btagsf;
