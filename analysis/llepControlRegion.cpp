@@ -395,6 +395,7 @@ MT2Analysis<T>* computeSigYield( const MT2Sample& sample, const MT2Config& cfg )
     else continue;
     
     if ( myTree.nJet30==1 && !myTree.passMonoJetId(0) ) continue;
+    if ( myTree.nJet20BadFastsim > 0 ) continue;
 
     float ht   = myTree.ht;
     float met  = myTree.met_pt;
