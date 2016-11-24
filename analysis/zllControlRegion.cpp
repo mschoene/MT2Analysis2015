@@ -211,21 +211,23 @@ int main(int argc, char* argv[]) {
       std::vector<MT2Sample> fSamples_top = MT2Sample::loadSamples(samplesFileName, 300, 499);   
       for( unsigned i=0; i<fSamples_top.size(); ++i )
 	computeYieldSnO( fSamples_top[i], cfg, mc_top, mc_top_of, h_elSF, h_muSF, false);
-      /* 
-      MT2Analysis<MT2EstimateTree>* mc_qcd = new MT2Analysis<MT2EstimateTree>( "QCD", cfg.crRegionsSet(),100, "QCD" );
-      MT2Analysis<MT2EstimateTree>* mc_qcd_of = new MT2Analysis<MT2EstimateTree>( "QCD", cfg.crRegionsSet(),100, "QCD");
-      addVariables(mc_qcd);      addVariables(mc_qcd_of);
-      std::vector<MT2Sample> fSamples_qcd = MT2Sample::loadSamples(samplesFileName, 100, 199);   
-      for( unsigned i=0; i<fSamples_qcd.size(); ++i )
-	computeYieldSnO( fSamples_qcd[i], cfg, mc_qcd, mc_qcd_of, h_elSF, h_muSF, false);
 
-      MT2Analysis<MT2EstimateTree>* mc_wjets = new MT2Analysis<MT2EstimateTree>( "WJets", cfg.crRegionsSet(),500, "W+jets"  );
-      MT2Analysis<MT2EstimateTree>* mc_wjets_of = new MT2Analysis<MT2EstimateTree>( "WJets", cfg.crRegionsSet(),500, "W+jets");
-      addVariables(mc_wjets);      addVariables(mc_wjets_of);
-      std::vector<MT2Sample> fSamples_wjets = MT2Sample::loadSamples(samplesFileName, 500, 599);   
-      for( unsigned i=0; i<fSamples_wjets.size(); ++i )
-	computeYieldSnO( fSamples_wjets[i], cfg, mc_wjets, mc_wjets_of, h_elSF, h_muSF, false);
+      /* 
+	 MT2Analysis<MT2EstimateTree>* mc_qcd = new MT2Analysis<MT2EstimateTree>( "QCD", cfg.crRegionsSet(),100, "QCD" );
+	 MT2Analysis<MT2EstimateTree>* mc_qcd_of = new MT2Analysis<MT2EstimateTree>( "QCD", cfg.crRegionsSet(),100, "QCD");
+	 addVariables(mc_qcd);      addVariables(mc_qcd_of);
+	 std::vector<MT2Sample> fSamples_qcd = MT2Sample::loadSamples(samplesFileName, 100, 199);   
+	 for( unsigned i=0; i<fSamples_qcd.size(); ++i )
+	 computeYieldSnO( fSamples_qcd[i], cfg, mc_qcd, mc_qcd_of, h_elSF, h_muSF, false);
+
+	 MT2Analysis<MT2EstimateTree>* mc_wjets = new MT2Analysis<MT2EstimateTree>( "WJets", cfg.crRegionsSet(),500, "W+jets"  );
+	 MT2Analysis<MT2EstimateTree>* mc_wjets_of = new MT2Analysis<MT2EstimateTree>( "WJets", cfg.crRegionsSet(),500, "W+jets");
+	 addVariables(mc_wjets);      addVariables(mc_wjets_of);
+	 std::vector<MT2Sample> fSamples_wjets = MT2Sample::loadSamples(samplesFileName, 500, 599);   
+	 for( unsigned i=0; i<fSamples_wjets.size(); ++i )
+	 computeYieldSnO( fSamples_wjets[i], cfg, mc_wjets, mc_wjets_of, h_elSF, h_muSF, false);
       */
+
       MT2Analysis<MT2EstimateTree>* mc_zll   = mcTree;
       mc_zll->setName("DYJets");
       mc_zll->setFullName("DY+jets");
@@ -397,7 +399,10 @@ void addVariables(MT2Analysis<MT2EstimateTree>* anaTree){
   MT2EstimateTree::addVar( anaTree, "lep_pt1");
   MT2EstimateTree::addVar( anaTree, "lep_eta0");
   MT2EstimateTree::addVar( anaTree, "lep_eta1");
+  MT2EstimateTree::addVar( anaTree, "lep_phi0");
+  MT2EstimateTree::addVar( anaTree, "lep_phi1");
   MT2EstimateTree::addVar( anaTree, "raw_mt2"); // = mt2 with the two leptons
+  MT2EstimateTree::addVar( anaTree, "raw_met"); // = met with the two leptons
 
   MT2EstimateTree::addVar( anaTree, "weight_lep0"); 
   MT2EstimateTree::addVar( anaTree, "weight_lep1");
@@ -578,7 +583,7 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
 	//Backwards compatible, don't make me think now, it's too warm
 	weight_lep0 = central;
 	weight_lep_err = uncert_UP;
-	weight_lep1 = 1;  	
+	weight_lep1 = 1.;  	
       }//end of loop over objects
 
     }//end of applying SF
@@ -598,7 +603,9 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
 
       if(doZinvEst){
 	//SF part
-	if( fabs(z.M()-91.19)>10 ) continue;
+	if( fabs(z.M()-91.19)>=20 ) continue;
+	if( z.Perp() <= 180. ) continue;
+	//if( fabs(z.M()-91.19)>10 ) continue;
       }
       if( abs(myTree.lep_pdgId[0])==11 && myTree.lep_tightId[0]< 0.5 ) continue;
       if( abs(myTree.lep_pdgId[1])==11 && myTree.lep_tightId[1]< 0.5 ) continue;
@@ -623,9 +630,7 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
 	else if(abs(myTree.lep_pdgId[0])==13 )
 	  HLT_weight = 0.969;
 	
-	//	if(doZinvEst){
-	  weight = weight* (HLT_weight * weight_lep0);
-	  //	}
+	weight = weight* (HLT_weight * weight_lep0);
       }
 
 
@@ -643,7 +648,10 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
       thisTree->assignVar("lep_pt1", myTree.lep_pt[1] );
       thisTree->assignVar("lep_eta0", myTree.lep_eta[0] );
       thisTree->assignVar("lep_eta1", myTree.lep_eta[1] );
+      thisTree->assignVar("lep_phi0", myTree.lep_phi[0] );
+      thisTree->assignVar("lep_phi1", myTree.lep_phi[1] );
       thisTree->assignVar("raw_mt2", myTree.mt2 );
+      thisTree->assignVar("raw_met", myTree.met_pt );
 
       thisTree->assignVar("weight_lep0", weight_lep0);
       thisTree->assignVar("weight_lep1", weight_lep1);
@@ -664,8 +672,16 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
     } else if(isOF){ //////////Opposite FLAVOR//////////////////////////////////////////
       if(  myTree.isData && !( (myTree.HLT_MuX_Ele12 || myTree.HLT_Mu8_EleX || myTree.HLT_Mu33_Ele33_NonIso )) ) continue;
 
-      if(doZinvEst)
-	if( fabs(z.M())<50 ) continue;
+      //   if(doZinvEst)
+      //	if( fabs(z.M())<50 ) continue;
+
+      if(doZinvEst){
+	//SF part
+	if( fabs(z.M()-91.19)>=20 ) continue;
+	if( z.Perp() <= 180. ) continue;
+	//if( fabs(z.M()-91.19)>10 ) continue;
+      }
+
 
       if( abs(myTree.lep_pdgId[0])==11 && myTree.lep_tightId[0]< 0.5 ) continue;
       if( abs(myTree.lep_pdgId[1])==11 && myTree.lep_tightId[1]< 0.5 ) continue;
@@ -697,7 +713,10 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
       thisTree_of->assignVar("lep_pt1", myTree.lep_pt[1] );
       thisTree_of->assignVar("lep_eta0", myTree.lep_eta[0] );
       thisTree_of->assignVar("lep_eta1", myTree.lep_eta[1] );
+      thisTree_of->assignVar("lep_phi0", myTree.lep_phi[0] );
+      thisTree_of->assignVar("lep_phi1", myTree.lep_phi[1] );
       thisTree_of->assignVar("raw_mt2", myTree.mt2 );
+      thisTree_of->assignVar("raw_met", myTree.met_pt );
 
       thisTree_of->assignVar("weight_lep0", weight_lep0);
       thisTree_of->assignVar("weight_lep1", weight_lep1);
