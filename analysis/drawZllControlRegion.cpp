@@ -29,7 +29,8 @@
 #define mt2_cxx
 #include "interface/mt2.h"
 
-double lumiErr = 0.12;
+
+double lumiErr = 0.046;
 bool shapeNorm = false;
 
 
@@ -99,8 +100,8 @@ int main(int argc, char* argv[]){
     std::cout << "-> Please run zllControlRegion first. I need to get the yields from there." << std::endl;    std::cout << "-> Thank you for your cooperation." << std::endl;    exit(197);
   } 
   Zll->setColor(kZinv);
-  MT2Analysis<MT2EstimateTree>* qcd = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s/ZllPurityTrees.root", ZllDir.c_str()  ), "QCD");
-  qcd->setColor(kQCD);
+  // MT2Analysis<MT2EstimateTree>* qcd = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s/ZllPurityTrees.root", ZllDir.c_str()  ), "QCD");
+  // qcd->setColor(kQCD);
   MT2Analysis<MT2EstimateTree>* top = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s/ZllPurityTrees.root", ZllDir.c_str() ), "Top");
   top->setColor(kTop);
   //MT2Analysis<MT2EstimateTree>* wjets = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s/ZllPurityTrees.root", ZllDir.c_str() ), "WJets");
@@ -122,22 +123,22 @@ int main(int argc, char* argv[]){
   //OPPOSITE FLAVOR TREES
   MT2Analysis<MT2EstimateTree>* Zll_of = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s/ZllPurityTrees_of.root", ZllDir_of.c_str() ), "DYJets");
   Zll_of->setColor(kZinv);
-  MT2Analysis<MT2EstimateTree>* qcd_of = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s/ZllPurityTrees_of.root", ZllDir_of.c_str()  ), "QCD");
-  qcd_of->setColor(kQCD);
+  // MT2Analysis<MT2EstimateTree>* qcd_of = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s/ZllPurityTrees_of.root", ZllDir_of.c_str()  ), "QCD");
+  // qcd_of->setColor(kQCD);
   MT2Analysis<MT2EstimateTree>* top_of = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s/ZllPurityTrees_of.root", ZllDir_of.c_str() ), "Top");
   top_of->setColor(kTop);
-  MT2Analysis<MT2EstimateTree>* wjets_of = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s/ZllPurityTrees_of.root", ZllDir_of.c_str() ), "WJets");
-  wjets_of->setColor(kWJets);
+  //MT2Analysis<MT2EstimateTree>* wjets_of = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s/ZllPurityTrees_of.root", ZllDir_of.c_str() ), "WJets");
+  // wjets_of->setColor(kWJets);
   MT2Analysis<MT2EstimateTree>* data_of = MT2Analysis<MT2EstimateTree>::readFromFile(Form("%s/data_of.root", ZllDir_of.c_str() ) , "data_of");
 
   Zll_of->setFullName("Z+jets");
-  wjets_of->setFullName("W+jets");
+  //  wjets_of->setFullName("W+jets");
   data_of->setFullName("Data");
 
   std::vector<MT2Analysis<MT2EstimateTree>* > bgYields_of; 
   bgYields_of.push_back( top_of );
   //  bgYields_of.push_back( qcd_of );
-  bgYields_of.push_back( wjets_of );
+  //  bgYields_of.push_back( wjets_of );
   bgYields_of.push_back( Zll_of );
 
   std::string plotsDir = cfg.getEventYieldDir() + "/zllControlRegion/plotsDataMC";
@@ -164,11 +165,18 @@ int main(int argc, char* argv[]){
   // +++      w/ monjet   +++
   // +++++++++++++++++++++++++
 
-  float htMin=200, htMax=-1;
+  float htMin=250, htMax=-1;
   std::string cutsLabel = getCutLabel(htMin, htMax, "H_{T}", "GeV");
 
-  std::string selection = "(ht>200. && nJets==1 && met>200 && mt2>200. && deltaPhiMin>0.3 && diffMetMht<0.5*met && abs(Z_mass-91.19)<10 && (Z_lepId==13 || (Z_lepId==11 && lep_tightId0>0 && lep_tightId1>0)) )";
+  std::string selection = "(ht>200. && nJets==1 && met>200 && mt2>200. && deltaPhiMin>0.3 && diffMetMht<0.5*met && abs(Z_mass-91.19)<20 )";
 
+
+  // std::string selection = "(ht>200. && nJets==1 && met>200 && mt2>200. && deltaPhiMin>0.3 && diffMetMht<0.5*met && abs(Z_mass-91.19)<10 && (Z_lepId==13 || (Z_lepId==11 && lep_tightId0>0 && lep_tightId1>0)) )";
+
+
+  std::string selection_mass;
+  std::string selection_mass_mu;
+  std::string selection_mass_el;
 	  // std::string selection = "ht>200. && nJets==1 && met>200 && mt2>200. && deltaPhiMin>0.3 && diffMetMht<0.5*met && abs(Z_mass-91.19)<10";
 
   /*
@@ -243,11 +251,13 @@ int main(int argc, char* argv[]){
   // +++++++++++++++++++++++++
   // +++     inclusive     +++
   // +++++++++++++++++++++++++
+  selection = "(ht>250. &&nJets>=1 && mt2>200. && deltaPhiMin>0.3 && diffMetMht<0.5*met && fabs(Z_mass-91.19)<=20)";
+  //  selection = "(ht>200. &&nJets>=1 && met>200. && mt2>200. && deltaPhiMin>0.3 && diffMetMht<0.5*met && abs(Z_mass-91.19)<20)";
 
-  selection = "weight*(ht>200. &&nJets>=1 && met>200. && mt2>200. && deltaPhiMin>0.3 && diffMetMht<0.5*met && abs(Z_mass-91.19)<10  && (Z_lepId==13 || (Z_lepId==11 && lep_tightId0>0 && lep_tightId1>0)) )";
-  dt.drawRegionYields_fromTree( "incl_mt2"   , "mt2"   , selection, 40, 10., 810., "M_{T2}", "GeV", cutsLabel, "#geq1j, #geq0b");
+  dt.drawRegionYields_fromTree( "incl_mt2"   , "mt2"   , selection, 40, 200., 1000., "M_{T2}", "GeV", cutsLabel, "#geq1j, #geq0b");
   dt.drawRegionYields_fromTree( "incl_met"   , "met"   , selection, 40, 200, 1000, "ME_{T}", "GeV", cutsLabel, "#geq1j, #geq0b");
-  dt.drawRegionYields_fromTree( "incl_ht"    , "ht"    , selection, 50, 200., 2200., "H_{T}", "GeV", cutsLabel, "#geq1j, #geq0b");
+  dt.drawRegionYields_fromTree( "incl_raw_met"   , "raw_met"   , selection, 40, 0, 400, "ME_{T}", "GeV", cutsLabel, "#geq1j, #geq0b");
+  dt.drawRegionYields_fromTree( "incl_ht"    , "ht"    , selection, 50, 250., 2250., "H_{T}", "GeV", cutsLabel, "#geq1j, #geq0b");
   dt.drawRegionYields_fromTree( "incl_nJets" , "nJets" , selection, 13, 0.5, 13.5, "Number of Jets (p_{T} > 30 GeV)", "", cutsLabel, "#geq1j, #geq0b");
   dt.drawRegionYields_fromTree( "incl_nBJets", "nBJets", selection, 7, -0.5, 6.5, "Number of b-Jets (p_{T} > 20 GeV)", "", cutsLabel, "#geq1j, #geq0b");
   dt.drawRegionYields_fromTree( "incl_Z_pt"   , "Z_pt"   , selection, 50, 10., 1010., "Z p_{T}", "GeV", cutsLabel, "#geq1j, #geq0b");
@@ -257,15 +267,240 @@ int main(int argc, char* argv[]){
   dt.drawRegionYields_fromTree( "incl_lep_eta1"   , "lep_eta1"   , selection, 30, -3., 3., "Sub-Leading Lepton #eta", "", cutsLabel, "#geq1j, #geq0b");
   dt.drawRegionYields_fromTree( "incl_Z_lepId", "Z_lepId", selection, 5, 9.5, 14.5, "Lepton Id", "", cutsLabel, "#geq1j, #geq0b");
  
-
- 
-  selection_mass = "weight*(ht>200. && nJets>=1  &&met>200 && mt2>200. && deltaPhiMin>0.3 && diffMetMht<0.5*met && (Z_lepId==13 || (Z_lepId==11 && lep_tightId0>0 && lep_tightId1>0))  )";
+  //MLL 
+  selection_mass = "(ht>250. && nJets>=1 && mt2>200. )";
   dt.drawRegionYields_fromTree( "incl_mll"   , "Z_mass"   , selection_mass, 50, 50., 150., "M_{ll}", "GeV", cutsLabel ,"#geq1j, #geq0b");
 
-  selection_mass_el = "weight*(ht>200. && nJets>=1  &&met> 200. && mt2>200. && deltaPhiMin>0.3 && diffMetMht<0.5*met && Z_lepId==11 && lep_tightId0>0 && lep_tightId1>0)";
+  selection_mass_el = "(ht>250. && nJets>=1 && mt2>200. && Z_lepId==11)";
   dt.drawRegionYields_fromTree( "incl_mll_el"   , "Z_mass"   , selection_mass_el, 50 , 50., 150., "M_{e^{+}e^{-}}", "GeV", cutsLabel, "#geq1j, #geq0b");
-  selection_mass_mu = "weight*(ht>200. && nJets>=1 &&met>200. && mt2>200. && deltaPhiMin>0.3 && diffMetMht<0.5*met && Z_lepId==13 )";
+  selection_mass_mu = "(ht>250. && nJets>=1 && mt2>200. && Z_lepId==13 )";
   dt.drawRegionYields_fromTree( "incl_mll_mu"   , "Z_mass"   , selection_mass_mu, 50, 50., 150., "M_{#mu^{+}#mu^{-}}", "GeV", cutsLabel, "#geq1j, #geq0b");
+
+
+  ///////////////////////////////////////////
+  ////// opposite flavour ///////////////////
+  ///////////////////////////////////////////
+  selection = "(ht>250. &&nJets>=1  && mt2>200. && deltaPhiMin>0.3 && diffMetMht<0.5*met && fabs(Z_mass-91.19)<=20)";
+  dt_of.drawRegionYields_fromTree( "incl_mt2"   , "mt2"   , selection, 40, 200., 1000., "M_{T2}", "GeV", cutsLabel, "#geq1j, #geq0b");
+  dt_of.drawRegionYields_fromTree( "incl_met"   , "met"   , selection, 40, 200, 1050, "ME_{T}", "GeV", cutsLabel, "#geq1j, #geq0b");
+  dt_of.drawRegionYields_fromTree( "incl_raw_met"   , "raw_met"   , selection, 40, 0, 400, "ME_{T}", "GeV", cutsLabel, "#geq1j, #geq0b");
+  dt_of.drawRegionYields_fromTree( "incl_ht"    , "ht"    , selection, 50, 250., 2250., "H_{T}", "GeV", cutsLabel, "#geq1j, #geq0b");
+  dt_of.drawRegionYields_fromTree( "incl_nJets" , "nJets" , selection, 13, 0.5, 13.5, "Number of Jets (p_{T} > 30 GeV)", "", cutsLabel, "#geq1j, #geq0b");
+  dt_of.drawRegionYields_fromTree( "incl_nBJets", "nBJets", selection, 7, -0.5, 6.5, "Number of b-Jets (p_{T} > 20 GeV)", "", cutsLabel, "#geq1j, #geq0b");
+  dt_of.drawRegionYields_fromTree( "incl_Z_pt"   , "Z_pt"   , selection, 50, 10., 1010., "Z p_{T}", "GeV", cutsLabel, "#geq1j, #geq0b");
+  dt_of.drawRegionYields_fromTree( "incl_lep_pt0"   , "lep_pt0"   , selection, 40, 0., 700., "Leading Lepton p_{T}", "GeV", cutsLabel, "#geq1j, #geq0b");
+  dt_of.drawRegionYields_fromTree( "incl_lep_pt1"   , "lep_pt1"   , selection, 20, 0., 500., "Sub-Leading Lepton p_{T}", "GeV", cutsLabel, "#geq1j, #geq0b");
+  dt_of.drawRegionYields_fromTree( "incl_lep_eta0"   , "lep_eta0"   , selection,30 , -3., 3., "Leading Lepton #eta", "", cutsLabel, "#geq1j, #geq0b");
+  dt_of.drawRegionYields_fromTree( "incl_lep_eta1"   , "lep_eta1"   , selection, 30, -3., 3., "Sub-Leading Lepton #eta", "", cutsLabel, "#geq1j, #geq0b");
+  dt_of.drawRegionYields_fromTree( "incl_Z_lepId", "Z_lepId", selection, 5, 9.5, 14.5, "Lepton Id", "", cutsLabel, "#geq1j, #geq0b");
+
+   //Mll distributions: WITHOUT mass cut (for obv. reason)
+  selection_mass = "(ht>250. && nJets>=1  && mt2>200. )";
+  dt_of.drawRegionYields_fromTree( "incl_mll"   , "Z_mass"   , selection_mass, 50, 50., 150., "M_{ll}", "GeV", cutsLabel ,"#geq1j, #geq0b");
+  selection_mass_el = "(ht>250. && nJets>=1  && mt2>200. && Z_lepId==11)";
+  dt_of.drawRegionYields_fromTree( "incl_mll_el"   , "Z_mass"   , selection_mass_el, 50 , 50., 150., "M_{e^{+}e^{-}}", "GeV", cutsLabel, "#geq1j, #geq0b");
+  selection_mass_mu = "(ht>250. && nJets>=1 && mt2>200. && Z_lepId==13 )";
+  dt_of.drawRegionYields_fromTree( "incl_mll_mu"   , "Z_mass"   , selection_mass_mu, 50, 50., 150., "M_{#mu^{+}#mu^{-}}", "GeV", cutsLabel, "#geq1j, #geq0b");
+
+
+
+
+
+
+  ///AGAIN BUT WITH Z_PT CUT
+
+  // +++++++++++++++++++++++++
+  // +++     inclusive     +++
+  // +++++++++++++++++++++++++
+  selection = "(ht>250. &&nJets>=1 &&  mt2>200. && deltaPhiMin>0.3 && diffMetMht<0.5*met && fabs(Z_mass-91.19)<=20) && Z_pt>=180.";
+  //  selection = "(ht>200. &&nJets>=1 && met>200. && mt2>200. && deltaPhiMin>0.3 && diffMetMht<0.5*met && abs(Z_mass-91.19)<20)";
+
+  dt.drawRegionYields_fromTree( "incl_cut180Zpt_mt2"   , "mt2"   , selection, 40, 200., 1000., "M_{T2}", "GeV", cutsLabel, "#geq1j, #geq0b");
+  dt.drawRegionYields_fromTree( "incl_cut180Zpt_met"   , "met"   , selection, 40, 200, 1000, "ME_{T}", "GeV", cutsLabel, "#geq1j, #geq0b");
+  dt.drawRegionYields_fromTree( "incl_cut180Zpt_raw_met"   , "raw_met"   , selection, 40, 0, 400, "ME_{T}", "GeV", cutsLabel, "#geq1j, #geq0b");
+  dt.drawRegionYields_fromTree( "incl_cut180Zpt_ht"    , "ht"    , selection, 50, 250., 2250., "H_{T}", "GeV", cutsLabel, "#geq1j, #geq0b");
+  dt.drawRegionYields_fromTree( "incl_cut180Zpt_nJets" , "nJets" , selection, 13, 0.5, 13.5, "Number of Jets (p_{T} > 30 GeV)", "", cutsLabel, "#geq1j, #geq0b");
+  dt.drawRegionYields_fromTree( "incl_cut180Zpt_nBJets", "nBJets", selection, 7, -0.5, 6.5, "Number of b-Jets (p_{T} > 20 GeV)", "", cutsLabel, "#geq1j, #geq0b");
+  dt.drawRegionYields_fromTree( "incl_cut180Zpt_Z_pt"   , "Z_pt"   , selection, 50, 10., 1010., "Z p_{T}", "GeV", cutsLabel, "#geq1j, #geq0b");
+  dt.drawRegionYields_fromTree( "incl_cut180Zpt_lep_pt0"   , "lep_pt0"   , selection, 40, 0., 700., "Leading Lepton p_{T}", "GeV", cutsLabel, "#geq1j, #geq0b");
+  dt.drawRegionYields_fromTree( "incl_cut180Zpt_lep_pt1"   , "lep_pt1"   , selection, 20, 0., 500., "Sub-Leading Lepton p_{T}", "GeV", cutsLabel, "#geq1j, #geq0b");
+  dt.drawRegionYields_fromTree( "incl_cut180Zpt_lep_eta0"   , "lep_eta0"   , selection,30 , -3., 3., "Leading Lepton #eta", "", cutsLabel, "#geq1j, #geq0b");
+  dt.drawRegionYields_fromTree( "incl_cut180Zpt_lep_eta1"   , "lep_eta1"   , selection, 30, -3., 3., "Sub-Leading Lepton #eta", "", cutsLabel, "#geq1j, #geq0b");
+  dt.drawRegionYields_fromTree( "incl_cut180Zpt_Z_lepId", "Z_lepId", selection, 5, 9.5, 14.5, "Lepton Id", "", cutsLabel, "#geq1j, #geq0b");
+ 
+  //MLL 
+  selection_mass = "(ht>250. && nJets>=1   && mt2>200. && Z_pt>=180. )";
+  dt.drawRegionYields_fromTree( "incl_cut180Zpt_mll"   , "Z_mass"   , selection_mass, 50, 50., 150., "M_{ll}", "GeV", cutsLabel ,"#geq1j, #geq0b");
+
+  selection_mass_el = "(ht>250. && nJets>=1 && met> 250. && mt2>200. && Z_lepId==11 && Z_pt>=180.)";
+  dt.drawRegionYields_fromTree( "incl_cut180Zpt_mll_el"   , "Z_mass"   , selection_mass_el, 50 , 50., 150., "M_{e^{+}e^{-}}", "GeV", cutsLabel, "#geq1j, #geq0b");
+  selection_mass_mu = "(ht>250. && nJets>=1 . && mt2>200. && Z_lepId==13 && Z_pt>=180. )";
+  dt.drawRegionYields_fromTree( "incl_cut180Zpt_mll_mu"   , "Z_mass"   , selection_mass_mu, 50, 50., 150., "M_{#mu^{+}#mu^{-}}", "GeV", cutsLabel, "#geq1j, #geq0b");
+
+
+  ///////////////////////////////////////////
+  ////// opposite flavour ///////////////////
+  ///////////////////////////////////////////
+  selection = "(ht>250. &&nJets>=1 . && mt2>200. && deltaPhiMin>0.3 && diffMetMht<0.5*met && fabs(Z_mass-91.19)<=20) && Z_pt>=180.";
+  dt_of.drawRegionYields_fromTree( "incl_cut180Zpt_mt2"   , "mt2"   , selection, 40, 200., 1000., "M_{T2}", "GeV", cutsLabel, "#geq1j, #geq0b");
+  dt_of.drawRegionYields_fromTree( "incl_cut180Zpt_met"   , "met"   , selection, 40, 200, 1050, "ME_{T}", "GeV", cutsLabel, "#geq1j, #geq0b");
+  dt_of.drawRegionYields_fromTree( "incl_cut180Zpt_raw_met"   , "raw_met"   , selection, 40, 0, 400, "ME_{T}", "GeV", cutsLabel, "#geq1j, #geq0b");
+  dt_of.drawRegionYields_fromTree( "incl_cut180Zpt_ht"    , "ht"    , selection, 50, 250., 2250., "H_{T}", "GeV", cutsLabel, "#geq1j, #geq0b");
+  dt_of.drawRegionYields_fromTree( "incl_cut180Zpt_nJets" , "nJets" , selection, 13, 0.5, 13.5, "Number of Jets (p_{T} > 30 GeV)", "", cutsLabel, "#geq1j, #geq0b");
+  dt_of.drawRegionYields_fromTree( "incl_cut180Zpt_nBJets", "nBJets", selection, 7, -0.5, 6.5, "Number of b-Jets (p_{T} > 20 GeV)", "", cutsLabel, "#geq1j, #geq0b");
+  dt_of.drawRegionYields_fromTree( "incl_cut180Zpt_Z_pt"   , "Z_pt"   , selection, 50, 10., 1010., "Z p_{T}", "GeV", cutsLabel, "#geq1j, #geq0b");
+  dt_of.drawRegionYields_fromTree( "incl_cut180Zpt_lep_pt0"   , "lep_pt0"   , selection, 40, 0., 700., "Leading Lepton p_{T}", "GeV", cutsLabel, "#geq1j, #geq0b");
+  dt_of.drawRegionYields_fromTree( "incl_cut180Zpt_lep_pt1"   , "lep_pt1"   , selection, 20, 0., 500., "Sub-Leading Lepton p_{T}", "GeV", cutsLabel, "#geq1j, #geq0b");
+  dt_of.drawRegionYields_fromTree( "incl_cut180Zpt_lep_eta0"   , "lep_eta0"   , selection,30 , -3., 3., "Leading Lepton #eta", "", cutsLabel, "#geq1j, #geq0b");
+  dt_of.drawRegionYields_fromTree( "incl_cut180Zpt_lep_eta1"   , "lep_eta1"   , selection, 30, -3., 3., "Sub-Leading Lepton #eta", "", cutsLabel, "#geq1j, #geq0b");
+  dt_of.drawRegionYields_fromTree( "incl_cut180Zpt_Z_lepId", "Z_lepId", selection, 5, 9.5, 14.5, "Lepton Id", "", cutsLabel, "#geq1j, #geq0b");
+
+   //Mll distributions: WITHOUT mass cut (for obv. reason)
+  selection_mass = "(ht>250. && nJets>=1   && mt2>200. && Z_pt>=180.)";
+  dt_of.drawRegionYields_fromTree( "incl_cut180Zpt_mll"   , "Z_mass"   , selection_mass, 50, 50., 150., "M_{ll}", "GeV", cutsLabel ,"#geq1j, #geq0b");
+  selection_mass_el = "(ht>250. && nJets>=1 && mt2>200. && Z_lepId==11 && Z_pt>=180.)";
+  dt_of.drawRegionYields_fromTree( "incl_cut180Zpt_mll_el"   , "Z_mass"   , selection_mass_el, 50 , 50., 150., "M_{e^{+}e^{-}}", "GeV", cutsLabel, "#geq1j, #geq0b");
+  selection_mass_mu = "(ht>250. && nJets>=1 . && mt2>200. && Z_lepId==13 && Z_pt>=180. )";
+  dt_of.drawRegionYields_fromTree( "incl_cut180Zpt_mll_mu"   , "Z_mass"   , selection_mass_mu, 50, 50., 150., "M_{#mu^{+}#mu^{-}}", "GeV", cutsLabel, "#geq1j, #geq0b");
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  /////////////////////////////////////////////////////////////////////////////
+  ///////////////SF/OF CR////////////////
+  /////////////////////////////////////////////////////////////////////////////////////
+
+
+ selection = "(ht>250. &&nJets>=1 && mt2>200. && deltaPhiMin>0.3 && diffMetMht<0.5*met && Z_pt<180.)";
+  //  selection = "(ht>200. &&nJets>=1 && met>200. && mt2>200. && deltaPhiMin>0.3 && diffMetMht<0.5*met && abs(Z_mass-91.19)<20)";
+
+  dt.drawRegionYields_fromTree( "incl_lowZpt_mt2"   , "mt2"   , selection, 40, 200., 1000., "M_{T2}", "GeV", cutsLabel, "#geq1j, #geq0b");
+  dt.drawRegionYields_fromTree( "incl_lowZpt_met"   , "met"   , selection, 40, 200, 1000, "ME_{T}", "GeV", cutsLabel, "#geq1j, #geq0b");
+  dt.drawRegionYields_fromTree( "incl_lowZpt_raw_met"   , "raw_met"   , selection, 40, 0, 400, "ME_{T}", "GeV", cutsLabel, "#geq1j, #geq0b");
+  dt.drawRegionYields_fromTree( "incl_lowZpt_ht"    , "ht"    , selection, 50, 250., 2250., "H_{T}", "GeV", cutsLabel, "#geq1j, #geq0b");
+  dt.drawRegionYields_fromTree( "incl_lowZpt_nJets" , "nJets" , selection, 13, 0.5, 13.5, "Number of Jets (p_{T} > 30 GeV)", "", cutsLabel, "#geq1j, #geq0b");
+  dt.drawRegionYields_fromTree( "incl_lowZpt_nBJets", "nBJets", selection, 7, -0.5, 6.5, "Number of b-Jets (p_{T} > 20 GeV)", "", cutsLabel, "#geq1j, #geq0b");
+  dt.drawRegionYields_fromTree( "incl_lowZpt_Z_pt"   , "Z_pt"   , selection, 50, 10., 1010., "Z p_{T}", "GeV", cutsLabel, "#geq1j, #geq0b");
+  dt.drawRegionYields_fromTree( "incl_lowZpt_lep_pt0"   , "lep_pt0"   , selection, 40, 0., 700., "Leading Lepton p_{T}", "GeV", cutsLabel, "#geq1j, #geq0b");
+  dt.drawRegionYields_fromTree( "incl_lowZpt_lep_pt1"   , "lep_pt1"   , selection, 20, 0., 500., "Sub-Leading Lepton p_{T}", "GeV", cutsLabel, "#geq1j, #geq0b");
+  dt.drawRegionYields_fromTree( "incl_lowZpt_lep_eta0"   , "lep_eta0"   , selection,30 , -3., 3., "Leading Lepton #eta", "", cutsLabel, "#geq1j, #geq0b");
+  dt.drawRegionYields_fromTree( "incl_lowZpt_lep_eta1"   , "lep_eta1"   , selection, 30, -3., 3., "Sub-Leading Lepton #eta", "", cutsLabel, "#geq1j, #geq0b");
+  dt.drawRegionYields_fromTree( "incl_lowZpt_Z_lepId", "Z_lepId", selection, 5, 9.5, 14.5, "Lepton Id", "", cutsLabel, "#geq1j, #geq0b");
+ 
+  //MLL 
+  selection_mass = "(ht>250. && nJets>=1 && mt2>200. && Z_pt< 180.)";
+  dt.drawRegionYields_fromTree( "incl_lowZpt_mll"   , "Z_mass"   , selection_mass, 50, 50., 150., "M_{ll}", "GeV", cutsLabel ,"#geq1j, #geq0b");
+
+
+
+  ///////////////////////////////////////////
+  ////// opposite flavour ///////////////////
+  ///////////////////////////////////////////
+  selection = "(ht>250. &&nJets>=1  && mt2>200. && deltaPhiMin>0.3 && diffMetMht<0.5*met && Z_pt<180.)";
+  dt_of.drawRegionYields_fromTree( "incl_lowZpt_mt2"   , "mt2"   , selection, 40, 200., 1000., "M_{T2}", "GeV", cutsLabel, "#geq1j, #geq0b");
+  dt_of.drawRegionYields_fromTree( "incl_lowZpt_met"   , "met"   , selection, 40, 200, 1050, "ME_{T}", "GeV", cutsLabel, "#geq1j, #geq0b");
+  dt_of.drawRegionYields_fromTree( "incl_lowZpt_raw_met"   , "raw_met"   , selection, 40, 0, 400, "ME_{T}", "GeV", cutsLabel, "#geq1j, #geq0b");
+  dt_of.drawRegionYields_fromTree( "incl_lowZpt_ht"    , "ht"    , selection, 50, 250., 2250., "H_{T}", "GeV", cutsLabel, "#geq1j, #geq0b");
+  dt_of.drawRegionYields_fromTree( "incl_lowZpt_nJets" , "nJets" , selection, 13, 0.5, 13.5, "Number of Jets (p_{T} > 30 GeV)", "", cutsLabel, "#geq1j, #geq0b");
+  dt_of.drawRegionYields_fromTree( "incl_lowZpt_nBJets", "nBJets", selection, 7, -0.5, 6.5, "Number of b-Jets (p_{T} > 20 GeV)", "", cutsLabel, "#geq1j, #geq0b");
+  dt_of.drawRegionYields_fromTree( "incl_lowZpt_Z_pt"   , "Z_pt"   , selection, 50, 10., 1010., "Z p_{T}", "GeV", cutsLabel, "#geq1j, #geq0b");
+  dt_of.drawRegionYields_fromTree( "incl_lowZpt_lep_pt0"   , "lep_pt0"   , selection, 40, 0., 700., "Leading Lepton p_{T}", "GeV", cutsLabel, "#geq1j, #geq0b");
+  dt_of.drawRegionYields_fromTree( "incl_lowZpt_lep_pt1"   , "lep_pt1"   , selection, 20, 0., 500., "Sub-Leading Lepton p_{T}", "GeV", cutsLabel, "#geq1j, #geq0b");
+  dt_of.drawRegionYields_fromTree( "incl_lowZpt_lep_eta0"   , "lep_eta0"   , selection,30 , -3., 3., "Leading Lepton #eta", "", cutsLabel, "#geq1j, #geq0b");
+  dt_of.drawRegionYields_fromTree( "incl_lowZpt_lep_eta1"   , "lep_eta1"   , selection, 30, -3., 3., "Sub-Leading Lepton #eta", "", cutsLabel, "#geq1j, #geq0b");
+  dt_of.drawRegionYields_fromTree( "incl_lowZpt_Z_lepId", "Z_lepId", selection, 5, 9.5, 14.5, "Lepton Id", "", cutsLabel, "#geq1j, #geq0b");
+
+   //Mll distributions: WITHOUT mass cut (for obv. reason)
+  selection_mass = "(ht>250. && nJets>=1  && mt2>200.&& Z_pt<180. )";
+  dt_of.drawRegionYields_fromTree( "incl_lowZpt_mll"   , "Z_mass"   , selection_mass, 50, 50., 150., "M_{ll}", "GeV", cutsLabel ,"#geq1j, #geq0b");
+  selection_mass_el = "(ht>250. && nJets>=1  && mt2>200. && Z_lepId==11&& Z_pt<180.)";
+  dt_of.drawRegionYields_fromTree( "incl_lowZpt_mll_el"   , "Z_mass"   , selection_mass_el, 50 , 50., 150., "M_{e^{+}e^{-}}", "GeV", cutsLabel, "#geq1j, #geq0b");
+  selection_mass_mu = "(ht>250. && nJets>=1 && mt2>200. && Z_lepId==13&& Z_pt<180. )";
+  dt_of.drawRegionYields_fromTree( "incl_lowZpt_mll_mu"   , "Z_mass"   , selection_mass_mu, 50, 50., 150., "M_{#mu^{+}#mu^{-}}", "GeV", cutsLabel, "#geq1j, #geq0b");
+
+
+//   //TESTS
+//   selection = "(ht>200. &&nJets>=1  && mt2>200. && abs(Z_mass-91.19)<10  &&  (( nJets>1 && ht<1000. && met>200.) || ( nJets>1 && ht>=1000. && met>30.) || (nJets==1 && met>200.))  )";
+//   dt.drawRegionYields_fromTree( "incl_mll_10"   , "Z_mass"   , selection, 50, 50., 150., "M_{ll}", "GeV", cutsLabel ,"#geq1j, #geq0b");
+//   dt.drawRegionYields_fromTree( "incl_Z_pt_10"   , "Z_pt"   , selection, 50, 10., 1010., "Z p_{T}", "GeV", cutsLabel, "#geq1j, #geq0b");
+//   dt.drawRegionYields_fromTree( "incl_nBJets_10", "nBJets", selection, 7, -0.5, 6.5, "Number of b-Jets (p_{T} > 20 GeV)", "", cutsLabel, "#geq1j, #geq0b");
+
+
+
+  
+//   selection = "(ht>200. &&nJets>=1  && mt2>200. && abs(Z_mass-91.19)<20  &&  (( nJets>1 && ht<1000. && met>200.) || ( nJets>1 && ht>=1000. && met>30.) || (nJets==1 && met>200.))  )";
+//   dt.drawRegionYields_fromTree( "incl_mll_20"   , "Z_mass"   , selection, 50, 50., 150., "M_{ll}", "GeV", cutsLabel ,"#geq1j, #geq0b");
+//   dt.drawRegionYields_fromTree( "incl_Z_pt_20"   , "Z_pt"   , selection, 50, 10., 1010., "Z p_{T}", "GeV", cutsLabel, "#geq1j, #geq0b");
+//   dt.drawRegionYields_fromTree( "incl_nBJets_20", "nBJets", selection, 7, -0.5, 6.5, "Number of b-Jets (p_{T} > 20 GeV)", "", cutsLabel, "#geq1j, #geq0b");
+ 
+//   dt.drawRegionYields_fromTree( "incl_raw_met_20"   , "raw_met"   , selection, 40, 0, 800, "ME_{T}", "GeV", cutsLabel, "#geq1j, #geq0b");
+
+
+//   selection = "(ht>200. &&nJets>=1  && mt2>200. && abs(Z_mass-91.19)<20  &&  (( nJets>1 && ht<1000. && met>200.) || ( nJets>1 && ht>=1000. && met>30.) || (nJets==1 && met>200.))  && Z_pt>=180.  )";
+
+//   dt.drawRegionYields_fromTree( "incl_mll_20_Zpt180"   , "Z_mass"   , selection, 50, 50., 150., "M_{ll}", "GeV", cutsLabel ,"#geq1j, #geq0b");
+//   dt.drawRegionYields_fromTree( "incl_Z_pt_20_Zpt180"   , "Z_pt"   , selection, 50, 10., 1010., "Z p_{T}", "GeV", cutsLabel, "#geq1j, #geq0b");
+//   dt.drawRegionYields_fromTree( "incl_nBJets_20_Zpt180", "nBJets", selection, 7, -0.5, 6.5, "Number of b-Jets (p_{T} > 20 GeV)", "", cutsLabel, "#geq1j, #geq0b");
+
+
+//   dt.drawRegionYields_fromTree( "incl_raw_met_20_Zpt180"   , "raw_met"   , selection, 40, 0, 800, "ME_{T}", "GeV", cutsLabel, "#geq1j, #geq0b");
+
+
+//   selection = "(ht>200. &&nJets>=1  && mt2>200. && abs(Z_mass-91.19)<20  &&  (( nJets>1 && ht<1000. && met>200.) || ( nJets>1 && ht>=1000. && met>30.) || (nJets==1 && met>200.))  && raw_met<=120.  )";
+
+//   dt.drawRegionYields_fromTree( "incl_Z_pt_20_rawMet120"   , "Z_pt"   , selection, 50, 10., 1010., "Z p_{T}", "GeV", cutsLabel, "#geq1j, #geq0b");
+//   dt.drawRegionYields_fromTree( "incl_nBJets_20_rawMet120", "nBJets", selection, 7, -0.5, 6.5, "Number of b-Jets (p_{T} > 20 GeV)", "", cutsLabel, "#geq1j, #geq0b");
+
+
+//   selection = "(ht>200. &&nJets>=1  && mt2>200. && abs(Z_mass-91.19)<20  &&  (( nJets>1 && ht<1000. && met>200.) || ( nJets>1 && ht>=1000. && met>30.) || (nJets==1 && met>200.))  && raw_met<=120.  && Z_pt>=180. )";
+//   dt.drawRegionYields_fromTree( "incl_nBJets_20_rawMet120_Zpt180", "nBJets", selection, 7, -0.5, 6.5, "Number of b-Jets (p_{T} > 20 GeV)", "", cutsLabel, "#geq1j, #geq0b");
+
+//   dt.drawRegionYields_fromTree( "incl_met_20_rawMet120_Zpt180"   , "met"   , selection, 40, 200., 1000., "M_{T2}", "GeV", cutsLabel, "#geq1j, #geq0b");
+
+//  dt.drawRegionYields_fromTree( "incl_mt2_20_rawMet120_Zpt180"   , "mt2"   , selection, 40, 200., 1000., "M_{T2}", "GeV", cutsLabel, "#geq1j, #geq0b");
+
+
+//  selection = "(ht>200. &&nJets>=1  && mt2>200. && abs(Z_mass-91.19)<20  &&  (( nJets>1 && ht<1000. && met>250.) || ( nJets>1 && ht>=1000. && met>30.) || (nJets==1 && met>250.))  && raw_met<=120.  && Z_pt>=180. )";
+//  dt.drawRegionYields_fromTree( "incl_met_met250_20_rawMet120_Zpt180"   , "met"   , selection, 40, 200., 1000., "ME_{T}", "GeV", cutsLabel, "#geq1j, #geq0b");
+// dt.drawRegionYields_fromTree( "incl_mt2_met250_20_rawMet120_Zpt180"   , "mt2"   , selection, 40, 200., 1000., "ME_{T}", "GeV", cutsLabel, "#geq1j, #geq0b");
+
+
+//   selection = "(ht>200. &&nJets>=1  && mt2>200. && abs(Z_mass-91.19)<20  &&  (( nJets>1 && ht<1000. && met>200.) || ( nJets>1 && ht>=1000. && met>30.) || (nJets==1 && met>200.))  && raw_met<=150.  && Z_pt>=150. )";
+//   dt.drawRegionYields_fromTree( "incl_nBJets_20_rawMet150_Zpt150", "nBJets", selection, 7, -0.5, 6.5, "Number of b-Jets (p_{T} > 20 GeV)", "", cutsLabel, "#geq1j, #geq0b");
+
+
+//   selection = "(ht>200. &&nJets>=1  && mt2>200. && abs(Z_mass-91.19)<20  &&  (( nJets>1 && ht<1000. && met>200.) || ( nJets>1 && ht>=1000. && met>30.) || (nJets==1 && met>200.))  && raw_met<=120.  && Z_pt>=150. )";
+//   dt.drawRegionYields_fromTree( "incl_nBJets_20_rawMet120_Zpt150", "nBJets", selection, 7, -0.5, 6.5, "Number of b-Jets (p_{T} > 20 GeV)", "", cutsLabel, "#geq1j, #geq0b");
+
+
+
+  // selection = "(ht>200. &&nJets>=1  && mt2>200. && abs(Z_mass-91.19)<10  &&  (( nJets>1 && ht<1000. && met>200.) || ( nJets>1 && ht>=1000. && met>30.) || (nJets==1 && met>200.))  && Z_pt>=180.  )";
+
+  // dt.drawRegionYields_fromTree( "incl_mll_10_Zpt180"   , "Z_mass"   , selection, 50, 50., 150., "M_{ll}", "GeV", cutsLabel ,"#geq1j, #geq0b");
+  // dt.drawRegionYields_fromTree( "incl_Z_pt_10_Zpt180"   , "Z_pt"   , selection, 50, 10., 1010., "Z p_{T}", "GeV", cutsLabel, "#geq1j, #geq0b");
+  // dt.drawRegionYields_fromTree( "incl_nBJets_10_Zpt180", "nBJets", selection, 7, -0.5, 6.5, "Number of b-Jets (p_{T} > 20 GeV)", "", cutsLabel, "#geq1j, #geq0b");
+
+
+
+  
+  // selection = "(ht>200. &&nJets>=1  && mt2>200. && abs(Z_mass-91.19)<20  &&  (( nJets>1 && ht<1000. && met>250.) || ( nJets>1 && ht>=1000. && met>30.) || (nJets==1 && met>250.))  )";
+  // dt.drawRegionYields_fromTree( "incl_mll_met250_20"   , "Z_mass"   , selection, 50, 50., 150., "M_{ll}", "GeV", cutsLabel ,"#geq1j, #geq0b");
+  // dt.drawRegionYields_fromTree( "incl_Z_pt_met250_20"   , "Z_pt"   , selection, 50, 10., 1010., "Z p_{T}", "GeV", cutsLabel, "#geq1j, #geq0b");
+  // dt.drawRegionYields_fromTree( "incl_nBJets_met250_20", "nBJets", selection, 7, -0.5, 6.5, "Number of b-Jets (p_{T} > 20 GeV)", "", cutsLabel, "#geq1j, #geq0b");
+
+ 
+
 
 
 
