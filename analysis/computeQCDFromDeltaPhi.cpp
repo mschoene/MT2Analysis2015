@@ -45,7 +45,7 @@ float nonQCDunc = 0.20; // extra uncertainty on non-QCD subtraction (relative un
 //float prescales[3] = {3721., 353.0, 88.3}; // 5.94 (B) + 2.65 (C) + 0.65 (D) fb-1
 //float prescales[3] = {3753., 354.4, 88.6}; // 5.94 (B) + 2.65 (C) + 4.33 (D) = 12.9 fb-1  (wrong)
 //float prescales[3] = {4842., 384.5, 96.2}; // 5.94 (B) + 2.65 (C) + 4.33 (D) = 12.9 fb-1 
-float prescales[3] = {7575., 435.5, 108.9}; // 24.5 fb-1
+float prescales[3] = {7579., 434.9, 108.8}; // 24.5 fb-1
 
 void projectFromInclusive( MT2Analysis<MT2Estimate>* analysis, MT2Analysis<MT2EstimateTree>* ana_inclusive, const std::string& selection );
 void fillFromTreeAndRatio( MT2Estimate* estimate, MT2Estimate* nCR, MT2EstimateSyst* r_effective, TTree* tree, TF1* f1_ratio, TH1D* h_band, float prescale=1. );

@@ -91,6 +91,7 @@ public :
    Float_t         rho;
    Int_t           nVert;
    Int_t           nJet20;
+   Int_t           nJet20BadFastsim;
    Int_t           nJet25;
    Int_t           nBJetLoose25;
    Int_t           nBJetMedium25;
@@ -131,6 +132,8 @@ public :
    Float_t         mht_phi;
    Float_t         diffMetMht;
    Float_t         deltaPhiMin;
+   Float_t         diffMetMht_genmet;
+   Float_t         deltaPhiMin_genmet;
    Float_t         ht_had;
    Float_t         mht_had_pt;
    Float_t         mht_had_phi;
@@ -153,6 +156,7 @@ public :
    Float_t         mt2ViaKt_had;
    Float_t         mt2_bb;
    Float_t         mt2_gen;
+   Float_t         mt2_genmet;
    Float_t         mt2;
    Float_t         gamma_mt2;
    Float_t         zll_mt2;
@@ -467,6 +471,8 @@ public :
    Float_t weight_phottrigsf;
    Float_t weight_pu;
    Float_t weight_isr;
+   Float_t weight_isr_UP;
+   Float_t weight_isr_DN;
    Float_t weight_scales[500];
    Float_t weight_scales_UP;
    Float_t weight_scales_DN;
@@ -540,6 +546,7 @@ public :
    TBranch        *b_rho;   //!
    TBranch        *b_nVert;   //!
    TBranch        *b_nJet20;   //!
+   TBranch        *b_nJet20BadFastsim;   //!
    TBranch        *b_nJet25;   //!
    TBranch        *b_nBJetLoose25;   //!
    TBranch        *b_nBJetMedium25;   //!
@@ -580,6 +587,8 @@ public :
    TBranch        *b_mht_phi;   //!
    TBranch        *b_diffMetMht;   //!
    TBranch        *b_deltaPhiMin;   //!
+   TBranch        *b_diffMetMht_genmet;   //!
+   TBranch        *b_deltaPhiMin_genmet;   //!
    TBranch        *b_ht_had;   //!
    TBranch        *b_mht_had_pt;   //!
    TBranch        *b_mht_had_phi;   //!
@@ -602,6 +611,7 @@ public :
    TBranch        *b_mt2ViaKt_had;   //!
    TBranch        *b_mt2_bb;   //!
    TBranch        *b_mt2_gen;   //!
+   TBranch        *b_mt2_genmet;   //!
    TBranch        *b_mt2;   //!
    TBranch        *b_gamma_mt2;   //!
    TBranch        *b_zll_mt2;   //!
@@ -915,6 +925,8 @@ public :
    TBranch *b_weight_phottrigsf;
    TBranch *b_weight_pu;
    TBranch *b_weight_isr;
+   TBranch *b_weight_isr_UP;
+   TBranch *b_weight_isr_DN;
    TBranch *b_weight_scales;
    TBranch *b_weight_scales_UP;
    TBranch *b_weight_scales_DN;
@@ -1060,6 +1072,7 @@ void MT2Tree::Init(TTree *tree)
    fChain->SetBranchAddress("rho", &rho, &b_rho);
    fChain->SetBranchAddress("nVert", &nVert, &b_nVert);
    fChain->SetBranchAddress("nJet20", &nJet20, &b_nJet20);
+   fChain->SetBranchAddress("nJet20BadFastsim", &nJet20BadFastsim, &b_nJet20BadFastsim);
    fChain->SetBranchAddress("nJet25", &nJet25, &b_nJet25);
    fChain->SetBranchAddress("nBJetLoose25", &nBJetLoose25, &b_nBJetLoose25);
    fChain->SetBranchAddress("nBJetMedium25", &nBJetMedium25, &b_nBJetMedium25);
@@ -1100,6 +1113,8 @@ void MT2Tree::Init(TTree *tree)
    fChain->SetBranchAddress("mht_phi", &mht_phi, &b_mht_phi);
    fChain->SetBranchAddress("diffMetMht", &diffMetMht, &b_diffMetMht);
    fChain->SetBranchAddress("deltaPhiMin", &deltaPhiMin, &b_deltaPhiMin);
+   fChain->SetBranchAddress("diffMetMht_genmet", &diffMetMht_genmet, &b_diffMetMht_genmet);
+   fChain->SetBranchAddress("deltaPhiMin_genmet", &deltaPhiMin_genmet, &b_deltaPhiMin_genmet);
    fChain->SetBranchAddress("ht_had", &ht_had, &b_ht_had);
    fChain->SetBranchAddress("mht_had_pt", &mht_had_pt, &b_mht_had_pt);
    fChain->SetBranchAddress("mht_had_phi", &mht_had_phi, &b_mht_had_phi);
@@ -1122,6 +1137,7 @@ void MT2Tree::Init(TTree *tree)
    fChain->SetBranchAddress("mt2ViaKt_had", &mt2ViaKt_had, &b_mt2ViaKt_had);
    fChain->SetBranchAddress("mt2_bb", &mt2_bb, &b_mt2_bb);
    fChain->SetBranchAddress("mt2_gen", &mt2_gen, &b_mt2_gen);
+   fChain->SetBranchAddress("mt2_genmet", &mt2_genmet, &b_mt2_genmet);
    fChain->SetBranchAddress("mt2", &mt2, &b_mt2);
    fChain->SetBranchAddress("gamma_mt2", &gamma_mt2, &b_gamma_mt2);
    fChain->SetBranchAddress("zll_mt2", &zll_mt2, &b_zll_mt2);
@@ -1440,6 +1456,8 @@ void MT2Tree::Init(TTree *tree)
    fChain->SetBranchAddress("weight_phottrigsf", &weight_phottrigsf, &b_weight_phottrigsf);
    fChain->SetBranchAddress("weight_pu", &weight_pu, &b_weight_pu);
    fChain->SetBranchAddress("weight_isr", &weight_isr, &b_weight_isr);
+   fChain->SetBranchAddress("weight_isr_UP", &weight_isr_UP, &b_weight_isr_UP);
+   fChain->SetBranchAddress("weight_isr_DN", &weight_isr_DN, &b_weight_isr_DN);
    fChain->SetBranchAddress("weight_scales", weight_scales, &b_weight_scales);
    fChain->SetBranchAddress("weight_scales_UP", &weight_scales_UP, &b_weight_scales_UP);
    fChain->SetBranchAddress("weight_scales_DN", &weight_scales_DN, &b_weight_scales_DN);
@@ -1523,6 +1541,14 @@ Bool_t MT2Tree::passBaseline(TString sel) const
       nJet30FailId == 0 &&
       met_pt>30. && 
       diffMetMht < 0.5*met_pt;
+  else if (sel=="genmet")
+    return nVert > 0 && 
+      nJet30 >=1 &&
+      nJet30FailId == 0 &&
+      deltaPhiMin_genmet > 0.3 && 
+      ( ( nJet30>1 && ht<1000. && met_genPt>250.) || ( nJet30>1 && ht>=1000. && met_genPt>30.) || (nJet30==1 && met_genPt>250.) ) && 
+      diffMetMht_genmet < 0.5*met_genPt;
+  //    return nVert > 0; 
   else
     return nVert > 0 && 
       //////(nJet30 >= 2 || sel=="monojet") &&

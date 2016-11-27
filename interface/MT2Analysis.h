@@ -18,7 +18,7 @@ class MT2Analysis {
 
  public:
 
-  MT2Analysis( const std::string& aname, const std::string& regionsSet="zurichPlus", int id=-1, const std::string& afullName="" );
+  MT2Analysis( const std::string& aname, const std::string& regionsSet="zurich2016", int id=-1, const std::string& afullName="" );
   MT2Analysis( const std::string& aname, std::set<MT2HTRegion> htRegions, std::set<MT2SignalRegion> signalRegions, int id=-1, const std::string& afullName="" );
   MT2Analysis( const std::string& aname, std::set<MT2Region> regions, int id=-1, const std::string& afullName="" );
   MT2Analysis( const std::string& aname, const std::string& asystname, std::set<MT2Region> regions, int id=-1, const std::string& afullName="" );
