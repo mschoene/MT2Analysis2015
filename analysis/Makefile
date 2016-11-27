@@ -228,9 +228,6 @@ drawGammaControlRegionDataMC: drawGammaControlRegionDataMC.cpp MT2Region.o MT2Es
 drawZllControlRegion: drawZllControlRegion.cpp MT2Region.o MT2Estimate.o MT2EstimateTree.o MT2DrawTools.o MT2Config.o
 	$(CC) -Wall $(INCLUDES) -o drawZllControlRegion drawZllControlRegion.cpp MT2Region.o MT2Estimate.o MT2EstimateTree.o MT2DrawTools.o MT2Config.o $(ROOTFLAG) $(EXTRALIBS)
 
-drawZllTop: drawZllTop.cpp MT2Region.o MT2Estimate.o MT2EstimateTree.o MT2DrawTools.o MT2Config.o
-	$(CC) -Wall $(INCLUDES) -o drawZllTop drawZllTop.cpp MT2Region.o MT2Estimate.o MT2EstimateTree.o MT2DrawTools.o MT2Config.o $(ROOTFLAG) $(EXTRALIBS)
-
 drawLostLeptonControlRegionDataMC: drawLostLeptonControlRegionDataMC.cpp MT2Region.o MT2Estimate.o MT2EstimateTree.o MT2DrawTools.o MT2Config.o
 	$(CC) -Wall $(INCLUDES) -o drawLostLeptonControlRegionDataMC drawLostLeptonControlRegionDataMC.cpp MT2Region.o MT2Estimate.o MT2EstimateTree.o MT2DrawTools.o MT2Config.o $(ROOTFLAG) $(EXTRALIBS)
 
@@ -296,10 +293,6 @@ printPurity: printPurity.cpp MT2Region.o MT2Sample.o MT2Estimate.o MT2EstimateZi
 printLatexBGTable_2016: printLatexBGTable_2016.cpp MT2Region.o MT2Estimate.o  MT2EstimateSigContSyst.o MT2DrawTools.o
 	$(CC) -Wall $(INCLUDES) -o printLatexBGTable_2016 printLatexBGTable_2016.cpp MT2Region.o MT2Estimate.o MT2EstimateSigContSyst.o MT2DrawTools.o $(ROOTFLAG) $(EXTRALIBS)
 
-printLatexBGTable_2016_zinvZll: printLatexBGTable_2016_zinvZll.cpp MT2Region.o MT2Estimate.o  MT2EstimateSigContSyst.o MT2DrawTools.o
-	$(CC) -Wall $(INCLUDES) -o printLatexBGTable_2016_zinvZll printLatexBGTable_2016_zinvZll.cpp MT2Region.o MT2Estimate.o MT2EstimateSigContSyst.o MT2DrawTools.o $(ROOTFLAG) $(EXTRALIBS)
-
-
 printLatexBGandSIGTable_2016: printLatexBGandSIGTable_2016.cpp MT2Region.o MT2Estimate.o MT2EstimateSigSyst.o MT2EstimateSigContSyst.o MT2DrawTools.o
 	$(CC) -Wall $(INCLUDES) -o printLatexBGandSIGTable_2016 printLatexBGandSIGTable_2016.cpp MT2Region.o MT2Estimate.o MT2EstimateSigSyst.o MT2EstimateSigContSyst.o MT2DrawTools.o $(ROOTFLAG) $(EXTRALIBS)
 
@@ -351,9 +344,6 @@ MT2Estimate.o: ../src/MT2Estimate.cc MT2Region.o
 
 MT2EstimateSyst.o: ../src/MT2EstimateSyst.cc MT2Region.o MT2Estimate.o 
 	$(CC) -Wall $(INCLUDES) -c ../src/MT2EstimateSyst.cc MT2Region.o MT2Estimate.o $(ROOTFLAG) $(EXTRALIBS)
-
-MT2EstimateAllSigSyst.o: ../src/MT2EstimateAllSigSyst.cc MT2Region.o MT2Estimate.o 
-	$(CC) -Wall $(INCLUDES) -c ../src/MT2EstimateAllSigSyst.cc MT2Region.o MT2Estimate.o $(ROOTFLAG) $(EXTRALIBS)
 
 MT2EstimateSigSyst.o: ../src/MT2EstimateSigSyst.cc MT2Region.o MT2Estimate.o 
 	$(CC) -Wall $(INCLUDES) -c ../src/MT2EstimateSigSyst.cc MT2Region.o MT2Estimate.o $(ROOTFLAG) $(EXTRALIBS)
