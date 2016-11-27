@@ -39,7 +39,7 @@
 
 void randomizePoisson( MT2Analysis<MT2EstimateTree>* data );
 template <class T>
-MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg );
+MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg, std::string otherRegion="" );
 template <class T>
 MT2Analysis<T>* computeSigYield( const MT2Sample& sample, const MT2Config& cfg );
 template <class T>
@@ -98,12 +98,15 @@ int main( int argc, char* argv[] ) {
   std::vector<MT2Analysis<MT2EstimateTree>* > yields;
   //MT2Analysis<MT2EstimateTree>* dataYield;  
 
+  //MT2Analysis<MT2EstimateTree>* EventYield_zjets_inclusiv = new MT2Analysis<MT2EstimateTree>( "ZJets_inclusive", "13TeV_2016_inclusive" ); 
+
   if( cfg.useMC() && !onlyData && !onlySignal ) { // use MC BG estimates
 
     std::string samplesFileName = "../samples/samples_" + cfg.mcSamples() + ".dat";
     std::cout << std::endl << std::endl;
     std::cout << "-> Loading samples from file: " << samplesFileName << std::endl;
 
+    //  std::vector<MT2Sample> fSamples = MT2Sample::loadSamples(samplesFileName, 600, 699); // not interested in signal here (see later)
     std::vector<MT2Sample> fSamples = MT2Sample::loadSamples(samplesFileName, 101, 999); // not interested in signal here (see later)
     if( fSamples.size()==0 ) {
       std::cout << "There must be an error: samples is empty!" << std::endl;
@@ -112,6 +115,17 @@ int main( int argc, char* argv[] ) {
 
 
     
+    std::vector< MT2Analysis<MT2EstimateTree>* > EventYield_incl;
+    for( unsigned i=0; i<fSamples.size(); ++i ) {
+      int this_id = fSamples[i].id;
+      if( this_id<600 ) continue; // skip everything that is not ZJets
+      if( this_id>=700 ) continue; //
+      EventYield_incl.push_back( computeYield<MT2EstimateTree>( fSamples[i], cfg, "13TeV_2016_inclusive"  ));
+    }
+    MT2Analysis<MT2EstimateTree>* EventYield_zjets_inclusive = mergeYields<MT2EstimateTree>( EventYield_incl, "13TeV_2016_inclusive", "ZJets_inclusive", 600, 699, "Z+jets" );
+    EventYield_zjets_inclusive->writeToFile(outputdir + "/ZJetsIncl.root");
+
+
     std::vector< MT2Analysis<MT2EstimateTree>* > EventYield;
     for( unsigned i=0; i<fSamples.size(); ++i ) {
       int this_id = fSamples[i].id;
@@ -119,6 +133,7 @@ int main( int argc, char* argv[] ) {
       if( this_id>=700 && this_id<800 ) continue; // skip DY
       EventYield.push_back( computeYield<MT2EstimateTree>( fSamples[i], cfg ));
     }
+
 
 
     std::cout << "-> Done looping on samples. Start merging." << std::endl;
@@ -132,6 +147,7 @@ int main( int argc, char* argv[] ) {
     std::cout << "     merging ZJets..." << std::endl;
     MT2Analysis<MT2EstimateTree>* EventYield_zjets = mergeYields<MT2EstimateTree>( EventYield, cfg.regionsSet(), "ZJets", 600, 699, "Z+jets" );
     
+
     //    MT2Analysis<MT2EstimateTree>* EventYield_other = mergeYields<MT2EstimateTree>( EventYield, cfg.regionsSet(), "Other", 700, 999, "Other" );
     std::cout << "-> Done merging." << std::endl;
 
@@ -140,6 +156,8 @@ int main( int argc, char* argv[] ) {
     yields.push_back( EventYield_zjets );
     yields.push_back( EventYield_top );
     //    yields.push_back( EventYield_other );
+
+
 
     if( cfg.dummyAnalysis() ) {
       MT2Analysis<MT2EstimateTree>* dataYield   = mergeYields<MT2EstimateTree>( EventYield, cfg.regionsSet(), "data", 100, 699 );
@@ -271,12 +289,14 @@ int main( int argc, char* argv[] ) {
 
 
 template <class T>
-MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg ) {
+MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg, std::string otherRegion ) {
 
   TFile* sigWgtFile = TFile::Open("/scratch/mmasciov/analysisCode_forMerge/analysis/SMS_T1bbbb_scale1fb.root");
   TH2F* sigWgt = (TH2F*) sigWgtFile->Get("wgt");
 
   std::string regionsSet = cfg.regionsSet();
+  if(otherRegion!="")
+    regionsSet = otherRegion;
 
   std::cout << std::endl << std::endl;
   std::cout << "-> Starting computation for sample: " << sample.name << std::endl;
