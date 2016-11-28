@@ -327,34 +327,29 @@ int main( int argc, char* argv[] ) {
   }else{
     zllData_forHybrid_notIntegral = MT2Analysis<MT2Estimate>::readFromFile(zllControlRegionDir + "/mc_forZinvEst.root", "zllCR");
     (*zllData_forHybrid_notIntegral) = (*zllData_forHybrid_notIntegral) * lumi;
-    //(*zllData_forHybrid) = (*zllData_forHybrid) +  (*TopMC_);
   }
 
-  MT2Analysis<MT2EstimateSyst>* purity_forHybrid_notIntegral = computePurityOF(zllData_forHybrid_notIntegral, zllData_of_forHybrid_notIntegral);
-
+  
   MT2Analysis<MT2Estimate>* zllData_of_forHybrid = MT2Estimate::makeIntegralAnalysisFromEstimate( "zllData_of_forHybrid", cfg.regionsSet(), zllData_of_forHybrid_notIntegral );
 
   MT2Analysis<MT2Estimate>* zllData_forHybrid = MT2Estimate::makeIntegralAnalysisFromEstimate( "zllData_forHybrid", cfg.regionsSet(), zllData_forHybrid_notIntegral );
 
-  MT2Analysis<MT2EstimateSyst>* purity_forHybrid = MT2EstimateSyst::makeIntegralAnalysisFromEstimate( "purity_forHybrid", cfg.regionsSet(), purity_forHybrid_notIntegral ); //= computePurityOF(zllData_forHybrid, zllData_of_forHybrid);
+  MT2Analysis<MT2EstimateSyst>* purity_forHybrid = computePurityOF(zllData_forHybrid, zllData_of_forHybrid);  
 
   std::cout << "filling the shapes from the extrapolation region to the TR ..." << std::endl;
   extrapolToTopoRegion( zllData_shape_TR, (MT2Analysis<MT2Estimate>*)zllData_shape );
   extrapolToTopoRegion( zllData_of_shape_TR, (MT2Analysis<MT2Estimate>*)zllData_shape_of );
   extrapolToTopoRegion( zllMC_shape_TR, (MT2Analysis<MT2Estimate>*)zllMC_shape, 1 ); //1 means it is mc
-  
-  //Bringing the Zinv/Zll MC ratio into shape
   extrapolToTopoRegion( zinvMC_forShape_TR, (MT2Analysis<MT2Estimate>*)zinvMC_forShape, 1 ); //1 means it is mc
  
   std::cout << "Filled the shapes into the TR" << std::endl;
 
   MT2Analysis<MT2EstimateSyst>* purity_shape_TR = computePurityOF(zllData_shape_TR, zllData_of_shape_TR );
   (*zllData_shape_TR) *= (*purity_shape_TR);
-
   MT2Analysis<MT2Estimate>* zinvZllRatio_forShape_TR = new MT2Analysis<MT2Estimate>( "ZinvZllRatio_forShape_TR", cfg.regionsSet() );
   (*zinvZllRatio_forShape_TR) = (*zinvMC_forShape_TR) / (*zllMC_shape_TR);
 
-  //Building the hybrid shape from data & MC, and the ratio of the MC
+  /////////////////Building the hybrid shape from data & MC, and the ratio of the MC/////////////////////////
   buildHybrid( zllHybrid_shape_TR, zllData_shape_TR,zllMC_shape_TR ,zinvZllRatio_forShape_TR, bin_extrapol );
 
   //The ALPHA
@@ -428,7 +423,6 @@ int main( int argc, char* argv[] ) {
   purity->addToFile( outFile );
  
   //  purity_signal->addToFile( outFile );
-
   // diLep->addToFile( outFile );
   //  TopMC_->addToFile( outFile );
 
@@ -447,7 +441,10 @@ int main( int argc, char* argv[] ) {
   if( do_hybrid ){
   purity_shape_TR->setName("purity_shape_TR");
   purity_shape_TR->addToFile( outFile);
-	
+  
+  purity_forHybrid->setName("purity_forHybrid");
+  purity_forHybrid->addToFile( outFile);	
+
   zinvZllRatio_forShape_TR->setName("ZinvZllRatio_mt2Binned");
   zinvZllRatio_forShape_TR->addToFile( outFile );
 
@@ -459,6 +456,8 @@ int main( int argc, char* argv[] ) {
   zllData_shape_TR->addToFile( outFile );
   zllMC_shape_TR->addToFile( outFile );
   zllHybrid_shape_TR->addToFile( outFile );
+
+  alpha->addToFile( outFile);
   }
 			     
   if( !use_extrapolation && !do_hybrid ){
@@ -579,6 +578,9 @@ MT2Analysis<MT2EstimateSyst>* computePurityOF( MT2Analysis<MT2Estimate>* SF, MT2
       float purity_err = 1.0;
       if( purity > 0.)
 	purity_err = sqrt( contentOF )/ contentSF;
+
+      if( contentOF == 0 )
+	purity_err = 1.8/ contentSF; //uncert = 1.8 in case of 0 events
 
       thisNewEstimate->yield->SetBinContent( ibin, purity );
      

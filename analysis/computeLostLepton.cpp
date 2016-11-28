@@ -182,8 +182,6 @@ int main( int argc, char* argv[] ) {
   else if( do_hybrid )
     (*llepEstimate) = (* (MT2Analysis<MT2Estimate>*)llep_est_integral) * (*RatioMC)* (*hybrid_shape);
 
- std::cout << "BOH 2" << std::endl;
-
 
   std::string outFile = cfg.getEventYieldDir() + "/llepEstimate";
   outFile += ".root";
@@ -199,10 +197,12 @@ int main( int argc, char* argv[] ) {
     llep_est_integral->addToFile( outFile );
     MCcr_integral->addToFile( outFile );
   }else if( do_hybrid ){
-  hybrid_shape->addToFile( outFile );
-  llepCR_data_forShape->addToFile( outFile );
-  MCcr_forShape->addToFile( outFile );
-  extrapol_bin->addToFile( outFile );
+    llep_est_integral->addToFile( outFile );
+    hybrid_shape->addToFile( outFile );
+    llepCR_data_forShape->setName("data_shape");
+    llepCR_data_forShape->addToFile( outFile );
+    MCcr_forShape->addToFile( outFile );
+    extrapol_bin->addToFile( outFile );
   }
 
   return 0;
