@@ -396,6 +396,8 @@ void addVariables(MT2Analysis<MT2EstimateTree>* anaTree){
   MT2EstimateTree::addVar( anaTree, "lep_tightId0" );
   MT2EstimateTree::addVar( anaTree, "lep_tightId1" );
 
+  MT2EstimateTree::addVar( anaTree, "lep_pdgId0");
+  MT2EstimateTree::addVar( anaTree, "lep_pdgId1");
   MT2EstimateTree::addVar( anaTree, "lep_pt0");
   MT2EstimateTree::addVar( anaTree, "lep_pt1");
   MT2EstimateTree::addVar( anaTree, "lep_eta0");
@@ -628,23 +630,6 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
       if( abs(myTree.lep_pdgId[1])==11 && myTree.lep_tightId[1]< 0.5 ) continue;
       
 
-      bool isId = true;
-      for (int l=0; l<2; ++l){
-	if(abs(myTree.lep_pdgId[l])==11){
-	  if(fabs(myTree.lep_eta[l])<0.8 && myTree.lep_mvaIdSpring15[l]<-0.70)
-	    isId=false;
-	  else if(fabs(myTree.lep_eta[l])>0.8 && fabs(myTree.lep_eta[l])<1.479 && myTree.lep_mvaIdSpring15[l]<-0.83)
-	    isId=false;
-	  else if(fabs(myTree.lep_eta[l])>1.479 && myTree.lep_mvaIdSpring15[l]<-0.92)
-	    isId=false;
-	}
-	else if(abs(myTree.lep_pdgId[l])==13)
-	  if(myTree.lep_mediumMuonId[l]<0.5)
-	    isId==false;
-      }
-      if(!isId) continue;
-      
-
       //      if(myTree.nVert > 0 && myTree.nJet30 >= 1 && myTree.zll_ht>250. && ((myTree.nJet30>1 && myTree.zll_mt2>200.)||myTree.nJet30==1) && myTree.nJet30FailId == 0 && myTree.zll_deltaPhiMin > 0.3 && ( (myTree.nJet30>1 && myTree.zll_ht<1000. && myTree.zll_met_pt>250.) || (myTree.nJet30>1 && myTree.zll_ht>=1000. && myTree.zll_met_pt>30.) || (myTree.nJet30==1 &&myTree.zll_met_pt>250.)) &&  myTree.zll_diffMetMht < 0.5*myTree.zll_met_pt &&  myTree.nlep==2 && (myTree.lep_pdgId[0]*myTree.lep_pdgId[1])<0 && ((myTree.nJet30==1 && myTree.jet_id[0]>=4) || myTree.nJet30>1) && myTree.lep_pt[0]>=25. && myTree.lep_pt[1]>=20. && myTree.Flag_HBHENoiseFilter>0 && myTree.Flag_HBHENoiseIsoFilter>0 && myTree.Flag_globalTightHalo2016Filter>0 && myTree.Flag_EcalDeadCellTriggerPrimitiveFilter>0 && myTree.Flag_goodVertices>0 && myTree.Flag_eeBadScFilter>0 && myTree.Flag_badMuonFilter>0 && myTree.Flag_badChargedHadronFilter>0 && (myTree.HLT_DoubleMu || myTree.HLT_DoubleMu_NonIso || myTree.HLT_SingleMu_NonIso || myTree.HLT_DoubleEl || myTree.HLT_DoubleEl33 || myTree.HLT_Photon165_HE10 ) && (abs(myTree.lep_pdgId[0]) == abs(myTree.lep_pdgId[1])) && ((abs(myTree.lep_pdgId[0])==11 && myTree.lep_tightId[0]> 0.5) || (abs(myTree.lep_pdgId[0])==13)) && ((abs(myTree.lep_pdgId[1])==11 && myTree.lep_tightId[1]> 0.5) || (abs(myTree.lep_pdgId[1])==13)) && myTree.jet_pt[0]<13000. && myTree.met_pt/myTree.met_caloPt < 5. );
       //      else continue;
 
@@ -672,9 +657,6 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
       }
 
 
-      float leppdgid0=myTree.lep_pdgId[0];
-      float leppdgid1=myTree.lep_pdgId[1];
-      
       thisTree->assignVar("ID", ID );
 
       //      thisTree->assignVar("Z_pt", z.Perp() );
@@ -686,8 +668,8 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
       thisTree->assignVar("Z_lepId", abs(myTree.lep_pdgId[0]) );
 
       thisTree->assignVar("nLep", myTree.nlep );
-//      thisTree->assignVar("lep_pdgId0", leppdgid0 );
-//      thisTree->assignVar("lep_pdgId1", leppdgid1 );
+      thisTree->assignVar("lep_pdgId0", myTree.lep_pdgId[0] );
+      thisTree->assignVar("lep_pdgId1", myTree.lep_pdgId[1] );
       thisTree->assignVar("lep_pt0", myTree.lep_pt[0] );
       thisTree->assignVar("lep_pt1", myTree.lep_pt[1] );
       thisTree->assignVar("lep_eta0", myTree.lep_eta[0] );
@@ -736,23 +718,6 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
       if( abs(myTree.lep_pdgId[0])==11 && myTree.lep_tightId[0]< 0.5 ) continue;
       if( abs(myTree.lep_pdgId[1])==11 && myTree.lep_tightId[1]< 0.5 ) continue;
 
-      bool isId = true;
-      for (int l=0; l<2; ++l){
-	if(abs(myTree.lep_pdgId[l])==11){
-	  if(fabs(myTree.lep_eta[l])<0.8 && myTree.lep_mvaIdSpring15[l]<-0.70)
-	    isId=false;
-	  else if(fabs(myTree.lep_eta[l])>0.8 && fabs(myTree.lep_eta[l])<1.479 && myTree.lep_mvaIdSpring15[l]<-0.83)
-	    isId=false;
-	  else if(fabs(myTree.lep_eta[l])>1.479 && myTree.lep_mvaIdSpring15[l]<-0.92)
-	    isId=false;
-	}
-	else if(abs(myTree.lep_pdgId[l])==13)
-	  if(myTree.lep_mediumMuonId[l]<0.5)
-	    isId==false;
-	
-      }
-      if(!isId) continue;
-	  
 
       //      if(myTree.nVert > 0 && myTree.nJet30 >= 1 && myTree.zll_ht>250. && ((myTree.nJet30>1 && myTree.zll_mt2>200.)||myTree.nJet30==1) && myTree.nJet30FailId == 0 && myTree.zll_deltaPhiMin > 0.3 && ( (myTree.nJet30>1 && myTree.zll_ht<1000. && myTree.zll_met_pt>250.) || (myTree.nJet30>1 && myTree.zll_ht>=1000. && myTree.zll_met_pt>30.) || (myTree.nJet30==1 &&myTree.zll_met_pt>250.)) &&  myTree.zll_diffMetMht < 0.5*myTree.zll_met_pt &&  myTree.nlep==2 && (myTree.lep_pdgId[0]*myTree.lep_pdgId[1])<0 && ((myTree.nJet30==1 && myTree.jet_id[0]>=4) || myTree.nJet30>1) && myTree.lep_pt[0]>=25. && myTree.lep_pt[1]>=20. && myTree.Flag_HBHENoiseFilter>0 && myTree.Flag_HBHENoiseIsoFilter>0 && myTree.Flag_globalTightHalo2016Filter>0 && myTree.Flag_EcalDeadCellTriggerPrimitiveFilter>0 && myTree.Flag_goodVertices>0 && myTree.Flag_eeBadScFilter>0 && myTree.Flag_badMuonFilter>0 && myTree.Flag_badChargedHadronFilter>0 && (myTree.HLT_MuX_Ele12 || myTree.HLT_Mu8_EleX || myTree.HLT_Mu33_Ele33_NonIso || myTree.HLT_Mu30_Ele30_NonIso) && (abs(myTree.lep_pdgId[0]) != abs(myTree.lep_pdgId[1])) && ((abs(myTree.lep_pdgId[0])==11 && myTree.lep_tightId[0]> 0.5) || (abs(myTree.lep_pdgId[0])==13)) && ((abs(myTree.lep_pdgId[1])==11 && myTree.lep_tightId[1]> 0.5) || (abs(myTree.lep_pdgId[1])==13)) && myTree.jet_pt[0]<13000. && myTree.met_pt/myTree.met_caloPt < 5. );
       //      else continue;
@@ -774,9 +739,6 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
 	  weight = weight*(weight_lep0);
       }
 
-      float leppdgid0_of=myTree.lep_pdgId[0];
-      float leppdgid1_of=myTree.lep_pdgId[1];
-
       thisTree_of->assignVar("ID", sample.id );
 
       //      thisTree_of->assignVar("Z_pt", z.Perp() );
@@ -788,8 +750,8 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
       thisTree_of->assignVar("Z_lepId", abs(myTree.lep_pdgId[0]) );
 
       thisTree_of->assignVar("nLep", myTree.nlep );
-//      thisTree_of->assignVar("lep_pdgId0", leppdgid0_of );
-//      thisTree_of->assignVar("lep_pdgId1", leppdgid1_of );
+      thisTree_of->assignVar("lep_pdgId0", myTree.lep_pdgId[0] );
+      thisTree_of->assignVar("lep_pdgId1", myTree.lep_pdgId[1] );
       thisTree_of->assignVar("lep_pt0", myTree.lep_pt[0] );
       thisTree_of->assignVar("lep_pt1", myTree.lep_pt[1] );
       thisTree_of->assignVar("lep_eta0", myTree.lep_eta[0] );
