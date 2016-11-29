@@ -455,6 +455,7 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
       continue;
     }
 
+    if( myTree.met_miniaodPt/myTree.met_caloPt > 5. ) continue;
      
     if( myTree.isData ) {
       

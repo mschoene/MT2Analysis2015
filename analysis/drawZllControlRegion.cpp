@@ -302,12 +302,30 @@ int main(int argc, char* argv[]){
   selection_mass_mu = "(ht>250. && nJets>=1 && mt2>200. && Z_lepId==13 )";
   dt_of.drawRegionYields_fromTree( "incl_mll_mu"   , "Z_mass"   , selection_mass_mu, 50, 50., 150., "M_{#mu^{+}#mu^{-}}", "GeV", cutsLabel, "#geq1j, #geq0b");
 
+  selection = "(ht>250. && nJets>=1  && mt2>200. && deltaPhiMin>0.3 && diffMetMht<0.5*met && fabs(Z_mass-91.19)>20)";
+  dt.drawRegionYields_fromTree( "noMassCut_Z_pt"   , "Z_pt"   , selection, 50, 10., 1010., "Z p_{T}", "GeV", cutsLabel, "#geq1j, #geq0b");
+  dt_of.drawRegionYields_fromTree( "noMassCut_Z_pt"   , "Z_pt"   , selection, 50, 10., 1010., "Z p_{T}", "GeV", cutsLabel, "#geq1j, #geq0b");
 
+  htMin=250, htMax=1000;
+  cutsLabel = getCutLabel(htMin, htMax, "H_{T}", "GeV");
 
+  selection = "(ht>250. && ht<1000 && met>250. && nJets>=1  && mt2>200. && deltaPhiMin>0.3 && diffMetMht<0.5*met && fabs(Z_mass-91.19)<=20 )"; //&& fabs(Z_mass-91.19)>20)";
+  dt.drawRegionYields_fromTree( "lowHT_Z_pt"   , "Z_pt"   , selection, 50, 10., 1010., "Z p_{T}", "GeV", cutsLabel, "#geq1j, #geq0b");
+  dt_of.drawRegionYields_fromTree( "lowHT_Z_pt"   , "Z_pt"   , selection, 50, 10., 1010., "Z p_{T}", "GeV", cutsLabel, "#geq1j, #geq0b");
+  
+  htMin=1000, htMax=-1;
+  cutsLabel = getCutLabel(htMin, htMax, "H_{T}", "GeV");
+
+  selection = "(ht>1000. && met>30. && nJets>=1  && mt2>200. && deltaPhiMin>0.3 && diffMetMht<0.5*met && fabs(Z_mass-91.19)<=20)"; // && fabs(Z_mass-91.19)>20)";
+  dt.drawRegionYields_fromTree( "highHT_Z_pt"   , "Z_pt"   , selection, 50, 10., 1010., "Z p_{T}", "GeV", cutsLabel, "#geq1j, #geq0b");
+  dt_of.drawRegionYields_fromTree( "highHT_Z_pt"   , "Z_pt"   , selection, 50, 10., 1010., "Z p_{T}", "GeV", cutsLabel, "#geq1j, #geq0b");
 
 
 
   ///AGAIN BUT WITH Z_PT CUT
+
+  htMin=250, htMax=-1;
+  cutsLabel = getCutLabel(htMin, htMax, "H_{T}", "GeV");
 
   // +++++++++++++++++++++++++
   // +++     inclusive     +++
@@ -382,7 +400,7 @@ int main(int argc, char* argv[]){
   /////////////////////////////////////////////////////////////////////////////////////
 
 
- selection = "(ht>250. &&nJets>=1 && mt2>200. && deltaPhiMin>0.3 && diffMetMht<0.5*met && Z_pt<180.)";
+ selection = "(ht>250. &&nJets>=1 && mt2>200. && deltaPhiMin>0.3 && diffMetMht<0.5*met && Z_pt<180. && (abs(Z_mass-91.19)>20) && Z_mass>50.)";
   //  selection = "(ht>200. &&nJets>=1 && met>200. && mt2>200. && deltaPhiMin>0.3 && diffMetMht<0.5*met && abs(Z_mass-91.19)<20)";
 
   dt.drawRegionYields_fromTree( "incl_lowZpt_mt2"   , "mt2"   , selection, 40, 200., 1000., "M_{T2}", "GeV", cutsLabel, "#geq1j, #geq0b");
@@ -402,12 +420,15 @@ int main(int argc, char* argv[]){
   selection_mass = "(ht>250. && nJets>=1 && mt2>200. && Z_pt< 180.)";
   dt.drawRegionYields_fromTree( "incl_lowZpt_mll"   , "Z_mass"   , selection_mass, 50, 50., 150., "M_{ll}", "GeV", cutsLabel ,"#geq1j, #geq0b");
 
+  //Zpt
+  selection = "(ht>250. &&nJets>=1 && mt2>200. && deltaPhiMin>0.3 && diffMetMht<0.5*met && (abs(Z_mass-91.19)>20) && Z_mass>50.)";
+  dt.drawRegionYields_fromTree( "incl_noZwindow_Z_pt"   , "Z_pt"   , selection, 50, 10., 1010., "Z p_{T}", "GeV", cutsLabel, "#geq1j, #geq0b");
 
 
   ///////////////////////////////////////////
   ////// opposite flavour ///////////////////
   ///////////////////////////////////////////
-  selection = "(ht>250. &&nJets>=1  && mt2>200. && deltaPhiMin>0.3 && diffMetMht<0.5*met && Z_pt<180.)";
+  selection = "(ht>250. &&nJets>=1  && mt2>200. && deltaPhiMin>0.3 && diffMetMht<0.5*met && Z_pt<180.  && (abs(Z_mass-91.19)>20) && Z_mass>50.)";
   dt_of.drawRegionYields_fromTree( "incl_lowZpt_mt2"   , "mt2"   , selection, 40, 200., 1000., "M_{T2}", "GeV", cutsLabel, "#geq1j, #geq0b");
   dt_of.drawRegionYields_fromTree( "incl_lowZpt_met"   , "met"   , selection, 40, 200, 1050, "ME_{T}", "GeV", cutsLabel, "#geq1j, #geq0b");
   dt_of.drawRegionYields_fromTree( "incl_lowZpt_raw_met"   , "raw_met"   , selection, 40, 0, 400, "ME_{T}", "GeV", cutsLabel, "#geq1j, #geq0b");
@@ -428,6 +449,10 @@ int main(int argc, char* argv[]){
   dt_of.drawRegionYields_fromTree( "incl_lowZpt_mll_el"   , "Z_mass"   , selection_mass_el, 50 , 50., 150., "M_{e^{+}e^{-}}", "GeV", cutsLabel, "#geq1j, #geq0b");
   selection_mass_mu = "(ht>250. && nJets>=1 && mt2>200. && Z_lepId==13&& Z_pt<180. )";
   dt_of.drawRegionYields_fromTree( "incl_lowZpt_mll_mu"   , "Z_mass"   , selection_mass_mu, 50, 50., 150., "M_{#mu^{+}#mu^{-}}", "GeV", cutsLabel, "#geq1j, #geq0b");
+
+  //Zpt
+  selection = "(ht>250. &&nJets>=1 && mt2>200. && deltaPhiMin>0.3 && diffMetMht<0.5*met && (abs(Z_mass-91.19)>20) && Z_mass>50.)";
+  dt_of.drawRegionYields_fromTree( "incl_noZwindow_Z_pt"   , "Z_pt"   , selection, 50, 10., 1010., "Z p_{T}", "GeV", cutsLabel, "#geq1j, #geq0b");
 
 
 //   //TESTS

@@ -43,6 +43,9 @@ public :
    Int_t         HLT_PFHT300_PFMET100;
    Int_t         HLT_PFMET90_PFMHT90;
    Int_t         HLT_PFMET100_PFMHT100;
+   Int_t         HLT_PFMET120_PFMHT120;
+   Int_t         HLT_PFHT300_PFMET110;
+   Int_t         HLT_PFJet450;
    Int_t         HLT_PFMETNoMu90_PFMHTNoMu90;
    Int_t         HLT_PFHT125_Prescale;
    Int_t         HLT_PFHT200_Prescale;
@@ -53,6 +56,7 @@ public :
    Int_t         HLT_SingleMu_NonIso;
    Int_t         HLT_MuX_Ele12;
    Int_t         HLT_Mu8_EleX;
+   Int_t         HLT_Mu30_Ele30_NonIso;
    Int_t         HLT_Mu33_Ele33_NonIso;
    Int_t         HLT_SingleEl;
    Int_t         HLT_PFHT800;
@@ -208,6 +212,7 @@ public :
    Float_t         pseudoViaKtJet2_had_phi;
    Float_t         pseudoViaKtJet2_had_mass;
    Float_t         met_pt;
+   Float_t         met_miniaodPt;
    Float_t         met_caloPt;
    Float_t         met_eta;
    Float_t         met_phi;
@@ -383,6 +388,8 @@ public :
    Int_t           lep_pixelLayers[5];   //[nlep]
    Float_t         lep_mvaTTH[5];   //[nlep]
    Float_t         lep_mvaSusy[5];   //[nlep]
+   Float_t         lep_mvaIdSpring15[5];   //[nlep]
+   Float_t         lep_mediumMuonId[5];   //[nlep]
    Float_t         lep_jetPtRatio[5];   //[nlep]
    Float_t         lep_jetBTagCSV[5];   //[nlep]
    Float_t         lep_jetDR[5];   //[nlep]
@@ -503,6 +510,9 @@ public :
    TBranch        *b_HLT_PFMETNoMu90_PFMHTNoMu90;   //!
    TBranch        *b_HLT_PFMET90_PFMHT90;   //!
    TBranch        *b_HLT_PFMET100_PFMHT100;   //!
+   TBranch        *b_HLT_PFMET120_PFMHT120;   //!
+   TBranch        *b_HLT_PFHT300_PFMET110;   //!
+   TBranch        *b_HLT_PFJet450;   //!
    TBranch        *b_HLT_PFHT125_Prescale;   //!
    TBranch        *b_HLT_PFHT200_Prescale;   //!
    TBranch        *b_HLT_PFHT475_Prescale;   //!
@@ -512,6 +522,7 @@ public :
    TBranch        *b_HLT_SingleEl;   //!
    TBranch        *b_HLT_MuX_Ele12;   //!
    TBranch        *b_HLT_Mu8_EleX;   //!
+   TBranch        *b_HLT_Mu30_Ele30_NonIso;   //!
    TBranch        *b_HLT_Mu33_Ele33_NonIso;   //!
    TBranch        *b_HLT_PFHT800;   //!
    TBranch        *b_HLT_Photon155;   //!
@@ -663,6 +674,7 @@ public :
    TBranch        *b_pseudoViaKtJet2_had_phi;   //!
    TBranch        *b_pseudoViaKtJet2_had_mass;   //!
    TBranch        *b_met_pt;   //!
+   TBranch        *b_met_miniaodPt;   //!
    TBranch        *b_met_caloPt;   //!
    TBranch        *b_met_eta;   //!
    TBranch        *b_met_phi;   //!
@@ -838,6 +850,8 @@ public :
    TBranch        *b_lep_pixelLayers;   //!
    TBranch        *b_lep_mvaTTH;   //!
    TBranch        *b_lep_mvaSusy;   //!
+   TBranch        *b_lep_mvaIdSpring15;   //!
+   TBranch        *b_lep_mediumMuonId;   //!
    TBranch        *b_lep_jetPtRatio;   //!
    TBranch        *b_lep_jetBTagCSV;   //!
    TBranch        *b_lep_jetDR;   //!
@@ -1026,9 +1040,11 @@ void MT2Tree::Init(TTree *tree)
    fChain->SetBranchAddress("HLT_Photon90", &HLT_Photon90, &b_HLT_Photon90);
    fChain->SetBranchAddress("HLT_PFHT350_PFMET100", &HLT_PFHT350_PFMET100, &b_HLT_PFHT350_PFMET100);
    fChain->SetBranchAddress("HLT_PFHT300_PFMET100", &HLT_PFHT300_PFMET100, &b_HLT_PFHT300_PFMET100);
+   fChain->SetBranchAddress("HLT_PFHT300_PFMET110", &HLT_PFHT300_PFMET110, &b_HLT_PFHT300_PFMET110);
    fChain->SetBranchAddress("HLT_PFMETNoMu90_PFMHTNoMu90", &HLT_PFMETNoMu90_PFMHTNoMu90, &b_HLT_PFMETNoMu90_PFMHTNoMu90);
    fChain->SetBranchAddress("HLT_PFMET90_PFMHT90", &HLT_PFMET90_PFMHT90, &b_HLT_PFMET90_PFMHT90);
    fChain->SetBranchAddress("HLT_PFMET100_PFMHT100", &HLT_PFMET100_PFMHT100, &b_HLT_PFMET100_PFMHT100);
+   fChain->SetBranchAddress("HLT_PFMET120_PFMHT120", &HLT_PFMET120_PFMHT120, &b_HLT_PFMET120_PFMHT120);
    fChain->SetBranchAddress("HLT_PFHT125_Prescale", &HLT_PFHT125_Prescale, &b_HLT_PFHT125_Prescale);
    fChain->SetBranchAddress("HLT_PFHT200_Prescale", &HLT_PFHT200_Prescale, &b_HLT_PFHT200_Prescale);
    fChain->SetBranchAddress("HLT_PFHT475_Prescale", &HLT_PFHT475_Prescale, &b_HLT_PFHT475_Prescale);
@@ -1038,10 +1054,12 @@ void MT2Tree::Init(TTree *tree)
    fChain->SetBranchAddress("HLT_SingleEl", &HLT_SingleEl, &b_HLT_SingleEl);
    fChain->SetBranchAddress("HLT_Mu8_EleX", &HLT_Mu8_EleX, &b_HLT_Mu8_EleX);
    fChain->SetBranchAddress("HLT_MuX_Ele12", &HLT_MuX_Ele12, &b_HLT_MuX_Ele12);
+   fChain->SetBranchAddress("HLT_Mu30_Ele30_NonIso", &HLT_Mu30_Ele30_NonIso, &b_HLT_Mu30_Ele30_NonIso);
    fChain->SetBranchAddress("HLT_Mu33_Ele33_NonIso", &HLT_Mu33_Ele33_NonIso, &b_HLT_Mu33_Ele33_NonIso);
    fChain->SetBranchAddress("HLT_PFHT800", &HLT_PFHT800, &b_HLT_PFHT800);
    fChain->SetBranchAddress("HLT_Photon155", &HLT_Photon155, &b_HLT_Photon155);
    fChain->SetBranchAddress("HLT_PFHT900", &HLT_PFHT900, &b_HLT_PFHT900);
+   fChain->SetBranchAddress("HLT_PFJet450", &HLT_PFJet450, &b_HLT_PFJet450);
    fChain->SetBranchAddress("HLT_Photon175", &HLT_Photon175, &b_HLT_Photon175);
    fChain->SetBranchAddress("HLT_DiJet", &HLT_DiJet, &b_HLT_DiJet);
    fChain->SetBranchAddress("HLT_DoubleEl", &HLT_DoubleEl, &b_HLT_DoubleEl);
@@ -1189,6 +1207,7 @@ void MT2Tree::Init(TTree *tree)
    fChain->SetBranchAddress("pseudoViaKtJet2_had_phi", &pseudoViaKtJet2_had_phi, &b_pseudoViaKtJet2_had_phi);
    fChain->SetBranchAddress("pseudoViaKtJet2_had_mass", &pseudoViaKtJet2_had_mass, &b_pseudoViaKtJet2_had_mass);
    fChain->SetBranchAddress("met_pt", &met_pt, &b_met_pt);
+   fChain->SetBranchAddress("met_miniaodPt", &met_miniaodPt, &b_met_miniaodPt);
    fChain->SetBranchAddress("met_caloPt", &met_caloPt, &b_met_caloPt);
    fChain->SetBranchAddress("met_eta", &met_eta, &b_met_eta);
    fChain->SetBranchAddress("met_phi", &met_phi, &b_met_phi);
@@ -1395,6 +1414,8 @@ void MT2Tree::Init(TTree *tree)
    fChain->SetBranchAddress("lep_pixelLayers", lep_pixelLayers, &b_lep_pixelLayers);
    fChain->SetBranchAddress("lep_mvaTTH", lep_mvaTTH, &b_lep_mvaTTH);
    fChain->SetBranchAddress("lep_mvaSusy", lep_mvaSusy, &b_lep_mvaSusy);
+   fChain->SetBranchAddress("lep_mvaIdSpring15", lep_mvaIdSpring15, &b_lep_mvaIdSpring15);
+   fChain->SetBranchAddress("lep_mediumMuonId", lep_mediumMuonId, &b_lep_mediumMuonId);
    fChain->SetBranchAddress("lep_jetPtRatio", lep_jetPtRatio, &b_lep_jetPtRatio);
    fChain->SetBranchAddress("lep_jetBTagCSV", lep_jetBTagCSV, &b_lep_jetBTagCSV);
    fChain->SetBranchAddress("lep_jetDR", lep_jetDR, &b_lep_jetDR);
