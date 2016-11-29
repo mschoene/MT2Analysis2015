@@ -388,11 +388,12 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg ) {
       continue;
     }
 
-    if( myTree.met_pt/myTree.met_caloPt > 5.0 ) continue;
+    if( myTree.met_miniaodPt/myTree.met_caloPt > 5.0 ) continue;
 
     if (myTree.isData) {
 
-      if ( !(myTree.HLT_PFMET100_PFMHT100 || myTree.HLT_PFHT800 || myTree.HLT_PFHT300_PFMET100) ) continue;
+      if ( !(myTree.HLT_PFMET120_PFMHT120 || myTree.HLT_PFHT900 || myTree.HLT_PFHT300_PFMET110 || myTree.HLT_PFJet450) ) continue;
+      //      if ( !(myTree.HLT_PFMET100_PFMHT100 || myTree.HLT_PFHT800 || myTree.HLT_PFHT300_PFMET100) ) continue;
 
     } // if is data
 
