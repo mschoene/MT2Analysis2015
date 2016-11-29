@@ -273,7 +273,8 @@ int main(int argc, char* argv[]) {
     std::string samplesFile_data = "../samples/samples_" + cfg.dataSamples() + ".dat";
     std::cout << std::endl << std::endl;
     std::cout << "-> Loading data from file: " << samplesFile_data << std::endl;
-    std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, "merged");  
+    //    std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, "merged");  
+    std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, "Double");  
 
     // std::vector<MT2Sample> samples_data_of = MT2Sample::loadSamples(samplesFile_data, "merged");
   
@@ -476,11 +477,25 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
     if( myTree.isData && !myTree.passFilters() ) continue;
     if( myTree.isData &&  myTree.isGolden == 0 ) continue;
 
+    //crazy events! To be piped into a separate txt file
+    if(myTree.jet_pt[0] > 13000){
+      std::cout << "Rejecting weird event at run:lumi:evt = " << myTree.run << ":" << myTree.lumi << ":" << myTree.evt << std::endl;
+      continue;
+    }
+    //NEW check if is there is a nan
+    if( isnan(myTree.ht) || isnan(myTree.met_pt) ||  isinf(myTree.ht) || isinf(myTree.met_pt)  ){
+      std::cout << "Rejecting nan/inf event at run:lumi:evt = " << myTree.run << ":" << myTree.lumi << ":" << myTree.evt << std::endl;
+      continue;
+    }
+
+    if( myTree.met_miniaodPt/myTree.met_caloPt > 5.0 ) continue;
+
     // if(myTree.lep_pt[0]<35) continue;
     // if(myTree.lep_pt[1]<35) continue; 
     if(myTree.lep_pt[0]<25) continue;
     if(myTree.lep_pt[1]<20) continue; 
 
+    
     //Need the lorentz vectors of the leptons first
     TLorentzVector *LVec = new TLorentzVector[3];
     for(int i=0; i< 2; i++){
@@ -603,13 +618,36 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
 
       if(doZinvEst){
 	//SF part
-	if( fabs(z.M()-91.19)>=20 ) continue;
-	if( z.Perp() <= 180. ) continue;
+	if( fabs(myTree.zll_mass-91.19)>=20 ) continue;
+	if( myTree.zll_pt <= 180. ) continue;
+//	if( fabs(z.M()-91.19)>=20 ) continue;
+//	if( z.Perp() <= 180. ) continue;
 	//if( fabs(z.M()-91.19)>10 ) continue;
       }
       if( abs(myTree.lep_pdgId[0])==11 && myTree.lep_tightId[0]< 0.5 ) continue;
       if( abs(myTree.lep_pdgId[1])==11 && myTree.lep_tightId[1]< 0.5 ) continue;
       
+
+      bool isId = true;
+      for (int l=0; l<2; ++l){
+	if(abs(myTree.lep_pdgId[l])==11){
+	  if(fabs(myTree.lep_eta[l])<0.8 && myTree.lep_mvaIdSpring15[l]<-0.70)
+	    isId=false;
+	  else if(fabs(myTree.lep_eta[l])>0.8 && fabs(myTree.lep_eta[l])<1.479 && myTree.lep_mvaIdSpring15[l]<-0.83)
+	    isId=false;
+	  else if(fabs(myTree.lep_eta[l])>1.479 && myTree.lep_mvaIdSpring15[l]<-0.92)
+	    isId=false;
+	}
+	else if(abs(myTree.lep_pdgId[l])==13)
+	  if(myTree.lep_mediumMuonId[l]<0.5)
+	    isId==false;
+      }
+      if(!isId) continue;
+      
+
+      //      if(myTree.nVert > 0 && myTree.nJet30 >= 1 && myTree.zll_ht>250. && ((myTree.nJet30>1 && myTree.zll_mt2>200.)||myTree.nJet30==1) && myTree.nJet30FailId == 0 && myTree.zll_deltaPhiMin > 0.3 && ( (myTree.nJet30>1 && myTree.zll_ht<1000. && myTree.zll_met_pt>250.) || (myTree.nJet30>1 && myTree.zll_ht>=1000. && myTree.zll_met_pt>30.) || (myTree.nJet30==1 &&myTree.zll_met_pt>250.)) &&  myTree.zll_diffMetMht < 0.5*myTree.zll_met_pt &&  myTree.nlep==2 && (myTree.lep_pdgId[0]*myTree.lep_pdgId[1])<0 && ((myTree.nJet30==1 && myTree.jet_id[0]>=4) || myTree.nJet30>1) && myTree.lep_pt[0]>=25. && myTree.lep_pt[1]>=20. && myTree.Flag_HBHENoiseFilter>0 && myTree.Flag_HBHENoiseIsoFilter>0 && myTree.Flag_globalTightHalo2016Filter>0 && myTree.Flag_EcalDeadCellTriggerPrimitiveFilter>0 && myTree.Flag_goodVertices>0 && myTree.Flag_eeBadScFilter>0 && myTree.Flag_badMuonFilter>0 && myTree.Flag_badChargedHadronFilter>0 && (myTree.HLT_DoubleMu || myTree.HLT_DoubleMu_NonIso || myTree.HLT_SingleMu_NonIso || myTree.HLT_DoubleEl || myTree.HLT_DoubleEl33 || myTree.HLT_Photon165_HE10 ) && (abs(myTree.lep_pdgId[0]) == abs(myTree.lep_pdgId[1])) && ((abs(myTree.lep_pdgId[0])==11 && myTree.lep_tightId[0]> 0.5) || (abs(myTree.lep_pdgId[0])==13)) && ((abs(myTree.lep_pdgId[1])==11 && myTree.lep_tightId[1]> 0.5) || (abs(myTree.lep_pdgId[1])==13)) && myTree.jet_pt[0]<13000. && myTree.met_pt/myTree.met_caloPt < 5. );
+      //      else continue;
+
 
       MT2EstimateTree* thisTree = anaTree->get( ht, njets, nbjets, minMTBmet, mt2 );
       if (thisTree==0) continue;
@@ -634,16 +672,22 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
       }
 
 
+      float leppdgid0=myTree.lep_pdgId[0];
+      float leppdgid1=myTree.lep_pdgId[1];
       
       thisTree->assignVar("ID", ID );
 
-      thisTree->assignVar("Z_pt", z.Perp() );
+      //      thisTree->assignVar("Z_pt", z.Perp() );
+      thisTree->assignVar("Z_pt", myTree.zll_pt );
       thisTree->assignVar("Z_phi", z.Phi() );
       thisTree->assignVar("Z_eta", z.Eta() );
-      thisTree->assignVar("Z_mass", z.M() );
+      //      thisTree->assignVar("Z_mass", z.M() );
+      thisTree->assignVar("Z_mass", myTree.zll_mass );
       thisTree->assignVar("Z_lepId", abs(myTree.lep_pdgId[0]) );
 
       thisTree->assignVar("nLep", myTree.nlep );
+//      thisTree->assignVar("lep_pdgId0", leppdgid0 );
+//      thisTree->assignVar("lep_pdgId1", leppdgid1 );
       thisTree->assignVar("lep_pt0", myTree.lep_pt[0] );
       thisTree->assignVar("lep_pt1", myTree.lep_pt[1] );
       thisTree->assignVar("lep_eta0", myTree.lep_eta[0] );
@@ -670,21 +714,50 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
       thisTree->yield->Fill( mt2, weight );
 
     } else if(isOF){ //////////Opposite FLAVOR//////////////////////////////////////////
-      if(  myTree.isData && !( (myTree.HLT_MuX_Ele12 || myTree.HLT_Mu8_EleX || myTree.HLT_Mu33_Ele33_NonIso )) ) continue;
+      if(  myTree.isData && !( (myTree.HLT_MuX_Ele12 || myTree.HLT_Mu8_EleX || myTree.HLT_Mu33_Ele33_NonIso || myTree.HLT_Mu30_Ele30_NonIso) ) ) continue;
+      //if(  myTree.isData && !( (myTree.HLT_MuX_Ele12 || myTree.HLT_Mu8_EleX || myTree.HLT_Mu30_Ele30_NonIso )) ) continue;
+
+      if( myTree.isData && !myTree.passFilters() ) continue;
+      if( myTree.isData && !myTree.isGolden) continue;
 
       //   if(doZinvEst)
       //	if( fabs(z.M())<50 ) continue;
 
       if(doZinvEst){
 	//SF part
-	if( fabs(z.M()-91.19)>=20 ) continue;
-	if( z.Perp() <= 180. ) continue;
+	if( fabs(myTree.zll_mass-91.19)>=20 ) continue;
+	if( myTree.zll_pt <= 180. ) continue;
+//	if( fabs(z.M()-91.19)>=20 ) continue;
+//	if( z.Perp() <= 180. ) continue;
 	//if( fabs(z.M()-91.19)>10 ) continue;
       }
 
 
       if( abs(myTree.lep_pdgId[0])==11 && myTree.lep_tightId[0]< 0.5 ) continue;
       if( abs(myTree.lep_pdgId[1])==11 && myTree.lep_tightId[1]< 0.5 ) continue;
+
+      bool isId = true;
+      for (int l=0; l<2; ++l){
+	if(abs(myTree.lep_pdgId[l])==11){
+	  if(fabs(myTree.lep_eta[l])<0.8 && myTree.lep_mvaIdSpring15[l]<-0.70)
+	    isId=false;
+	  else if(fabs(myTree.lep_eta[l])>0.8 && fabs(myTree.lep_eta[l])<1.479 && myTree.lep_mvaIdSpring15[l]<-0.83)
+	    isId=false;
+	  else if(fabs(myTree.lep_eta[l])>1.479 && myTree.lep_mvaIdSpring15[l]<-0.92)
+	    isId=false;
+	}
+	else if(abs(myTree.lep_pdgId[l])==13)
+	  if(myTree.lep_mediumMuonId[l]<0.5)
+	    isId==false;
+	
+      }
+      if(!isId) continue;
+	  
+
+      //      if(myTree.nVert > 0 && myTree.nJet30 >= 1 && myTree.zll_ht>250. && ((myTree.nJet30>1 && myTree.zll_mt2>200.)||myTree.nJet30==1) && myTree.nJet30FailId == 0 && myTree.zll_deltaPhiMin > 0.3 && ( (myTree.nJet30>1 && myTree.zll_ht<1000. && myTree.zll_met_pt>250.) || (myTree.nJet30>1 && myTree.zll_ht>=1000. && myTree.zll_met_pt>30.) || (myTree.nJet30==1 &&myTree.zll_met_pt>250.)) &&  myTree.zll_diffMetMht < 0.5*myTree.zll_met_pt &&  myTree.nlep==2 && (myTree.lep_pdgId[0]*myTree.lep_pdgId[1])<0 && ((myTree.nJet30==1 && myTree.jet_id[0]>=4) || myTree.nJet30>1) && myTree.lep_pt[0]>=25. && myTree.lep_pt[1]>=20. && myTree.Flag_HBHENoiseFilter>0 && myTree.Flag_HBHENoiseIsoFilter>0 && myTree.Flag_globalTightHalo2016Filter>0 && myTree.Flag_EcalDeadCellTriggerPrimitiveFilter>0 && myTree.Flag_goodVertices>0 && myTree.Flag_eeBadScFilter>0 && myTree.Flag_badMuonFilter>0 && myTree.Flag_badChargedHadronFilter>0 && (myTree.HLT_MuX_Ele12 || myTree.HLT_Mu8_EleX || myTree.HLT_Mu33_Ele33_NonIso || myTree.HLT_Mu30_Ele30_NonIso) && (abs(myTree.lep_pdgId[0]) != abs(myTree.lep_pdgId[1])) && ((abs(myTree.lep_pdgId[0])==11 && myTree.lep_tightId[0]> 0.5) || (abs(myTree.lep_pdgId[0])==13)) && ((abs(myTree.lep_pdgId[1])==11 && myTree.lep_tightId[1]> 0.5) || (abs(myTree.lep_pdgId[1])==13)) && myTree.jet_pt[0]<13000. && myTree.met_pt/myTree.met_caloPt < 5. );
+      //      else continue;
+      //if( myTree.zll_ht>=250. && ((myTree.nJet30>1 && myTree.zll_mt2>=200.) || (myTree.zll_met_pt>250.)) );
+      //else continue;
 
 
       MT2EstimateTree* thisTree_of = anaTree_of->get( myTree.zll_ht, njets, nbjets, minMTBmet, myTree.zll_mt2 );
@@ -701,14 +774,22 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
 	  weight = weight*(weight_lep0);
       }
 
+      float leppdgid0_of=myTree.lep_pdgId[0];
+      float leppdgid1_of=myTree.lep_pdgId[1];
+
       thisTree_of->assignVar("ID", sample.id );
 
-      thisTree_of->assignVar("Z_pt", z.Perp() );
+      //      thisTree_of->assignVar("Z_pt", z.Perp() );
+      thisTree_of->assignVar("Z_pt", myTree.zll_pt );
       thisTree_of->assignVar("Z_phi", z.Phi() );
-      thisTree_of->assignVar("Z_mass", z.M() );
-      thisTree_of->assignVar("Z_lepId", abs(myTree.lep_pdgId[0])  );
+      thisTree_of->assignVar("Z_eta", z.Eta() );
+      //      thisTree_of->assignVar("Z_mass", z.M() );
+      thisTree_of->assignVar("Z_mass", myTree.zll_mass );
+      thisTree_of->assignVar("Z_lepId", abs(myTree.lep_pdgId[0]) );
 
       thisTree_of->assignVar("nLep", myTree.nlep );
+//      thisTree_of->assignVar("lep_pdgId0", leppdgid0_of );
+//      thisTree_of->assignVar("lep_pdgId1", leppdgid1_of );
       thisTree_of->assignVar("lep_pt0", myTree.lep_pt[0] );
       thisTree_of->assignVar("lep_pt1", myTree.lep_pt[1] );
       thisTree_of->assignVar("lep_eta0", myTree.lep_eta[0] );
@@ -722,17 +803,50 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
       thisTree_of->assignVar("weight_lep1", weight_lep1);
       thisTree_of->assignVar("weight_lep_err", weight_lep_err);
 
-      thisTree_of->assignVar( "nJetHF30",  nJetHF30_ );
-      thisTree_of->assignVar( "jet1_pt",  myTree.jet1_pt );
-  
+      thisTree_of->assignVar( "nJetHF30", nJetHF30_ );
+      thisTree_of->assignVar( "jet1_pt", myTree.jet1_pt );
+
       thisTree_of->assignVar("lep_tightId0", myTree.lep_tightId[0] );
       thisTree_of->assignVar("lep_tightId1", myTree.lep_tightId[1] );
+
+
+
+//      thisTree_of->assignVar("ID", sample.id );
+//
+//
+//
+//      //      thisTree_of->assignVar("Z_pt", z.Perp() );
+//      thisTree_of->assignVar("Z_pt", myTree.zll_pt );
+//      thisTree_of->assignVar("Z_phi", z.Phi() );
+//      //      thisTree_of->assignVar("Z_mass", z.M() );
+//      thisTree_of->assignVar("Z_mass", myTree.zll_mass );
+//      thisTree_of->assignVar("Z_lepId", abs(myTree.lep_pdgId[0])  );
+//
+//      thisTree_of->assignVar("nLep", myTree.nlep );
+//      thisTree_of->assignVar("lep_pt0", myTree.lep_pt[0] );
+//      thisTree_of->assignVar("lep_pt1", myTree.lep_pt[1] );
+//      thisTree_of->assignVar("lep_eta0", myTree.lep_eta[0] );
+//      thisTree_of->assignVar("lep_eta1", myTree.lep_eta[1] );
+//      thisTree_of->assignVar("lep_phi0", myTree.lep_phi[0] );
+//      thisTree_of->assignVar("lep_phi1", myTree.lep_phi[1] );
+//      thisTree_of->assignVar("raw_mt2", myTree.mt2 );
+//      thisTree_of->assignVar("raw_met", myTree.met_pt );
+//
+//      thisTree_of->assignVar("weight_lep0", weight_lep0);
+//      thisTree_of->assignVar("weight_lep1", weight_lep1);
+//      thisTree_of->assignVar("weight_lep_err", weight_lep_err);
+//
+//      thisTree_of->assignVar( "nJetHF30",  nJetHF30_ );
+//      thisTree_of->assignVar( "jet1_pt",  myTree.jet1_pt );
+//  
+//      thisTree_of->assignVar("lep_tightId0", myTree.lep_tightId[0] );
+//      thisTree_of->assignVar("lep_tightId1", myTree.lep_tightId[1] );
 
  
       thisTree_of->fillTree_zll(myTree, weight );
       thisTree_of->yield->Fill(mt2, weight );
 
-    }else
+    } else
       continue;
  
   } // for entries
