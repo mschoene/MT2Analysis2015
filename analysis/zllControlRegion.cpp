@@ -523,10 +523,10 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
 
 
 
-    if( !myTree.isData ){ //temporarily scaling by hand the cross sections
+    if( !myTree.isData ){ 
       weight *= myTree.weight_btagsf;
       
-      /* //ONLY for 74MC which has xsec corrections
+      /* //ONLY for 74MC which has xsec corrections //temporarily scaling by hand the cross sections
       if( myTree.evt_id == 702) weight = weight * 1.0573;
       if( myTree.evt_id == 703) weight = weight * 0.9588;
       if( myTree.evt_id == 704) weight = weight * 1.0329;
@@ -607,7 +607,6 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
 
 
 
-
     bool isSF = false;
     bool isOF = false;
 
@@ -621,11 +620,12 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
       if(doZinvEst){
 	//SF part
 	if( fabs(myTree.zll_mass-91.19)>=20 ) continue;
-	if( myTree.zll_pt <= 180. ) continue;
-//	if( fabs(z.M()-91.19)>=20 ) continue;
-//	if( z.Perp() <= 180. ) continue;
+	if( myTree.zll_pt <= 200. ) continue;
+	//if( fabs(z.M()-91.19)>=20 ) continue;
+	//if( z.Perp() <= 180. ) continue;
 	//if( fabs(z.M()-91.19)>10 ) continue;
       }
+
       if( abs(myTree.lep_pdgId[0])==11 && myTree.lep_tightId[0]< 0.5 ) continue;
       if( abs(myTree.lep_pdgId[1])==11 && myTree.lep_tightId[1]< 0.5 ) continue;
       
@@ -645,9 +645,6 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
 
       float HLT_weight = 1;
       if( !myTree.isData){
-	// weight *= 0.93;
-	// HLT_weight = 0.93;
-	
 	if( abs(myTree.lep_pdgId[0])==11 )
 	  HLT_weight = 0.993;
 	else if(abs(myTree.lep_pdgId[0])==13 )
@@ -699,16 +696,10 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
       if(  myTree.isData && !( (myTree.HLT_MuX_Ele12 || myTree.HLT_Mu8_EleX || myTree.HLT_Mu33_Ele33_NonIso || myTree.HLT_Mu30_Ele30_NonIso) ) ) continue;
       //if(  myTree.isData && !( (myTree.HLT_MuX_Ele12 || myTree.HLT_Mu8_EleX || myTree.HLT_Mu30_Ele30_NonIso )) ) continue;
 
-      if( myTree.isData && !myTree.passFilters() ) continue;
-      if( myTree.isData && !myTree.isGolden) continue;
-
-      //   if(doZinvEst)
-      //	if( fabs(z.M())<50 ) continue;
-
       if(doZinvEst){
 	//SF part
-	if( fabs(myTree.zll_mass-91.19)>=20 ) continue;
-	if( myTree.zll_pt <= 180. ) continue;
+	if( fabs(myTree.zll_mass-91.19)>=20. ) continue;
+	if( myTree.zll_pt <= 200. ) continue;
 //	if( fabs(z.M()-91.19)>=20 ) continue;
 //	if( z.Perp() <= 180. ) continue;
 	//if( fabs(z.M()-91.19)>10 ) continue;
@@ -774,9 +765,6 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
 
 
 //      thisTree_of->assignVar("ID", sample.id );
-//
-//
-//
 //      //      thisTree_of->assignVar("Z_pt", z.Perp() );
 //      thisTree_of->assignVar("Z_pt", myTree.zll_pt );
 //      thisTree_of->assignVar("Z_phi", z.Phi() );
