@@ -621,7 +621,7 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
       if(doZinvEst){
 	//SF part
 	if( fabs(myTree.zll_mass-91.19)>=20 ) continue;
-	if( myTree.zll_pt <= 180. ) continue;
+	if( myTree.zll_pt <= 200. ) continue;
 //	if( fabs(z.M()-91.19)>=20 ) continue;
 //	if( z.Perp() <= 180. ) continue;
 	//if( fabs(z.M()-91.19)>10 ) continue;
@@ -708,7 +708,7 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
       if(doZinvEst){
 	//SF part
 	if( fabs(myTree.zll_mass-91.19)>=20 ) continue;
-	if( myTree.zll_pt <= 180. ) continue;
+	if( myTree.zll_pt <= 200. ) continue;
 //	if( fabs(z.M()-91.19)>=20 ) continue;
 //	if( z.Perp() <= 180. ) continue;
 	//if( fabs(z.M()-91.19)>10 ) continue;
@@ -725,7 +725,7 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
       //else continue;
 
 
-      MT2EstimateTree* thisTree_of = anaTree_of->get( myTree.zll_ht, njets, nbjets, minMTBmet, myTree.zll_mt2 );
+      MT2EstimateTree* thisTree_of = anaTree_of->get( myTree.zll_ht, njets, nbjets, minMTBmet, mt2 );
       if(thisTree_of==0) continue;
 
       int nJetHF30_ = 0;
