@@ -757,7 +757,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
 //  htRegions.push_back("#it{H}_{T} [575,1000] GeV");
 //  htRegions.push_back("#it{H}_{T} [1000,1500] GeV");
 //  htRegions.push_back("#it{H}_{T} >1500 GeV");
-  htRegions.push_back("H_{T} [200,450] GeV");
+  htRegions.push_back("H_{T} [250,450] GeV");
   htRegions.push_back("H_{T} [450,575] GeV");
   htRegions.push_back("H_{T} [575,1000] GeV");
   htRegions.push_back("H_{T} [1000,1500] GeV");
