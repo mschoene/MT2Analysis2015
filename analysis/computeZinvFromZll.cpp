@@ -834,8 +834,12 @@ void buildHybrid( MT2Analysis<MT2Estimate>* shape_hybrid, MT2Analysis<MT2Estimat
     for(int iBin=1; iBin<= nBins; iBin++){
       double MCsr_cont;
       double MCcr_cont;
+      double MCsr_contErr;
+      double MCcr_contErr;
       MCsr_cont = this_shape_MCsr->GetBinContent(iBin);
       MCcr_cont = this_shape_MCcr->GetBinContent(iBin);
+      MCsr_contErr = this_shape_MCsr->GetBinError(iBin);
+      MCcr_contErr = this_shape_MCcr->GetBinError(iBin);
 
       if(MCcr_cont == 0) 
 	std::cout << std::endl << std::endl << "EMPTY CR bin!!!" << std::endl << std::endl;
@@ -850,6 +854,14 @@ void buildHybrid( MT2Analysis<MT2Estimate>* shape_hybrid, MT2Analysis<MT2Estimat
 //      }
 
       double ratioMC_cont = MCsr_cont/MCcr_cont;
+      double ratioMC_err  = sqrt( (MCsr_contErr/MCcr_cont)*(MCsr_contErr/MCcr_cont) + (MCsr_cont*MCcr_contErr/(MCcr_cont*MCcr_cont))*(MCsr_cont*MCcr_contErr/(MCcr_cont*MCcr_cont)) );
+
+      if (ratioMC_cont>0)
+        ratioMC_err /= ratioMC_cont;
+
+      float relativeErrorData;
+      float relativeErrorMC;
+
       double kMT2_zinv = MCsr_cont/integralZinv;
       
 //      if(ratioMC_cont > 3){
@@ -858,15 +870,30 @@ void buildHybrid( MT2Analysis<MT2Estimate>* shape_hybrid, MT2Analysis<MT2Estimat
 //      }
       
       if( iBin<bin_extrapol && (bin_extrapol != nBins) ){
+	
+	relativeErrorData = sqrt( (this_shape_data->GetBinError(iBin)*this_shape_data->GetBinError(iBin))/(this_shape_data->GetBinContent(iBin)*this_shape_data->GetBinContent(iBin)) +  ratioMC_err*ratioMC_err );
+	relativeErrorMC = sqrt( (this_shape_MCcr->GetBinError(iBin)*this_shape_MCcr->GetBinError(iBin))/(this_shape_MCcr->GetBinContent(iBin)*this_shape_MCcr->GetBinContent(iBin)) +  ratioMC_err*ratioMC_err );
+
 	this_shape_data ->SetBinContent(iBin, this_shape_data->GetBinContent(iBin)*ratioMC_cont);
 	this_shape_MCcr ->SetBinContent(iBin, this_shape_MCcr->GetBinContent(iBin)*ratioMC_cont);
-	this_shape_data ->SetBinError(iBin, this_shape_data->GetBinError(iBin)*ratioMC_cont);
-	this_shape_MCcr ->SetBinError(iBin, this_shape_MCcr->GetBinError(iBin)*ratioMC_cont);
+	this_shape_data ->SetBinError(iBin, this_shape_data->GetBinContent(iBin)*relativeErrorData);
+	this_shape_MCcr ->SetBinError(iBin, this_shape_MCcr->GetBinContent(iBin)*relativeErrorMC);
+
       }else{
+
+	relativeErrorData = sqrt( errShapeExt*errShapeExt + ratioMC_err*ratioMC_err );
+        relativeErrorMC = sqrt( errShapeMCExt*errShapeMCExt + ratioMC_err*ratioMC_err );
+
+        this_shape_data ->SetBinContent(iBin, integral*ratioMC_cont*kMT2_zinv);
+        this_shape_MCcr ->SetBinContent(iBin, integralMC*ratioMC_cont*kMT2_zinv);
+        this_shape_data ->SetBinError(iBin, relativeErrorData*this_shape_data->GetBinContent(iBin));
+        this_shape_MCcr ->SetBinError(iBin, relativeErrorMC*this_shape_MCcr->GetBinContent(iBin));
+
 	this_shape_data ->SetBinContent(iBin, integral*ratioMC_cont*kMT2_zinv);
 	this_shape_MCcr ->SetBinContent(iBin, integralMC*ratioMC_cont*kMT2_zinv);
-	this_shape_data ->SetBinError(iBin, integral*ratioMC_cont*kMT2_zinv*errShapeExt);
-	this_shape_MCcr ->SetBinError(iBin, integralMC*ratioMC_cont*kMT2_zinv*errShapeMCExt);
+	this_shape_data ->SetBinError(iBin, integral*ratioMC_cont*kMT2_zinv*relativeErrorData);
+	this_shape_MCcr ->SetBinError(iBin, integralMC*ratioMC_cont*kMT2_zinv*relativeErrorMC);
+
       }
 
     }
