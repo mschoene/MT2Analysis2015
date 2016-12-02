@@ -233,7 +233,7 @@ int main( int argc, char* argv[] ) {
     //    std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, 1, 3 );
     // std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, -1, 0 );
     // std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, "noDuplicates" );
-    std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, "mergedMET_HTMHT_JetHT" );
+    std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, "merged" );
     if( samples_data.size()==0 ) {
       std::cout << "There must be an error: samples_data is empty!" << std::endl;
       exit(1209);
@@ -348,13 +348,15 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg, std
     
     myTree.GetEntry(iEntry);
     
-    //////    if( myTree.isData && !myTree.isGolden ) continue;
+    if( myTree.isData && !myTree.isGolden ) continue;
 
     if( regionsSet!="13TeV_noCut" )
       if( !myTree.passSelection(cfg.additionalStuff()) ) continue;
 
     if ( myTree.nJet30==1 && !myTree.passMonoJetId(0) ) continue;
       
+
+    if( myTree.isData && !(myTree.run<=276811 || ( 278820<=myTree.run && myTree.run<=279931)) ) continue;
 
     float ht   = myTree.ht;
     float met  = myTree.met_pt;
