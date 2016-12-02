@@ -224,6 +224,8 @@ int main( int argc, char* argv[] ) {
   (*purity_err) = (*zllMC_ )*0.5*(*TopMC_)/ ((*diLep)*(*diLep)) ;
   
 
+  std::cout << "Creating Shapes..." << std::endl;
+
 
   ////////////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -757,6 +759,8 @@ void extrapolToTopoRegion( MT2Analysis<MT2Estimate>* shape_TR, MT2Analysis<MT2Es
 
 void buildHybrid( MT2Analysis<MT2Estimate>* shape_hybrid, MT2Analysis<MT2Estimate>* shape_data, MT2Analysis<MT2Estimate>* shape_MCsr, MT2Analysis<MT2Estimate>* shape_MCcr, MT2Analysis<MT2Estimate>* bin_extrapol ) {
 
+  std::cout << "In build hybrid:" << std::endl;
+
   std::set<MT2Region> regions       = shape_data->getRegions();
 
   for( std::set<MT2Region>::iterator iR=regions.begin(); iR!=regions.end(); ++iR ) {
@@ -772,8 +776,10 @@ void buildHybrid( MT2Analysis<MT2Estimate>* shape_hybrid, MT2Analysis<MT2Estimat
     int nBins = this_shape_data->GetNbinsX();
     //for each topo region will have a bin number indicating where we extrapolate
     int bin_extrapol = 1;
-    float integral = 0.;
-    float integralMC = 0.;
+    double integral = 0.;
+    double errData = 0.;
+    double integralMC = 0.;
+    double errMC = 0.;
 
     std::vector< std::string > niceNames = region->getNiceNames();
     std::cout << niceNames[0] << " " << niceNames[1] << std::endl;
@@ -783,20 +789,21 @@ void buildHybrid( MT2Analysis<MT2Estimate>* shape_hybrid, MT2Analysis<MT2Estimat
       if( this_shape_MCcr->Integral( iBin, -1) >= 50. ){
 	if( iBin == nBins ){ //We take the full shape from data!
 	  bin_extrapol = iBin+1;
-	  integral = 1.;    //we don't have to do a special normalization in this case
-	  integralMC = this_shape_MCcr->Integral( iBin, -1);
+	  integral = 1.;//we don't have to do a special normalization in this case
+	  errData = 0.;
+	  integralMC = this_shape_MCcr->IntegralAndError( iBin, -1, errMC);
 	}else{
 	  bin_extrapol = iBin;
-	  integral = this_shape_data->Integral( iBin, -1);
-	  integralMC = this_shape_MCcr->Integral( iBin, -1);
+	  integral = this_shape_data->IntegralAndError( iBin, -1, errData);
+	  integralMC = this_shape_MCcr->IntegralAndError( iBin, -1, errMC);
 	}
 	break;
       }
       else{
 	
 	bin_extrapol = 1;
-	integralMC = this_shape_MCcr->Integral( bin_extrapol, -1);
-	integral  = this_shape_data->Integral( bin_extrapol, -1);
+	integralMC = this_shape_MCcr->IntegralAndError( bin_extrapol, -1, errMC);
+	integral  = this_shape_data->IntegralAndError( bin_extrapol, -1, errData);
 
       }
     }
@@ -804,27 +811,51 @@ void buildHybrid( MT2Analysis<MT2Estimate>* shape_hybrid, MT2Analysis<MT2Estimat
     //Filling the histo that knows where we extrapolate
     this_binExtrapol->SetBinContent( 1, bin_extrapol );
     
-    std::cout << "extrapol bin / total bins= " << bin_extrapol << " / " << nBins << " : " << integral << std::endl;
+    double errZinv;
+    double integralZinv = this_shape_MCsr->IntegralAndError( bin_extrapol, -1, errZinv);
+    double relativeErrZinv = 1.0;
+    if(integralZinv>0)
+      relativeErrZinv = errZinv/integralZinv;
+
+    double relativeErrData = 1.0;
+    if(integral>0)
+      relativeErrData = errData/integral;
+
+    double errShapeExt = sqrt(relativeErrData*relativeErrData+relativeErrZinv*relativeErrZinv);
+
+    double relativeErrMC = 1.0;
+    if(integralMC>0)
+      relativeErrMC = errMC/integralMC;
+
+    double errShapeMCExt = sqrt(relativeErrMC*relativeErrMC+relativeErrZinv*relativeErrZinv);
+
+    std::cout << "extrapol bin / total bins= " << bin_extrapol << " / " << nBins << " : " << integral << " : " << integralMC << " : " << integralZinv <<std::endl;
 
     for(int iBin=1; iBin<= nBins; iBin++){
-      float MCsr_cont;
-      float MCcr_cont;
-      if(iBin<bin_extrapol){
-	MCsr_cont = this_shape_MCsr->GetBinContent(iBin);
-	MCcr_cont = this_shape_MCcr->GetBinContent(iBin);
-      }
-      else{
-	MCsr_cont = this_shape_MCsr->GetBinContent(iBin);
-	MCcr_cont = integralMC;
-      }
-      float ratioMC_cont = MCsr_cont/MCcr_cont;
-      
-      std::cout << "Bin Content " << iBin << ": " << this_shape_MCcr->GetBinContent(iBin) << " : " << this_shape_MCsr->GetBinContent(iBin) << " : " << ratioMC_cont << std::endl;
+      double MCsr_cont;
+      double MCcr_cont;
+      MCsr_cont = this_shape_MCsr->GetBinContent(iBin);
+      MCcr_cont = this_shape_MCcr->GetBinContent(iBin);
 
-      if(ratioMC_cont > 3){
-	std::cout << ratioMC_cont << std::endl;
-	ratioMC_cont = 3.;
-      }
+      if(MCcr_cont == 0) 
+	std::cout << std::endl << std::endl << "EMPTY CR bin!!!" << std::endl << std::endl;
+      
+//      if(iBin<bin_extrapol){
+//	MCsr_cont = this_shape_MCsr->GetBinContent(iBin);
+//	MCcr_cont = this_shape_MCcr->GetBinContent(iBin);
+//      }
+//      else{
+//	MCsr_cont = this_shape_MCsr->GetBinContent(iBin);
+//	MCcr_cont = integralMC;
+//      }
+
+      double ratioMC_cont = MCsr_cont/MCcr_cont;
+      double kMT2_zinv = MCsr_cont/integralZinv;
+      
+//      if(ratioMC_cont > 3){
+//	std::cout << ratioMC_cont << std::endl;
+//	ratioMC_cont = 3.;
+//      }
       
       if( iBin<bin_extrapol && (bin_extrapol != nBins) ){
 	this_shape_data ->SetBinContent(iBin, this_shape_data->GetBinContent(iBin)*ratioMC_cont);
@@ -832,37 +863,41 @@ void buildHybrid( MT2Analysis<MT2Estimate>* shape_hybrid, MT2Analysis<MT2Estimat
 	this_shape_data ->SetBinError(iBin, this_shape_data->GetBinError(iBin)*ratioMC_cont);
 	this_shape_MCcr ->SetBinError(iBin, this_shape_MCcr->GetBinError(iBin)*ratioMC_cont);
       }else{
-	this_shape_data ->SetBinContent(iBin, integral*ratioMC_cont);
-	this_shape_MCcr ->SetBinContent(iBin, integralMC*ratioMC_cont);
-	this_shape_data ->SetBinError(iBin, sqrt(integral)*ratioMC_cont);
-	this_shape_MCcr ->SetBinError(iBin, sqrt(integralMC)*ratioMC_cont);
+	this_shape_data ->SetBinContent(iBin, integral*ratioMC_cont*kMT2_zinv);
+	this_shape_MCcr ->SetBinContent(iBin, integralMC*ratioMC_cont*kMT2_zinv);
+	this_shape_data ->SetBinError(iBin, integral*ratioMC_cont*kMT2_zinv*errShapeExt);
+	this_shape_MCcr ->SetBinError(iBin, integralMC*ratioMC_cont*kMT2_zinv*errShapeMCExt);
       }
 
-      std::cout << "Bin Content " << iBin << ": " << this_shape_MCcr->GetBinContent(iBin) << " : " << this_shape_MCsr->GetBinContent(iBin) << " : " << integral << std::endl;
-
     }
+
+    std::cout << "extrapol bin / total bins= " << bin_extrapol << " / " << nBins << " : " << this_shape_data->Integral(bin_extrapol,-1) << " : " << this_shape_MCcr->Integral(bin_extrapol,-1) << " : " << this_shape_MCsr->Integral(bin_extrapol,-1) <<std::endl;
 
     //And now it has to be normalized
     this_shape_MCcr  ->Scale( 1./this_shape_MCcr->Integral());
     this_shape_data->Scale( 1./this_shape_data->Integral());
 
-     //Normalized
-    this_shape_MCcr->Scale(this_shape_data->Integral(bin_extrapol,-1)/this_shape_MCcr->Integral(bin_extrapol,-1) );
+//     //Normalized
+//    this_shape_MCcr->Scale(this_shape_data->Integral(bin_extrapol,-1)/this_shape_MCcr->Integral(bin_extrapol,-1) );
 
     for(int iBin=1; iBin<= nBins; iBin++){
-      if( ( bin_extrapol==nBins+1 ) || ( iBin<bin_extrapol && (bin_extrapol != nBins) ) ){
 	this_shape_hybrid->SetBinContent(iBin, this_shape_data->GetBinContent(iBin) );
 	this_shape_hybrid->SetBinError  (iBin, this_shape_data->GetBinError(iBin) );
-      }else{
-	this_shape_hybrid->SetBinContent(iBin, this_shape_MCcr->GetBinContent(iBin) );
-	this_shape_hybrid->SetBinError  (iBin, (1./sqrt(integral))*this_shape_MCcr->GetBinContent(iBin) );
-      }
+
+//      if( ( bin_extrapol==nBins+1 ) || ( iBin<bin_extrapol && (bin_extrapol != nBins) ) ){
+//	this_shape_hybrid->SetBinContent(iBin, this_shape_data->GetBinContent(iBin) );
+//	this_shape_hybrid->SetBinError  (iBin, this_shape_data->GetBinError(iBin) );
+//      }else{
+//	this_shape_hybrid->SetBinContent(iBin, this_shape_MCcr->GetBinContent(iBin) );
+//	this_shape_hybrid->SetBinError  (iBin, (1./sqrt(integral))*this_shape_MCcr->GetBinContent(iBin) );
+//      }
+
     }
     if( nBins == 1) this_shape_hybrid->SetBinError( 1, 0.0 );
 
-    if( this_shape_hybrid->Integral() != 0 ){
-      this_shape_hybrid->Scale( 1./ this_shape_hybrid->Integral() );
-    }
+//    if( this_shape_hybrid->Integral() != 0 ){
+//      this_shape_hybrid->Scale( 1./ this_shape_hybrid->Integral() );
+//    }
 
 //    this_shape_hybrid_->Reset();
 //    for(int iBin = 1; iBin<=nBins; ++iBin){
