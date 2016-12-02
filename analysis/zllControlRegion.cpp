@@ -494,8 +494,11 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
 
     // if(myTree.lep_pt[0]<35) continue;
     // if(myTree.lep_pt[1]<35) continue; 
-    if(myTree.lep_pt[0]<25) continue;
-    if(myTree.lep_pt[1]<20) continue; 
+    if(myTree.lep_pt[0]<100) continue;
+    if(myTree.lep_pt[1]<30) continue; 
+
+    //    if(myTree.lep_pt[0]<25) continue;
+    //    if(myTree.lep_pt[1]<20) continue; 
 
     
     //Need the lorentz vectors of the leptons first
@@ -604,6 +607,7 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
       }//end of loop over objects
 
     }//end of applying SF
+
 
 
 
@@ -716,7 +720,7 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
       //else continue;
 
 
-      MT2EstimateTree* thisTree_of = anaTree_of->get( myTree.zll_ht, njets, nbjets, minMTBmet, myTree.zll_mt2 );
+      MT2EstimateTree* thisTree_of = anaTree_of->get( myTree.zll_ht, njets, nbjets, minMTBmet, mt2 );
       if(thisTree_of==0) continue;
 
       int nJetHF30_ = 0;
