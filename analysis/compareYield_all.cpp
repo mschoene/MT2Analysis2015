@@ -781,7 +781,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
 
   TLine* lHT[5];
   for( int iHT=0; iHT < 5; iHT++ ){
-    if (iHT!=1)
+    if (iHT!=2)
       lHT[iHT-1] = new TLine(12+11*iHT, 0.0, 12+11*iHT, yMax );
     else
       lHT[iHT-1] = new TLine(12+7*iHT, 0.0, 12+11*iHT, yMax );
