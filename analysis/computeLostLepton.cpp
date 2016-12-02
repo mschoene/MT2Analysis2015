@@ -187,12 +187,16 @@ int main( int argc, char* argv[] ) {
     (*llepEstimate) = (* (MT2Analysis<MT2Estimate>*)llep_est) * (*RatioMC);
   else if( use_extrapolation )
     (*llepEstimate) = (* (MT2Analysis<MT2Estimate>*)llep_est_integral) * (*RatioMC);
+//  else if( do_hybrid )
+//    (*llepEstimate) = (* (MT2Analysis<MT2Estimate>*)llep_est_integral) * (*RatioMC) * (*hybrid_shape);
   else if( do_hybrid )
-    (*llepEstimate) = (* (MT2Analysis<MT2Estimate>*)llep_est_integral) * (*RatioMC) * (*hybrid_shape);
+    (*llepEstimate) = (* (MT2Analysis<MT2Estimate>*)llep_est_integral) * (*hybrid_shape);
 
   MT2Analysis<MT2Estimate>* alpha= new MT2Analysis<MT2Estimate>( "alpha", cfg.regionsSet() );
+//  if( do_hybrid )
+//    (*alpha) =  (*RatioMC) * (*hybrid_shape);
   if( do_hybrid )
-    (*alpha) =  (*RatioMC) * (*hybrid_shape);
+    (*alpha) =  (*hybrid_shape);
 
   std::string outFile = cfg.getEventYieldDir() + "/llepEstimate";
   outFile += ".root";
@@ -325,27 +329,32 @@ void buildHybrid( MT2Analysis<MT2Estimate>* shape_hybrid, MT2Analysis<MT2Estimat
 
     }
 
-    //And now it has to be normalized
-    this_shape_MCcr  ->Scale( 1./this_shape_MCcr->Integral());
-    this_shape_data->Scale( 1./this_shape_data->Integral());
-
-     //Normalized
-    this_shape_MCcr->Scale(this_shape_data->Integral(bin_extrapol,-1)/this_shape_MCcr->Integral(bin_extrapol,-1) );
+//    //And now it has to be normalized
+//    this_shape_MCcr  ->Scale( 1./this_shape_MCcr->Integral());
+//    this_shape_data->Scale( 1./this_shape_data->Integral());
+//
+//     //Normalized
+//    this_shape_MCcr->Scale(this_shape_data->Integral(bin_extrapol,-1)/this_shape_MCcr->Integral(bin_extrapol,-1) );
 
     for(int iBin=1; iBin<= nBins; iBin++){
-      if( ( bin_extrapol==nBins+1 ) || ( iBin<bin_extrapol && (bin_extrapol != nBins) ) ){
-	this_shape_hybrid->SetBinContent(iBin, this_shape_data->GetBinContent(iBin) );
-	this_shape_hybrid->SetBinError  (iBin, this_shape_data->GetBinError(iBin) );
-      }else{
-	this_shape_hybrid->SetBinContent(iBin, this_shape_MCcr->GetBinContent(iBin) );
-	this_shape_hybrid->SetBinError  (iBin, (1./sqrt(integral))*this_shape_MCcr->GetBinContent(iBin) );
-      }
+
+      this_shape_hybrid->SetBinContent(iBin, this_shape_data->GetBinContent(iBin) );
+      this_shape_hybrid->SetBinError  (iBin, this_shape_data->GetBinError(iBin) );
+
     }
+//      if( ( bin_extrapol==nBins+1 ) || ( iBin<bin_extrapol && (bin_extrapol != nBins) ) ){
+//	this_shape_hybrid->SetBinContent(iBin, this_shape_data->GetBinContent(iBin) );
+//	this_shape_hybrid->SetBinError  (iBin, this_shape_data->GetBinError(iBin) );
+//      }else{
+////	this_shape_hybrid->SetBinContent(iBin, this_shape_MCcr->GetBinContent(iBin) );
+////	this_shape_hybrid->SetBinError  (iBin, (1./sqrt(integral))*this_shape_MCcr->GetBinContent(iBin) );
+//      }
+//    }
     if( nBins == 1) this_shape_hybrid->SetBinError( 1, 0.0 );
 
-    if( this_shape_hybrid->Integral() != 0 ){
-      this_shape_hybrid->Scale( 1./ this_shape_hybrid->Integral() );
-    }
+//    if( this_shape_hybrid->Integral() != 0 ){
+//      this_shape_hybrid->Scale( 1./ this_shape_hybrid->Integral() );
+//    }
 
 //    this_shape_hybrid_->Reset();
 //    for(int iBin = 1; iBin<=nBins; ++iBin){
