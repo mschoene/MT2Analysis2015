@@ -4,7 +4,6 @@
 #include <iomanip>
 
 
-
 #include "interface/MT2Config.h"
 #include "interface/MT2Sample.h"
 #include "interface/MT2Region.h"
@@ -310,16 +309,16 @@ void buildHybrid( MT2Analysis<MT2Estimate>* shape_hybrid, MT2Analysis<MT2Estimat
 	ratioMC_cont = 3.;
       }
       
-      if( iBin< bin_extrapol && (bin_extrapol != nBins) ){
-	this_shape_data->SetBinContent(iBin, this_shape_data->GetBinContent(iBin)*ratioMC_cont);
-	this_shape_MCcr  ->SetBinContent(iBin, this_shape_MCsr->GetBinContent(iBin)/ratioMC_cont);
-	this_shape_data->SetBinError(iBin, this_shape_data->GetBinError(iBin)*ratioMC_cont);
-	this_shape_MCcr  ->SetBinError(iBin, this_shape_MCsr->GetBinError(iBin)/ratioMC_cont);
+      if( iBin<bin_extrapol && (bin_extrapol != nBins) ){
+	this_shape_data ->SetBinContent(iBin, this_shape_data->GetBinContent(iBin)*ratioMC_cont);
+	this_shape_MCcr ->SetBinContent(iBin, this_shape_MCcr->GetBinContent(iBin)*ratioMC_cont);
+	this_shape_data ->SetBinError(iBin, this_shape_data->GetBinError(iBin)*ratioMC_cont);
+	this_shape_MCcr ->SetBinError(iBin, this_shape_MCcr->GetBinError(iBin)*ratioMC_cont);
       }else{
-	this_shape_data->SetBinContent(iBin, this_shape_data->GetBinContent(iBin)*ratioMC_cont);
-	this_shape_MCcr  ->SetBinContent(iBin, ratioMC_cont);
-	this_shape_data->SetBinError(iBin, this_shape_data->GetBinError(iBin)*ratioMC_cont);
-	this_shape_MCcr  ->SetBinError(iBin, ratioMC_cont);
+	this_shape_data ->SetBinContent(iBin, integral*ratioMC_cont);
+	this_shape_MCcr ->SetBinContent(iBin, integralMC*ratioMC_cont);
+	this_shape_data ->SetBinError(iBin, sqrt(integral)*ratioMC_cont);
+	this_shape_MCcr ->SetBinError(iBin, sqrt(integralMC)*ratioMC_cont);
       }
 
       std::cout << "Bin Content " << iBin << ": " << this_shape_MCcr->GetBinContent(iBin) << " : " << this_shape_MCsr->GetBinContent(iBin) << " : " << integral << std::endl;
