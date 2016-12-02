@@ -32,7 +32,7 @@ bool do_dummyMC = false;
 bool do_hybrid = true;
 
 
-void buildHybrid( MT2Analysis<MT2Estimate>* shape_hybrid, MT2Analysis<MT2Estimate>* shape_data, MT2Analysis<MT2Estimate>* shape_MC, MT2Analysis<MT2Estimate>* MC_ratio, MT2Analysis<MT2Estimate>* bin_extrapol );
+void buildHybrid( MT2Analysis<MT2Estimate>* shape_hybrid, MT2Analysis<MT2Estimate>* shape_data, MT2Analysis<MT2Estimate>* shape_MCsr, MT2Analysis<MT2Estimate>* shape_MCcr, MT2Analysis<MT2Estimate>* bin_extrapol );
 
 
 int main( int argc, char* argv[] ) {
@@ -116,18 +116,21 @@ int main( int argc, char* argv[] ) {
   ////// Hybrid shape ////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////
   MT2Analysis<MT2Estimate>* MCsr_forShape   = MT2Analysis<MT2Estimate>::readFromFile(cfg.getEventYieldDir() + "/analyses.root", "Top");
+  MCsr_forShape->setName( "MCsr_forShape" );
+
   MT2Analysis<MT2Estimate>* WJets_forShape = MT2Analysis<MT2Estimate>::readFromFile(cfg.getEventYieldDir() + "/analyses.root", "WJets");
   (*MCsr_forShape) += (*(WJets_forShape));
-
+  
   MT2Analysis<MT2Estimate>*  MCcr_forShape = MT2Analysis<MT2Estimate>::readFromFile(llepControlRegionDir + "/mc.root", "llepCR");
   MCcr_forShape->setName( "MCcr_forShape" );
+
+  (*MCsr_forShape) *= cfg.lumi();
+  (*MCcr_forShape) *= cfg.lumi();
   
-  MT2Analysis<MT2Estimate>* RatioMC_forShape = new MT2Analysis<MT2Estimate>( "llepRatioMC_forShape", cfg.regionsSet() );
-  (*RatioMC_forShape) = ( (*MCsr_forShape) / (*MCcr_forShape) );
+//  MT2Analysis<MT2Estimate>* RatioMC_forShape = new MT2Analysis<MT2Estimate>( "llepRatioMC_forShape", cfg.regionsSet() );
+//  (*RatioMC_forShape) = ( (*MCsr_forShape) / (*MCcr_forShape) );
  
   MT2Analysis<MT2Estimate>* extrapol_bin = new MT2Analysis<MT2Estimate>( "extrapol_bin", cfg.regionsSet() );
-
-  (*MCcr_forShape) *= cfg.lumi();
 
   MT2Analysis<MT2Estimate>* llepCR_data_forShape;
   if( !do_dummyMC )
@@ -140,15 +143,18 @@ int main( int argc, char* argv[] ) {
   MT2Analysis<MT2Estimate>* hybrid_shape = new MT2Analysis<MT2Estimate>( "hybrid_shape", cfg.regionsSet() );
 
   //Building the hybrid shape from data & MC, and the ratio of the MC
-  buildHybrid( hybrid_shape, llepCR_data_forShape, MCcr_forShape, RatioMC_forShape, extrapol_bin );
+  buildHybrid( hybrid_shape, llepCR_data_forShape, MCsr_forShape, MCcr_forShape, extrapol_bin );
 
   ////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////
 
   MT2Analysis<MT2Estimate>* MCsr_   = MT2Analysis<MT2Estimate>::readFromFile(cfg.getEventYieldDir() + "/analyses.root", "Top");
+  MCsr_->setName("MCsr_");
+
   MT2Analysis<MT2Estimate>* WJets_ = MT2Analysis<MT2Estimate>::readFromFile(cfg.getEventYieldDir() + "/analyses.root", "WJets");
   (*MCsr_) += (*(WJets_));
+
   MT2Analysis<MT2Estimate>* MCsr_integral;
   if( do_hybrid ){
     MCsr_integral = MT2Estimate::makeIntegralAnalysisFromEstimate( "MCsr_integral", cfg.regionsSet(), MCsr_ );
@@ -183,11 +189,11 @@ int main( int argc, char* argv[] ) {
   else if( use_extrapolation )
     (*llepEstimate) = (* (MT2Analysis<MT2Estimate>*)llep_est_integral) * (*RatioMC);
   else if( do_hybrid )
-    (*llepEstimate) = (* (MT2Analysis<MT2Estimate>*)llep_est_integral) * (*RatioMC)* (*hybrid_shape);
+    (*llepEstimate) = (* (MT2Analysis<MT2Estimate>*)llep_est_integral) * (*RatioMC) * (*hybrid_shape);
 
   MT2Analysis<MT2Estimate>* alpha= new MT2Analysis<MT2Estimate>( "alpha", cfg.regionsSet() );
   if( do_hybrid )
-    (*alpha) =  (*RatioMC)* (*hybrid_shape);
+    (*alpha) =  (*RatioMC) * (*hybrid_shape);
 
   std::string outFile = cfg.getEventYieldDir() + "/llepEstimate";
   outFile += ".root";
@@ -203,11 +209,11 @@ int main( int argc, char* argv[] ) {
     llep_est_integral->addToFile( outFile );
     MCcr_integral->addToFile( outFile );
   }else if( do_hybrid ){
-    RatioMC_forShape->addToFile( outFile );
     llep_est_integral->addToFile( outFile );
     hybrid_shape->addToFile( outFile );
     llepCR_data_forShape->setName("data_shape");
     llepCR_data_forShape->addToFile( outFile );
+    MCsr_forShape->addToFile( outFile );
     MCcr_forShape->addToFile( outFile );
     extrapol_bin->addToFile( outFile );
     alpha->addToFile( outFile );
@@ -233,87 +239,121 @@ int main( int argc, char* argv[] ) {
 
 
 
-void buildHybrid( MT2Analysis<MT2Estimate>* shape_hybrid, MT2Analysis<MT2Estimate>* shape_data, MT2Analysis<MT2Estimate>* shape_MC, MT2Analysis<MT2Estimate>* MC_ratio, MT2Analysis<MT2Estimate>* bin_extrapol ) {
+void buildHybrid( MT2Analysis<MT2Estimate>* shape_hybrid, MT2Analysis<MT2Estimate>* shape_data, MT2Analysis<MT2Estimate>* shape_MCsr, MT2Analysis<MT2Estimate>* shape_MCcr, MT2Analysis<MT2Estimate>* bin_extrapol ) {
 
   std::set<MT2Region> regions       = shape_data->getRegions();
 
   for( std::set<MT2Region>::iterator iR=regions.begin(); iR!=regions.end(); ++iR ) {
     MT2Region* region = new MT2Region( *iR );
 
-    TH1D* this_shape_data    = shape_data   ->get( *iR)->yield;
-    TH1D* this_shape_MC      = shape_MC     ->get( *iR)->yield;
-    TH1D* this_shape_hybrid  = shape_hybrid ->get( *iR)->yield;
-    TH1D* this_MC_ratio      = MC_ratio     ->get( *iR)->yield;
-    TH1D* this_binExtrapol   = bin_extrapol ->get( *iR)->yield;
+    TH1D* this_shape_data    = (TH1D*)shape_data   ->get( *iR)->yield;
+    TH1D* this_shape_MCsr    = (TH1D*)shape_MCsr   ->get( *iR)->yield;
+    TH1D* this_shape_MCcr    = (TH1D*)shape_MCcr   ->get( *iR)->yield;
+    TH1D* this_shape_hybrid  = (TH1D*)shape_hybrid ->get( *iR)->yield;
+    //    TH1D* this_shape_hybrid  = (TH1D*)shape_hybrid ->get( *iR)->yield->Clone("hybrid_helpH");
+    TH1D* this_binExtrapol   = (TH1D*)bin_extrapol ->get( *iR)->yield;
 
     int nBins = this_shape_data->GetNbinsX();
     //for each topo region will have a bin number indicating where we extrapolate
     int bin_extrapol = 1;
     float integral = 0.;
+    float integralMC = 0.;
 
     std::vector< std::string > niceNames = region->getNiceNames();
     std::cout << niceNames[0] << " " << niceNames[1] << std::endl;
     for( int iBin=nBins; iBin>= 1; iBin-- ){
       // std::cout << this_shape_data->Integral( iBin, -1)  << std::endl;
       // if( this_shape_data->Integral( iBin, -1) >= 10. ){
-      if( this_shape_MC->Integral( iBin, -1) >= 50. ){
+      if( this_shape_MCcr->Integral( iBin, -1) >= 50. ){
 	if( iBin == nBins ){ //We take the full shape from data!
 	  bin_extrapol = iBin+1;
 	  integral = 1.;    //we don't have to do a special normalization in this case
+	  integralMC = this_shape_MCcr->Integral( iBin, -1);
 	}else{
 	  bin_extrapol = iBin;
 	  integral = this_shape_data->Integral( iBin, -1);
+	  integralMC = this_shape_MCcr->Integral( iBin, -1);
 	}
 	break;
+      }
+      else{
+	
+	bin_extrapol = 1;
+	integralMC = this_shape_MCcr->Integral( bin_extrapol, -1);
+	integral  = this_shape_data->Integral( bin_extrapol, -1);
+
       }
     }
 
     //Filling the histo that knows where we extrapolate
     this_binExtrapol->SetBinContent( 1, bin_extrapol );
     
-    std::cout << "extrapol bin / total bins= " << bin_extrapol << " / " << nBins << std::endl;
+    std::cout << "extrapol bin / total bins= " << bin_extrapol << " / " << nBins << " : " << integral << std::endl;
 
     for(int iBin=1; iBin<= nBins; iBin++){
-	float ratioMC = this_MC_ratio->GetBinContent(iBin);
-	if(ratioMC > 2){
-	  std::cout << ratioMC << std::endl;
-	  ratioMC = this_MC_ratio->GetBinContent(iBin-1);
-	}
-      if( iBin< bin_extrapol && (bin_extrapol != nBins) ){
-	this_shape_data->SetBinContent(iBin, this_shape_data->GetBinContent(iBin)*ratioMC);
-	this_shape_MC  ->SetBinContent(iBin, this_shape_MC->GetBinContent(iBin)*ratioMC);
-	this_shape_data->SetBinError(iBin, this_shape_data->GetBinError(iBin)*ratioMC);
-	this_shape_MC  ->SetBinError(iBin, this_shape_MC->GetBinError(iBin)*ratioMC);
-      }else{
-	this_shape_data->SetBinContent(iBin, this_shape_data->GetBinContent(iBin)*ratioMC);
-	this_shape_MC  ->SetBinContent(iBin, this_shape_MC->GetBinContent(iBin)*ratioMC);
-	this_shape_data->SetBinError(iBin, this_shape_data->GetBinError(iBin)*ratioMC);
-	this_shape_MC  ->SetBinError(iBin, this_shape_MC->GetBinError(iBin)*ratioMC);
+      float MCsr_cont;
+      float MCcr_cont;
+      if(iBin<bin_extrapol){
+	MCsr_cont = this_shape_MCsr->GetBinContent(iBin);
+	MCcr_cont = this_shape_MCcr->GetBinContent(iBin);
       }
+      else{
+	MCsr_cont = this_shape_MCsr->GetBinContent(iBin);
+	MCcr_cont = integralMC;
+      }
+      float ratioMC_cont = MCsr_cont/MCcr_cont;
+      
+      std::cout << "Bin Content " << iBin << ": " << this_shape_MCcr->GetBinContent(iBin) << " : " << this_shape_MCsr->GetBinContent(iBin) << " : " << ratioMC_cont << std::endl;
+
+      if(ratioMC_cont > 3){
+	std::cout << ratioMC_cont << std::endl;
+	ratioMC_cont = 3.;
+      }
+      
+      if( iBin< bin_extrapol && (bin_extrapol != nBins) ){
+	this_shape_data->SetBinContent(iBin, this_shape_data->GetBinContent(iBin)*ratioMC_cont);
+	this_shape_MCcr  ->SetBinContent(iBin, this_shape_MCsr->GetBinContent(iBin)/ratioMC_cont);
+	this_shape_data->SetBinError(iBin, this_shape_data->GetBinError(iBin)*ratioMC_cont);
+	this_shape_MCcr  ->SetBinError(iBin, this_shape_MCsr->GetBinError(iBin)/ratioMC_cont);
+      }else{
+	this_shape_data->SetBinContent(iBin, this_shape_data->GetBinContent(iBin)*ratioMC_cont);
+	this_shape_MCcr  ->SetBinContent(iBin, ratioMC_cont);
+	this_shape_data->SetBinError(iBin, this_shape_data->GetBinError(iBin)*ratioMC_cont);
+	this_shape_MCcr  ->SetBinError(iBin, ratioMC_cont);
+      }
+
+      std::cout << "Bin Content " << iBin << ": " << this_shape_MCcr->GetBinContent(iBin) << " : " << this_shape_MCsr->GetBinContent(iBin) << " : " << integral << std::endl;
+
     }
 
     //And now it has to be normalized
-    this_shape_MC  ->Scale( 1./this_shape_MC->Integral());
+    this_shape_MCcr  ->Scale( 1./this_shape_MCcr->Integral());
     this_shape_data->Scale( 1./this_shape_data->Integral());
 
      //Normalized
-    this_shape_MC->Scale(this_shape_data->Integral(bin_extrapol,-1)/this_shape_MC->Integral(bin_extrapol,-1) );
+    this_shape_MCcr->Scale(this_shape_data->Integral(bin_extrapol,-1)/this_shape_MCcr->Integral(bin_extrapol,-1) );
 
     for(int iBin=1; iBin<= nBins; iBin++){
-      if( (bin_extrapol==nBins+1) || ( iBin< bin_extrapol && (bin_extrapol != nBins)) ){
-	this_shape_hybrid->SetBinContent(iBin,this_shape_data->GetBinContent(iBin) );
-	this_shape_hybrid->SetBinError(iBin, this_shape_data->GetBinError(iBin) );
+      if( ( bin_extrapol==nBins+1 ) || ( iBin<bin_extrapol && (bin_extrapol != nBins) ) ){
+	this_shape_hybrid->SetBinContent(iBin, this_shape_data->GetBinContent(iBin) );
+	this_shape_hybrid->SetBinError  (iBin, this_shape_data->GetBinError(iBin) );
       }else{
-	this_shape_hybrid->SetBinContent(iBin, this_shape_MC->GetBinContent(iBin) );
-	this_shape_hybrid->SetBinError(iBin, (1./sqrt(integral))*this_shape_MC->GetBinContent(iBin) );
+	this_shape_hybrid->SetBinContent(iBin, this_shape_MCcr->GetBinContent(iBin) );
+	this_shape_hybrid->SetBinError  (iBin, (1./sqrt(integral))*this_shape_MCcr->GetBinContent(iBin) );
       }
     }
-    if( nBins == 1) this_shape_hybrid->SetBinError(nBins, 0.0 );
+    if( nBins == 1) this_shape_hybrid->SetBinError( 1, 0.0 );
 
     if( this_shape_hybrid->Integral() != 0 ){
       this_shape_hybrid->Scale( 1./ this_shape_hybrid->Integral() );
     }
 
+//    this_shape_hybrid_->Reset();
+//    for(int iBin = 1; iBin<=nBins; ++iBin){
+//      this_shape_hybrid_->SetBinContent(iBin,this_shape_hybrid->GetBinContent(iBin));
+//      this_shape_hybrid_->SetBinError  (iBin,this_shape_hybrid->GetBinError(iBin));
+//    }
+  
   }//end loop over final estimate loops
 
   return;
