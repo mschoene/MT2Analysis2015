@@ -34,7 +34,7 @@ bool do_hybrid = true;
 MT2Analysis<MT2Estimate>* getInclusiveRatioMC( const std::string& regionsSet, MT2Analysis<MT2EstimateTree>* Zinv, MT2Analysis<MT2EstimateTree>* gammaCRtree );
 MT2Analysis<MT2EstimateSyst>* combineDataAndMC( MT2Analysis<MT2EstimateSyst>* data, MT2Analysis<MT2Estimate>* mc );
 
-MT2Analysis<MT2EstimateSyst>* computePurityOF( MT2Analysis<MT2Estimate>* SF, MT2Analysis<MT2Estimate>* OF );
+MT2Analysis<MT2EstimateSyst>* computePurityOF( MT2Analysis<MT2Estimate>* SF, MT2Analysis<MT2Estimate>* OF, bool do_Runcert=0 );
 
 
 void extrapolToTopoRegion( MT2Analysis<MT2Estimate>* shape_TR, MT2Analysis<MT2Estimate>* shape, bool isMC=0 );
@@ -114,7 +114,7 @@ int main( int argc, char* argv[] ) {
   MT2Analysis<MT2EstimateTree>* TopTree_mc = MT2Analysis<MT2EstimateTree>::readFromFile(zllControlRegionDir + "/ZllPurityTrees_of.root", "Top");
 
   TH1::AddDirectory(kTRUE); // stupid ROOT memory allocation needs this
-  MT2Analysis<MT2EstimateTree>* TTZ = MT2EstimateTree::makeAnalysisFromInclusiveTree( "TTZ" , cfg.regionsSet(), TopTree_mc,  "(id==413 && Z_pt>180.)");
+  MT2Analysis<MT2EstimateTree>* TTZ = MT2EstimateTree::makeAnalysisFromInclusiveTree( "TTZ" , cfg.regionsSet(), TopTree_mc,  "(id==413 && Z_pt>200.)");
   (*TTZ) *= lumi;
   TH1::AddDirectory(kFALSE); // stupid ROOT memory allocation needs this
 
@@ -271,20 +271,20 @@ int main( int argc, char* argv[] ) {
   ///////////FILLING THE SHAPE///////////////////
   ///////////////////////////////////////////////
   MT2Analysis<MT2EstimateTree>* zinvMC_forShape = MT2EstimateTree::makeAnalysisFromInclusiveTree( "zinv_forShape" , "zurich2016_forExtrapol", zinvMC_tree,  "");
-  MT2Analysis<MT2EstimateTree>* zllMC_forShape = MT2EstimateTree::makeAnalysisFromInclusiveTree( "zllMC_forShape" , "zurich2016_forExtrapol", zllMC_tree,  "(fabs(Z_mass-91.19)<=20.) && Z_pt>180.");
+  MT2Analysis<MT2EstimateTree>* zllMC_forShape = MT2EstimateTree::makeAnalysisFromInclusiveTree( "zllMC_forShape" , "zurich2016_forExtrapol", zllMC_tree,  "(fabs(Z_mass-91.19)<=20.) && Z_pt>200.");
    
-  MT2Analysis<MT2EstimateTree>* zllData_shape = MT2EstimateTree::makeAnalysisFromInclusiveTree( "shape" , "zurich2016_forExtrapol", zllData_tree,  "(fabs(Z_mass-91.19)<=20.) && Z_pt>180.");
+  MT2Analysis<MT2EstimateTree>* zllData_shape = MT2EstimateTree::makeAnalysisFromInclusiveTree( "shape" , "zurich2016_forExtrapol", zllData_tree,  "(fabs(Z_mass-91.19)<=20.) && Z_pt>200.");
   
-  MT2Analysis<MT2EstimateTree>* zllData_shape_of = MT2EstimateTree::makeAnalysisFromInclusiveTree( "shape_of" , "zurich2016_forExtrapol", zllData_tree_of,  "(fabs(Z_mass-91.19)<=20.) && Z_pt>180.");
+  MT2Analysis<MT2EstimateTree>* zllData_shape_of = MT2EstimateTree::makeAnalysisFromInclusiveTree( "shape_of" , "zurich2016_forExtrapol", zllData_tree_of,  "(fabs(Z_mass-91.19)<=20.) && Z_pt>200.");
 
-  // MT2Analysis<MT2EstimateTree>* zllData_shape_noTTZ = MT2EstimateTree::makeAnalysisFromInclusiveTree( "shape_noTTZ" , "zurich2016_forExtrapol", zllData_tree,  "(fabs(Z_mass-91.19)<=20.) && Z_pt>180.");
-  MT2Analysis<MT2EstimateTree>* TTZ_shape = MT2EstimateTree::makeAnalysisFromInclusiveTree( "TTZ_shape" , "zurich2016_forExtrapol", TopTree_mc,  "(id==413 && (fabs(Z_mass-91.19)<=20.) && Z_pt>180.)");
+  // MT2Analysis<MT2EstimateTree>* zllData_shape_noTTZ = MT2EstimateTree::makeAnalysisFromInclusiveTree( "shape_noTTZ" , "zurich2016_forExtrapol", zllData_tree,  "(fabs(Z_mass-91.19)<=20.) && Z_pt>200.");
+  MT2Analysis<MT2EstimateTree>* TTZ_shape = MT2EstimateTree::makeAnalysisFromInclusiveTree( "TTZ_shape" , "zurich2016_forExtrapol", TopTree_mc,  "(id==413 && (fabs(Z_mass-91.19)<=20.) && Z_pt>200.)");
 
-  MT2Analysis<MT2EstimateTree>* zllMC_shape = MT2EstimateTree::makeAnalysisFromInclusiveTree( "zllMC_shape" , "zurich2016_forExtrapol", zllMC_tree,  "(fabs(Z_mass-91.19)<=20.) && Z_pt>180.");
+  MT2Analysis<MT2EstimateTree>* zllMC_shape = MT2EstimateTree::makeAnalysisFromInclusiveTree( "zllMC_shape" , "zurich2016_forExtrapol", zllMC_tree,  "(fabs(Z_mass-91.19)<=20.) && Z_pt>200.");
 
-  MT2Analysis<MT2EstimateTree>* zllMC_shape_withTTZ = MT2EstimateTree::makeAnalysisFromInclusiveTree( "zllMC_shape_withTTZ" , "zurich2016_forExtrapol", zllMC_tree,  "(fabs(Z_mass-91.19)<=20.) && Z_pt>180.");
+  MT2Analysis<MT2EstimateTree>* zllMC_shape_withTTZ = MT2EstimateTree::makeAnalysisFromInclusiveTree( "zllMC_shape_withTTZ" , "zurich2016_forExtrapol", zllMC_tree,  "(fabs(Z_mass-91.19)<=20.) && Z_pt>200.");
 
-  // MT2Analysis<MT2EstimateTree>* zllMC_shape_TR = MT2EstimateTree::makeAnalysisFromInclusiveTree( "zllMC_shape_TR" , cfg.regionsSet(), zllMC_tree,  "(fabs(Z_mass-91.19)<=20.) && Z_pt>180.");
+  // MT2Analysis<MT2EstimateTree>* zllMC_shape_TR = MT2EstimateTree::makeAnalysisFromInclusiveTree( "zllMC_shape_TR" , cfg.regionsSet(), zllMC_tree,  "(fabs(Z_mass-91.19)<=20.) && Z_pt>200.");
 
   std::cout << "got the cr in the regions wanted" << std::endl;
   //  TH1::AddDirectory(kFALSE); // stupid ROOT memory allocation needs this
@@ -334,7 +334,7 @@ int main( int argc, char* argv[] ) {
 
   MT2Analysis<MT2Estimate>* zllData_forHybrid = MT2Estimate::makeIntegralAnalysisFromEstimate( "zllData_forHybrid", cfg.regionsSet(), zllData_forHybrid_notIntegral );
 
-  MT2Analysis<MT2EstimateSyst>* purity_forHybrid = computePurityOF(zllData_forHybrid, zllData_of_forHybrid);  
+  MT2Analysis<MT2EstimateSyst>* purity_forHybrid = computePurityOF(zllData_forHybrid, zllData_of_forHybrid, 1);  
 
   std::cout << "filling the shapes from the extrapolation region to the TR ..." << std::endl;
   extrapolToTopoRegion( zllData_shape_TR, (MT2Analysis<MT2Estimate>*)zllData_shape );
@@ -546,7 +546,7 @@ MT2Analysis<MT2Estimate>* getInclusiveRatioMC( const MT2Config& cfg, MT2Analysis
 
 
 
-MT2Analysis<MT2EstimateSyst>* computePurityOF( MT2Analysis<MT2Estimate>* SF, MT2Analysis<MT2Estimate>* OF ) {
+MT2Analysis<MT2EstimateSyst>* computePurityOF( MT2Analysis<MT2Estimate>* SF, MT2Analysis<MT2Estimate>* OF, bool do_Runcert ) {
 
   std::string SFname = SF->getName();
   std::string OFname = OF->getName();
@@ -572,13 +572,19 @@ MT2Analysis<MT2EstimateSyst>* computePurityOF( MT2Analysis<MT2Estimate>* SF, MT2
       float contentSF = SFEst->yield->GetBinContent(ibin);
       float contentOF = OFEst->yield->GetBinContent(ibin);
 
-      float purity = 0.0;
-      if(contentSF>contentOF)
-	purity = (contentSF - contentOF)/ contentSF;
-      float purity_err = 1.0;
-      if( purity > 0.)
-	purity_err = sqrt( contentOF )/ contentSF;
+      float R_sfof = 1.11;
+      float R_sfof_err = 0.15;
 
+      float purity = 0.0;
+      if(contentSF>(R_sfof * contentOF))
+	purity = (contentSF - R_sfof * contentOF)/ contentSF;
+      float purity_err = 1.0;
+      if( purity > 0.){
+	if(do_Runcert)
+	  purity_err = sqrt( sqrt( contentOF )*sqrt( contentOF )*R_sfof*R_sfof + R_sfof_err*R_sfof_err* contentOF * contentOF  )/ contentSF;
+	else
+	  purity_err = sqrt( contentOF )/ contentSF;
+      }
       if( contentOF == 0 )
 	purity_err = 1.8/ contentSF; //uncert = 1.8 in case of 0 events
 
@@ -774,7 +780,8 @@ void buildHybrid( MT2Analysis<MT2Estimate>* shape_hybrid, MT2Analysis<MT2Estimat
     std::cout << niceNames[0] << " " << niceNames[1] << std::endl;
     for(int iBin=nBins; iBin>= 1; iBin--){
       //      std::cout << this_shape_data->Integral( iBin, -1)  << std::endl;
-      if( this_shape_data->Integral( iBin, -1) >= 10. ){
+      //      if( this_shape_data->Integral( iBin, -1) >= 10. ){
+      if( this_shape_MC->Integral( iBin, -1) >= 50. ){
 	if( iBin == nBins ){ //We take the full shape from data!
 	  bin_extrapol = iBin+1;
 	  integral = 1.;    //we don't have to do a special normalization in this case

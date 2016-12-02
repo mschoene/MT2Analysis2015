@@ -349,15 +349,16 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg, std
     myTree.GetEntry(iEntry);
     
     if( myTree.isData && !myTree.isGolden ) continue;
-
-    if( !(myTree.run<=276811 ||  (278820<=myTree.run && myTree.run<=279931)) )
-      continue;
+//    if( !(myTree.run<=276811 ||  (278820<=myTree.run && myTree.run<=279931)) )
+//      continue;
 
     if( regionsSet!="13TeV_noCut" )
       if( !myTree.passSelection(cfg.additionalStuff()) ) continue;
 
     if ( myTree.nJet30==1 && !myTree.passMonoJetId(0) ) continue;
       
+
+    if( myTree.isData && !(myTree.run<=276811 || ( 278820<=myTree.run && myTree.run<=279931)) ) continue;
 
     float ht   = myTree.ht;
     float met  = myTree.met_pt;
