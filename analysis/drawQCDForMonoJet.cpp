@@ -129,7 +129,7 @@ int main( int argc, char* argv[] ) {
 
 
   //std::string selection = "nJets==2 && deltaPhiMin<0.3 && jet1_pt>200. && met>200.";
-  std::string selection = "(id<100 || id>=151) && nJets==2 && deltaPhiMin<0.3 && jet1_pt>250. && met>250.";
+  std::string selection = "(id<100 || id>=152) && nJets==2 && deltaPhiMin<0.3 && jet1_pt>250. && met>250.";
   //std::string selection = "(id<100 || id>152) && nJets==2 && deltaPhiMin<0.3 && jet1_pt>200. && met>200.";
   canvases = dt.drawRegionYields_fromTree( "jet2_pt" , "jet2_pt" , selection, 20, 30., 330., "Subleading Jet p_{T}", "GeV", "p_{T}(jet1) > 250 GeV", "N(j) = 2" );
 
