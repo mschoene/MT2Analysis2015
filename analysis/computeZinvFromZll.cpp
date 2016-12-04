@@ -590,9 +590,13 @@ MT2Analysis<MT2EstimateSyst>* computePurityOF( MT2Analysis<MT2Estimate>* SF, MT2
 	else
 	  purity_err = sqrt( contentOF )/ contentSF;
       }
-      if( contentOF == 0 )
-	purity_err = 1.8/ contentSF; //uncert = 1.8 in case of 0 events
-
+      if( contentOF == 0 ){
+	if( contentSF > 0 )
+	  purity_err = 1.8/ contentSF; //uncert = 1.8 in case of 0 events
+	else
+	  purity_err = 1.0;
+      }
+	
       thisNewEstimate->yield->SetBinContent( ibin, purity );
      
       thisNewEstimate->yield->SetBinError( ibin, purity_err );
@@ -829,7 +833,7 @@ void buildHybrid( MT2Analysis<MT2Estimate>* shape_hybrid, MT2Analysis<MT2Estimat
 
     double errShapeMCExt = sqrt(relativeErrMC*relativeErrMC+relativeErrZinv*relativeErrZinv);
 
-    std::cout << "extrapol bin / total bins= " << bin_extrapol << " / " << nBins << " : " << integral << " : " << integralMC << " : " << integralZinv <<std::endl;
+    std::cout << "extrapol bin / total bins= " << bin_extrapol << " / " << nBins << " : " << integral << " : " << errData << " : " << integralMC << " : " << integralZinv << " : " << errZinv <<std::endl;
 
     for(int iBin=1; iBin<= nBins; iBin++){
       double MCsr_cont;
@@ -896,9 +900,11 @@ void buildHybrid( MT2Analysis<MT2Estimate>* shape_hybrid, MT2Analysis<MT2Estimat
 
       }
 
+      //    std::cout << "extrapol bin / total bins= " << bin_extrapol << " / " << nBins << " : " << this_shape_data->Integral(bin_extrapol,-1) << " : " << this_shape_MCcr->Integral(bin_extrapol,-1) << " : " << this_shape_MCsr->Integral(bin_extrapol,-1) << " : " << ratioMC_err << " : " << errShapeExt << " : " << relativeErrZinv << " : " << relativeErrData <<std::endl;
+
+
     }
 
-    std::cout << "extrapol bin / total bins= " << bin_extrapol << " / " << nBins << " : " << this_shape_data->Integral(bin_extrapol,-1) << " : " << this_shape_MCcr->Integral(bin_extrapol,-1) << " : " << this_shape_MCsr->Integral(bin_extrapol,-1) <<std::endl;
 
     //And now it has to be normalized
     this_shape_MCcr  ->Scale( 1./this_shape_MCcr->Integral());
