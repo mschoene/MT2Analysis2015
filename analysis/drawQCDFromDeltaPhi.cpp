@@ -22,19 +22,13 @@
 
 bool closureTest = false;
 
+bool onlyUseUpToRunG = true; // only use up to run G for rphi, fj, rb
+float lumiRatioGtoH = 27.70/36.46;
+int lastRunG = 280385;
+
 //float prescales[3] = {7000., 180.0, 60.0}; // 2015
-//float prescales[3] = { 973., 125.0, 31.5}; // 211/ipb
-//float prescales[3] = {1046., 137.9, 34.7}; // 589/ipb
-//float prescales[3] = {1198., 160.8, 40.5}; // 804/ipb
-//float prescales[3] = {2100., 246., 61.5}; // 2.1 /fb
-//float prescales[3] = {2644., 298., 74.7}; // 4.0/fb
-//float prescales[3] = {1534., 298., 74.7}; // 4.0/fb (HLT_HT 125 OR 200)
-//float prescales[3] = {2868., 321., 80.4}; // all RunB 5.4/fb
-//float prescales[3] = {3484., 344.6, 86.2}; // 5.89 (B) + 1.76 (C) fb-1 (JECv6, eta2.4)
-//float prescales[3] = {3721., 353.0, 88.3}; // 5.89 (B) + 2.65 (C) + 0.65 (D) fb-1
-//float prescales[3] = {3753., 354.4, 88.6}; // 5.94 (B) + 2.65 (C) + 4.33 (D) fb-1  (wrong)
-//float prescales[3] = {4842., 384.5, 96.2}; // 5.94 (B) + 2.65 (C) + 4.33 (D) = 12.9 fb-1 
-float prescales[3] = {7579., 434.9, 108.8}; // 24.5 fb-1
+float prescales[3] = {7900., 440.6, 110.2}; // up to run G 27.7 fb-1
+//float prescales[3] = {9200., 460.6, 115.2}; // full 2016
 
 
 void compareFractions( const MT2Config& cfg, const std::string& outputdir, const std::string& dataFile, const std::string& analysisName, const std::string& xaxisName, const std::string& yaxisName, bool logPlot, const std::string& postfix="" );
@@ -188,7 +182,7 @@ void compareFractions( const MT2Config& cfg, const std::string& outputdir, const
     h1_data->Draw("p same norm");
 
 
-    TPaveText* labelTop = MT2DrawTools::getLabelTop( cfg.lumi() );
+    TPaveText* labelTop = MT2DrawTools::getLabelTop( cfg.lumi()*(onlyUseUpToRunG ? lumiRatioGtoH : 1.0) );
     labelTop->Draw("same");
     // //TPaveText* labelCMS = MT2DrawTools::getLabelCMS();
     // //TPaveText* labelCMS = MT2DrawTools::getLabelCMS("CMS Unpublished");

@@ -25,7 +25,7 @@ int round(float d) {
 
 
 void computeYield( const MT2Sample& sample, const MT2Config& cfg,  MT2Analysis<MT2EstimateTree>* anaTree );
-
+float getAverageISRWeight(const int id, const int var);
 
 
 
@@ -85,7 +85,7 @@ int main( int argc, char* argv[] ) {
 
   TH1::AddDirectory(kFALSE); // stupid ROOT memory allocation needs this 
 
-  std::string outputdir = cfg.getEventYieldDir() + "/qcdControlRegion"; 
+  std::string outputdir = cfg.getEventYieldDir() + "/qcdControlRegion";
   system(Form("mkdir -p %s", outputdir.c_str()));
 
 
@@ -96,12 +96,12 @@ int main( int argc, char* argv[] ) {
 
     std::vector<MT2Sample> samples_zinv = MT2Sample::loadSamples(samplesFile, 602, 699);
     std::vector<MT2Sample> samples_wjet = MT2Sample::loadSamples(samplesFile, 502, 599);
-    std::vector<MT2Sample> samples_top  = MT2Sample::loadSamples(samplesFile, 300, 399); // ignore single top and rares: faster
-    //std::vector<MT2Sample> samples_top  = MT2Sample::loadSamples(samplesFile, 300, 499);
+    //std::vector<MT2Sample> samples_top  = MT2Sample::loadSamples(samplesFile, 300, 399); // ignore single top and rares: faster
+    std::vector<MT2Sample> samples_top  = MT2Sample::loadSamples(samplesFile, 300, 499);
     std::vector<MT2Sample> samples_qcd  = MT2Sample::loadSamples(samplesFile, 100, 199);
 
 
-    MT2Analysis<MT2EstimateTree>* qcdCRtree = new MT2Analysis<MT2EstimateTree>( "qcdCRtree", "13TeV_inclusive" );
+    MT2Analysis<MT2EstimateTree>* qcdCRtree = new MT2Analysis<MT2EstimateTree>( "qcdCRtree", "13TeV_2016_inclusive" );
     MT2EstimateTree::addVar( qcdCRtree, "jet1_pt" );
     MT2EstimateTree::addVar( qcdCRtree, "jet2_pt" );
     
@@ -138,7 +138,7 @@ int main( int argc, char* argv[] ) {
       exit(1209);
     }
 
-    MT2Analysis<MT2EstimateTree>* data = new MT2Analysis<MT2EstimateTree>( "qcdCRtree", "13TeV_inclusive" );
+    MT2Analysis<MT2EstimateTree>* data = new MT2Analysis<MT2EstimateTree>( "qcdCRtree", "13TeV_2016_inclusive" );
     MT2EstimateTree::addVar( data, "jet1_pt" );
     MT2EstimateTree::addVar( data, "jet2_pt" );
     //MT2Analysis<MT2EstimateTree>* data = new MT2Analysis<MT2EstimateTree>( "qcdCRtree", cfg.regionsSet() );
@@ -196,9 +196,10 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
       if ( !myTree.passFilters() ) continue;
     }
     else {
-      if ( !(myTree.Flag_badMuonFilter>0 && myTree.Flag_badChargedHadronFilter>0 && myTree.Flag_EcalDeadCellTriggerPrimitiveFilter>0) ) continue;
-      if (myTree.met_pt/myTree.met_caloPt > 5.0) continue; // RA2 filter for QCD MC
+      //if ( !(myTree.Flag_badMuonFilter>0 && myTree.Flag_badChargedHadronFilter>0 && myTree.Flag_EcalDeadCellTriggerPrimitiveFilter>0) ) continue;
+      if ( !(myTree.Flag_badChargedHadronFilter>0 && myTree.Flag_EcalDeadCellTriggerPrimitiveFilter>0) ) continue; // americans don't have muon filter
     }
+    if (myTree.met_miniaodPt/myTree.met_caloPt > 5.0) continue; // RA2 filter for QCD MC
     
 
     if( !myTree.passSelection("qcd") ) continue;
@@ -226,35 +227,14 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
 
     if (myTree.isData) {
 
-      //int id = sample.id;
-      // sample IDs for data:
-      // JetHT = 1
-      // HTMHT = 2
-      // MET   = 3
-      //myTree.evt_id = id; // useful when using american trees
-
-      // if( njets==1 ) {
-      //   if( !( id==3 && myTree.HLT_PFMET100_PFMHT100) ) continue;
-      // } else { // njets>=2
-      //   if( ht>1000. ) {
-      //     if( !( id==1 && myTree.HLT_PFHT800) ) continue;
-      //   } else if( ht>575. ) {
-      //     if( !( (id==2 && myTree.HLT_PFHT300_PFMET100 ) || (id==1 && myTree.HLT_PFHT475_Prescale))  ) continue;
-      //   } else if( ht>450. ) {
-      //     if( !( (id==2 && myTree.HLT_PFHT300_PFMET100 ) || (id==1 && myTree.HLT_PFHT350_Prescale))  ) continue;
-      //   } else if( ht>200. ) {
-      //     if( !( (id==3 && myTree.HLT_PFMET100_PFMHT100) || (id==1 && (myTree.HLT_PFHT125_Prescale)))  ) continue;
-      //   }
-
-      // }
-
       if( njets<2 ) continue; // qcd CRs never use 1jet events, not even for monojet CR
       // don't bother about dataset of origin (OR of datasets)
       // fill id with trigger bit logic (0b01 HT-only triggered, 0b10 signal triggered)
+      // signal triggered events include the MET>250 selection for HT<1000
       myTree.evt_id = 0;
-      if( (ht>1000.&&myTree.HLT_PFHT800) || (ht<1000.&&ht>575.&&myTree.HLT_PFHT475_Prescale) || (ht<575.&&ht>450.&&myTree.HLT_PFHT350_Prescale) || (ht<450.&&ht>200.&&myTree.HLT_PFHT125_Prescale) )
+      if( (ht>1000.&&myTree.HLT_PFHT900) || (ht<1000.&&ht>575.&&myTree.HLT_PFHT475_Prescale) || (ht<575.&&ht>450.&&myTree.HLT_PFHT350_Prescale) || (ht<450.&&ht>250.&&myTree.HLT_PFHT125_Prescale) )
 	myTree.evt_id += 0b01;      // HT-only triggered -> turn bit 1 on
-      if(ht>200 && (myTree.HLT_PFHT800||myTree.HLT_PFHT300_PFMET100||myTree.HLT_PFMET100_PFMHT100) && (ht>1000 || myTree.met_pt>200) )
+      if(ht>250 && (myTree.HLT_PFHT900||myTree.HLT_PFJet450||myTree.HLT_PFHT300_PFMET110||myTree.HLT_PFMET120_PFMHT120) && (ht>1000 || myTree.met_pt>250) )
 	myTree.evt_id += 0b10;      // passes signal triggers -> turn bit 2 on
       if( myTree.evt_id==0 )
 	continue;                   // doesn't pass any trigger
@@ -274,10 +254,14 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
 
 
     } else {
-      if( mt2<50. ) continue;
+      if( mt2<50. || njets<2 ) continue; // remove unnecesary for lighter trees
     }
 
-    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb;//*cfg.lumi(); 
+    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*myTree.weight_btagsf;
+
+    // isr weight. Renormalization factor valid for american top mc. To recheck once ETH have its own top mc
+    if (myTree.evt_id>=301 && myTree.evt_id<=303)
+      weight *= myTree.weight_isr/getAverageISRWeight(myTree.evt_id,0);
 
     //float myht = njets==1 ? 201. : ht; // let everything (mt2=ht>40) pass for monojet
     MT2EstimateTree* thisTree = anaTree->get( ht, njets, nbjets, minMTBmet, mt2 );
@@ -305,5 +289,25 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
 
 }
 
+// from Americans, valid for american top mc
+float getAverageISRWeight(const int evt_id, const int var){
 
+  // madgraph ttsl, from RunIISpring16MiniAODv2
+  if (evt_id == 301 || evt_id == 302) {
+    if (var == 0) return 0.910; // nominal
+    else if (var == 1) return 0.955; // UP
+    else if (var == -1) return 0.865; // DN
+  }
+  // madgraph ttdl, from RunIISpring16MiniAODv2
+  else if (evt_id == 303) {
+    if (var == 0) return 0.897; // nominal
+    else if (var == 1) return 0.948; // UP
+    else if (var == -1) return 0.845; // DN
+  }
+
+  std::cout << "WARNING: MT2Looper::getAverageISRWeight: didn't recognize either evt_id: " << evt_id
+	    << " or variation: " << var << std::endl;
+  return 1.;
+
+}
 

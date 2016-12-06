@@ -41,17 +41,15 @@ public :
    Int_t         HLT_Photon90;
    Int_t         HLT_PFHT350_PFMET100;
    Int_t         HLT_PFHT300_PFMET100;
+   Int_t         HLT_PFHT300_PFMET110;
    Int_t         HLT_PFMET90_PFMHT90;
    Int_t         HLT_PFMET100_PFMHT100;
    Int_t         HLT_PFMET120_PFMHT120;
-   Int_t         HLT_PFHT300_PFMET110;
-   Int_t         HLT_PFJet450;
    Int_t         HLT_PFMETNoMu90_PFMHTNoMu90;
    Int_t         HLT_PFHT125_Prescale;
    Int_t         HLT_PFHT200_Prescale;
    Int_t         HLT_PFHT475_Prescale;
    Int_t         HLT_PFHT350_Prescale;
-   Int_t         HLT_ht475prescale;
    Int_t         HLT_SingleMu;
    Int_t         HLT_SingleMu_NonIso;
    Int_t         HLT_MuX_Ele12;
@@ -60,9 +58,9 @@ public :
    Int_t         HLT_Mu33_Ele33_NonIso;
    Int_t         HLT_SingleEl;
    Int_t         HLT_PFHT800;
-   Int_t         HLT_ht350prescale;
    Int_t         HLT_Photon155;
    Int_t         HLT_PFHT900;
+   Int_t         HLT_PFJet450;
    Int_t         HLT_Photon175;
    Int_t         HLT_MuEG;
    Int_t         HLT_DiJet;
@@ -507,12 +505,11 @@ public :
    TBranch        *b_HLT_Photon90;   //!
    TBranch        *b_HLT_PFHT350_PFMET100;   //!
    TBranch        *b_HLT_PFHT300_PFMET100;   //!
+   TBranch        *b_HLT_PFHT300_PFMET110;   //!
    TBranch        *b_HLT_PFMETNoMu90_PFMHTNoMu90;   //!
    TBranch        *b_HLT_PFMET90_PFMHT90;   //!
    TBranch        *b_HLT_PFMET100_PFMHT100;   //!
    TBranch        *b_HLT_PFMET120_PFMHT120;   //!
-   TBranch        *b_HLT_PFHT300_PFMET110;   //!
-   TBranch        *b_HLT_PFJet450;   //!
    TBranch        *b_HLT_PFHT125_Prescale;   //!
    TBranch        *b_HLT_PFHT200_Prescale;   //!
    TBranch        *b_HLT_PFHT475_Prescale;   //!
@@ -527,6 +524,7 @@ public :
    TBranch        *b_HLT_PFHT800;   //!
    TBranch        *b_HLT_Photon155;   //!
    TBranch        *b_HLT_PFHT900;   //!
+   TBranch        *b_HLT_PFJet450;   //!
    TBranch        *b_HLT_Photon175;   //!
    TBranch        *b_HLT_DiJet;   //!
    TBranch        *b_HLT_DoubleEl;   //!
