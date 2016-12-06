@@ -101,7 +101,7 @@ int main( int argc, char* argv[] ) {
     std::vector<MT2Sample> samples_qcd  = MT2Sample::loadSamples(samplesFile, 100, 199);
 
 
-    MT2Analysis<MT2EstimateTree>* qcdCRtree = new MT2Analysis<MT2EstimateTree>( "qcdCRtree", "13TeV_inclusive2016" );
+    MT2Analysis<MT2EstimateTree>* qcdCRtree = new MT2Analysis<MT2EstimateTree>( "qcdCRtree", "13TeV_2016_inclusive" );
     MT2EstimateTree::addVar( qcdCRtree, "jet1_pt" );
     MT2EstimateTree::addVar( qcdCRtree, "jet2_pt" );
     
@@ -138,7 +138,7 @@ int main( int argc, char* argv[] ) {
       exit(1209);
     }
 
-    MT2Analysis<MT2EstimateTree>* data = new MT2Analysis<MT2EstimateTree>( "qcdCRtree", "13TeV_inclusive2016" );
+    MT2Analysis<MT2EstimateTree>* data = new MT2Analysis<MT2EstimateTree>( "qcdCRtree", "13TeV_2016_inclusive" );
     MT2EstimateTree::addVar( data, "jet1_pt" );
     MT2EstimateTree::addVar( data, "jet2_pt" );
     //MT2Analysis<MT2EstimateTree>* data = new MT2Analysis<MT2EstimateTree>( "qcdCRtree", cfg.regionsSet() );
