@@ -243,9 +243,13 @@ int main( int argc, char* argv[] ) {
 
   std::cout << "-> Making MT2EstimateQCD from inclusive tree...";
   MT2Analysis<MT2EstimateQCD>* est_all;
+
+  // don't apply met>250 for validation region 100<MT2<200 from ht-only prescaled triggers
+  std::string metcut = closureTest ? "" : "&&(met>250||ht>1000)";
+
   if( useMC ) {
     // the met>250 for lower HT, to be applied in the estimate selection, not for the fits. Safe for non-QCD below. For data it is directly applied in qcdControlRegion as part of the id.
-    est_all  = MT2EstimateQCD::makeAnalysisFromInclusiveTree( "est", regionsSet_fits, qcdTree_mc , "(id>150&&(id>151||ht<450)&&(id>152||ht<575)&&(id>153||ht<1000)&&(id>154||ht<1500)&&(met>250||ht>1000))", "(id>150&&(id>151||ht<450)&&(id>152||ht<575)&&(id>153||ht<1000)&&(id>154||ht<1500))" ); // 
+    est_all  = MT2EstimateQCD::makeAnalysisFromInclusiveTree( "est", regionsSet_fits, qcdTree_mc , "(id>150&&(id>151||ht<450)&&(id>152||ht<575)&&(id>153||ht<1000)&&(id>154||ht<1500))"+metcut, "(id>150&&(id>151||ht<450)&&(id>152||ht<575)&&(id>153||ht<1000)&&(id>154||ht<1500))" ); // 
   } else {
     if ( closureTest ) // fill tree with ht-only triggers
       est_all  = MT2EstimateQCD::makeAnalysisFromInclusiveTree( "est", regionsSet_fits, qcdTree_data, "((id&1)==1"+runRange+")", "((id&1)==1"+runRange+")" ); //use HT-only triggers for dphi-ratio --- new way
@@ -253,7 +257,7 @@ int main( int argc, char* argv[] ) {
       est_all  = MT2EstimateQCD::makeAnalysisFromInclusiveTree( "est", regionsSet_fits, qcdTree_data, "((id&2)==2)", "((id&1)==1"+runRange+")" ); //use HT-only triggers for dphi-ratio --- new way, bit 2 on for signal triggers, bit 1 on for ht-only triggers
   }
 
-  MT2Analysis<MT2EstimateQCD>* mc_rest = MT2EstimateQCD::makeAnalysisFromInclusiveTree( "mc_rest", regionsSet_fits, qcdTree_mc  , "id>=300&&(met>250||ht>1000)", "id>=300" );
+  MT2Analysis<MT2EstimateQCD>* mc_rest = MT2EstimateQCD::makeAnalysisFromInclusiveTree( "mc_rest", regionsSet_fits, qcdTree_mc  , "id>=300"+metcut, "id>=300" );
 
 
   MT2Analysis<MT2EstimateQCD>* est_minus_nonQCD = new MT2Analysis<MT2EstimateQCD>("est_minus_nonQCD"  , regionsSet_fits );
@@ -328,9 +332,13 @@ int main( int argc, char* argv[] ) {
 
     drawSingleFit( cfg, useMC, fitsDir, matchedEstimate_mnQ, matchedEstimate, fits[*iR], bands[*iR], xMin_fit, xMax_fit );
 
+    // initial values for variation fits from central fit, to facilitate convergence
+    float par0 = fits[*iR]->GetParameter(0);
+    float par1 = fits[*iR]->GetParameter(1);
+
     float xMin_fit_var = xMin_fit + 5.;
     float xMax_fit_var = xMax_fit + 25.;
-    fits_up [*iR] = matchedEstimate_mnQ->getFit( "pow", xMin_fit_var, xMax_fit_var );
+    fits_up [*iR] = matchedEstimate_mnQ->getFit( "pow", xMin_fit_var, xMax_fit_var, par0, par1 );
     bands_up[*iR] = new TH1D(Form("band_up_%s",iR->getName().c_str()), "", 500, matchedEstimate->lDphi->GetXaxis()->GetXmin(), matchedEstimate->lDphi->GetXaxis()->GetXmax());
     (TVirtualFitter::GetFitter())->GetConfidenceIntervals(bands_up[*iR], 0.68);
     drawSingleFit( cfg, useMC, fitsDir+"/up/", matchedEstimate_mnQ, matchedEstimate, fits_up[*iR], bands_up[*iR], xMin_fit_var, xMax_fit_var );
@@ -341,7 +349,7 @@ int main( int argc, char* argv[] ) {
 
     xMin_fit_var = xMin_fit - 5.;
     xMax_fit_var = xMax_fit;
-    fits_down [*iR] = matchedEstimate_mnQ->getFit( "pow", xMin_fit_var, xMax_fit_var );
+    fits_down [*iR] = matchedEstimate_mnQ->getFit( "pow", xMin_fit_var, xMax_fit_var, par0, par1 );
     bands_down[*iR] = new TH1D(Form("band_down_%s",iR->getName().c_str()), "", 500, matchedEstimate->lDphi->GetXaxis()->GetXmin(), matchedEstimate->lDphi->GetXaxis()->GetXmax());
     (TVirtualFitter::GetFitter())->GetConfidenceIntervals(bands_down[*iR], 0.68);
     drawSingleFit( cfg, useMC, fitsDir+"/down/", matchedEstimate_mnQ, matchedEstimate, fits_down[*iR], bands_down[*iR], xMin_fit_var, xMax_fit_var );
@@ -419,8 +427,14 @@ int main( int argc, char* argv[] ) {
     fillFromTreeAndRatio( this_estimate  , this_nCR       , this_r_effective , matchedEstimate->tree, fits[*fit_matchedRegion], bands[*fit_matchedRegion], fits_up[*fit_matchedRegion], bands_up[*fit_matchedRegion], fits_down[*fit_matchedRegion], bands_down[*fit_matchedRegion]     );
     fillFromTreeAndRatio( this_est_mcRest, this_nCR_mcRest, this_r_eff_mcRest, matchedEstimate_rest->tree, fits[*fit_matchedRegion], bands[*fit_matchedRegion] , ps);
 
-    //computePurity( this_qcdPurity->yield, this_est_mcRest->yield, this_estimate->yield, useMC ? 1.0 : cfg.lumi() );
-    computePurity( this_qcdPurity->yield, this_nCR_mcRest->yield, this_nCR->yield, useMC ? 1.0 : cfg.lumi() ); //this computes purity directly on CR, above is more correct
+
+    // validation from prescale triggers -> use only up to runG
+    float lumi = useMC ? 1.0 : cfg.lumi();
+    if (!useMC && onlyUseUpToRunG && closureTest)
+      lumi *= lumiRatioGtoH;
+
+    //computePurity( this_qcdPurity->yield, this_est_mcRest->yield, this_estimate->yield, lumi );
+    computePurity( this_qcdPurity->yield, this_nCR_mcRest->yield, this_nCR->yield, lumi ); //this computes purity directly on CR, above is more correct
 
     if (!useMC && purityFromMC){ // use purity from MC as agreed with FG
       MT2Estimate* this_qcdPurityMC = qcdPurityMC   ->get( *iR );
@@ -972,7 +986,6 @@ void drawSingleFit( const MT2Config& cfg, bool useMC, const std::string& outdir,
 
 
 void computePurity( TH1D* purity, TH1D* nonQCD, TH1D* all ,float lumi ) {
-
 
   for( int iBin=1; iBin<nonQCD->GetXaxis()->GetNbins()+1; ++iBin ) {
 
