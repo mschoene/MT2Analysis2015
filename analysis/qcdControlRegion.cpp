@@ -258,7 +258,9 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
     }
 
     Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*myTree.weight_btagsf;
-    if (myTree.evt_id>300 && myTree.evt_id<310)
+
+    // isr weight. Renormalization factor valid for american top mc. To recheck once ETH have its own top mc
+    if (myTree.evt_id>=301 && myTree.evt_id<=303)
       weight *= myTree.weight_isr/getAverageISRWeight(myTree.evt_id,0);
 
     //float myht = njets==1 ? 201. : ht; // let everything (mt2=ht>40) pass for monojet
@@ -287,7 +289,7 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
 
 }
 
-
+// from Americans, valid for american top mc
 float getAverageISRWeight(const int evt_id, const int var){
 
   // madgraph ttsl, from RunIISpring16MiniAODv2
