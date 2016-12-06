@@ -101,7 +101,7 @@ int main( int argc, char* argv[] ) {
     std::vector<MT2Sample> samples_qcd  = MT2Sample::loadSamples(samplesFile, 100, 199);
 
 
-    MT2Analysis<MT2EstimateTree>* qcdCRtree = new MT2Analysis<MT2EstimateTree>( "qcdCRtree", "13TeV_inclusive" );
+    MT2Analysis<MT2EstimateTree>* qcdCRtree = new MT2Analysis<MT2EstimateTree>( "qcdCRtree", "13TeV_2016_inclusive" );
     MT2EstimateTree::addVar( qcdCRtree, "jet1_pt" );
     MT2EstimateTree::addVar( qcdCRtree, "jet2_pt" );
     
@@ -138,7 +138,7 @@ int main( int argc, char* argv[] ) {
       exit(1209);
     }
 
-    MT2Analysis<MT2EstimateTree>* data = new MT2Analysis<MT2EstimateTree>( "qcdCRtree", "13TeV_inclusive" );
+    MT2Analysis<MT2EstimateTree>* data = new MT2Analysis<MT2EstimateTree>( "qcdCRtree", "13TeV_2016_inclusive" );
     MT2EstimateTree::addVar( data, "jet1_pt" );
     MT2EstimateTree::addVar( data, "jet2_pt" );
     //MT2Analysis<MT2EstimateTree>* data = new MT2Analysis<MT2EstimateTree>( "qcdCRtree", cfg.regionsSet() );
@@ -196,7 +196,8 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
       if ( !myTree.passFilters() ) continue;
     }
     else {
-      if ( !(myTree.Flag_badMuonFilter>0 && myTree.Flag_badChargedHadronFilter>0 && myTree.Flag_EcalDeadCellTriggerPrimitiveFilter>0) ) continue;
+      if ( !(myTree.Flag_badChargedHadronFilter>0 && myTree.Flag_EcalDeadCellTriggerPrimitiveFilter>0) ) continue;
+      //    if ( !(myTree.Flag_badMuonFilter>0 && myTree.Flag_badChargedHadronFilter>0 && myTree.Flag_EcalDeadCellTriggerPrimitiveFilter>0) ) continue;
       if (myTree.met_pt/myTree.met_caloPt > 5.0) continue; // RA2 filter for QCD MC
     }
     
@@ -248,13 +249,15 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
 
       // }
 
+
+
       if( njets<2 ) continue; // qcd CRs never use 1jet events, not even for monojet CR
       // don't bother about dataset of origin (OR of datasets)
       // fill id with trigger bit logic (0b01 HT-only triggered, 0b10 signal triggered)
       myTree.evt_id = 0;
-      if( (ht>1000.&&myTree.HLT_PFHT800) || (ht<1000.&&ht>575.&&myTree.HLT_PFHT475_Prescale) || (ht<575.&&ht>450.&&myTree.HLT_PFHT350_Prescale) || (ht<450.&&ht>200.&&myTree.HLT_PFHT125_Prescale) )
+      if( (ht>1000.&&myTree.HLT_PFHT900) || (ht<1000.&&ht>575.&&myTree.HLT_PFHT475_Prescale) || (ht<575.&&ht>450.&&myTree.HLT_PFHT350_Prescale) || (ht<450.&&ht>200.&&myTree.HLT_PFHT125_Prescale) )
 	myTree.evt_id += 0b01;      // HT-only triggered -> turn bit 1 on
-      if(ht>200 && (myTree.HLT_PFHT800||myTree.HLT_PFHT300_PFMET100||myTree.HLT_PFMET100_PFMHT100) && (ht>1000 || myTree.met_pt>200) )
+      if(ht>200 && (myTree.HLT_PFMET120_PFMHT120 || myTree.HLT_PFHT900 || myTree.HLT_PFHT300_PFMET110 || myTree.HLT_PFJet450 ) && (ht>1000 || myTree.met_pt>250) )
 	myTree.evt_id += 0b10;      // passes signal triggers -> turn bit 2 on
       if( myTree.evt_id==0 )
 	continue;                   // doesn't pass any trigger
@@ -264,13 +267,18 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
 
     if( monojet ) {
       // only store signal triggered events for monojet CR
-      if( !( (njets==2 && myTree.deltaPhiMin<0.3 && myTree.jet1_pt>200. && myTree.met_pt>200. && (myTree.evt_id&0b10)==0b10) ) ) continue;
+      //  if( !( (njets==2 && myTree.deltaPhiMin<0.3 && myTree.jet1_pt>250. && myTree.met_pt>250. && (myTree.evt_id&0b10)==0b10) ) ) continue;
+
+      if( !( (njets==2 && myTree.deltaPhiMin<0.3 && myTree.jet1_pt>250. && myTree.met_pt>250. ) )) continue;
+      if( myTree.isData && !( myTree.HLT_PFMET120_PFMHT120 || myTree.HLT_PFHT900 || myTree.HLT_PFHT300_PFMET110 || myTree.HLT_PFJet450  ) ) continue;
+
       if( !myTree.passMonoJetId(0) ) continue;
 
       //Fix for monojetCR for shape comparsion Data/MC
       if( !myTree.Flag_EcalDeadCellTriggerPrimitiveFilter ) continue;
 
-      if( !myTree.isData && (myTree.met_pt/ myTree.met_caloPt > 5.0) ) continue;
+      //  if( (myTree.met_pt/ myTree.met_caloPt > 5.0) ) continue;
+
 
 
     } else {
@@ -278,6 +286,23 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
     }
 
     Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb;//*cfg.lumi(); 
+
+
+    if( myTree.met_miniaodPt/myTree.met_caloPt > 5.0 ) continue;   
+
+    if( !myTree.isData ){
+      weight *= myTree.weight_btagsf;
+      weight *= myTree.weight_lepsf;
+     
+      weight *= myTree.weight_lepsf;
+   
+      if (myTree.evt_id == 301 || myTree.evt_id == 302)
+	weight *= myTree.weight_isr/0.910; // central/average
+      else if (myTree.evt_id == 303) 
+	weight *= myTree.weight_isr/0.897;  
+    }
+
+
 
     //float myht = njets==1 ? 201. : ht; // let everything (mt2=ht>40) pass for monojet
     MT2EstimateTree* thisTree = anaTree->get( ht, njets, nbjets, minMTBmet, mt2 );
