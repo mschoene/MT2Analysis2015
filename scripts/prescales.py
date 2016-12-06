@@ -6,7 +6,7 @@ from math import sqrt
 ROOT.gSystem.Load("/mnt/t3nfs01/data01/shome/casal/ana743/src/MT2DrawTools_cc")
 from ROOT import MT2DrawTools
 
-lumi = 24.5
+lumi = 27.7
 
 MT2DrawTools.setStyle()
 lumilabel = MT2DrawTools.getLabelTop(lumi)
@@ -49,7 +49,12 @@ t = ROOT.TChain("mt2")
 
 
 # 24.5/fb run G up to 279931
-t.Add("dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/casal/MT2production/80X/PostProcessed/prodSept13_all_forQCD/JetHT_Run2016*.root")
+#t.Add("dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/casal/MT2production/80X/PostProcessed/prodSept13_all_forQCD/JetHT_Run2016*.root")
+
+# full 2016 dataset (few corrupted files 36.5/fb
+#t.Add("dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/casal/MT2production/80X/PostProcessed/prodNov08_allRuns_forQCD/JetHT_Run2016*.root")
+# re-reco up to runG 27.7/fb
+t.Add("dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/casal/MT2production/80X/PostProcessed/prodNov08_allRuns_forQCD/JetHT_Run2016*23Sep2016*.root")
 
 
 ht900 = ROOT.TH1F("ht900","ht900",68,300,2000)
