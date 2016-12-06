@@ -3,6 +3,7 @@ from array import array
 import os
 from math import sqrt
 
+# this was created when MT2DrawTools could be compiled standalone
 ROOT.gSystem.Load("/mnt/t3nfs01/data01/shome/casal/ana743/src/MT2DrawTools_cc")
 from ROOT import MT2DrawTools
 
@@ -11,47 +12,11 @@ lumi = 27.7
 MT2DrawTools.setStyle()
 lumilabel = MT2DrawTools.getLabelTop(lumi)
 
-# 211/pb
-#f = ROOT.TFile.Open("dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/pandolf/MT2production/80X/PostProcessed/data2016_v3/JetHT_Run2016B_PromptReco_v2_post.root")
-# 589/pb
-#f = ROOT.TFile.Open("dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/mangano/babies/80X/MT2/PostProcessed/data27May_v1/JetHT_Run2016B_PromptReco_v2_po0st.root")
-# 804/pb
-#f = ROOT.TFile.Open("dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/mangano/babies/80X/MT2/PostProcessed/data07June_JetHT_v1/JetHT_Run2016B_PromptReco_v2_post.root")
-
-#t = f.Get("mt2")
-
 
 t = ROOT.TChain("mt2")
 
-# 2.07/fb
-#t.Add("dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/mangano/MT2production/80X/PostProcessed/data13June_271036-274421_newCFG_v1/JetHT_Run2016B*.root")
 
-# 2.07 + 1.89 /fb
-#t.Add("dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/mangano/MT2production/80X/PostProcessed/data13June_271036-274421_newCFG_v1/JetHT_Run2016B*.root")
-#t.Add("dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/mangano/MT2production/80X/PostProcessed/prodJune21_274422-275125_forQCD_v1_v2/JetHT_Run2016B*.root")
-
-# all runB 5.4/fb
-#t.Add("dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/mangano/MT2production/80X/PostProcessed/prodJune30_allRunB_forQCD_v1//JetHT_Run2016B*.root")
-
-# JECv6, eta2.4,  5.89 (B) + 1.76 (C) /fb
-#t.Add("dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/mangano/MT2production/80X/PostProcessed/prodJuly08_runB_forQCD_v1//JetHT_Run2016B*.root")
-#t.Add("dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/mangano/MT2production/80X/PostProcessed/prodJuly08_runC_forQCD_v1//JetHT_Run2016C*.root")
-
-# 5.94 (B) + 2.646 (C) + 0.649 (D) = 9.24/fb
-#t.Add("dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/mangano/MT2production/80X/PostProcessed/prodJuly08_runB_forQCD_v1/JetHT_Run2016B*.root")
-#t.Add("dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/mangano/MT2production/80X/PostProcessed/prodJuly15_runC_all_forQCD_v1//JetHT_Run2016C*.root")
-#t.Add("dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/mangano/MT2production/80X/PostProcessed/prodJuly15_runD_276311-276384_forQCD_v1/JetHT_Run2016D*.root")
-
-# 5.940 (B) + 2.646 (C) + 4.330 (D) = 12.92/fb
-#t.Add("dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/mangano/MT2production/80X/PostProcessed/prodJuly08_runB_forQCD_v1/JetHT_Run2016B*.root")
-#t.Add("dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/mangano/MT2production/80X/PostProcessed/prodJuly15_runC_all_forQCD_v1//JetHT_Run2016C*.root")
-#t.Add("dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/mangano/MT2production/80X/PostProcessed/prodJuly19_runD_276311-276811_forQCD_v1/JetHT_Run2016D*.root")
-
-
-# 24.5/fb run G up to 279931
-#t.Add("dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/casal/MT2production/80X/PostProcessed/prodSept13_all_forQCD/JetHT_Run2016*.root")
-
-# full 2016 dataset (few corrupted files 36.5/fb
+# full 2016 re-reco dataset
 #t.Add("dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/casal/MT2production/80X/PostProcessed/prodNov08_allRuns_forQCD/JetHT_Run2016*.root")
 # re-reco up to runG 27.7/fb
 t.Add("dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/casal/MT2production/80X/PostProcessed/prodNov08_allRuns_forQCD/JetHT_Run2016*23Sep2016*.root")
