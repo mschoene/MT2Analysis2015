@@ -139,7 +139,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   
   std::set<MT2Region> MT2Regions = data->getRegions();
   
-  TH1D* hdata = new TH1D("hdata", "", 67, 0, 67);
+  TH1D* hdata = new TH1D("hdata", "", 63, 0, 63);
   hdata->Sumw2();
   hdata->GetYaxis()->SetTitle("Entries");
   hdata->SetMarkerStyle(20);
@@ -154,13 +154,13 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   
   for(unsigned int b=0; b<bgSize; ++b){
   
-    hestimate[b]= new TH1D(Form("hestimate_%d", b), "", 67, 0, 67);
+    hestimate[b]= new TH1D(Form("hestimate_%d", b), "", 63, 0, 63);
     hestimate[b]->Sumw2();
     hestimate[b]->GetYaxis()->SetTitle("Entries");
     hestimate[b]->SetFillColor(colors[b]);
     hestimate[b]->SetLineColor(1);
 
-    hestimate_forRatio[b]= new TH1D(Form("hestimate_forRatio%d", b), "", 67, 0, 67);
+    hestimate_forRatio[b]= new TH1D(Form("hestimate_forRatio%d", b), "", 63, 0, 63);
     hestimate_forRatio[b]->Sumw2();
     hestimate_forRatio[b]->GetYaxis()->SetTitle("Entries");
     hestimate_forRatio[b]->SetFillColor(colors[b]);
@@ -182,7 +182,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   
   std::string fullPath = outputdir;
   
-  std::string labelsMono[12]={"[200,250]","[250,350]","[350,450]","[450,575]","[575,700]","[700,1000]",">1000", "[200,250]","[250,350]","[350,450]","[450,575]",">575"};
+  std::string labelsMono[12]={"[250,350]","[350,450]","[450,575]","[575,700]","[700,1000]","[1000,1200]", ">1200","[250,350]","[350,450]","[450,575]","[575,700]", ">700"};
 
   TFile* bigHistoFile = TFile::Open( Form("%s/histograms_ALL.root", fullPath.c_str()), "recreate" );
 
@@ -664,11 +664,12 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   float yMax2 = (yMax_3>yMax_4) ? yMax_3 : yMax_4;
   float yMax = (yMax1>yMax2) ? yMax1 : yMax2;
   
-  float yMin = 1e-3;
+  //  float yMin = 1e-3;
+  float yMin = 1e-1;
   //  yMin=0;
   yMax*=20.;
   
-  int thisBin=67;
+  int thisBin=63;
   
   hestimate_all->GetXaxis()->SetRangeUser(0, thisBin);
   hdata->GetXaxis()->SetRangeUser(0, thisBin);
@@ -757,7 +758,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
 //  htRegions.push_back("#it{H}_{T} [575,1000] GeV");
 //  htRegions.push_back("#it{H}_{T} [1000,1500] GeV");
 //  htRegions.push_back("#it{H}_{T} >1500 GeV");
-  htRegions.push_back("H_{T} [200,450] GeV");
+  htRegions.push_back("H_{T} [250,450] GeV");
   htRegions.push_back("H_{T} [450,575] GeV");
   htRegions.push_back("H_{T} [575,1000] GeV");
   htRegions.push_back("H_{T} [1000,1500] GeV");
@@ -781,7 +782,14 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
 
   TLine* lHT[5];
   for( int iHT=0; iHT < 5; iHT++ ){
-    lHT[iHT-1] = new TLine(12+11*iHT, 0.0, 12+11*iHT, yMax );
+    if( iHT==0)
+      lHT[iHT-1] = new TLine(12+11*(iHT), 0.0, 12+11*(iHT), yMax );
+    else if (iHT!=1)
+      lHT[iHT-1] = new TLine(12-4+11*iHT, 0.0, 12-4+11*iHT, yMax );
+    else
+      lHT[iHT-1] = new TLine(12+7*iHT, 0.0, 12+7*iHT, yMax );
+ 
+    //  lHT[iHT-1] = new TLine(12+7*iHT, 0.0, 12+11*iHT, yMax );
     lHT[iHT-1]->SetLineColor(kBlack);
     lHT[iHT-1]->SetLineStyle(3);
     lHT[iHT-1]->SetLineWidth(2);
@@ -814,7 +822,8 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
     
   }
   else
-    h2_axes_ratio = new TH2D("axes_ratio", "", 10, 0, thisBin, 10, 0., 3.5 );
+    h2_axes_ratio = new TH2D("axes_ratio", "", 10, 0, thisBin, 10, 0., 3 );
+  // h2_axes_ratio = new TH2D("axes_ratio", "", 10, 0, thisBin, 10, 0., 3.5 );
   
   //  TH2D* h2_axes_ratio = new TH2D("axes_ratio", "", 10, 0, thisBin, 10, 0., 3.0 );
   h2_axes_ratio->SetStats(0);
@@ -861,10 +870,26 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   TLine* lHT_b[6];
   for( int iHT=1; iHT < 6; iHT++ ){
     //    lHT_b[iHT-1] = new TLine(12+11*(iHT-1), 0, 12+11*(iHT-1), 3.0 );
-    if(doLogRatio)
-      lHT_b[iHT-1] = new TLine(12+11*(iHT-1), 0.1, 12+11*(iHT-1), 10.0 );
-    else
-      lHT_b[iHT-1] = new TLine(12+11*(iHT-1), 0, 12+11*(iHT-1), 2.0 );
+    if(doLogRatio){
+	//	lHT_b[iHT-1] = new TLine(12+11*(iHT-1), 0.1, 12+11*(iHT-1), 10.0 );
+      if (iHT!=2)
+	lHT_b[iHT-1] = new TLine(12-4+11*(iHT-1), 0.1, 12-4+11*(iHT-1), 10.0 );
+      else
+	lHT_b[iHT-1] = new TLine(12+7*(iHT-1), 0.1, 12+7*(iHT-1), 10.0 );
+      if( iHT==1)
+	lHT_b[iHT-1] = new TLine(12+11*(iHT-1), 0.1, 12+11*(iHT-1), 10.0 );
+    }
+    else{
+      //      lHT_b[iHT-1] = new TLine(12+11*(iHT-1), 0, 12+11*(iHT-1), 2.0 );
+      if (iHT!=2)
+	lHT_b[iHT-1] = new TLine(12-4+11*(iHT-1), 0, 12-4+11*(iHT-1), 2.0 );
+      else
+	lHT_b[iHT-1] = new TLine(12+7*(iHT-1), 0, 12+7*(iHT-1), 2.0 ); 
+    if( iHT==1)
+	lHT_b[iHT-1] = new TLine(12+11*(iHT-1), 0.1, 12+11*(iHT-1), 10.0 );
+
+  
+    }
 
     lHT_b[iHT-1]->SetLineColor(kBlack);
     lHT_b[iHT-1]->SetLineStyle(3);

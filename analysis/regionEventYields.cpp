@@ -39,7 +39,7 @@
 
 void randomizePoisson( MT2Analysis<MT2EstimateTree>* data );
 template <class T>
-MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg );
+MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg, std::string otherRegion="" );
 template <class T>
 MT2Analysis<T>* computeSigYield( const MT2Sample& sample, const MT2Config& cfg );
 template <class T>
@@ -111,6 +111,17 @@ int main( int argc, char* argv[] ) {
 
 
     
+    std::vector< MT2Analysis<MT2EstimateTree>* > EventYield_incl;
+    for( unsigned i=0; i<fSamples.size(); ++i ) {
+      int this_id = fSamples[i].id;
+      if( this_id<600 ) continue; // skip everything that is not ZJets
+      if( this_id>=700 ) continue; //
+      EventYield_incl.push_back( computeYield<MT2EstimateTree>( fSamples[i], cfg, "13TeV_2016_inclusive"  ));
+    }
+    MT2Analysis<MT2EstimateTree>* EventYield_zjets_inclusive = mergeYields<MT2EstimateTree>( EventYield_incl, "13TeV_2016_inclusive", "ZJets_inclusive", 600, 699, "Z+jets" );
+    EventYield_zjets_inclusive->writeToFile(outputdir + "/ZJetsIncl.root");
+
+
     std::vector< MT2Analysis<MT2EstimateTree>* > EventYield;
     for( unsigned i=0; i<fSamples.size(); ++i ) {
       int this_id = fSamples[i].id;
@@ -118,6 +129,7 @@ int main( int argc, char* argv[] ) {
       if( this_id>=700 && this_id<800 ) continue; // skip DY
       EventYield.push_back( computeYield<MT2EstimateTree>( fSamples[i], cfg ));
     }
+
 
 
     std::cout << "-> Done looping on samples. Start merging." << std::endl;
@@ -131,6 +143,7 @@ int main( int argc, char* argv[] ) {
     std::cout << "     merging ZJets..." << std::endl;
     MT2Analysis<MT2EstimateTree>* EventYield_zjets = mergeYields<MT2EstimateTree>( EventYield, cfg.regionsSet(), "ZJets", 600, 699, "Z+jets" );
     
+
     //    MT2Analysis<MT2EstimateTree>* EventYield_other = mergeYields<MT2EstimateTree>( EventYield, cfg.regionsSet(), "Other", 700, 999, "Other" );
     std::cout << "-> Done merging." << std::endl;
 
@@ -139,6 +152,8 @@ int main( int argc, char* argv[] ) {
     yields.push_back( EventYield_zjets );
     yields.push_back( EventYield_top );
     //    yields.push_back( EventYield_other );
+
+
 
     if( cfg.dummyAnalysis() ) {
       MT2Analysis<MT2EstimateTree>* dataYield   = mergeYields<MT2EstimateTree>( EventYield, cfg.regionsSet(), "data", 100, 699 );
@@ -218,7 +233,7 @@ int main( int argc, char* argv[] ) {
     //    std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, 1, 3 );
     // std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, -1, 0 );
     // std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, "noDuplicates" );
-    std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, "mergedMET_HTMHT_JetHT" );
+    std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, "merged" );
     if( samples_data.size()==0 ) {
       std::cout << "There must be an error: samples_data is empty!" << std::endl;
       exit(1209);
@@ -268,9 +283,11 @@ int main( int argc, char* argv[] ) {
 
 
 template <class T>
-MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg ) {
+MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg, std::string otherRegion ) {
 
   std::string regionsSet = cfg.regionsSet();
+  if(otherRegion!="")
+    regionsSet = otherRegion;
 
   std::cout << std::endl << std::endl;
   std::cout << "-> Starting computation for sample: " << sample.name << std::endl;
@@ -331,13 +348,17 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg ) {
     
     myTree.GetEntry(iEntry);
     
-    //////    if( myTree.isData && !myTree.isGolden ) continue;
+    if( myTree.isData && !myTree.isGolden ) continue;
+//    if( !(myTree.run<=276811 ||  (278820<=myTree.run && myTree.run<=279931)) )
+//      continue;
 
     if( regionsSet!="13TeV_noCut" )
       if( !myTree.passSelection(cfg.additionalStuff()) ) continue;
 
     if ( myTree.nJet30==1 && !myTree.passMonoJetId(0) ) continue;
       
+
+    if( myTree.isData && !(myTree.run<=276811 || ( 278820<=myTree.run && myTree.run<=279931)) ) continue;
 
     float ht   = myTree.ht;
     float met  = myTree.met_pt;
@@ -388,11 +409,12 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg ) {
       continue;
     }
 
-    if( myTree.met_pt/myTree.met_caloPt > 5.0 ) continue;
+    if( myTree.met_miniaodPt/myTree.met_caloPt > 5.0 ) continue;
 
     if (myTree.isData) {
 
-      if ( !(myTree.HLT_PFMET100_PFMHT100 || myTree.HLT_PFHT800 || myTree.HLT_PFHT300_PFMET100) ) continue;
+      if ( !(myTree.HLT_PFMET120_PFMHT120 || myTree.HLT_PFHT900 || myTree.HLT_PFHT300_PFMET110 || myTree.HLT_PFJet450) ) continue;
+      //      if ( !(myTree.HLT_PFMET100_PFMHT100 || myTree.HLT_PFHT800 || myTree.HLT_PFHT300_PFMET100) ) continue;
 
     } // if is data
 

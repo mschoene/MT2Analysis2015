@@ -237,7 +237,7 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
 
     myTree.GetEntry(iEntry);
 
-    //    if( myTree.isData && !myTree.isGolden ) continue;
+    if( myTree.isData && !myTree.isGolden ) continue;
     if( myTree.isData ) {
 
       if( !myTree.passFilters() ) continue;
@@ -270,11 +270,13 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
 
     if (myTree.isData) {
 
-      if ( !(myTree.HLT_PFMET100_PFMHT100 || myTree.HLT_PFHT800 || myTree.HLT_PFHT300_PFMET100) ) continue;
+      if ( !(myTree.HLT_PFMET120_PFMHT120 || myTree.HLT_PFHT900 || myTree.HLT_PFHT300_PFMET110 || myTree.HLT_PFJet450) ) continue;
+      //      if ( !(myTree.HLT_PFMET100_PFMHT100 || myTree.HLT_PFHT800 || myTree.HLT_PFHT300_PFMET100) ) continue; //ICHEP 2016
       //OLD if( !(myTree.HLT_PFMETNoMu90_PFMHTNoMu90 || myTree.HLT_PFHT350_PFMET100 || myTree.HLT_PFHT800) ) continue;
 
     } // if is data
 
+    if( myTree.met_miniaodPt/myTree.met_caloPt > 5.0 ) continue;
 
     //crazy events! To be piped into a separate txt file
     if(myTree.jet_pt[0] > 13000){
@@ -291,9 +293,9 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
 
     if( regionsSet=="zurich" || regionsSet=="zurichPlus" || regionsSet=="zurich2016" ){ // To avoid signal contamination in 7j 2b and 7j 3b
       
-      if( njets>=7 && nbjets>2 ) continue;
+      if( ht>450. && njets>=7 && nbjets>2 ) continue;
       
-      else if( njets<7 || nbjets<1) {
+      else if( ht<450 || njets<7 || nbjets<1 ) {
 	
 	thisEstimate = anaTree->get( ht, njets, nbjets, minMTBmet, mt2 );
 	if( thisEstimate==0 ) continue;
@@ -485,9 +487,9 @@ MT2Analysis<T>* computeSigYield( const MT2Sample& sample, const MT2Config& cfg )
 
     if( regionsSet=="zurich" || regionsSet=="zurichPlus" || regionsSet=="zurich2016" ){ // To avoid signal contamination in 7j 2b and 7j 3b                                                                                
 
-      if( njets>=7 && nbjets>2 ) continue;
+      if( ht>450 && njets>=7 && nbjets>2 ) continue;
 
-      else if( njets<7 || nbjets<1) {
+      else if( ht<450 || njets<7 || nbjets<1) {
 	
 	if(passRecoMET){
 
