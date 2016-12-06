@@ -567,7 +567,6 @@ MT2Analysis<MT2EstimateSyst>* computePurityOF( MT2Analysis<MT2Estimate>* SF, MT2
 
   for( std::set<MT2Region>::iterator iR=regions.begin(); iR!=regions.end(); ++iR ) {
 
-    // MT2EstimateSyst* Est = SF->get(*iR);
     MT2Estimate* SFEst = SF->get(*iR);
     MT2Estimate* OFEst = OF->get(*iR);
    
@@ -695,7 +694,7 @@ void extrapolToTopoRegion( MT2Analysis<MT2Estimate>* shape_TR, MT2Analysis<MT2Es
       TH1D* this_shape     = shape   ->get( *iR_shape)->yield;
       int nBins_shape = this_shape->GetNbinsX();
 
-      for(int iBin=1; iBin<= nBins; iBin++){
+      for(int iBin=1; iBin<= nBins+1; iBin++){
 
 	if(iBin == nBins && nBins_shape > nBins){
 	  if( regionToMatch->nJetsMin()==2 && (regionToMatch->nJetsMax()==6 || regionToMatch->nJetsMax()==-1) && this_shape_TR->GetBinContent( iBin )!=0 ){
@@ -835,7 +834,7 @@ void buildHybrid( MT2Analysis<MT2Estimate>* shape_hybrid, MT2Analysis<MT2Estimat
 
     std::cout << "extrapol bin / total bins= " << bin_extrapol << " / " << nBins << " : " << integral << " : " << errData << " : " << integralMC << " : " << integralZinv << " : " << errZinv <<std::endl;
 
-    for(int iBin=1; iBin<= nBins; iBin++){
+    for(int iBin=1; iBin<= nBins+1; iBin++){
       double MCsr_cont;
       double MCcr_cont;
       double MCsr_contErr;

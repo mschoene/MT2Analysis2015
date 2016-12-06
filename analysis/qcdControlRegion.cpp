@@ -244,24 +244,33 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
 
     if( monojet ) {
       // only store signal triggered events for monojet CR
-      if( !( (njets==2 && myTree.deltaPhiMin<0.3 && myTree.jet1_pt>200. && myTree.met_pt>200. && (myTree.evt_id&0b10)==0b10) ) ) continue;
+      //  if( !( (njets==2 && myTree.deltaPhiMin<0.3 && myTree.jet1_pt>250. && myTree.met_pt>250. && (myTree.evt_id&0b10)==0b10) ) ) continue;
+
+      if( !( (njets==2 && myTree.deltaPhiMin<0.3 && myTree.jet1_pt>250. && myTree.met_pt>250. ) )) continue;
+      if( myTree.isData && !( myTree.HLT_PFMET120_PFMHT120 || myTree.HLT_PFHT900 || myTree.HLT_PFHT300_PFMET110 || myTree.HLT_PFJet450  ) ) continue;
+
       if( !myTree.passMonoJetId(0) ) continue;
 
       //Fix for monojetCR for shape comparsion Data/MC
       if( !myTree.Flag_EcalDeadCellTriggerPrimitiveFilter ) continue;
-
-      if( !myTree.isData && (myTree.met_pt/ myTree.met_caloPt > 5.0) ) continue;
 
 
     } else {
       if( mt2<50. || njets<2 ) continue; // remove unnecesary for lighter trees
     }
 
-    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*myTree.weight_btagsf;
+    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb;
 
-    // isr weight. Renormalization factor valid for american top mc. To recheck once ETH have its own top mc
-    if (myTree.evt_id>=301 && myTree.evt_id<=303)
-      weight *= myTree.weight_isr/getAverageISRWeight(myTree.evt_id,0);
+    if( !myTree.isData ){
+      // isr weight. Renormalization factor valid for american top mc. To recheck once ETH have its own top mc
+      if (myTree.evt_id == 301 || myTree.evt_id == 302 || myTree.evt_id == 303 )
+	weight *= myTree.weight_isr/getAverageISRWeight(myTree.evt_id,0);
+
+      weight *= myTree.weight_btagsf;
+      weight *= myTree.weight_lepsf;
+    }
+
+
 
     //float myht = njets==1 ? 201. : ht; // let everything (mt2=ht>40) pass for monojet
     MT2EstimateTree* thisTree = anaTree->get( ht, njets, nbjets, minMTBmet, mt2 );
