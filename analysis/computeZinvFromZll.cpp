@@ -839,13 +839,17 @@ void buildHybrid( MT2Analysis<MT2Estimate>* shape_hybrid, MT2Analysis<MT2Estimat
       double MCcr_cont;
       double MCsr_contErr;
       double MCcr_contErr;
-      
+      double MCsr_forkMT2;
+
       if(iBin < bin_extrapol){
 
 	MCsr_cont = this_shape_MCsr->GetBinContent(iBin);
 	MCcr_cont = this_shape_MCcr->GetBinContent(iBin);
 	MCsr_contErr = this_shape_MCsr->GetBinError(iBin);
 	MCcr_contErr = this_shape_MCcr->GetBinError(iBin);
+
+	MCsr_forkMT2 = MCsr_cont;
+       
 
       }
       else{
@@ -854,6 +858,8 @@ void buildHybrid( MT2Analysis<MT2Estimate>* shape_hybrid, MT2Analysis<MT2Estimat
 	MCcr_cont = integralMC;
 	MCsr_contErr = errZinv;
 	MCcr_contErr = errMC;
+
+	MCsr_forkMT2 = this_shape_MCsr->GetBinContent(iBin);
 
       }
 
@@ -883,7 +889,7 @@ void buildHybrid( MT2Analysis<MT2Estimate>* shape_hybrid, MT2Analysis<MT2Estimat
       float relativeErrorData;
       float relativeErrorMC;
 
-      double kMT2_zinv = MCsr_cont/integralZinv;
+      double kMT2_zinv = MCsr_forkMT2/integralZinv;
       
 //      if(ratioMC_cont > 3){
 //	std::cout << ratioMC_cont << std::endl;
