@@ -406,7 +406,8 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
       bgStack_region.Draw("histo, same");
       g_first->Draw("pe,same");
       
-      TPaveText* labelTop = MT2DrawTools::getLabelTop(lumi);
+      TPaveText* labelTop = MT2DrawTools::getLabelTop("18.1 fb^{-1} (13TeV)" );
+      //      TPaveText* labelTop = MT2DrawTools::getLabelTop(lumi);
       labelTop->Draw("same");
       TPaveText* labelCMS = MT2DrawTools::getLabelCMS();
       labelCMS->Draw("same");
