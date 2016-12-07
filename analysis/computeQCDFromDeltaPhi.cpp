@@ -1006,9 +1006,9 @@ void computePurity( TH1D* purity, TH1D* nonQCD, TH1D* all ,float lumi ) {
     // as agreed with FG
     if ( qcdPurity<0.001 ) {
       qcdPurity    = iBin>1 ? purity->GetBinContent( iBin-1 ) // take value from left neighbour
-	                    : purity = 1.0;  // first bin should not be empty (or extremely rarely) in MC based purity
+	                    : 1.0;  // first bin should not be empty (or extremely rarely) in MC based purity
       qcdPurityErr = iBin>1 ? purity->GetBinError( iBin-1 ) 
-	                    : purity = 1.0;  
+	                    : 1.0;  
     }
 
     purity->SetBinContent( iBin, qcdPurity    );
