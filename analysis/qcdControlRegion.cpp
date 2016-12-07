@@ -199,7 +199,7 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
       //if ( !(myTree.Flag_badMuonFilter>0 && myTree.Flag_badChargedHadronFilter>0 && myTree.Flag_EcalDeadCellTriggerPrimitiveFilter>0) ) continue;
       if ( !(myTree.Flag_badChargedHadronFilter>0 && myTree.Flag_EcalDeadCellTriggerPrimitiveFilter>0) ) continue; // americans don't have muon filter
     }
-    if (myTree.met_miniaodPt/myTree.met_caloPt > 5.0) continue; // RA2 filter for QCD MC
+    //    if (myTree.met_miniaodPt/myTree.met_caloPt > 5.0) continue; // RA2 filter for QCD MC
     
 
     if( !myTree.passSelection("qcd") ) continue;
@@ -266,7 +266,7 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
       if (myTree.evt_id == 301 || myTree.evt_id == 302 || myTree.evt_id == 303 )
 	weight *= myTree.weight_isr/getAverageISRWeight(myTree.evt_id,0);
 
-      weight *= myTree.weight_btagsf;
+      //      weight *= myTree.weight_btagsf;
       weight *= myTree.weight_lepsf;
     }
 
