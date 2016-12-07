@@ -79,14 +79,16 @@ int main( int argc, char* argv[] ) {
   MT2Analysis<MT2EstimateTree>* qcdTree_mc   = MT2Analysis<MT2EstimateTree>::readFromFile( qcdCRdir + "/mc.root",   "qcdCRtree" );
   MT2Analysis<MT2EstimateTree>* qcdTree_data = MT2Analysis<MT2EstimateTree>::readFromFile( qcdCRdir + "/data.root", "qcdCRtree" );
 
+  std::string runRange = "";
+  if (onlyUseUpToRunG)
+    runRange = Form("&&(run<=%d||ht>1000)",lastRunG);
+
   MT2Analysis<MT2EstimateTree>* mcTruth;
-
-
   MT2Analysis<MT2EstimateTree>* data  ;
   MT2Analysis<MT2EstimateTree>* nonQCD;
   if( closureTest ) { // in validation region we also use id==152
     mcTruth = MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( "mcTruth", cfg.regionsSet(), qcdTree_mc  , 1, 100, 200 , "(id>150&&(id>151||ht<450)&&(id>152||ht<575)&&(id>153||ht<1000)&&(id>154||ht<1500)) && id<200 && mt2>100 && mt2<200. && deltaPhiMin>0.3"); // signal region for mcTruth
-    data    = MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( "data"   , cfg.regionsSet(), qcdTree_data, 1, 100, 200 , "id==1   && mt2>100. && mt2<200. && deltaPhiMin>0.3"         ); // signal region for data
+    data    = MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( "data"   , cfg.regionsSet(), qcdTree_data, 1, 100, 200 , "((id&1)==1"+runRange+") && mt2>100. && mt2<200. && deltaPhiMin>0.3"         ); // signal region for data
     nonQCD  = MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( "nonQCD" , cfg.regionsSet(), qcdTree_mc  , 1, 100, 200 , "id>=300 && mt2>100. && mt2<200. && deltaPhiMin>0.3"         ); // signal region for nonQCD mcTruth
   }
   else
@@ -310,17 +312,17 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
 
       TH1D* h_nonQCD;
       if ( doClosureTestData ){ 
-	float ps = 1.;
+	float ps = 1./(onlyUseUpToRunG ? lumiRatioGtoH : 1.);
 	if     ( iMT2->htMin() < 300. ) ps = prescales[0];
 	else if( iMT2->htMin() < 500. ) ps = prescales[1];
 	else if( iMT2->htMin() < 600. ) ps = prescales[2];
 
 	// apply scale factors
 	float sf = 1.;  // 2015 numbers from lost lepton from Dominick. Confirmed in zll from Myriam
-	if     ( iMT2->htMin() < 500.  ) sf = 0.97; // prescale
-	else if( iMT2->htMin() < 1000. ) sf = 0.85;
-	else if( iMT2->htMin() < 1500. ) sf = 0.82;
-	else                             sf = 0.57;
+	// if     ( iMT2->htMin() < 500.  ) sf = 0.97; // prescale
+	// else if( iMT2->htMin() < 1000. ) sf = 0.85;
+	// else if( iMT2->htMin() < 1500. ) sf = 0.82;
+	// else                             sf = 0.57;
 
 	h_nonQCD = nonQCD->get(*iMT2)->yield;
 	h_nonQCD->Scale(lumi/ps*sf);
@@ -621,7 +623,7 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
   
   TLine* lHT[4];
   for( int iHT=1; iHT < 5; iHT++ ){
-    lHT[iHT-1] = new TLine(11*iHT, -3, 11*iHT, yMax );
+    lHT[iHT-1] = new TLine(7*iHT+4*(iHT-1), -3, 7*iHT+4*(iHT-1), yMax );
     lHT[iHT-1]->SetLineColor(kBlack);
     lHT[iHT-1]->SetLineStyle(3);
     lHT[iHT-1]->SetLineWidth(2);

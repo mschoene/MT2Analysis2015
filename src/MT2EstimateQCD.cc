@@ -155,7 +155,7 @@ TH1D* MT2EstimateQCD::getRatio() const {
 }
 
 
-TF1* MT2EstimateQCD::getFit( const std::string& functionName, float xMin_fit, float xMax_fit ) {
+TF1* MT2EstimateQCD::getFit( const std::string& functionName, float xMin_fit, float xMax_fit, float par0, float par1 ) {
 
   TH1D* ratio = getRatio();
 
@@ -171,6 +171,11 @@ TF1* MT2EstimateQCD::getFit( const std::string& functionName, float xMin_fit, fl
     std::cout << "[MT2EstimateQCD::getFit] ERROR!! Unkown function name: '" << functionName << "'" << std::endl;
     std::cout << "Exiting." << std::endl;
     exit(191111);
+  }
+
+  if ( par0!=0 && par1!=0 ) {
+    f1->SetParameter(0, par0);
+    f1->SetParameter(1, par1);
   }
 
   f1->SetRange( xMin_fit, xMax_fit );

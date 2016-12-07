@@ -254,6 +254,8 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
       //Fix for monojetCR for shape comparsion Data/MC
       if( !myTree.Flag_EcalDeadCellTriggerPrimitiveFilter ) continue;
 
+      //if( !myTree.isData && (myTree.met_pt/ myTree.met_caloPt > 5.0) ) continue;
+
 
     } else {
       if( mt2<50. || njets<2 ) continue; // remove unnecesary for lighter trees
