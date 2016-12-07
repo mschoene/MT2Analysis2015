@@ -25,7 +25,7 @@ class MT2EstimateQCD : public MT2EstimateTree {
   static MT2Analysis<MT2EstimateQCD>* makeAnalysisFromInclusiveTree( const std::string& aname, const std::string& regionsSet, MT2Analysis<MT2EstimateTree>* analysis, const std::string& selectionTree="", const std::string& selectionDphi=""  );
 
   TH1D* getRatio() const;
-  TF1* getFit( const std::string& functionName, float xMin_fit, float xMax_fit );
+  TF1* getFit( const std::string& functionName, float xMin_fit, float xMax_fit, float par0=0., float par1=0. );
 
   void fillDphi( float dphi, float mt2=0., float weight=1. );
 
