@@ -45,7 +45,7 @@ int main( int argc, char* argv[] ) {
 
 
   if( argc<2 ) {
-    std::cout << "USAGE: ./qcdControlRegion [configFileName] [data/MC/all] [monojet=false]" << std::endl;
+    std::cout << "USAGE: ./qcdControlRegion [configFileName] [data/MC/all/top/zinv/wjets/qcd] [monojet=false]" << std::endl;
     std::cout << "Exiting." << std::endl;
     exit(11);
   }
@@ -57,16 +57,20 @@ int main( int argc, char* argv[] ) {
 
   bool onlyData = false;
   bool onlyMC   = false;
+  std::string  process;
   if( argc > 2 ) {
     std::string dataMC(argv[2]);
     if( dataMC=="data" ) onlyData = true;
-    else if( dataMC=="MC" || dataMC=="mc" ) onlyMC = true;
+    else if( dataMC=="MC" || dataMC=="mc" || dataMC=="top" || dataMC=="qcd" || dataMC=="zinv" || dataMC=="wjets" ) {
+      onlyMC = true;
+      process = dataMC;
+    }
   }
 
   if( onlyData ) {
     std::cout << "-> Will run only on data." << std::endl;
   } else if( onlyMC ) {
-    std::cout << "-> Will run only on MC." << std::endl;
+    std::cout << "-> Will run only on " << process << std::endl;
   } else {
     std::cout << "-> Will run on both data and MC." << std::endl;
   }
@@ -106,18 +110,28 @@ int main( int argc, char* argv[] ) {
     MT2EstimateTree::addVar( qcdCRtree, "jet2_pt" );
     
     
-    for( unsigned i=0; i<samples_zinv.size(); ++i ) 
-      computeYield( samples_zinv[i], cfg, qcdCRtree );
-    for( unsigned i=0; i<samples_wjet.size(); ++i ) 
-      computeYield( samples_wjet[i], cfg, qcdCRtree );
-    for( unsigned i=0; i<samples_top.size(); ++i ) 
-      computeYield( samples_top[i], cfg, qcdCRtree );
-    for( unsigned i=0; i<samples_qcd.size(); ++i ) 
-      computeYield( samples_qcd[i], cfg, qcdCRtree );
+    if ( process=="mc" || process=="MC" || process=="zinv"){
+      for( unsigned i=0; i<samples_zinv.size(); ++i ) 
+	computeYield( samples_zinv[i], cfg, qcdCRtree );
+    }
+    if ( process=="mc" || process=="MC" || process=="wjets"){
+      for( unsigned i=0; i<samples_wjet.size(); ++i ) 
+	computeYield( samples_wjet[i], cfg, qcdCRtree );
+    }
+    if ( process=="mc" || process=="MC" || process=="top"){
+      for( unsigned i=0; i<samples_top.size(); ++i ) 
+	computeYield( samples_top[i], cfg, qcdCRtree );
+    }
+    if ( process=="mc" || process=="MC" || process=="qcd"){
+      for( unsigned i=0; i<samples_qcd.size(); ++i ) 
+	computeYield( samples_qcd[i], cfg, qcdCRtree );
+    }
     
 
    
     std::string mcFile = outputdir + "/mc";
+    if ( process!="mc" && process!="MC" ) 
+      mcFile += "_" + process;
     if( monojet ) mcFile = mcFile + "_forMonojet";
     mcFile = mcFile + ".root";
     qcdCRtree->writeToFile( mcFile, "RECREATE" );
