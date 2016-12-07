@@ -40,7 +40,7 @@ TH2D*  h_elTrk = 0;
 void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,   
 		      MT2Analysis<MT2EstimateTree>* anaTree,  
 		      MT2Analysis<MT2EstimateTree>* anaTree_of,
-		      TH2D* h_elSF, TH2D* h_muSF, bool doZinvEst );
+		      TH2D* h_elSF, TH2D* h_muSF, bool do_ZinvEst );
 void addVariables(MT2Analysis<MT2EstimateTree>* anaTree);
 void roundLikeData( MT2Analysis<MT2EstimateTree>* data );
 
@@ -428,10 +428,10 @@ void addVariables(MT2Analysis<MT2EstimateTree>* anaTree){
 void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg, 
 		      MT2Analysis<MT2EstimateTree>* anaTree,
 		      MT2Analysis<MT2EstimateTree>* anaTree_of,
-		      TH2D* h_elSF, TH2D* h_muSF, bool doZinvEst) {
+		      TH2D* h_elSF, TH2D* h_muSF, bool do_ZinvEst) {
 
   std::string regionsSet = cfg.crRegionsSet();
-  if( doZinvEst ) regionsSet = cfg.regionsSet(); 
+  if( do_ZinvEst ) regionsSet = cfg.regionsSet(); 
 
   std::cout << std::endl << std::endl;
   std::cout << "-> Starting computation for sample: " << sample.name << std::endl;
@@ -635,7 +635,7 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
     if(isSF){ //////////SAME FLAVOR//////////////////////////////////////////
       if(  myTree.isData && !( myTree.HLT_DoubleMu || myTree.HLT_DoubleMu_NonIso || myTree.HLT_SingleMu_NonIso || myTree.HLT_DoubleEl || myTree.HLT_DoubleEl33 || myTree.HLT_Photon165_HE10 ) )continue;
 
-      if(doZinvEst){
+      if(do_ZinvEst){
 	//SF part
 	if( fabs(myTree.zll_mass-91.19)>=20 ) continue;
 	if( myTree.zll_pt <= 200. ) continue;
@@ -751,7 +751,7 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
       if(  myTree.isData && !( (myTree.HLT_MuX_Ele12 || myTree.HLT_Mu8_EleX || myTree.HLT_Mu33_Ele33_NonIso || myTree.HLT_Mu30_Ele30_NonIso || myTree.HLT_Photon165_HE10 || myTree.HLT_SingleMu_NonIso  ) ) ) continue;
       //if(  myTree.isData && !( (myTree.HLT_MuX_Ele12 || myTree.HLT_Mu8_EleX || myTree.HLT_Mu30_Ele30_NonIso )) ) continue;
 
-      if(doZinvEst){
+      if(do_ZinvEst){
 	//SF part
 	if( fabs(myTree.zll_mass-91.19)>=20. ) continue;
 	if( myTree.zll_pt <= 200. ) continue;
