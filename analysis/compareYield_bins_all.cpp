@@ -562,7 +562,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   
 
   TPad *pad1 = new TPad("pad1","pad1",0,0.3-0.1,1,1);
-  pad1->SetBottomMargin(0.15);
+  pad1->SetBottomMargin(0.18);
   pad1->Draw();
   pad1->cd();
 
@@ -748,7 +748,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   c2_0->cd();
   
   TPad *pad1_0 = new TPad("pad1_0","pad1_0",0,0.3-0.1,1,1);
-  pad1_0->SetBottomMargin(0.15);
+  pad1_0->SetBottomMargin(0.18);
   pad1_0->Draw();
   pad1_0->cd();
 
@@ -839,7 +839,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   c2_1->cd();
   
   TPad *pad1_1 = new TPad("pad1_1","pad1_1",0,0.3-0.1,1,1);
-  pad1_1->SetBottomMargin(0.15);
+  pad1_1->SetBottomMargin(0.18);
   pad1_1->Draw();
   pad1_1->cd();
 
@@ -920,7 +920,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   c2_2->cd();
   
   TPad *pad1_2 = new TPad("pad1_2","pad1_2",0,0.3-0.1,1,1);
-  pad1_2->SetBottomMargin(0.15);
+  pad1_2->SetBottomMargin(0.18);
   pad1_2->Draw();
   pad1_2->cd();
 
@@ -1001,7 +1001,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   c2_3->cd();
   
   TPad *pad1_3 = new TPad("pad1_3","pad1_3",0,0.3-0.1,1,1);
-  pad1_3->SetBottomMargin(0.15);
+  pad1_3->SetBottomMargin(0.18);
   pad1_3->Draw();
   pad1_3->cd();
 
@@ -1083,7 +1083,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   c2_4->cd();
   
   TPad *pad1_4 = new TPad("pad1_4","pad1_4",0,0.3-0.1,1,1);
-  pad1_4->SetBottomMargin(0.15);
+  pad1_4->SetBottomMargin(0.18);
   pad1_4->Draw();
   pad1_4->cd();
 
@@ -1166,7 +1166,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   c2_5->cd();
   
   TPad *pad1_5 = new TPad("pad1_5","pad1_5",0,0.3-0.1,1,1);
-  pad1_5->SetBottomMargin(0.15);
+  pad1_5->SetBottomMargin(0.18);
   pad1_5->Draw();
   pad1_5->cd();
 

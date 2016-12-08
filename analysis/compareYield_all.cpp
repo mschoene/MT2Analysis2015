@@ -650,7 +650,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   h_Ratio->GetYaxis()->SetTitle("Ratio");
 
   TPad *pad1 = new TPad("pad1","pad1",0,0.3-0.1,1,1);
-  pad1->SetBottomMargin(0.15);
+  pad1->SetBottomMargin(0.18);
   pad1->Draw();
   pad1->cd();
 
@@ -758,17 +758,18 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
 //  htRegions.push_back("#it{H}_{T} [575,1000] GeV");
 //  htRegions.push_back("#it{H}_{T} [1000,1500] GeV");
 //  htRegions.push_back("#it{H}_{T} >1500 GeV");
-  htRegions.push_back("H_{T} [250,450] GeV");
-  htRegions.push_back("H_{T} [450,575] GeV");
-  htRegions.push_back("H_{T} [575,1000] GeV");
-  htRegions.push_back("H_{T} [1000,1500] GeV");
+  htRegions.push_back("H_{T} [250,450]");
+  htRegions.push_back("H_{T} [450,575]");
+  htRegions.push_back("H_{T} [575,1000]");
+  htRegions.push_back("H_{T} [1000,1500]");
   htRegions.push_back("H_{T} > 1500 GeV");
   
   TPaveText* htBox[5];
   for( int iHT = 0; iHT < nHTRegions; ++iHT){
 
     if (iHT==0) htBox[iHT] = new TPaveText(0.12+0.15*iHT, 0.9-0.06+0.02, 0.34+0.15*iHT, 0.85+0.02, "brNDC");
-    else htBox[iHT] = new TPaveText(0.13+0.13*iHT, 0.9-0.06+0.02, 0.34+0.13*iHT, 0.85+0.02, "brNDC");
+    else if (iHT==1) htBox[iHT] = new TPaveText(0.30, 0.9-0.06+0.02, 0.39, 0.85+0.02, "brNDC");
+    else htBox[iHT] = new TPaveText(0.39+0.14*(iHT-2), 0.9-0.06+0.02, 0.39+0.14+0.14*(iHT-2), 0.85+0.02, "brNDC");
     htBox[iHT]->AddText( htRegions[iHT].c_str() );
 
     htBox[iHT]->SetBorderSize(0);
@@ -779,6 +780,29 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
     htBox[iHT]->Draw("same");
 
   }
+//  htRegions.push_back("H_{T} [250,450] GeV");
+//  htRegions.push_back("H_{T} [450,575] GeV");
+//  htRegions.push_back("H_{T} [575,1000] GeV");
+//  htRegions.push_back("H_{T} [1000,1500] GeV");
+//  htRegions.push_back("H_{T} > 1500 GeV");
+//  
+//  TPaveText* htBox[5];
+//  for( int iHT = 0; iHT < nHTRegions; ++iHT){
+//
+//    if (iHT==0) htBox[iHT] = new TPaveText(0.12+0.15*iHT, 0.9-0.06+0.02, 0.34+0.15*iHT, 0.85+0.02, "brNDC");
+//    else htBox[iHT] = new TPaveText(0.13+0.13*iHT, 0.9-0.06+0.02, 0.34+0.13*iHT, 0.85+0.02, "brNDC");
+//    htBox[iHT]->AddText( htRegions[iHT].c_str() );
+//
+//    htBox[iHT]->SetBorderSize(0);
+//    htBox[iHT]->SetFillColor(kWhite);
+//    htBox[iHT]->SetTextSize(0.035);
+//    htBox[iHT]->SetTextAlign(21); // align centered
+//    htBox[iHT]->SetTextFont(62);
+//    htBox[iHT]->Draw("same");
+//
+//  }
+
+
 
   TLine* lHT[5];
   for( int iHT=0; iHT < 5; iHT++ ){
