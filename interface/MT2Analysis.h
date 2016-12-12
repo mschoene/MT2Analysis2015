@@ -85,9 +85,9 @@ class MT2Analysis {
   static MT2Analysis* readSystFromFile( const std::string& fileName, const std::string& matchName="", const std::string& systName="" );
   static std::vector<MT2Analysis*> readAllFromFile( const std::string& fileName, const std::string& matchName="", bool verbose=true );
   static std::vector<MT2Analysis*> readAllSystFromFile( const std::string& fileName, const std::string& matchName="", const std::string& systName="", bool verbose=true );
-  void writeToFile( const std::string& fileName, const std::string& option="UPDATE", bool overwrite=true );
-  void addToFile( const std::string& fileName, bool overwrite=true ) {
-    return this->writeToFile(fileName,"UPDATE",overwrite);
+  void writeToFile( const std::string& fileName, const std::string& option="UPDATE", bool overwrite=true, bool addToDir=false );
+  void addToFile( const std::string& fileName, bool overwrite=true, bool addToDir=false ) {
+    return this->writeToFile(fileName,"UPDATE",overwrite, addToDir);
   }
 
   static void printFromFile( const std::string& fileName, const std::string& ofs, const std::string& matchName="" );
@@ -849,6 +849,13 @@ MT2Analysis<T>::MT2Analysis( const std::string& aname, const std::string& region
     regions_.insert(MT2Region(250., -1., 4,  6, 0,  -1));
     regions_.insert(MT2Region(250., -1., 7, -1, 0,  -1));
 
+  } else if( regionsSet=="zurich2016_onlyJets_noB_extra1" ){
+
+    regions_.insert(MT2Region(250., -1., 4, -1, 0,  -1)); // not exclusive from above, used for VLHT and <3b 
+
+  } else if( regionsSet=="zurich2016_onlyJets_noB_extra2" ){
+
+    regions_.insert(MT2Region(250., -1., 2, -1, 0,  -1)); // not exclusive from above, used for VLHT and 3b 
 
   } else if( regionsSet=="darkMatter_max1b" ){
 
@@ -2142,7 +2149,7 @@ MT2Analysis<T> MT2Analysis<T>::operator/( float k ) const {
 
 
 template<class T> 
-void MT2Analysis<T>::writeToFile( const std::string& fileName, const std::string& option, bool overwrite ) {
+void MT2Analysis<T>::writeToFile( const std::string& fileName, const std::string& option, bool overwrite, bool addToDir ) {
 
   TFile* file = TFile::Open(fileName.c_str(), option.c_str() );
   file->cd();
@@ -2151,13 +2158,20 @@ void MT2Analysis<T>::writeToFile( const std::string& fileName, const std::string
     file->cd();
     if( overwrite ) {
       file->rmdir(this->name_.c_str());
+      file->mkdir(this->name_.c_str());
     } else {
-      std::cout << "[MT2Analysis::writeToFile] Directory '" << this->name_ << "' already exists in file '" << fileName << "'. Will not overwrite." << std::endl;
-      return;
+      std::cout << "[MT2Analysis::writeToFile] Directory '" << this->name_ << "' already exists in file '" << fileName << "'. Will not overwrite";
+      if ( !addToDir )	{
+	std::cout << " and exit." << std::endl;
+	return; // if addToDir don't exit and try to add new dirs
+      }
+      else
+	std::cout << " existing data but write new info." << std::endl;
     }
   }
+  else
+    file->mkdir(this->name_.c_str());
 
-  file->mkdir(this->name_.c_str());
   file->cd(this->name_.c_str());
 
   std::set<MT2Region> regions = this->getRegions();
