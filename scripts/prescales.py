@@ -13,25 +13,78 @@ MT2DrawTools.setStyle()
 lumilabel = MT2DrawTools.getLabelTop(lumi)
 
 
-t = ROOT.TChain("mt2")
+OVERWRITE = False # use cached files if they exist, if true recreate cached files
+
+base_dir = "dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/casal/MT2production/80X/PostProcessed/prodNov08_allRuns_forQCD/"
+
+# can contain subdirs, and wildcards
+# if separated in chunks, they will be cached for posible quick access later
+### re-reco up to runG 27.7/fb ###
+files = [ "JetHT_Run2016B_23Sep2016_v3*.root", "JetHT_Run2016C_23Sep2016_v1*.root", "JetHT_Run2016D_23Sep2016_v1*.root", "JetHT_Run2016E_23Sep2016_v1*.root", "JetHT_Run2016F_23Sep2016_v1*.root", "JetHT_Run2016G_23Sep2016_v1*.root" ]
+
+### full 2016 re-reco dataset ###
+#files = [ "JetHT_Run2016*.root" ]
 
 
-# full 2016 re-reco dataset
-#t.Add("dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/casal/MT2production/80X/PostProcessed/prodNov08_allRuns_forQCD/JetHT_Run2016*.root")
-# re-reco up to runG 27.7/fb
-t.Add("dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/casal/MT2production/80X/PostProcessed/prodNov08_allRuns_forQCD/JetHT_Run2016*23Sep2016*.root")
+def getHistos(base, afile, ow): # will return [ht900, ht475, ht350, ht125]
 
+    dirName = base.rstrip("/").split("/")[-1]
+    if ( not os.path.isdir(dirName) ):
+        os.mkdir(dirName)
 
-ht900 = ROOT.TH1F("ht900","ht900",68,300,2000)
-ht475 = ROOT.TH1F("ht475","ht475",68,300,2000)
-ht350 = ROOT.TH1F("ht350","ht350",68,300,2000)
-ht125 = ROOT.TH1F("ht125","ht125",68,300,2000)
+    theFile = dirName + "/" + afile.replace("*","_a_")
+    if ( not theFile.endswith(".root") ):
+        theFile += ".root"
+    subname = theFile.rstrip(".root").split("/")[-1]
+    
+    if ( not ow and os.path.isfile(theFile) ): #get histos from cached file
+        print "reading from cached file", theFile
+        rfile = ROOT.TFile(theFile, "READ")
+        ROOT.gROOT.cd()
+        return [rfile.Get("ht900"+"_"+subname).Clone(), 
+                rfile.Get("ht475"+"_"+subname).Clone(), 
+                rfile.Get("ht350"+"_"+subname).Clone(), 
+                rfile.Get("ht125"+"_"+subname).Clone() ]
 
-t.Draw("ht>>ht900","isGolden && HLT_PFHT900"         , "q");  ht900.Sumw2()
-t.Draw("ht>>ht475","isGolden && HLT_PFHT475_Prescale", "q");  ht475.Sumw2() 
-t.Draw("ht>>ht350","isGolden && HLT_PFHT350_Prescale", "q");  ht350.Sumw2() 
-t.Draw("ht>>ht125","isGolden && HLT_PFHT125_Prescale", "q");  ht125.Sumw2() 
-#t.Draw("ht>>ht125","isGolden && (HLT_PFHT125_Prescale||HLT_PFHT200_Prescale)", "q");  ht125.Sumw2() 
+    else:
+
+        print "creating histos from", base+"/"+afile
+
+        t = ROOT.TChain("mt2")
+        t.Add(base+"/"+afile)
+   
+        ht900 = ROOT.TH1F("ht900"+"_"+subname,"ht900",68,300,2000)
+        ht475 = ROOT.TH1F("ht475"+"_"+subname,"ht475",68,300,2000)
+        ht350 = ROOT.TH1F("ht350"+"_"+subname,"ht350",68,300,2000)
+        ht125 = ROOT.TH1F("ht125"+"_"+subname,"ht125",68,300,2000)
+
+        t.Draw("ht>>ht900"+"_"+subname,"isGolden && HLT_PFHT900"         , "goff");  ht900.Sumw2()
+        t.Draw("ht>>ht475"+"_"+subname,"isGolden && HLT_PFHT475_Prescale", "goff");  ht475.Sumw2() 
+        t.Draw("ht>>ht350"+"_"+subname,"isGolden && HLT_PFHT350_Prescale", "goff");  ht350.Sumw2() 
+        t.Draw("ht>>ht125"+"_"+subname,"isGolden && HLT_PFHT125_Prescale", "goff");  ht125.Sumw2() 
+
+        # cache histos in file
+        rfile = ROOT.TFile(theFile, "RECREATE")
+        rfile.cd()
+        ht900.Write()
+        ht475.Write()
+        ht350.Write()
+        ht125.Write()
+        rfile.Close()
+
+        return [ht900, ht475, ht350, ht125]
+        
+
+for i,afile in enumerate(files):
+    [h1, h2, h3, h4] = getHistos(base_dir, afile, OVERWRITE)
+    print "got histos for file", afile
+    if i==0:
+        [ht900, ht475, ht350, ht125] = [h1, h2, h3, h4]
+    else:
+        ht900.Add(h1)
+        ht475.Add(h2)
+        ht350.Add(h3)
+        ht125.Add(h4)
 
 
 r900over475 = ht900.Clone("r900over475");  r900over475.Divide(ht475)
@@ -108,5 +161,5 @@ leg.Draw("same")
 
 lumilabel.Draw("same")
 
-#can.SaveAs("prescales.pdf")
-#can.SaveAs("prescales.png")
+can.SaveAs(base_dir.rstrip("/").split("/")[-1]+"/prescales.pdf")
+can.SaveAs(base_dir.rstrip("/").split("/")[-1]+"/prescales.png")
