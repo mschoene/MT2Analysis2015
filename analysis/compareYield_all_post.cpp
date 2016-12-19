@@ -84,7 +84,8 @@ int main( int argc, char* argv[] ) {
   std::string configFileName(argv[1]);
   MT2Config cfg(configFileName);
 
-  lumi = cfg.lumi();
+  lumi = 18.1;
+  //  lumi = cfg.lumi();
   
   TH1::AddDirectory(kTRUE);
   
@@ -149,31 +150,31 @@ int main( int argc, char* argv[] ) {
 //  analysesSignal[8]->setName("T2tt 200, 100");
 
 
-  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( sigPath + "/T1bbbb_eth.root", "T1bbbb") );
-  //  analysesSignal[0]->setName("T1bbbb 1500, 100");
-  analysesSignal[0]->setName("pp #rightarrow #tilde{g}#tilde{g}, #tilde{g} #rightarrow b#bar{b}#chi_{1}^{0}");
-  (*analysesSignal[0]) *= 2.26355/2.155;
+  // // // analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( sigPath + "/T1bbbb_eth.root", "T1bbbb") );
+  // // // //  analysesSignal[0]->setName("T1bbbb 1500, 100");
+  // // // analysesSignal[0]->setName("pp #rightarrow #tilde{g}#tilde{g}, #tilde{g} #rightarrow b#bar{b}#chi_{1}^{0}");
+  // // // (*analysesSignal[0]) *= 2.26355/2.155;
 
-  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( sigPath + "/T1bbbb_eth.root", "T1bbbb") );
-  //  analysesSignal[1]->setName("T1bbbb 700, 600");
-  analysesSignal[1]->setName("pp #rightarrow #tilde{g}#tilde{g}, #tilde{g} #rightarrow b#bar{b}#tilde{#chi}_{1}^{0}");
-  //  (*analysesSignal[1]) *= 2.26355/2.155;
+  // // // analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( sigPath + "/T1bbbb_eth.root", "T1bbbb") );
+  // // // //  analysesSignal[1]->setName("T1bbbb 700, 600");
+  // // // analysesSignal[1]->setName("pp #rightarrow #tilde{g}#tilde{g}, #tilde{g} #rightarrow b#bar{b}#tilde{#chi}_{1}^{0}");
+  // // // //  (*analysesSignal[1]) *= 2.26355/2.155;
 
-  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( sigPath + "/T1qqqq_eth.root", "T1qqqq") );
-  analysesSignal[2]->setName("T1qqqq 1300, 100");
-  (*analysesSignal[2]) *= 2.26355/2.155;
+  // // // analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( sigPath + "/T1qqqq_eth.root", "T1qqqq") );
+  // // // analysesSignal[2]->setName("T1qqqq 1300, 100");
+  // // // (*analysesSignal[2]) *= 2.26355/2.155;
 
-  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( sigPath + "/T1qqqq_eth.root", "T1qqqq") );
-  analysesSignal[3]->setName("pp #rightarrow #tilde{g}#tilde{g}, #tilde{g} #rightarrow q#bar{q}#tilde{#chi}_{1}^{0}");
-  (*analysesSignal[3]) *= 2.26355/2.155;
+  // // // analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( sigPath + "/T1qqqq_eth.root", "T1qqqq") );
+  // // // analysesSignal[3]->setName("pp #rightarrow #tilde{g}#tilde{g}, #tilde{g} #rightarrow q#bar{q}#tilde{#chi}_{1}^{0}");
+  // // // (*analysesSignal[3]) *= 2.26355/2.155;
 
-  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( sigPath + "/T2bb_eth.root", "T2bb") );
-  analysesSignal[4]->setName("T2bb 700, 0");
-  (*analysesSignal[4]) *= 2.26355/2.26;
+  // // // analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( sigPath + "/T2bb_eth.root", "T2bb") );
+  // // // analysesSignal[4]->setName("T2bb 700, 0");
+  // // // (*analysesSignal[4]) *= 2.26355/2.26;
 
-  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( sigPath + "/T2bb_eth.root", "T2bb") );
-  analysesSignal[5]->setName("pp #rightarrow #tilde{b}#bar{#tilde{b}}, #tilde{b} #rightarrow b#tilde{#chi}_{1}^{0}");
-  (*analysesSignal[5]) *= 2.26355/2.26;
+  // // // analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( sigPath + "/T2bb_eth.root", "T2bb") );
+  // // // analysesSignal[5]->setName("pp #rightarrow #tilde{b}#bar{#tilde{b}}, #tilde{b} #rightarrow b#tilde{#chi}_{1}^{0}");
+  // // // (*analysesSignal[5]) *= 2.26355/2.26;
 
 //  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( sigPath + "/T2qq_eth.root", "T2qq") );
 //  analysesSignal[6]->setName("T2qq 1000, 0");
@@ -188,18 +189,18 @@ int main( int argc, char* argv[] ) {
 //  (*analysesSignal[8]) *= 2.26355/2.26;
 
 
-  analysesSignalCont.push_back( MT2Analysis<MT2EstimateSigContSyst>::readSystFromFile( sigPath + "/T1tttt_sigcontam_eth.root", "T1tttt_sigcontam", "isr") );
+  // // // analysesSignalCont.push_back( MT2Analysis<MT2EstimateSigContSyst>::readSystFromFile( sigPath + "/T1tttt_sigcontam_eth.root", "T1tttt_sigcontam", "isr") );
 
-  analysesSignalCont.push_back( MT2Analysis<MT2EstimateSigContSyst>::readSystFromFile( sigPath + "/T1tttt_sigcontam_eth.root", "T1tttt_sigcontam", "isr") );
+  // // // analysesSignalCont.push_back( MT2Analysis<MT2EstimateSigContSyst>::readSystFromFile( sigPath + "/T1tttt_sigcontam_eth.root", "T1tttt_sigcontam", "isr") );
 
-  analysesSignalCont.push_back( MT2Analysis<MT2EstimateSigContSyst>::readSystFromFile( sigPath + "/T2tt_sigcontam_eth.root", "T2tt_sigcontam", "isr") );
-  analysesSignalCont[2]->setName("T2tt 650, 0");
+  // // // analysesSignalCont.push_back( MT2Analysis<MT2EstimateSigContSyst>::readSystFromFile( sigPath + "/T2tt_sigcontam_eth.root", "T2tt_sigcontam", "isr") );
+  // // // analysesSignalCont[2]->setName("T2tt 650, 0");
 
-  analysesSignalCont.push_back( MT2Analysis<MT2EstimateSigContSyst>::readSystFromFile( sigPath + "/T2tt_sigcontam_eth.root", "T2tt_sigcontam", "isr") );
-  analysesSignalCont[3]->setName("T2tt 600, 200");
+  // // // analysesSignalCont.push_back( MT2Analysis<MT2EstimateSigContSyst>::readSystFromFile( sigPath + "/T2tt_sigcontam_eth.root", "T2tt_sigcontam", "isr") );
+  // // // analysesSignalCont[3]->setName("T2tt 600, 200");
 
-  analysesSignalCont.push_back( MT2Analysis<MT2EstimateSigContSyst>::readSystFromFile( sigPath + "/T2tt_sigcontam_eth.root", "T2tt_sigcontam", "isr") );
-  analysesSignalCont[4]->setName("pp #rightarrow #tilde{t}#bar{#tilde{t}}, #tilde{t} #rightarrow t#tilde{#chi}_{1}^{0}");
+  // // // analysesSignalCont.push_back( MT2Analysis<MT2EstimateSigContSyst>::readSystFromFile( sigPath + "/T2tt_sigcontam_eth.root", "T2tt_sigcontam", "isr") );
+  // // // analysesSignalCont[4]->setName("pp #rightarrow #tilde{t}#bar{#tilde{t}}, #tilde{t} #rightarrow t#tilde{#chi}_{1}^{0}");
   
   std::set<MT2Region> regions = analysis->getRegions();
 
@@ -278,14 +279,17 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
   styleSig.push_back(1);
 
   int bgSize = 3;
-  int sigSize = 6;//9;
-  int sigContSize = 5;
+  int sigSize = 0;//9;
+  int sigContSize = 0;
+
+  // int sigSize = 6;//9;
+  // int sigContSize = 5;
 
   int S=1;
 
   std::set<MT2Region> MT2Regions = data->getRegions();
   
-  TH1D* hdata = new TH1D("hdata", "", 67, 0, 67);
+  TH1D* hdata = new TH1D("hdata", "", 63, 0, 63);
   hdata->Sumw2();
   hdata->GetYaxis()->SetTitle("Entries");
   hdata->SetMarkerStyle(20);
@@ -296,7 +300,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
   TH1D* hsig[sigSize+sigContSize];
   for(int s=0; s<sigSize+sigContSize; ++s){
     std::string thisNameS( Form("hsig_%d", s) );
-    hsig[s] = new TH1D(thisNameS.c_str(), "", 67, 0, 67);
+    hsig[s] = new TH1D(thisNameS.c_str(), "", 63, 0, 63);
     hsig[s]->Sumw2();
     hsig[s]->GetYaxis()->SetTitle("Entries");
     hsig[s]->SetLineColor( colorsSig[s] );
@@ -304,26 +308,26 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
     hsig[s]->SetLineStyle( styleSig[s] );
   }
   
-  TH1D* hestimate_all = new TH1D(Form("hestimate_all"), "", 67, 0, 67);
+  TH1D* hestimate_all = new TH1D(Form("hestimate_all"), "", 63, 0, 63);
   hestimate_all->Sumw2();
   hestimate_all->GetYaxis()->SetTitle("Entries");
 
   TH1D* hestimate[bgSize];
 
-  TH1D* hestimate_all_forRatio = new TH1D(Form("hestimate_all_forRatio"), "", 67, 0, 67);
+  TH1D* hestimate_all_forRatio = new TH1D(Form("hestimate_all_forRatio"), "", 63, 0, 63);
   hestimate_all_forRatio->Sumw2();
 
   TH1D* hestimate_forRatio[bgSize];
   
   for(int b=0; b<bgSize; ++b){
   
-    hestimate[b]= new TH1D(Form("hestimate_%d", b), "", 67, 0, 67);
+    hestimate[b]= new TH1D(Form("hestimate_%d", b), "", 63, 0, 63);
     hestimate[b]->Sumw2();
     hestimate[b]->GetYaxis()->SetTitle("Entries");
     hestimate[b]->SetFillColor(colors[b]);
     hestimate[b]->SetLineColor(1);
 
-    hestimate_forRatio[b]= new TH1D(Form("hestimate_forRatio%d", b), "", 67, 0, 67);
+    hestimate_forRatio[b]= new TH1D(Form("hestimate_forRatio%d", b), "", 63, 0, 63);
     hestimate_forRatio[b]->Sumw2();
     hestimate_forRatio[b]->GetYaxis()->SetTitle("Entries");
     hestimate_forRatio[b]->SetFillColor(colors[b]);
@@ -345,14 +349,15 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
 
   std::string fullPath = outputdir;
 
-  std::string labelsMono[12]={"[200,250]","[250,350]","[350,450]","[450,575]","[575,700]","[700,1000]",">1000", "[200,250]","[250,350]","[350,450]","[450,575]",">575"};
+  std::string labelsMono[12]={"[250,350]","[350,450]","[450,575]","[575,700]","[700,1000]","[1000,1200]", ">1200","[250,350]","[350,450]","[450,575]","[575,700]", ">700"};
 
-  TFile* fmono=TFile::Open("mlfit_monojet.root");
-  TFile* fvlht=TFile::Open("mlfit_veryLowHT.root");
-  TFile* flht =TFile::Open("mlfit_LowHT.root");
-  TFile* fmht =TFile::Open("mlfit_MediumHT.root");
-  TFile* fhht =TFile::Open("mlfit_HighHT.root");
-  TFile* feht =TFile::Open("mlfit_ExtremeHT.root");
+
+  TFile* fmono=TFile::Open( Form( "%s/mlfit_monojetHT.root", dir.c_str() ) );
+  TFile* fvlht=TFile::Open( Form( "%s/mlfit_veryLowHT.root", dir.c_str() ) );
+  TFile* flht =TFile::Open( Form( "%s/mlfit_lowHT.root", dir.c_str() ) );
+  TFile* fmht =TFile::Open( Form( "%s/mlfit_mediumHT.root", dir.c_str() ) );
+  TFile* fhht =TFile::Open( Form( "%s/mlfit_highHT.root", dir.c_str() ) );
+  TFile* feht =TFile::Open( Form( "%s/mlfit_extremeHT.root", dir.c_str() ) );
   
   int iBinRegion = 1;
   int iRegion = 1;
@@ -517,10 +522,10 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
 	  gDirectory->cd("..");
 	      
 	}
-	else if(iRegion >=13 && iRegion <= 23){
-
+	else if(iRegion >=13 && iRegion <= (12+7)){
+	 
 	  int ch=iBinRegion-12;//+iBin;
-	  
+
 	  fvlht->cd();
 	  gDirectory->cd("shapes_fit_b");
 	  
@@ -532,13 +537,13 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
 	  TH1F* thiszinv=(TH1F*)gDirectory->Get("zinv");
 	  TH1F* thisqcd=(TH1F*)gDirectory->Get("qcd");
 	  
-	  
 	  totalPost_llep = (gDirectory->GetListOfKeys()->Contains("llep")) ? thisllep->GetBinContent(1) : 0;
 	  totalPost_zinv = (gDirectory->GetListOfKeys()->Contains("zinv")) ? thiszinv->GetBinContent(1) : 0;
 	  totalPost_qcd  = (gDirectory->GetListOfKeys()->Contains("qcd")) ? thisqcd ->GetBinContent(1) : 0;
-	  
+
 	  totalPost = thisBG->GetBinContent(1);
 	  totalPost_Err = thisBG->GetBinError(1);
+
 //	  totalPost = totalPost_llep+totalPost_zinv+totalPost_qcd;
 //	  totalPost_Err = TMath::Sqrt(totalPost_Err_llep*totalPost_Err_llep + totalPost_Err_zinv*totalPost_Err_zinv + totalPost_Err_qcd*totalPost_Err_qcd);
 //	  totalPost_Err = (totalPost_Err > thisBG->GetBinError(1)) ? totalPost_Err : thisBG->GetBinError(1);
@@ -546,10 +551,11 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
 	  gDirectory->cd("..");
 
 	}
-	else if(iRegion >=24 && iRegion <= 34){
+	else if(iRegion >= (12+7+1) && iRegion <= (12+7+11) ){
 	  
-	  int ch=iBinRegion-36;//+iBin;
-	  
+	  int ch=iBinRegion-(12+21);//+iBin;
+	  std::cout << "lowHT " << iBinRegion << "\t" << ch << "\t" << iRegion << std::endl;	 
+
 	  flht->cd();
 	  gDirectory->cd("shapes_fit_b");
 	  
@@ -576,10 +582,10 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
 	  gDirectory->cd("..");
 	
 	}
-	else if(iRegion >=35 && iRegion <= 45){
+	else if(iRegion >=(12+7+11+1) && iRegion <= (12+7+11+11) ){
 
-	  int ch=iBinRegion-67;//+iBin;
-	  std::cout << iBinRegion << "\t" << ch << std::endl;
+	  int ch=iBinRegion-(12+21+40);//+iBin;
+	  std::cout << "mediumHT " << iBinRegion << "\t" << ch << "\t" << iRegion << std::endl;	 
 
 	  fmht->cd();
 	  gDirectory->cd("shapes_fit_b");
@@ -605,10 +611,11 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
 	  gDirectory->cd("..");
 	  
 	}
-	else if(iRegion >=46 && iRegion <= 56){
+	else if(iRegion >=(12+7+11+11+1 ) && iRegion <= (12+7+11+11+11)){
 
-	  int ch=iBinRegion-109;//+iBin;
-	  
+	  int ch=iBinRegion-(12+21+40+51);//+iBin;
+	  std::cout << iBinRegion << "\t" << ch <<  "\t" << iRegion << std::endl;	  
+
 	  fhht->cd();
 	  gDirectory->cd("shapes_fit_b");
 	  
@@ -633,9 +640,10 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
 	  gDirectory->cd("..");
 
 	}
-	else if(iRegion >=57){
+	else if(iRegion >= (12+7+11+11+11+1) ){
 
-	  int ch=iBinRegion-144;//+iBin;
+	  int ch=iBinRegion-(12+21+40+51+53);//+iBin;
+	  std::cout << iBinRegion << "\t" << ch <<  "\t" << iRegion << std::endl;	  
 
 	  feht->cd();
 	  gDirectory->cd("shapes_fit_b");
@@ -787,7 +795,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
       c1->cd();
 
       TPad *pad1 = new TPad("pad1","pad1",0,0.3-0.1,1,1);
-      pad1->SetBottomMargin(0.15);
+      pad1->SetBottomMargin(0.18);
       pad1->Draw();
       pad1->cd();
 
@@ -1043,7 +1051,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
   h_Ratio->GetYaxis()->SetTitle("Ratio");
 
   TPad *pad1 = new TPad("pad1","pad1",0,0.3-0.1,1,1);
-  pad1->SetBottomMargin(0.15);
+  pad1->SetBottomMargin(0.18);
   pad1->Draw();
   pad1->cd();
 
@@ -1067,11 +1075,11 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
 //    yMax*=10;
 //  }
   else{
-    yMin = 1e-3;
+    yMin = 1e-1;
     yMax*=20.;
   }
 
-  int thisBin=67;
+  int thisBin=63;
   
   hestimate_all->GetXaxis()->SetRangeUser(0, thisBin);
   hdata->GetXaxis()->SetRangeUser(0, thisBin);
@@ -1216,33 +1224,54 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
 //  htRegions.push_back("#it{H}_{T} [575,1000] GeV");
 //  htRegions.push_back("#it{H}_{T} [1000,1500] GeV");
 //  htRegions.push_back("#it{H}_{T} >1500 GeV");
-  htRegions.push_back("H_{T} [200,450] GeV");
-  htRegions.push_back("H_{T} [450,575] GeV");
-  htRegions.push_back("H_{T} [575,1000] GeV");
-  htRegions.push_back("H_{T} [1000,1500] GeV");
-  htRegions.push_back("H_{T} > 1500 GeV");
+  htRegions.push_back("H_{T} [250,450]");
+  htRegions.push_back("H_{T} [450,575]");
+  htRegions.push_back("H_{T} [575,1000]");
+  htRegions.push_back("H_{T} [1000,1500]");
+  htRegions.push_back("H_{T} > 1500");
 
 
-  TPaveText* htBox[6];
+  TPaveText* htBox[5];
   for( int iHT = 0; iHT < nHTRegions; ++iHT){
 
     if (iHT==0) htBox[iHT] = new TPaveText(0.12+0.15*iHT, 0.9-0.06+0.02, 0.34+0.15*iHT, 0.85+0.02, "brNDC");
-    else htBox[iHT] = new TPaveText(0.13+0.13*iHT, 0.9-0.06+0.02, 0.34+0.13*iHT, 0.85+0.02, "brNDC");
+    else if (iHT==1) htBox[iHT] = new TPaveText(0.30, 0.9-0.06+0.02, 0.39, 0.85+0.02, "brNDC");
+    else htBox[iHT] = new TPaveText(0.39+0.14*(iHT-2), 0.9-0.06+0.02, 0.39+0.14+0.14*(iHT-2), 0.85+0.02, "brNDC");
     htBox[iHT]->AddText( htRegions[iHT].c_str() );
 
     htBox[iHT]->SetBorderSize(0);
-    htBox[iHT]->SetFillColor(0);
+    htBox[iHT]->SetFillColor(kWhite);
     htBox[iHT]->SetTextSize(0.035);
     htBox[iHT]->SetTextAlign(21); // align centered
-    //    htBox[iHT]->SetTextFont(62);
+    htBox[iHT]->SetTextFont(62);
     htBox[iHT]->Draw("same");
+
+  // TPaveText* htBox[6];
+  // for( int iHT = 0; iHT < nHTRegions; ++iHT){
+
+  //   if (iHT==0) htBox[iHT] = new TPaveText(0.12+0.15*iHT, 0.9-0.06+0.02, 0.34+0.15*iHT, 0.85+0.02, "brNDC");
+  //   else htBox[iHT] = new TPaveText(0.13+0.13*iHT, 0.9-0.06+0.02, 0.34+0.13*iHT, 0.85+0.02, "brNDC");
+  //   htBox[iHT]->AddText( htRegions[iHT].c_str() );
+
+  //   htBox[iHT]->SetBorderSize(0);
+  //   htBox[iHT]->SetFillColor(0);
+  //   htBox[iHT]->SetTextSize(0.035);
+  //   htBox[iHT]->SetTextAlign(21); // align centered
+  //   //    htBox[iHT]->SetTextFont(62);
+  //   htBox[iHT]->Draw("same");
 
   }
   
 
   TLine* lHT[5];
   for( int iHT=0; iHT < 5; iHT++ ){
-    lHT[iHT-1] = new TLine(12+11*iHT, 0.0, 12+11*iHT, yMax );
+    if( iHT==0)
+      lHT[iHT-1] = new TLine(12+11*(iHT), 0.0, 12+11*(iHT), yMax );
+    else if (iHT!=1)
+      lHT[iHT-1] = new TLine(12-4+11*iHT, 0.0, 12-4+11*iHT, yMax );
+    else
+      lHT[iHT-1] = new TLine(12+7*iHT, 0.0, 12+7*iHT, yMax );
+ 
     lHT[iHT-1]->SetLineColor(kBlack);
     lHT[iHT-1]->SetLineStyle(3);
     lHT[iHT-1]->SetLineWidth(2);
@@ -1272,7 +1301,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
     g_Ratio->GetYaxis()->SetRangeUser(0.1, 10.0);
   }
   else{
-    h2_axes_ratio = new TH2D("axes_ratio", "", 10, 0, thisBin, 10, 0., 1.5 );
+    h2_axes_ratio = new TH2D("axes_ratio", "", 10, 0, thisBin, 10, 0.5, 1.5 );
   }
 
   h2_axes_ratio->SetStats(0);
@@ -1314,12 +1343,28 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
   //h_Ratio->Draw("pe,same");
   g_Ratio->Draw("pe,same");
 
+
   TLine* lHT_b[6];
   for( int iHT=1; iHT < 6; iHT++ ){
-    if(doLogRatio)
-      lHT_b[iHT-1] = new TLine(12+11*(iHT-1), 0.1, 12+11*(iHT-1), 10.0 );
-    else
-      lHT_b[iHT-1] = new TLine(12+11*(iHT-1), 0, 12+11*(iHT-1), 2.0 );
+    //    lHT_b[iHT-1] = new TLine(12+11*(iHT-1), 0, 12+11*(iHT-1), 3.0 );
+    if(doLogRatio){
+      //	lHT_b[iHT-1] = new TLine(12+11*(iHT-1), 0.5, 12+11*(iHT-1), 1.5 );
+      if (iHT!=2)
+	lHT_b[iHT-1] = new TLine(12-4+11*(iHT-1), 0.5, 12-4+11*(iHT-1), 1.5 );
+      else
+	lHT_b[iHT-1] = new TLine(12+7*(iHT-1), 0.5, 12+7*(iHT-1), 1.5 );
+      if( iHT==1)
+	lHT_b[iHT-1] = new TLine(12+11*(iHT-1), 0.5, 12+11*(iHT-1), 1.5 );
+    }
+    else{
+      //      lHT_b[iHT-1] = new TLine(12+11*(iHT-1), 0, 12+11*(iHT-1), 1.5 );
+      if (iHT!=2)
+	lHT_b[iHT-1] = new TLine(12-4+11*(iHT-1), 0.5, 12-4+11*(iHT-1), 1.5 );
+      else
+	lHT_b[iHT-1] = new TLine(12+7*(iHT-1), 0.5, 12+7*(iHT-1), 1.5 ); 
+      if( iHT==1)
+	lHT_b[iHT-1] = new TLine(12+11*(iHT-1), 0.5, 12+11*(iHT-1), 1.5 );  
+    }
 
     lHT_b[iHT-1]->SetLineColor(kBlack);
     lHT_b[iHT-1]->SetLineStyle(3);
@@ -1344,7 +1389,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
 
   gPad->SetLogy();
   
-  thisBin=67;
+  thisBin=63;
 
   bgStack.Add(hsig[S]);
 

@@ -80,7 +80,8 @@ int main( int argc, char* argv[] ) {
   std::string configFileName(argv[1]);
   MT2Config cfg(configFileName);
 
-  lumi = cfg.lumi();
+  lumi = 18.1;
+  //  lumi = cfg.lumi();
   
   TH1::AddDirectory(kTRUE);
   
@@ -147,7 +148,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   
   std::set<MT2Region> MT2Regions = data->getRegions();
   
-  TH1D* hdata = new TH1D("hdata", "", 174, 0, 174);
+  TH1D* hdata = new TH1D("hdata", "", 224, 0, 224);
   hdata->Sumw2();
   hdata->GetYaxis()->SetTitle("Entries");
   hdata->SetMarkerStyle(20);
@@ -162,13 +163,13 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   
   for(unsigned int b=0; b<bgSize; ++b){
   
-    hestimate[b]= new TH1D(Form("hestimate_%d", b), "", 174, 0, 174);
+    hestimate[b]= new TH1D(Form("hestimate_%d", b), "", 224, 0, 224);
     hestimate[b]->Sumw2();
     hestimate[b]->GetYaxis()->SetTitle("Entries");
     hestimate[b]->SetFillColor(colors[b]);
     hestimate[b]->SetLineColor(1);
 
-    hestimate_forRatio[b]= new TH1D(Form("hestimate_forRatio%d", b), "", 174, 0, 174);
+    hestimate_forRatio[b]= new TH1D(Form("hestimate_forRatio%d", b), "", 224, 0, 224);
     hestimate_forRatio[b]->Sumw2();
     hestimate_forRatio[b]->GetYaxis()->SetTitle("Entries");
     hestimate_forRatio[b]->SetFillColor(colors[b]);
@@ -185,7 +186,8 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   
   std::string fullPath = outputdir;
   
-  std::string labelsMono[12]={"[200,250]","[250,350]","[350,450]","[450,575]","[575,700]","[700,1000]",">1000", "[200,250]","[250,350]","[350,450]","[450,575]",">575"};
+  std::string labelsMono[12]={"[250,350]","[350,450]","[450,575]","[575,700]","[700,1000]","[1000,1200]", ">1200","[250,350]","[350,450]","[450,575]","[575,700]", ">700"};
+  //std::string labelsMono[12]={"[200,250]","[250,350]","[350,450]","[450,575]","[575,700]","[700,1000]",">1000", "[200,250]","[250,350]","[350,450]","[450,575]",">575"};
   
   TFile* bigHistoFile = TFile::Open( Form("%s/histograms_ALL.root", fullPath.c_str()), "recreate" );
 
@@ -356,7 +358,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
       c1->cd();
 
       TPad *pad1 = new TPad("pad1","pad1",0,0.3-0.1,1,1);
-      pad1->SetBottomMargin(0.15);
+      pad1->SetBottomMargin(0.18);
       pad1->Draw();
       pad1->cd();
 
@@ -577,7 +579,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   
 
   TPad *pad1 = new TPad("pad1","pad1",0,0.3-0.1,1,1);
-  pad1->SetBottomMargin(0.15);
+  pad1->SetBottomMargin(0.18);
   pad1->Draw();
   pad1->cd();
 
@@ -591,11 +593,11 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   float yMax2 = (yMax_3>yMax_4) ? yMax_3 : yMax_4;
   float yMax = (yMax1>yMax2) ? yMax1 : yMax2;
   
-  float yMin = 1e-3;
+  float yMin = 1e-1;
   //  yMin=0;
   yMax*=20.;
   
-  int thisBin=174;
+  int thisBin=224;
 
   hestimate_all->GetXaxis()->SetRangeUser(0, thisBin);
   hdata->GetXaxis()->SetRangeUser(0, thisBin);
@@ -663,7 +665,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   int nHTRegions = 6;
   std::vector< std::string > htRegions;
   htRegions.push_back("1 Jet");
-  htRegions.push_back("H_{T} [200, 450] GeV");
+  htRegions.push_back("H_{T} [250, 450] GeV");
   htRegions.push_back("H_{T} [450, 575] GeV");
   htRegions.push_back("H_{T} [575, 1000] GeV");
   htRegions.push_back("H_{T} [1000, 1500] GeV");
@@ -765,7 +767,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   c2_0->cd();
   
   TPad *pad1_0 = new TPad("pad1_0","pad1_0",0,0.3-0.1,1,1);
-  pad1_0->SetBottomMargin(0.15);
+  pad1_0->SetBottomMargin(0.18);
   pad1_0->Draw();
   pad1_0->cd();
 
@@ -857,14 +859,15 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   c2_1->cd();
   
   TPad *pad1_1 = new TPad("pad1_1","pad1_1",0,0.3-0.1,1,1);
-  pad1_1->SetBottomMargin(0.15);
+  pad1_1->SetBottomMargin(0.18);
   pad1_1->Draw();
   pad1_1->cd();
 
   pad1_1->SetLogy();
     
+  yMin = 1e-2;
   oldBin=thisBin;
-  thisBin=36;
+  thisBin=12+21;//  thisBin=36;
   hestimate_all->GetXaxis()->SetRangeUser(oldBin, thisBin);
   hdata->GetXaxis()->SetRangeUser(oldBin, thisBin);
   h_Ratio->GetXaxis()->SetRangeUser(oldBin, thisBin);
@@ -938,14 +941,14 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   c2_2->cd();
   
   TPad *pad1_2 = new TPad("pad1_2","pad1_2",0,0.3-0.1,1,1);
-  pad1_2->SetBottomMargin(0.15);
+  pad1_2->SetBottomMargin(0.18);
   pad1_2->Draw();
   pad1_2->cd();
 
   pad1_2->SetLogy();
     
   oldBin=thisBin;
-  thisBin=67;
+  thisBin=12+21+40;//  thisBin=67;
   hestimate_all->GetXaxis()->SetRangeUser(oldBin, thisBin);
   hdata->GetXaxis()->SetRangeUser(oldBin, thisBin);
   h_Ratio->GetXaxis()->SetRangeUser(oldBin, thisBin);
@@ -1021,14 +1024,15 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   c2_3->cd();
   
   TPad *pad1_3 = new TPad("pad1_3","pad1_3",0,0.3-0.1,1,1);
-  pad1_3->SetBottomMargin(0.15);
+  pad1_3->SetBottomMargin(0.18);
   pad1_3->Draw();
   pad1_3->cd();
 
   pad1_3->SetLogy();
-    
+  
+  yMin = 1e-2;  
   oldBin=thisBin;
-  thisBin=109;
+  thisBin=12+21+40+51;// thisBin=109;
   hestimate_all->GetXaxis()->SetRangeUser(oldBin, thisBin);
   hdata->GetXaxis()->SetRangeUser(oldBin, thisBin);
   h_Ratio->GetXaxis()->SetRangeUser(oldBin, thisBin);
@@ -1105,14 +1109,16 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   c2_4->cd();
   
   TPad *pad1_4 = new TPad("pad1_4","pad1_4",0,0.3-0.1,1,1);
-  pad1_4->SetBottomMargin(0.15);
+  pad1_4->SetBottomMargin(0.18);
   pad1_4->Draw();
   pad1_4->cd();
 
   pad1_4->SetLogy();
-    
+  
+  yMin = 1e-2;
+  
   oldBin=thisBin;
-  thisBin=144;
+  thisBin=12+21+40+51+53;//  thisBin=144;
   hestimate_all->GetXaxis()->SetRangeUser(oldBin, thisBin);
   hdata->GetXaxis()->SetRangeUser(oldBin, thisBin);
   h_Ratio->GetXaxis()->SetRangeUser(oldBin, thisBin);
@@ -1190,14 +1196,14 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   c2_5->cd();
   
   TPad *pad1_5 = new TPad("pad1_5","pad1_5",0,0.3-0.1,1,1);
-  pad1_5->SetBottomMargin(0.15);
+  pad1_5->SetBottomMargin(0.18);
   pad1_5->Draw();
   pad1_5->cd();
 
   pad1_5->SetLogy();
     
   oldBin=thisBin;
-  thisBin=174;
+  thisBin=224;//  thisBin=174;
   hestimate_all->GetXaxis()->SetRangeUser(oldBin, thisBin);
   hdata->GetXaxis()->SetRangeUser(oldBin, thisBin);
   gdata->GetXaxis()->SetRangeUser(oldBin, thisBin);

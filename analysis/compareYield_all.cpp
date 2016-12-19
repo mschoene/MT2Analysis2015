@@ -81,7 +81,8 @@ int main( int argc, char* argv[] ) {
   std::string configFileName(argv[1]);
   MT2Config cfg(configFileName);
 
-  lumi = cfg.lumi();
+  lumi = 18.1;
+  //  lumi = cfg.lumi();
   
   TH1::AddDirectory(kTRUE);
   
@@ -846,7 +847,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
     
   }
   else
-    h2_axes_ratio = new TH2D("axes_ratio", "", 10, 0, thisBin, 10, 0., 3 );
+    h2_axes_ratio = new TH2D("axes_ratio", "", 10, 0, thisBin, 10, 0.4, 1.6);
   // h2_axes_ratio = new TH2D("axes_ratio", "", 10, 0, thisBin, 10, 0., 3.5 );
   
   //  TH2D* h2_axes_ratio = new TH2D("axes_ratio", "", 10, 0, thisBin, 10, 0., 3.0 );
@@ -910,9 +911,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
       else
 	lHT_b[iHT-1] = new TLine(12+7*(iHT-1), 0, 12+7*(iHT-1), 2.0 ); 
     if( iHT==1)
-	lHT_b[iHT-1] = new TLine(12+11*(iHT-1), 0.1, 12+11*(iHT-1), 10.0 );
-
-  
+	lHT_b[iHT-1] = new TLine(12+11*(iHT-1), 0.1, 12+11*(iHT-1), 10.0 );  
     }
 
     lHT_b[iHT-1]->SetLineColor(kBlack);
