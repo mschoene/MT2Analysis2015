@@ -389,18 +389,11 @@ int main( int argc, char* argv[] ) {
 
     MT2Estimate* this_qcdPurity   = qcdPurity   ->get( *iR );
 
-    MT2Region* regionToMatch;
-    if( (iR->htMin()<300 && iR->nJetsMax()==-1) || (iR->nBJetsMin()==3 && iR->nJetsMin()==2) ) 
-      regionToMatch = new MT2Region( iR->htMin(), iR->htMax(), 4, 6, iR->nBJetsMin(), iR->nBJetsMax() );
-    else
-      regionToMatch = new MT2Region( *iR );
-
     MT2Estimate* this_r_hat ;
     MT2Estimate *this_f_jets;
-    
 
     if ( useMC ) {
-      this_r_hat  = r_hat_mc ->getWithMatch( *regionToMatch );
+      this_r_hat  = r_hat_mc ->getWithMatch( *iR );
       this_f_jets = f_jets_mc->getWithMatch( *iR );
     }
     // else if ( iR->htMin() < 300. ) { // if we are in VLHT take the values for fjet from the monojet trigger w/o bkg subtraction
@@ -409,7 +402,7 @@ int main( int argc, char* argv[] ) {
     //   this_f_jets = f_jets_data->getWithMatch( *regionToMatch );  // ht-only trigger also for vlht in 2016 data
     // }
     else { // otherwise take values from HT-only triggers w/ proper bkg subtractions
-      this_r_hat  = r_hat_data ->getWithMatch( *regionToMatch );
+      this_r_hat  = r_hat_data ->getWithMatch( *iR );
       this_f_jets = f_jets_data->getWithMatch( *iR );
     }
 
