@@ -848,6 +848,7 @@ MT2Analysis<T>::MT2Analysis( const std::string& aname, const std::string& region
     regions_.insert(MT2Region(250., -1., 2,  3, 0,  -1));
     regions_.insert(MT2Region(250., -1., 4,  6, 0,  -1));
     regions_.insert(MT2Region(250., -1., 7, -1, 0,  -1));
+    regions_.insert(MT2Region(250., -1., 2,  6, 0,  -1)); // not exclusive from above, used for !VLHT and 3b
     regions_.insert(MT2Region(250., -1., 4, -1, 0,  -1)); // not exclusive from above, used for VLHT and <3b 
     regions_.insert(MT2Region(250., -1., 2, -1, 0,  -1)); // not exclusive from above, used for VLHT and 3b 
 
