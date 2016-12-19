@@ -389,15 +389,8 @@ int main( int argc, char* argv[] ) {
 
     MT2Estimate* this_qcdPurity   = qcdPurity   ->get( *iR );
 
-    // MT2Region* regionToMatch;
-    // if( (iR->htMin()<300 && iR->nJetsMax()==-1) || (iR->nBJetsMin()==3 && iR->nJetsMin()==2) ) 
-    //   regionToMatch = new MT2Region( iR->htMin(), iR->htMax(), 4, 6, iR->nBJetsMin(), iR->nBJetsMax() );
-    // else
-    //   regionToMatch = new MT2Region( *iR );
-
     MT2Estimate* this_r_hat ;
     MT2Estimate *this_f_jets;
-    
 
     if ( useMC ) {
       this_r_hat  = r_hat_mc ->getWithMatch( *iR );
