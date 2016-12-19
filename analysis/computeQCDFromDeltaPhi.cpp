@@ -46,7 +46,7 @@ float prescales[3] = {7900., 440.6, 110.2}; // up to run G 27.7 fb-1
 void projectFromInclusive( MT2Analysis<MT2Estimate>* analysis, MT2Analysis<MT2EstimateTree>* ana_inclusive, const std::string& selection );
 void fillFromTreeAndRatio( MT2Estimate* estimate, MT2Estimate* nCR, MT2EstimateSyst* r_effective, TTree* tree, TF1* f1_ratio, TH1D* h_band, float prescale=1. );
 void fillFromTreeAndRatio( MT2Estimate* estimate, MT2Estimate* nCR, MT2EstimateSyst* r_effective, TTree* tree, TF1* f1_ratio, TH1D* h_band, TF1* f1_ratio_up, TH1D* h_band_up, TF1* f1_ratio_down, TH1D* h_band_down , float prescale=1. );
-void get_rHat( const MT2Config& cfg, MT2Analysis<MT2Estimate>* rHat, MT2Analysis<MT2Estimate>* rHat2, MT2Analysis<MT2Estimate>* rHat3, MT2Analysis<MT2EstimateTree>* analysis, MT2Analysis<MT2EstimateTree>* ana_rest=NULL );
+void get_rHat( const MT2Config& cfg, MT2Analysis<MT2Estimate>* rHat, MT2Analysis<MT2EstimateTree>* analysis, MT2Analysis<MT2EstimateTree>* ana_rest=NULL );
 void addSystAndNormalize4rHat(MT2Analysis<MT2Estimate>* rHat);
 void get_fJets( const MT2Config& cfg, MT2Analysis<MT2Estimate>* fJets, MT2Analysis<MT2EstimateTree>* analysis, MT2Analysis<MT2EstimateTree>* ana_rest=NULL );
 void drawSingleFit( const MT2Config& cfg, bool useMC, const std::string& outdir, MT2EstimateQCD* qcd, MT2EstimateQCD* all, TF1* thisFitQCD, TH1D* h_band, float xMin_fit, float xMax_fit );
@@ -141,8 +141,6 @@ int main( int argc, char* argv[] ) {
   std::string regionsSet_fits = "zurich2016_onlyHT";
   std::string regionsSet_fJets = "zurich2016_onlyHT";
   std::string regionsSet_rHat  = "zurich2016_onlyJets_noB";
-  std::string regionsSet_rHat_extra1  = "zurich2016_onlyJets_noB_extra1"; // to include extra regions in VLHT -> 0-2b
-  std::string regionsSet_rHat_extra2  = "zurich2016_onlyJets_noB_extra2"; // to include extra regions in VLHT -> 3b
 
   std::cout << "-> Making MT2EstimateTrees from inclusive tree...";
   MT2Analysis<MT2EstimateTree>* data_4rHat ;
@@ -190,12 +188,8 @@ int main( int argc, char* argv[] ) {
   }
 
   MT2Analysis<MT2Estimate>* r_hat_mc         = new MT2Analysis<MT2Estimate>("r_hat_mc"        , regionsSet_rHat);
-  MT2Analysis<MT2Estimate>* r_hat_mc2        = new MT2Analysis<MT2Estimate>("r_hat_mc"       , regionsSet_rHat_extra1);
-  MT2Analysis<MT2Estimate>* r_hat_mc3        = new MT2Analysis<MT2Estimate>("r_hat_mc"       , regionsSet_rHat_extra2);
   MT2Analysis<MT2Estimate>* f_jets_mc        = new MT2Analysis<MT2Estimate>("f_jets_mc"       , regionsSet_fJets);
   MT2Analysis<MT2Estimate>* r_hat_data       = new MT2Analysis<MT2Estimate>("r_hat_data"      , regionsSet_rHat);
-  MT2Analysis<MT2Estimate>* r_hat_data2      = new MT2Analysis<MT2Estimate>("r_hat_data"     , regionsSet_rHat_extra1);
-  MT2Analysis<MT2Estimate>* r_hat_data3      = new MT2Analysis<MT2Estimate>("r_hat_data"      , regionsSet_rHat_extra2);
   MT2Analysis<MT2Estimate>* f_jets_data      = new MT2Analysis<MT2Estimate>("f_jets_data"     , regionsSet_fJets);
   MT2Analysis<MT2Estimate>* f_jets_data_noPS = new MT2Analysis<MT2Estimate>("f_jets_data_noPS", regionsSet_fJets);
   std::cout << " Done." << std::endl;
@@ -241,9 +235,9 @@ int main( int argc, char* argv[] ) {
   }
   std::cout << " Done." << std::endl;
   std::cout << "-> Getting rHat...";
-  get_rHat ( cfg, r_hat_mc, r_hat_mc2, r_hat_mc3, qcdmc_4rHat );
+  get_rHat ( cfg, r_hat_mc, qcdmc_4rHat );
   if ( !useMC ) 
-    get_rHat ( cfg, r_hat_data, r_hat_data2, r_hat_data3, data_4rHat, rest_4rHat );
+    get_rHat ( cfg, r_hat_data, data_4rHat, rest_4rHat );
   std::cout << " Done." << std::endl;
 
 
@@ -300,15 +294,17 @@ int main( int argc, char* argv[] ) {
     }
 
     // add extra uncertainty on nonQCD subtraction
-    for( int iBin=1; iBin<matchedEstimate_rest->hDphi->GetXaxis()->GetNbins()+1; ++iBin ){
-      float val = matchedEstimate_rest->hDphi->GetBinContent(iBin);
-      float err = matchedEstimate_rest->hDphi->GetBinError(iBin);
-      err = sqrt(err*err + nonQCDunc*val*nonQCDunc*val);
-      matchedEstimate_rest->hDphi->SetBinError(iBin,err);
-      val = matchedEstimate_rest->lDphi->GetBinContent(iBin);
-      err = matchedEstimate_rest->lDphi->GetBinError(iBin);
-      err = sqrt(err*err + nonQCDunc*val*nonQCDunc*val);
-      matchedEstimate_rest->lDphi->SetBinError(iBin,err);
+    if ( !useMC ){
+      for( int iBin=1; iBin<matchedEstimate_rest->hDphi->GetXaxis()->GetNbins()+1; ++iBin ){
+	float val = matchedEstimate_rest->hDphi->GetBinContent(iBin);
+	float err = matchedEstimate_rest->hDphi->GetBinError(iBin);
+	err = sqrt(err*err + nonQCDunc*val*nonQCDunc*val);
+	matchedEstimate_rest->hDphi->SetBinError(iBin,err);
+	val = matchedEstimate_rest->lDphi->GetBinContent(iBin);
+	err = matchedEstimate_rest->lDphi->GetBinError(iBin);
+	err = sqrt(err*err + nonQCDunc*val*nonQCDunc*val);
+	matchedEstimate_rest->lDphi->SetBinError(iBin,err);
+      }
     }
     
     matchedEstimate_mnQ->lDphi = (TH1D*) matchedEstimate->lDphi->Clone(matchedEstimate_mnQ->lDphi->GetName());
@@ -499,12 +495,8 @@ int main( int argc, char* argv[] ) {
   nCR             ->writeToFile( outfileName );
   r_effective     ->writeToFile( outfileName );
   r_hat_mc        ->writeToFile( outfileName );
-  r_hat_mc2       ->writeToFile( outfileName, "UPDATE", false, true );
-  r_hat_mc3       ->writeToFile( outfileName, "UPDATE", false, true );
   f_jets_mc       ->writeToFile( outfileName );
   r_hat_data      ->writeToFile( outfileName );
-  r_hat_data2     ->writeToFile( outfileName, "UPDATE", false, true );
-  r_hat_data3     ->writeToFile( outfileName, "UPDATE", false, true );
   f_jets_data     ->writeToFile( outfileName );
   f_jets_data_noPS->writeToFile( outfileName );
   if (!useMC && purityFromMC){
@@ -569,7 +561,7 @@ void projectFromInclusive( MT2Analysis<MT2Estimate>* analysis, MT2Analysis<MT2Es
 
 
 
-void get_rHat( const MT2Config& cfg, MT2Analysis<MT2Estimate>* rHat, MT2Analysis<MT2Estimate>* rHat2, MT2Analysis<MT2Estimate>* rHat3, MT2Analysis<MT2EstimateTree>* analysis, MT2Analysis<MT2EstimateTree>* ana_rest ) {
+void get_rHat( const MT2Config& cfg, MT2Analysis<MT2Estimate>* rHat, MT2Analysis<MT2EstimateTree>* analysis, MT2Analysis<MT2EstimateTree>* ana_rest ) {
 
   int nBins = 4;
   Double_t bins[nBins+1];
@@ -580,34 +572,25 @@ void get_rHat( const MT2Config& cfg, MT2Analysis<MT2Estimate>* rHat, MT2Analysis
   bins[4] = 6.;
 
   std::set<MT2Region> regions  = rHat ->getRegions();
-  std::set<MT2Region> regions2 = rHat2->getRegions();
-  std::set<MT2Region> regions3 = rHat3->getRegions();
 
-  // initialize yields for extra regions
-  for( std::set<MT2Region>::iterator iR=regions2.begin(); iR!=regions2.end(); ++iR ) {
-    MT2Estimate* thisEst = rHat2->get(*iR);
+  // initialize yields
+  for( std::set<MT2Region>::iterator iR=regions.begin(); iR!=regions.end(); ++iR ) {
+    MT2Estimate* thisEst = rHat->get(*iR);
     std::string name(thisEst->yield->GetName());
     delete thisEst->yield;
     thisEst->yield = new TH1D( name.c_str(), "", nBins, bins );
     thisEst->yield->Sumw2();
   } 
-  for( std::set<MT2Region>::iterator iR=regions3.begin(); iR!=regions3.end(); ++iR ) {
-    MT2Estimate* thisEst = rHat3->get(*iR);
-    std::string name(thisEst->yield->GetName());
-    delete thisEst->yield;
-    thisEst->yield = new TH1D( name.c_str(), "", nBins, bins );
-    thisEst->yield->Sumw2();
-  }
 
   // fill histos for regular non-extended regions, add them to the relevant extra regions (before normalization and addition of syst. err)
   for( std::set<MT2Region>::iterator iR=regions.begin(); iR!=regions.end(); ++iR ) {
 
+    // do computing expensive stuff only for regular regions
+    if ( iR->nJetsMax()==-1 && iR->nJetsMin()<7 )
+      continue;
+
     MT2Estimate* thisEst = rHat->get(*iR);
     std::string name(thisEst->yield->GetName());
-
-    delete thisEst->yield;
-    thisEst->yield = new TH1D( name.c_str(), "", nBins, bins );
-    thisEst->yield->Sumw2();
 
     MT2EstimateTree* thisTree = analysis->get(*iR);
     thisTree->tree->Project( name.c_str(), "nBJets", "weight" );
@@ -632,28 +615,22 @@ void get_rHat( const MT2Config& cfg, MT2Analysis<MT2Estimate>* rHat, MT2Analysis
     }
 
     // fill extra regions
-    for( std::set<MT2Region>::iterator iR2=regions2.begin(); iR2!=regions2.end(); ++iR2 ) {
-      MT2Estimate* extraEst = rHat2->get(*iR2);
-      MT2Region* extraR = new MT2Region( *(iR2) );
-      if ( iR->isIncluded(extraR) )
-	extraEst->yield->Add(thisEst->yield);
+    MT2Region* extra1 = new MT2Region( iR->htMin(), iR->htMax(), 4, -1, iR->nBJetsMin(), iR->nBJetsMax() );
+    MT2Region* extra2 = new MT2Region( iR->htMin(), iR->htMax(), 2, -1, iR->nBJetsMin(), iR->nBJetsMax() );
+    if ( iR->isIncluded(extra1) ) {
+      MT2Estimate* extraEst = rHat->get(*extra1);
+      extraEst->yield->Add(thisEst->yield);
     }  
-    for( std::set<MT2Region>::iterator iR2=regions3.begin(); iR2!=regions3.end(); ++iR2 ) {
-      MT2Estimate* extraEst = rHat3->get(*iR2);
-      MT2Region* extraR = new MT2Region( *(iR2) );
-      if ( iR->isIncluded(extraR) )
-	extraEst->yield->Add(thisEst->yield);
+    if ( iR->isIncluded(extra2) ) {
+      MT2Estimate* extraEst = rHat->get(*extra2);
+      extraEst->yield->Add(thisEst->yield);
     }  
-
-
 
   } // for regions
     
 
   // add syst. errors and normalize
   addSystAndNormalize4rHat(rHat);
-  addSystAndNormalize4rHat(rHat2);
-  addSystAndNormalize4rHat(rHat3);
     
 }
 

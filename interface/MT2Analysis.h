@@ -848,13 +848,7 @@ MT2Analysis<T>::MT2Analysis( const std::string& aname, const std::string& region
     regions_.insert(MT2Region(250., -1., 2,  3, 0,  -1));
     regions_.insert(MT2Region(250., -1., 4,  6, 0,  -1));
     regions_.insert(MT2Region(250., -1., 7, -1, 0,  -1));
-
-  } else if( regionsSet=="zurich2016_onlyJets_noB_extra1" ){
-
     regions_.insert(MT2Region(250., -1., 4, -1, 0,  -1)); // not exclusive from above, used for VLHT and <3b 
-
-  } else if( regionsSet=="zurich2016_onlyJets_noB_extra2" ){
-
     regions_.insert(MT2Region(250., -1., 2, -1, 0,  -1)); // not exclusive from above, used for VLHT and 3b 
 
   } else if( regionsSet=="darkMatter_max1b" ){
