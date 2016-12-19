@@ -509,6 +509,8 @@ bool MT2SignalRegion::operator<( const MT2SignalRegion& rhs ) const {
 
   int  thisNJmax = (nJetsMax>=0) ? nJetsMax : 99999;
   int  rhsNJmax = (rhs.nJetsMax>=0) ? rhs.nJetsMax : 99999;
+  int  thisNJmin = nJetsMin;
+  int  rhsNJmin = rhs.nJetsMin;
 
   bool returnBool;
   
@@ -532,27 +534,34 @@ bool MT2SignalRegion::operator<( const MT2SignalRegion& rhs ) const {
 
       if( thisNJmax == rhsNJmax ) {
 	
-	if( nBJetsMin!=rhs.nBJetsMin ) {
+	if( thisNJmin == rhsNJmin ) {
+	
+	  if( nBJetsMin!=rhs.nBJetsMin ) {
 	  
-	  returnBool = ( nBJetsMin<rhs.nBJetsMin );
+	    returnBool = ( nBJetsMin<rhs.nBJetsMin );
 	  
-	} else {
-	  
-	  if( mtCut!=rhs.mtCut ) {
+	  } else {
 	    
-	    if( mtCut=="loMT" ) {
-	      returnBool = true;
-	    } else {
+	    if( mtCut!=rhs.mtCut ) {
+	      
+	      if( mtCut=="loMT" ) {
+		returnBool = true;
+	      } else {
+		returnBool = false;
+	      }
+	      
+	    } else { // everything is the same
+	      
 	      returnBool = false;
+	      
 	    }
 	    
-	  } else { // everything is the same
-	    
-	    returnBool = false;
-	    
-	  }
+	  } //if nbjetsmin
+	  	
+	} else {
 	  
-	} //if nbjetsmin
+	  returnBool = thisNJmin<rhsNJmin;
+	}
 	
       } else {
 	
