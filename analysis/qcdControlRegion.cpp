@@ -244,6 +244,7 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
       if( njets<2 ) continue; // qcd CRs never use 1jet events, not even for monojet CR
       // don't bother about dataset of origin (OR of datasets)
       // fill id with trigger bit logic (0b01 HT-only triggered, 0b10 signal triggered)
+      // or 0b11 if both (also a valid case)
       // signal triggered events include the MET>250 selection for HT<1000
       myTree.evt_id = 0;
       if( (ht>1000.&&myTree.HLT_PFHT900) || (ht<1000.&&ht>575.&&myTree.HLT_PFHT475_Prescale) || (ht<575.&&ht>450.&&myTree.HLT_PFHT350_Prescale) || (ht<450.&&ht>250.&&myTree.HLT_PFHT125_Prescale) )
@@ -279,8 +280,20 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
 
     if( !myTree.isData ){
       // isr weight. Renormalization factor valid for american top mc. To recheck once ETH have its own top mc
-      if (myTree.evt_id == 301 || myTree.evt_id == 302 || myTree.evt_id == 303 )
-	weight *= myTree.weight_isr/getAverageISRWeight(myTree.evt_id,0);
+
+
+      // I'll do it my way   // Also we have a different numbering scheme.. merde
+      if (myTree.evt_id == 302 || myTree.evt_id == 303 || myTree.evt_id == 304) //singleLep T/Tbar, Dilep
+ 	weight *= myTree.weight_isr / myTree.weight_isr_norm;
+
+      // ///AMERICAN WAY
+      // if (myTree.evt_id == 301 || myTree.evt_id == 302)
+      // 	weight *= myTree.weight_isr/0.910; // nominal
+      // else if (myTree.evt_id == 303) 
+      // 	weight *= myTree.weight_isr/0.897;
+
+      //      if (myTree.evt_id == 301 || myTree.evt_id == 302 || myTree.evt_id == 303 )
+      //	weight *= myTree.weight_isr/getAverageISRWeight(myTree.evt_id,0);
 
       //      weight *= myTree.weight_btagsf;
       weight *= myTree.weight_lepsf;
