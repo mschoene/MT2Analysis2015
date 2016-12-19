@@ -25,7 +25,7 @@
 
 
 
-bool closureTest = false;
+bool closureTest = false; // = validation region 100<MT2<200 GeV
 
 bool macroPlots = false; // to make macro QCD estimate for Gio. Use convert2Gio.py after this
 
@@ -38,6 +38,7 @@ float lumiRatioGtoH = 27.70/36.46;
 int lastRunG = 280385;
 
 bool purityFromMC = true; // as discussed with Frank
+//This is why you do MC first (also other reasons) to get the MC purity
 
 //float prescales[3] = {7000., 180.0, 60.0}; // 2015
 float prescales[3] = {7900., 440.6, 110.2}; // up to run G 27.7 fb-1
@@ -138,9 +139,9 @@ int main( int argc, char* argv[] ) {
   
 
   std::string regionsSet = cfg.qcdRegionsSet();
-  std::string regionsSet_fits = "zurich2016_onlyHT";
-  std::string regionsSet_fJets = "zurich2016_onlyHT";
-  std::string regionsSet_rHat  = "zurich2016_onlyJets_noB";
+  std::string regionsSet_fits = "zurich2016_onlyHT"; //inclusive in nj & nb
+  std::string regionsSet_fJets = "zurich2016_onlyHT"; //inclusive in nb
+  std::string regionsSet_rHat  = "zurich2016_onlyJets_noB";//inclusive in HT //assume invariance in HT for rB -> calculate from unprescale HT trigger region (i.e. HT>1000)
 
   std::cout << "-> Making MT2EstimateTrees from inclusive tree...";
   MT2Analysis<MT2EstimateTree>* data_4rHat ;
@@ -150,12 +151,17 @@ int main( int argc, char* argv[] ) {
   MT2Analysis<MT2EstimateTree>* qcdmc_4fJets;
   MT2Analysis<MT2EstimateTree>* rest_4rHat ;
   MT2Analysis<MT2EstimateTree>* rest_4fJets;
-  qcdmc_4rHat  = MT2EstimateTree::makeAnalysisFromInclusiveTree( "qcdmc_4rHat"   , regionsSet_rHat  , qcdTree_mc, "((id>150&&(id>151||ht<450)&&(id>152||ht<575)&&(id>153||ht<1000)&&(id>154||ht<1500)) && id<200 && mt2>100. && mt2<200. && nJets>1 && deltaPhiMin<0.3)" ); // invert deltaPhi
+  //spike removal with id cuts//
+  qcdmc_4rHat  = MT2EstimateTree::makeAnalysisFromInclusiveTree( "qcdmc_4rHat"   , regionsSet_rHat  , qcdTree_mc, "((id>150&&(id>151||ht<450)&&(id>152||ht<575)&&(id>153||ht<1000)&&(id>154||ht<1500)) && id<200 && mt2>100. && mt2<200. && nJets>1 && deltaPhiMin<0.3)" ); // invert deltaPhi (i.e. low deltaphi = not the signal region)
   qcdmc_4fJets = MT2EstimateTree::makeAnalysisFromInclusiveTree( "qcdmc_4fJets"  , regionsSet_fJets , qcdTree_mc, "((id>150&&(id>151||ht<450)&&(id>152||ht<575)&&(id>153||ht<1000)&&(id>154||ht<1500)) && id<200 && mt2>100. && mt2<200. && nJets>1 && deltaPhiMin<0.3)" ); // invert deltaPhi ; id=152 plays a role for VLHT in 100<mt2<200
-  if ( !useMC ) {
+
+  if ( !useMC ) {//= DATA!!!
+    // with PFHT900 trigger only (HT only triggered)
     data_4rHat       = MT2EstimateTree::makeAnalysisFromInclusiveTree( "data_4rHat"      , regionsSet_rHat  , qcdTree_data, "((id&1)==1 && ht>1000. &&  mt2>100. && mt2<200. && nJets>1 && deltaPhiMin<0.3"+runRange+")" ); // invert deltaPhi; ht>1000 unprescaled triggers
     data_4fJets      = MT2EstimateTree::makeAnalysisFromInclusiveTree( "data_4fJets"     , regionsSet_fJets , qcdTree_data, "((id&1)==1 &&              mt2>100. && mt2<200. && nJets>1 && deltaPhiMin<0.3"+runRange+")" ); // invert deltaPhi; HT-only triggers, ps'ed for HT<1000, empty for HT<450
+    // without prescaled guys //update to new id stuff ... // it's wrong atm
     data_noPS_4fJets = MT2EstimateTree::makeAnalysisFromInclusiveTree( "data_noPS_4fJets", regionsSet_fJets , qcdTree_data, "(((id==1&&ht>100)||(id==2&&ht>450&&ht<1000)||(id==3&&ht<450))&& mt2>100. && mt2<200. && nJets>1 && deltaPhiMin<0.3"+runRange+")" ); // invert deltaPhi; unprescaled triggers, HT-only for ht>100, HTMHT for450< ht<1000, MET for ht<450 (below ht<1000 we live in turnon, better not to subtract an unknown amount of non-QCD [smaller than 18% for VLHT])
+    //NON-QCD MC to be subtracted
     rest_4rHat       = MT2EstimateTree::makeAnalysisFromInclusiveTree( "rest_4rHat"      , regionsSet_rHat  , qcdTree_mc  , "(id>=300 && ht>1000. &&  mt2>100. && mt2<200. && nJets>1 && deltaPhiMin<0.3)" ); // invert deltaPhi
     rest_4fJets      = MT2EstimateTree::makeAnalysisFromInclusiveTree( "rest_4fJets"     , regionsSet_fJets , qcdTree_mc  , "(id>=300 &&              mt2>100. && mt2<200. && nJets>1 && deltaPhiMin<0.3)" ); // invert deltaPhi 
   }
@@ -196,7 +202,8 @@ int main( int argc, char* argv[] ) {
 
 
   if( closureTest ) {
-
+    //only one bin to account for correlation of uncerts //with more bins you underestimate the variation
+    //if you wanna see some nice shapes, increase the number of bins~
     MT2Estimate    ::rebinYields( estimate    , 1, 100., 200. );
     MT2Estimate    ::rebinYields( nCR         , 1, 100., 200. );
     MT2EstimateSyst::rebinYields( r_effective , 1, 100., 200. );
@@ -211,7 +218,7 @@ int main( int argc, char* argv[] ) {
 
   }
   else if( macroPlots ) {
- 
+    //update CHANGE
     const int nBins_tmp = 6;
     double *bins = new double[nBins_tmp+1]{200., 300., 400., 600., 800., 1000., 1500.};
     int nBins = nBins_tmp;
@@ -228,9 +235,9 @@ int main( int argc, char* argv[] ) {
   }
 
   std::cout << "-> Getting fJets...";
-  get_fJets( cfg, f_jets_mc, qcdmc_4fJets );
+  get_fJets( cfg, f_jets_mc, qcdmc_4fJets ); //MC case: to be filled with QCD MC
   if ( !useMC ) {
-    get_fJets( cfg, f_jets_data     , data_4fJets     , rest_4fJets );    
+    get_fJets( cfg, f_jets_data     , data_4fJets     , rest_4fJets );  //cfg, to be filled, data, nonQCDMC  
     get_fJets( cfg, f_jets_data_noPS, data_noPS_4fJets              ); // don't subtract an unknown amount (trigger turnon) small in any case
   }
   std::cout << " Done." << std::endl;
@@ -248,9 +255,13 @@ int main( int argc, char* argv[] ) {
   // don't apply met>250 for validation region 100<MT2<200 from ht-only prescaled triggers
   std::string metcut = closureTest ? "" : "&&(met>250||ht>1000)";
 
+  // makeAnalysisFromInclusiveTree: 
+  //first string: for NCR: = low deltaphi -> fills the tree
+  //second string: is for rphi ratio-> ht triggers ONLY -> fills 2 histos
+
   if( useMC ) {
     // the met>250 for lower HT, to be applied in the estimate selection, not for the fits. Safe for non-QCD below. For data it is directly applied in qcdControlRegion as part of the id.
-    est_all  = MT2EstimateQCD::makeAnalysisFromInclusiveTree( "est", regionsSet_fits, qcdTree_mc , "(id>150&&(id>151||ht<450)&&(id>152||ht<575)&&(id>153||ht<1000)&&(id>154||ht<1500))"+metcut, "(id>150&&(id>151||ht<450)&&(id>152||ht<575)&&(id>153||ht<1000)&&(id>154||ht<1500))" ); // 
+    est_all  = MT2EstimateQCD::makeAnalysisFromInclusiveTree( "est", regionsSet_fits, qcdTree_mc , "(id>150&&(id>151||ht<450)&&(id>152||ht<575)&&(id>153||ht<1000)&&(id>154||ht<1500))"+metcut, "(id>150&&(id>151||ht<450)&&(id>152||ht<575)&&(id>153||ht<1000)&&(id>154||ht<1500))" ); // includes nonQCD
   } else {
     if ( closureTest ) // fill tree with ht-only triggers
       est_all  = MT2EstimateQCD::makeAnalysisFromInclusiveTree( "est", regionsSet_fits, qcdTree_data, "((id&1)==1"+runRange+")", "((id&1)==1"+runRange+")" ); //use HT-only triggers for dphi-ratio --- new way
@@ -258,6 +269,7 @@ int main( int argc, char* argv[] ) {
       est_all  = MT2EstimateQCD::makeAnalysisFromInclusiveTree( "est", regionsSet_fits, qcdTree_data, "((id&2)==2)", "((id&1)==1"+runRange+")" ); //use HT-only triggers for dphi-ratio --- new way, bit 2 on for signal triggers, bit 1 on for ht-only triggers
   }
 
+  //apply the met cut for control region (by default done for data id&2==2)
   MT2Analysis<MT2EstimateQCD>* mc_rest = MT2EstimateQCD::makeAnalysisFromInclusiveTree( "mc_rest", regionsSet_fits, qcdTree_mc  , "id>=300"+metcut, "id>=300" );
 
 
@@ -307,6 +319,7 @@ int main( int argc, char* argv[] ) {
       }
     }
     
+    //Subtract non qcd
     matchedEstimate_mnQ->lDphi = (TH1D*) matchedEstimate->lDphi->Clone(matchedEstimate_mnQ->lDphi->GetName());
     if (useMC && scaleMC!=0.)  matchedEstimate_mnQ->lDphi->Scale(lumiScale);
     matchedEstimate_mnQ->lDphi->Add( matchedEstimate_rest->lDphi, -lumiScale );
@@ -325,6 +338,7 @@ int main( int argc, char* argv[] ) {
     float xMin_fit = (iR->htMin()>=1000.) ? 70. : 60.;
     float xMax_fit = 100.;
     //fits.insert(std::pair<MT2Region, TF1*>(*iR, matchedEstimate_mnQ->getFit( "pow", xMin_fit, xMax_fit ) ) );
+    //GetFit does ratio and fit
     fits[*iR] = matchedEstimate_mnQ->getFit( "pow", xMin_fit, xMax_fit );
     bands[*iR] = new TH1D(Form("band_%s",iR->getName().c_str()), "", 500, matchedEstimate->lDphi->GetXaxis()->GetXmin(), matchedEstimate->lDphi->GetXaxis()->GetXmax());
     (TVirtualFitter::GetFitter())->GetConfidenceIntervals(bands[*iR], 0.68);
@@ -339,6 +353,7 @@ int main( int argc, char* argv[] ) {
     float par0 = fits[*iR]->GetParameter(0);
     float par1 = fits[*iR]->GetParameter(1);
 
+    //UP variation 
     float xMin_fit_var = xMin_fit + 5.;
     float xMax_fit_var = xMax_fit + 25.;
     fits_up [*iR] = matchedEstimate_mnQ->getFit( "pow", xMin_fit_var, xMax_fit_var, par0, par1 );
@@ -419,7 +434,7 @@ int main( int argc, char* argv[] ) {
       else if( iR->htMin() < 500. ) ps = prescales[1];
       else if( iR->htMin() < 600. ) ps = prescales[2];
     }
-
+    // fill fill fill, tree(matched), fits, bands
     fillFromTreeAndRatio( this_estimate  , this_nCR       , this_r_effective , matchedEstimate->tree, fits[*fit_matchedRegion], bands[*fit_matchedRegion], fits_up[*fit_matchedRegion], bands_up[*fit_matchedRegion], fits_down[*fit_matchedRegion], bands_down[*fit_matchedRegion]     );
     fillFromTreeAndRatio( this_est_mcRest, this_nCR_mcRest, this_r_eff_mcRest, matchedEstimate_rest->tree, fits[*fit_matchedRegion], bands[*fit_matchedRegion] , ps);
 
@@ -429,8 +444,10 @@ int main( int argc, char* argv[] ) {
     if (!useMC && onlyUseUpToRunG && closureTest)
       lumi *= lumiRatioGtoH;
 
-    //computePurity( this_qcdPurity->yield, this_est_mcRest->yield, this_estimate->yield, lumi );
-    computePurity( this_qcdPurity->yield, this_nCR_mcRest->yield, this_nCR->yield, lumi ); //this computes purity directly on CR, above is more correct
+    //P = QCD/ (QCD +nonQCD)
+    //Franks way: 
+    //computePurity( this_qcdPurity->yield, this_est_mcRest->yield, this_estimate->yield, lumi );//Old but gold: change to this back
+    computePurity( this_qcdPurity->yield, this_nCR_mcRest->yield, this_nCR->yield, lumi ); //this computes purity directly on CR, above is more correct, this is franks way
 
     if (!useMC && purityFromMC){ // use purity from MC as agreed with FG
       MT2Estimate* this_qcdPurityMC = qcdPurityMC   ->get( *iR );
@@ -470,6 +487,10 @@ int main( int argc, char* argv[] ) {
       thisFjetsError *= thisFjetsError;
       thisFjetsError += this_f_jets->yield->GetBinError( bin_jets_2 )*this_f_jets->yield->GetBinError( bin_jets_2 );
       thisFjetsError  = sqrt(thisFjetsError);
+      // if( iR->htMin()==250 && iR->htMax()==450 ){ //CHANGE TO SYNC with GOLF
+      // thisFjetsError  = 0.0;
+      // thisFjetsValue = 1.;
+      // }
     }
 
     scaleHisto( this_estimate->yield, thisRhatValue , thisRhatError  );
@@ -566,6 +587,7 @@ void get_rHat( const MT2Config& cfg, MT2Analysis<MT2Estimate>* rHat, MT2Analysis
 
   std::set<MT2Region> regions  = rHat ->getRegions();
 
+  //CHANGE to use rebinning function
   // initialize yields
   for( std::set<MT2Region>::iterator iR=regions.begin(); iR!=regions.end(); ++iR ) {
     MT2Estimate* thisEst = rHat->get(*iR);
@@ -579,7 +601,7 @@ void get_rHat( const MT2Config& cfg, MT2Analysis<MT2Estimate>* rHat, MT2Analysis
   for( std::set<MT2Region>::iterator iR=regions.begin(); iR!=regions.end(); ++iR ) {
 
     // do computing expensive stuff only for regular regions
-    if ( iR->nJetsMax()==-1 && iR->nJetsMin()<7 )
+    if ( iR->nJetsMax()==-1 && iR->nJetsMin()<7 ) //because we do them afterwards
       continue;
 
     MT2Estimate* thisEst = rHat->get(*iR);
@@ -589,7 +611,7 @@ void get_rHat( const MT2Config& cfg, MT2Analysis<MT2Estimate>* rHat, MT2Analysis
     thisTree->tree->Project( name.c_str(), "nBJets", "weight" );
     MT2DrawTools::addOverflowSingleHisto(thisEst->yield);
 
-    if ( ana_rest!=NULL ) {
+    if ( ana_rest!=NULL ) { //don't account for PS because we're in ht>1000 regions= unprescale!
       float lumi = cfg.lumi();
       if (onlyUseUpToRunG)
 	lumi *= lumiRatioGtoH;
@@ -702,8 +724,10 @@ void get_fJets( const MT2Config& cfg, MT2Analysis<MT2Estimate>* fJets, MT2Analys
 
     MT2DrawTools::addOverflowSingleHisto(thisEst->yield);
 
-    if ( ana_rest!=NULL ) {
+    
+    if ( ana_rest!=NULL ) {//if it is data
       TH1D *toSubtract = new TH1D( Form("%s_rest",name.c_str()), "", nBins, bins );
+      //another = nonQCD MC
       MT2EstimateTree* anotherTree = ana_rest->get(*iR);
       anotherTree->tree->Project( Form("%s_rest",name.c_str()), "nJets", "weight" );
       MT2DrawTools::addOverflowSingleHisto(toSubtract);
@@ -739,12 +763,13 @@ void get_fJets( const MT2Config& cfg, MT2Analysis<MT2Estimate>* fJets, MT2Analys
       //float inflateUncert = iR->htMin() < 400. ? 2.0 : 1.0; // inflate by a factor two in the VLHT
       float inflateUncert = 1.0; // don't inflate by a factor two in the VLHT for 2016
 
+      //add uncert = from variation test
       float errorRel_tot = sqrt( errorRel_est*errorRel_est + inflateUncert*inflateUncert*uncert[iBin-1]*uncert[iBin-1] );
       thisEst->yield->SetBinError( iBin, errorRel_tot*val_est );
 
     }
     
-
+    //scale to 1 (want fractions)
     thisEst->yield->Scale( 1./thisEst->yield->Integral(1, nBins+1) );
 
   } // for regions
@@ -788,7 +813,7 @@ void fillFromTreeAndRatio( MT2Estimate* estimate, MT2Estimate* nCR, MT2EstimateS
     nCR     ->yield->Fill( mt2, ps_weight   );
     estimate->yield->Fill( mt2, ps_weight*r );
 
-    hp_r->Fill( mt2, r, ps_weight );
+    hp_r->Fill( mt2, r, ps_weight ); //Profile histo -> averaged over N_CR
     hp_rErr->Fill( mt2, h_band->GetBinError(h_band->FindBin(mt2)), ps_weight );
 
     hp_rUp  ->Fill( mt2, f1_ratio_up  ->Eval(mt2), ps_weight);
@@ -815,7 +840,7 @@ void fillFromTreeAndRatio( MT2Estimate* estimate, MT2Estimate* nCR, MT2EstimateS
       error_mean = 0.0;
     }
 
-    // fill r_effective
+    // fill r_effective //average r
     r_effective->yield->SetBinContent( iBin, r );
 
     // add fit error in quadrature to R and fill r_effective error

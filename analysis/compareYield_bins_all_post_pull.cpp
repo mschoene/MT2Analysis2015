@@ -82,7 +82,8 @@ int main( int argc, char* argv[] ) {
   std::string configFileName(argv[1]);
   MT2Config cfg(configFileName);
 
-  lumi = cfg.lumi();
+  lumi = 18.1;
+  //  lumi = cfg.lumi();
   
   TH1::AddDirectory(kTRUE);
   
@@ -340,7 +341,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
   
   std::string fullPath = outputdir;
 
-  std::string labelsMono[12]={"[200,250]","[250,350]","[350,450]","[450,575]","[575,700]","[700,1000]",">1000", "[200,250]","[250,350]","[350,450]","[450,575]",">575"};
+  std::string labelsMono[12]={"[250,350]","[350,450]","[450,575]","[575,700]","[700,1000]","[1000,1200]", ">1200","[250,350]","[350,450]","[450,575]","[575,700]", ">700"};
 
   TFile* fmono=TFile::Open(Form("%s/mlfit_monojet.root", dir.c_str()));
   TFile* fvlht=TFile::Open(Form("%s/mlfit_veryLowHT.root", dir.c_str()));
@@ -509,7 +510,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
 	  gDirectory->cd("..");
 	      
 	}
-	else if(iRegion >=13 && iRegion <= 36){
+	else if(iRegion >=13 && iRegion <= 12+21){
 
 	  int ch=iRegion-12+iBin;
 	  
@@ -538,9 +539,9 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
 	  gDirectory->cd("..");
 
 	}
-	else if(iRegion >=37 && iRegion <= 67){
+	else if(iRegion >= (12+21+1) && iRegion <= (12+21+40) ){
 	  
-	  int ch=iRegion-36+iBin;
+	  int ch=iRegion-(12+21)+iBin;
 	  
 	  flht->cd();
 	  gDirectory->cd("shapes_fit_b");
@@ -568,9 +569,9 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
 	  gDirectory->cd("..");
 	
 	}
-	else if(iRegion >=68 && iRegion <= 109){
+	else if(iRegion >=(12+21+40+1) && iRegion <= (12+21+40+51) ){
 
-	  int ch=iRegion-67+iBin;
+	  int ch=iRegion-(12+21+40)+iBin;
 
 	  fmht->cd();
 	  gDirectory->cd("shapes_fit_b");
@@ -596,9 +597,9 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
 	  gDirectory->cd("..");
 	  
 	}
-	else if(iRegion >=110 && iRegion <= 144){
+	else if(iRegion >=(12+21+40+51+1 ) && iRegion <= (12+21+40+51+53)){
 
-	  int ch=iRegion-109+iBin;
+	  int ch=iRegion-(12+21+40+51)+iBin;
 	  
 	  fhht->cd();
 	  gDirectory->cd("shapes_fit_b");
@@ -624,9 +625,9 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
 	  gDirectory->cd("..");
 
 	}
-	else if(iRegion >=145){
+	else if(iRegion >= (12+21+40+51+53+1) ){
 
-	  int ch=iRegion-144+iBin;
+	  int ch=iRegion-(12+21+40+51+53)+iBin;
 
 	  feht->cd();
 	  gDirectory->cd("shapes_fit_b");
@@ -1152,7 +1153,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
   int nHTRegions = 6;
   std::vector< std::string > htRegions;
   htRegions.push_back("1 Jet");
-  htRegions.push_back("H_{T} [200, 450] GeV");
+  htRegions.push_back("H_{T} [250, 450] GeV");
   htRegions.push_back("H_{T} [450, 575] GeV");
   htRegions.push_back("H_{T} [575, 1000] GeV");
   htRegions.push_back("H_{T} [1000, 1500] GeV");
@@ -1247,7 +1248,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
   c2_0->cd();
   
   TPad *pad1_0 = new TPad("pad1_0","pad1_0",0,0.3-0.1,1,1);
-  pad1_0->SetBottomMargin(0.15);
+  pad1_0->SetBottomMargin(0.18);
   pad1_0->Draw();
   pad1_0->cd();
 
@@ -1403,7 +1404,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
   c2_1->cd();
   
   TPad *pad1_1 = new TPad("pad1_1","pad1_1",0,0.3-0.1,1,1);
-  pad1_1->SetBottomMargin(0.15);
+  pad1_1->SetBottomMargin(0.18);
   pad1_1->Draw();
   pad1_1->cd();
 
@@ -1513,7 +1514,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
   c2_2->cd();
   
   TPad *pad1_2 = new TPad("pad1_2","pad1_2",0,0.3-0.1,1,1);
-  pad1_2->SetBottomMargin(0.15);
+  pad1_2->SetBottomMargin(0.18);
   pad1_2->Draw();
   pad1_2->cd();
 
@@ -1622,7 +1623,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
   c2_3->cd();
   
   TPad *pad1_3 = new TPad("pad1_3","pad1_3",0,0.3-0.1,1,1);
-  pad1_3->SetBottomMargin(0.15);
+  pad1_3->SetBottomMargin(0.18);
   pad1_3->Draw();
   pad1_3->cd();
 
@@ -1734,7 +1735,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
   c2_4->cd();
   
   TPad *pad1_4 = new TPad("pad1_4","pad1_4",0,0.3-0.1,1,1);
-  pad1_4->SetBottomMargin(0.15);
+  pad1_4->SetBottomMargin(0.18);
   pad1_4->Draw();
   pad1_4->cd();
 
@@ -1847,7 +1848,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
   c2_5->cd();
   
   TPad *pad1_5 = new TPad("pad1_5","pad1_5",0,0.3-0.1,1,1);
-  pad1_5->SetBottomMargin(0.15);
+  pad1_5->SetBottomMargin(0.18);
   pad1_5->Draw();
   pad1_5->cd();
 

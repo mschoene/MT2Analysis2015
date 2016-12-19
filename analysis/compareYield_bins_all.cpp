@@ -80,7 +80,8 @@ int main( int argc, char* argv[] ) {
   std::string configFileName(argv[1]);
   MT2Config cfg(configFileName);
 
-  lumi = cfg.lumi();
+  lumi = 18.1;
+  //lumi = cfg.lumi();
   
   TH1::AddDirectory(kTRUE);
   
@@ -576,7 +577,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   float yMax2 = (yMax_3>yMax_4) ? yMax_3 : yMax_4;
   float yMax = (yMax1>yMax2) ? yMax1 : yMax2;
   
-  float yMin = 1e-3;
+  float yMin = 1e-1; // float yMin = 1e-3;
   //  yMin=0;
   yMax*=20.;
   
@@ -752,6 +753,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   pad1_0->Draw();
   pad1_0->cd();
 
+  yMin = 1e-1;
 
   int oldBin=0;
   pad1_0->SetLogy();
@@ -926,6 +928,8 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
 
   pad1_2->SetLogy();
     
+  yMin= 1e-2;
+
   oldBin=thisBin;
   thisBin=12+21+40;
   hestimate_all->GetXaxis()->SetRangeUser(oldBin, thisBin);
@@ -1007,6 +1011,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
 
   pad1_3->SetLogy();
     
+  yMin = 1e-2;
   oldBin=thisBin;
   thisBin=12+21+40+51;
   hestimate_all->GetXaxis()->SetRangeUser(oldBin, thisBin);
