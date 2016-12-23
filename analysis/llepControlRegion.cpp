@@ -252,7 +252,8 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
 
     int njets  = myTree.nJet30;
     int nbjets = myTree.nBJet20; 
-    float ht   = myTree.ht;
+    //    float ht   = myTree.ht;
+    float ht   = (njets>1) ? myTree.ht : myTree.jet1_pt;
     //    float met  = myTree.met_pt;
     float mt2  = (njets>1) ? myTree.mt2 : ht;
     float minMTBmet = myTree.minMTBMet;
@@ -263,14 +264,31 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
     //    int nPFHad10LowMT = myTree.nPFHad10LowMT;
     
     Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb;//*cfg.lumi();
-    if(!myTree.isData) {
-      weight *= myTree.weight_btagsf;
+    // if(!myTree.isData) {
+    //   weight *= myTree.weight_btagsf;
+    //   weight *= myTree.weight_lepsf;
+    // }
+
+    if( !myTree.isData ){
+      //      weight *= myTree.weight_btagsf;
       weight *= myTree.weight_lepsf;
+
+      // // ETH has a branch witht he average weight stored:
+      // // Also we have a different numbering scheme...
+      // if (myTree.evt_id == 302 || myTree.evt_id == 303 || myTree.evt_id == 304) //singleLep T/Tbar, Dilep
+      // 	weight *= myTree.weight_isr / myTree.weight_isr_norm;
+
+      ///AMERICAN WAY
+      if (myTree.evt_id == 301 || myTree.evt_id == 302)
+      	weight *= myTree.weight_isr/0.910; // nominal
+      else if (myTree.evt_id == 303) 
+      	weight *= myTree.weight_isr/0.897;
+
     }
 
     if (myTree.isData) {
 
-      if ( !(myTree.HLT_PFMET120_PFMHT120 || myTree.HLT_PFHT900 || myTree.HLT_PFHT300_PFMET110 || myTree.HLT_PFJet450) ) continue;
+      if ( !(myTree.HLT_PFMET120_PFMHT120 || myTree.HLT_PFHT900 || myTree.HLT_PFHT300_PFMET110 || myTree.HLT_PFJet450  || myTree.HLT_PFMETNoMu120_PFMHTNoMu120 ) ) continue;
       //      if ( !(myTree.HLT_PFMET100_PFMHT100 || myTree.HLT_PFHT800 || myTree.HLT_PFHT300_PFMET100) ) continue; //ICHEP 2016
       //OLD if( !(myTree.HLT_PFMETNoMu90_PFMHTNoMu90 || myTree.HLT_PFHT350_PFMET100 || myTree.HLT_PFHT800) ) continue;
 
@@ -292,6 +310,7 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
     MT2EstimateTree* thisEstimate;
 
     if( regionsSet=="zurich" || regionsSet=="zurichPlus" || regionsSet=="zurich2016" ){ // To avoid signal contamination in 7j 2b and 7j 3b
+    //    if( false ){ // To avoid signal contamination in 7j 2b and 7j 3b
       
       if( ht>450. && njets>=7 && nbjets>2 ) continue;
       
@@ -468,7 +487,11 @@ MT2Analysis<T>* computeSigYield( const MT2Sample& sample, const MT2Config& cfg )
     if( !myTree.isData ){
       weight *= myTree.weight_btagsf;
       weight *= myTree.weight_lepsf;
-      weight *= myTree.weight_isr;
+   
+      if (myTree.evt_id == 301 || myTree.evt_id == 302)
+	weight *= myTree.weight_isr/0.910; // central/average
+      else if (myTree.evt_id == 303) 
+	weight *= myTree.weight_isr/0.897;  
     }
 
     float sig_xs=0.;

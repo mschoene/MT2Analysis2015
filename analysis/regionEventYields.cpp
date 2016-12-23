@@ -349,8 +349,9 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg, std
     myTree.GetEntry(iEntry);
     
     if( myTree.isData && !myTree.isGolden ) continue;
-//    if( !(myTree.run<=276811 ||  (278820<=myTree.run && myTree.run<=279931)) )
-//      continue;
+    //For 18.1 ifb
+    if( !(myTree.run<=276811 || (278820<=myTree.run && myTree.run<=279931)) )
+      continue;
 
     if( regionsSet!="13TeV_noCut" )
       if( !myTree.passSelection(cfg.additionalStuff()) ) continue;
@@ -386,13 +387,20 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg, std
     //    }
 
     if( !myTree.isData ){
-      weight *= myTree.weight_btagsf;
+      //      weight *= myTree.weight_btagsf;
       weight *= myTree.weight_lepsf;
- 
+
+      // // ETH has a branch witht he average weight stored:
+      // // Also we have a different numbering scheme...
+      // if (myTree.evt_id == 302 || myTree.evt_id == 303 || myTree.evt_id == 304) //singleLep T/Tbar, Dilep
+      // 	weight *= myTree.weight_isr / myTree.weight_isr_norm;
+
+      ///AMERICAN WAY
       if (myTree.evt_id == 301 || myTree.evt_id == 302)
-	weight *= myTree.weight_isr/0.910; // central/average
+      	weight *= myTree.weight_isr/0.910; // nominal
       else if (myTree.evt_id == 303) 
-	weight *= myTree.weight_isr/0.897;
+      	weight *= myTree.weight_isr/0.897;
+
     }
 
 
@@ -424,7 +432,7 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg, std
 
     if (myTree.isData) {
 
-      if ( !(myTree.HLT_PFMET120_PFMHT120 || myTree.HLT_PFHT900 || myTree.HLT_PFHT300_PFMET110 || myTree.HLT_PFJet450) ) continue;
+      if ( !(myTree.HLT_PFMET120_PFMHT120 || myTree.HLT_PFHT900 || myTree.HLT_PFHT300_PFMET110 || myTree.HLT_PFJet450 || myTree.HLT_PFMETNoMu120_PFMHTNoMu120 ) ) continue;
       //      if ( !(myTree.HLT_PFMET100_PFMHT100 || myTree.HLT_PFHT800 || myTree.HLT_PFHT300_PFMET100) ) continue;
 
     } // if is data
@@ -439,7 +447,7 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg, std
       thisEstimate->assignVar( "jet1_pt",  myTree.jet1_pt );
       thisEstimate->assignVar( "jet2_pt",  myTree.jet2_pt );
       thisEstimate->assignVar( "mht",  myTree.mht_pt );
-      
+
       if( cfg.additionalStuff()=="qgVars" ) {
 	
 	// initialize

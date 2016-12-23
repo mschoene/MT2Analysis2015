@@ -531,10 +531,18 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
 
 
     if( !myTree.isData ){
+
+      // // ETH has a branch witht he average weight stored:
+      // // Also we have a different numbering scheme...
+      // if (myTree.evt_id == 302 || myTree.evt_id == 303 || myTree.evt_id == 304) //singleLep T/Tbar, Dilep
+      // 	weight *= myTree.weight_isr / myTree.weight_isr_norm;
+
+      ///AMERICAN WAY
       if (myTree.evt_id == 301 || myTree.evt_id == 302)
-	weight *= myTree.weight_isr/0.910; // nominal
+      	weight *= myTree.weight_isr/0.910; // nominal
       else if (myTree.evt_id == 303) 
-	weight *= myTree.weight_isr/0.897;
+      	weight *= myTree.weight_isr/0.897;
+
     }
 
 
