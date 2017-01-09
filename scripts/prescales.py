@@ -4,7 +4,7 @@ import os
 from math import sqrt
 
 # this was created when MT2DrawTools could be compiled standalone
-ROOT.gSystem.Load("/mnt/t3nfs01/data01/shome/casal/ana743/src/MT2DrawTools_cc")
+ROOT.gSystem.Load("/mnt/t3nfs01/data01/shome/mschoene/8_0_12_analysisPlayArea/src/mschoene_newBinning/MT2DrawTools_cc")
 from ROOT import MT2DrawTools
 
 lumi = 27.7
@@ -63,7 +63,7 @@ def getHistos(base, afile, ow): # will return [ht900, ht475, ht350, ht125]
         t.Draw("ht>>ht350"+"_"+subname,"isGolden && HLT_PFHT350_Prescale", "goff");  ht350.Sumw2() 
         t.Draw("ht>>ht125"+"_"+subname,"isGolden && HLT_PFHT125_Prescale", "goff");  ht125.Sumw2() 
 
-        # cache histos in file
+        # cache histos in file -> save into folder, so stuff is quicker when you rerun
         rfile = ROOT.TFile(theFile, "RECREATE")
         rfile.cd()
         ht900.Write()
@@ -113,9 +113,11 @@ r900over125.Draw("esame")
 r475over350.Draw("esame")
 r475over125.Draw("esame")
 
+#fit only in the ranges from where they are eff, eg for first one, HT900 eff after 1000GeV of HT
 f_ps1  = ROOT.TF1("ps1" , "pol0(0)", 1000, 2000); f_ps1 .SetLineColor(1) ; f_ps1 .SetLineWidth(2)
 f_ps2  = ROOT.TF1("ps2" , "pol0(0)", 1000, 2000); f_ps2 .SetLineColor(2) ; f_ps2 .SetLineWidth(2)
 f_ps3  = ROOT.TF1("ps3" , "pol0(0)", 1000, 2000); f_ps3 .SetLineColor(4) ; f_ps3 .SetLineWidth(2)
+#comparing to the lower threshold triggers
 f_ps12 = ROOT.TF1("ps12", "pol0(0)", 575, 2000); f_ps12.SetLineColor(8) ; f_ps12.SetLineWidth(2); f_ps12.SetLineStyle(7)
 f_ps13 = ROOT.TF1("ps13", "pol0(0)", 575, 2000); f_ps13.SetLineColor(51); f_ps13.SetLineWidth(2); f_ps13.SetLineStyle(7)
 
@@ -141,6 +143,9 @@ leg.AddEntry(f_ps3 , "PFHT900/125: %.0f #pm %.0f" % (ps3 , eps3 ), "L")
 leg.AddEntry(f_ps12, "PFHT475/350: %.2f #pm %.2f #rightarrow ps350 = %.1f #pm %.1f" % (ps12, eps12, ps2b, eps2b), "L")
 leg.AddEntry(f_ps13, "PFHT475/125: %.1f #pm %.1f #rightarrow ps125 = %.0f #pm %.0f" % (ps13, eps13, ps3b, eps3b), "L")
 leg.SetTextSize(0.026)
+
+
+#we use the weighted average of the fits
 
 #weighted averages 
 def weightedAverage(data, errors):

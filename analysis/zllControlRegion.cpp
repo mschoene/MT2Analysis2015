@@ -43,6 +43,7 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
 		      TH2D* h_elSF, TH2D* h_muSF, bool do_ZinvEst );
 void addVariables(MT2Analysis<MT2EstimateTree>* anaTree);
 void roundLikeData( MT2Analysis<MT2EstimateTree>* data );
+float getHLTweight( int lep1_pdgId, int lep2_pdgId, float lep1_pt, float lep2_pt, int variation);
 
 
 int main(int argc, char* argv[]) {
@@ -531,10 +532,18 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
 
 
     if( !myTree.isData ){
+
+      // // ETH has a branch witht he average weight stored:
+      // // Also we have a different numbering scheme...
+      // if (myTree.evt_id == 302 || myTree.evt_id == 303 || myTree.evt_id == 304) //singleLep T/Tbar, Dilep
+      // 	weight *= myTree.weight_isr / myTree.weight_isr_norm;
+
+      ///AMERICAN WAY
       if (myTree.evt_id == 301 || myTree.evt_id == 302)
-	weight *= myTree.weight_isr/0.910; // nominal
+      	weight *= myTree.weight_isr/0.910; // nominal
       else if (myTree.evt_id == 303) 
-	weight *= myTree.weight_isr/0.897;
+      	weight *= myTree.weight_isr/0.897;
+
     }
 
 
@@ -651,17 +660,19 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
       //      if(myTree.nVert > 0 && myTree.nJet30 >= 1 && myTree.zll_ht>250. && ((myTree.nJet30>1 && myTree.zll_mt2>200.)||myTree.nJet30==1) && myTree.nJet30FailId == 0 && myTree.zll_deltaPhiMin > 0.3 && ( (myTree.nJet30>1 && myTree.zll_ht<1000. && myTree.zll_met_pt>250.) || (myTree.nJet30>1 && myTree.zll_ht>=1000. && myTree.zll_met_pt>30.) || (myTree.nJet30==1 &&myTree.zll_met_pt>250.)) &&  myTree.zll_diffMetMht < 0.5*myTree.zll_met_pt &&  myTree.nlep==2 && (myTree.lep_pdgId[0]*myTree.lep_pdgId[1])<0 && ((myTree.nJet30==1 && myTree.jet_id[0]>=4) || myTree.nJet30>1) && myTree.lep_pt[0]>=25. && myTree.lep_pt[1]>=20. && myTree.Flag_HBHENoiseFilter>0 && myTree.Flag_HBHENoiseIsoFilter>0 && myTree.Flag_globalTightHalo2016Filter>0 && myTree.Flag_EcalDeadCellTriggerPrimitiveFilter>0 && myTree.Flag_goodVertices>0 && myTree.Flag_eeBadScFilter>0 && myTree.Flag_badMuonFilter>0 && myTree.Flag_badChargedHadronFilter>0 && (myTree.HLT_DoubleMu || myTree.HLT_DoubleMu_NonIso || myTree.HLT_SingleMu_NonIso || myTree.HLT_DoubleEl || myTree.HLT_DoubleEl33 || myTree.HLT_Photon165_HE10 ) && (abs(myTree.lep_pdgId[0]) == abs(myTree.lep_pdgId[1])) && ((abs(myTree.lep_pdgId[0])==11 && myTree.lep_tightId[0]> 0.5) || (abs(myTree.lep_pdgId[0])==13)) && ((abs(myTree.lep_pdgId[1])==11 && myTree.lep_tightId[1]> 0.5) || (abs(myTree.lep_pdgId[1])==13)) && myTree.jet_pt[0]<13000. && myTree.met_pt/myTree.met_caloPt < 5. );
       //      else continue;
 
-
-      float HLT_weight = 1;
+      // float HLT_weight = 1;
+      float HLT_weight = getHLTweight( myTree.lep_pdgId[0], myTree.lep_pdgId[1], myTree.lep_pt[0], myTree.lep_pt[1], 0 );
+      // variation -1 and +1 are for the weight up and down
+      
       if( !myTree.isData){
-	if( abs(myTree.lep_pdgId[0])==11 )
-	  HLT_weight = 0.993;
-	else if(abs(myTree.lep_pdgId[0])==13 )
-	  HLT_weight = 0.969;
+	// if( abs(myTree.lep_pdgId[0])==11 )
+	//   HLT_weight = 0.993;
+	// else if(abs(myTree.lep_pdgId[0])==13 )
+	//   HLT_weight = 0.969;
 	
 	// 	weight = weight* (HLT_weight * weight_lep0);
-	weight = weight * myTree.weight_lepsf;
-	//	weight = weight* (HLT_weight * myTree.weight_lepsf );
+	//	weight = weight * myTree.weight_lepsf;
+	weight = weight* (HLT_weight * myTree.weight_lepsf );
       }
 
       int nJetHF30_ = 0;
@@ -903,9 +914,11 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
       //if( myTree.zll_ht>=250. && ((myTree.nJet30>1 && myTree.zll_mt2>=200.) || (myTree.zll_met_pt>250.)) );
       //else continue;
 
+      float HLT_weight = getHLTweight( myTree.lep_pdgId[0], myTree.lep_pdgId[1], myTree.lep_pt[0], myTree.lep_pt[1], 0 );
 
       if( !myTree.isData){
-	weight = weight* myTree.weight_lepsf;
+	weight = weight* myTree.weight_lepsf * HLT_weight;
+	//	weight = weight* myTree.weight_lepsf;
 	// weight = weight*(weight_lep0);
       }
 
@@ -1167,4 +1180,39 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
   file->Close();
   delete file;
    
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+float getHLTweight( int lep1_pdgId, int lep2_pdgId, float lep1_pt, float lep2_pt, int variation ){
+
+  float SF = 1.0;
+
+  //di Muon
+  if( abs(lep1_pdgId)==13 && abs(lep2_pdgId)==13 )
+    SF = ( variation==0) ? 0.97 : (( variation == -1 ) ? 0.94 : 1.00  );
+  //di Electron
+  else if( abs(lep1_pdgId)==11 && abs(lep2_pdgId)==11) 
+    if (lep1_pt < 180. && lep2_pt < 35. )
+      SF = ( variation==0) ? 0.91 : (( variation == -1 ) ? 0.84 : 1.00 );
+    else
+      SF = ( variation==0) ? 1.00 : (( variation == -1 ) ? 0.97 : 1.00 );
+  else 
+    if (lep1_pt < 180.)
+      SF = ( variation==0 ) ? 0.92 : (( variation == -1 ) ? 0.89 : 0.95 );
+    else
+      SF = ( variation==0 ) ? 0.97 : (( variation == -1 ) ? 0.92 : 1.00 );
+
+  return SF;
+
 }
