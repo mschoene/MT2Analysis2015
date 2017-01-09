@@ -618,7 +618,7 @@ MT2Analysis<MT2EstimateSyst>* computePurityOF( MT2Analysis<MT2Estimate>* SF, MT2
       float contentSF = SFEst->yield->GetBinContent(ibin);
       float contentOF = OFEst->yield->GetBinContent(ibin);
 
-      float R_sfof = 1.11;
+      float R_sfof = 1.12; //old value 1.11 (used for dec 2016 results)
       float R_sfof_err = 0.15;
 
       float purity = 0.0;
