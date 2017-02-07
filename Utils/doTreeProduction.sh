@@ -6,13 +6,16 @@
 # env -i X509_USER_PROXY=~/.x509up_u`id -u` gfal-ls gsiftp://storage01.lcg.cscs.ch/pnfs/lcg.cscs.ch/cms/trivcat/store/user/mangano
 
 # NB: Insert path starting from /store/user/... The rest will be added automatically
-inputProductionFolder="/store/user/mangano/crab/MT2_8_0_12/prodJuly19_runD_276311-276811_v1"
+#inputProductionFolder="/store/user/mschoene/crab/8_0_11/signal2016_Nov02/"
+
+inputProductionFolder="/store/user/mschoene/crab/8_0_11/signal2017_Jan11/"
+#inputProductionFolder="/store/user/mschoene/crab/8_0_11/mc2016_Nov15"
 
 # In case you want to run the same production twice, adding a post-fix may help
-postFix=""
-#postFix="_chunksCreationFixed"
- 
-
+#postFix=""
+#postFix="_preProc_Jan11"
+postFix="_postProc_Jan12"
+#postFix="_postProc_Dec09"
 
 # For reading input from T2 (default):
 site="lcg.cscs.ch"
@@ -22,18 +25,20 @@ se="storage01"
 #se="t3dcachedb03"
 
 # You should uncomment only one of the two, because data and MC production usually require different settings 
-listOfSamplesFile="postProcessing2016-Data.cfg"  #for data inputs
-#listOfSamplesFile="postProcessing2016-MC.cfg"   # for MC inputs
-
+#listOfSamplesFile="postProcessing2016-Data.cfg"  #for data inputs
+listOfSamplesFile="postProcessing2016-MC.cfg"   # for MC inputs
 
 isCrab=1
 inputPU="MyDataPileupHistogram.root"
-GoldenJSON="$PWD/gold_runF.txt"  #produced, for example for runE, with: filterJSON.py --min=276831 --max=277420 --output=gold_runE.txt gold_json.txt
-doSkimmingPruning=0 #1 as default; 0 for *_forQCD datasets (in data), which don't contain the necessary info to run the skimming and which are already pruned
-applyJSON=1     #0 for MC
+GoldenJSON="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-251642_13TeV_PromptReco_Collisions15_JSON.txt"
+#"$PWD/gold_runF.txt"  #produced, for example for runE, with: filterJSON.py --min=276831 --max=277420 --output=gold_runE.txt gold_json.txt
+
+###CHANGE
+doSkimmingPruning=1 #1 as default; 0 for *_forQCD datasets (in data), which don't contain the necessary info to run the skimming and which are already pruned
+applyJSON=0     #0 for MC
 doFilterTxt=0   #0 for MC
-doAllSF=0       #1 for MC
-doPreProc=0     #0 (only 1 for TTJets or if you want to split MC samples, then run ./doTreeProduction pre first)
+doAllSF=1       #1 for MC
+doPreProc=1     #0 (only 1 for large MC samples (almost all of them now!) or if you want to split MC samples, then run ./doTreeProduction pre first)
 
 
 
@@ -75,6 +80,7 @@ gfalProtocol="gsiftp" # if useXRD disabled, use gfal via the given protocol
 host="${se}.${site}"
 
 inputFolder="/pnfs/"$site"/cms/trivcat"$inputProductionFolder
+
 productionName="$(basename $inputFolder)$postFix" 
 
 outputFolder="/pnfs/psi.ch/cms/trivcat/store/user/`whoami`/MT2production/80X/PostProcessed/"$productionName"/"
@@ -118,6 +124,14 @@ if [[ "$1" = "pre" ]]; then
 	mkdir  $jobsLogsFolder
     fi
 
+    if [ $CMSSW_BASE ]; then
+	myCMSSW=$CMSSW_BASE  
+    else
+	myCMSSW=/cvmfs/cms.cern.ch/slc6_amd64_gcc491/cms/cmssw-patch/CMSSW_7_4_12_patch4
+    fi
+
+    env -i X509_USER_PROXY=~/.x509up_u`id -u` gfal-ls ${gfalProtocol}://t3se01.psi.ch$outputFolder &> /tmp/checkOutputDir
+
 
     while read line; 
     do 
@@ -127,24 +141,36 @@ if [[ "$1" = "pre" ]]; then
 	id=`echo $line |awk '{print $1}'`
 	name=`echo $line |awk '{print $2}'`
 
-	fileList=inputChunkList.txt
+	fileList=inputChunkList_${name}.txt
 	
-	if [ -e inputChunkList.txt ]; then
+	fileList=$jobsLogsFolder/inputChunkList_${name}.txt
+
+	if [ -e inputChunkList_${name}.txt ]; then
 	    echo "deleting the old file list"
 	    rm $fileList
 	fi;
 
 	crabExt=""
 	if [ ${isCrab} = 1 ]; then
-	    crabExt=$(ls $inputFolder/$name/)
+	#crabExt=$(ls $inputFolder/$name/)
+	    echo $(xrdfs $host ls $inputFolder/$name/)
+	    crabExt=$(xrdfs $host ls $inputFolder/$name/)
 	fi;
+	echo "crabExt: " $crabExt;
+
+	
 
 	if [ ${isCrab} = 1 ]; then
-	    for ((i=0; i<10; i++)); do
-		if [ -d $inputFolder/${name}/$crabExt/000${i}/ ]; then
-		    for f in $inputFolder/$name/$crabExt/000${i}/mt2*.root; do
+	    for ((i=0; i<10; i++)); do  #BM: where this 10 is coming from ?? 
+		xrdfs $host ls $crabExt/000${i}/ &> /dev/null;
+		remoteDirectoryExist=`echo $?`
+		if [ "$remoteDirectoryExist" -eq "0" ]; then
+		    remoteFiles=`xrdfs $host ls $crabExt/000${i}/ |grep mt2`
+		    for f in $remoteFiles; do
 			echo $f>>$fileList
 		    done;
+		else
+		    break;
 		fi;
 	    done;
 	else
@@ -152,43 +178,61 @@ if [[ "$1" = "pre" ]]; then
 		echo $f>>$fileList
 	    done;
 	fi;
-	
 
-	numFiles=$(wc -l inputChunkList.txt | awk '{print $1}')
+
+	numFiles=$(wc -l $fileList | awk '{print $1}')
 	echo "number of files = " $numFiles
-	
-	if [ -d $inputFolder/${name}_ext/ ]; then
-	    if [ ${isCrab} = 1 ]; then
-    		crabExt=$(ls $inputFolder/${name}_ext/)
-		for ((i=0; i<10; i++)); do
-		    if [ -d $inputFolder/${name}_ext/$crabExt/000${i}/ ]; then
-			for f in $inputFolder/${name}_ext/${crabExt}/000${i}/mt2*.root; do
-			    echo $f>>$fileList
-			done;
-		    fi;
-		done;
-	    else
-		for f in $inputFolder/${name}_ext_${i}/mt2*.root; do
-		    echo $f>>$fileList
-		done;
-	    fi;
+
+        ###And now for the extensions if they exist	
+	crabExt=""
+	if [ ${isCrab} = 1 ]; then
+	#crabExt=$(ls $inputFolder/$name/)
+	    echo "input to xrdfs: " xrdfs $host ls $inputFolder/${name}_ext/
+	    echo $(xrdfs $host ls $inputFolder/${name}_ext/)
+	    crabExt=$(xrdfs $host ls $inputFolder/${name}_ext/)
 	fi;
-	    
+	echo "crabExt: " $crabExt;
 
-	numFiles=$(wc -l inputChunkList.txt | awk '{print $1}')
+	
+	if [ ${isCrab} = 1 ]; then
+	    for ((i=0; i<10; i++)); do  #BM: where this 10 is coming from ?? 
+		xrdfs $host ls $crabExt/000${i}/ &> /dev/null;
+		remoteDirectoryExist=`echo $?`
+		if [ "$remoteDirectoryExist" -eq "0" ]; then
+		    remoteFiles=`xrdfs $host ls $crabExt/000${i}/ |grep mt2`
+		    for f in $remoteFiles; do
+			echo $f>>$fileList
+		    done;
+		else
+		    break;
+		fi;
+	    done;
+	else
+	    for f in $inputFolder/$name/mt2*.root; do
+		echo $f>>$fileList
+	    done;
+	fi;
+
+	numFiles=$(wc -l $fileList | awk '{print $1}')
 	echo "number of files = " $numFiles
 
-	awk '$0="dcap://t3se01.psi.ch:22125/"$0' $fileList > inputChunkList_dcap.txt 
-	mv inputChunkList_dcap.txt inputChunkList.txt
-	cp  inputChunkList.txt  inputChunkList_${name}.txt
-	fileListTemp=inputChunkList_${name}.txt
-    #   fileList=inputChunkList_dcap.txt
-	
+
+	if [ "$site" == "psi.ch" ]; then
+	    sed -e "s#^#dcap://t3se01.psi.ch:22125/#" $jobsLogsFolder/inputChunkList_${name}.txt > $jobsLogsFolder/temp_${name}_dcap.txt
+	else
+    	    sed -e "s#^#root://$host/#" $jobsLogsFolder/inputChunkList_${name}.txt > $jobsLogsFolder/temp_${name}_dcap.txt
+	fi
+	mv $jobsLogsFolder/temp_${name}_dcap.txt $jobsLogsFolder/chunkPart_${name}.txt
+
+
+	fileListTemp=$jobsLogsFolder/chunkPart_${name}.txt
+
 	scriptName=batchScript_${name}.sh
 
-	outputFile=${name}_pre.cfg
+	outputFile=${name}_pre #old with .cfg
 
 	cat <<EOF > $scriptName
+
 #!/bin/bash
 shopt -s expand_aliases
 alias semkdir="env -i X509_USER_PROXY=~/.x509up_u`id -u` gfal-mkdir -p"
@@ -198,7 +242,7 @@ alias secp="env -i X509_USER_PROXY=~/.x509up_u`id -u` gfal-copy"
 #### The following configurations you should not need to change
 # Job name (defines name seen in monitoring by qstat and the
 #     job script's stderr/stdout names)
-#$ -N pP_${name}_`whoami`
+#$ -N preP_${name}_`whoami`
 
 ### Specify the queue on which to run
 #$ -q short.q
@@ -215,9 +259,8 @@ alias secp="env -i X509_USER_PROXY=~/.x509up_u`id -u` gfal-copy"
 #$ -o $jobsLogsFolder/${name}.out
 #$ -e $jobsLogsFolder/${name}.err
 
-
 source $VO_CMS_SW_DIR/cmsset_default.sh
-source /mnt/t3nfs01/data01/swshare/glite/external/etc/profile.d/grid-env.sh
+#source /mnt/t3nfs01/data01/swshare/glite/external/etc/profile.d/grid-env.sh
 export SCRAM_ARCH=slc6_amd64_gcc491
 export LD_LIBRARY_PATH=/mnt/t3nfs01/data01/swshare/glite/d-cache/dcap/lib/:$LD_LIBRARY_PATH
 echo "Loading your CMSSW release"
@@ -225,13 +268,16 @@ echo "from $myCMSSW"
 cd $myCMSSW
 eval `scramv1 runtime -sh`
 cd -
-echo "preProcessing(\"$name\",\"$inputFolder\",\"$outputFile\",\"$treeName\",$id,$fileList);"
-echo "gROOT->LoadMacro(\"preProcessing.C+\"); preProcessing(\"$name\",\"$inputFolder\",\"$outputFile\",\"$treeName\",$id,\"$fileListTemp\"); gSystem->Exit(0);" |root.exe -b -l ;
+echo "preProcessing(\"$name\",\"$inputFolder\",\"$outputFile\",\"$treeName\",$id,\"$fileListTemp\");"
+echo "gSystem->Load(\"BTagCalibrationStandalone_cc.so\");gROOT->LoadMacro(\"preProcessing.C+\"); preProcessing(\"$name\",\"$inputFolder\",\"$outputFile\",\"$treeName\",$id,\"$fileListTemp\"); gSystem->Exit(0);" |root.exe -b -l ;
 
 
 EOF
 
-	qsub -q short.q $scriptName;
+###qsub  -q short.q -l h_vmem=5g batchScript_${name}.sh;
+
+	qsub -q long.q -l h_vmem=5g $scriptName; 
+#	qsub -q all.q $scriptName;
 	rm $scriptName;
 	
     done < $listOfSamplesFile
@@ -320,9 +366,6 @@ do
     doPruning="true"
     if [ $id -lt 10 ]; then
 	doPruning="false"
-    fi;
-
-    if [ $id -lt 10 ]; then
 	doAllSF="false"
     fi;
 
@@ -360,6 +403,7 @@ do
 	    xrdfs $host ls $crabExt/000${i}/ &> /dev/null;
 	    remoteDirectoryExist=`echo $?`
 	    if [ "$remoteDirectoryExist" -eq "0" ]; then
+		echo "adding files in 000"${i}" folders"
 		remoteFiles=`xrdfs $host ls $crabExt/000${i}/ |grep mt2`
 		for f in $remoteFiles; do
 		    echo $f>>$fileList
@@ -374,27 +418,37 @@ do
 	done;
     fi;
     
-
     numFiles=$(wc -l $fileList | awk '{print $1}')
     echo "number of files = " $numFiles
     
-    #BM: this is only for MC with extension. I've not fixed this for T2 yet. Do the same as lines above
-    if [ -d $inputFolder/${name}_ext/ ]; then
-	if [ ${isCrab} = 1 ]; then
-    	    crabExt=$(ls $inputFolder/${name}_ext/)
-	    for ((i=0; i<10; i++)); do
-		if [ -d $inputFolder/${name}_ext/$crabExt/000${i}/ ]; then
-		    for f in $inputFolder/${name}_ext/${crabExt}/000${i}/mt2*.root; do
-			echo $f>>$fileList
-		    done;
-		fi;
-	    done;
-	else
-	    for f in $inputFolder/${name}_ext_${i}/mt2*.root; do
-		echo $f>>$fileList
-	    done;
-	fi;
+    ###And now for the extensions if they exist########################
+    crabExt=""
+    if [ ${isCrab} = 1 ]; then
+	echo "input to xrdfs: " xrdfs $host ls $inputFolder/${name}_ext/
+	crabExt=$(xrdfs $host ls $inputFolder/${name}_ext/)
     fi;
+    echo "crabExt: " $crabExt;
+
+    
+    if [ ${isCrab} = 1 ]; then
+	for ((i=0; i<10; i++)); do  #BM: where this 10 is coming from ?? 
+	    xrdfs $host ls $crabExt/000${i}/ &> /dev/null;
+	    remoteDirectoryExist=`echo $?`
+	    if [ "$remoteDirectoryExist" -eq "0" ]; then
+		remoteFiles=`xrdfs $host ls $crabExt/000${i}/ |grep mt2`
+		for f in $remoteFiles; do
+		    echo $f>>$fileList
+		done;
+	    else
+		break;
+	    fi;
+	done;
+    else
+	for f in $inputFolder/$name/mt2*.root; do
+	    echo $f>>$fileList
+	done;
+    fi;
+
 
     #numFiles=$(wc -l inputChunkList.txt | awk '{print $1}')
     numFiles=$(wc -l $fileList | awk '{print $1}')
@@ -405,11 +459,11 @@ do
     preProcFile=""
 
     if [[ (( $doPreProc -eq 1 && (( $numFiles -gt $maxNfiles )) ))  || (( $id -lt 10 )) ]]; then
-	echo "File will be split into multiple files for speed and memory limit purposes"
+   	echo "File will be split into multiple files for speed and memory limit purposes"
 	counter=0;
-	maxNfiles=100;
+	maxNfiles=200;
 	if [[ $id > 10 ]]; then
-	    preProcFile=${name}_pre.cfg;
+	    preProcFile=${name}_pre;
 	fi;
     fi;
     
@@ -506,7 +560,9 @@ semkdir ${gfalProtocol}://t3se01.psi.ch/$outputFolder
 
 echo "postProcessing(\"$name\",\"$counterFile\",\"$outputFile\",\"$treeName\",$filter,$kfactor,$xsec,$id,\"$crabExt\",\"$inputPU\",\"$PUvar\",\"$jobsLogsFolder/goodruns_golden.txt\",\"$jobsLogsFolder/goodruns_silver.txt\",$applyJSON,$doAllSF,$doSilver,\"$preProcFile\"); gSystem->Exit(0);"
 
-echo "gSystem->Load(\"goodrunClass_cc.so\");  gSystem->Load(\"BTagCalibrationStandalone_cc.so\"); gROOT->LoadMacro(\"postProcessing.C\"); postProcessing(\"$name\",\"$counterFile\",\"$outputFile\",\"$treeName\",$filter,$kfactor,$xsec,$id,\"$crabExt\",\"$inputPU\",\"$PUvar\",\"$jobsLogsFolder/goodruns_golden.txt\",\"$jobsLogsFolder/goodruns_silver.txt\",$applyJSON,$doAllSF,$doSilver,\"$preProcFile\"); gSystem->Exit(0);" |root.exe -b -l ;
+echo "gSystem->Load(\"goodrunClass_cc.so\");  gSystem->Load(\"BTagCalibrationStandalone_cc.so\"); gROOT->LoadMacro(\"postProcessing.C\"); postProcessing(\"$name\",\"$counterFile\",\"$outputFile\",\"$treeName\",$filter,$kfactor,$xsec,$id,\"$crabExt\",\"$inputPU\",\"$PUvar\",$applyJSON,$doAllSF,$doSilver,\"$preProcFile\"); gSystem->Exit(0);" |root.exe -b -l ;
+
+####echo "gSystem->Load(\"goodrunClass_cc.so\");  gSystem->Load(\"BTagCalibrationStandalone_cc.so\"); gROOT->LoadMacro(\"postProcessing.C\"); postProcessing(\"$name\",\"$counterFile\",\"$outputFile\",\"$treeName\",$filter,$kfactor,$xsec,$id,\"$crabExt\",\"$inputPU\",\"$PUvar\",\"$jobsLogsFolder/goodruns_golden.txt\",\"$jobsLogsFolder/goodruns_silver.txt\",$applyJSON,$doAllSF,$doSilver,\"$preProcFile\"); gSystem->Exit(0);" |root.exe -b -l ;
 
 
 
@@ -524,21 +580,21 @@ rm $outputFile
 if [[ $doSkimmingPruning == 1 ]]; then
 #Normal skim
 skimmingPruningCfg="${workingFolder}/skimmingPruning_${counterName}.cfg"
-     cat skimmingPruning.cfg |grep -v \# | sed  "s#INPUTDIR#${outputFolder}#" |sed "s#INPUTFILTER#${counterName}#" \
+     cat skimmingPruning.cfg |grep -v \# | sed  "s#INPUTDIR#${outputFolder}#" |sed "s#INPUTFILTER#${counterName}_#" \
  	| sed "s#OUTPUTDIR#${outputFolder}/skimAndPrune#" | sed "s#DOPRUNING#${doPruning}#" > \$skimmingPruningCfg
 ./runSkimmingPruning.sh \$skimmingPruningCfg
 rm \$skimmingPruningCfg
 
 #qcd skim
 skimmingPruningCfgQCD="${workingFolder}/skimmingPruningQCD_${counterName}.cfg"
-    cat skimmingPruningQCD.cfg |grep -v \# | sed  "s#INPUTDIR#${outputFolder}#" |sed "s#INPUTFILTER#${counterName}#" \
+    cat skimmingPruningQCD.cfg |grep -v \# | sed  "s#INPUTDIR#${outputFolder}#" |sed "s#INPUTFILTER#${counterName}_#" \
 	| sed "s#OUTPUTDIR#${outputFolder}/QCDskimAndPrune#" | sed "s#DOPRUNING#${doPruning}#" > \$skimmingPruningCfgQCD
 ./runSkimmingPruning.sh \$skimmingPruningCfgQCD
 rm \$skimmingPruningCfgQCD
 
 #qcd skim for monojet
 skimmingPruningCfgMonoJet="${workingFolder}/skimmingPruningMonoJet_${counterName}.cfg"
-    cat skimmingPruningMonoJet.cfg |grep -v \# | sed  "s#INPUTDIR#${outputFolder}#" |sed "s#INPUTFILTER#${counterName}#" \
+    cat skimmingPruningMonoJet.cfg |grep -v \# | sed  "s#INPUTDIR#${outputFolder}#" |sed "s#INPUTFILTER#${counterName}_#" \
 	| sed "s#OUTPUTDIR#${outputFolder}/QCDMonoJetSkimAndPrune#" | sed "s#DOPRUNING#${doPruning}#" > \$skimmingPruningCfgMonoJet
 ./runSkimmingPruning.sh \$skimmingPruningCfgMonoJet
 rm \$skimmingPruningCfgMonoJet
@@ -554,7 +610,8 @@ EOF
 
         #if you have a big file and no time to change the code to be smoother: qsub  -q short.q -l h_vmem=5g batchScript_${name}.sh;
 
-	qsub -q short.q $scriptName;
+	qsub -q all.q $scriptName;
+##	qsub -q short.q $scriptName;
 	rm $scriptName;
 
 	if (($counter < 0)); then
@@ -604,12 +661,20 @@ if [[ "$1" = "postCheck" ]]; then
 
 fi
 
+
+
+
+
 if [[ "$1" = "mergeData" ]]; then
+
     seString="root://t3se01.psi.ch/"
 
     # It assumes that the 'doTreeProduction mergeData' script is run after the 'doTreeProduction post' step.
     # If this is not the case, the 'input' variable here may need to be set properly by hand
+    # no automated yet to merge the three skim flavours... (un)comment out as necessary
     input="${outputFolder}/skimAndPrune/"
+    #input="${outputFolder}/QCDskimAndPrune/"
+    #input="${outputFolder}/QCDMonoJetSkimAndPrune/"
 
 
     echo "InputFolder for mergeData script: " $input
@@ -619,13 +684,20 @@ if [[ "$1" = "mergeData" ]]; then
     mkdir $tmpOutputDir
     inputFilesList="${tmpOutputDir}/fileList.txt"
 
+    # Add other relevant strings here if you want to merge more than these 3 datasets
+    #datasets="MET HTMHT JetHT"
+    #datasets="MET HTMHT JetHT SingleElectron SingleMuon SinglePhoton DoubleEG DoubleMuon MuonEG"
+    datasets="DoubleEG DoubleMuon HTMHT JetHT MET MuonEG SingleElectron SingleMuon SinglePhoton"
 
-    rootFileName="mergedMET_HTMHT_JetHT.root"
+    rootFileName="merged"
+    for d in $datasets; do
+	rootFileName=${rootFileName}_$d
+    done
+    rootFileName=${rootFileName}.root
     tmpOutputFile=$tmpOutputDir/$rootFileName
     outputFile=$input/$rootFileName
 
-    # Add other relevant strings here if you want to merge more than these 3 datasets
-    for x in "MET" "HTMHT" "JetHT"; do
+    for x in $datasets; do
 	prefix=$x
 	for x in $input/${prefix}_*.root; do echo $seString$x >> $inputFilesList ; done;
     done
@@ -639,8 +711,6 @@ if [[ "$1" = "mergeData" ]]; then
     rm $inputFilesList
     rmdir $tmpOutputDir
 fi
-
-
 
 
 if [[ "$1" = "addLepSF" ]]; then
