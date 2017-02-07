@@ -16,17 +16,17 @@ postFix="_postProc_Jan12"
 #postFix="_postProc_Dec09"
 
 # For reading input from T2 (default):
-#site="lcg.cscs.ch"
-#se="storage01"
+site="lcg.cscs.ch"
+se="storage01"
 # or alternatively for reading from T3 (for legacy)
-site="psi.ch"
-se="t3dcachedb03"
+#site="psi.ch"
+#se="t3dcachedb03"
 
 # You should uncomment only one of the two, because data and MC production usually require different settings 
 #listOfSamplesFile="postProcessing2016-Data.cfg"  #for data inputs
 listOfSamplesFile="postProcessing2016-MC.cfg"   # for MC inputs
 
-isCrab=0
+isCrab=1
 inputPU="MyDataPileupHistogram.root"
 GoldenJSON="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-251642_13TeV_PromptReco_Collisions15_JSON.txt"
 #"$PWD/gold_runF.txt"  #produced, for example for runE, with: filterJSON.py --min=276831 --max=277420 --output=gold_runE.txt gold_json.txt
@@ -684,16 +684,9 @@ if [[ "$1" = "mergeData" ]]; then
     inputFilesList="${tmpOutputDir}/fileList.txt"
 
     # Add other relevant strings here if you want to merge more than these 3 datasets
-<<<<<<< HEAD
-#    datasets="MET HTMHT JetHT"
-#    datasets="MET HTMHT JetHT SingleElectron SingleMuon SinglePhoton DoubleEG DoubleMuon MuonEG"
-    datasets="MET HTMHT JetHT DoubleMuon"
-#    datasets="DoubleMuon"
-=======
     #datasets="MET HTMHT JetHT"
     #datasets="MET HTMHT JetHT SingleElectron SingleMuon SinglePhoton DoubleEG DoubleMuon MuonEG"
     datasets="DoubleEG DoubleMuon HTMHT JetHT MET MuonEG SingleElectron SingleMuon SinglePhoton"
->>>>>>> ana-mt2
 
     rootFileName="merged"
     for d in $datasets; do
