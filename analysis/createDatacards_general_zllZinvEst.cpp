@@ -110,7 +110,6 @@ int main( int argc, char* argv[] ) {
   float err_llep_shape = 0.40;
   //OLD  float err_llep_lepEff = 0.12; // Uncertainty on llep estimate from lepton efficiency (12%)
   //float err_llep_lepEff = 0.05; // Uncertainty on llep estimate from lepton efficiency (12%)
-  float err_llep_JEC    = 0.05; 
   float err_llep_mtcut  = 0.03; 
   float err_llep_tauEff  = 0.01; 
   float err_llep_btagEff_heavy_7j1b = 0.01;   
@@ -125,7 +124,7 @@ int main( int argc, char* argv[] ) {
   float err_zinv_uncorr_2b = 1.0;
 
   //float err_zinv_zll_SF = 0.00; //rough guess of 3% hlt and 3%for lep sf
-  float err_zinv_zll_SF = 0.05; //rough guess of 3% hlt and 3%for lep sf
+  //float err_zinv_zll_SF = 0.05; //rough guess of 3% hlt and 3%for lep sf
 
   float err_zinv_puritySyst = 0.1; // 10%, including 5% on purity + 8% on fragmentation
 
@@ -136,7 +135,6 @@ int main( int argc, char* argv[] ) {
   
   float err_lumi_corr   = 0.062; // Uncertainty on luminosity (6.2% for 2016 public results)
   // float err_lumi_corr   = 0.046; // Uncertainty on luminosity (6.2% for 2016 public results)
-  //  float err_lumi_corr   = 0.062; // Uncertainty on luminosity (6.2% for 2016 public results)
 
   float err_jec_llep = 0.02;
   float err_jec_zinv= 0.02; //special case for VL in line
@@ -398,10 +396,7 @@ int main( int argc, char* argv[] ) {
       qcd_fjetsCR_name = thisQCDCR->getName();
 
       // }
-      // For region 2-6j, 3b, take R(B) from 4-6 jets region 
-      // also for very low ht, 4-inf
-      // UPDATE: they got their own regions now
-      //MT2Region* thisQCDCR;
+      // For regions 2-6j, 3b, very low ht, 4-inf use special regionsR(B) from 4-6 jets region 
       if( iR->nJetsMin()==4 &&  iR->htMin()==250 && iR->htMax()==450 )
 	thisQCDCR = new MT2Region( 250, -1, 4, -1, 0, -1 );
       else if( iR->nJetsMin()==2 && iR->nBJetsMin()==3 &&  iR->htMin()==250 && iR->htMax()==450 )
@@ -657,7 +652,7 @@ int main( int argc, char* argv[] ) {
 
 	datacard << "jec    lnN    - " << 1.+ err_jec_zinv  << " " << 1.+ err_jec_llep << "  - "  << std::endl;
 
-	datacard << "lep_eff    lnN    - " << 1.05 << " " << 1.05 << "  - "  << std::endl;
+	datacard << "lep_eff    lnN    - " << 1. + err_lep_eff << " " << 1.+ err_lep_eff << "  - "  << std::endl;
 
 	if(doSignalContamination && doSimultaneousFit)
 	  datacard << "sig_MCstat_1L_" << llepCR_name << " lnN - - - - VVV -" << std::endl;
@@ -687,9 +682,9 @@ int main( int argc, char* argv[] ) {
 	
 	datacard << "lumi_syst    lnN    " << 1.+err_lumi_corr << " - - -" << std::endl;
 
-	datacard << "lep_eff    lnN    - " << 1.05 << " " << 1.05 << "  - "  << std::endl;
+	datacard << "lep_eff    lnN    - " << 1. + err_lep_eff << " " << 1. + err_lep_eff << "  - "  << std::endl;
 	datacard << "jec    lnN    - " << 1.+ err_jec_zinv  << " " << 1.+ err_jec_llep << "  - "  << std::endl;
-	datacard << "renorm    lnN    - " << 1.01 << " " << 1.01 << "  - "  << std::endl;
+	datacard << "renorm    lnN    - " << 1. + err_llep_renorm << " " << 1. + err_llep_renorm << "  - "  << std::endl;
 
 	if(!includeSignalUnc)
 	  datacard << "sig_syst_" << binName << " lnN 1.2 - - -" << std::endl; 
@@ -733,13 +728,7 @@ int main( int argc, char* argv[] ) {
       int qcd_nCR  = 0;
       int llep_nCR = 0;
       
-
-      //float summedErr =  0.05*0.05 + 0.05*0.05 + 0.01*0.01;
-
-
       float summedErr = err_jec_zinv* err_jec_zinv +  err_jec_llep*err_jec_llep + err_llep_renorm*err_llep_renorm;
-
-
       zinvZll_systUp += summedErr;
       zinvZll_systDn += summedErr;
       llep_systUp    += summedErr;
@@ -1650,7 +1639,7 @@ int main( int argc, char* argv[] ) {
        //table << "zinv    " << yield_zinv << " " << zinv_statUp << " " << zinv_statDn << "  " << zinv_systUp << " " << zinv_systDn << std::endl;
        table << "llep    " << yield_llep << " " << llep_statUp << " " << llep_statDn << "  " << llep_systUp << " " << llep_systDn << std::endl;
        table << "qcd     " << yield_qcd << " " << qcd_statUp << " " << qcd_statDn << "  " << qcd_systUp << " " << qcd_systDn << std::endl;
-       table << "data    " << std::setprecision(3) << nData << std::setprecision(3) <<std::endl;
+       table << "data    " << nData  <<std::endl;
 
        // table << "zinv_nCR    " << std::setprecision(3) << zinv_nCR << std::setprecision(3) <<std::endl;
        table << "zinv_nCR " << std::setprecision(3) << zinv_zll_nCR << std::setprecision(3) <<std::endl;
@@ -1685,25 +1674,17 @@ int main( int argc, char* argv[] ) {
   if( model == "T2tt" || model == "T1tttt" )
     modelName += "_sigcontam";
 
-  // if( model == "T1qqqq") modelName+="_1900_1";
-  //  if( model == "T2qq") modelName+="_1500_1";
-
-  std::cout << "Model name = " << modelName << std::endl;
-
-
+  // // for running on ETH processed signal 
   // signals       = MT2Analysis<MT2EstimateSigContSyst>::readAllSystFromFile( dir + "/analyses.root", modelName, "isr" );
-
   // //   llep = MT2Analysis<MT2Estimate>::readFromFile( dir + "/analyses.root", "llepEstimate" );
- 
   // if( includeSignalUnc ){
   //   signals_isr       = MT2Analysis<MT2EstimateSigSyst>::readAllSystFromFile( dir + "/analyses.root", modelName, "isr" );
   //   signals_bTagHeavy = MT2Analysis<MT2EstimateSigSyst>::readAllSystFromFile( dir + "/analyses.root", modelName, "btagsf_heavy" );
   //   signals_bTagLight = MT2Analysis<MT2EstimateSigSyst>::readAllSystFromFile( dir + "/analyses.root", modelName, "btagsf_light" );
-    
+
   //   if( addSigLepSF && (( model == "T2tt" || model == "T1tttt" )) )
   //     signals_lepEff = MT2Analysis<MT2EstimateSigSyst>::readAllSystFromFile( dir + "/analyses.root", modelName, "lepeff" );
   // }
-
 
 
   signals       = MT2Analysis<MT2EstimateSigContSyst>::readAllSystFromFile( "./signalScansFromDominick/"+modelName+"_eth.root", modelName, "isr" );
@@ -1727,11 +1708,6 @@ int main( int argc, char* argv[] ) {
 
   for( unsigned  isig=0; isig<signals.size(); ++isig ) {
 
-    std::cout << "looping over signals" << std::endl;
-
-    //   std::cout << signals[isig]->getName() << std::endl;
-
-    
     // signals[isig]           ->setName(model.c_str());
     // if(includeSignalUnc){
     //   signals_isr[isig]       ->setName(model.c_str());
@@ -1754,8 +1730,6 @@ int main( int argc, char* argv[] ) {
     // Local path for datacards
     std::string path = dir + "/datacards_" + sigName;
     system(Form("mkdir -p %s", path.c_str()));
-
-    std::cout << "made the directory" << std::endl;
 
     // SE path for datacards
     std::string pathSE = "";
@@ -2002,9 +1976,7 @@ int main( int argc, char* argv[] ) {
 
 	      sig*=xs_norm; // To eventually rescale xsec.
 	      
-	      //Scaling to lumi (so one doesn't have to reloop to change lumi)
-	      //sig*=(12.93+5.19); // to be changed to 
-	   
+	      //Scaling to lumi (so one doesn't have to reloop to change lumi), for ETH, not for SnT histograms
 	      //sig *= cfg.lumi();
 
 	      // Siganl Contamination
@@ -2030,7 +2002,7 @@ int main( int argc, char* argv[] ) {
 		isrErr = this_signal3d_isr_Up->GetBinContent(iBin, iBinY, iBinZ);
 		//isrErr = 2 - isrErr/sig;
 		isrErr = isrErr/sig; // before without the 1+
-		//		isrErr = 1. + isrErr/sig; // before without the 1+
+		//isrErr = 1. + isrErr/sig; // before without the 1+
 		//isrErr = isrErr/sig;
 	      
 		bTagErr_heavy = this_signal3d_bTagHeavy_Up->GetBinContent(iBin, iBinY, iBinZ);

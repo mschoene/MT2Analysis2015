@@ -145,7 +145,6 @@ int main( int argc, char* argv[] ) {
 //  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( sigPath + "/T2tt_eth.root", "T2tt") );
 //  analysesSignal[8]->setName("T2tt 200, 100");
 
-  
    analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( sigPath + "/T1bbbb_eth.root", "T1bbbb") );
    //  analysesSignal[0]->setName("T1bbbb 1500, 100");
    analysesSignal[0]->setName("pp #rightarrow #tilde{g}#tilde{g}, #tilde{g} #rightarrow b#bar{b}#tilde{#chi}_{1}^{0}");
@@ -174,7 +173,6 @@ int main( int argc, char* argv[] ) {
 
   analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( sigPath + "/T2qq_eth.root", "T2qq") );
   analysesSignal[8]->setName("T2qq 500, 300");
-
 
 
   analysesSignalCont.push_back( MT2Analysis<MT2EstimateSigContSyst>::readSystFromFile( sigPath + "/T1tttt_sigcontam_eth.root", "T1tttt_sigcontam", "isr") );
@@ -265,9 +263,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
   styleSig.push_back(1);
 
   int bgSize = 3;
-  //  int sigSize = 9;
-  //  int sigContSize = 0;
-  int sigSize = 9;//9;
+  int sigSize = 9;;
   int sigContSize = 5;
 
   int S=0;
@@ -425,8 +421,6 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
         binY = h_sig3d[s]->GetYaxis()->FindBin(m1[s]);
         binZ = h_sig3d[s]->GetZaxis()->FindBin(m2[s]);
         h_sig[s] = h_sig3d[s]->ProjectionX(Form("mt2_%d", s), binY, binY, binZ, binZ);
-
-	std::cout << std::endl << std::endl << "SIGNAL: " << h_sig[s]->Integral() << std::endl << std::endl<< std::endl;
 
       }
 
@@ -1215,6 +1209,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
     htBox[iHT] = new TPaveText(0.4, 0.9-0.06+0.02, 0.7, 0.85+0.02, "brNDC");
     if(drawSignals)
       htBox[iHT] = new TPaveText(0.4, 0.9-0.06+0.02+0.04, 0.7, 0.85+0.02+0.04, "brNDC");
+
     htBox[iHT]->AddText( htRegions[iHT].c_str() );
     
     htBox[iHT]->SetBorderSize(0);
@@ -1774,7 +1769,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
   }
   else
     //    h2_axes_ratio_2 = new TH2D("axes_ratio_2", "", 10, oldBin, thisBin, 10, 0.2, 1.8 );
-    h2_axes_ratio_2 = new TH2D("axes_ratio_2", "", 10, oldBin, thisBin, 10, 0., 4.0 );
+    h2_axes_ratio_2 = new TH2D("axes_ratio_2", "", 10, oldBin, thisBin, 10, 0., 2 );
 
   //  TH2D* h2_axes_ratio_2 = new TH2D("axes_ratio_2", "", 10, oldBin, thisBin, 10, 0., 3.0 );
   h2_axes_ratio_2->SetStats(0);
@@ -1802,7 +1797,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
   ibin = oldBin;
   for(int nR=0; nR<11; nR++){
     ibin += nBins_[12+7+nR];
-    line->DrawLine(ibin,0,ibin,4);
+    line->DrawLine(ibin,0,ibin,2);
   }
 
   gPad->RedrawAxis();
@@ -1897,7 +1892,6 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
     text->SetTextFont(62);
     text->SetTextSize(0.030);
 
-
     float y=bot+(1-top-bot)*0.85;
     if (xcenter>1-right-0.19)
       y=0.67;
@@ -1946,7 +1940,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
   }
   else
     //    h2_axes_ratio_3 = new TH2D("axes_ratio_3", "", 10, oldBin, thisBin, 10, 0., 2.0 );
-    h2_axes_ratio_3 = new TH2D("axes_ratio_3", "", 10, oldBin, thisBin, 10, 0., 2.5 );
+    h2_axes_ratio_3 = new TH2D("axes_ratio_3", "", 10, oldBin, thisBin, 10, 0., 2);
 
   //  TH2D* h2_axes_ratio_3 = new TH2D("axes_ratio_3", "", 10, oldBin, thisBin, 10, 0., 3.0 );
   h2_axes_ratio_3->SetStats(0);
@@ -1974,7 +1968,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
   ibin = oldBin;
   for(int nR=0; nR<11; nR++){
     ibin += nBins_[12+7+11+nR];
-    line->DrawLine(ibin,0.,ibin,2.5);
+    line->DrawLine(ibin,0.,ibin,2);
   }
 
   gPad->RedrawAxis();
@@ -2119,7 +2113,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
   }
   else
     //    h2_axes_ratio_4 = new TH2D("axes_ratio_4", "", 10, oldBin, thisBin, 10, 0., 2.0 );
-    h2_axes_ratio_4 = new TH2D("axes_ratio_4", "", 10, oldBin, thisBin, 10, 0., 4.0 );
+    h2_axes_ratio_4 = new TH2D("axes_ratio_4", "", 10, oldBin, thisBin, 10, 0., 3.5 );
 
   //  TH2D* h2_axes_ratio_4 = new TH2D("axes_ratio_4", "", 10, oldBin, thisBin, 10, 0., 3.0 );
   h2_axes_ratio_4->SetStats(0);
@@ -2147,7 +2141,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
   ibin = oldBin;
   for(int nR=0; nR<11; nR++){
     ibin += nBins_[12+7+11*2+nR];
-    line->DrawLine(ibin,0,ibin,4.0);
+    line->DrawLine(ibin,0,ibin,3.5);
   }
 
   
@@ -2220,6 +2214,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
 //  haxes->GetXaxis()->SetLabelSize(0.042);
 //
 //  haxes->Draw("A");
+
   hestimate_all->Draw("");  
 
   bgStack.Draw("histo,same");
@@ -2348,7 +2343,6 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
 
   gPad->SetLogy();
 
-
   hestimate_all->Draw("");
   bgStack.Draw("histo, same");
   hestimate_all->Draw("E2,same");
@@ -2362,7 +2356,6 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
   htBox[5]->Draw("same");
 
   legend->Draw("same");
-
 
   left  = gPad->GetLeftMargin();
   right = gPad->GetRightMargin();
@@ -2416,7 +2409,6 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
 
 
   }
-
 
   gPad->RedrawAxis();
 

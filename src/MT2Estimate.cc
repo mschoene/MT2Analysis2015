@@ -99,7 +99,7 @@ void MT2Estimate::rebinYields( MT2Analysis<MT2Estimate>* analysis, int nBins, fl
   double bins[nBins+1];
   double step = (xMax-xMin)/(double)nBins;
 
-  for(int i=0; i < nBins + 1; ++i)
+  for(int i=0; i < nBins+1; i++)
     bins[i] = xMin + ((double)i )* step;
   
 
@@ -379,14 +379,14 @@ MT2Analysis<MT2Estimate>* MT2Estimate::makeIntegralAnalysisFromEstimate( const s
     thisYield->Sumw2();
 
     //    for( int iBin = 1; iBin < thisEstimate->yield->GetNbinsX()+1; ++iBin ){
-    for( int iBin = 1; iBin <= nBins; ++iBin ){
+    for( int iBin = 1; iBin <= nBins+1; ++iBin ){
 
       thisYield->SetBinContent(iBin, integral);
       thisYield->SetBinError(iBin, error);
       thisEstimate->yield = (TH1D*) thisYield->Clone((thisEstimate->yield->GetName()));
       
-//      thisEstimate->yield->SetBinContent(iBin, integral);
-//      thisEstimate->yield->SetBinError(iBin, error);
+      //      thisEstimate->yield->SetBinContent(iBin, integral);
+      //      thisEstimate->yield->SetBinError(iBin, error);
 
       for( int jBin = 1; jBin < thisEstimate->yield3d->GetNbinsY()+1; ++jBin )
 	for( int kBin = 1; kBin < thisEstimate->yield3d->GetNbinsZ()+1; ++kBin ){

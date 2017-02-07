@@ -1467,7 +1467,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
     h2_axes_ratio_4 = new TH2D("axes_ratio_4", "", 10, oldBin, thisBin, 10, 0.1, 10.0 );
   }
   else
-    h2_axes_ratio_4 = new TH2D("axes_ratio_4", "", 10, oldBin, thisBin, 10, 0., 4.0 );
+    h2_axes_ratio_4 = new TH2D("axes_ratio_4", "", 10, oldBin, thisBin, 10, 0., 5.0 );
   //h2_axes_ratio_4 = new TH2D("axes_ratio_4", "", 10, oldBin, thisBin, 10, 0., 2.0 );
 
 
@@ -1496,7 +1496,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   ibin = oldBin;
   for(int nR=0; nR<11; nR++){
     ibin += nBins_[12+7+11*2+nR];
-    line->DrawLine(ibin,0,ibin,4.0);
+    line->DrawLine(ibin,0,ibin,5.0);
   }
 
   gPad->RedrawAxis();

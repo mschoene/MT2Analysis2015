@@ -1,0 +1,46 @@
+
+# step 1) get trigger prescales
+# edit scripts/prescales.py to point to the right trees for which you want to calculate the prescales
+# these are trees for the JetHT dataset from the "_forQCD" production
+# run the script to get the values and plot:
+> python -i scripts/prescales.py
+
+# step 2) produce qcd analysis trees
+# QCDsamples pointed from the cfg file should be the merged 'QCDskimAndPrune' ones from the signal production
+# run data and mc (order doesn't matter)
+> make qcdControlRegion
+> ./qcdControlRegion cfg data
+> ./qcdControlRegion cfg mc
+
+#if mc is too big and the buffer problem makes the above fail, then split processes:
+> ./qcdControlRegion cfg top
+> ./qcdControlRegion cfg qcd
+> ./qcdControlRegion cfg zinv
+> ./qcdControlRegion cfg wjets
+# and merge
+> hadd mc.root mc_top.root mc_qcd.root mc_zinv.root mc_wjets.root
+
+
+# step 3) get estimate
+# in case of new prescales, update computeQCDFromDeltaPhi.cpp
+# first run mc (order matters)
+> make computeQCDFromDeltaPhi
+> ./computeQCDFromDeltaPhi cfg mc
+#then data
+> ./computeQCDFromDeltaPhi cfg data
+
+# this gives as output the *qcdEstimateData.root*
+# also the qcd fits are given as output
+
+# step 4) validation
+# update drawQCDFromDeltaPhi.cpp in case of new prescales (same as computeQCDFromDeltaPhi.cpp)
+# start running the estimate in the validation region:
+> ./computeQCDFromDeltaPhi cfgfile mc true
+> ./computeQCDFromDeltaPhi cfgfile data true
+# draw it:
+> make drawQCDFromDeltaPhi
+> ./drawQCDFromDeltaPhi cfg true
+
+# relevant plot is cfg/qcdControlRegion/test/plotsData/pdf/closureVR_allRegions_ratio_data.pdf
+# also f_j and r_b plots are produced in  cfg/qcdControlRegion/test/f_jets* [r_hat*]
+

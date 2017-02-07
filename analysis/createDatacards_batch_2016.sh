@@ -22,28 +22,34 @@ source $VO_CMS_SW_DIR/cmsset_default.sh
 export SCRAM_ARCH=slc6_amd64_gcc491
 export LD_LIBRARY_PATH=/mnt/t3nfs01/data01/swshare/glite/d-cache/dcap/lib/:$LD_LIBRARY_PATH
 
-echo "Loading CMSSW_7_4_7"
-cd /mnt/t3nfs01/data01/shome/casal/CMSSW_7_4_12_patch4_MT2/src/
+echo "Loading 80X"
+cd /mnt/t3nfs01/data01/shome/mschoene/80X/src/
 echo $PWD
 eval `scramv1 runtime -sh`
 
-JOBDIR=/scratch/casal/datacardCreation_$JOB_ID
+JOBDIR=/scratch/mschoene/datacardCreation_$JOB_ID
 
 echo "Copying all needed stuff..."
 
 mkdir -p $JOBDIR/analysis/
-cp -r /mnt/t3nfs01/data01/shome/casal/CMSSW_7_4_12_patch4_MT2/src/analysisJul/analysis/signalScansFromDominick $JOBDIR/analysis/
-cp -r /mnt/t3nfs01/data01/shome/casal/CMSSW_7_4_12_patch4_MT2/src/analysisJul/analysis/EventYields_data_Run2016_7p7ifb $JOBDIR/analysis/
-cp -r /mnt/t3nfs01/data01/shome/casal/CMSSW_7_4_12_patch4_MT2/src/analysisJul/analysis/cfgs $JOBDIR/analysis/
-cp -r /mnt/t3nfs01/data01/shome/casal/CMSSW_7_4_12_patch4_MT2/src/analysisJul/samples/ $JOBDIR
+cp -r /mnt/t3nfs01/data01/shome/mschoene/8_0_12_analysisPlayArea/src/mschoene_newBinning/analysis/signalScansFromDominick $JOBDIR/analysis/
+cp -r /mnt/t3nfs01/data01/shome/mschoene/8_0_12_analysisPlayArea/src/mschoene_newBinning/analysis/EventYields_data_2016_SnT_36p8_02Feb/ $JOBDIR/analysis/
+#cp -r /mnt/t3nfs01/data01/shome/mschoene/80X/src/myMT2Analysis/analysis/EventYields_data_Run2016_12p9ifb_80ZinvEst_40ifbScaled $JOBDIR/analysis/
+cp -r /mnt/t3nfs01/data01/shome/mschoene/8_0_12_analysisPlayArea/src/mschoene_newBinning/analysis/cfgs $JOBDIR/analysis/
+cp -r /mnt/t3nfs01/data01/shome/mschoene/8_0_12_analysisPlayArea/src/mschoene_newBinning/samples/ $JOBDIR
 
-cp /mnt/t3nfs01/data01/shome/casal/CMSSW_7_4_12_patch4_MT2/src/analysisJul/analysis/createDatacards_general $JOBDIR/analysis/
+cp /mnt/t3nfs01/data01/shome/mschoene/8_0_12_analysisPlayArea/src/mschoene_newBinning/analysis/createDatacards_general_zllZinvEst $JOBDIR/analysis/
+#cp /mnt/t3nfs01/data01/shome/mschoene/80X/src/myMT2Analysis/analysis/createDatacards_general $JOBDIR/analysis/
 
 cd $JOBDIR/analysis/
 echo $PWD
 
 echo "Starting to create datacards..."
-./createDatacards_general $1 $2 $3 $4 $5 $6 $7
+./createDatacards_general_zllZinvEst $1 $2 $3 $4 $5 $6 $7
+#./createDatacards_general $1 $2 $3 $4 $5 $6 $7
 
-cd /scratch/casal/
+cd /scratch/mschoene/
 rm -rf $JOBDIR
+
+
+#/mnt/t3nfs01/data01/shome/mschoene/8_0_12_analysisPlayArea/src/mschoene_newBinning/analysis/EventYields_data_2016_SnTMC_362ifb_18ifbUB_Signal

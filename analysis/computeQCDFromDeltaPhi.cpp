@@ -878,8 +878,6 @@ void fillFromTreeAndRatio( MT2Estimate* estimate, MT2Estimate* nCR, MT2EstimateS
   } // for entries
 
 
-  std::cout << "Finished loop over tree events " << std::endl;
-
   for( int iBin=1; iBin<nBins+1; ++iBin ) {
 
     float r          = hp_r   ->GetBinContent(iBin);
@@ -894,8 +892,6 @@ void fillFromTreeAndRatio( MT2Estimate* estimate, MT2Estimate* nCR, MT2EstimateS
     // if zero events in control region, take r from lower mt2 edge
     if ( nCR->yield->GetBinContent(iBin)==0 ){
 
-      std::cout << "zero events in the CR" << std::endl;
-
       float mt2  = nCR->yield->GetXaxis()->GetBinLowEdge(iBin);
       r          = f1_ratio->Eval( mt2 );
       error_fit  = h_band->GetBinError(h_band->FindBin(mt2));
@@ -903,28 +899,18 @@ void fillFromTreeAndRatio( MT2Estimate* estimate, MT2Estimate* nCR, MT2EstimateS
       r_down  = f1_ratio_down->Eval(mt2);
       error_mean = 0.0;
     }
-    std::cout << "filling stuff 1" << std::endl;
- 
     // fill r_effective //average r
     r_effective->yield->SetBinContent( iBin, r );
-
-    std::cout << "filling stuff 2" << std::endl;
 
     // add fit error in quadrature to R and fill r_effective error
     float error_r    = sqrt(error_fit*error_fit + error_mean*error_mean);
     r_effective->yield->SetBinError(iBin, error_r);
-
-    std::cout << "filling stuff 3" << std::endl;
 
     // // asymmetric error band. Envelope of the three fit bands
     r_effective->yield_systUp  ->SetBinContent(iBin, r_up );
     r_effective->yield_systDown->SetBinContent(iBin, r_down );
     
     // add R error in quadrature to estimate
-
-    std::cout << "what is R " << r << std::endl;
-    std::cout << "what is errR " << error_r << std::endl;
-    
     float errorRel_r = r>0 ? error_r/r : 1.0;
     float val_est    = estimate->yield->GetBinContent(iBin);
     float error_est  = estimate->yield->GetBinError(iBin);
