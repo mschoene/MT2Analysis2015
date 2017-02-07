@@ -42,7 +42,7 @@ struct BGTable {
 
 BGTable getTable( const std::string& tableFileName );
 std::string makeSingleLine( float yield, float statUp, float statDn, float systUp, float systDn );
-std::string makeSingleLineData( int yield );
+std::string makeSingleLineData( float yield );
 std::string makeSingleLinePost( float yield, float stat );
 std::string getSingleErrPart( float up, float dn );
 
@@ -73,7 +73,7 @@ int main( int argc, char* argv[] ) {
   MT2Analysis<MT2EstimateSigContSyst> *analysesT1tttt;
   MT2Analysis<MT2EstimateSigContSyst> *analysesT2tt  ;
 
-  std::string sigPath="./signalScansFromDominick";
+  std::string sigPath="~mschoene/8_0_12_analysisPlayArea/src/mschoene_newBinning/analysis/signalScansFromDominick/";
   //std::string sigPath="./sig_7p65fb";
 
   analysesT1qqqq = MT2Analysis<MT2EstimateSigSyst>::readSystFromFile( sigPath + "/T1qqqq_eth.root", "T1qqqq", "isr");
@@ -91,74 +91,15 @@ int main( int argc, char* argv[] ) {
   ofs.open( ofs_name , std::ofstream::app );
 
 
-   TFile* fmono=TFile::Open("mlfit_monojet.root");
-   TFile* fvlht=TFile::Open("mlfit_veryLowHT.root");
-   TFile* flht =TFile::Open("mlfit_LowHT.root");
-   TFile* fmht =TFile::Open("mlfit_MediumHT.root");
-   TFile* fhht =TFile::Open("mlfit_HighHT.root");
-   TFile* feht =TFile::Open("mlfit_ExtremeHT.root");
-
-   int iRegion_vlht =1;
-   int iRegion_mono =1;
-   int iRegion_lht  =1;
-   int iRegion_mht  =1;
-   int iRegion_hht  =1;
-   int iRegion_eht  =1;
-
-   int obs_3b[2];
-   float exp_3b[2];
-   float exp_3b_err[2];
-
-   int obs_7j=0;
-   float exp_7j=0;
-   float exp_7j_err=0;
-
-   int obs_4j[2];
-   float exp_4j[2];
-   float exp_4j_err[2];
-
-   int obs_2b[2];
-   float exp_2b[2];
-   float exp_2b_err[2];
-
-   int obs_2j=0;
-   float exp_2j=0;
-   float exp_2j_err=0;
-
-   int obs_1j[3];
-   float exp_1j[3];
-   float exp_1j_err[3];
-
-
-   for(int i=0; i<2; ++i){
+  TFile* fpost=TFile::Open(Form("%s/mlfit_all.root", dir.c_str()));
+  int iRegion=1;
   
-     obs_3b[i]=0;
-     exp_3b[i]=0;
-     exp_3b_err[i]=0;
-
-     obs_2b[i]=0;
-     exp_2b[i]=0;
-     exp_2b_err[i]=0;
-
-     obs_4j[i]=0;
-     exp_4j[i]=0;
-     exp_4j_err[i]=0;
-
-   }
-
-   for(int i=0; i<3; ++i){
-  
-     obs_1j[i]=0;
-     exp_1j[i]=0;
-     exp_1j_err[i]=0;
-
-   }
-
   for( std::set<MT2Region>::iterator iR = regions.begin(); iR != regions.end(); ++iR ){
     std::cout << iR->getName() << std::endl;
     std::vector< std::string > names = iR->getNiceNamesLatex();
 
     MT2Region* thisRegion = new MT2Region( *(iR) );
+ 
 
     ofs << "\\begin{table}[htbp]" << std::endl; 
     if( iR->nJetsMin() > 1 )
@@ -173,6 +114,7 @@ int main( int argc, char* argv[] ) {
     double *bins;
     iR->getBins(nBins, bins);
     for( int b=0; b<nBins; ++b ){
+      if (iR->htMin()>=1500 && b==0) continue;
       ofs << "|c";
       //      std::cout<< b <<"out of"<< nBins <<": " << bins[b] << std::endl;
     }
@@ -186,10 +128,13 @@ int main( int argc, char* argv[] ) {
 
     std::vector< std::string > binNames = iR->getBinNamesLatex();
     if( iR->nJetsMin() > 1 )
-      for( unsigned b=0; b < binNames.size(); ++b )
+      for( unsigned b=0; b < binNames.size(); ++b ){
+	if(iR->htMin()>=1500 && b==0) continue;
 	ofs << " & " << binNames[b].c_str();
-    else
+      }
+    else{
       ofs << " & " << names[0].c_str();
+    }
     ofs << "\\\\" << std::endl;
     ofs <<"\\hline \\hline" << std::endl;
 
@@ -207,6 +152,9 @@ int main( int argc, char* argv[] ) {
 
     for( int iBin=0; iBin<nBins; ++iBin ) {
       
+      if(iR->htMin()>=1500 && iBin==0)
+        continue;
+
       std::string tableName;
       if( iR->nJetsMax()==1 )
 	tableName = std::string(Form("%s/datacard_templates/table_%s_m0toInf.txt", dir.c_str(), iR->getName().c_str()) );
@@ -247,766 +195,25 @@ int main( int argc, char* argv[] ) {
       float totalPost=0.;
       float totalPost_Err=0.;
     
-      if( thisRegion->nJetsMax() == 1){
-    	  
-    	  int ch=iRegion_mono+iBin;
-    	  fmono->cd();
-    	  gDirectory->cd("shapes_fit_b");
-    	  
-    	  std::string thisCh = Form("ch%d", ch);
-    	  //	  std::cout << thisCh << std::endl;
-    	  gDirectory->cd(thisCh.c_str());
-    	  
-    	  TH1F* thisBG=(TH1F*)gDirectory->Get("total_background");
-    	  
-    	  totalPost = thisBG->GetBinContent(1);
-    	  totalPost_Err = thisBG->GetBinError(1);
-    	  
-    	  gDirectory->cd("..");
-    	  
-    	  if( iBin==nBins-1 ){
-    	    iRegion_mono += nBins;
-    	  }
- 
-    	  if( thisRegion->nBJetsMin()==3 && thisRegion->htMin()>=575 ){
-    	    
-    	    obs_3b[0]+=thisTable.data;
-    	    exp_3b[0]+=totalPost;
-    	    //exp_3b_err[0]+=totalPost_Err*totalPost_Err;
-    	    exp_3b_err[0]+=totalPost_Err;
-    	    
+      int ch=iRegion;
+      fpost->cd();
+      gDirectory->cd("shapes_fit_b");
 
-    	  }
-    	  if( thisRegion->nBJetsMin()==3 && thisRegion->htMin()>=450 ){
-    	    
-    	    obs_3b[1]+=thisTable.data;
-    	    exp_3b[1]+=totalPost;
-    	    //exp_3b_err[1]+=totalPost_Err*totalPost_Err;
-    	    exp_3b_err[1]+=totalPost_Err;
-    	    
-    	  }
-    	  if( thisRegion->nJetsMin()==7 && thisRegion->htMin()>=575 && (thisRegion->htMin()>=1500 || bins[iBin]>=400.) ){
-    	    
-    	    obs_7j+=thisTable.data;
-    	    exp_7j+=totalPost;
-    	    //exp_7j_err+=totalPost_Err*totalPost_Err;
-    	    exp_7j_err+=totalPost_Err;
-    	    
+      std::string thisCh = Form("ch%d", ch);
+      gDirectory->cd(thisCh.c_str());
 
-    	  }
-    	  if( thisRegion->nJetsMin()>=4 && thisRegion->htMin()>=1000 && ((thisRegion->htMin()>=1500 && bins[iBin]>=400) || bins[iBin]>=600.) ){
-    	    
-    	    obs_4j[0]+=thisTable.data;
-    	    exp_4j[0]+=totalPost;
-    	    //exp_4j_err[0]+=totalPost_Err*totalPost_Err;
-    	    exp_4j_err[0]+=totalPost_Err;
-    	    
-    	  }
-    	  if( thisRegion->nJetsMin()>=4 && thisRegion->htMin()>=575 && bins[iBin]>=400 ){
-    	    
-    	    obs_4j[1]+=thisTable.data;
-    	    exp_4j[1]+=totalPost;
-    	    //exp_4j_err[1]+=totalPost_Err*totalPost_Err;
-    	    exp_4j_err[1]+=totalPost_Err;
-    	    
-    	  }
-    	  if( thisRegion->nBJetsMin()>=2 && thisRegion->htMin()>=575 && bins[iBin]>=400 ){
-    	    
-    	    obs_2b[0]+=thisTable.data;
-    	    exp_2b[0]+=totalPost;
-    	    //exp_2b_err[0]+=totalPost_Err*totalPost_Err;
-    	    exp_2b_err[0]+=totalPost_Err;
-    	    
-    	  }
-    	  if( thisRegion->nBJetsMin()>=2 && thisRegion->htMin()>=575 ){
-    	    
-    	    obs_2b[1]+=thisTable.data;
-    	    exp_2b[1]+=totalPost;
-    	    //exp_2b_err[1]+=totalPost_Err*totalPost_Err;
-    	    exp_2b_err[1]+=totalPost_Err;
-    	    
-    	  }
-    	  if( thisRegion->nJetsMin()<7 && thisRegion->htMin()>=1000 && ( ( thisRegion->nJetsMin()>=4 && ( ( thisRegion->htMin()>=1500 && bins[iBin]>=600 ) || ( bins[iBin]>=800. ) ) ) || ( thisRegion->nJetsMin()<4 && ( ( thisRegion->htMin()>=1500 && bins[iBin]>=400 ) || ( bins[iBin]>=600. ) ) ) ) ){
-    	    
-    	    obs_2j+=thisTable.data;
-    	    exp_2j+=totalPost;
-    	    //exp_2j_err+=totalPost_Err*totalPost_Err;
-    	    exp_2j_err+=totalPost_Err;
-    	    
-    	  }
-    	  if( (thisRegion->nJetsMin()==1 && thisRegion->nBJetsMin()==1  && thisRegion->htMin()>=575) ||
-    	      (thisRegion->nJetsMin()==1 && thisRegion->nBJetsMin()==0  && thisRegion->htMin()>=1000) ||
-    	      (thisRegion->nJetsMin()==2 && thisRegion->nBJetsMin()==0  && thisRegion->htMin()>=575 && thisRegion->htMin()<1000 && bins[iBin]>=800) ||
-    	      (thisRegion->nJetsMin()==2 && thisRegion->nBJetsMin()<3  && thisRegion->htMin()>=575 && thisRegion->htMin()<1000 && bins[iBin]>=600) ||
-    	      (thisRegion->nJetsMin()==2 && thisRegion->nBJetsMin()<2  && thisRegion->htMin()>=1000 && thisRegion->htMin()<1500 && bins[iBin]>=800) ||
-    	      (thisRegion->nJetsMin()==2 && thisRegion->nBJetsMin()==2  && thisRegion->htMin()>=1000 && thisRegion->htMin()<1500 && bins[iBin]>=400) ||
-    	      (thisRegion->nJetsMin()==2 && thisRegion->nBJetsMin()<2  && thisRegion->htMin()>=1500 && bins[iBin]>=400) ||
-    	      (thisRegion->nJetsMin()==2 && thisRegion->nBJetsMin()==2  && thisRegion->htMin()>=1500) ){
-    	    
-    	    obs_1j[0]+=thisTable.data;
-    	    exp_1j[0]+=totalPost;
-    	    //exp_1j_err[0]+=totalPost_Err*totalPost_Err;
-    	    exp_1j_err[0]+=totalPost_Err;
-    	    
-    	  }
-    	  if((thisRegion->nJetsMin()==1 && thisRegion->htMin()>=575) ||
-    	     (thisRegion->nJetsMin()==2 && thisRegion->nBJetsMin()<3  && thisRegion->htMin()>=575 && thisRegion->htMin()<1000 && bins[iBin]>=600) ||
-    	     (thisRegion->nJetsMin()==2 && thisRegion->nBJetsMin()<3  && thisRegion->htMin()>=1000) ){ 
-    	    
-    	    obs_1j[1]+=thisTable.data;
-    	    exp_1j[1]+=totalPost;
-    	    //exp_1j_err[1]+=totalPost_Err*totalPost_Err;
-    	    exp_1j_err[1]+=totalPost_Err;
-    	    
-    	  }
-    	  if((thisRegion->nJetsMin()==1 && thisRegion->htMin()>=450) ||
-    	     (thisRegion->nJetsMin()==2 && thisRegion->nBJetsMin()<3  && thisRegion->htMin()>=450 && thisRegion->htMin()<575 && bins[iBin]>=400) ||
-    	     (thisRegion->nJetsMin()==2 && thisRegion->nBJetsMin()<3  && thisRegion->htMin()>=575 && thisRegion->htMin()<1000 && bins[iBin]>=300) ||
-    	     (thisRegion->nJetsMin()==2 && thisRegion->nBJetsMin()<3  && thisRegion->htMin()>=1000) ){ 
-    	    
-    	    obs_1j[2]+=thisTable.data;
-    	    exp_1j[2]+=totalPost;
-    	    //exp_1j_err[2]+=totalPost_Err*totalPost_Err;
-    	    exp_1j_err[2]+=totalPost_Err;
-    	    
-    	  }
-    	
+      TH1F* thisBG=(TH1F*)gDirectory->Get("total_background");
 
-    }      
-      else if( thisRegion->htMin() >= 200 && thisRegion->htMax() <= 450 && thisRegion->htMax() > 0 && thisRegion->nJetsMin() > 1){
-    	
-    	int ch=iRegion_vlht+iBin;
-    	fvlht->cd();
-    	gDirectory->cd("shapes_fit_b");
-    	
-    	std::string thisCh = Form("ch%d", ch);
-    	//	std::cout << thisCh << std::endl;
-    	gDirectory->cd(thisCh.c_str());
-    	
-    	TH1F* thisBG=(TH1F*)gDirectory->Get("total_background");
-    	
-    	totalPost = thisBG->GetBinContent(1);
-    	totalPost_Err = thisBG->GetBinError(1);
-    	
-    	gDirectory->cd("..");
-    	
-    	if( iBin==nBins-1 ){
-    	  iRegion_vlht += nBins;
-    	}
-    	
-    	  if( thisRegion->nBJetsMin()==3 && thisRegion->htMin()>=575 ){
-    	    
-    	    obs_3b[0]+=thisTable.data;
-    	    exp_3b[0]+=totalPost;
-    	    //exp_3b_err[0]+=totalPost_Err*totalPost_Err;
-    	    exp_3b_err[0]+=totalPost_Err;
-    	    
+      totalPost = thisBG->GetBinContent(1);
+      totalPost_Err = thisBG->GetBinError(1);
 
-    	  }
-    	  if( thisRegion->nBJetsMin()==3 && thisRegion->htMin()>=450 ){
-    	    
-    	    obs_3b[1]+=thisTable.data;
-    	    exp_3b[1]+=totalPost;
-    	    //exp_3b_err[1]+=totalPost_Err*totalPost_Err;
-    	    exp_3b_err[1]+=totalPost_Err;
-    	    
-    	  }
-    	  if( thisRegion->nJetsMin()==7 && thisRegion->htMin()>=575 && (thisRegion->htMin()>=1500 || bins[iBin]>=400.) ){
-    	    
-    	    obs_7j+=thisTable.data;
-    	    exp_7j+=totalPost;
-    	    //exp_7j_err+=totalPost_Err*totalPost_Err;
-    	    exp_7j_err+=totalPost_Err;
-    	    
-
-    	  }
-    	  if( thisRegion->nJetsMin()>=4 && thisRegion->htMin()>=1000 && ((thisRegion->htMin()>=1500 && bins[iBin]>=400) || bins[iBin]>=600.) ){
-    	    
-    	    obs_4j[0]+=thisTable.data;
-    	    exp_4j[0]+=totalPost;
-    	    //exp_4j_err[0]+=totalPost_Err*totalPost_Err;
-    	    exp_4j_err[0]+=totalPost_Err;
-    	    
-    	  }
-    	  if( thisRegion->nJetsMin()>=4 && thisRegion->htMin()>=575 && bins[iBin]>=400 ){
-    	    
-    	    obs_4j[1]+=thisTable.data;
-    	    exp_4j[1]+=totalPost;
-    	    //exp_4j_err[1]+=totalPost_Err*totalPost_Err;
-    	    exp_4j_err[1]+=totalPost_Err;
-    	    
-    	  }
-    	  if( thisRegion->nBJetsMin()>=2 && thisRegion->htMin()>=575 && bins[iBin]>=400 ){
-    	    
-    	    obs_2b[0]+=thisTable.data;
-    	    exp_2b[0]+=totalPost;
-    	    //exp_2b_err[0]+=totalPost_Err*totalPost_Err;
-    	    exp_2b_err[0]+=totalPost_Err;
-    	    
-    	  }
-    	  if( thisRegion->nBJetsMin()>=2 && thisRegion->htMin()>=575 ){
-    	    
-    	    obs_2b[1]+=thisTable.data;
-    	    exp_2b[1]+=totalPost;
-    	    //exp_2b_err[1]+=totalPost_Err*totalPost_Err;
-    	    exp_2b_err[1]+=totalPost_Err;
-    	    
-    	  }
-    	  if( thisRegion->nJetsMin()<7 && thisRegion->htMin()>=1000 && ( ( thisRegion->nJetsMin()>=4 && ( ( thisRegion->htMin()>=1500 && bins[iBin]>=600 ) || ( bins[iBin]>=800. ) ) ) || ( thisRegion->nJetsMin()<4 && ( ( thisRegion->htMin()>=1500 && bins[iBin]>=400 ) || ( bins[iBin]>=600. ) ) ) ) ){
-    	    
-    	    obs_2j+=thisTable.data;
-    	    exp_2j+=totalPost;
-    	    //exp_2j_err+=totalPost_Err*totalPost_Err;
-    	    exp_2j_err+=totalPost_Err;
-    	    
-    	  }
-    	  if( (thisRegion->nJetsMin()==1 && thisRegion->nBJetsMin()==1  && thisRegion->htMin()>=575) ||
-    	      (thisRegion->nJetsMin()==1 && thisRegion->nBJetsMin()==0  && thisRegion->htMin()>=1000) ||
-    	      (thisRegion->nJetsMin()==2 && thisRegion->nBJetsMin()==0  && thisRegion->htMin()>=575 && thisRegion->htMin()<1000 && bins[iBin]>=800) ||
-    	      (thisRegion->nJetsMin()==2 && thisRegion->nBJetsMin()<3  && thisRegion->htMin()>=575 && thisRegion->htMin()<1000 && bins[iBin]>=600) ||
-    	      (thisRegion->nJetsMin()==2 && thisRegion->nBJetsMin()<2  && thisRegion->htMin()>=1000 && thisRegion->htMin()<1500 && bins[iBin]>=800) ||
-    	      (thisRegion->nJetsMin()==2 && thisRegion->nBJetsMin()==2  && thisRegion->htMin()>=1000 && thisRegion->htMin()<1500 && bins[iBin]>=400) ||
-    	      (thisRegion->nJetsMin()==2 && thisRegion->nBJetsMin()<2  && thisRegion->htMin()>=1500 && bins[iBin]>=400) ||
-    	      (thisRegion->nJetsMin()==2 && thisRegion->nBJetsMin()==2  && thisRegion->htMin()>=1500) ){
-    	    
-    	    obs_1j[0]+=thisTable.data;
-    	    exp_1j[0]+=totalPost;
-    	    //exp_1j_err[0]+=totalPost_Err*totalPost_Err;
-    	    exp_1j_err[0]+=totalPost_Err;
-    	    
-    	  }
-    	  if((thisRegion->nJetsMin()==1 && thisRegion->htMin()>=575) ||
-    	     (thisRegion->nJetsMin()==2 && thisRegion->nBJetsMin()<3  && thisRegion->htMin()>=575 && thisRegion->htMin()<1000 && bins[iBin]>=600) ||
-    	     (thisRegion->nJetsMin()==2 && thisRegion->nBJetsMin()<3  && thisRegion->htMin()>=1000) ){ 
-    	    
-    	    obs_1j[1]+=thisTable.data;
-    	    exp_1j[1]+=totalPost;
-    	    //exp_1j_err[1]+=totalPost_Err*totalPost_Err;
-    	    exp_1j_err[1]+=totalPost_Err;
-    	    
-    	  }
-    	  if((thisRegion->nJetsMin()==1 && thisRegion->htMin()>=450) ||
-    	     (thisRegion->nJetsMin()==2 && thisRegion->nBJetsMin()<3  && thisRegion->htMin()>=450 && thisRegion->htMin()<575 && bins[iBin]>=400) ||
-    	     (thisRegion->nJetsMin()==2 && thisRegion->nBJetsMin()<3  && thisRegion->htMin()>=575 && thisRegion->htMin()<1000 && bins[iBin]>=300) ||
-    	     (thisRegion->nJetsMin()==2 && thisRegion->nBJetsMin()<3  && thisRegion->htMin()>=1000) ){ 
-    	    
-    	    obs_1j[2]+=thisTable.data;
-    	    exp_1j[2]+=totalPost;
-    	    //exp_1j_err[2]+=totalPost_Err*totalPost_Err;
-    	    exp_1j_err[2]+=totalPost_Err;
-    	    
-    	  }
-
-    	
-      } 
-      else if( thisRegion->htMin() >= 450 && thisRegion->htMax() <= 575 && thisRegion->htMax() > 0 && thisRegion->nJetsMin() > 1){
-    	
-    	int ch=iRegion_lht+iBin;
-    	flht->cd();
-    	gDirectory->cd("shapes_fit_b");
-    	
-    	std::string thisCh = Form("ch%d", ch);
-    	//	std::cout << thisCh << std::endl;
-    	gDirectory->cd(thisCh.c_str());
-    	
-    	TH1F* thisBG=(TH1F*)gDirectory->Get("total_background");
-    	
-    	totalPost = thisBG->GetBinContent(1);
-    	totalPost_Err = thisBG->GetBinError(1);
-    	
-    	gDirectory->cd("..");
-    	
-    	if( iBin==nBins-1 ){
-    	  iRegion_lht += nBins;
-    	}
-    	
-    	  if( thisRegion->nBJetsMin()==3 && thisRegion->htMin()>=575 ){
-    	    
-    	    obs_3b[0]+=thisTable.data;
-    	    exp_3b[0]+=totalPost;
-    	    //exp_3b_err[0]+=totalPost_Err*totalPost_Err;
-    	    exp_3b_err[0]+=totalPost_Err;
-    	    
-
-    	  }
-    	  if( thisRegion->nBJetsMin()==3 && thisRegion->htMin()>=450 ){
-    	    
-    	    obs_3b[1]+=thisTable.data;
-    	    exp_3b[1]+=totalPost;
-    	    //exp_3b_err[1]+=totalPost_Err*totalPost_Err;
-    	    exp_3b_err[1]+=totalPost_Err;
-    	    
-    	  }
-    	  if( thisRegion->nJetsMin()==7 && thisRegion->htMin()>=575 && (thisRegion->htMin()>=1500 || bins[iBin]>=400.) ){
-    	    
-    	    obs_7j+=thisTable.data;
-    	    exp_7j+=totalPost;
-    	    //exp_7j_err+=totalPost_Err*totalPost_Err;
-    	    exp_7j_err+=totalPost_Err;
-    	    
-
-    	  }
-    	  if( thisRegion->nJetsMin()>=4 && thisRegion->htMin()>=1000 && ((thisRegion->htMin()>=1500 && bins[iBin]>=400) || bins[iBin]>=600.) ){
-    	    
-    	    obs_4j[0]+=thisTable.data;
-    	    exp_4j[0]+=totalPost;
-    	    //exp_4j_err[0]+=totalPost_Err*totalPost_Err;
-    	    exp_4j_err[0]+=totalPost_Err;
-    	    
-    	  }
-    	  if( thisRegion->nJetsMin()>=4 && thisRegion->htMin()>=575 && bins[iBin]>=400 ){
-    	    
-    	    obs_4j[1]+=thisTable.data;
-    	    exp_4j[1]+=totalPost;
-    	    //exp_4j_err[1]+=totalPost_Err*totalPost_Err;
-    	    exp_4j_err[1]+=totalPost_Err;
-    	    
-    	  }
-    	  if( thisRegion->nBJetsMin()>=2 && thisRegion->htMin()>=575 && bins[iBin]>=400 ){
-    	    
-    	    obs_2b[0]+=thisTable.data;
-    	    exp_2b[0]+=totalPost;
-    	    //exp_2b_err[0]+=totalPost_Err*totalPost_Err;
-    	    exp_2b_err[0]+=totalPost_Err;
-    	    
-    	  }
-    	  if( thisRegion->nBJetsMin()>=2 && thisRegion->htMin()>=575 ){
-    	    
-    	    obs_2b[1]+=thisTable.data;
-    	    exp_2b[1]+=totalPost;
-    	    //exp_2b_err[1]+=totalPost_Err*totalPost_Err;
-    	    exp_2b_err[1]+=totalPost_Err;
-    	    
-    	  }
-    	  if( thisRegion->nJetsMin()<7 && thisRegion->htMin()>=1000 && ( ( thisRegion->nJetsMin()>=4 && ( ( thisRegion->htMin()>=1500 && bins[iBin]>=600 ) || ( bins[iBin]>=800. ) ) ) || ( thisRegion->nJetsMin()<4 && ( ( thisRegion->htMin()>=1500 && bins[iBin]>=400 ) || ( bins[iBin]>=600. ) ) ) ) ){
-    	    
-    	    obs_2j+=thisTable.data;
-    	    exp_2j+=totalPost;
-    	    //exp_2j_err+=totalPost_Err*totalPost_Err;
-    	    exp_2j_err+=totalPost_Err;
-    	    
-    	  }
-    	  if( (thisRegion->nJetsMin()==1 && thisRegion->nBJetsMin()==1  && thisRegion->htMin()>=575) ||
-    	      (thisRegion->nJetsMin()==1 && thisRegion->nBJetsMin()==0  && thisRegion->htMin()>=1000) ||
-    	      (thisRegion->nJetsMin()==2 && thisRegion->nBJetsMin()==0  && thisRegion->htMin()>=575 && thisRegion->htMin()<1000 && bins[iBin]>=800) ||
-    	      (thisRegion->nJetsMin()==2 && thisRegion->nBJetsMin()<3  && thisRegion->htMin()>=575 && thisRegion->htMin()<1000 && bins[iBin]>=600) ||
-    	      (thisRegion->nJetsMin()==2 && thisRegion->nBJetsMin()<2  && thisRegion->htMin()>=1000 && thisRegion->htMin()<1500 && bins[iBin]>=800) ||
-    	      (thisRegion->nJetsMin()==2 && thisRegion->nBJetsMin()==2  && thisRegion->htMin()>=1000 && thisRegion->htMin()<1500 && bins[iBin]>=400) ||
-    	      (thisRegion->nJetsMin()==2 && thisRegion->nBJetsMin()<2  && thisRegion->htMin()>=1500 && bins[iBin]>=400) ||
-    	      (thisRegion->nJetsMin()==2 && thisRegion->nBJetsMin()==2  && thisRegion->htMin()>=1500) ){
-    	    
-    	    obs_1j[0]+=thisTable.data;
-    	    exp_1j[0]+=totalPost;
-    	    //exp_1j_err[0]+=totalPost_Err*totalPost_Err;
-    	    exp_1j_err[0]+=totalPost_Err;
-    	    
-    	  }
-    	  if((thisRegion->nJetsMin()==1 && thisRegion->htMin()>=575) ||
-    	     (thisRegion->nJetsMin()==2 && thisRegion->nBJetsMin()<3  && thisRegion->htMin()>=575 && thisRegion->htMin()<1000 && bins[iBin]>=600) ||
-    	     (thisRegion->nJetsMin()==2 && thisRegion->nBJetsMin()<3  && thisRegion->htMin()>=1000) ){ 
-    	    
-    	    obs_1j[1]+=thisTable.data;
-    	    exp_1j[1]+=totalPost;
-    	    //exp_1j_err[1]+=totalPost_Err*totalPost_Err;
-    	    exp_1j_err[1]+=totalPost_Err;
-    	    
-    	  }
-    	  if((thisRegion->nJetsMin()==1 && thisRegion->htMin()>=450) ||
-    	     (thisRegion->nJetsMin()==2 && thisRegion->nBJetsMin()<3  && thisRegion->htMin()>=450 && thisRegion->htMin()<575 && bins[iBin]>=400) ||
-    	     (thisRegion->nJetsMin()==2 && thisRegion->nBJetsMin()<3  && thisRegion->htMin()>=575 && thisRegion->htMin()<1000 && bins[iBin]>=300) ||
-    	     (thisRegion->nJetsMin()==2 && thisRegion->nBJetsMin()<3  && thisRegion->htMin()>=1000) ){ 
-    	    
-    	    obs_1j[2]+=thisTable.data;
-    	    exp_1j[2]+=totalPost;
-    	    //exp_1j_err[2]+=totalPost_Err*totalPost_Err;
-    	    exp_1j_err[2]+=totalPost_Err;
-    	    
-    	  }
-
-    	
-      }
-      else if( thisRegion->htMin() >= 575 && thisRegion->htMax() <= 1000 && thisRegion->htMax() > 0 && thisRegion->nJetsMin() > 1){
-    	
-    	int ch=iRegion_mht+iBin;
-    	fmht->cd();
-    	gDirectory->cd("shapes_fit_b");
-    	
-    	std::string thisCh = Form("ch%d", ch);
-    	//	std::cout << thisCh << std::endl;
-    	gDirectory->cd(thisCh.c_str());
-    	
-    	TH1F* thisBG=(TH1F*)gDirectory->Get("total_background");
-    	
-    	totalPost = thisBG->GetBinContent(1);
-    	totalPost_Err = thisBG->GetBinError(1);
-    	
-    	gDirectory->cd("..");
-    	
-    	if( iBin==nBins-1 ){
-    	  iRegion_mht += nBins;
-    	}
-
-    	  if( thisRegion->nBJetsMin()==3 && thisRegion->htMin()>=575 ){
-    	    
-    	    obs_3b[0]+=thisTable.data;
-    	    exp_3b[0]+=totalPost;
-    	    //exp_3b_err[0]+=totalPost_Err*totalPost_Err;
-    	    exp_3b_err[0]+=totalPost_Err;
-    	    
-
-    	  }
-    	  if( thisRegion->nBJetsMin()==3 && thisRegion->htMin()>=450 ){
-    	    
-    	    obs_3b[1]+=thisTable.data;
-    	    exp_3b[1]+=totalPost;
-    	    //exp_3b_err[1]+=totalPost_Err*totalPost_Err;
-    	    exp_3b_err[1]+=totalPost_Err;
-    	    
-    	  }
-    	  if( thisRegion->nJetsMin()==7 && thisRegion->htMin()>=575 && (thisRegion->htMin()>=1500 || bins[iBin]>=400.) ){
-    	    
-    	    obs_7j+=thisTable.data;
-    	    exp_7j+=totalPost;
-    	    //exp_7j_err+=totalPost_Err*totalPost_Err;
-    	    exp_7j_err+=totalPost_Err;
-    	    
-
-    	  }
-    	  if( thisRegion->nJetsMin()>=4 && thisRegion->htMin()>=1000 && ((thisRegion->htMin()>=1500 && bins[iBin]>=400) || bins[iBin]>=600.) ){
-    	    
-    	    obs_4j[0]+=thisTable.data;
-    	    exp_4j[0]+=totalPost;
-    	    //exp_4j_err[0]+=totalPost_Err*totalPost_Err;
-    	    exp_4j_err[0]+=totalPost_Err;
-    	    
-    	  }
-    	  if( thisRegion->nJetsMin()>=4 && thisRegion->htMin()>=575 && bins[iBin]>=400 ){
-    	    
-    	    obs_4j[1]+=thisTable.data;
-    	    exp_4j[1]+=totalPost;
-    	    //exp_4j_err[1]+=totalPost_Err*totalPost_Err;
-    	    exp_4j_err[1]+=totalPost_Err;
-    	    
-    	  }
-    	  if( thisRegion->nBJetsMin()>=2 && thisRegion->htMin()>=575 && bins[iBin]>=400 ){
-    	    
-    	    obs_2b[0]+=thisTable.data;
-    	    exp_2b[0]+=totalPost;
-    	    //exp_2b_err[0]+=totalPost_Err*totalPost_Err;
-    	    exp_2b_err[0]+=totalPost_Err;
-    	    
-    	  }
-    	  if( thisRegion->nBJetsMin()>=2 && thisRegion->htMin()>=575 ){
-    	    
-    	    obs_2b[1]+=thisTable.data;
-    	    exp_2b[1]+=totalPost;
-    	    //exp_2b_err[1]+=totalPost_Err*totalPost_Err;
-    	    exp_2b_err[1]+=totalPost_Err;
-    	    
-    	  }
-    	  if( thisRegion->nJetsMin()<7 && thisRegion->htMin()>=1000 && ( ( thisRegion->nJetsMin()>=4 && ( ( thisRegion->htMin()>=1500 && bins[iBin]>=600 ) || ( bins[iBin]>=800. ) ) ) || ( thisRegion->nJetsMin()<4 && ( ( thisRegion->htMin()>=1500 && bins[iBin]>=400 ) || ( bins[iBin]>=600. ) ) ) ) ){
-    	    
-    	    obs_2j+=thisTable.data;
-    	    exp_2j+=totalPost;
-    	    //exp_2j_err+=totalPost_Err*totalPost_Err;
-    	    exp_2j_err+=totalPost_Err;
-    	    
-    	  }
-    	  if( (thisRegion->nJetsMin()==1 && thisRegion->nBJetsMin()==1  && thisRegion->htMin()>=575) ||
-    	      (thisRegion->nJetsMin()==1 && thisRegion->nBJetsMin()==0  && thisRegion->htMin()>=1000) ||
-    	      (thisRegion->nJetsMin()==2 && thisRegion->nBJetsMin()==0  && thisRegion->htMin()>=575 && thisRegion->htMin()<1000 && bins[iBin]>=800) ||
-    	      (thisRegion->nJetsMin()==2 && thisRegion->nBJetsMin()<3  && thisRegion->htMin()>=575 && thisRegion->htMin()<1000 && bins[iBin]>=600) ||
-    	      (thisRegion->nJetsMin()==2 && thisRegion->nBJetsMin()<2  && thisRegion->htMin()>=1000 && thisRegion->htMin()<1500 && bins[iBin]>=800) ||
-    	      (thisRegion->nJetsMin()==2 && thisRegion->nBJetsMin()==2  && thisRegion->htMin()>=1000 && thisRegion->htMin()<1500 && bins[iBin]>=400) ||
-    	      (thisRegion->nJetsMin()==2 && thisRegion->nBJetsMin()<2  && thisRegion->htMin()>=1500 && bins[iBin]>=400) ||
-    	      (thisRegion->nJetsMin()==2 && thisRegion->nBJetsMin()==2  && thisRegion->htMin()>=1500) ){
-    	    
-    	    obs_1j[0]+=thisTable.data;
-    	    exp_1j[0]+=totalPost;
-    	    //exp_1j_err[0]+=totalPost_Err*totalPost_Err;
-    	    exp_1j_err[0]+=totalPost_Err;
-    	    
-    	  }
-    	  if((thisRegion->nJetsMin()==1 && thisRegion->htMin()>=575) ||
-    	     (thisRegion->nJetsMin()==2 && thisRegion->nBJetsMin()<3  && thisRegion->htMin()>=575 && thisRegion->htMin()<1000 && bins[iBin]>=600) ||
-    	     (thisRegion->nJetsMin()==2 && thisRegion->nBJetsMin()<3  && thisRegion->htMin()>=1000) ){ 
-    	    
-    	    obs_1j[1]+=thisTable.data;
-    	    exp_1j[1]+=totalPost;
-    	    //exp_1j_err[1]+=totalPost_Err*totalPost_Err;
-    	    exp_1j_err[1]+=totalPost_Err;
-    	    
-    	  }
-    	  if((thisRegion->nJetsMin()==1 && thisRegion->htMin()>=450) ||
-    	     (thisRegion->nJetsMin()==2 && thisRegion->nBJetsMin()<3  && thisRegion->htMin()>=450 && thisRegion->htMin()<575 && bins[iBin]>=400) ||
-    	     (thisRegion->nJetsMin()==2 && thisRegion->nBJetsMin()<3  && thisRegion->htMin()>=575 && thisRegion->htMin()<1000 && bins[iBin]>=300) ||
-    	     (thisRegion->nJetsMin()==2 && thisRegion->nBJetsMin()<3  && thisRegion->htMin()>=1000) ){ 
-    	    
-    	    obs_1j[2]+=thisTable.data;
-    	    exp_1j[2]+=totalPost;
-    	    //exp_1j_err[2]+=totalPost_Err*totalPost_Err;
-    	    exp_1j_err[2]+=totalPost_Err;
-    	    
-    	  }
-
-
-      }
-      else if( thisRegion->htMin() >= 1000 && thisRegion->htMax() <= 1500 && thisRegion->htMax() > 0 && thisRegion->nJetsMin() > 1){
-    	
-    	int ch=iRegion_hht+iBin;
-    	fhht->cd();
-    	gDirectory->cd("shapes_fit_b");
-    	
-    	std::string thisCh = Form("ch%d", ch);
-    	//	std::cout << thisCh << std::endl;
-    	gDirectory->cd(thisCh.c_str());
-    	
-    	TH1F* thisBG=(TH1F*)gDirectory->Get("total_background");
-    	
-    	totalPost = thisBG->GetBinContent(1);
-    	totalPost_Err = thisBG->GetBinError(1);
-    	
-    	gDirectory->cd("..");
-    	
-    	if( iBin==nBins-1 ){
-    	  iRegion_hht += nBins;
-    	}
-
-    	  if( thisRegion->nBJetsMin()==3 && thisRegion->htMin()>=575 ){
-    	    
-    	    obs_3b[0]+=thisTable.data;
-    	    exp_3b[0]+=totalPost;
-    	    //exp_3b_err[0]+=totalPost_Err*totalPost_Err;
-    	    exp_3b_err[0]+=totalPost_Err;
-    	    
-
-    	  }
-    	  if( thisRegion->nBJetsMin()==3 && thisRegion->htMin()>=450 ){
-    	    
-    	    obs_3b[1]+=thisTable.data;
-    	    exp_3b[1]+=totalPost;
-    	    //exp_3b_err[1]+=totalPost_Err*totalPost_Err;
-    	    exp_3b_err[1]+=totalPost_Err;
-    	    
-    	  }
-    	  if( thisRegion->nJetsMin()==7 && thisRegion->htMin()>=575 && (thisRegion->htMin()>=1500 || bins[iBin]>=400.) ){
-    	    
-    	    obs_7j+=thisTable.data;
-    	    exp_7j+=totalPost;
-    	    //exp_7j_err+=totalPost_Err*totalPost_Err;
-    	    exp_7j_err+=totalPost_Err;
-    	    
-    	  }
-    	  if( thisRegion->nJetsMin()>=4 && thisRegion->htMin()>=1000 && ((thisRegion->htMin()>=1500 && bins[iBin]>=400) || bins[iBin]>=600.) ){
-    	    
-    	    obs_4j[0]+=thisTable.data;
-    	    exp_4j[0]+=totalPost;
-    	    //exp_4j_err[0]+=totalPost_Err*totalPost_Err;
-    	    exp_4j_err[0]+=totalPost_Err;
-    	    
-    	  }
-    	  if( thisRegion->nJetsMin()>=4 && thisRegion->htMin()>=575 && bins[iBin]>=400 ){
-    	    
-    	    obs_4j[1]+=thisTable.data;
-    	    exp_4j[1]+=totalPost;
-    	    //exp_4j_err[1]+=totalPost_Err*totalPost_Err;
-    	    exp_4j_err[1]+=totalPost_Err;
-    	    
-    	  }
-    	  if( thisRegion->nBJetsMin()>=2 && thisRegion->htMin()>=575 && bins[iBin]>=400 ){
-    	    
-    	    obs_2b[0]+=thisTable.data;
-    	    exp_2b[0]+=totalPost;
-    	    //exp_2b_err[0]+=totalPost_Err*totalPost_Err;
-    	    exp_2b_err[0]+=totalPost_Err;
-    	    
-    	  }
-    	  if( thisRegion->nBJetsMin()>=2 && thisRegion->htMin()>=575 ){
-    	    
-    	    obs_2b[1]+=thisTable.data;
-    	    exp_2b[1]+=totalPost;
-    	    //exp_2b_err[1]+=totalPost_Err*totalPost_Err;
-    	    exp_2b_err[1]+=totalPost_Err;
-    	    
-    	  }
-    	  if( thisRegion->nJetsMin()<7 && thisRegion->htMin()>=1000 && ( ( thisRegion->nJetsMin()>=4 && ( ( thisRegion->htMin()>=1500 && bins[iBin]>=600 ) || ( bins[iBin]>=800. ) ) ) || ( thisRegion->nJetsMin()<4 && ( ( thisRegion->htMin()>=1500 && bins[iBin]>=400 ) || ( bins[iBin]>=600. ) ) ) ) ){
-    	    
-    	    obs_2j+=thisTable.data;
-    	    exp_2j+=totalPost;
-    	    //exp_2j_err+=totalPost_Err*totalPost_Err;
-    	    exp_2j_err+=totalPost_Err;
-    	    
-    	  }
-    	  if( (thisRegion->nJetsMin()==1 && thisRegion->nBJetsMin()==1  && thisRegion->htMin()>=575) ||
-    	      (thisRegion->nJetsMin()==1 && thisRegion->nBJetsMin()==0  && thisRegion->htMin()>=1000) ||
-    	      (thisRegion->nJetsMin()==2 && thisRegion->nBJetsMin()==0  && thisRegion->htMin()>=575 && thisRegion->htMin()<1000 && bins[iBin]>=800) ||
-    	      (thisRegion->nJetsMin()==2 && thisRegion->nBJetsMin()<3  && thisRegion->htMin()>=575 && thisRegion->htMin()<1000 && bins[iBin]>=600) ||
-    	      (thisRegion->nJetsMin()==2 && thisRegion->nBJetsMin()<2  && thisRegion->htMin()>=1000 && thisRegion->htMin()<1500 && bins[iBin]>=800) ||
-    	      (thisRegion->nJetsMin()==2 && thisRegion->nBJetsMin()==2  && thisRegion->htMin()>=1000 && thisRegion->htMin()<1500 && bins[iBin]>=400) ||
-    	      (thisRegion->nJetsMin()==2 && thisRegion->nBJetsMin()<2  && thisRegion->htMin()>=1500 && bins[iBin]>=400) ||
-    	      (thisRegion->nJetsMin()==2 && thisRegion->nBJetsMin()==2  && thisRegion->htMin()>=1500) ){
-    	    
-    	    obs_1j[0]+=thisTable.data;
-    	    exp_1j[0]+=totalPost;
-    	    //exp_1j_err[0]+=totalPost_Err*totalPost_Err;
-    	    exp_1j_err[0]+=totalPost_Err;
-    	    
-    	  }
-    	  if((thisRegion->nJetsMin()==1 && thisRegion->htMin()>=575) ||
-    	     (thisRegion->nJetsMin()==2 && thisRegion->nBJetsMin()<3  && thisRegion->htMin()>=575 && thisRegion->htMin()<1000 && bins[iBin]>=600) ||
-    	     (thisRegion->nJetsMin()==2 && thisRegion->nBJetsMin()<3  && thisRegion->htMin()>=1000) ){ 
-    	    
-    	    obs_1j[1]+=thisTable.data;
-    	    exp_1j[1]+=totalPost;
-    	    //exp_1j_err[1]+=totalPost_Err*totalPost_Err;
-    	    exp_1j_err[1]+=totalPost_Err;
-    	    
-    	  }
-    	  if((thisRegion->nJetsMin()==1 && thisRegion->htMin()>=450) ||
-    	     (thisRegion->nJetsMin()==2 && thisRegion->nBJetsMin()<3  && thisRegion->htMin()>=450 && thisRegion->htMin()<575 && bins[iBin]>=400) ||
-    	     (thisRegion->nJetsMin()==2 && thisRegion->nBJetsMin()<3  && thisRegion->htMin()>=575 && thisRegion->htMin()<1000 && bins[iBin]>=300) ||
-    	     (thisRegion->nJetsMin()==2 && thisRegion->nBJetsMin()<3  && thisRegion->htMin()>=1000) ){ 
-    	    
-    	    obs_1j[2]+=thisTable.data;
-    	    exp_1j[2]+=totalPost;
-    	    //exp_1j_err[2]+=totalPost_Err*totalPost_Err;
-    	    exp_1j_err[2]+=totalPost_Err;
-    	    
-    	  }
-
-
-      }
-      else if( thisRegion->htMin() >= 1500 && thisRegion->nJetsMin() > 1){
-
-    	int ch=iRegion_eht+iBin;
-    	feht->cd();
-    	gDirectory->cd("shapes_fit_b");
-    	
-    	std::string thisCh = Form("ch%d", ch);
-    	//	std::cout << thisCh << std::endl;
-    	gDirectory->cd(thisCh.c_str());
-    	
-    	TH1F* thisBG=(TH1F*)gDirectory->Get("total_background");
-    	
-    	totalPost = thisBG->GetBinContent(1);
-    	totalPost_Err = thisBG->GetBinError(1);
-    	
-    	gDirectory->cd("..");
-    	
-    	if( iBin==nBins-1 ){
-    	  iRegion_eht += nBins;
-    	}
-
-    	  if( thisRegion->nBJetsMin()==3 && thisRegion->htMin()>=575 ){
-    	    
-    	    obs_3b[0]+=thisTable.data;
-    	    exp_3b[0]+=totalPost;
-    	    //exp_3b_err[0]+=totalPost_Err*totalPost_Err;
-    	    exp_3b_err[0]+=totalPost_Err;
-    	    
-
-    	  }
-    	  if( thisRegion->nBJetsMin()==3 && thisRegion->htMin()>=450 ){
-    	    
-    	    obs_3b[1]+=thisTable.data;
-    	    exp_3b[1]+=totalPost;
-    	    //exp_3b_err[1]+=totalPost_Err*totalPost_Err;
-    	    exp_3b_err[1]+=totalPost_Err;
-    	    
-    	  }
-    	  if( thisRegion->nJetsMin()==7 && thisRegion->htMin()>=575 && (thisRegion->htMin()>=1500 || bins[iBin]>=400.) ){
-    	    
-    	    obs_7j+=thisTable.data;
-    	    exp_7j+=totalPost;
-    	    //exp_7j_err+=totalPost_Err*totalPost_Err;
-    	    exp_7j_err+=totalPost_Err;
-    	    
-
-    	  }
-    	  if( thisRegion->nJetsMin()>=4 && thisRegion->htMin()>=1000 && ((thisRegion->htMin()>=1500 && bins[iBin]>=400) || bins[iBin]>=600.) ){
-    	    
-    	    obs_4j[0]+=thisTable.data;
-    	    exp_4j[0]+=totalPost;
-    	    //exp_4j_err[0]+=totalPost_Err*totalPost_Err;
-    	    exp_4j_err[0]+=totalPost_Err;
-    	    
-    	  }
-    	  if( thisRegion->nJetsMin()>=4 && thisRegion->htMin()>=575 && bins[iBin]>=400 ){
-    	    
-    	    obs_4j[1]+=thisTable.data;
-    	    exp_4j[1]+=totalPost;
-    	    //exp_4j_err[1]+=totalPost_Err*totalPost_Err;
-    	    exp_4j_err[1]+=totalPost_Err;
-    	    
-    	  }
-    	  if( thisRegion->nBJetsMin()>=2 && thisRegion->htMin()>=575 && bins[iBin]>=400 ){
-    	    
-    	    obs_2b[0]+=thisTable.data;
-    	    exp_2b[0]+=totalPost;
-    	    //exp_2b_err[0]+=totalPost_Err*totalPost_Err;
-    	    exp_2b_err[0]+=totalPost_Err;
-    	    
-    	  }
-    	  if( thisRegion->nBJetsMin()>=2 && thisRegion->htMin()>=575 ){
-    	    
-    	    obs_2b[1]+=thisTable.data;
-    	    exp_2b[1]+=totalPost;
-    	    //exp_2b_err[1]+=totalPost_Err*totalPost_Err;
-    	    exp_2b_err[1]+=totalPost_Err;
-    	    
-    	  }
-    	  if( thisRegion->nJetsMin()<7 && thisRegion->htMin()>=1000 && ( ( thisRegion->nJetsMin()>=4 && ( ( thisRegion->htMin()>=1500 && bins[iBin]>=600 ) || ( bins[iBin]>=800. ) ) ) || ( thisRegion->nJetsMin()<4 && ( ( thisRegion->htMin()>=1500 && bins[iBin]>=400 ) || ( bins[iBin]>=600. ) ) ) ) ){
-    	    
-    	    obs_2j+=thisTable.data;
-    	    exp_2j+=totalPost;
-    	    //exp_2j_err+=totalPost_Err*totalPost_Err;
-    	    exp_2j_err+=totalPost_Err;
-    	    
-    	  }
-    	  if( (thisRegion->nJetsMin()==1 && thisRegion->nBJetsMin()==1  && thisRegion->htMin()>=575) ||
-    	      (thisRegion->nJetsMin()==1 && thisRegion->nBJetsMin()==0  && thisRegion->htMin()>=1000) ||
-    	      (thisRegion->nJetsMin()==2 && thisRegion->nBJetsMin()==0  && thisRegion->htMin()>=575 && thisRegion->htMin()<1000 && bins[iBin]>=800) ||
-    	      (thisRegion->nJetsMin()==2 && thisRegion->nBJetsMin()<3  && thisRegion->htMin()>=575 && thisRegion->htMin()<1000 && bins[iBin]>=600) ||
-    	      (thisRegion->nJetsMin()==2 && thisRegion->nBJetsMin()<2  && thisRegion->htMin()>=1000 && thisRegion->htMin()<1500 && bins[iBin]>=800) ||
-    	      (thisRegion->nJetsMin()==2 && thisRegion->nBJetsMin()==2  && thisRegion->htMin()>=1000 && thisRegion->htMin()<1500 && bins[iBin]>=400) ||
-    	      (thisRegion->nJetsMin()==2 && thisRegion->nBJetsMin()<2  && thisRegion->htMin()>=1500 && bins[iBin]>=400) ||
-    	      (thisRegion->nJetsMin()==2 && thisRegion->nBJetsMin()==2  && thisRegion->htMin()>=1500) ){
-    	    
-    	    obs_1j[0]+=thisTable.data;
-    	    exp_1j[0]+=totalPost;
-    	    //exp_1j_err[0]+=totalPost_Err*totalPost_Err;
-    	    exp_1j_err[0]+=totalPost_Err;
-    	    
-    	  }
-    	  if((thisRegion->nJetsMin()==1 && thisRegion->htMin()>=575) ||
-    	     (thisRegion->nJetsMin()==2 && thisRegion->nBJetsMin()<3  && thisRegion->htMin()>=575 && thisRegion->htMin()<1000 && bins[iBin]>=600) ||
-    	     (thisRegion->nJetsMin()==2 && thisRegion->nBJetsMin()<3  && thisRegion->htMin()>=1000) ){ 
-    	    
-    	    obs_1j[1]+=thisTable.data;
-    	    exp_1j[1]+=totalPost;
-    	    //exp_1j_err[1]+=totalPost_Err*totalPost_Err;
-    	    exp_1j_err[1]+=totalPost_Err;
-    	    
-    	  }
-    	  if((thisRegion->nJetsMin()==1 && thisRegion->htMin()>=450) ||
-    	     (thisRegion->nJetsMin()==2 && thisRegion->nBJetsMin()<3  && thisRegion->htMin()>=450 && thisRegion->htMin()<575 && bins[iBin]>=400) ||
-    	     (thisRegion->nJetsMin()==2 && thisRegion->nBJetsMin()<3  && thisRegion->htMin()>=575 && thisRegion->htMin()<1000 && bins[iBin]>=300) ||
-    	     (thisRegion->nJetsMin()==2 && thisRegion->nBJetsMin()<3  && thisRegion->htMin()>=1000) ){ 
-    	    
-    	    obs_1j[2]+=thisTable.data;
-    	    exp_1j[2]+=totalPost;
-    	    //exp_1j_err[2]+=totalPost_Err*totalPost_Err;
-    	    exp_1j_err[2]+=totalPost_Err;
-    	    
-    	  }
-    	
-    	
-      }
+      gDirectory->cd("..");
 
       std::string thisTotPostLine =  makeSingleLinePost( totalPost, totalPost_Err );
       totPostLine = totPostLine + " & " + thisTotPostLine;
       
-            
+      ++iRegion;
+
     } // for mt2 bins
     
     zinvLine = zinvLine + " \\\\";
@@ -1217,7 +424,7 @@ std::string makeSingleLinePost( float yield, float stat ) {
 }
 
 
-std::string makeSingleLineData( int yield ) {
+std::string makeSingleLineData( float yield ) {
 
   std::string returnLine;
   returnLine=Form("%d", yield);

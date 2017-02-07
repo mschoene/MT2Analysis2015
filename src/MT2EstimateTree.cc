@@ -209,29 +209,29 @@ void MT2EstimateTree::projectFromTree( const MT2EstimateTree* treeEst, const std
 
 // //Analysis with the bins defined by the region set, and also applying a selection
 // MT2Analysis<MT2EstimateTree>* MT2EstimateTree::makeAnalysisFromInclusiveTree( const std::string& aname, const std::string& regionsSet, MT2Analysis<MT2EstimateTree>* estimate, const std::string& selection, const std::string& variable ) {
-
+//
 //   std::set<MT2Region> regions = estimate->getRegions();
-
+//
 //   if( regions.size()!=1 ) {
 //     std::cout << "[MT2EstimateTree::makeAnalysisFromEstimateTreeInclusive] ERROR!! You need to pass an inclusive MT2EstimateTree Analysis to use this function!" << std::endl;
 //     exit(19191);
 //   }
-  
+//
 //   MT2EstimateTree* treeInclusive = estimate->get( *(regions.begin()) );
-
+//
 //   // will create a new analysis with custom regions from inclusive tree:
 //   MT2Analysis<MT2EstimateTree>* analysis = new MT2Analysis<MT2EstimateTree>( aname, regionsSet );
 //   std::set<MT2Region> newRegions = analysis->getRegions();
- 
+//
 //   for( std::set<MT2Region>::iterator iR=newRegions.begin(); iR!=newRegions.end(); ++iR ) {
-   
+// 
 //     MT2EstimateTree* thisEstimateTree = analysis->get( *iR );
 //     thisEstimateTree->projectFromTree( treeInclusive, selection, variable );
-
+//
 //   } // for regions
-
+//
 //   return analysis;
-
+//
 // }
 
 

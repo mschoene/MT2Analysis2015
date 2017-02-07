@@ -69,6 +69,9 @@ int main( int argc, char* argv[] ) {
   std::ofstream ofs;
   ofs.open( ofs_name , std::ofstream::app );
 
+  TFile* fpost=TFile::Open(Form("%s/mlfit_all.root", dir.c_str()));
+  int iRegion=1;
+
   for( std::set<MT2Region>::iterator iR = regions.begin(); iR != regions.end(); ++iR ){
     std::cout << iR->getName() << std::endl;
     std::vector< std::string > names = iR->getNiceNamesLatex();
@@ -77,9 +80,9 @@ int main( int argc, char* argv[] ) {
 
     ofs << "\\begin{table}[htbp]" << std::endl; 
     if( iR->nJetsMin() > 1 )
-      ofs << "\\caption{Background estimate, observation, and signal yields in bins of \\mttwo for " << names[0].c_str() << ", " << names[1].c_str() << ". The yields are normalized to $2.3~\\mathrm{fb}^{-1}$.}" << std::endl;
+      ofs << "\\caption{Background estimate and observation in bins of \\mttwo for " << names[0].c_str() << ", " << names[1].c_str() << ". The yields are normalized to $36.8~\\mathrm{fb}^{-1}$.}" << std::endl;
     else
-      ofs << "\\caption{Background estimate, observation, and signal yields for " << names[0].c_str() << ", " << names[1].c_str() << ". The yields are normalized to $2.3~\\mathrm{fb}^{-1}$.}" << std::endl;
+      ofs << "\\caption{Background estimate and observation for " << names[0].c_str() << ", " << names[1].c_str() << ". The yields are normalized to $36.8~\\mathrm{fb}^{-1}$.}" << std::endl;
     ofs << "\\scriptsize" << std::endl;
     ofs << "\\centering" << std::endl;
     ofs << "\\makebox[\\textwidth][c]{" << std::endl;
@@ -122,6 +125,9 @@ int main( int argc, char* argv[] ) {
 
     for( int iBin=0; iBin<nBins; ++iBin ) {
       
+      if(iR->htMin()>=1500 && iBin==0)
+	continue;
+      
       std::string tableName;
       if( iR->nJetsMax()==1 )
 	tableName = std::string(Form("%s/datacard_templates/table_%s_m0toInf.txt", dir.c_str(), iR->getName().c_str()) );
@@ -157,7 +163,31 @@ int main( int argc, char* argv[] ) {
       qcdCRLine  = qcdCRLine  + " & " + thisQCDCRLine;
       zinvCRLine = zinvCRLine + " & " + thisZinvCRLine;
       llepCRLine = llepCRLine + " & " + thisLlepCRLine;
+
+
+      float totalPost=0.;
+      float totalPost_Err=0.;
+      
+      int ch=iRegion;
+      fpost->cd();
+      gDirectory->cd("shapes_fit_b");
+    	  
+      std::string thisCh = Form("ch%d", ch);
+      //	  std::cout << thisCh << std::endl;
+      gDirectory->cd(thisCh.c_str());
+    	  
+      TH1F* thisBG=(TH1F*)gDirectory->Get("total_background");
+      
+      totalPost = thisBG->GetBinContent(1);
+      totalPost_Err = thisBG->GetBinError(1);
+    	  
+      gDirectory->cd("..");
             
+      std::string thisTotPostLine =  makeSingleLinePost( totalPost, totalPost_Err );
+      totPostLine = totPostLine + " & " + thisTotPostLine;
+
+      ++iRegion;
+      
     } // for mt2 bins
     
     zinvLine = zinvLine + " \\\\";
@@ -165,6 +195,8 @@ int main( int argc, char* argv[] ) {
     qcdLine  = qcdLine  + " \\\\";
     totLine  = totLine  + " \\\\";
     dataLine  = dataLine  + " \\\\";
+    
+    totPostLine = totPostLine + "\\\\";
 
     qcdCRLine   = qcdCRLine  + " \\\\";
     zinvCRLine  = zinvCRLine  + " \\\\";
@@ -178,6 +210,10 @@ int main( int argc, char* argv[] ) {
     ofs << "\\hline" << std::endl;
 
     ofs << totLine << std::endl;
+
+    ofs << "\\hline" << std::endl;
+
+    ofs << totPostLine << std::endl;
 
     ofs << "\\hline" << std::endl;
 

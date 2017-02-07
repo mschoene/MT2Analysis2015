@@ -1499,7 +1499,6 @@ void MT2Tree::Init(TTree *tree)
    fChain->SetBranchAddress("weight_lepsf2017_UP", &weight_lepsf2017_UP, &b_weight_lepsf2017_UP);
    fChain->SetBranchAddress("weight_lepsf2017_DN", &weight_lepsf2017_DN, &b_weight_lepsf2017_DN);
 
-
    fChain->SetBranchAddress("weight_btagsf", &weight_btagsf, &b_weight_btagsf);
    fChain->SetBranchAddress("weight_btagsf_heavy_UP", &weight_btagsf_heavy_UP, &b_weight_btagsf_heavy_UP);
    fChain->SetBranchAddress("weight_btagsf_heavy_DN", &weight_btagsf_heavy_DN, &b_weight_btagsf_heavy_DN);

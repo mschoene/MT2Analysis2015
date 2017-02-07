@@ -1617,19 +1617,51 @@ template<class T>
 MT2Region* MT2Analysis<T>::matchRegion( MT2Region region ) const {
 
   MT2Region* foundRegion = 0;
-  
+
   for( std::set<MT2Region>::iterator iR=regions_.begin(); iR!=regions_.end(); ++iR ) {
     
     MT2Region* thisRegion= new MT2Region( (*iR) );
  
     if(!( region.isIncluded( thisRegion ) ) ) continue;
     foundRegion = ( thisRegion );
+    
     break;
-
+        
     delete thisRegion;
     
   }
-    
+  
+//  for( std::set<MT2Region>::iterator iR=regions_.begin(); iR!=regions_.end(); ++iR ) {
+//    
+//      MT2Region* thisRegion = new MT2Region( (*iR) );
+//      
+//      if( !( region.isIncluded( thisRegion ) ) ) continue;
+//      foundRegion = ( thisRegion );
+//
+//      for( std::set<MT2Region>::iterator iR_2=regions_.begin(); iR_2!=regions_.end(); ++iR_2 ) {
+//
+//	MT2Region* thisRegion_2 = new MT2Region( (*iR_2) );
+//	
+//	if( (thisRegion_2->getName()) == (foundRegion->getName()) ) continue;
+//
+//	if( region.isIncluded( thisRegion_2 ) && thisRegion_2->isIncluded( foundRegion ) )
+//	  foundRegion = ( thisRegion_2 ); 
+//	  
+//	break;
+//	
+//	delete thisRegion_2;
+//	
+//      }
+//            
+//      break;
+//
+//      delete thisRegion;
+//    
+//  }
+//  
+//  
+//  std::cout << "Matched region: " << region.getName() << " " << foundRegion->getName() << std::endl;
+  
   return foundRegion;
 
 
@@ -2353,7 +2385,8 @@ void MT2Analysis<T>::print( std::ofstream& ofs_file, Float_t m1, Float_t m2, MT2
   
   T* thisT = this->get(*thisRegion);
 
-  for(int i=1; i < nBins+1; ++i){ 
+  for(int i=1; i < nBins+1; ++i){
+    if(thisRegion->htMin()>=1500 && i==1) continue;
     thisT->print( ofs_file, m1, m2, i, k );
   }
   
@@ -2373,6 +2406,7 @@ void MT2Analysis<T>::print( std::ofstream& ofs_file, Float_t m1, Float_t m2, MT2
   T* thisT = this->get(*thisRegion);
 
   for(int i=1; i < nBins+1; ++i){ 
+    if(thisRegion->htMin()>=1500 && i==1) continue;
     thisT->print( ofs_file, m1, m2, i, k, doGenAverage );
   }
   

@@ -58,23 +58,23 @@ int main( int argc, char* argv[] ) {
   //  MT2Analysis<MT2Estimate>* analysisData = MT2Analysis<MT2Estimate>::readFromFile( dir + "/analyses.root", "data" ); // any one is good, just need to know the regions
   
   std::vector < MT2Analysis<MT2Estimate>* > analysesSignal;
-  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( dir + "/analyses.root", "SMS_T1tttt_mGluino1500_mLSP100") );
-  analysesSignal[0]->setName("T1tttt 1500,100");
-
-  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( dir + "/analyses.root", "SMS_T1tttt_mGluino1200_mLSP800") );
-  analysesSignal[1]->setName("T1tttt 1200,800");
-
-  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( dir + "/analyses.root", "SMS_T1bbbb_mGluino1500_mLSP100") );
-  analysesSignal[2]->setName("T1bbbb 1500,100");
-
-  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( dir + "/analyses.root", "SMS_T1bbbb_mGluino1000_mLSP900") );
-  analysesSignal[3]->setName("T1bbbb 1000,900");
-
-  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( dir + "/analyses.root", "SMS_T1qqqq_mGluino1400_mLSP100") );
-  analysesSignal[4]->setName("T1qqqq 1400,100");
-
-  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( dir + "/analyses.root", "SMS_T1qqqq_mGluino1000_mLSP800") );
-  analysesSignal[5]->setName("T1qqqq 1000,800");
+//  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( dir + "/analyses.root", "SMS_T1tttt_mGluino1500_mLSP100") );
+//  analysesSignal[0]->setName("T1tttt 1500,100");
+//
+//  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( dir + "/analyses.root", "SMS_T1tttt_mGluino1200_mLSP800") );
+//  analysesSignal[1]->setName("T1tttt 1200,800");
+//
+//  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( dir + "/analyses.root", "SMS_T1bbbb_mGluino1500_mLSP100") );
+//  analysesSignal[2]->setName("T1bbbb 1500,100");
+//
+//  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( dir + "/analyses.root", "SMS_T1bbbb_mGluino1000_mLSP900") );
+//  analysesSignal[3]->setName("T1bbbb 1000,900");
+//
+//  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( dir + "/analyses.root", "SMS_T1qqqq_mGluino1400_mLSP100") );
+//  analysesSignal[4]->setName("T1qqqq 1400,100");
+//
+//  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( dir + "/analyses.root", "SMS_T1qqqq_mGluino1000_mLSP800") );
+//  analysesSignal[5]->setName("T1qqqq 1000,800");
 
   std::set<MT2Region> regions = analysis->getRegions();
 
