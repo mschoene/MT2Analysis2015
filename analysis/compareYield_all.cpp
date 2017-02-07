@@ -81,8 +81,8 @@ int main( int argc, char* argv[] ) {
   std::string configFileName(argv[1]);
   MT2Config cfg(configFileName);
 
-  lumi = 18.1;
-  //  lumi = cfg.lumi();
+  //  lumi = 18.1;
+  lumi = cfg.lumi();
   
   TH1::AddDirectory(kTRUE);
   
@@ -195,8 +195,29 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
       int nBins;
       double *bins;
       iMT2->getBins(nBins, bins);
-      
-      TH1D* h_first = data->get(*iMT2)->yield;
+     
+      //      TH1D* h_first = data->get(*iMT2)->yield;
+      TH1D* h_first_forExtreme = data->get(*iMT2)->yield;
+
+      TH1D* h_first;
+
+      if( iMT2->htMin()==1500 && iMT2->nJetsMin()>1 ){
+	double *binsExtreme = bins++;
+	// for( int iBin=1; iBin<=nBins; ++iBin ){
+	//   std::cout << bins[iBin]<< std::endl;
+	//   std::cout << bins[iBin+1]<< std::endl;
+	//   binsExtreme[iBin] = bins[iBin];
+	//   std::cout << binsExtreme[iBin]<< std::endl;
+	// }
+	h_first = new TH1D("h_first", "", nBins-1, binsExtreme);
+	
+	for( int iBin=0; iBin<nBins; ++iBin )
+	  h_first->SetBinContent( iBin, h_first_forExtreme->GetBinContent(iBin+1) );
+
+      }else 
+	h_first = (TH1D*)h_first_forExtreme->Clone("h_first");
+
+
       TGraphAsymmErrors* g_first = MT2DrawTools::getPoissonGraph(h_first);      
       
       TFile* histoFile = TFile::Open( Form("%s/histograms_%s.root", fullPath.c_str(), iMT2->getName().c_str()), "recreate" );
@@ -217,6 +238,9 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
 
       for(unsigned int b=0; b< bgSize; ++b){
 	
+	if( iMT2->htMin()==1500 && iMT2->nJetsMin()>1 && b==0 )
+	  nBins--;
+		
 	h_second[b] = new TH1D(Form("h_second_%d", b), "", nBins, bins);
 	
 	h_second_forRatio[b] = new TH1D(Form("h_second_%d", b), "", nBins, bins);
@@ -227,6 +251,8 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
       }
       
       for( int iBin=0; iBin<nBins; ++iBin ) {
+
+	if( iMT2->htMin()==1500 && iMT2->nJetsMin()>1 && bins[iBin]==200 ) continue;
 
 	std::string tableName;
 	if(iMT2->nJetsMax()==1){
@@ -666,7 +692,8 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   float yMax = (yMax1>yMax2) ? yMax1 : yMax2;
   
   //  float yMin = 1e-3;
-  float yMin = 1e-1;
+  float yMin = 1e-2 ;
+  //float yMin = 1e-1 * 0.3 ;
   //  yMin=0;
   yMax*=20.;
   
@@ -847,7 +874,8 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
     
   }
   else
-    h2_axes_ratio = new TH2D("axes_ratio", "", 10, 0, thisBin, 10, 0.4, 1.6);
+    h2_axes_ratio = new TH2D("axes_ratio", "", 10, 0, thisBin, 10, 0.0, 2.0);
+  //   h2_axes_ratio = new TH2D("axes_ratio", "", 10, 0, thisBin, 10, 0.4, 1.6);
   // h2_axes_ratio = new TH2D("axes_ratio", "", 10, 0, thisBin, 10, 0., 3.5 );
   
   //  TH2D* h2_axes_ratio = new TH2D("axes_ratio", "", 10, 0, thisBin, 10, 0., 3.0 );
@@ -911,7 +939,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
       else
 	lHT_b[iHT-1] = new TLine(12+7*(iHT-1), 0, 12+7*(iHT-1), 2.0 ); 
     if( iHT==1)
-	lHT_b[iHT-1] = new TLine(12+11*(iHT-1), 0.1, 12+11*(iHT-1), 10.0 );  
+	lHT_b[iHT-1] = new TLine(12+11*(iHT-1), 0, 12+11*(iHT-1), 2.0 );  
     }
 
     lHT_b[iHT-1]->SetLineColor(kBlack);

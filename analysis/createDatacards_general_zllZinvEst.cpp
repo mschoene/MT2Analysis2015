@@ -27,9 +27,9 @@ bool use_extrapolation = false;
 bool use_extrapolation_zinv = false;
 bool doSignalContamination = true;
 bool doSimultaneousFit = false;
-bool includeSignalUnc = false; // signal lep eff commented out till available
+bool includeSignalUnc = true; // signal lep eff commented out till available
 //set back to this: bool includeSignalUnc = true; // signal lep eff commented out till available
-bool copy2SE = false; // copy datacards to SE
+bool copy2SE = true; // copy datacards to SE
 bool doGenAverage = true;
 
 int round(float d) {
@@ -88,7 +88,7 @@ int main( int argc, char* argv[] ) {
   else
     label = "";
 
-  std::cout << "Will produce datacards for parent mass between " << m1 << " and " << m2 << ", and LSP mass between" << m11 <<  " and " << m22 << std::endl;
+  std::cout << "Will produce datacards for parent mass between " << m1 << " and " << m2 << ", and LSP mass between " << m11 <<  " and " << m22 << std::endl;
 
   std::string dir = cfg.getEventYieldDir();
   std::string mc_fileName = dir + "/analyses.root";
@@ -110,7 +110,6 @@ int main( int argc, char* argv[] ) {
   float err_llep_shape = 0.40;
   //OLD  float err_llep_lepEff = 0.12; // Uncertainty on llep estimate from lepton efficiency (12%)
   //float err_llep_lepEff = 0.05; // Uncertainty on llep estimate from lepton efficiency (12%)
-  float err_llep_JEC    = 0.05; 
   float err_llep_mtcut  = 0.03; 
   float err_llep_tauEff  = 0.01; 
   float err_llep_btagEff_heavy_7j1b = 0.01;   
@@ -125,7 +124,7 @@ int main( int argc, char* argv[] ) {
   float err_zinv_uncorr_2b = 1.0;
 
   //float err_zinv_zll_SF = 0.00; //rough guess of 3% hlt and 3%for lep sf
-  float err_zinv_zll_SF = 0.05; //rough guess of 3% hlt and 3%for lep sf
+  //float err_zinv_zll_SF = 0.05; //rough guess of 3% hlt and 3%for lep sf
 
   float err_zinv_puritySyst = 0.1; // 10%, including 5% on purity + 8% on fragmentation
 
@@ -134,9 +133,11 @@ int main( int argc, char* argv[] ) {
 
   float zinv_doubleRatioOffset = 0.89; // 89%, used to correct the Z/G ratio in zinv estimate // TO BE UPDATED IN CASE IT CHANGES WITH FULL LUMI
   
-  float err_lumi_corr   = 0.046; // Uncertainty on luminosity (6.2% for 2016 public results)
-  //  float err_lumi_corr   = 0.062; // Uncertainty on luminosity (6.2% for 2016 public results)
+  float err_lumi_corr   = 0.062; // Uncertainty on luminosity (6.2% for 2016 public results)
+  // float err_lumi_corr   = 0.046; // Uncertainty on luminosity (6.2% for 2016 public results)
 
+  float err_jec_llep = 0.02;
+  float err_jec_zinv= 0.02; //special case for VL in line
 
   // Reading data analysis (in search region)
   // MT2Analysis<MT2Estimate>* data  = MT2Analysis<MT2Estimate>::readFromFile( data_fileName, "ZJets" );
@@ -395,12 +396,12 @@ int main( int argc, char* argv[] ) {
       qcd_fjetsCR_name = thisQCDCR->getName();
 
       // }
-      // For region 2-6j, 3b, take R(B) from 4-6 jets region 
-      // also for very low ht, 4-inf
-      //MT2Region* thisQCDCR;
+      // For regions 2-6j, 3b, very low ht, 4-inf use special regionsR(B) from 4-6 jets region 
       if( iR->nJetsMin()==4 &&  iR->htMin()==250 && iR->htMax()==450 )
-	thisQCDCR = new MT2Region( 250, -1, 4, 6, 0, -1 );
-      else if( iR->nBJetsMin()==3 && iR->nJetsMin()==2   ) 
+	thisQCDCR = new MT2Region( 250, -1, 4, -1, 0, -1 );
+      else if( iR->nJetsMin()==2 && iR->nBJetsMin()==3 &&  iR->htMin()==250 && iR->htMax()==450 )
+	thisQCDCR = new MT2Region( 250, -1, 2, -1, 0, -1 );
+      else if( iR->nBJetsMin()==3 && iR->nJetsMin()==2 && iR->nJetsMax()==6   ) 
 	thisQCDCR = new MT2Region( 250, -1, 4, 6, 0, -1 );
       else  
 	thisQCDCR = qcd_rb->matchRegion(*iR);
@@ -458,6 +459,11 @@ int main( int argc, char* argv[] ) {
     
     int nBins = this_data->GetNbinsX(); // Getting total number of bins for this topological region
     
+    if( iR->htMin()==250 && iR->htMax()==450 )
+      err_jec_zinv = 0.05;
+    else
+      err_jec_zinv = 0.02;
+
     // Calculating shape uncertainty for invisible Z (default: linear extrapolation)
     float shapeErr_zinv=0.;
     for( int iBin=1; iBin<this_data->GetNbinsX()+1; ++iBin ) {
@@ -559,6 +565,9 @@ int main( int argc, char* argv[] ) {
       
       std::ifstream thisDatacard( datacardName.c_str() );
       if( thisDatacard.good() ) continue; // If template already exists, move on
+
+      if(iR->htMin()==1500 && iR->nJetsMin()>1 && mt2Min==200 )     
+	continue; //don't even write the first bin for extreme HT
       
       std::ofstream datacard( datacardName.c_str() );
       
@@ -582,9 +591,9 @@ int main( int argc, char* argv[] ) {
       float N_obs = yield_llep + yield_qcd + yield_zinv_zll;
 
 
-      yield_zinv_zll*=(12.93+5.19)/36.459;
-      yield_llep*=(12.93+5.19)/36.459;
-      yield_qcd*=(12.93+5.19)/36.459;
+      // yield_zinv_zll*=(12.93+5.19)/36.459;
+      // yield_llep*=(12.93+5.19)/36.459;
+      // yield_qcd*=(12.93+5.19)/36.459;
 
       // yield_qcd*=(12.93)/36.459;
 
@@ -634,19 +643,21 @@ int main( int argc, char* argv[] ) {
 	datacard << "bin \t" << binName << "\t" << binName << "\t" << binName << "\t" << binName << "\t" << llepCR_name << "\t" << llepCR_name <<std::endl;
 	datacard << "process \t sig \t zinv \t llep \t qcd \t sig \t llep" << std::endl;
 	datacard << "process \t 0 \t 1 \t 2 \t 3 \t 0 \t 2" << std::endl;
-	//	datacard << "rate \t XXX"; //CHANGE
-	datacard << "rate \t 0.01";
+	datacard << "rate \t XXX";
+	//	datacard << "rate \t 0.01";//CHANGE
 	datacard << " \t " << yield_zinv_zll << " \t " << yield_llep << " \t " << yield_qcd << " \t YYY \t " << ( (N_llep_CR>0.001) ? N_llep_CR : 0.001 ) << std::endl;
 	datacard << "-------------" << std::endl;
 	
 	datacard << "lumi_syst    lnN    " << 1.+err_lumi_corr << " - - - " << 1.+err_lumi_corr << " -" << std::endl;
 
-	datacard << "lep_eff    lnN    - " << 1.05 << " " << 1.05 << "  - "  << std::endl;
+	datacard << "jec    lnN    - " << 1.+ err_jec_zinv  << " " << 1.+ err_jec_llep << "  - "  << std::endl;
+
+	datacard << "lep_eff    lnN    - " << 1. + err_lep_eff << " " << 1.+ err_lep_eff << "  - "  << std::endl;
 
 	if(doSignalContamination && doSimultaneousFit)
 	  datacard << "sig_MCstat_1L_" << llepCR_name << " lnN - - - - VVV -" << std::endl;
 	if(!includeSignalUnc)
-	  datacard << "sig_syst_" << binName << " lnN 1.2 - - - - -" << std::endl;
+	  datacard << "sig_syst_" << binName << " lnN 1.2 - - - - -" << std::endl; 
 	else{
 	  datacard << "sig_MCstat_" << binName << " lnN UUU - - - - -" << std::endl;
 	  datacard << "sig_isrSyst lnN III - - - - -" << std::endl;
@@ -664,19 +675,19 @@ int main( int argc, char* argv[] ) {
 	datacard << "bin \t" << binName << "\t" << binName << "\t" << binName << "\t" << binName << std::endl;
 	datacard << "process \t sig \t zinv \t llep \t qcd" << std::endl;
 	datacard << "process \t 0 \t 1 \t 2 \t 3" << std::endl;
-	//	datacard << "rate \t XXX";
-	datacard << "rate \t 0.01";
+       	datacard << "rate \t XXX";
+	//      datacard << "rate \t 0.01";
 	datacard << " \t " << yield_zinv_zll << " \t " << yield_llep << " \t " << yield_qcd << std::endl;
 	datacard << "-------------" << std::endl;
 	
 	datacard << "lumi_syst    lnN    " << 1.+err_lumi_corr << " - - -" << std::endl;
 
-	datacard << "lep_eff    lnN    - " << 1.05 << " " << 1.05 << "  - "  << std::endl;
-	datacard << "jec    lnN    - " << 1.05 << " " << 1.05 << "  - "  << std::endl;
-	datacard << "renom    lnN    - " << 1.01 << " " << 1.01 << "  - "  << std::endl;
+	datacard << "lep_eff    lnN    - " << 1. + err_lep_eff << " " << 1. + err_lep_eff << "  - "  << std::endl;
+	datacard << "jec    lnN    - " << 1.+ err_jec_zinv  << " " << 1.+ err_jec_llep << "  - "  << std::endl;
+	datacard << "renorm    lnN    - " << 1. + err_llep_renorm << " " << 1. + err_llep_renorm << "  - "  << std::endl;
 
 	if(!includeSignalUnc)
-	  datacard << "sig_syst_" << binName << " lnN 1.2 - - -" << std::endl;
+	  datacard << "sig_syst_" << binName << " lnN 1.2 - - -" << std::endl; 
 	else{
 	  datacard << "sig_MCstat_" << binName << " lnN UUU - - -" << std::endl;
 	  if (doGenAverage)
@@ -717,7 +728,12 @@ int main( int argc, char* argv[] ) {
       int qcd_nCR  = 0;
       int llep_nCR = 0;
       
-   
+      float summedErr = err_jec_zinv* err_jec_zinv +  err_jec_llep*err_jec_llep + err_llep_renorm*err_llep_renorm;
+      zinvZll_systUp += summedErr;
+      zinvZll_systDn += summedErr;
+      llep_systUp    += summedErr;
+      llep_systDn    += summedErr;
+
       std::string zinvCR_name;
       zinvCR_name = iR->getName();
 
@@ -918,8 +934,22 @@ int main( int argc, char* argv[] ) {
 	  //float err_zinvZll_purity = (this_purity_zll_err->GetBinContent(iBin));
 	  // p_errUp_zll = p_errDown_zll = err_zinvZll_purity;
 
-	  if( !(doGammaOnly==1) && (doZllOnly==1  || !isForGamma) ){
 
+
+	  std::cout << "purity " << p_zll << std::endl;
+ 
+	  if(doSimultaneousFit && includeCR){
+	    datacard << "zinvDY_Rsfof  lnN  - " << 1.+ 0.15*(1.-p_zll) << " - - - -" << std::endl;
+	  }else{
+	    datacard << "zinvDY_Rsfof  lnN  - " << 1.+ 0.15*(1.-p_zll)  << " - -" << std::endl;
+	  }
+
+	  zinvZll_systUp += (0.15*(1.-p_zll))*(0.15*(1.-p_zll));
+	  zinvZll_systDn +=  (0.15*(1.-p_zll))*(0.15*(1.-p_zll));
+
+
+
+	  if( !(doGammaOnly==1) && (doZllOnly==1  || !isForGamma) ){
 	    //Syst uncerainty on purity
 	    if( Nzll>0 ){
 	      // if(doSimultaneousFit && includeCR)
@@ -928,33 +958,58 @@ int main( int argc, char* argv[] ) {
 	      //   datacard << "zinv_zll_SF" << " lnN  - " << 1.+err_zinv_zll_SF << " - -" << std::endl;
 	      // zinvZll_systUp += err_zinv_zll_SF*err_zinv_zll_SF;
 	      // zinvZll_systDn += err_zinv_zll_SF*err_zinv_zll_SF; 
+	 
+	      // p_zll = fabs(p_zll);
+	      if( p_zll > 0. ){
+	
+		float p_zllUp = err_zinvZll_purity / p_zll ;
+		float p_zllDn = err_zinvZll_purity / p_zll ;
+		//Stat Uncert
+		if( ( p_zllUp )>=1. ){
+		  p_zllUp = 1.0;
+		  p_zllDn = 1.0;
+
+		}
+		//	  p_zllUp = (1./ p_zll) - 1.;//	if( ( p_zll - err_zinvZll_purity)<= 0.)		  //	  p_zllDn = 0.99;
+       
+		std::cout << p_zll << "  " << p_zllUp << "  " << p_zllDn << std::endl;
+		if(doSimultaneousFit && includeCR){
+		  datacard << "zinvDY_purity_" << zinvCR_name << " lnN  - " << 1.+ p_zllUp << " - - - -" << std::endl;
+		}else{
+		  datacard << "zinvDY_purity_" << zinvCR_name << " lnN  - " << 1.+ p_zllUp  << " - -" << std::endl;
+		}
+
+		  // if(doSimultaneousFit && includeCR){
+		  //   datacard << "zinvDY_purity_" << zinvCR_name << " lnN  - " << 1.+ p_zllUp << "/" <<  1.- p_zllDn << " - - - -" << std::endl;
+		  // }else{
+		  //   datacard << "zinvDY_purity_" << zinvCR_name << " lnN  - " << 1.+ p_zllUp  << "/" <<  1.- p_zllDn << " - -" << std::endl;
+		  // }
+
+		  zinvZll_systUp += p_zllUp*p_zllUp;
+		  zinvZll_systDn += p_zllDn*p_zllDn;
 
 
-	    //Stat Uncert
-	    // p_zll = fabs(p_zll);
-	    if( p_zll > 0.){
-	      if(doSimultaneousFit && includeCR){
-		datacard << "zinvDY_purity_" << zinvCR_name << " lnN  - " << 1.+err_zinvZll_purity/p_zll << " - - - -" << std::endl;
-	      }else{
-		datacard << "zinvDY_purity_" << zinvCR_name << " lnN  - " << 1.+err_zinvZll_purity/p_zll << " - -" << std::endl;
+	      }else{ //purity = 0 //this happens at 36ifb still for a few regions 
+		  if(doSimultaneousFit && includeCR){
+		    datacard << "zinvDY_purity_" << zinvCR_name << " lnN  - 1.0/0.01 - - - -" << std::endl; 
+		  }
+		  else{
+		    datacard << "zinvDY_purity_" << zinvCR_name << " lnN  - 1.0/0.01 - - - -" << std::endl;
+		  }
+		zinvZll_systUp += 1.0;
+		zinvZll_systDn += 1.0;
 	      }
-	    }else{ //purity = 0 //this happens at 36ifb still for a few regions 
-	      if(doSimultaneousFit && includeCR){
-		datacard << "zinvDY_purity_" << zinvCR_name << " lnN  - 1.0/0.01 - - - -" << std::endl; 
-	      }
-	      else{
-		datacard << "zinvDY_purity_" << zinvCR_name << " lnN  - 1.0/0.01 - - - -" << std::endl;
-	      }
-	    }
-	    //   if( fabs(p_errDown_zll)/p_zll < 1. )  
-	    // 	datacard << "zinvDY_purity_" << zinvCR_name << " lnN  - " << 1.+p_errUp_zll/p_zll << "/" << 1.-p_errDown_zll/p_zll << " - - - -" << std::endl;
-	    //   else 
-	    // 	datacard << "zinvDY_purity_" << zinvCR_name << " lnN  - " << 1.+p_errUp_zll/p_zll << "/0.01 - - - -" << std::endl;
-	    // }
-	    // else{
-	    //   if( fabs(p_errDown_zll)/p_zll < 1. )  
-	    // 	datacard << "zinvDY_purity_" << zinvCR_name << " lnN  - " << 1.+p_errUp_zll/p_zll << "/" << 1.-p_errDown_zll/p_zll << " - -" << std::endl;
-	    //   else 
+
+
+	      //   if( fabs(p_errDown_zll)/p_zll < 1. )  
+	      // 	datacard << "zinvDY_purity_" << zinvCR_name << " lnN  - " << 1.+p_errUp_zll/p_zll << "/" << 1.-p_errDown_zll/p_zll << " - - - -" << std::endl;
+	      //   else 
+	      // 	datacard << "zinvDY_purity_" << zinvCR_name << " lnN  - " << 1.+p_errUp_zll/p_zll << "/0.01 - - - -" << std::endl;
+	      // }
+	      // else{
+	      //   if( fabs(p_errDown_zll)/p_zll < 1. )  
+	      // 	datacard << "zinvDY_purity_" << zinvCR_name << " lnN  - " << 1.+p_errUp_zll/p_zll << "/" << 1.-p_errDown_zll/p_zll << " - -" << std::endl;
+	      //   else 
 	    // 	datacard << "zinvDY_purity_" << zinvCR_name << " lnN  - " << 1.+p_errUp_zll/p_zll << "/0.01 - -" << std::endl;
 	    // }
 	    // zinvZll_systUp += (p_errUp_zll/p_zll)*(p_errUp_zll/p_zll);
@@ -1574,6 +1629,8 @@ int main( int argc, char* argv[] ) {
        qcd_systUp = yield_qcd*sqrt(qcd_systUp);
        qcd_systDn = yield_qcd*sqrt(qcd_systDn);
 
+       int nData = round(this_data->GetBinContent(iBin));
+
        // Print the table:
        table << "### bg_name yield statUp statDown systUp systDown" << std::endl;
  
@@ -1582,7 +1639,7 @@ int main( int argc, char* argv[] ) {
        //table << "zinv    " << yield_zinv << " " << zinv_statUp << " " << zinv_statDn << "  " << zinv_systUp << " " << zinv_systDn << std::endl;
        table << "llep    " << yield_llep << " " << llep_statUp << " " << llep_statDn << "  " << llep_systUp << " " << llep_systDn << std::endl;
        table << "qcd     " << yield_qcd << " " << qcd_statUp << " " << qcd_statDn << "  " << qcd_systUp << " " << qcd_systDn << std::endl;
-       table << "data    " << std::setprecision(3) << this_data->GetBinContent(iBin) << std::setprecision(3) <<std::endl;
+       table << "data    " << nData  <<std::endl;
 
        // table << "zinv_nCR    " << std::setprecision(3) << zinv_nCR << std::setprecision(3) <<std::endl;
        table << "zinv_nCR " << std::setprecision(3) << zinv_zll_nCR << std::setprecision(3) <<std::endl;
@@ -1606,6 +1663,7 @@ int main( int argc, char* argv[] ) {
   //////  std::vector<MT2Analysis<MT2Estimate>*> signals = MT2Analysis<MT2Estimate>::readAllFromFile( mc_fileName, "SMS" );
   //////  std::vector<MT2Analysis<MT2EstimateSigSyst>*> signals = MT2Analysis<MT2EstimateSigSyst>::readAllSystFromFile( mc_fileName, "SMS", "" );
 
+
   std::vector<MT2Analysis<MT2EstimateSigContSyst>*> signals;
   std::vector<MT2Analysis<MT2EstimateSigSyst>*> signals_isr;
   std::vector<MT2Analysis<MT2EstimateSigSyst>*> signals_bTagHeavy;
@@ -1616,11 +1674,18 @@ int main( int argc, char* argv[] ) {
   if( model == "T2tt" || model == "T1tttt" )
     modelName += "_sigcontam";
 
-  if( model == "T1qqqq") modelName+="_1900_1";
-  if( model == "T2qq") modelName+="_1500_1";
+  // // for running on ETH processed signal 
+  // signals       = MT2Analysis<MT2EstimateSigContSyst>::readAllSystFromFile( dir + "/analyses.root", modelName, "isr" );
+  // //   llep = MT2Analysis<MT2Estimate>::readFromFile( dir + "/analyses.root", "llepEstimate" );
+  // if( includeSignalUnc ){
+  //   signals_isr       = MT2Analysis<MT2EstimateSigSyst>::readAllSystFromFile( dir + "/analyses.root", modelName, "isr" );
+  //   signals_bTagHeavy = MT2Analysis<MT2EstimateSigSyst>::readAllSystFromFile( dir + "/analyses.root", modelName, "btagsf_heavy" );
+  //   signals_bTagLight = MT2Analysis<MT2EstimateSigSyst>::readAllSystFromFile( dir + "/analyses.root", modelName, "btagsf_light" );
+  //   if( addSigLepSF && (( model == "T2tt" || model == "T1tttt" )) )
+  //     signals_lepEff = MT2Analysis<MT2EstimateSigSyst>::readAllSystFromFile( dir + "/analyses.root", modelName, "lepeff" );
+  // }
 
   signals       = MT2Analysis<MT2EstimateSigContSyst>::readAllSystFromFile( "./signalScansFromDominick/"+modelName+"_eth.root", modelName, "isr" );
-
  
   if( includeSignalUnc ){
     signals_isr       = MT2Analysis<MT2EstimateSigSyst>::readAllSystFromFile( "./signalScansFromDominick/"+modelName+"_eth.root", modelName, "isr" );
@@ -1629,8 +1694,6 @@ int main( int argc, char* argv[] ) {
     
     if( addSigLepSF && (( model == "T2tt" || model == "T1tttt" )) )
       signals_lepEff = MT2Analysis<MT2EstimateSigSyst>::readAllSystFromFile( "./signalScansFromDominick/"+modelName+"_eth.root", modelName, "lepeff" );
-
-
   }
   
   
@@ -1642,7 +1705,6 @@ int main( int argc, char* argv[] ) {
   
 
   for( unsigned  isig=0; isig<signals.size(); ++isig ) {
-
     
     // signals[isig]           ->setName(model.c_str());
     // if(includeSignalUnc){
@@ -1680,6 +1742,7 @@ int main( int argc, char* argv[] ) {
     ////// If you need to renormalize T2qq xsec, uncomment
 //    if( signals[isig]->getName().find("T2qq") != std::string::npos ) 
 //      xs_norm=8./10.;
+
 
     // Start loop over topological regions
     for( std::set<MT2Region>::iterator iR=regions.begin(); iR!=regions.end(); ++iR ) {
@@ -1843,9 +1906,11 @@ int main( int argc, char* argv[] ) {
 	    if(iR->nJetsMin()>=7 && iR->nBJetsMin()>1) includeCR=false;
 	    
 	    if( this_signal->GetBinLowEdge( iBin ) > iR->htMax() && iR->htMax()>0 ) continue;
-	    
+	    	    
 	    float mt2Min = this_signal->GetBinLowEdge( iBin );
 	    float mt2Max = (iBin==this_signal->GetNbinsX()) ?  -1. : this_signal->GetBinLowEdge( iBin+1 );
+
+	    if( iR->htMin()==1500 && iR->nJetsMin()>1 && mt2Min==200 ) continue;
 	    
 	    // If bin is empty, do not create card
 	    if( this_signal->GetBinContent(iBin) <=0 );
@@ -1898,6 +1963,7 @@ int main( int argc, char* argv[] ) {
 	      std::ifstream thisNewDatacard( newDatacard.c_str() );
 	      if( thisNewDatacard.good() ) continue;
 
+
 	      float sig = this_signal->GetBinContent(iBin);
 	      float sigErr = this_signal->GetBinError(iBin)/sig;
 	      float sig_syst = 0;
@@ -1908,6 +1974,9 @@ int main( int argc, char* argv[] ) {
 
 	      sig*=xs_norm; // To eventually rescale xsec.
 	      
+	      //Scaling to lumi (so one doesn't have to reloop to change lumi), for ETH, not for SnT histograms
+	      //sig *= cfg.lumi();
+
 	      // Siganl Contamination
 	      double sigContErr = 0.0;
 	      double sigCont = 0.0;
@@ -1930,13 +1999,17 @@ int main( int argc, char* argv[] ) {
 		
 		isrErr = this_signal3d_isr_Up->GetBinContent(iBin, iBinY, iBinZ);
 		//isrErr = 2 - isrErr/sig;
-		isrErr = isrErr/sig;
+		isrErr = isrErr/sig; // before without the 1+
+		//isrErr = 1. + isrErr/sig; // before without the 1+
+		//isrErr = isrErr/sig;
 	      
 		bTagErr_heavy = this_signal3d_bTagHeavy_Up->GetBinContent(iBin, iBinY, iBinZ);
-		bTagErr_heavy = bTagErr_heavy/sig;
+		bTagErr_heavy = bTagErr_heavy/sig;// before without the 1+
+		//		bTagErr_heavy = 1. + bTagErr_heavy/sig;// before without the 1+
 	      
 		bTagErr_light = this_signal3d_bTagLight_Up->GetBinContent(iBin, iBinY, iBinZ);
-		bTagErr_light = bTagErr_light/sig;
+		bTagErr_light = bTagErr_light/sig;// before without the 1+
+		//bTagErr_light = 1. + bTagErr_light/sig;// before without the 1+
 		
 		if( addSigLepSF && (( model == "T2tt" || model == "T1tttt" ))){
 		  lepEffErr = this_signal3d_lepEff_Up->GetBinContent(iBin, iBinY, iBinZ);

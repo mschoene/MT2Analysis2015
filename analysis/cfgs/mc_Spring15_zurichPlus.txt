@@ -1,6 +1,0 @@
-lumi 3
-regionsSet zurichPlus
-mcSamples Spring15_25ns_zurichPlus
-dataSamples datatest
-#gamma2bMethod 2b1bRatio
-#additionalStuff noSignals

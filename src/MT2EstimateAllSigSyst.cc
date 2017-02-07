@@ -407,7 +407,31 @@ const MT2EstimateAllSigSyst& MT2EstimateAllSigSyst::operator=( const MT2Estimate
 
 
 
+const MT2EstimateAllSigSyst& MT2EstimateAllSigSyst::operator+=( const MT2EstimateAllSigSyst& rhs ) {
 
+  this->yield->Add(rhs.yield);
+  this->yield3d->Add(rhs.yield3d);
+  this->yield3d_systUp->Add(rhs.yield3d_systUp);
+  this->yield3d_systDown->Add(rhs.yield3d_systDown);
+
+  this->yield3d_genmet->Add(rhs.yield3d_genmet );
+
+  this->yield3d_isr_UP->Add(rhs.yield3d_isr_UP);
+  this->yield3d_isr_DN->Add(rhs.yield3d_isr_DN );
+  this->yield3d_lepsf_UP->Add(rhs.yield3d_lepsf_UP );
+  this->yield3d_lepsf_DN->Add(rhs.yield3d_lepsf_DN );
+  this->yield3d_btag_light_UP->Add(rhs.yield3d_btag_light_UP );
+  this->yield3d_btag_light_DN->Add(rhs.yield3d_btag_light_DN );
+
+  this->yield3d_btag_heavy_UP->Add(rhs.yield3d_btag_heavy_UP );
+  this->yield3d_btag_heavy_DN->Add(rhs.yield3d_btag_heavy_DN );
+
+  this->yield3d_crsl->Add(rhs.yield3d_crsl);
+  this->yield3d_alpha->Add(rhs.yield3d_alpha);
+
+  return (*this);
+
+}
 
 
 MT2EstimateAllSigSyst MT2EstimateAllSigSyst::operator*( float k ) const{

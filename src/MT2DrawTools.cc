@@ -187,7 +187,7 @@ TStyle* MT2DrawTools::setStyle() {
   style->SetStripDecimals(kTRUE);
   style->SetTickLength(0.03, "XYZ");
   style->SetNdivisions(510, "XYZ");
-  style->SetPadTickX(1); // To get tick marks on the opposite side of the frame
+  //  style->SetPadTickX(1); // To get tick marks on the opposite side of the frame
   style->SetPadTickY(1);
   // for histograms:
   style->SetHistLineColor(1);
@@ -897,6 +897,10 @@ std::vector<TCanvas*> MT2DrawTools::drawRegionYields_fromTree( const std::string
         MT2DrawTools::addOverflowSingleHisto(h1_mc);
 
       histos_mc.push_back(h1_mc);
+      //if( varName == "nBJets"){
+      // for(int iBin=1; iBin< h1_mc->GetNbinsX(); iBin++){
+      //   std::cout << "iBin " << i << " = " << h1_mc->GetBinContent(iBin) << std::endl;
+      //}}
     }
 
     //TH1::AddDirectory(kFALSE); // stupid ROOT memory allocation needs this
@@ -1118,17 +1122,17 @@ std::vector<TCanvas*> MT2DrawTools::drawRegionYields_fromTree( const std::string
       if( displaySF_ )
         normText->AddText( Form("#splitline{MC scaled}{by %.2f}", scaleFactor) );
       else
-        normText->AddText( "#splitline{Shape}{Norm.}" );
+	normText->AddText( "#splitline{Shape}{Norm.}" );
       if( this->twoPads() ) 
         pad1->cd();
       else
         c1->cd();
-      normText->Draw("same");
+      //   normText->Draw("same");
       if( this->twoPads() ) 
         pad1_log->cd();
       else
         c1_log->cd();
-      normText->Draw("same");
+      //normText->Draw("same");
     }
 
 

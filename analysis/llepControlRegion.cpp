@@ -270,8 +270,9 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
     // }
 
     if( !myTree.isData ){
-      //      weight *= myTree.weight_btagsf;
-      weight *= myTree.weight_lepsf;
+      weight *= myTree.weight_btagsf;
+      weight *= myTree.weight_lepsf2017;
+      //      weight *= myTree.weight_lepsf;
 
       // // ETH has a branch witht he average weight stored:
       // // Also we have a different numbering scheme...
@@ -280,9 +281,9 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
 
       ///AMERICAN WAY
       if (myTree.evt_id == 301 || myTree.evt_id == 302)
-      	weight *= myTree.weight_isr/0.910; // nominal
+      	weight *= myTree.weight_isr/0.909; // nominal
       else if (myTree.evt_id == 303) 
-      	weight *= myTree.weight_isr/0.897;
+      	weight *= myTree.weight_isr/0.895;
 
     }
 
@@ -293,6 +294,9 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
       //OLD if( !(myTree.HLT_PFMETNoMu90_PFMHTNoMu90 || myTree.HLT_PFHT350_PFMET100 || myTree.HLT_PFHT800) ) continue;
 
     } // if is data
+
+
+    if( myTree.nJet200MuFrac50DphiMet > 0 ) continue; // new RA2 filter
 
     if( myTree.met_miniaodPt/myTree.met_caloPt > 5.0 ) continue;
 
@@ -486,12 +490,12 @@ MT2Analysis<T>* computeSigYield( const MT2Sample& sample, const MT2Config& cfg )
 
     if( !myTree.isData ){
       weight *= myTree.weight_btagsf;
-      weight *= myTree.weight_lepsf;
+      weight *= myTree.weight_lepsf2017;
    
       if (myTree.evt_id == 301 || myTree.evt_id == 302)
-	weight *= myTree.weight_isr/0.910; // central/average
+	weight *= myTree.weight_isr/0.909; // central/average
       else if (myTree.evt_id == 303) 
-	weight *= myTree.weight_isr/0.897;  
+	weight *= myTree.weight_isr/0.895;  
     }
 
     float sig_xs=0.;

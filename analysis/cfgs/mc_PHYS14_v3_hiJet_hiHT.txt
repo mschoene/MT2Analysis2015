@@ -1,3 +1,0 @@
-regionsSet 13TeV_PHYS14_hiHT
-mcSamples PHYS14_v3_skimprune
-dataSamples datatest

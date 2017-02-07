@@ -1,5 +1,0 @@
-lumi 0.0205
-regionsSet 13TeV_inclusive
-mcSamples PHYS14_v6_noSkim
-dataSamples Run2015B_firstData_mercredi
-additionalStuff noSignals

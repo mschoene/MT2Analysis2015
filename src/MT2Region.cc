@@ -827,7 +827,7 @@ void MT2Region::getBins( int &nBins, double*& bins) const {
   }  else if( regionName == "HT1200toInf_j1_b0" ){ // monojet inclusive
     
     const int nBins_tmp                        = 1;
-    bins = new double[nBins_tmp+1]{0., 1500.};   //NEW EOY 2016 binning
+    bins = new double[nBins_tmp+1]{0., 2000.};   //NEW EOY 2016 binning
     nBins = nBins_tmp;
     
   }
@@ -882,7 +882,13 @@ void MT2Region::getBins( int &nBins, double*& bins) const {
     bins = new double[nBins_tmp+1]{200., 300., 400., 1500.};   //NEW EOY 2016 binning (same)
     nBins = nBins_tmp;
     
-  } else if( regionName == "HT250to450_j2to3_b0toInf" ){ // for extrapolation
+  } else if( regionName == "HT250to450_j2_b0toInf" ){ // for extrapolation
+    
+    const int nBins_tmp                        = 3;
+    bins = new double[nBins_tmp+1]{200., 300., 400., 1500.};   //NEW EOY 2016 binning (same)
+    nBins = nBins_tmp;
+    
+  } else if( regionName == "HT250to450_j3_b0toInf" ){ // for extrapolation
     
     const int nBins_tmp                        = 3;
     bins = new double[nBins_tmp+1]{200., 300., 400., 1500.};   //NEW EOY 2016 binning (same)
@@ -1097,7 +1103,13 @@ void MT2Region::getBins( int &nBins, double*& bins) const {
 
 ////HERE (is the important stuff)
 
-  else if( regionName == "HT450to575_j2to3_b0toInf" ){ // for extrapolation
+  else if( regionName == "HT450to575_j2_b0toInf" ){ // for extrapolation
+    
+    const int nBins_tmp                        = 4;
+    bins = new double[nBins_tmp+1]{200., 300., 400., 500., 1500.};   //NEW EOY 2016 binning (same)
+    nBins = nBins_tmp;
+    
+  }else if( regionName == "HT450to575_j3_b0toInf" ){ // for extrapolation
     
     const int nBins_tmp                        = 4;
     bins = new double[nBins_tmp+1]{200., 300., 400., 500., 1500.};   //NEW EOY 2016 binning (same)
@@ -1181,7 +1193,13 @@ void MT2Region::getBins( int &nBins, double*& bins) const {
     bins = new double[nBins_tmp+1]{200.,300., 400., 1500.};  //NEW EOY 2016 binning
     nBins = nBins_tmp;
 
-  } else if( regionName == "HT575to1000_j2to3_b0toInf" ){ //for extrapolation
+  } else if( regionName == "HT575to1000_j2_b0toInf" ){ //for extrapolation
+
+    const int nBins_tmp                        = 5;
+    bins = new double[nBins_tmp+1]{200., 300., 400., 600., 800., 1500.};  //NEW EOY 2016 binning
+    nBins = nBins_tmp;
+
+  } else if( regionName == "HT575to1000_j3_b0toInf" ){ //for extrapolation
 
     const int nBins_tmp                        = 5;
     bins = new double[nBins_tmp+1]{200., 300., 400., 600., 800., 1500.};  //NEW EOY 2016 binning
@@ -1265,7 +1283,13 @@ void MT2Region::getBins( int &nBins, double*& bins) const {
     bins = new double[nBins_tmp+1]{200., 300., 400., 600., 1500.};  //NEW EOY 2016 binning
     nBins = nBins_tmp;
 
-  } else if( regionName == "HT1000to1500_j2to3_b0toInf" ){ // for extrapolation
+  } else if( regionName == "HT1000to1500_j2_b0toInf" ){ // for extrapolation
+
+    const int nBins_tmp                        = 6;
+    bins = new double[nBins_tmp+1]{200., 400., 600., 800., 1000., 1200., 1500.};  //NEW EOY 2016 binning
+    nBins = nBins_tmp;
+
+  } else if( regionName == "HT1000to1500_j3_b0toInf" ){ // for extrapolation
 
     const int nBins_tmp                        = 6;
     bins = new double[nBins_tmp+1]{200., 400., 600., 800., 1000., 1200., 1500.};  //NEW EOY 2016 binning

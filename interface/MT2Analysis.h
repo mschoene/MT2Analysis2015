@@ -562,7 +562,8 @@ MT2Analysis<T>::MT2Analysis( const std::string& aname, const std::string& region
     //  htRegions.insert(MT2HTRegion(1500.,    -1 ));
     
     std::set<MT2SignalRegion> signalRegions;
-    signalRegions.insert(MT2SignalRegion( 2,  3, 0, -1));
+    signalRegions.insert(MT2SignalRegion( 2,  2, 0, -1)); // splitting 2-3 bin for 2-6 bin
+    signalRegions.insert(MT2SignalRegion( 3,  3, 0, -1));
     signalRegions.insert(MT2SignalRegion( 4,  6, 0, -1));
     signalRegions.insert(MT2SignalRegion( 7, -1, 0, -1));
 
@@ -570,9 +571,12 @@ MT2Analysis<T>::MT2Analysis( const std::string& aname, const std::string& region
 
     regions_.insert(MT2Region(1500.,-1., 2, -1, 0, -1));
 
-    regions_.insert(MT2Region(250., 450., 2,  3, 0, -1));
+    //very low ht bins
+    regions_.insert(MT2Region(250., 450., 2,  2, 0, -1));
+    regions_.insert(MT2Region(250., 450., 3,  3, 0, -1));
     regions_.insert(MT2Region(250., 450., 4, -1, 0, -1));
 
+    //monojet bins
     //    regions_.insert(MT2Region(200., 250., 1, 1, 0, 0));
     regions_.insert(MT2Region(250., 350., 1, 1, 0, 0));
     regions_.insert(MT2Region(350., 450., 1, 1, 0, 0));
