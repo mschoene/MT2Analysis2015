@@ -671,6 +671,7 @@ if [[ "$1" = "mergeData" ]]; then
     # If this is not the case, the 'input' variable here may need to be set properly by hand
     # no automated yet to merge the three skim flavours... (un)comment out as necessary
     input="${outputFolder}/skimAndPrune/"
+    #input="${outputFolder}/"
     #input="${outputFolder}/QCDskimAndPrune/"
     #input="${outputFolder}/QCDMonoJetSkimAndPrune/"
 
