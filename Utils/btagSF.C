@@ -1,8 +1,8 @@
 /*
-How to run:
-root -l
-.L btagSF.C+
-btagSF(inputString, inputFolder, outputFile, treeName, objectName)
+  How to run:
+  root -l
+  .L btagSF.C+
+  btagSF(inputString, inputFolder, outputFile, treeName, objectName)
 */
 
 
@@ -32,6 +32,8 @@ btagSF(inputString, inputFolder, outputFile, treeName, objectName)
 
 //using namespace std;
 
+//Working point
+float btag_wp = 0.800;
 
 // setup calibration readers 
 // https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation74X  --  official SFs
@@ -56,8 +58,7 @@ public:
     h_btag_eff_c    = (TH2D*) f_btag_eff->Get("h2_BTaggingEff_csv_med_Eff_c"   );
     h_btag_eff_udsg = (TH2D*) f_btag_eff->Get("h2_BTaggingEff_csv_med_Eff_udsg");
 
-
-
+    
     calib_fast = new BTagCalibrationStandalone("csvv2", "/shome/mschoene/btagSF/CSV_13TEV_Combined_14_7_2016.csv"); // 25 ns official version of SFs
     reader_fastSim    = new BTagCalibrationStandaloneReader(BTagEntryStandalone::OP_MEDIUM, "central", {"up","down"}); 
 
@@ -130,6 +131,7 @@ void BTagSFHelper::get_SF_btag(float pt, float eta, int mcFlavour, float &SF, fl
   else if ( abs(mcFlavour)==4 ) flavour = BTagEntryStandalone::FLAV_C;
   
   //BM: these two lines are probably unnecessary now with "eval_auto_bounds" method. To be checked
+  //Checked and it is still needed:
   float pt_cutoff  = std::max(29.999 ,std::min(669., double(pt)));
   //  float pt_cutoff  = std::max(30. ,std::min(669., double(pt)));
   float eta_cutoff = std::min(2.39,fabs(double(eta)));
@@ -211,7 +213,7 @@ void BTagSFHelper::get_weight_btag(int nobj, float* obj_pt, float* obj_eta, int*
     float eta = fabs(obj_eta[indj]);
     float pt  = obj_pt[indj];
 
-    if(eta > 2.5) continue;
+    if(eta > 2.4) continue;
     if(pt  < 20 ) continue;
     //if(mcFlavour==0) continue; //for jets with flavour 0, we ignore.
 
@@ -220,8 +222,7 @@ void BTagSFHelper::get_weight_btag(int nobj, float* obj_pt, float* obj_eta, int*
     float eff = getBtagEffFromFile(pt, eta, mcFlavour, isFastSim);
 
 
-    bool istag = csv > 0.890 && eta < 2.5 && pt>20;
-
+    bool istag = csv >= btag_wp && eta <= 2.4 && pt>=20;
     float SF = 0.;
     float SFup = 0.;
     float SFdown = 0.;
@@ -272,7 +273,8 @@ void BTagSFHelper::get_weight_btag(int nobj, float* obj_pt, float* obj_eta, int*
   wtbtagUp_heavy   = errHup   / ( mcNoTag * mcTag );
   wtbtagUp_light   = errLup   / ( mcNoTag * mcTag );
   wtbtagDown_heavy = errHdown / ( mcNoTag * mcTag );
-  wtbtagDown_light = errHdown / ( mcNoTag * mcTag );
+  wtbtagDown_light = errLdown / ( mcNoTag * mcTag );
+ 
 }
 
 
@@ -316,8 +318,8 @@ int btagSF(string inputString,
   Float_t obj_eta[100];
   clone->SetBranchAddress((objectName+"_eta").c_str(), obj_eta);
   Int_t obj_mcFlavour[100];
-  //clone->SetBranchAddress((objectName+"_hadronFlavour").c_str(), obj_mcFlavour);
-  clone->SetBranchAddress((objectName+"_mcFlavour").c_str(), obj_mcFlavour);
+  clone->SetBranchAddress((objectName+"_hadronFlavour").c_str(), obj_mcFlavour);
+  //clone->SetBranchAddress((objectName+"_mcFlavour").c_str(), obj_mcFlavour);
   Float_t obj_btagCSV[100];
   clone->SetBranchAddress((objectName+"_btagCSV").c_str(), obj_btagCSV);
   
