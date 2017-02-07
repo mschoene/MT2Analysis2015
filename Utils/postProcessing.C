@@ -42,8 +42,6 @@ int postProcessing(std::string inputString="input",
 		   std::string crabExt="",
 		   std::string inputPU="",
 		   std::string PUvar="nTrueInt",
-		   std::string goldenjson_file="goodruns_golden.txt",
-		   std::string silverjson_file="goodruns_silver.txt",
 		   bool applyJSON=true,
 		   bool applySF=true,
 		   bool doSilver=false,
@@ -117,17 +115,27 @@ int postProcessing(std::string inputString,
 		   std::string crabExt,
 		   std::string inputPU,
 		   std::string PUvar,
-		   std::string goldenjson_file,
-		   std::string silverjson_file,
 		   bool applyJSON,
 		   bool applySF,
 		   bool doSilver,
 		   std::string normFile){
 
-  double totalSumGenWeightsHisto, topAverageWeight;
+  double totalSumGenWeightsHisto, topAverageWeight, isrAverageWeight, weight_btag_average, weight_btag_heavy_UP_average, weight_btag_heavy_DN_average, weight_btag_light_UP_average, weight_btag_light_DN_average;
  
+  TH2F* h_isr;
+  TH2F* h_isr_UP;
+  TH2F* h_isr_DN;
+  TH2F* h_totalSumGenWeightsHisto;
+
+  TH2F* h_btag;
+  TH2F* h_btag_heavy_UP;
+  TH2F* h_btag_heavy_DN;
+  TH2F* h_btag_light_UP;
+  TH2F* h_btag_light_DN;
+
+
   if( normFile!="" ){
-    ifstream configuration( Form("%s", normFile.c_str()) );
+    ifstream configuration( Form("%s.cfg", normFile.c_str()) );
     std::string line;
     while(std::getline(configuration,line)){
       istringstream ss(line);
@@ -137,15 +145,43 @@ int postProcessing(std::string inputString,
       //      std::string normName;
       //      ss >> normName;
       ss >> totalSumGenWeightsHisto;
-      ss >> topAverageWeight;
+      ss >> isrAverageWeight;
+     
+      ss >> weight_btag_average; 
+      ss >> weight_btag_heavy_UP_average; 
+      ss >> weight_btag_heavy_DN_average;
+      ss >> weight_btag_light_UP_average;
+      ss >> weight_btag_light_DN_average;
+
+      //ss >> topAverageWeight;
 
       std::cout<< "Got a line with " << std::endl;
       std::cout<< "sumGenWeightsHisto = " << totalSumGenWeightsHisto << std::endl;
-      std::cout<< "weight_topPt_av    = " << topAverageWeight << std::endl;
+      std::cout<< "weight_isr_av    = " << isrAverageWeight << std::endl;
+      std::cout<< "weight_btag_av    = " << weight_btag_average << std::endl;
+      //      std::cout<< "weight_topPt_av    = " << topAverageWeight << std::endl;
 
+      TFile* f_temp = new TFile(Form("%s.root", normFile.c_str() ));
+      h_isr = (TH2F*) f_temp->Get("h_isr");
+      h_isr_UP = (TH2F*) f_temp->Get("h_isr_UP");
+      h_isr_DN = (TH2F*) f_temp->Get("h_isr_DN");
+
+      h_btag = (TH2F*) f_temp->Get("h_btag");
+      h_btag_heavy_UP = (TH2F*) f_temp->Get("h_btag_heavy_UP");
+      h_btag_heavy_DN = (TH2F*) f_temp->Get("h_btag_heavy_DN");
+      h_btag_light_UP = (TH2F*) f_temp->Get("h_btag_light_UP");
+      h_btag_light_DN = (TH2F*) f_temp->Get("h_btag_light_DN");
+
+      h_totalSumGenWeightsHisto = (TH2F*) f_temp->Get("h_totalSumGenWeightsHisto");
+
+      if (!h_totalSumGenWeightsHisto || !h_isr || !h_btag ) std::cout << "ERROR: Could not find averaging histogram"<< std::endl;
     }
   }
 
+
+  //bool applyJSON=true;
+  const char* goldenjson_file = "goodruns_golden.txt";
+  const char* silverjson_file = "goodruns_silver.txt";
 
   GoodRun golden;
   GoodRun silver;
@@ -154,10 +190,10 @@ int postProcessing(std::string inputString,
     //std::cout << gSystem->pwd() << std::endl;
     //gSystem->Load("goodrun_cc");
     std::cout << "Loading golden json file: " << goldenjson_file << std::endl;
-    golden.set_goodrun_file(goldenjson_file.c_str());
+    golden.set_goodrun_file(goldenjson_file);
     if (doSilver) {
       std::cout << "Loading silver json file: " << silverjson_file << std::endl;
-      silver.set_goodrun_file(silverjson_file.c_str());
+      silver.set_goodrun_file(silverjson_file);
     }
   }
 
@@ -169,6 +205,7 @@ int postProcessing(std::string inputString,
   TH2D* h_dxyz_mu = 0;
   TH2D* h_muSF = 0;
 
+  TH2D* h_elTrk = 0;
   TH1D* h_muTrk_hi = 0;
   TH1D* h_muTrk_lo = 0;
  
@@ -197,6 +234,14 @@ int postProcessing(std::string inputString,
     h_elSF = (TH2D*) h_id->Clone("h_elSF");
     h_elSF->SetDirectory(0);
     h_elSF->Multiply(h_iso);
+
+    std::string filenameElTrk = "/mnt/t3nfs01/data01/shome/mschoene/lepSF/egammaEffi_SF2D.root";
+    TFile * f_eleTrk = new TFile(filenameElTrk.c_str() );
+    if (!f_eleTrk->IsOpen()) std::cout << " ERROR: Could not find scale factor file " << filenameElTrk << std::endl; 
+    h_elTrk = (TH2D*) f_eleTrk->Get("EGamma_SF2D");
+    h_elTrk->SetDirectory(0);
+    f_eleTrk->Close(); delete f_eleTrk; 
+
 
     //Muons//
     std::string filenameID = "/mnt/t3nfs01/data01/shome/mschoene/lepSF/TnP_MuonID_NUM_LooseID_DENOM_generalTracks_VAR_map_pt_eta.root";
@@ -359,7 +404,8 @@ int postProcessing(std::string inputString,
     else
       allSumGenWeight += countH->GetBinContent(1);
     f->Close();
-    delete f;      
+    delete f;     
+
   }
   newH->SetBinContent(1,allHistoEntries);
   newSumW->SetBinContent(1,allSumGenWeight);
@@ -379,7 +425,7 @@ int postProcessing(std::string inputString,
   //  clone->SetAutoSave( - 10000000 );
 
   TBranch* thisPUWeight = (TBranch*) chain->GetListOfBranches()->FindObject("puWeight");
-  if (thisPUWeight) chain->SetBranchStatus("puWeight", 0);
+  // if (thisPUWeight) chain->SetBranchStatus("puWeight", 0);
 
   std::cout << "Cloning tree..." << std::endl;
 
@@ -476,7 +522,11 @@ int postProcessing(std::string inputString,
   Float_t weight_lepsf_DN;
   Float_t weight_toppt;
   Float_t weight_isr;
-  Float_t weight_isr_norm;
+  Float_t weight_isr_UP;
+  Float_t weight_isr_DN;
+  Float_t weight_isr_av;
+  Float_t weight_isr_UP_av;
+  Float_t weight_isr_DN_av;
   Float_t weight_scales[110];
   Float_t weight_scales_av[110];
 
@@ -485,18 +535,16 @@ int postProcessing(std::string inputString,
   Float_t weight_lepsf_0l_DN;
 
 
-  ////// Lepton Efficiency SF (to be run only for MC)
+  ////// Lepton Efficiency SF
   Int_t nlep;
+  chain->SetBranchAddress("nlep", &nlep);
   Float_t lep_pt[100];
+  chain->SetBranchAddress("lep_pt", lep_pt);
   Float_t lep_eta[100];
+  chain->SetBranchAddress("lep_eta", lep_eta);
   Int_t lep_pdgId[100];
-
-  if(!isData){
-    chain->SetBranchAddress("nlep", &nlep);
-    chain->SetBranchAddress("lep_pt", lep_pt);
-    chain->SetBranchAddress("lep_eta", lep_eta);    
-    chain->SetBranchAddress("lep_pdgId", lep_pdgId);
-  }
+  chain->SetBranchAddress("lep_pdgId", lep_pdgId);
+  
 
   Int_t ngenLep;
   Float_t genLep_pt[100];
@@ -511,7 +559,11 @@ int postProcessing(std::string inputString,
   Int_t nPFLep5LowMT;
   Int_t nPFHad10LowMT;
 
+  Int_t nisrMatch;
+
   if(!isData){
+    chain->SetBranchAddress("nisrMatch", &nisrMatch);
+    
     chain->SetBranchAddress("ngenLep", &ngenLep);
     chain->SetBranchAddress("genLep_pt", genLep_pt);
     chain->SetBranchAddress("genLep_eta", genLep_eta);
@@ -529,22 +581,20 @@ int postProcessing(std::string inputString,
   }
 
 
-  ////// b-tag SF (to be run only for MC)
+  ////// b-tag SF
   Int_t njet;
+  chain->SetBranchAddress("njet", &njet);
   Float_t jet_pt[100];
+  chain->SetBranchAddress("jet_pt", jet_pt);
   Float_t jet_eta[100];
+  chain->SetBranchAddress("jet_eta", jet_eta);
   Int_t jet_mcFlavour[100];
+  if(!isData)
+    chain->SetBranchAddress( "jet_hadronFlavour", jet_mcFlavour);
+  //chain->SetBranchAddress("jet_mcFlavour", jet_mcFlavour);
   Float_t jet_btagCSV[100];
-
-
-  if(!isData){
-    chain->SetBranchAddress("njet", &njet);
-    chain->SetBranchAddress("jet_pt", jet_pt);
-    chain->SetBranchAddress("jet_eta", jet_eta);
-    chain->SetBranchAddress("jet_mcFlavour", jet_mcFlavour);
-    chain->SetBranchAddress("jet_btagCSV", jet_btagCSV);
-  }  
-
+  chain->SetBranchAddress("jet_btagCSV", jet_btagCSV);
+  
   ////// isr re-weight
   Int_t nGenPart;
   Float_t GenPart_pt[100];
@@ -594,12 +644,12 @@ int postProcessing(std::string inputString,
   
   if (nEventsHisto < nEventsTree) // this should not happen
     std::cout << "ERROR: histogram count has less events than tree. This indicates something went wrong" << std::endl
-	 << "#events histo: "  << nEventsHisto << std::endl
-	 << "#events tree: "  << nEventsTree << std::endl;
+	      << "#events histo: "  << nEventsHisto << std::endl
+	      << "#events tree: "  << nEventsTree << std::endl;
   else if (nEventsHisto > nEventsTree) // this can happen
     std::cout << "WARNING: histogram count has more events than tree. This should only happen if tree was skimmed" << std::endl
-	 << "#events histo: "  << nEventsHisto << std::endl
-	 << "#events tree: "  << nEventsTree << std::endl;
+	      << "#events histo: "  << nEventsHisto << std::endl
+	      << "#events tree: "  << nEventsTree << std::endl;
     
   bool isFastSim=0;
   if( id>=1000 && id<=2000)
@@ -636,8 +686,19 @@ int postProcessing(std::string inputString,
   TBranch* b27 = 0;
   TBranch* b28 = 0; 
   TBranch* b29 = 0; 
+  TBranch* b30 = 0; 
+  TBranch* b31 = 0; 
 
-  bool doIsrAv = 0;
+  TBranch* b32 = 0; 
+  TBranch* b33 = 0; 
+  TBranch* b34 = 0; 
+  TBranch* b35 = 0; 
+  TBranch* b36 = 0; 
+
+  TBranch* b37 = 0; 
+  TBranch* b38 = 0; 
+
+  bool doIsrAv = 1;
   
   if( applySF ){
     b14 = clone->Branch("weight_btagsf"         , &weight_btagsf         , "weight_btagsf/F"         );
@@ -645,20 +706,32 @@ int postProcessing(std::string inputString,
     b16 = clone->Branch("weight_btagsf_heavy_DN", &weight_btagsf_heavy_DN, "weight_btagsf_heavy_DN/F");
     b17 = clone->Branch("weight_btagsf_light_UP", &weight_btagsf_light_UP, "weight_btagsf_light_UP/F");
     b18 = clone->Branch("weight_btagsf_light_DN", &weight_btagsf_light_DN, "weight_btagsf_light_DN/F");
-    b19 = clone->Branch("weight_lepsf", &weight_lepsf, "weight_lepsf/F");
+    b19 = clone->Branch("weight_lepsf",    &weight_lepsf,    "weight_lepsf/F");
     b20 = clone->Branch("weight_lepsf_UP", &weight_lepsf_UP, "weight_lepsf_UP/F");
     b21 = clone->Branch("weight_lepsf_DN", &weight_lepsf_DN, "weight_lepsf_DN/F");
+
     b22 = clone->Branch("weight_toppt", &weight_toppt, "weight_toppt/F");
-    b23 = clone->Branch("weight_isr", &weight_isr, "weight_isr/F");
 
-    b24 = clone->Branch("weight_isr_norm", &weight_isr_norm, "weight_isr_norm/F");
+    b23 = clone->Branch("weight_isr",      &weight_isr,      "weight_isr/F");
+    b24 = clone->Branch("weight_isr_av", &weight_isr_av, "weight_isr_av/F");
+    b25 = clone->Branch("weight_isr_UP",   &weight_isr_UP,   "weight_isr_UP/F");
+    b26 = clone->Branch("weight_isr_DN",   &weight_isr_DN,   "weight_isr_DN/F");
 
-    b25 = clone->Branch("weight_scales", &weight_scales, "weight_scales[110]/F");
-    b26 = clone->Branch("weight_scales_av", &weight_scales_av, "weight_scales_av[110]/F");
+    b27 = clone->Branch("weight_isr_UP_av",   &weight_isr_UP_av,   "weight_isr_UP_av/F");
+    b28 = clone->Branch("weight_isr_DN_av",   &weight_isr_DN_av,   "weight_isr_DN_av/F");
 
-    b27 = clone->Branch("weight_lepsf_0l", &weight_lepsf_0l, "weight_lepsf_0l/F");
-    b28 = clone->Branch("weight_lepsf_0l_UP", &weight_lepsf_0l_UP, "weight_lepsf_0l_UP/F");
-    b29 = clone->Branch("weight_lepsf_0l_DN", &weight_lepsf_0l_DN, "weight_lepsf_0l_DN/F");
+    b29 = clone->Branch("weight_scales", &weight_scales, "weight_scales[110]/F");
+    b30 = clone->Branch("weight_scales_av", &weight_scales_av, "weight_scales_av[110]/F");
+
+    b31 = clone->Branch("weight_lepsf_0l", &weight_lepsf_0l, "weight_lepsf_0l/F");
+    b32 = clone->Branch("weight_lepsf_0l_UP", &weight_lepsf_0l_UP, "weight_lepsf_0l_UP/F");
+    b33 = clone->Branch("weight_lepsf_0l_DN", &weight_lepsf_0l_DN, "weight_lepsf_0l_DN/F");
+
+    b34 = clone->Branch("weight_btagsf_av"         , &weight_btag_average         , "weight_btagsf_av/F"         );
+    b35 = clone->Branch("weight_btagsf_heavy_UP_av", &weight_btag_heavy_UP_average, "weight_btagsf_heavy_UP_av/F");
+    b36 = clone->Branch("weight_btagsf_heavy_DN_av", &weight_btag_heavy_DN_average, "weight_btagsf_heavy_DN_av/F");
+    b37 = clone->Branch("weight_btagsf_light_UP_av", &weight_btag_light_UP_average, "weight_btagsf_light_UP_av/F");
+    b38 = clone->Branch("weight_btagsf_light_DN_av", &weight_btag_light_DN_average, "weight_btagsf_light_DN_av/F");
   }
 
 
@@ -670,79 +743,137 @@ int postProcessing(std::string inputString,
   Float_t min = 12.5;
   Float_t max = 3012.5;
 
-  Float_t weight_isr_av;
-  TH2F* h_isr = new TH2F("h_isr", "", nBins, min, max, nBins, -min, max-min); h_isr->Sumw2();
+  Float_t weight_isr_av_firstLoop;
+  if(normFile=="" && id>1000){
+    h_isr = new TH2F("h_isr", "", nBins, min, max, nBins, -min, max-min); h_isr->Sumw2();
+  
+    h_btag = new TH2F("h_btag", "", nBins, min, max, nBins, -min, max-min); h_btag->Sumw2();
+    h_btag_heavy_UP = new TH2F("h_btag_heavy_UP", "", nBins, min, max, nBins, -min, max-min); h_btag_heavy_UP->Sumw2();
+    h_btag_heavy_DN = new TH2F("h_btag_heavy_DN", "", nBins, min, max, nBins, -min, max-min); h_btag_heavy_DN->Sumw2();
+    h_btag_light_UP = new TH2F("h_btag_light_UP", "", nBins, min, max, nBins, -min, max-min); h_btag_light_UP->Sumw2();
+    h_btag_light_DN = new TH2F("h_btag_light_DN", "", nBins, min, max, nBins, -min, max-min); h_btag_light_DN->Sumw2();
+  }
+
   TH2F* h_counter = new TH2F("h_counter", "", nBins, min, max, nBins, -min, max-min); h_counter->Sumw2();
   Int_t GenSusyMNeutralino;
   Int_t GenSusyMGluino;
 
-  if( id>1000 && applySF ){
+  if( (id>1000) ){
+    chain->SetBranchAddress("GenSusyMNeutralino", &GenSusyMNeutralino);
 
-    for(int k=0;k<110;k++){
-      std::string name = "var"+  std::to_string(k);
-      TH2F* h_scales_temp = new TH2F(name.c_str(), "", nBins, min, max, nBins, -min, max-min); h_scales_temp->Sumw2();
-      h_scales.push_back(h_scales_temp);
+    if(  normFile.find("T2bb") != std::string::npos ){
+      std::cout << "FOUND T2bb " << std::endl;  
+      chain->SetBranchAddress("GenSusyMSbottom", &GenSusyMGluino);
+
+    }else if(  normFile.find("T2qq") != std::string::npos ){
+      std::cout << "FOUND T2qq " << std::endl;  
+      chain->SetBranchAddress("GenSusyMSquark", &GenSusyMGluino);
+
+    }else if(  normFile.find("T2tt") != std::string::npos ){
+      std::cout << "FOUND T2tt " << std::endl;  
+      chain->SetBranchAddress("GenSusyMStop", &GenSusyMGluino);
+
+    }else if(  normFile.find("T1") != std::string::npos ){
+      std::cout << "FOUND T1* " << std::endl;  
+      chain->SetBranchAddress("GenSusyMGluino", &GenSusyMGluino);
+
+    }	else std::cout << "Fuck" << std::endl;
+  }
+
+  double isr_average = 1.;
+   
+  if( applySF  ){
+
+    if( id>1000 ) {
+      for(int k=0;k<110;k++){
+	std::string name = "var"+  std::to_string(k);
+	TH2F* h_scales_temp = new TH2F(name.c_str(), "", nBins, min, max, nBins, -min, max-min); h_scales_temp->Sumw2();
+	h_scales.push_back(h_scales_temp);
  
-      std::string name_evt = "evt"+  std::to_string(k); 
-      TH2F* h_evt_temp = new TH2F(name_evt.c_str(), "", nBins, min, max, nBins, -min, max-min); h_evt_temp->Sumw2();
-      h_evt.push_back(h_evt_temp);
+	std::string name_evt = "evt"+  std::to_string(k); 
+	TH2F* h_evt_temp = new TH2F(name_evt.c_str(), "", nBins, min, max, nBins, -min, max-min); h_evt_temp->Sumw2();
+	h_evt.push_back(h_evt_temp);
+      }
     }
 
-    std::cout << "Entering first loop to determine the average ISR weights" << std::endl;
 
-    chain->SetBranchAddress("GenSusyMNeutralino", &GenSusyMNeutralino);
-    chain->SetBranchAddress("GenSusyMGluino", &GenSusyMGluino);
-   
+    if( normFile=="" ){
+
+      std::cout << "Entering first loop to determine the average ISR weights" << std::endl;
+      for(  ULong64_t j = 0; j < nEventsTree; j++) {
     
-    for(  ULong64_t j = 0; j < nEventsTree; j++) {
-    
-      chain->GetEntry(j);
-      weight_isr_av = 1.0;
+	chain->GetEntry(j);
+ 
+	if(normFile==""){
+	  weight_isr_av_firstLoop = 1.0;
+     
+	  //NEW method with number of ISR jets
 
-      TLorentzVector s;
-      if(nGenPart>0){
- 	for(int o=0; o<nGenPart; ++o){
-	  if(GenPart_status[o] != 62)   continue;
-	  TLorentzVector s_;
-	  s_.SetPtEtaPhiM(GenPart_pt[o], GenPart_eta[o], GenPart_phi[o], GenPart_mass[o]);
-	  s+=s_;
-	}  
-	double pt_hard = s.Pt();
-	if( pt_hard < 0. || pt_hard > 99999 )         continue;
-	else if( pt_hard < 400. )  weight_isr_av = 1.0;
-	else if( pt_hard < 600. )  weight_isr_av = 1.0-0.15;
-	else if( pt_hard >= 600. ) weight_isr_av = 1.0-0.30;
-      }
+	  if( nisrMatch == 1 )      weight_isr_av_firstLoop = 0.882;
+	  else if( nisrMatch == 2 ) weight_isr_av_firstLoop = 0.792;
+	  else if( nisrMatch == 3 ) weight_isr_av_firstLoop = 0.702;
+	  else if( nisrMatch == 4 ) weight_isr_av_firstLoop = 0.648;
+	  else if( nisrMatch == 5 ) weight_isr_av_firstLoop = 0.601;
+	  else if( nisrMatch > 5 )  weight_isr_av_firstLoop = 0.515;
+ 
+	  if(id>10 && id<1000)
+	    isr_average += weight_isr_av_firstLoop;
+	  else{
+	    h_isr->Fill((float)GenSusyMGluino , (float)GenSusyMNeutralino,  weight_isr_av_firstLoop);
+	    h_counter->Fill((float)GenSusyMGluino,(float)GenSusyMNeutralino,  1.0);
+	  }
 
-      h_isr->Fill((float)GenSusyMGluino , (float)GenSusyMNeutralino,  weight_isr_av);
-      h_counter->Fill((float)GenSusyMGluino,(float)GenSusyMNeutralino,  1.0);
+	  if( id>1000){
+	    Float_t weight_btagsf = 1.0;
+	    Float_t weight_btagsf_heavy_UP = 1.0;
+	    Float_t weight_btagsf_heavy_DN = 1.0;
+	    Float_t weight_btagsf_light_UP = 1.0;
+	    Float_t weight_btagsf_light_DN = 1.0;
+	  
+	    bTagSFHelper->get_weight_btag(njet, jet_pt, jet_eta, jet_mcFlavour, jet_btagCSV, weight_btagsf, weight_btagsf_heavy_UP, weight_btagsf_heavy_DN, weight_btagsf_light_UP, weight_btagsf_light_DN, isFastSim);
 
+	    h_btag->Fill((float)GenSusyMGluino , (float)GenSusyMNeutralino, weight_btagsf );
+	    h_btag_heavy_UP->Fill((float)GenSusyMGluino , (float)GenSusyMNeutralino, weight_btagsf_heavy_UP );
+	    h_btag_heavy_DN->Fill((float)GenSusyMGluino , (float)GenSusyMNeutralino, weight_btagsf_heavy_DN );
+	    h_btag_light_UP->Fill((float)GenSusyMGluino , (float)GenSusyMNeutralino, weight_btagsf_light_UP );
+	    h_btag_light_DN->Fill((float)GenSusyMGluino , (float)GenSusyMNeutralino, weight_btagsf_light_DN );
+	  }
+
+	}
       
-      if( id < 2000. ){
-	for(int v=0; v<110; ++v){
-	  weight_scales[v] = 1.;
-	  weight_scales[v] = LHEweight_wgt[v]/LHEweight_original;
+	if( id < 2000. && id > 1000.){
+	  for(int v=0; v<110; ++v){
+	    weight_scales[v] = 1.;
+	    weight_scales[v] = LHEweight_wgt[v]/LHEweight_original;
 
-	  h_scales[v]->Fill((float)GenSusyMGluino , (float)GenSusyMNeutralino,  weight_scales[v]);
-	  h_evt[v]->Fill((float)GenSusyMGluino,(float)GenSusyMNeutralino,  1.0);
+	    h_scales[v]->Fill((float)GenSusyMGluino , (float)GenSusyMNeutralino,  weight_scales[v]);
+	    h_evt[v]->Fill((float)GenSusyMGluino,(float)GenSusyMNeutralino,  1.0);
+	  }
+	}
+    
+      }//end or first loop over events for calculating the average ISR
+
+
+      if(normFile==""){
+	h_isr->Divide(h_counter);
+
+  	h_btag->Divide(h_counter);
+	h_btag_heavy_UP->Divide(h_counter);
+	h_btag_heavy_DN->Divide(h_counter);
+	h_btag_light_UP->Divide(h_counter);
+	h_btag_light_DN->Divide(h_counter);
+      }
+    
+      if( id<2000 && id>1000. ){
+	for(int v=0; v<110; ++v){
+	  h_scales[v]->Divide(h_evt[v]);
 	}
       }
-    
-    }//end or first loop over events for calculating the average ISR
-
-
-    h_isr->Divide(h_counter);
-
-    
-    if( id<2000 ){
-      for(int v=0; v<110; ++v){
-	h_scales[v]->Divide(h_evt[v]);
-      }
-    }
+    } //end of if normfile, ie this is only done if not split
     
     /* 
-    for(int l = 0; l<120*5; l++){
-      for(int m = 0; m<120*5; m++){
+       for(int l = 0; l<120*5; l++){
+       for(int m = 0; m<120*5; m++){
 	if( h_scales[5]->GetBinContent(l,m) > 0.5)
 	  std::cout << l<< ", " << m << " has content " <<h_scales[5]->GetBinContent(l,m)  << std::endl;
       }
@@ -751,6 +882,8 @@ int postProcessing(std::string inputString,
     std::cout << "Finished first loop over the events to get the average weight of ISR" << std::endl;
   }//end of ISR norm histo calculation
 
+  if( normFile=="" && id>10 )
+    isr_average /= (double) nEventsTree;
   
   //Top pt reweighting 
   //Values from Run1 still valid for now, see here: https://twiki.cern.ch/twiki/bin/viewauth/CMS/TopPtReweighting
@@ -804,21 +937,29 @@ int postProcessing(std::string inputString,
     if( i==0)
       std::cout << "Start of loop over tree entries" << std::endl;
 
-
-    weight_btagsf = 1.;
+    
+    weight_btag_average = 1.;
+    weight_btag_heavy_UP_average=  1.;
+    weight_btag_heavy_DN_average=  1.;
+    weight_btag_light_UP_average=  1.;
+    weight_btag_light_DN_average=  1.;
+  
+    weight_btagsf          = 1.;
     weight_btagsf_heavy_UP = 1.;
     weight_btagsf_heavy_DN = 1.;
     weight_btagsf_light_UP = 1.;
     weight_btagsf_light_DN = 1.;
-    weight_lepsf = 1.;
-    weight_lepsf_UP = 1.;
-    weight_lepsf_DN = 1.;
-    weight_toppt = 1.;
-    weight_isr=1.;
-    weight_lepsf_0l = 1;
-    weight_lepsf_0l_UP = 1;
-    weight_lepsf_0l_DN = 1;
-    
+    weight_lepsf           = 1.;
+    weight_lepsf_UP        = 1.;
+    weight_lepsf_DN        = 1.;
+    weight_toppt           = 1.;
+    weight_isr             = 1.;
+    weight_isr_UP          = 1.;
+    weight_isr_DN          = 1.;
+    weight_lepsf_0l        = 1.;
+    weight_lepsf_0l_UP     = 1.;
+    weight_lepsf_0l_DN     = 1.;
+
     for(int v=0; v<110; ++v){
       weight_scales[v]=1.;
       weight_scales_av[v]=1.;
@@ -833,7 +974,13 @@ int postProcessing(std::string inputString,
       scale1fb = 0.0; 
       puWeight = 1.0;
     }else{
-      scale1fb= xsec*kfactor*1000.*filter*genWeight/(Float_t)sumGenWeightsHisto;
+      if(id >= 1000 && id<2000. && normFile!=""){
+	Int_t binx = h_totalSumGenWeightsHisto->GetXaxis()->FindBin( (float)GenSusyMGluino );
+	Int_t biny = h_totalSumGenWeightsHisto->GetYaxis()->FindBin( (float)GenSusyMNeutralino );
+	sumGenWeightsHisto = h_totalSumGenWeightsHisto->GetBinContent(binx,biny); // weight per mass point
+      }
+      scale1fb = xsec*kfactor*1000.*filter*genWeight/(Float_t)sumGenWeightsHisto;
+ 
       int nPU = ( PUvar == "nVert") ? nVert : nTrueInt;
       int puBin = (int) hPU_r->GetXaxis()->FindBin(nPU);
       puWeight = hPU_r->GetBinContent(puBin);
@@ -847,44 +994,71 @@ int postProcessing(std::string inputString,
 
 
     if( applySF ){
-      /////////Add ISR scale factor//////////
-      if( id > 1000 ){
-	TLorentzVector s;
-	if(nGenPart>0)
-	  for(int o=0; o<nGenPart; ++o){
-	    if(GenPart_status[o] != 62) continue;
-	    TLorentzVector s_;
-	    s_.SetPtEtaPhiM(GenPart_pt[o], GenPart_eta[o], GenPart_phi[o], GenPart_mass[o]);
-	    s+=s_;	  
-	  }
-	float pt_hard = s.Pt();
-	if( pt_hard < 0. )         continue;
-	else if( pt_hard < 400. )  weight_isr = 1.0;
-	else if( pt_hard < 600. )  weight_isr = 1.0-0.15;
-	else if( pt_hard >= 600. ) weight_isr = 1.0-0.30;
+      /////////Add ISR scale factor////////// 
+      /////////ISR for all MC now//////////////
+      //NEW method with number of ISR jets
+      float isr_err = 0.;
+      if( nisrMatch == 1 ){
+	weight_isr = 0.882;	    isr_err = 0.059;
+      }else if( nisrMatch == 2 ){
+	weight_isr = 0.792;	    isr_err = 0.104;
+      }else if( nisrMatch == 3 ){ 
+	weight_isr = 0.702;	    isr_err = 0.149;
+      }else if( nisrMatch == 4 ){
+	weight_isr = 0.648;	    isr_err = 0.176;
+      }else if( nisrMatch == 5 ){
+	weight_isr = 0.601;	    isr_err = 0.199;
+      }else if( nisrMatch > 5 ){  
+	weight_isr = 0.515;	    isr_err = 0.242;
+      }
 
+      double central = 1.;
+
+      double central_UP = 1.;
+      double central_DN = 1.;
+
+      if( id<1000 )
+	if( normFile == "" )
+	  central = isr_average;
+	else
+	  central = isrAverageWeight;
+      else{
 	Int_t binx = h_isr->GetXaxis()->FindBin( (float)GenSusyMGluino );
 	Int_t biny = h_isr->GetYaxis()->FindBin( (float)GenSusyMNeutralino );
-	double central = h_isr->GetBinContent(binx,biny);
+	central = h_isr->GetBinContent(binx,biny);
+	central_UP = h_isr_UP->GetBinContent(binx,biny);
+	central_DN = h_isr_DN->GetBinContent(binx,biny);
 
-	weight_isr /= central;
-	
-	//Scale variations
-	if( id<2000 ){
+	weight_btag_average          = h_btag->GetBinContent(binx,biny);        
+	weight_btag_heavy_UP_average = h_btag_heavy_UP->GetBinContent(binx,biny);
+	weight_btag_heavy_DN_average = h_btag_heavy_DN->GetBinContent(binx,biny);
+	weight_btag_light_UP_average = h_btag_light_UP->GetBinContent(binx,biny);
+	weight_btag_light_DN_average = h_btag_light_DN->GetBinContent(binx,biny);
 
-	  for(int v=0; v<110; ++v){
-	    weight_scales[v] = 1.;
-	    weight_scales_av[v] = 1.;
-	    weight_scales[v] = LHEweight_wgt[v]/LHEweight_original;
-	  
-	    //bins & binning are the same as for isr
-	    double scale_av = h_scales[v]->GetBinContent(binx,biny);
-	    weight_scales_av[v] = weight_scales[v] / scale_av;
+      }
 
-	  }
+      //weight_isr /= central;
+      weight_isr_av = central;
+      weight_isr_UP_av = central_UP; 
+      weight_isr_DN_av = central_DN;
+
+      weight_isr_UP = weight_isr + isr_err;
+      weight_isr_DN = weight_isr - isr_err;
+
+      //Scale variations
+      if( id>=1000 && id<2000 ){
+	for(int v=0; v<110; ++v){
+	  weight_scales[v] = 1.;
+	  weight_scales_av[v] = 1.;
+	  weight_scales[v] = LHEweight_wgt[v]/LHEweight_original;
+	  //bins & binning are the same as for isr
+	  Int_t binx = h_scales[v]->GetXaxis()->FindBin( (float)GenSusyMGluino );
+	  Int_t biny = h_scales[v]->GetYaxis()->FindBin( (float)GenSusyMNeutralino );
+	  double scale_av = h_scales[v]->GetBinContent(binx,biny);
+	  weight_scales_av[v] = weight_scales[v] / scale_av;
 	}
-	
-      }//finished isr (and scale) weights
+      }//finished scale weights
+
 
       int foundTop=0;
       int foundAntiTop=0;
@@ -928,16 +1102,17 @@ int postProcessing(std::string inputString,
 
       /////////Add lepton scale factor//////////
       if(nlep>0){
-	Float_t uncert = 1; //Place holder for total uncertainty
+	Float_t uncert = 0.; //Place holder for total uncertainty
 	Float_t central = 1; 
-	Float_t err = 0;
-	Float_t uncert_UP = 0; 	Float_t uncert_DN = 0; 
+	Float_t uncert_UP = 1.; 	Float_t uncert_DN = 1.; 
 
 	Float_t fast_central = 1; 
 	Float_t fast_err = 0;
 
 
 	for(int o=0; o<nlep; ++o){
+
+	  Float_t err = 0.;
 
 	  float pt = lep_pt[o];
 	  float eta = fabs( lep_eta[o] );
@@ -954,27 +1129,47 @@ int postProcessing(std::string inputString,
 	    err  = h_elSF->GetBinError(binx,biny);
 	    if (central > 1.2 || central < 0.8) 
 	      std::cout<<"STRANGE: Electron with pT/eta of "<< pt <<"/"<< eta <<". SF is "<< central <<std::endl;
+
+	    float central_trk = 1.;
+	    Int_t binx_trk = h_elTrk->GetXaxis()->FindBin(  lep_eta[o] );
+	    if( binx_trk>28 ) binx_trk = 28; //though we shouldn't really get many electrons with eta = 2.5
+	    else if( binx_trk<1 ) binx_trk = 1;
+	    central_trk = h_elTrk->GetBinContent( binx_trk,1  ); // y=pT range of 20-200
+
+	    central *= central_trk;
+	     
+	    float trk_err = h_elTrk->GetBinError( binx_trk,1  ); // y=pT range of 20-200 
+
+	    if( pt_cutoff < 20. )
+	      err = sqrt( trk_err*trk_err + err*err + 0.03*0.03 );
+	    else
+	      err = sqrt( trk_err*trk_err + err*err  );
+
+	    // uncert_UP +=  err;
+	    // uncert_DN -=  err;
 	    uncert_UP = central + err;
 	    uncert_DN = central - err;
 
 	    if( id>999 ){//FASTSIM SCALEFACTORS
-	    Int_t fast_binx = h_fast_elSF->GetXaxis()->FindBin(pt_cutoff);
-	    Int_t fast_biny = h_fast_elSF->GetYaxis()->FindBin(eta);
-	    fast_central = h_fast_elSF->GetBinContent(fast_binx,fast_biny);
-	    fast_err  = h_fast_elSF->GetBinError(fast_binx,fast_biny);
-	    fast_err= sqrt(fast_err*fast_err+ 0.05*0.05); // 5% systematic uncertainty
+	      Int_t fast_binx = h_fast_elSF->GetXaxis()->FindBin(pt_cutoff);
+	      Int_t fast_biny = h_fast_elSF->GetYaxis()->FindBin(eta);
+	      fast_central = h_fast_elSF->GetBinContent(fast_binx,fast_biny);
+	      fast_err = h_fast_elSF->GetBinError(fast_binx,fast_biny);
+	      fast_err = sqrt(fast_err*fast_err + 0.05*0.05); // 5% systematic uncertainty
 
-	    if( fast_central > 1.3 || fast_central < 0.7 )
-	      std::cout << "Strange FastSim Electron with pT/eta of" << pt <<"/"<< eta <<". SF is "<< fast_central <<std::endl;
+	      if( fast_central > 1.3 || fast_central < 0.7 )
+		std::cout << "Strange FastSim Electron with pT/eta of" << pt <<"/"<< eta <<". SF is "<< fast_central <<std::endl;
 
-	    central   *= fast_central;
-	    uncert_UP *= ( fast_central + fast_err );
-	    uncert_DN *= ( fast_central - fast_err );
+	      central   *= fast_central;
+	      uncert_UP *= ( fast_central + fast_err );
+	      uncert_DN *= ( fast_central - fast_err );
+	      // uncert_UP += fast_err ;
+	      //uncert_DN -= fast_err ;
 
 	    }
 
 	  } //else Muons
-	  else if (abs( lep_pdgId[o]) == 13) {
+	  else if ( pdgId == 13) {
 	    Int_t binx = h_muSF->GetXaxis()->FindBin(pt);
 	    Int_t biny = h_muSF->GetYaxis()->FindBin(fabs(eta));
 
@@ -991,34 +1186,49 @@ int postProcessing(std::string inputString,
 	    central *= central_trk;
 
 	    err  = 0.03; //current recomendation is 3% //   err  = 0.014; // adding in quadrature 1% unc. on ID and 1% unc. on ISO
+
 	    if (central > 1.3 || central < 0.7) 
 	      std::cout<<"STRANGE: Muon with pT/eta of "<<pt<<"/"<< fabs(eta) <<". SF is "<< central <<std::endl;
+	    //uncert_UP +=  err;
+	    //uncert_DN -=  err;
 	    uncert_UP = central + err;
 	    uncert_DN = central - err;
 
 	    if( id>999 ){ //FASTSIM SCALE FACTORS
-	    Int_t fast_binx = h_fast_muSF->GetXaxis()->FindBin(pt);
-	    Int_t fast_biny = h_fast_muSF->GetYaxis()->FindBin(fabs(eta));
-	    fast_central = h_fast_muSF->GetBinContent(fast_binx,fast_biny);
-	    fast_err  = h_fast_muSF->GetBinError(fast_binx,fast_biny);
-	    if(lep_pt[0] < 20)
-	      fast_err= sqrt(fast_err*fast_err+ 0.03*0.03); // 3% systematic uncertainty
-	    else
-	      fast_err= sqrt(fast_err*fast_err+ 0.01*0.01); // 1% systematic uncertainty
+	      Int_t fast_binx = h_fast_muSF->GetXaxis()->FindBin(pt);
+	      Int_t fast_biny = h_fast_muSF->GetYaxis()->FindBin(fabs(eta));
+	      fast_central = h_fast_muSF->GetBinContent(fast_binx,fast_biny);
+	      fast_err  = h_fast_muSF->GetBinError(fast_binx,fast_biny);
+	      if(lep_pt[0] < 20)
+		fast_err= sqrt(fast_err*fast_err+ 0.03*0.03); // 3% systematic uncertainty
+	      else
+		fast_err= sqrt(fast_err*fast_err+ 0.01*0.01); // 1% systematic uncertainty
 
-	    if( fast_central > 1.3 || fast_central < 0.7 )
-	      std::cout << "Strange FastSim Muon with pT/eta of" <<pt<<"/"<<eta<<". SF is "<< fast_central <<std::endl;
+	      if( fast_central > 1.3 || fast_central < 0.7 )
+		std::cout << "Strange FastSim Muon with pT/eta of" <<pt<<"/"<<eta<<". SF is "<< fast_central <<std::endl;
 
-	    central   *= fast_central;
-	    uncert_UP *= ( fast_central + fast_err );
-	    uncert_DN *= ( fast_central - fast_err );
+	      central   *= fast_central;
+
+	      uncert_UP *= ( fast_central + fast_err );
+	      uncert_DN *= ( fast_central - fast_err );
+
+	      //uncert_UP += fast_err ;
+	    //uncert_DN -= fast_err ;
 	    }
 	  }//done with one  electron/muon 
 	  weight_lepsf    *= central;
+
 	  weight_lepsf_UP *= uncert_UP;
-	  weight_lepsf_DN *= uncert_DN;	  	
+	  weight_lepsf_DN *= uncert_DN;	  
+
+ 	  //weight_lepsf_UP += uncert_UP;
+	  //weight_lepsf_DN += uncert_DN;	  
+  	
 	}//end of loop over objects
 
+	//  weight_lepsf_UP += weight_lepsf;
+	//  weight_lepsf_DN += weight_lepsf;	
+	  
       }//end of lepton sf
 
 
@@ -1026,7 +1236,6 @@ int postProcessing(std::string inputString,
 
       //0lepton efficiency correction
       if( nMuons10+nElectrons10+nPFLep5LowMT+nPFHad10LowMT == 0 ){ //otherwise we have caught the lep
-
 
 	for(int o=0; o < ngenLep+ngenLepFromTau; ++o){
 
@@ -1036,7 +1245,6 @@ int postProcessing(std::string inputString,
 	  float fast_central=1.;
 	  float fast_err=0.;
 	  float uncert_fast=0;
-
 
 	  float pt, eta;
 	  int  pdgId;
@@ -1052,7 +1260,6 @@ int postProcessing(std::string inputString,
 	  // acceptance of lepton veto: pt>5, |eta| < 2.4
 	  if( pt < 5.) continue;
 	  if( fabs(eta) > 2.4) continue; 
-
 
 	  float pt_cutoff = std::max( 10.1, std::min( 100., double(pt) ) );
 	  float pt_cutoff_eff = std::max( 5.1, std::min( 100., double(pt) ) );
@@ -1117,7 +1324,6 @@ int postProcessing(std::string inputString,
 	      else
 		uncert_fast= sqrt(fast_err*fast_err+ 0.01*0.01); // 1% systematic uncertainty
 	      
-
 	      veto_eff = h_eff_fast_mu->GetBinContent(fast_binx,fast_biny);
 
 	    }//got the sf
@@ -1195,6 +1401,14 @@ int postProcessing(std::string inputString,
       b27->Fill();
       b28->Fill();
       b29->Fill();
+
+      b30->Fill();
+      b31->Fill();
+      b32->Fill();
+      b33->Fill();
+      b34->Fill();
+      b35->Fill();
+      b36->Fill();
     }
     
   }//end loop over events
@@ -1206,7 +1420,9 @@ int postProcessing(std::string inputString,
       delete h_scales[k];
       delete h_evt[k];
     }
-    delete h_isr; delete h_counter;
+    if( h_isr )
+      delete h_isr; 
+    delete h_counter;
   }
   //  if(bTagSFHelper) delete bTagSFHelper;
   delete chain; 
@@ -1227,5 +1443,4 @@ int postProcessing(std::string inputString,
   return 0;
   
 }
-
 
