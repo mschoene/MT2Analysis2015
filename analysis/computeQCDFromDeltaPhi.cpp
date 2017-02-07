@@ -212,6 +212,7 @@ int main( int argc, char* argv[] ) {
     //only one bin to account for correlation of uncerts //with more bins you underestimate the variation
     //if you wanna see some nice shapes, increase the number of bins~
     MT2Estimate    ::rebinYields( estimate    , 1, 100., 200. );
+    std::cout << "rebinned first one" << std::endl;
     MT2Estimate    ::rebinYields( nCR         , 1, 100., 200. );
     MT2EstimateSyst::rebinYields( r_effective , 1, 100., 200. );
 
@@ -884,6 +885,9 @@ void fillFromTreeAndRatio( MT2Estimate* estimate, MT2Estimate* nCR, MT2EstimateS
     float error_fit  = hp_rErr->GetBinContent(iBin);
     float r_up    = hp_rUp->GetBinContent(iBin);
     float r_down  = hp_rDown->GetBinContent(iBin);
+
+    std::cout << "Got the bin contents " << std::endl;
+
 
     // if zero events in control region, take r from lower mt2 edge
     if ( nCR->yield->GetBinContent(iBin)==0 ){
