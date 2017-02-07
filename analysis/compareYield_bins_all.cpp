@@ -80,8 +80,8 @@ int main( int argc, char* argv[] ) {
   std::string configFileName(argv[1]);
   MT2Config cfg(configFileName);
 
-  lumi = 18.1;
-  //lumi = cfg.lumi();
+  // lumi = 18.1;
+  lumi = cfg.lumi();
   
   TH1::AddDirectory(kTRUE);
   
@@ -148,7 +148,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   
   std::set<MT2Region> MT2Regions = data->getRegions();
   
-  TH1D* hdata = new TH1D("hdata", "", 224, 0, 224);
+  TH1D* hdata = new TH1D("hdata", "", 213, 0, 213);
   hdata->Sumw2();
   hdata->GetYaxis()->SetTitle("Entries");
   hdata->SetMarkerStyle(20);
@@ -163,13 +163,13 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   
   for(unsigned int b=0; b<bgSize; ++b){
   
-    hestimate[b]= new TH1D(Form("hestimate_%d", b), "", 224, 0, 224);
+    hestimate[b]= new TH1D(Form("hestimate_%d", b), "", 213, 0, 213);
     hestimate[b]->Sumw2();
     hestimate[b]->GetYaxis()->SetTitle("Entries");
     hestimate[b]->SetFillColor(colors[b]);
     hestimate[b]->SetLineColor(1);
 
-    hestimate_forRatio[b]= new TH1D(Form("hestimate_forRatio%d", b), "", 224, 0, 224);
+    hestimate_forRatio[b]= new TH1D(Form("hestimate_forRatio%d", b), "", 213, 0, 213);
     hestimate_forRatio[b]->Sumw2();
     hestimate_forRatio[b]->GetYaxis()->SetTitle("Entries");
     hestimate_forRatio[b]->SetFillColor(colors[b]);
@@ -190,18 +190,40 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   
   TFile* bigHistoFile = TFile::Open( Form("%s/histograms_ALL.root", fullPath.c_str()), "recreate" );
 
+  int nBins_[63];
+
   int iRegion = 1;
+  int iTR = 1;
   for( std::set<MT2Region>::iterator iMT2 = MT2Regions.begin(); iMT2!=MT2Regions.end(); ++iMT2 ) {
 
       std::vector<std::string> niceNames = iMT2->getNiceNames();
       
-      int nBins;
+      //      int nBins;
       double *bins;
-      iMT2->getBins(nBins, bins);
+      iMT2->getBins(nBins_[iTR-1], bins);
+      int nBins = nBins_[iTR-1];
+      std::cout << nBins << std::endl;
       
-      TH1D* h_first = data->get(*iMT2)->yield;
+      //      TH1D* h_first = data->get(*iMT2)->yield;
+      TH1D* h_first_forExtreme = data->get(*iMT2)->yield;
 
-      TGraphAsymmErrors* g_first = MT2DrawTools::getPoissonGraph(h_first);      
+      TH1D* h_first;
+
+      if( iMT2->htMin()==1500 && iMT2->nJetsMin()>1 ){
+	double *binsExtreme = bins++;
+	h_first = new TH1D("h_first", "", nBins-1, binsExtreme);
+	
+	for( int iBin=0; iBin<nBins; ++iBin )
+	  h_first->SetBinContent( iBin, h_first_forExtreme->GetBinContent(iBin+1) );
+
+      }else 
+	h_first = (TH1D*)h_first_forExtreme->Clone("h_first");
+
+
+      TGraphAsymmErrors* g_first = MT2DrawTools::getPoissonGraph(h_first);    
+
+      //if( iMT2->htMin()==1500 && iMT2->nJetsMin()>1 )
+      //	g_first->GetXaxis()->SetLimits(400, 2000);  
       
       TFile* histoFile = TFile::Open( Form("%s/histograms_%s.root", fullPath.c_str(), iMT2->getName().c_str()), "recreate" );
       histoFile->cd();
@@ -220,6 +242,9 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
       TH1D* h_second_forRatio[bgSize];
 
       for(unsigned int b=0; b< bgSize; ++b){
+
+	if( iMT2->htMin()==1500 && iMT2->nJetsMin()>1 && b==0 )
+	  nBins--;
 	
 	h_second[b] = new TH1D(Form("h_second_%d", b), "", nBins, bins);
 	
@@ -232,14 +257,16 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
       
       for( int iBin=0; iBin<nBins; ++iBin ) {
 
+	if( iMT2->htMin()==1500 && iMT2->nJetsMin()>1 && bins[iBin]==200 ) continue;
+
 	std::string tableName;
 	if(iMT2->nJetsMax()==1){
           tableName = std::string(Form("%s/datacard_templates/table_%s_m0toInf.txt", dir.c_str(), iMT2->getName().c_str() ));
 	}
         else{
-          if( iBin < nBins-1 )
-            tableName = std::string(Form("%s/datacard_templates/table_%s_m%.0lfto%.0lf.txt", dir.c_str(), iMT2->getName().c_str(), bins[iBin], bins[iBin+1]) );
-          else
+          if( iBin < nBins-1 ){
+	    tableName = std::string(Form("%s/datacard_templates/table_%s_m%.0lfto%.0lf.txt", dir.c_str(), iMT2->getName().c_str(), bins[iBin], bins[iBin+1]) );
+          }else
             tableName = std::string(Form("%s/datacard_templates/table_%s_m%.0lftoInf.txt", dir.c_str(), iMT2->getName().c_str(), bins[iBin] ));
         }
 //	if( iBin < nBins-1 )
@@ -315,6 +342,8 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
       double int_data;
       for (int iBin=1; iBin<=nBins; ++iBin){
 	
+	if( iMT2->htMin()==1500 && iMT2->nJetsMin()>1 && bins[iBin]==200 ) continue;
+ 
 	int_data = h_first->GetBinContent(iBin);
 	err_data = h_first->GetBinError(iBin);
 	
@@ -340,9 +369,11 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
             hestimate[b]->GetXaxis()->SetBinLabel( iRegion, labelsMono[iRegion-1].c_str() );
 	  else{
 	    std::string thisLabel;
-	    if( iBin < nBins )
+	    if( iBin < nBins ){
+	      if( iMT2->htMin()==1500 && iMT2->nJetsMin()>1 && bins[iBin]==200 ) continue;
+
 	      thisLabel=Form("[%.0lf,%.0lf]", bins[iBin-1], bins[iBin]);
-	    else
+	    } else
 	      thisLabel=Form(">%.0lf", bins[iBin-1]);
 	    hestimate[b]->GetXaxis()->SetBinLabel( iRegion, thisLabel.c_str() );
 	  }
@@ -407,8 +438,8 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
       bgStack_region.Draw("histo, same");
       g_first->Draw("pe,same");
       
-      TPaveText* labelTop = MT2DrawTools::getLabelTop("18.1 fb^{-1} (13TeV)" );
-      //      TPaveText* labelTop = MT2DrawTools::getLabelTop(lumi);
+      //TPaveText* labelTop = MT2DrawTools::getLabelTop("18.1 fb^{-1} (13TeV)" );
+      TPaveText* labelTop = MT2DrawTools::getLabelTop(lumi);
       labelTop->Draw("same");
       TPaveText* labelCMS = MT2DrawTools::getLabelCMS();
       labelCMS->Draw("same");
@@ -472,6 +503,8 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
 	delete h_second[b];
       
       //      ++iRegion;
+
+      ++iTR;
 
   } // for MT2 regions
 
@@ -581,7 +614,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   //  yMin=0;
   yMax*=20.;
   
-  int thisBin=224;
+  int thisBin=213;
 
   hestimate_all->GetXaxis()->SetRangeUser(0, thisBin);
   hdata->GetXaxis()->SetRangeUser(0, thisBin);
@@ -648,7 +681,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   
   int nHTRegions = 6;
   std::vector< std::string > htRegions;
-  htRegions.push_back("1 Jet");
+  htRegions.push_back("Monojet Region");
   htRegions.push_back("H_{T} [250, 450] GeV");
   htRegions.push_back("H_{T} [450, 575] GeV");
   htRegions.push_back("H_{T} [575, 1000] GeV");
@@ -787,7 +820,56 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   labelCMS->Draw("same");
   
   htBox[0]->Draw("same");
+  
+  float left = pad1_0->GetLeftMargin();
+  float right = pad1_0->GetRightMargin();
+  float bot = pad1_0->GetBottomMargin();
+  float top = pad1_0->GetTopMargin();
+  float binWidth = (1.0-right-left)/thisBin;
+  
+  TLatex* text = new TLatex();
+  text->SetNDC(1);
+  
+  // draw the "Pre-fit background" text
+  text->SetTextAlign(13);
+  text->SetTextFont(42);
+  text->SetTextAngle(0);
+  text->SetTextSize(0.05);
+  text->DrawLatex(left+0.04,1-top-0.01, "Pre-fit background");
 
+
+  float ibin = 0;
+  int monoBin[2]={7,5};
+  TString monoJ[2] = {"1j", "1j"};
+  TString monoB[2] = {"0b", "#geq 1b"};
+  float xcenter;
+  for(int nR=0; nR<2; nR++){ 
+    
+    xcenter = left+binWidth*(ibin+(monoBin[nR]-1)*0.5);
+    text->SetTextAlign(23);
+    text->SetTextFont(62);
+    text->SetTextSize(0.030);
+    
+    float y=bot+(1-top-bot)*0.85;
+    if (xcenter>1-right-0.19)
+      y=0.67;
+    
+    text->DrawLatex(xcenter, y, monoJ[nR]);
+    text->DrawLatex(xcenter,y-text->GetTextSize()-0.001,monoB[nR]);
+
+    ibin+=monoBin[nR];
+
+  }
+  
+  TLine* line = new TLine();
+  line->SetNDC(1);
+  line->SetLineStyle(2);
+  line->SetLineWidth(1);
+  line->SetLineColor(kBlack);
+  float x=left+monoBin[0]*binWidth;
+  line->DrawLineNDC(x, bot, x, bot+(1-top-bot)*0.85);
+  std::cout << bot << std::endl;
+  
   gPad->RedrawAxis();
   
   bool doLogRatio=false;
@@ -806,7 +888,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
     h_Ratio->GetYaxis()->SetRangeUser(0.1, 10.0);
   }
   else
-    h2_axes_ratio_0 = new TH2D("axes_ratio_0", "", 10, oldBin, thisBin, 10, 0., 2.0 );
+    h2_axes_ratio_0 = new TH2D("axes_ratio_0", "", 10, oldBin, thisBin, 10, 0.0, 2 );
 
 
 
@@ -828,6 +910,8 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   //h_Ratio->Draw("pe,same");
   g_Ratio->Draw("pe,same");
   
+  line->DrawLine(monoBin[0],0.0,monoBin[0],2.0);
+
   gPad->RedrawAxis();
 
   c2_0->cd();
@@ -873,6 +957,62 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
 
   htBox[1]->Draw("same");
 
+  left = pad1_1->GetLeftMargin();
+  right = pad1_1->GetRightMargin();
+  bot = pad1_1->GetBottomMargin();
+  top = pad1_1->GetTopMargin();
+  binWidth = (1.0-right-left)/(thisBin-oldBin);
+  
+  text->SetTextAlign(13);
+  text->SetTextFont(42);
+  text->SetTextAngle(0);
+  text->SetTextSize(0.05);
+  text->DrawLatex(left+0.04,1-top-0.01, "Pre-fit background");
+
+
+  ibin = 0;
+  TString vlJ[7] = {"2-3j","2-3j","2-3j","#geq4j","#geq4j","#geq4j", "#geq2j"};
+  TString vlB[7] = {"0b", "1b", "2b", "0b", "1b", "2b", "#geq3b"};
+
+  for(int nR=0; nR<7; nR++){ 
+    
+    xcenter = left+binWidth*(ibin+(nBins_[oldBin+nR])*0.5);
+    text->SetTextAlign(23);
+    text->SetTextFont(62);
+    text->SetTextSize(0.030);
+    
+    float y=bot+(1-top-bot)*0.85;
+    if (xcenter>1-right-0.19)
+      y=0.67;
+    
+    text->DrawLatex(xcenter, y, vlJ[nR]);
+    text->DrawLatex(xcenter,y-text->GetTextSize()-0.001,vlB[nR]);
+
+    ibin+=nBins_[12+nR];
+
+  }
+  
+  line = new TLine();
+  line->SetNDC(1);
+  line->SetLineStyle(2);
+  line->SetLineWidth(1);
+  line->SetLineColor(kBlack);
+  
+  ibin=0;
+
+  for(int nR=0; nR<7; nR++){
+
+    ibin+=nBins_[oldBin+nR];
+    x = left+ibin*binWidth;
+    
+    if(left+binWidth*(ibin+(nBins_[oldBin+nR])*0.5)>1-right-0.19)
+      line->DrawLineNDC(x, bot, x, bot+(1-top-bot)*0.65);
+    else
+      line->DrawLineNDC(x, bot, x, bot+(1-top-bot)*0.85);
+  
+    
+  }
+
   gPad->RedrawAxis();
   
   c2_1->cd();
@@ -888,7 +1028,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
     h2_axes_ratio_1 = new TH2D("axes_ratio_1", "", 10, oldBin, thisBin, 10, 0.1, 10.0 );
   }
   else
-    h2_axes_ratio_1 = new TH2D("axes_ratio_1", "", 10, oldBin, thisBin, 10, 0., 4.0 );
+    h2_axes_ratio_1 = new TH2D("axes_ratio_1", "", 10, oldBin, thisBin, 10, 0.0, 2 );
   //h2_axes_ratio_1 = new TH2D("axes_ratio_1", "", 10, oldBin, thisBin, 10, 0., 2.0 );
 
   h2_axes_ratio_1->SetStats(0);
@@ -908,7 +1048,17 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   LineCentral_1->Draw("same");
   //h_Ratio->Draw("pe,same");
   g_Ratio->Draw("pe,same");
-
+  
+  line->SetNDC(1);
+  line->SetLineStyle(2);
+  line->SetLineWidth(1);
+  line->SetLineColor(kBlack);
+  ibin = oldBin;
+  for(int nR=0; nR<7; nR++){
+    ibin += nBins_[oldBin+nR];
+    line->DrawLine(ibin,0.0,ibin,2.0);
+  }
+  
   gPad->RedrawAxis();
 
   c2_1->cd();
@@ -956,6 +1106,62 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
     
   htBox[2]->Draw("same");
 
+  left = pad1_2->GetLeftMargin();
+  right = pad1_2->GetRightMargin();
+  bot = pad1_2->GetBottomMargin();
+  top = pad1_2->GetTopMargin();
+  binWidth = (1.0-right-left)/(thisBin-oldBin);
+
+  text->SetTextAlign(13);
+  text->SetTextFont(42);
+  text->SetTextAngle(0);
+  text->SetTextSize(0.05);
+  text->DrawLatex(left+0.04,1-top-0.01, "Pre-fit background");
+
+
+  ibin = 0;
+  TString Jlab[11] = {"2-3j","2-3j","2-3j","4-6j","4-6j","4-6j","#geq7j","#geq7j","#geq7j","2-6j", "#geq7j"};
+  TString Blab[11] = {"0b", "1b", "2b", "0b", "1b", "2b", "0b", "1b", "2b","#geq3b","#geq3b"};
+
+  for(int nR=0; nR<11; nR++){
+
+    xcenter = left+binWidth*(ibin+(nBins_[12+7+nR])*0.5);
+    text->SetTextAlign(23);
+    text->SetTextFont(62);
+    text->SetTextSize(0.030);
+
+    float y=bot+(1-top-bot)*0.85;
+    if (xcenter>1-right-0.19)
+      y=0.67;
+
+    text->DrawLatex(xcenter, y, Jlab[nR]);
+    text->DrawLatex(xcenter,y-text->GetTextSize()-0.001,Blab[nR]);
+
+    ibin+=nBins_[12+7+nR];
+
+  }
+
+  line = new TLine();
+  line->SetNDC(1);
+  line->SetLineStyle(2);
+  line->SetLineWidth(1);
+  line->SetLineColor(kBlack);
+
+  ibin=0;
+
+  for(int nR=0; nR<11; nR++){
+
+    ibin+=nBins_[12+7+nR];
+    x = left+ibin*binWidth;
+
+    if(left+binWidth*(ibin+(nBins_[12+7+nR])*0.5)>1-right-0.19)
+      line->DrawLineNDC(x, bot, x, bot+(1-top-bot)*0.65);
+    else
+      line->DrawLineNDC(x, bot, x, bot+(1-top-bot)*0.85);
+
+
+  }
+
   gPad->RedrawAxis();
   
   c2_2->cd();
@@ -991,6 +1197,16 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   //h_Ratio->Draw("pe,same");
   g_Ratio->Draw("pe,same");
   
+  line->SetNDC(1);
+  line->SetLineStyle(2);
+  line->SetLineWidth(1);
+  line->SetLineColor(kBlack);
+  ibin = oldBin;
+  for(int nR=0; nR<11; nR++){
+    ibin += nBins_[12+7+nR];
+    line->DrawLine(ibin,0,ibin,4);
+  }
+
   gPad->RedrawAxis();
 
   c2_2->cd();
@@ -1038,6 +1254,59 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
 
   htBox[3]->Draw("same");
 
+  left = pad1_3->GetLeftMargin();
+  right = pad1_3->GetRightMargin();
+  bot = pad1_3->GetBottomMargin();
+  top = pad1_3->GetTopMargin();
+  binWidth = (1.0-right-left)/(thisBin-oldBin);
+
+  text->SetTextAlign(13);
+  text->SetTextFont(42);
+  text->SetTextAngle(0);
+  text->SetTextSize(0.05);
+  text->DrawLatex(left+0.04,1-top-0.01, "Pre-fit background");
+
+
+  ibin = 0;
+  for(int nR=0; nR<11; nR++){
+
+    xcenter = left+binWidth*(ibin+(nBins_[12+7+11+nR])*0.5);
+    text->SetTextAlign(23);
+    text->SetTextFont(62);
+    text->SetTextSize(0.030);
+
+    float y=bot+(1-top-bot)*0.85;
+    if (xcenter>1-right-0.19)
+      y=0.67;
+
+    text->DrawLatex(xcenter, y, Jlab[nR]);
+    text->DrawLatex(xcenter,y-text->GetTextSize()-0.001,Blab[nR]);
+
+    ibin+=nBins_[12+7+11+nR];
+
+  }
+
+  line = new TLine();
+  line->SetNDC(1);
+  line->SetLineStyle(2);
+  line->SetLineWidth(1);
+  line->SetLineColor(kBlack);
+
+  ibin=0;
+
+  for(int nR=0; nR<11; nR++){
+
+    ibin+=nBins_[12+7+11+nR];
+    x = left+ibin*binWidth;
+
+    if(left+binWidth*(ibin+(nBins_[12+7+11+nR])*0.5)>1-right-0.19)
+      line->DrawLineNDC(x, bot, x, bot+(1-top-bot)*0.65);
+    else
+      line->DrawLineNDC(x, bot, x, bot+(1-top-bot)*0.85);
+
+
+  }
+
   gPad->RedrawAxis();
   
   c2_3->cd();
@@ -1073,7 +1342,17 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   LineCentral_3->Draw("same");
   //h_Ratio->Draw("pe,same");
   g_Ratio->Draw("pe,same");
-  
+
+  line->SetNDC(1);
+  line->SetLineStyle(2);
+  line->SetLineWidth(1);
+  line->SetLineColor(kBlack);
+  ibin = oldBin;
+  for(int nR=0; nR<11; nR++){
+    ibin += nBins_[12+7+11+nR];
+    line->DrawLine(ibin,0.,ibin,2.5);
+  }
+
   gPad->RedrawAxis();
 
   c2_3->cd();
@@ -1120,6 +1399,59 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
 
   htBox[4]->Draw("same");
 
+  left = pad1_4->GetLeftMargin();
+  right = pad1_4->GetRightMargin();
+  bot = pad1_4->GetBottomMargin();
+  top = pad1_4->GetTopMargin();
+  binWidth = (1.0-right-left)/(thisBin-oldBin);
+
+  text->SetTextAlign(13);
+  text->SetTextFont(42);
+  text->SetTextAngle(0);
+  text->SetTextSize(0.05);
+  text->DrawLatex(left+0.04,1-top-0.01, "Pre-fit background");
+
+
+  ibin = 0;
+  for(int nR=0; nR<11; nR++){
+
+    xcenter = left+binWidth*(ibin+(nBins_[12+7+11*2+nR])*0.5);
+    text->SetTextAlign(23);
+    text->SetTextFont(62);
+    text->SetTextSize(0.030);
+
+    float y=bot+(1-top-bot)*0.85;
+    if (xcenter>1-right-0.19)
+      y=0.67;
+
+    text->DrawLatex(xcenter, y, Jlab[nR]);
+    text->DrawLatex(xcenter,y-text->GetTextSize()-0.001,Blab[nR]);
+
+    ibin+=nBins_[12+7+11*2+nR];
+
+  }
+
+  line = new TLine();
+  line->SetNDC(1);
+  line->SetLineStyle(2);
+  line->SetLineWidth(1);
+  line->SetLineColor(kBlack);
+
+  ibin=0;
+
+  for(int nR=0; nR<11; nR++){
+
+    ibin+=nBins_[12+7+11*2+nR];
+    x = left+ibin*binWidth;
+
+    if(left+binWidth*(ibin+(nBins_[12+7+11*2+nR])*0.5)>1-right-0.19)
+      line->DrawLineNDC(x, bot, x, bot+(1-top-bot)*0.65);
+    else
+      line->DrawLineNDC(x, bot, x, bot+(1-top-bot)*0.85);
+
+
+  }
+
   gPad->RedrawAxis();
   
   c2_4->cd();
@@ -1135,7 +1467,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
     h2_axes_ratio_4 = new TH2D("axes_ratio_4", "", 10, oldBin, thisBin, 10, 0.1, 10.0 );
   }
   else
-    h2_axes_ratio_4 = new TH2D("axes_ratio_4", "", 10, oldBin, thisBin, 10, 0., 2.5 );
+    h2_axes_ratio_4 = new TH2D("axes_ratio_4", "", 10, oldBin, thisBin, 10, 0., 5.0 );
   //h2_axes_ratio_4 = new TH2D("axes_ratio_4", "", 10, oldBin, thisBin, 10, 0., 2.0 );
 
 
@@ -1157,6 +1489,16 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   //h_Ratio->Draw("pe,same");
   g_Ratio->Draw("pe,same");
   
+  line->SetNDC(1);
+  line->SetLineStyle(2);
+  line->SetLineWidth(1);
+  line->SetLineColor(kBlack);
+  ibin = oldBin;
+  for(int nR=0; nR<11; nR++){
+    ibin += nBins_[12+7+11*2+nR];
+    line->DrawLine(ibin,0,ibin,5.0);
+  }
+
   gPad->RedrawAxis();
 
   c2_4->cd();
@@ -1177,8 +1519,9 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
 
   pad1_5->SetLogy();
     
+  yMax  /= 10;
   oldBin=thisBin;
-  thisBin=224;
+  thisBin=213;
   hestimate_all->GetXaxis()->SetRangeUser(oldBin, thisBin);
   hdata->GetXaxis()->SetRangeUser(oldBin, thisBin);
   gdata->GetXaxis()->SetRangeUser(oldBin, thisBin);
@@ -1203,6 +1546,59 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
 
   htBox[5]->Draw("same");
 
+  left  = pad1_5->GetLeftMargin();
+  right = pad1_5->GetRightMargin();
+  bot   = pad1_5->GetBottomMargin();
+  top   = pad1_5->GetTopMargin();
+  binWidth = (1.0-right-left)/(thisBin-oldBin);
+
+  text->SetTextAlign(13);
+  text->SetTextFont(42);
+  text->SetTextAngle(0);
+  text->SetTextSize(0.05);
+  text->DrawLatex(left+0.04,1-top-0.01, "Pre-fit background");
+
+
+  ibin = 0;
+  for(int nR=0; nR<11; nR++){
+
+    xcenter = left+binWidth*(ibin+(nBins_[12+7+11*3+nR]-1)*0.5);
+    text->SetTextAlign(23);
+    text->SetTextFont(62);
+    text->SetTextSize(0.030);
+
+    float y=bot+(1-top-bot)*0.85;
+    if (xcenter>1-right-0.19)
+      y=0.67;
+
+    text->DrawLatex(xcenter, y, Jlab[nR]);
+    text->DrawLatex(xcenter,y-text->GetTextSize()-0.001,Blab[nR]);
+
+    ibin+=nBins_[12+7+11*3+nR]-1;
+
+  }
+
+  line = new TLine();
+  line->SetNDC(1);
+  line->SetLineStyle(2);
+  line->SetLineWidth(1);
+  line->SetLineColor(kBlack);
+
+  ibin=0;
+
+  for(int nR=0; nR<11; nR++){
+
+    ibin+=(nBins_[12+7+11*3+nR]-1);
+    x = left+ibin*binWidth;
+
+    if(left+binWidth*(ibin+(nBins_[12+7+11*3+nR]-1)*0.5)>1-right-0.19)
+      line->DrawLineNDC(x, bot, x, bot+(1-top-bot)*0.65);
+    else
+      line->DrawLineNDC(x, bot, x, bot+(1-top-bot)*0.85);
+
+
+  }
+
   gPad->RedrawAxis();
   
   c2_5->cd();
@@ -1218,7 +1614,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
     h2_axes_ratio_5 = new TH2D("axes_ratio_5", "", 10, oldBin, thisBin, 10, 0.1, 10.0 );
   }
   else
-    h2_axes_ratio_5 = new TH2D("axes_ratio_5", "", 10, oldBin, thisBin, 10, 0., 5.0 );
+    h2_axes_ratio_5 = new TH2D("axes_ratio_5", "", 10, oldBin, thisBin, 10, 0., 3.0 );
   //h2_axes_ratio_5 = new TH2D("axes_ratio_5", "", 10, oldBin, thisBin, 10, 0., 2.0 );
 
   h2_axes_ratio_5->SetStats(0);
@@ -1239,6 +1635,16 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   //  h_Ratio->Draw("pe,same");
   g_Ratio->Draw("pe,same");
   
+  line->SetNDC(1);
+  line->SetLineStyle(2);
+  line->SetLineWidth(1);
+  line->SetLineColor(kBlack);
+  ibin = oldBin;
+  for(int nR=0; nR<11; nR++){
+    ibin += (nBins_[12+7+11*3+nR]-1);
+    line->DrawLine(ibin,0.,ibin,3.0);
+  }
+
   gPad->RedrawAxis();
 
   c2_5->cd();

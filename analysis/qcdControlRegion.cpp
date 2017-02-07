@@ -146,7 +146,9 @@ int main( int argc, char* argv[] ) {
     std::cout << std::endl << std::endl;
     std::cout << "-> Loading data from file: " << samplesFile_data << std::endl;
 
-    std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, 1, 3 );
+    //std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, "data_" );
+    std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, "merged" );
+    //    std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, 1, 3 );
     if( samples_data.size()==0 ) {
       std::cout << "There must be an error: samples_data is empty!" << std::endl;
       exit(1209);
@@ -213,8 +215,10 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
       //if ( !(myTree.Flag_badMuonFilter>0 && myTree.Flag_badChargedHadronFilter>0 && myTree.Flag_EcalDeadCellTriggerPrimitiveFilter>0) ) continue;
       if ( !(myTree.Flag_badChargedHadronFilter>0 && myTree.Flag_EcalDeadCellTriggerPrimitiveFilter>0) ) continue; // americans don't have muon filter
     }
-    //    if (myTree.met_miniaodPt/myTree.met_caloPt > 5.0) continue; // RA2 filter for QCD MC
-    
+
+    //don't apply it  if (myTree.met_miniaodPt/myTree.met_caloPt > 5.0) continue; // RA2 filter for QCD MC
+    if( myTree.nJet200MuFrac50DphiMet > 0 ) continue; // new RA2 filter
+
 
     if( !myTree.passSelection("qcd") ) continue;
 
@@ -255,7 +259,8 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
 	continue;                   // doesn't pass any trigger
 
     } // if is data
-
+    else
+      myTree.evt_id = sample.id;
 
     if( monojet ) {
       // only store signal triggered events for monojet CR
@@ -280,23 +285,17 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
 
     if( !myTree.isData ){
       // isr weight. Renormalization factor valid for american top mc. To recheck once ETH have its own top mc
+      // if (myTree.evt_id == 302 || myTree.evt_id == 303 || myTree.evt_id == 304) //singleLep T/Tbar, Dilep
+      // 	weight *= myTree.weight_isr / myTree.weight_isr_norm;
 
+      ///AMERICAN WAY
+      if (myTree.evt_id == 301 || myTree.evt_id == 302)
+      	weight *= myTree.weight_isr/0.909; // nominal
+      else if (myTree.evt_id == 303) 
+      	weight *= myTree.weight_isr/0.895;
 
-      // I'll do it my way   // Also we have a different numbering scheme.. merde
-      if (myTree.evt_id == 302 || myTree.evt_id == 303 || myTree.evt_id == 304) //singleLep T/Tbar, Dilep
- 	weight *= myTree.weight_isr / myTree.weight_isr_norm;
-
-      // ///AMERICAN WAY
-      // if (myTree.evt_id == 301 || myTree.evt_id == 302)
-      // 	weight *= myTree.weight_isr/0.910; // nominal
-      // else if (myTree.evt_id == 303) 
-      // 	weight *= myTree.weight_isr/0.897;
-
-      //      if (myTree.evt_id == 301 || myTree.evt_id == 302 || myTree.evt_id == 303 )
-      //	weight *= myTree.weight_isr/getAverageISRWeight(myTree.evt_id,0);
-
-      //      weight *= myTree.weight_btagsf;
-      weight *= myTree.weight_lepsf;
+      weight *= myTree.weight_btagsf;
+      weight *= myTree.weight_lepsf2017;
     }
 
 

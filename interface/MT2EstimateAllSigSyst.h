@@ -54,6 +54,8 @@ class MT2EstimateAllSigSyst : public MT2Estimate {
   const MT2EstimateAllSigSyst& operator/=( float k );
   const MT2EstimateAllSigSyst& operator*=( float k );
 
+  const MT2EstimateAllSigSyst& operator+=( const MT2EstimateAllSigSyst& rhs );
+
   friend MT2EstimateAllSigSyst operator/( float k, const MT2EstimateAllSigSyst& rhs );
   friend MT2EstimateAllSigSyst operator*( float k, const MT2EstimateAllSigSyst& rhs );
 

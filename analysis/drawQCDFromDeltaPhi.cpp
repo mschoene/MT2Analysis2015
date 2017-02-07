@@ -87,13 +87,18 @@ int main( int argc, char* argv[] ) {
   MT2Analysis<MT2EstimateTree>* data  ;
   MT2Analysis<MT2EstimateTree>* nonQCD;
   if( closureTest ) { // in validation region we also use id==152
-    mcTruth = MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( "mcTruth", cfg.regionsSet(), qcdTree_mc  , 1, 100, 200 , "(id>150&&(id>151||ht<450)&&(id>152||ht<575)&&(id>153||ht<1000)&&(id>154||ht<1500)) && id<200 && mt2>100 && mt2<200. && deltaPhiMin>0.3"); // signal region for mcTruth
+    ////    mcTruth = MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( "mcTruth", cfg.regionsSet(), qcdTree_mc  , 1, 100, 200 , "(id>150&&(id>151||ht<450)&&(id>152||ht<575)&&(id>153||ht<1000)&&(id>154||ht<1500)) && id<200 && mt2>100 && mt2<200. && deltaPhiMin>0.3"); // signal region for mcTruth
+    mcTruth = MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( "mcTruth", cfg.regionsSet(), qcdTree_mc  , 1, 100, 200 , "(id>150 && id<200 && mt2>100 && mt2<200. && deltaPhiMin>0.3)"); // signal region for mcTruth
+    //    mcTruth = MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( "mcTruth", cfg.regionsSet(), qcdTree_mc  , 1, 100, 200 , "(id>150&&(id>152||ht<450)&&(id>153||ht<575)&&(id>154||ht<1000)&&(id>155||ht<1500)) && id<200 && mt2>100 && mt2<200. && deltaPhiMin>0.3"); // signal region for mcTruth
     data    = MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( "data"   , cfg.regionsSet(), qcdTree_data, 1, 100, 200 , "((id&1)==1"+runRange+") && mt2>100. && mt2<200. && deltaPhiMin>0.3"         ); // signal region for data
+    //// nonQCD  = MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( "nonQCD" , cfg.regionsSet(), qcdTree_mc  , 1, 100, 200 , "(id>=300 || id<=0) && mt2>100. && mt2<200. && deltaPhiMin>0.3"         ); // signal region for nonQCD mcTruth
     nonQCD  = MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( "nonQCD" , cfg.regionsSet(), qcdTree_mc  , 1, 100, 200 , "id>=300 && mt2>100. && mt2<200. && deltaPhiMin>0.3"         ); // signal region for nonQCD mcTruth
+
   }
   else
-    //mcTruth = MT2EstimateTree::makeAnalysisFromInclusiveTree( "mcTruth", cfg.regionsSet(), qcdTree_mc  , "(id>150&&(id>151||ht<450)&&(id>152||ht<575)&&(id>153||ht<1000)&&(id>154||ht<1500)) && id<200 && mt2>200. && deltaPhiMin>0.3 && (met>250 || ht>1000)" ); // signal region for mcTruth
-    mcTruth = MT2EstimateTree::makeAnalysisFromInclusiveTree( "mcTruth", cfg.regionsSet(), qcdTree_mc  , "id<200 && mt2>200. && deltaPhiMin>0.3 && (met>250 || ht>1000)" ); // signal region for mcTruth
+    //mcTruth = MT2EstimateTree::makeAnalysisFromInclusiveTree( "mcTruth", cfg.regionsSet(), qcdTree_mc  , "(id>150&&(id>152||ht<450)&&(id>153||ht<575)&&(id>154||ht<1000)&&(id>155||ht<1500)) && id<200 && mt2>200. && deltaPhiMin>0.3 && (met>250 || ht>1000)" ); // signal region for mcTruth
+    mcTruth = MT2EstimateTree::makeAnalysisFromInclusiveTree( "mcTruth", cfg.regionsSet(), qcdTree_mc  , "id> 10 && id<200 && mt2>200. && deltaPhiMin>0.3 && (met>250 || ht>1000)" ); // signal region for mcTruth  
+    ////mcTruth = MT2EstimateTree::makeAnalysisFromInclusiveTree( "mcTruth", cfg.regionsSet(), qcdTree_mc  , "(id>150&&(id>151||ht<450)&&(id>152||ht<575)&&(id>153||ht<1000)&&(id>154||ht<1500)) && id<200 && mt2>200. && deltaPhiMin>0.3 && (met>250 || ht>1000)" ); // signal region for mcTruth
 
 
   MT2Analysis<MT2Estimate>* estimateMC     = MT2Analysis<MT2Estimate>::readFromFile( mcFile  , "qcdEstimate" );
@@ -634,7 +639,7 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
 
   int nHTRegions = 5;
   std::vector< std::string > htRegions;
-  htRegions.push_back("H_{T} [200,450] GeV");
+  htRegions.push_back("H_{T} [250,450] GeV");
   htRegions.push_back("H_{T} [450,575] GeV");
   htRegions.push_back("H_{T} [575,100] GeV");
   htRegions.push_back("H_{T} [1000,1500] GeV");

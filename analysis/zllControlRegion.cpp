@@ -274,8 +274,10 @@ int main(int argc, char* argv[]) {
     std::string samplesFile_data = "../samples/samples_" + cfg.dataSamples() + ".dat";
     std::cout << std::endl << std::endl;
     std::cout << "-> Loading data from file: " << samplesFile_data << std::endl;
-    //    std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, "merged");  
-    std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, "Double");  
+       std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, "merged");  
+    //std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, "noDuplicates");  
+
+    //    std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, "Double");  
 
     // std::vector<MT2Sample> samples_data_of = MT2Sample::loadSamples(samplesFile_data, "merged");
   
@@ -497,16 +499,11 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
       continue;
     }
 
-    //    if( myTree.met_miniaodPt/myTree.met_caloPt > 5.0 ) continue;
+    if( myTree.nJet200MuFrac50DphiMet > 0 ) continue; // new RA2 filter
+    if (myTree.met_miniaodPt/myTree.met_caloPt>5.0  &&  myTree.met_miniaodPt>200.) continue;
 
-    // if(myTree.lep_pt[0]<35) continue;
-    // if(myTree.lep_pt[1]<35) continue; 
     if(myTree.lep_pt[0]<100) continue;
     if(myTree.lep_pt[1]<30) continue; 
-
-    //    if(myTree.lep_pt[0]<25) continue;
-    //    if(myTree.lep_pt[1]<20) continue; 
-
     
     //Need the lorentz vectors of the leptons first
     TLorentzVector *LVec = new TLorentzVector[3];
@@ -514,7 +511,7 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
       LVec[i].SetPtEtaPhiM(myTree.lep_pt[i], myTree.lep_eta[i],myTree.lep_phi[i], myTree.lep_mass[i]);
     }
 
-    TLorentzVector z = LVec[0] + LVec[1]; //leptons invariant mass
+    TLorentzVector Zvec = LVec[0] + LVec[1]; //leptons invariant mass
     
 
 
@@ -540,9 +537,11 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
 
       ///AMERICAN WAY
       if (myTree.evt_id == 301 || myTree.evt_id == 302)
-      	weight *= myTree.weight_isr/0.910; // nominal
+      	weight *= myTree.weight_isr/0.909; // nominal
+      //	weight *= myTree.weight_isr/0.910; // nominal
       else if (myTree.evt_id == 303) 
-      	weight *= myTree.weight_isr/0.897;
+      	weight *= myTree.weight_isr/0.895;
+      //	weight *= myTree.weight_isr/0.897;
 
     }
 
@@ -550,13 +549,11 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
 
 
     if( !myTree.isData ){ 
-      //      weight *= myTree.weight_btagsf;
-      
       /* //ONLY for 74MC which has xsec corrections //temporarily scaling by hand the cross sections
-      if( myTree.evt_id == 702) weight = weight * 1.0573;
-      if( myTree.evt_id == 703) weight = weight * 0.9588;
-      if( myTree.evt_id == 704) weight = weight * 1.0329;
-      if( myTree.evt_id == 705) weight = weight * 0.9945;
+	 if( myTree.evt_id == 702) weight = weight * 1.0573;
+	 if( myTree.evt_id == 703) weight = weight * 0.9588;
+	 if( myTree.evt_id == 704) weight = weight * 1.0329;
+	 if( myTree.evt_id == 705) weight = weight * 0.9945;
       */
 
       //weight *= myTree.weight_toppt;
@@ -648,9 +645,6 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
 	//SF part
 	if( fabs(myTree.zll_mass-91.19)>=20 ) continue;
 	if( myTree.zll_pt <= 200. ) continue;
-	//if( fabs(z.M()-91.19)>=20 ) continue;
-	//if( z.Perp() <= 180. ) continue;
-	//if( fabs(z.M()-91.19)>10 ) continue;
       }
 
       if( abs(myTree.lep_pdgId[0])==11 && myTree.lep_tightId[0]< 0.5 ) continue;
@@ -665,14 +659,8 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
       // variation -1 and +1 are for the weight up and down
       
       if( !myTree.isData){
-	// if( abs(myTree.lep_pdgId[0])==11 )
-	//   HLT_weight = 0.993;
-	// else if(abs(myTree.lep_pdgId[0])==13 )
-	//   HLT_weight = 0.969;
-	
-	// 	weight = weight* (HLT_weight * weight_lep0);
-	//	weight = weight * myTree.weight_lepsf;
-	weight = weight* (HLT_weight * myTree.weight_lepsf );
+	//weight *= myTree.weight_btagsf * HLT_weight * myTree.weight_lepsf;
+	weight *= myTree.weight_btagsf * HLT_weight * myTree.weight_lepsf2017;
       }
 
       int nJetHF30_ = 0;
@@ -692,11 +680,9 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
 
 	  thisTree->assignVar("ID", ID );
 	  
-	  //      thisTree->assignVar("Z_pt", z.Perp() );
 	  thisTree->assignVar("Z_pt", myTree.zll_pt );
-	  thisTree->assignVar("Z_phi", z.Phi() );
-	  thisTree->assignVar("Z_eta", z.Eta() );
-	  //      thisTree->assignVar("Z_mass", z.M() );
+	  thisTree->assignVar("Z_phi", Zvec.Phi() );
+	  thisTree->assignVar("Z_eta", Zvec.Eta() );
 	  thisTree->assignVar("Z_mass", myTree.zll_mass );
 	  thisTree->assignVar("Z_lepId", abs(myTree.lep_pdgId[0]) );
 	  
@@ -730,11 +716,11 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
 	  thisTree = anaTree->get( ht, njets, 1, minMTBmet, mt2 );
 	  if( thisTree==0 ) continue;
 
-	  //      thisTree->assignVar("Z_pt", z.Perp() );
+	  thisTree->assignVar("ID", ID );
+
 	  thisTree->assignVar("Z_pt", myTree.zll_pt );
-	  thisTree->assignVar("Z_phi", z.Phi() );
-	  thisTree->assignVar("Z_eta", z.Eta() );
-	  //      thisTree->assignVar("Z_mass", z.M() );
+	  thisTree->assignVar("Z_phi", Zvec.Phi() );
+	  thisTree->assignVar("Z_eta", Zvec.Eta() );
 	  thisTree->assignVar("Z_mass", myTree.zll_mass );
 	  thisTree->assignVar("Z_lepId", abs(myTree.lep_pdgId[0]) );
 	  
@@ -766,11 +752,9 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
 	  thisTree = anaTree->get( ht, njets, 2, minMTBmet, mt2 );
 	  if( thisTree==0 ) continue;
 
-	  //      thisTree->assignVar("Z_pt", z.Perp() );
 	  thisTree->assignVar("Z_pt", myTree.zll_pt );
-	  thisTree->assignVar("Z_phi", z.Phi() );
-	  thisTree->assignVar("Z_eta", z.Eta() );
-	  //      thisTree->assignVar("Z_mass", z.M() );
+	  thisTree->assignVar("Z_phi", Zvec.Phi() );
+	  thisTree->assignVar("Z_eta", Zvec.Eta() );
 	  thisTree->assignVar("Z_mass", myTree.zll_mass );
 	  thisTree->assignVar("Z_lepId", abs(myTree.lep_pdgId[0]) );
 	  
@@ -802,11 +786,9 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
 	  thisTree = anaTree->get( ht, njets, 3, minMTBmet, mt2 );
 	  if( thisTree==0 ) continue;
 
-	  //      thisTree->assignVar("Z_pt", z.Perp() );
 	  thisTree->assignVar("Z_pt", myTree.zll_pt );
-	  thisTree->assignVar("Z_phi", z.Phi() );
-	  thisTree->assignVar("Z_eta", z.Eta() );
-	  //      thisTree->assignVar("Z_mass", z.M() );
+	  thisTree->assignVar("Z_phi", Zvec.Phi() );
+	  thisTree->assignVar("Z_eta", Zvec.Eta() );
 	  thisTree->assignVar("Z_mass", myTree.zll_mass );
 	  thisTree->assignVar("Z_lepId", abs(myTree.lep_pdgId[0]) );
 	  
@@ -845,9 +827,9 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
 
 	//      thisTree->assignVar("Z_pt", z.Perp() );
 	thisTree->assignVar("Z_pt", myTree.zll_pt );
-	thisTree->assignVar("Z_phi", z.Phi() );
-	thisTree->assignVar("Z_eta", z.Eta() );
-	//      thisTree->assignVar("Z_mass", z.M() );
+	thisTree->assignVar("Z_phi", Zvec.Phi() );
+	thisTree->assignVar("Z_eta", Zvec.Eta() );
+	//      thisTree->assignVar("Z_mass", Zvec.M() );
 	thisTree->assignVar("Z_mass", myTree.zll_mass );
 	thisTree->assignVar("Z_lepId", abs(myTree.lep_pdgId[0]) );
 	
@@ -882,10 +864,6 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
 
       // MT2EstimateTree* thisTree = anaTree->get( ht, njets, nbjets, minMTBmet, mt2 );
       //   if (thisTree==0) continue;
-
-
-
- 
       //  thisTree->fillTree_zll(myTree, weight );
       //   thisTree->yield->Fill( mt2, weight );
 
@@ -893,15 +871,11 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
 
     } else if(isOF){ //////////Opposite FLAVOR//////////////////////////////////////////
       if(  myTree.isData && !( (myTree.HLT_MuX_Ele12 || myTree.HLT_Mu8_EleX || myTree.HLT_Mu33_Ele33_NonIso || myTree.HLT_Mu30_Ele30_NonIso || myTree.HLT_Photon165_HE10 || myTree.HLT_SingleMu_NonIso  ) ) ) continue;
-      //if(  myTree.isData && !( (myTree.HLT_MuX_Ele12 || myTree.HLT_Mu8_EleX || myTree.HLT_Mu30_Ele30_NonIso )) ) continue;
 
       if(do_ZinvEst){
 	//SF part
 	if( fabs(myTree.zll_mass-91.19)>=20. ) continue;
 	if( myTree.zll_pt <= 200. ) continue;
-//	if( fabs(z.M()-91.19)>=20 ) continue;
-//	if( z.Perp() <= 180. ) continue;
-	//if( fabs(z.M()-91.19)>10 ) continue;
       }
 
 
@@ -917,9 +891,8 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
       float HLT_weight = getHLTweight( myTree.lep_pdgId[0], myTree.lep_pdgId[1], myTree.lep_pt[0], myTree.lep_pt[1], 0 );
 
       if( !myTree.isData){
-	weight = weight* myTree.weight_lepsf * HLT_weight;
-	//	weight = weight* myTree.weight_lepsf;
-	// weight = weight*(weight_lep0);
+	weight *= myTree.weight_btagsf * myTree.weight_lepsf2017 * HLT_weight;
+	//weight *= myTree.weight_btagsf * myTree.weight_lepsf * HLT_weight;
       }
 
       int nJetHF30_ = 0;
@@ -931,7 +904,6 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
 
       MT2EstimateTree* thisTree_of;
       if( regionsSet=="zurich" || regionsSet=="zurichPlus" || regionsSet=="zurich2016" ){ //     
-	// if( ht>450. && njets>=7 && nbjets>2 ) continue;	//     else 
 	if( ht<450 || njets<7 || nbjets<1 ) {//Fill it the normal way
 
 	  thisTree_of = anaTree_of->get( ht, njets, nbjets, minMTBmet, mt2 ); 
@@ -939,11 +911,9 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
 
 	  thisTree_of->assignVar("ID", sample.id );
 	  
-	  //      thisTree_of->assignVar("Z_pt", z.Perp() );
 	  thisTree_of->assignVar("Z_pt", myTree.zll_pt );
-	  thisTree_of->assignVar("Z_phi", z.Phi() );
-	  thisTree_of->assignVar("Z_eta", z.Eta() );
-	  //      thisTree_of->assignVar("Z_mass", z.M() );
+	  thisTree_of->assignVar("Z_phi", Zvec.Phi() );
+	  thisTree_of->assignVar("Z_eta", Zvec.Eta() );
 	  thisTree_of->assignVar("Z_mass", myTree.zll_mass );
 	  thisTree_of->assignVar("Z_lepId", abs(myTree.lep_pdgId[0]) );
 	  
@@ -979,11 +949,9 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
 	  
 	  thisTree_of->assignVar("ID", sample.id );
 	  
-	  //      thisTree_of->assignVar("Z_pt", z.Perp() );
 	  thisTree_of->assignVar("Z_pt", myTree.zll_pt );
-	  thisTree_of->assignVar("Z_phi", z.Phi() );
-	  thisTree_of->assignVar("Z_eta", z.Eta() );
-	  //      thisTree_of->assignVar("Z_mass", z.M() );
+	  thisTree_of->assignVar("Z_phi", Zvec.Phi() );
+	  thisTree_of->assignVar("Z_eta", Zvec.Eta() );
 	  thisTree_of->assignVar("Z_mass", myTree.zll_mass );
 	  thisTree_of->assignVar("Z_lepId", abs(myTree.lep_pdgId[0]) );
 	  
@@ -1016,11 +984,9 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
 	  if( thisTree_of==0 ) continue;
 	  thisTree_of->assignVar("ID", sample.id );
 	  
-	  //      thisTree_of->assignVar("Z_pt", z.Perp() );
 	  thisTree_of->assignVar("Z_pt", myTree.zll_pt );
-	  thisTree_of->assignVar("Z_phi", z.Phi() );
-	  thisTree_of->assignVar("Z_eta", z.Eta() );
-	  //      thisTree_of->assignVar("Z_mass", z.M() );
+	  thisTree_of->assignVar("Z_phi", Zvec.Phi() );
+	  thisTree_of->assignVar("Z_eta", Zvec.Eta() );
 	  thisTree_of->assignVar("Z_mass", myTree.zll_mass );
 	  thisTree_of->assignVar("Z_lepId", abs(myTree.lep_pdgId[0]) );
 	  
@@ -1054,11 +1020,9 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
 	  
 	  thisTree_of->assignVar("ID", sample.id );
 	  
-	  //      thisTree_of->assignVar("Z_pt", z.Perp() );
 	  thisTree_of->assignVar("Z_pt", myTree.zll_pt );
-	  thisTree_of->assignVar("Z_phi", z.Phi() );
-	  thisTree_of->assignVar("Z_eta", z.Eta() );
-	  //      thisTree_of->assignVar("Z_mass", z.M() );
+	  thisTree_of->assignVar("Z_phi", Zvec.Phi() );
+	  thisTree_of->assignVar("Z_eta", Zvec.Eta() );
 	  thisTree_of->assignVar("Z_mass", myTree.zll_mass );
 	  thisTree_of->assignVar("Z_lepId", abs(myTree.lep_pdgId[0]) );
 	  
@@ -1095,11 +1059,9 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
 
 	thisTree_of->assignVar("ID", sample.id );
 	
-	//      thisTree_of->assignVar("Z_pt", z.Perp() );
 	thisTree_of->assignVar("Z_pt", myTree.zll_pt );
-	thisTree_of->assignVar("Z_phi", z.Phi() );
-	thisTree_of->assignVar("Z_eta", z.Eta() );
-	//      thisTree_of->assignVar("Z_mass", z.M() );
+	thisTree_of->assignVar("Z_phi", Zvec.Phi() );
+	thisTree_of->assignVar("Z_eta", Zvec.Eta() );
 	thisTree_of->assignVar("Z_mass", myTree.zll_mass );
 	thisTree_of->assignVar("Z_lepId", abs(myTree.lep_pdgId[0]) );
 	

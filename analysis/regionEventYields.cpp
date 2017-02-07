@@ -87,6 +87,12 @@ int main( int argc, char* argv[] ) {
     }
   }
 
+  std::string signalName = "";
+  if( argc > 3 ) {
+    signalName = argv[3];
+    std::cout << "-> Running on signal: " << signalName << std::endl;
+  }
+
   std::string outputdir = cfg.getEventYieldDir();
   system(Form("mkdir -p %s", outputdir.c_str()));
 
@@ -167,15 +173,24 @@ int main( int argc, char* argv[] ) {
 
 
   // load signal samples, if any
+  MT2Analysis<MT2EstimateAllSigSyst>* signalYield ;
+
   std::vector< MT2Analysis< MT2EstimateAllSigSyst>* > signals;
   if( cfg.mcSamples()!="" && cfg.additionalStuff()!="noSignals" && !onlyData ) {
+    //  if( cfg.mcSamples()!="" && cfg.additionalStuff()!="noSignals" && !onlyData && onlySignal) {
 
     std::string samplesFileName = "../samples/samples_" + cfg.mcSamples() + ".dat";
     std::cout << std::endl << std::endl;
     std::cout << "-> Loading signal samples from file: " << samplesFileName << std::endl;
 
+    //   if( signalName == "" ) signalName = 9999;
+    
+    std::cout << "signal name " << signalName << std::endl;
+
+    //std::vector<MT2Sample> fSamples = MT2Sample::loadSamples(samplesFileName, signalName); // only signal (id>=1000)
     std::vector<MT2Sample> fSamples = MT2Sample::loadSamples(samplesFileName, 1000); // only signal (id>=1000)
 
+    
 
     if( fSamples.size()==0 ) {
 
@@ -193,9 +208,15 @@ int main( int argc, char* argv[] ) {
 
     } // if samples != 0
 
+    std::cout << "Merging        signals" << std::endl;
+
+    signalYield   = mergeYields<MT2EstimateAllSigSyst>( signals, cfg.regionsSet(), signalName, 1000, 2000 ); //old t1bbbb 1200, 1249
+
+
   } // if mc samples
 
-  else if ( cfg.sigSamples()!="" && !onlyData ) {
+  else if ( cfg.sigSamples()!="" && !onlyData  ) {
+    //  else if ( cfg.sigSamples()!="" && !onlyData && onlySignal ) {
 
     std::string samplesFileName = "../samples/samples_" + cfg.sigSamples() + ".dat";
     std::cout << std::endl << std::endl;
@@ -219,6 +240,10 @@ int main( int argc, char* argv[] ) {
 
     } // if samples != 0
     
+    std::cout << "Merging signals" << std::endl;
+    signalYield   = mergeYields<MT2EstimateAllSigSyst>( signals, cfg.regionsSet(), signalName, 1000, 2000 );
+
+
   } // if sig samples
   
 
@@ -265,14 +290,17 @@ int main( int argc, char* argv[] ) {
     yields[0]->writeToFile(outputdir + "/analyses.root");
   for( unsigned i=1; i<yields.size(); ++i )
     yields[i]->writeToFile(outputdir + "/analyses.root");
-  for( unsigned i=0; i<signals.size(); ++i )
-    signals[i]->writeToFile(outputdir + "/analyses.root");
+  //for( unsigned i=0; i<signals.size(); ++i )
+  //  signals[i]->writeToFile(outputdir + "/analyses.root");
   }
   else if( signals.size()>0 ){
-    signals[0]->writeToFile(outputdir + "/analyses.root");
-    for( unsigned i=1; i<signals.size(); ++i )
-      signals[i]->writeToFile(outputdir + "/analyses.root");
+    signalYield->writeToFile(outputdir + "/analyses.root");
+    //    signals[0]->writeToFile(outputdir + "/analyses.root");
+    //    for( unsigned i=1; i<signals.size(); ++i )
+    //    signals[i]->writeToFile(outputdir + "/analyses.root");
   }
+
+
   cfg.saveAs(outputdir + "/config.txt");
 
   return 0;
@@ -350,17 +378,14 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg, std
     
     if( myTree.isData && !myTree.isGolden ) continue;
     //For 18.1 ifb
-    if( !(myTree.run<=276811 || (278820<=myTree.run && myTree.run<=279931)) )
-      continue;
+    //if( !(myTree.run<=276811 || (278820<=myTree.run && myTree.run<=279931)) )
+    //  continue;
 
     if( regionsSet!="13TeV_noCut" )
       if( !myTree.passSelection(cfg.additionalStuff()) ) continue;
 
     if ( myTree.nJet30==1 && !myTree.passMonoJetId(0) ) continue;
       
-
-    if( myTree.isData && !(myTree.run<=276811 || ( 278820<=myTree.run && myTree.run<=279931)) ) continue;
-
     float ht   = myTree.ht;
     float met  = myTree.met_pt;
     float minMTBmet = myTree.minMTBMet;
@@ -387,8 +412,8 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg, std
     //    }
 
     if( !myTree.isData ){
-      //      weight *= myTree.weight_btagsf;
-      weight *= myTree.weight_lepsf;
+      weight *= myTree.weight_btagsf;
+      weight *= myTree.weight_lepsf2017;
 
       // // ETH has a branch witht he average weight stored:
       // // Also we have a different numbering scheme...
@@ -397,9 +422,9 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg, std
 
       ///AMERICAN WAY
       if (myTree.evt_id == 301 || myTree.evt_id == 302)
-      	weight *= myTree.weight_isr/0.910; // nominal
+      	weight *= myTree.weight_isr/0.909; // nominal
       else if (myTree.evt_id == 303) 
-      	weight *= myTree.weight_isr/0.897;
+      	weight *= myTree.weight_isr/0.895;
 
     }
 
@@ -427,6 +452,8 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg, std
       std::cout << "Rejecting nan/inf event at run:lumi:evt = " << myTree.run << ":" << myTree.lumi << ":" << myTree.evt << std::endl;
       continue;
     }
+
+    if( myTree.nJet200MuFrac50DphiMet > 0 ) continue;
 
     if( myTree.met_miniaodPt/myTree.met_caloPt > 5.0 ) continue;
 
@@ -592,7 +619,7 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg, std
 template <class T>
 MT2Analysis<T>* computeSigYield( const MT2Sample& sample, const MT2Config& cfg ) {
 
-  bool dogenmet = false;
+  bool dogenmet = true;
 
   TString sigSampleName(sample.name);
   TFile* sigXSFile;
@@ -657,8 +684,10 @@ MT2Analysis<T>* computeSigYield( const MT2Sample& sample, const MT2Config& cfg )
     }
       
 
-    if ( myTree.nJet30==1 && !myTree.passMonoJetId(0) ) continue;
-    if ( myTree.nJet20BadFastsim > 0 ) continue;
+    if( myTree.nJet30==1 && !myTree.passMonoJetId(0) ) continue;
+    if( myTree.nJet20BadFastsim > 0 ) continue;
+    if( myTree.nJet200MuFrac50DphiMet > 0 ) continue; // new RA2 filter
+
 
     float ht   = myTree.ht;
     float met  = myTree.met_pt;
@@ -672,13 +701,13 @@ MT2Analysis<T>* computeSigYield( const MT2Sample& sample, const MT2Config& cfg )
     if(dogenmet)
       mt2_genmet = (njets>1) ? myTree.mt2_genmet : ht;
 
-    float weight_isr = myTree.weight_isr;
-    float isr_UP = myTree.weight_isr_UP;
-    float isr_DN = myTree.weight_isr_DN;
+    float weight_isr = myTree.weight_isr    / myTree.weight_isr_av;
+    float isr_UP     = myTree.weight_isr_UP / myTree.weight_isr_UP_av;
+    float isr_DN     = myTree.weight_isr_DN / myTree.weight_isr_DN_av;
 
-    float weight_lepsf = myTree.weight_lepsf;
-    float lepsf_UP = myTree.weight_lepsf_UP;
-    float lepsf_DN = myTree.weight_lepsf_DN;
+    float weight_lepsf = myTree.weight_lepsf2017;
+    float lepsf_UP     = myTree.weight_lepsf2017_UP;
+    float lepsf_DN     = myTree.weight_lepsf2017_DN;
 
     float weight_btagsf = myTree.weight_btagsf;
     float btag_heavy_UP = myTree.weight_btagsf_heavy_UP;
@@ -732,7 +761,7 @@ MT2Analysis<T>* computeSigYield( const MT2Sample& sample, const MT2Config& cfg )
     if( !myTree.isData ){
       weight *= weight_btagsf;
       weight *= weight_lepsf;
-      weight *= weight_isr;
+      weight *= weight_isr ;
     }
 
 
@@ -762,29 +791,25 @@ MT2Analysis<T>* computeSigYield( const MT2Sample& sample, const MT2Config& cfg )
       
       //    thisEstimate->yield3d_systUp->Fill( mt2, GenSusyMScan1, GenSusyMScan2, weight*(1.+(weight_syst-1.)));
       //    thisEstimate->yield3d_systDown->Fill( mt2, GenSusyMScan1, GenSusyMScan2, weight*(1.-(weight_syst-1.)));
-      
-//      thisEstimate->yield3d_isr_UP->Fill( mt2, GenSusyMScan1, GenSusyMScan2, weight*(1.+(isr-1.)));
-//      thisEstimate->yield3d_isr_DN->Fill( mt2, GenSusyMScan1, GenSusyMScan2, weight*(1.-(isr-1.)));
-//      
-//      thisEstimate->yield3d_btag_heavy_UP->Fill( mt2, GenSusyMScan1, GenSusyMScan2, weight*(1.+(btag_heavy_UP-1.)));
-//      thisEstimate->yield3d_btag_heavy_DN->Fill( mt2, GenSusyMScan1, GenSusyMScan2, weight*(1.-(btag_heavy_DN-1.)));
-//      
-//      thisEstimate->yield3d_btag_light_UP->Fill( mt2, GenSusyMScan1, GenSusyMScan2, weight*(1.+(btag_light_UP-1.)));
-//      thisEstimate->yield3d_btag_light_DN->Fill( mt2, GenSusyMScan1, GenSusyMScan2, weight*(1.-(btag_light_DN-1.)));
+      //    thisEstimate->yield3d_isr_UP->Fill( mt2, GenSusyMScan1, GenSusyMScan2, weight*(1.+(isr-1.)));
+      //    thisEstimate->yield3d_isr_DN->Fill( mt2, GenSusyMScan1, GenSusyMScan2, weight*(1.-(isr-1.)));
+      //    thisEstimate->yield3d_btag_heavy_UP->Fill( mt2, GenSusyMScan1, GenSusyMScan2, weight*(1.+(btag_heavy_UP-1.)));
+      //    thisEstimate->yield3d_btag_heavy_DN->Fill( mt2, GenSusyMScan1, GenSusyMScan2, weight*(1.-(btag_heavy_DN-1.)));
+      //    thisEstimate->yield3d_btag_light_UP->Fill( mt2, GenSusyMScan1, GenSusyMScan2, weight*(1.+(btag_light_UP-1.)));
+      //    thisEstimate->yield3d_btag_light_DN->Fill( mt2, GenSusyMScan1, GenSusyMScan2, weight*(1.-(btag_light_DN-1.)));
 
+      thisEstimate->yield3d_isr_UP->Fill( mt2, GenSusyMScan1, GenSusyMScan2, weight/weight_isr*isr_UP);
+      thisEstimate->yield3d_isr_DN->Fill( mt2, GenSusyMScan1, GenSusyMScan2, weight/weight_isr*isr_DN);
 
-      thisEstimate->yield3d_isr_UP->Fill( mt2, GenSusyMScan1, GenSusyMScan2, weight/weight_isr*(isr_UP) );
-      thisEstimate->yield3d_isr_DN->Fill( mt2, GenSusyMScan1, GenSusyMScan2, weight/weight_isr*(isr_DN) );
+      thisEstimate->yield3d_lepsf_UP->Fill( mt2, GenSusyMScan1, GenSusyMScan2, weight/weight_lepsf*lepsf_UP);
+      thisEstimate->yield3d_lepsf_DN->Fill( mt2, GenSusyMScan1, GenSusyMScan2, weight/weight_lepsf*lepsf_DN);
 
-      thisEstimate->yield3d_lepsf_UP->Fill( mt2, GenSusyMScan1, GenSusyMScan2, weight/weight_lepsf*(lepsf_UP) );
-      thisEstimate->yield3d_lepsf_DN->Fill( mt2, GenSusyMScan1, GenSusyMScan2, weight/weight_lepsf*(lepsf_DN) );
-
-      thisEstimate->yield3d_btag_heavy_UP->Fill( mt2, GenSusyMScan1, GenSusyMScan2, weight/weight_btagsf*(btag_heavy_UP) );
-      thisEstimate->yield3d_btag_heavy_DN->Fill( mt2, GenSusyMScan1, GenSusyMScan2, weight/weight_btagsf*(btag_heavy_DN) );
+      thisEstimate->yield3d_btag_heavy_UP->Fill( mt2, GenSusyMScan1, GenSusyMScan2, weight/weight_btagsf*btag_heavy_UP);
+      thisEstimate->yield3d_btag_heavy_DN->Fill( mt2, GenSusyMScan1, GenSusyMScan2, weight/weight_btagsf*btag_heavy_DN);
             
-      thisEstimate->yield3d_btag_light_UP->Fill( mt2, GenSusyMScan1, GenSusyMScan2, weight/weight_btagsf*(btag_light_UP) );
-      thisEstimate->yield3d_btag_light_DN->Fill( mt2, GenSusyMScan1, GenSusyMScan2, weight/weight_btagsf*(btag_light_DN) );
-                  
+      thisEstimate->yield3d_btag_light_UP->Fill( mt2, GenSusyMScan1, GenSusyMScan2, weight/weight_btagsf*btag_light_UP);
+      thisEstimate->yield3d_btag_light_DN->Fill( mt2, GenSusyMScan1, GenSusyMScan2, weight/weight_btagsf*btag_light_DN);
+                             
     }
     
     if(dogenmet && passGenMET){
