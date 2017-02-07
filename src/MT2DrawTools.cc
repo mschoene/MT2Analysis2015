@@ -187,7 +187,7 @@ TStyle* MT2DrawTools::setStyle() {
   style->SetStripDecimals(kTRUE);
   style->SetTickLength(0.03, "XYZ");
   style->SetNdivisions(510, "XYZ");
-  style->SetPadTickX(1); // To get tick marks on the opposite side of the frame
+  //  style->SetPadTickX(1); // To get tick marks on the opposite side of the frame
   style->SetPadTickY(1);
   // for histograms:
   style->SetHistLineColor(1);

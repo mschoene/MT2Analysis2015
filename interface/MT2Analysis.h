@@ -85,9 +85,9 @@ class MT2Analysis {
   static MT2Analysis* readSystFromFile( const std::string& fileName, const std::string& matchName="", const std::string& systName="" );
   static std::vector<MT2Analysis*> readAllFromFile( const std::string& fileName, const std::string& matchName="", bool verbose=true );
   static std::vector<MT2Analysis*> readAllSystFromFile( const std::string& fileName, const std::string& matchName="", const std::string& systName="", bool verbose=true );
-  void writeToFile( const std::string& fileName, const std::string& option="UPDATE", bool overwrite=true );
-  void addToFile( const std::string& fileName, bool overwrite=true ) {
-    return this->writeToFile(fileName,"UPDATE",overwrite);
+  void writeToFile( const std::string& fileName, const std::string& option="UPDATE", bool overwrite=true, bool addToDir=false );
+  void addToFile( const std::string& fileName, bool overwrite=true, bool addToDir=false ) {
+    return this->writeToFile(fileName,"UPDATE",overwrite, addToDir);
   }
 
   static void printFromFile( const std::string& fileName, const std::string& ofs, const std::string& matchName="" );
@@ -562,7 +562,8 @@ MT2Analysis<T>::MT2Analysis( const std::string& aname, const std::string& region
     //  htRegions.insert(MT2HTRegion(1500.,    -1 ));
     
     std::set<MT2SignalRegion> signalRegions;
-    signalRegions.insert(MT2SignalRegion( 2,  3, 0, -1));
+    signalRegions.insert(MT2SignalRegion( 2,  2, 0, -1)); // splitting 2-3 bin for 2-6 bin
+    signalRegions.insert(MT2SignalRegion( 3,  3, 0, -1));
     signalRegions.insert(MT2SignalRegion( 4,  6, 0, -1));
     signalRegions.insert(MT2SignalRegion( 7, -1, 0, -1));
 
@@ -570,9 +571,12 @@ MT2Analysis<T>::MT2Analysis( const std::string& aname, const std::string& region
 
     regions_.insert(MT2Region(1500.,-1., 2, -1, 0, -1));
 
-    regions_.insert(MT2Region(250., 450., 2,  3, 0, -1));
+    //very low ht bins
+    regions_.insert(MT2Region(250., 450., 2,  2, 0, -1));
+    regions_.insert(MT2Region(250., 450., 3,  3, 0, -1));
     regions_.insert(MT2Region(250., 450., 4, -1, 0, -1));
 
+    //monojet bins
     //    regions_.insert(MT2Region(200., 250., 1, 1, 0, 0));
     regions_.insert(MT2Region(250., 350., 1, 1, 0, 0));
     regions_.insert(MT2Region(350., 450., 1, 1, 0, 0));
@@ -848,7 +852,9 @@ MT2Analysis<T>::MT2Analysis( const std::string& aname, const std::string& region
     regions_.insert(MT2Region(250., -1., 2,  3, 0,  -1));
     regions_.insert(MT2Region(250., -1., 4,  6, 0,  -1));
     regions_.insert(MT2Region(250., -1., 7, -1, 0,  -1));
-
+    regions_.insert(MT2Region(250., -1., 2,  6, 0,  -1)); // not exclusive from above, used for !VLHT and 3b
+    regions_.insert(MT2Region(250., -1., 4, -1, 0,  -1)); // not exclusive from above, used for VLHT and <3b 
+    regions_.insert(MT2Region(250., -1., 2, -1, 0,  -1)); // not exclusive from above, used for VLHT and 3b 
 
   } else if( regionsSet=="darkMatter_max1b" ){
 
@@ -1611,19 +1617,51 @@ template<class T>
 MT2Region* MT2Analysis<T>::matchRegion( MT2Region region ) const {
 
   MT2Region* foundRegion = 0;
-  
+
   for( std::set<MT2Region>::iterator iR=regions_.begin(); iR!=regions_.end(); ++iR ) {
     
     MT2Region* thisRegion= new MT2Region( (*iR) );
  
     if(!( region.isIncluded( thisRegion ) ) ) continue;
     foundRegion = ( thisRegion );
+    
     break;
-
+        
     delete thisRegion;
     
   }
-    
+  
+//  for( std::set<MT2Region>::iterator iR=regions_.begin(); iR!=regions_.end(); ++iR ) {
+//    
+//      MT2Region* thisRegion = new MT2Region( (*iR) );
+//      
+//      if( !( region.isIncluded( thisRegion ) ) ) continue;
+//      foundRegion = ( thisRegion );
+//
+//      for( std::set<MT2Region>::iterator iR_2=regions_.begin(); iR_2!=regions_.end(); ++iR_2 ) {
+//
+//	MT2Region* thisRegion_2 = new MT2Region( (*iR_2) );
+//	
+//	if( (thisRegion_2->getName()) == (foundRegion->getName()) ) continue;
+//
+//	if( region.isIncluded( thisRegion_2 ) && thisRegion_2->isIncluded( foundRegion ) )
+//	  foundRegion = ( thisRegion_2 ); 
+//	  
+//	break;
+//	
+//	delete thisRegion_2;
+//	
+//      }
+//            
+//      break;
+//
+//      delete thisRegion;
+//    
+//  }
+//  
+//  
+//  std::cout << "Matched region: " << region.getName() << " " << foundRegion->getName() << std::endl;
+  
   return foundRegion;
 
 
@@ -2142,7 +2180,7 @@ MT2Analysis<T> MT2Analysis<T>::operator/( float k ) const {
 
 
 template<class T> 
-void MT2Analysis<T>::writeToFile( const std::string& fileName, const std::string& option, bool overwrite ) {
+void MT2Analysis<T>::writeToFile( const std::string& fileName, const std::string& option, bool overwrite, bool addToDir ) {
 
   TFile* file = TFile::Open(fileName.c_str(), option.c_str() );
   file->cd();
@@ -2151,13 +2189,20 @@ void MT2Analysis<T>::writeToFile( const std::string& fileName, const std::string
     file->cd();
     if( overwrite ) {
       file->rmdir(this->name_.c_str());
+      file->mkdir(this->name_.c_str());
     } else {
-      std::cout << "[MT2Analysis::writeToFile] Directory '" << this->name_ << "' already exists in file '" << fileName << "'. Will not overwrite." << std::endl;
-      return;
+      std::cout << "[MT2Analysis::writeToFile] Directory '" << this->name_ << "' already exists in file '" << fileName << "'. Will not overwrite";
+      if ( !addToDir )	{
+	std::cout << " and exit." << std::endl;
+	return; // if addToDir don't exit and try to add new dirs
+      }
+      else
+	std::cout << " existing data but write new info." << std::endl;
     }
   }
+  else
+    file->mkdir(this->name_.c_str());
 
-  file->mkdir(this->name_.c_str());
   file->cd(this->name_.c_str());
 
   std::set<MT2Region> regions = this->getRegions();
@@ -2340,7 +2385,8 @@ void MT2Analysis<T>::print( std::ofstream& ofs_file, Float_t m1, Float_t m2, MT2
   
   T* thisT = this->get(*thisRegion);
 
-  for(int i=1; i < nBins+1; ++i){ 
+  for(int i=1; i < nBins+1; ++i){
+    if(thisRegion->htMin()>=1500 && i==1) continue;
     thisT->print( ofs_file, m1, m2, i, k );
   }
   
@@ -2360,6 +2406,7 @@ void MT2Analysis<T>::print( std::ofstream& ofs_file, Float_t m1, Float_t m2, MT2
   T* thisT = this->get(*thisRegion);
 
   for(int i=1; i < nBins+1; ++i){ 
+    if(thisRegion->htMin()>=1500 && i==1) continue;
     thisT->print( ofs_file, m1, m2, i, k, doGenAverage );
   }
   

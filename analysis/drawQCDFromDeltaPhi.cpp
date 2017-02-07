@@ -77,6 +77,8 @@ int main( int argc, char* argv[] ) {
 
 
   MT2Analysis<MT2EstimateTree>* qcdTree_mc   = MT2Analysis<MT2EstimateTree>::readFromFile( qcdCRdir + "/mc.root",   "qcdCRtree" );
+  MT2Analysis<MT2EstimateTree>* qcdTree_sr   = MT2Analysis<MT2EstimateTree>::readFromFile( qcdCRdir + "/mc.root",   "qcdCRtree" );
+  //  MT2Analysis<MT2EstimateTree>* qcdTree_sr   = MT2Analysis<MT2EstimateTree>::readFromFile( qcdCRdir + "/../analyses.root",   "QCD" );
   MT2Analysis<MT2EstimateTree>* qcdTree_data = MT2Analysis<MT2EstimateTree>::readFromFile( qcdCRdir + "/data.root", "qcdCRtree" );
 
   std::string runRange = "";
@@ -86,13 +88,15 @@ int main( int argc, char* argv[] ) {
   MT2Analysis<MT2EstimateTree>* mcTruth;
   MT2Analysis<MT2EstimateTree>* data  ;
   MT2Analysis<MT2EstimateTree>* nonQCD;
-  if( closureTest ) { // in validation region we also use id==152
-    mcTruth = MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( "mcTruth", cfg.regionsSet(), qcdTree_mc  , 1, 100, 200 , "(id>150&&(id>151||ht<450)&&(id>152||ht<575)&&(id>153||ht<1000)&&(id>154||ht<1500)) && id<200 && mt2>100 && mt2<200. && deltaPhiMin>0.3"); // signal region for mcTruth
+  if( closureTest ) { // in validation region we also use id==15
+    //    mcTruth = MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( "mcTruth", cfg.regionsSet(), qcdTree_mc  , 1, 100, 200 , "(id>150&&(id>151||ht<450)&&(id>152||ht<575)&&(id>153||ht<1000)&&(id>154||ht<1500)) && id<200 && mt2>100 && mt2<200. && deltaPhiMin>0.3"); // signal region for mcTruth
+    mcTruth = MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( "mcTruth", cfg.regionsSet(), qcdTree_mc  , 1, 100, 200 , "id>150 && id<200 && mt2>100 && mt2<200. && deltaPhiMin>0.3"); // signal region for mcTruth    
     data    = MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( "data"   , cfg.regionsSet(), qcdTree_data, 1, 100, 200 , "((id&1)==1"+runRange+") && mt2>100. && mt2<200. && deltaPhiMin>0.3"         ); // signal region for data
     nonQCD  = MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( "nonQCD" , cfg.regionsSet(), qcdTree_mc  , 1, 100, 200 , "id>=300 && mt2>100. && mt2<200. && deltaPhiMin>0.3"         ); // signal region for nonQCD mcTruth
   }
   else
-    mcTruth = MT2EstimateTree::makeAnalysisFromInclusiveTree( "mcTruth", cfg.regionsSet(), qcdTree_mc  , "(id>150&&(id>151||ht<450)&&(id>152||ht<575)&&(id>153||ht<1000)&&(id>154||ht<1500)) && id<200 && mt2>200. && deltaPhiMin>0.3" ); // signal region for mcTruth
+    //mcTruth = qcdTree_sr;
+    mcTruth = MT2EstimateTree::makeAnalysisFromInclusiveTree( "mcTruth", cfg.regionsSet(), qcdTree_sr  , "id>=153 && id<200 && mt2>200. && deltaPhiMin>0.3" ); // signal region for mcTruth
 
 
   MT2Analysis<MT2Estimate>* estimateMC     = MT2Analysis<MT2Estimate>::readFromFile( mcFile  , "qcdEstimate" );
@@ -307,6 +311,8 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
       h_estimate->SetMarkerSize(1.6);
       h_estimate->SetLineColor( estimate->getColor() );
       h_estimate->SetMarkerColor( estimate->getColor() );
+//      if(iMT2->htMin()>=1400) h_estimate->SetBinContent(1, 0.0); 
+//      if(iMT2->htMin()>=1400) h_estimate->SetBinError(1, 0.0); 
 
       THStack* stack = new THStack("stack","");
 
@@ -342,7 +348,8 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
 
       double err_estimate;
       double int_estimate = h_estimate->IntegralAndError(1, nBins+1, err_estimate);
- 
+      //      if(iMT2->htMin()>=1400.) h_estimate->IntegralAndError(2, nBins+1, err_estimate);
+      
       h_estimate_tot->SetBinContent(iRegion, int_estimate);
       h_estimate_tot->SetBinError  (iRegion, err_estimate);
       
@@ -377,11 +384,22 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
       h_mcTruth->SetMarkerStyle(20);
       h_mcTruth->SetMarkerSize(1.6);
       
-   
+//      if( iMT2->htMin()>1400 )
+//	h_mcTruth->SetBinContent(1, 0);
+      
       double err_int;
       double int_mcTruth = h_mcTruth->IntegralAndError(1, nBins+1, err_int);
       h_mcTruth_tot->SetBinContent(iRegion, h_mcTruth->Integral());
       h_mcTruth_tot->SetBinError(iRegion, err_int);
+
+//      if(iMT2->htMin()>1400){
+//	
+//	int_mcTruth = h_mcTruth->IntegralAndError(2, nBins+1, err_int);
+//	h_mcTruth_tot->SetBinContent(iRegion, int_mcTruth);
+//	h_mcTruth_tot->SetBinError(iRegion, err_int);
+//	
+//      }
+      
       h_mcTruth_tot->GetXaxis()->SetBinLabel( iRegion, niceNames[1].c_str() );
 
       if ( doClosureTestData ) {
@@ -631,29 +649,52 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
     lHT[iHT-1]->Draw("same");
   }
 
+
   int nHTRegions = 5;
   std::vector< std::string > htRegions;
-  htRegions.push_back("H_{T} [200,450] GeV");
-  htRegions.push_back("H_{T} [450,575] GeV");
-  htRegions.push_back("H_{T} [575,100] GeV");
-  htRegions.push_back("H_{T} [1000,1500] GeV");
+  htRegions.push_back("H_{T} [250,450]");
+  htRegions.push_back("H_{T} [450,575]");
+  htRegions.push_back("H_{T} [575,1000]");
+  htRegions.push_back("H_{T} [1000,1500]");
   htRegions.push_back("H_{T} > 1500 GeV");
-  
+
   TPaveText* htBox[nHTRegions];
   for( int iHT = 0; iHT < nHTRegions; ++iHT){
-    
-    htBox[iHT] = new TPaveText(0.17+0.16*iHT, 0.9-0.06, 0.3+0.16*iHT, 0.9, "brNDC");
 
+    if (iHT==0) htBox[iHT] = new TPaveText(0.16, 0.9-0.06+0.02, 0.26, 0.85+0.02, "brNDC");
+    else htBox[iHT] = new TPaveText(0.26+0.17*(iHT-1), 0.9-0.06+0.02, 0.26+0.17+0.17*(iHT-1), 0.85+0.02, "brNDC");
     htBox[iHT]->AddText( htRegions[iHT].c_str() );
-    
+
     htBox[iHT]->SetBorderSize(0);
     htBox[iHT]->SetFillColor(kWhite);
-    htBox[iHT]->SetTextSize(0.038);
-    htBox[iHT]->SetTextAlign(21); // align centered
+    htBox[iHT]->SetTextSize(0.035);
+    htBox[iHT]->SetTextAlign(21); // align centered                                                                                                                                                                        
     htBox[iHT]->SetTextFont(62);
     htBox[iHT]->Draw("same");
 
   }
+
+//  htRegions.push_back("H_{T} [200,450] GeV");
+//  htRegions.push_back("H_{T} [450,575] GeV");
+//  htRegions.push_back("H_{T} [575,100] GeV");
+//  htRegions.push_back("H_{T} [1000,1500] GeV");
+//  htRegions.push_back("H_{T} > 1500 GeV");
+//  
+//  TPaveText* htBox[nHTRegions];
+//  for( int iHT = 0; iHT < nHTRegions; ++iHT){
+//    
+//    htBox[iHT] = new TPaveText(0.17+0.16*iHT, 0.9-0.06, 0.3+0.16*iHT, 0.9, "brNDC");
+//
+//    htBox[iHT]->AddText( htRegions[iHT].c_str() );
+//    
+//    htBox[iHT]->SetBorderSize(0);
+//    htBox[iHT]->SetFillColor(kWhite);
+//    htBox[iHT]->SetTextSize(0.038);
+//    htBox[iHT]->SetTextAlign(21); // align centered
+//    htBox[iHT]->SetTextFont(62);
+//    htBox[iHT]->Draw("same");
+//
+//  }
 
   gPad->RedrawAxis();
   
