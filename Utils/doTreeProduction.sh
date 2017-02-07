@@ -7,6 +7,8 @@
 
 # NB: Insert path starting from /store/user/... The rest will be added automatically
 inputProductionFolder="/store/user/casal/crab/MT2_8_0_12/prodOct29_runG_all/"
+inputProductionFolder="/store/user/mmasciov/testBadMuon_Run2016D/"
+#inputProductionFolder="/store/user/mschoene/crab/8_0_25/data2016_runE_23Jan2017/"
 
 # In case you want to run the same production twice, adding a post-fix may help
 postFix=""
@@ -15,21 +17,22 @@ postFix=""
 
 
 # For reading input from T2 (default):
-site="lcg.cscs.ch"
-se="storage01"
+#site="lcg.cscs.ch"
+#se="storage01"
 # or alternatively for reading from T3 (for legacy)
-#site="psi.ch"
-#se="t3dcachedb03"
+site="psi.ch"
+se="t3dcachedb03"
 
 # You should uncomment only one of the two, because data and MC production usually require different settings 
 listOfSamplesFile="postProcessing2016-Data.cfg"  #for data inputs
 #listOfSamplesFile="postProcessing2016-MC.cfg"   # for MC inputs
 
 
-isCrab=1
+isCrab=0
 inputPU="MyDataPileupHistogram.root"
 #GoldenJSON="$PWD/gold_runF.txt"  #produced, for example for runE, with: filterJSON.py --min=276831 --max=277420 --output=gold_runE.txt gold_json.txt
 GoldenJSON="$PWD/Cert_271036-282037_13TeV_PromptReco_Collisions16_JSON_NoL1T.txt"
+GoldenJSON="$PWD/json_final.txt"
 doSkimmingPruning=1 #1 as default; 0 for *_forQCD datasets (in data), which don't contain the necessary info to run the skimming and which are already pruned
 applyJSON=1     #0 for MC
 doFilterTxt=0   #0 for MC
@@ -612,6 +615,7 @@ if [[ "$1" = "mergeData" ]]; then
     # If this is not the case, the 'input' variable here may need to be set properly by hand
     # no automated yet to merge the three skim flavours... (un)comment out as necessary
     input="${outputFolder}/skimAndPrune/"
+    #input="${outputFolder}/"
     #input="${outputFolder}/QCDskimAndPrune/"
     #input="${outputFolder}/QCDMonoJetSkimAndPrune/"
 
@@ -624,8 +628,10 @@ if [[ "$1" = "mergeData" ]]; then
     inputFilesList="${tmpOutputDir}/fileList.txt"
 
     # Add other relevant strings here if you want to merge more than these 3 datasets
-    #datasets="MET HTMHT JetHT"
-    datasets="MET HTMHT JetHT SingleElectron SingleMuon SinglePhoton DoubleEG DoubleMuon MuonEG"
+#    datasets="MET HTMHT JetHT"
+#    datasets="MET HTMHT JetHT SingleElectron SingleMuon SinglePhoton DoubleEG DoubleMuon MuonEG"
+    datasets="MET HTMHT JetHT DoubleMuon"
+#    datasets="DoubleMuon"
 
     rootFileName="merged"
     for d in $datasets; do
