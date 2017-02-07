@@ -23,6 +23,7 @@
 #include "interface/MT2Analysis.h"
 #include "interface/MT2EstimateTree.h"
 #include "interface/MT2EstimateSigSyst.h"
+#include "interface/MT2EstimateAllSigSyst.h"
 #include "interface/MT2DrawTools.h"
 #include "interface/MT2Config.h"
 
@@ -38,7 +39,7 @@
 
 void randomizePoisson( MT2Analysis<MT2EstimateTree>* data );
 template <class T>
-MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg );
+MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg, std::string otherRegion="" );
 template <class T>
 MT2Analysis<T>* computeSigYield( const MT2Sample& sample, const MT2Config& cfg );
 template <class T>
@@ -73,7 +74,6 @@ int main( int argc, char* argv[] ) {
   std::string configFileName(argv[1]);
   MT2Config cfg(configFileName);
 
-
   bool onlyData = false;
   bool onlyMC   = false;
   bool onlySignal = false;
@@ -85,6 +85,12 @@ int main( int argc, char* argv[] ) {
     else {
       std::cout << "-> You passed a second argument that isn't 'data', nor 'MC', nor 'signal', so I don't know what to do about it." << std::endl;
     }
+  }
+
+  std::string signalName = "";
+  if( argc > 3 ) {
+    signalName = argv[3];
+    std::cout << "-> Running on signal: " << signalName << std::endl;
   }
 
   std::string outputdir = cfg.getEventYieldDir();
@@ -111,6 +117,17 @@ int main( int argc, char* argv[] ) {
 
 
     
+    std::vector< MT2Analysis<MT2EstimateTree>* > EventYield_incl;
+    for( unsigned i=0; i<fSamples.size(); ++i ) {
+      int this_id = fSamples[i].id;
+      if( this_id<600 ) continue; // skip everything that is not ZJets
+      if( this_id>=700 ) continue; //
+      EventYield_incl.push_back( computeYield<MT2EstimateTree>( fSamples[i], cfg, "13TeV_2016_inclusive"  ));
+    }
+    MT2Analysis<MT2EstimateTree>* EventYield_zjets_inclusive = mergeYields<MT2EstimateTree>( EventYield_incl, "13TeV_2016_inclusive", "ZJets_inclusive", 600, 699, "Z+jets" );
+    EventYield_zjets_inclusive->writeToFile(outputdir + "/ZJetsIncl.root");
+
+
     std::vector< MT2Analysis<MT2EstimateTree>* > EventYield;
     for( unsigned i=0; i<fSamples.size(); ++i ) {
       int this_id = fSamples[i].id;
@@ -120,17 +137,19 @@ int main( int argc, char* argv[] ) {
     }
 
 
+
     std::cout << "-> Done looping on samples. Start merging." << std::endl;
 
     std::cout << "     merging Top..." << std::endl;
     MT2Analysis<MT2EstimateTree>* EventYield_top   = mergeYields<MT2EstimateTree>( EventYield, cfg.regionsSet(), "Top", 300, 499 ); // ttbar, single top, ttW, ttZ...
     std::cout << "     merging QCD..." << std::endl;
-    MT2Analysis<MT2EstimateTree>* EventYield_qcd   = mergeYields<MT2EstimateTree>( EventYield, cfg.regionsSet(), "QCD", 101, 199 );
+    MT2Analysis<MT2EstimateTree>* EventYield_qcd   = mergeYields<MT2EstimateTree>( EventYield, cfg.regionsSet(), "QCD", 100, 199 );
     std::cout << "     merging WJets..." << std::endl;
     MT2Analysis<MT2EstimateTree>* EventYield_wjets = mergeYields<MT2EstimateTree>( EventYield, cfg.regionsSet(), "WJets", 500, 599, "W+jets" );
     std::cout << "     merging ZJets..." << std::endl;
     MT2Analysis<MT2EstimateTree>* EventYield_zjets = mergeYields<MT2EstimateTree>( EventYield, cfg.regionsSet(), "ZJets", 600, 699, "Z+jets" );
     
+
     //    MT2Analysis<MT2EstimateTree>* EventYield_other = mergeYields<MT2EstimateTree>( EventYield, cfg.regionsSet(), "Other", 700, 999, "Other" );
     std::cout << "-> Done merging." << std::endl;
 
@@ -139,6 +158,8 @@ int main( int argc, char* argv[] ) {
     yields.push_back( EventYield_zjets );
     yields.push_back( EventYield_top );
     //    yields.push_back( EventYield_other );
+
+
 
     if( cfg.dummyAnalysis() ) {
       MT2Analysis<MT2EstimateTree>* dataYield   = mergeYields<MT2EstimateTree>( EventYield, cfg.regionsSet(), "data", 100, 699 );
@@ -152,15 +173,24 @@ int main( int argc, char* argv[] ) {
 
 
   // load signal samples, if any
-  std::vector< MT2Analysis< MT2EstimateSigSyst>* > signals;
+  MT2Analysis<MT2EstimateAllSigSyst>* signalYield ;
+
+  std::vector< MT2Analysis< MT2EstimateAllSigSyst>* > signals;
   if( cfg.mcSamples()!="" && cfg.additionalStuff()!="noSignals" && !onlyData ) {
+    //  if( cfg.mcSamples()!="" && cfg.additionalStuff()!="noSignals" && !onlyData && onlySignal) {
 
     std::string samplesFileName = "../samples/samples_" + cfg.mcSamples() + ".dat";
     std::cout << std::endl << std::endl;
     std::cout << "-> Loading signal samples from file: " << samplesFileName << std::endl;
 
+    //   if( signalName == "" ) signalName = 9999;
+    
+    std::cout << "signal name " << signalName << std::endl;
+
+    //std::vector<MT2Sample> fSamples = MT2Sample::loadSamples(samplesFileName, signalName); // only signal (id>=1000)
     std::vector<MT2Sample> fSamples = MT2Sample::loadSamples(samplesFileName, 1000); // only signal (id>=1000)
 
+    
 
     if( fSamples.size()==0 ) {
 
@@ -169,19 +199,24 @@ int main( int argc, char* argv[] ) {
     } else {
     
       for( unsigned i=0; i<fSamples.size(); ++i ) 
-        signals.push_back( computeSigYield<MT2EstimateSigSyst>( fSamples[i], cfg ) );
+        signals.push_back( computeSigYield<MT2EstimateAllSigSyst>( fSamples[i], cfg ) );
     
-      std::cout << "     merging T1bbbb full scan..." << std::endl;
-      MT2Analysis<MT2EstimateSigSyst>* EventYield_T1bbbb   = mergeYields<MT2EstimateSigSyst>( signals, cfg.regionsSet(), "SMS_T1bbbb_fullScan", 1020, 1020 );
-      std::cout << "-> Done merging." << std::endl;
-
-      signals.push_back( EventYield_T1bbbb );
+//      std::cout << "     merging T1bbbb full scan..." << std::endl;
+//      MT2Analysis<MT2EstimateAllSigSyst>* EventYield_T1bbbb   = mergeYields<MT2EstimateAllSigSyst>( signals, cfg.regionsSet(), "SMS_T1bbbb_fullScan", 1020, 1020 );
+//      std::cout << "-> Done merging." << std::endl;
+//      signals.push_back( EventYield_T1bbbb );
 
     } // if samples != 0
 
+    std::cout << "Merging        signals" << std::endl;
+
+    signalYield   = mergeYields<MT2EstimateAllSigSyst>( signals, cfg.regionsSet(), signalName, 1000, 2000 ); //old t1bbbb 1200, 1249
+
+
   } // if mc samples
 
-  else if ( cfg.sigSamples()!="" && !onlyData ) {
+  else if ( cfg.sigSamples()!="" && !onlyData  ) {
+    //  else if ( cfg.sigSamples()!="" && !onlyData && onlySignal ) {
 
     std::string samplesFileName = "../samples/samples_" + cfg.sigSamples() + ".dat";
     std::cout << std::endl << std::endl;
@@ -196,16 +231,19 @@ int main( int argc, char* argv[] ) {
     } else {
 
       for( unsigned i=0; i<fSamples.size(); ++i )
-        signals.push_back( computeSigYield<MT2EstimateSigSyst>( fSamples[i], cfg ) );
+        signals.push_back( computeSigYield<MT2EstimateAllSigSyst>( fSamples[i], cfg ) );
 
-      std::cout << "     merging T1bbbb full scan..." << std::endl;
-      MT2Analysis<MT2EstimateSigSyst>* EventYield_T1bbbb   = mergeYields<MT2EstimateSigSyst>( signals, cfg.regionsSet(), "SMS_T1bbbb_fullScan", 1020, 1020 );
-      std::cout << "-> Done merging." << std::endl;
-
-      signals.push_back( EventYield_T1bbbb );
+//      std::cout << "     merging T1bbbb full scan..." << std::endl;
+//      MT2Analysis<MT2EstimateAllSigSyst>* EventYield_T1bbbb   = mergeYields<MT2EstimateAllSigSyst>( signals, cfg.regionsSet(), "SMS_T1bbbb_fullScan", 1020, 1020 );
+//      std::cout << "-> Done merging." << std::endl;
+//      signals.push_back( EventYield_T1bbbb );
 
     } // if samples != 0
     
+    std::cout << "Merging signals" << std::endl;
+    signalYield   = mergeYields<MT2EstimateAllSigSyst>( signals, cfg.regionsSet(), signalName, 1000, 2000 );
+
+
   } // if sig samples
   
 
@@ -218,7 +256,9 @@ int main( int argc, char* argv[] ) {
 
     //    std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, "JetHTMHT"); //, 1, 99 );
     //    std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, 1, 3 );
-    std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, -1, 0 );
+    // std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, -1, 0 );
+    // std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, "noDuplicates" );
+    std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, "merged" );
     if( samples_data.size()==0 ) {
       std::cout << "There must be an error: samples_data is empty!" << std::endl;
       exit(1209);
@@ -232,7 +272,7 @@ int main( int argc, char* argv[] ) {
     //dataYield = EventYield_data[0];
     //dataYield->setName("data");
     //dataYield   = mergeYields<MT2EstimateTree>( EventYield_data, cfg.regionsSet(), "data", 1, 3 );
-    dataYield   = mergeYields<MT2EstimateTree>( EventYield_data, cfg.regionsSet(), "data", -1, -1 );
+    dataYield   = mergeYields<MT2EstimateTree>( EventYield_data, cfg.regionsSet(), "data", -1, 10 );
 
     yields.push_back( dataYield );
 
@@ -250,14 +290,17 @@ int main( int argc, char* argv[] ) {
     yields[0]->writeToFile(outputdir + "/analyses.root");
   for( unsigned i=1; i<yields.size(); ++i )
     yields[i]->writeToFile(outputdir + "/analyses.root");
-  for( unsigned i=0; i<signals.size(); ++i )
-    signals[i]->writeToFile(outputdir + "/analyses.root");
+  //for( unsigned i=0; i<signals.size(); ++i )
+  //  signals[i]->writeToFile(outputdir + "/analyses.root");
   }
   else if( signals.size()>0 ){
-    signals[0]->writeToFile(outputdir + "/analyses.root");
-    for( unsigned i=1; i<signals.size(); ++i )
-      signals[i]->writeToFile(outputdir + "/analyses.root");
+    signalYield->writeToFile(outputdir + "/analyses.root");
+    //    signals[0]->writeToFile(outputdir + "/analyses.root");
+    //    for( unsigned i=1; i<signals.size(); ++i )
+    //    signals[i]->writeToFile(outputdir + "/analyses.root");
   }
+
+
   cfg.saveAs(outputdir + "/config.txt");
 
   return 0;
@@ -268,12 +311,11 @@ int main( int argc, char* argv[] ) {
 
 
 template <class T>
-MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg ) {
-
-  TFile* sigWgtFile = TFile::Open("/scratch/mmasciov/analysisCode_forMerge/analysis/SMS_T1bbbb_scale1fb.root");
-  TH2F* sigWgt = (TH2F*) sigWgtFile->Get("wgt");
+MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg, std::string otherRegion ) {
 
   std::string regionsSet = cfg.regionsSet();
+  if(otherRegion!="")
+    regionsSet = otherRegion;
 
   std::cout << std::endl << std::endl;
   std::cout << "-> Starting computation for sample: " << sample.name << std::endl;
@@ -334,14 +376,16 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg ) {
     
     myTree.GetEntry(iEntry);
     
-    //////    if( myTree.isData && !myTree.isGolden ) continue;
+    if( myTree.isData && !myTree.isGolden ) continue;
+    //For 18.1 ifb
+    //if( !(myTree.run<=276811 || (278820<=myTree.run && myTree.run<=279931)) )
+    //  continue;
 
     if( regionsSet!="13TeV_noCut" )
       if( !myTree.passSelection(cfg.additionalStuff()) ) continue;
 
     if ( myTree.nJet30==1 && !myTree.passMonoJetId(0) ) continue;
       
-
     float ht   = myTree.ht;
     float met  = myTree.met_pt;
     float minMTBmet = myTree.minMTBMet;
@@ -349,29 +393,48 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg ) {
     int nbjets = myTree.nBJet20;    
     float mt2  = (njets>1) ? myTree.mt2 : ht;
     //float mt2  = myTree.mt2;
-    
-    int GenSusyMScan1 = myTree.GenSusyMGluino;
-    int GenSusyMScan2 = myTree.GenSusyMNeutralino;
-    
+
+    int GenSusyMScan1=0;
+    int GenSusyMScan2=0;
+    if(  myTree.evt_id > 999){
+      GenSusyMScan1 = myTree.GenSusyMGluino;
+      GenSusyMScan2 = myTree.GenSusyMNeutralino;
+    }
+   
     //Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi()*myTree.puWeight;
-    //Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb;//*cfg.lumi();
-    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi();
+    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb;//*cfg.lumi();
+    //Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi();
     Double_t weight_syst = 1.;
 
-    if( myTree.evt_id > 1000 )
-      weight_syst = myTree.weight_isr;
-    
-    float sig_scale1fb=0;
-    if( myTree.evt_id >= 1020  && myTree.evt_id < 2000){ // T1bbbb full scan
-      
-      int thisBinX = sigWgt->GetXaxis()->FindBin( GenSusyMScan1 );
-      int thisBinY = sigWgt->GetYaxis()->FindBin( GenSusyMScan2 );
-      
-      sig_scale1fb = sigWgt->GetBinContent( thisBinX, thisBinY );
+    //    if( !myTree.isData ){
+    //      weight *= myTree.weight_btagsf;
+    //      weight *= myTree.weight_lepsf;
+    //    }
 
-      weight = sig_scale1fb*cfg.lumi();
-  
+    if( !myTree.isData ){
+      weight *= myTree.weight_btagsf;
+      weight *= myTree.weight_lepsf2017;
+
+      // // ETH has a branch witht he average weight stored:
+      // // Also we have a different numbering scheme...
+      // if (myTree.evt_id == 302 || myTree.evt_id == 303 || myTree.evt_id == 304) //singleLep T/Tbar, Dilep
+      // 	weight *= myTree.weight_isr / myTree.weight_isr_norm;
+
+      ///AMERICAN WAY
+      if (myTree.evt_id == 301 || myTree.evt_id == 302)
+      	weight *= myTree.weight_isr/0.909; // nominal
+      else if (myTree.evt_id == 303) 
+      	weight *= myTree.weight_isr/0.895;
+
     }
+
+
+    //   if( myTree.evt_id > 1000 )
+      //     weight_syst = myTree.weight_isr;
+    
+    //The filters to be applied to MC only
+    if( !(myTree.nVert>0 && myTree.Flag_HBHENoiseFilter==1 && myTree.Flag_HBHENoiseIsoFilter==1 && myTree.Flag_EcalDeadCellTriggerPrimitiveFilter==1 && myTree.Flag_goodVertices==1 && myTree.Flag_eeBadScFilter==1 && myTree.Flag_badChargedHadronFilter==1)) continue;
+
 
     if( myTree.isData ) {
       
@@ -379,33 +442,25 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg ) {
 
     }
 
+    //crazy events! To be piped into a separate txt file
+    if(myTree.jet_pt[0] > 13000){
+      std::cout << "Rejecting weird event at run:lumi:evt = " << myTree.run << ":" << myTree.lumi << ":" << myTree.evt << std::endl;
+      continue;
+    }
+    //NEW check if is there is a nan
+    if( isnan(myTree.ht) || isnan(myTree.met_pt) ||  isinf(myTree.ht) || isinf(myTree.met_pt)  ){
+      std::cout << "Rejecting nan/inf event at run:lumi:evt = " << myTree.run << ":" << myTree.lumi << ":" << myTree.evt << std::endl;
+      continue;
+    }
+
+    if( myTree.nJet200MuFrac50DphiMet > 0 ) continue;
+
+    if( myTree.met_miniaodPt/myTree.met_caloPt > 5.0 ) continue;
+
     if (myTree.isData) {
 
-      int id = sample.id;
-      // sample IDs for data:
-      // JetHT = 1
-      // HTMHT = 2
-      // MET   = 3
-
-    //  if( njets==1 ) {
-    //
-    //    if( !( id==3 && myTree.HLT_PFMETNoMu90_PFMHTNoMu90) ) continue;
-    //
-    //  } else { // njets>=2
-    //
-    //    if( ht>1000. ) {
-    //      if( !( id==1 && myTree.HLT_PFHT800) ) continue;
-    //    } else if( ht>575. ) {
-    //      if( !( id==2 && myTree.HLT_PFHT350_PFMET100 )  ) continue;
-    //    } else if( ht>450. ) {
-    //      if( !( id==2 && myTree.HLT_PFHT350_PFMET100 )  ) continue;
-    //    } else if( ht>200. ) {
-    //      if( !( id==3 && myTree.HLT_PFMETNoMu90_PFMHTNoMu90  )  ) continue;
-    //    }
-    //
-    //  }
-
-      if ( !(myTree.HLT_PFMETNoMu90_PFMHTNoMu90 || myTree.HLT_PFHT800 || myTree.HLT_PFHT350_PFMET100) ) continue;
+      if ( !(myTree.HLT_PFMET120_PFMHT120 || myTree.HLT_PFHT900 || myTree.HLT_PFHT300_PFMET110 || myTree.HLT_PFJet450 || myTree.HLT_PFMETNoMu120_PFMHTNoMu120 ) ) continue;
+      //      if ( !(myTree.HLT_PFMET100_PFMHT100 || myTree.HLT_PFHT800 || myTree.HLT_PFHT300_PFMET100) ) continue;
 
     } // if is data
 
@@ -419,7 +474,7 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg ) {
       thisEstimate->assignVar( "jet1_pt",  myTree.jet1_pt );
       thisEstimate->assignVar( "jet2_pt",  myTree.jet2_pt );
       thisEstimate->assignVar( "mht",  myTree.mht_pt );
-      
+
       if( cfg.additionalStuff()=="qgVars" ) {
 	
 	// initialize
@@ -503,7 +558,7 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg ) {
 	float nTrueB=0.;
 	float nTrueC=0.;
 	
-	for( unsigned ipart=0; ipart<myTree.ngenPart; ++ipart ) {
+	for( int ipart=0; ipart<myTree.ngenPart; ++ipart ) {
 	  
 	  if( myTree.genPart_pt[ipart] < 20. ) continue;
 	  if( abs(myTree.genPart_eta[ipart])>2.5 ) continue;
@@ -519,7 +574,7 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg ) {
 	
 	float nTrueBJ=0.;
 	
-	for( unsigned ijet=0; ijet<myTree.njet; ++ijet ) {
+	for( int ijet=0; ijet<myTree.njet; ++ijet ) {
 	  
 	  if( myTree.jet_pt[ijet] <20. ) continue;
 	  if( abs(myTree.jet_eta[ijet])>2.5 ) continue;
@@ -564,13 +619,26 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg ) {
 template <class T>
 MT2Analysis<T>* computeSigYield( const MT2Sample& sample, const MT2Config& cfg ) {
 
-  TFile* sigWgtFile = TFile::Open("/scratch/mmasciov/analysisCode_forMerge/analysis/SMS_T1bbbb_scale1fb.root");
-  TH2F* sigWgt = (TH2F*) sigWgtFile->Get("wgt");
+  bool dogenmet = true;
+
+  TString sigSampleName(sample.name);
+  TFile* sigXSFile;
+  if(sigSampleName.Contains("T1qqqq") || sigSampleName.Contains("T1bbbb") || sigSampleName.Contains("T1tttt"))
+    sigXSFile = TFile::Open("/shome/casal/SUSxsecs/SUSYCrossSections13TeVgluglu.root");
+  else if(sigSampleName.Contains("T2bb") || sigSampleName.Contains("T2tt"))
+    sigXSFile = TFile::Open("/shome/casal/SUSxsecs/SUSYCrossSections13TeVstopstop.root");
+  else
+    sigXSFile = TFile::Open("/shome/casal/SUSxsecs/SUSYCrossSections13TeVsquarkantisquark.root");
+
+  TH1F* sigXS = (TH1F*) sigXSFile->Get("xs");
+
+  if(sigSampleName.Contains("T2qq"))
+    sigXS->Scale(8./10);
 
   std::string regionsSet = cfg.regionsSet();
-
+  
   std::cout << std::endl << std::endl;
-  std::cout << "-> Starting computation for sample: " << sample.name << std::endl;
+  std::cout << "-> Starting computation for sample (computeSigYield): " << sample.name << std::endl;
 
   TFile* file = TFile::Open(sample.file.c_str());
   std::cout << "-> Getting mt2 tree from file: " << sample.file << std::endl;
@@ -596,92 +664,160 @@ MT2Analysis<T>* computeSigYield( const MT2Sample& sample, const MT2Config& cfg )
     
     myTree.GetEntry(iEntry);
     
-    //////    if( myTree.isData && !myTree.isGolden ) continue;
+    bool passGenMET=false;
+    if(dogenmet) passGenMET =true;
+    
+    bool passRecoMET=true;
 
-    if( regionsSet!="13TeV_noCut" )
-      if( !myTree.passSelection(cfg.additionalStuff()) ) continue;
+//    if( regionsSet!="13TeV_noCut" )
+//      if( !myTree.passSelection(cfg.additionalStuff()) ) continue;
 
-    if ( myTree.nJet30==1 && !myTree.passMonoJetId(0) ) continue;
+    if( regionsSet!="13TeV_noCut" ){
+     
+      if( !myTree.passSelection(cfg.additionalStuff()) ) passRecoMET=false;
       
+      if(dogenmet)
+	if( !myTree.passSelection("genmet") ) passGenMET=false;      
+      
+      if (!passGenMET && !passRecoMET) continue;
+
+    }
+      
+
+    if( myTree.nJet30==1 && !myTree.passMonoJetId(0) ) continue;
+    if( myTree.nJet20BadFastsim > 0 ) continue;
+    if( myTree.nJet200MuFrac50DphiMet > 0 ) continue; // new RA2 filter
+
 
     float ht   = myTree.ht;
     float met  = myTree.met_pt;
+    float met_gen  = myTree.met_genPt;
     float minMTBmet = myTree.minMTBMet;
     int njets  = myTree.nJet30;
     int nbjets = myTree.nBJet20;    
     float mt2  = (njets>1) ? myTree.mt2 : ht;
-    //float mt2  = myTree.mt2;
+    float mt2_genmet;
+
+    if(dogenmet)
+      mt2_genmet = (njets>1) ? myTree.mt2_genmet : ht;
+
+    float weight_isr = myTree.weight_isr    / myTree.weight_isr_av;
+    float isr_UP     = myTree.weight_isr_UP / myTree.weight_isr_UP_av;
+    float isr_DN     = myTree.weight_isr_DN / myTree.weight_isr_DN_av;
+
+    float weight_lepsf = myTree.weight_lepsf2017;
+    float lepsf_UP     = myTree.weight_lepsf2017_UP;
+    float lepsf_DN     = myTree.weight_lepsf2017_DN;
+
+    float weight_btagsf = myTree.weight_btagsf;
+    float btag_heavy_UP = myTree.weight_btagsf_heavy_UP;
+    float btag_heavy_DN = myTree.weight_btagsf_heavy_DN;
+    float btag_light_UP = myTree.weight_btagsf_light_UP;
+    float btag_light_DN = myTree.weight_btagsf_light_DN;
     
-    int GenSusyMScan1 = myTree.GenSusyMGluino;
-    int GenSusyMScan2 = myTree.GenSusyMNeutralino;
-    
+
+
+    int GenSusyMScan1=0;
+    int GenSusyMScan2=0;
+    if(  myTree.evt_id > 999){
+     
+      if(sigSampleName.Contains("T2qq")){
+	
+	GenSusyMScan1 = myTree.GenSusyMSquark;
+	GenSusyMScan2 = myTree.GenSusyMNeutralino;
+
+      }
+      else if(sigSampleName.Contains("T2bb")){
+	
+	GenSusyMScan1 = myTree.GenSusyMSbottom;
+	GenSusyMScan2 = myTree.GenSusyMNeutralino;
+	
+      }
+      else if(sigSampleName.Contains("T2tt")){
+	
+	GenSusyMScan1 = myTree.GenSusyMStop;
+	GenSusyMScan2 = myTree.GenSusyMNeutralino;
+
+      }
+      else{
+      
+      GenSusyMScan1 = myTree.GenSusyMGluino;
+      GenSusyMScan2 = myTree.GenSusyMNeutralino;
+      
+//      GenSusyMScan1 = myTree.GenSusyMScan1;
+//      GenSusyMScan2 = myTree.GenSusyMScan2;
+      
+      }
+
+    }
+ 
     //Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi()*myTree.puWeight;
-    //Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb;//*cfg.lumi();
-    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi();
+    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb;//*cfg.lumi();
+    //Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi(); //Keeping normalization to luminosity for signal?
     Double_t weight_syst = 1.;
 
-    if( myTree.evt_id > 1000 )
-      weight_syst = myTree.weight_isr;
+    //weight = 1000./nentries*cfg.lumi(); //Exceptionally for signal from muricans 
+
+    if( !myTree.isData ){
+      weight *= weight_btagsf;
+      weight *= weight_lepsf;
+      weight *= weight_isr ;
+    }
+
+
+//    if( myTree.evt_id > 1000 )
+//      weight_syst = myTree.weight_isr;
     
-    float sig_scale1fb=0;
-    if( myTree.evt_id >= 1020  && myTree.evt_id < 2000){ // T1bbbb full scan
-      
-      int thisBinX = sigWgt->GetXaxis()->FindBin( GenSusyMScan1 );
-      int thisBinY = sigWgt->GetYaxis()->FindBin( GenSusyMScan2 );
-      
-      sig_scale1fb = sigWgt->GetBinContent( thisBinX, thisBinY );
 
-      weight = sig_scale1fb*cfg.lumi();
-  
-    }
-
-    if( myTree.isData ) {
-      
-      if( !myTree.passFilters() ) continue;
-
-    }
-
-    if (myTree.isData) {
-
-      int id = sample.id;
-      // sample IDs for data:
-      // JetHT = 1
-      // HTMHT = 2
-      // MET   = 3
-
-    //  if( njets==1 ) {
-    //
-    //    if( !( id==3 && myTree.HLT_PFMETNoMu90_PFMHTNoMu90) ) continue;
-    //
-    //  } else { // njets>=2
-    //
-    //    if( ht>1000. ) {
-    //      if( !( id==1 && myTree.HLT_PFHT800) ) continue;
-    //    } else if( ht>575. ) {
-    //      if( !( id==2 && myTree.HLT_PFHT350_PFMET100 )  ) continue;
-    //    } else if( ht>450. ) {
-    //      if( !( id==2 && myTree.HLT_PFHT350_PFMET100 )  ) continue;
-    //    } else if( ht>200. ) {
-    //      if( !( id==3 && myTree.HLT_PFMETNoMu90_PFMHTNoMu90  )  ) continue;
-    //    }
-    //
-    //  }
-
-      if ( !(myTree.HLT_PFMETNoMu90_PFMHTNoMu90 || myTree.HLT_PFHT800 || myTree.HLT_PFHT350_PFMET100) ) continue;
-
-    } // if is data
-
+    float sig_xs=0.;
+    if( myTree.evt_id >= 1000  && myTree.evt_id < 2000){
    
+      int thisBinX = sigXS->FindBin( GenSusyMScan1 );
+     
+      sig_xs = sigXS->GetBinContent(thisBinX);
+     
+      weight *= sig_xs;
+   
+    }
+    
+    
     T* thisEstimate = analysis->get( ht, njets, nbjets, minMTBmet, mt2 );
-    //T* thisEstimate = analysis->get( ht, njets, nbjets, met, minMTBmet, mt2 );
     if( thisEstimate==0 ) continue;
     
-    thisEstimate->yield->Fill( mt2, weight );
-    thisEstimate->yield3d->Fill( mt2, GenSusyMScan1, GenSusyMScan2, weight );
-    
-    thisEstimate->yield3d_systUp->Fill( mt2, GenSusyMScan1, GenSusyMScan2, weight*(1.+(weight_syst-1.)));
-    thisEstimate->yield3d_systDown->Fill( mt2, GenSusyMScan1, GenSusyMScan2, weight*(1.-(weight_syst-1.)));
+    if(passRecoMET){
+      
+      thisEstimate->yield->Fill( mt2, weight );
+      thisEstimate->yield3d->Fill( mt2, GenSusyMScan1, GenSusyMScan2, weight );
+      
+      //    thisEstimate->yield3d_systUp->Fill( mt2, GenSusyMScan1, GenSusyMScan2, weight*(1.+(weight_syst-1.)));
+      //    thisEstimate->yield3d_systDown->Fill( mt2, GenSusyMScan1, GenSusyMScan2, weight*(1.-(weight_syst-1.)));
+      //    thisEstimate->yield3d_isr_UP->Fill( mt2, GenSusyMScan1, GenSusyMScan2, weight*(1.+(isr-1.)));
+      //    thisEstimate->yield3d_isr_DN->Fill( mt2, GenSusyMScan1, GenSusyMScan2, weight*(1.-(isr-1.)));
+      //    thisEstimate->yield3d_btag_heavy_UP->Fill( mt2, GenSusyMScan1, GenSusyMScan2, weight*(1.+(btag_heavy_UP-1.)));
+      //    thisEstimate->yield3d_btag_heavy_DN->Fill( mt2, GenSusyMScan1, GenSusyMScan2, weight*(1.-(btag_heavy_DN-1.)));
+      //    thisEstimate->yield3d_btag_light_UP->Fill( mt2, GenSusyMScan1, GenSusyMScan2, weight*(1.+(btag_light_UP-1.)));
+      //    thisEstimate->yield3d_btag_light_DN->Fill( mt2, GenSusyMScan1, GenSusyMScan2, weight*(1.-(btag_light_DN-1.)));
 
+      thisEstimate->yield3d_isr_UP->Fill( mt2, GenSusyMScan1, GenSusyMScan2, weight/weight_isr*isr_UP);
+      thisEstimate->yield3d_isr_DN->Fill( mt2, GenSusyMScan1, GenSusyMScan2, weight/weight_isr*isr_DN);
+
+      thisEstimate->yield3d_lepsf_UP->Fill( mt2, GenSusyMScan1, GenSusyMScan2, weight/weight_lepsf*lepsf_UP);
+      thisEstimate->yield3d_lepsf_DN->Fill( mt2, GenSusyMScan1, GenSusyMScan2, weight/weight_lepsf*lepsf_DN);
+
+      thisEstimate->yield3d_btag_heavy_UP->Fill( mt2, GenSusyMScan1, GenSusyMScan2, weight/weight_btagsf*btag_heavy_UP);
+      thisEstimate->yield3d_btag_heavy_DN->Fill( mt2, GenSusyMScan1, GenSusyMScan2, weight/weight_btagsf*btag_heavy_DN);
+            
+      thisEstimate->yield3d_btag_light_UP->Fill( mt2, GenSusyMScan1, GenSusyMScan2, weight/weight_btagsf*btag_light_UP);
+      thisEstimate->yield3d_btag_light_DN->Fill( mt2, GenSusyMScan1, GenSusyMScan2, weight/weight_btagsf*btag_light_DN);
+                             
+    }
+    
+    if(dogenmet && passGenMET){
+      
+      thisEstimate->yield3d_genmet->Fill( mt2_genmet, GenSusyMScan1, GenSusyMScan2, weight );
+
+    }
+    
   } // for entries
     
   //ofs.close();

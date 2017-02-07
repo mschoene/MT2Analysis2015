@@ -1,3 +1,0 @@
-regionsSet 13TeV_CSA14
-mcSamples CSA14_skimprune
-dataSamples datatest

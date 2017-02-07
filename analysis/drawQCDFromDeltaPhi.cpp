@@ -22,17 +22,13 @@
 
 bool closureTest = false;
 
+bool onlyUseUpToRunG = true; // only use up to run G for rphi, fj, rb
+float lumiRatioGtoH = 27.70/36.46;
+int lastRunG = 280385;
+
 //float prescales[3] = {7000., 180.0, 60.0}; // 2015
-//float prescales[3] = { 973., 125.0, 31.5}; // 211/ipb
-//float prescales[3] = {1046., 137.9, 34.7}; // 589/ipb
-//float prescales[3] = {1198., 160.8, 40.5}; // 804/ipb
-//float prescales[3] = {2100., 246., 61.5}; // 2.1 /fb
-//float prescales[3] = {2644., 298., 74.7}; // 4.0/fb
-//float prescales[3] = {1534., 298., 74.7}; // 4.0/fb (HLT_HT 125 OR 200)
-//float prescales[3] = {2868., 321., 80.4}; // all RunB 5.4/fb
-//float prescales[3] = {3484., 344.6, 86.2}; // 5.89 (B) + 1.76 (C) fb-1 (JECv6, eta2.4)
-//float prescales[3] = {3721., 353.0, 88.3}; // 5.89 (B) + 2.65 (C) + 0.65 (D) fb-1
-float prescales[3] = {3753., 354.4, 88.6}; // 5.94 (B) + 2.65 (C) + 4.33 (D) fb-1
+float prescales[3] = {7900., 440.6, 110.2}; // up to run G 27.7 fb-1
+//float prescales[3] = {9200., 460.6, 115.2}; // full 2016
 
 
 void compareFractions( const MT2Config& cfg, const std::string& outputdir, const std::string& dataFile, const std::string& analysisName, const std::string& xaxisName, const std::string& yaxisName, bool logPlot, const std::string& postfix="" );
@@ -83,18 +79,26 @@ int main( int argc, char* argv[] ) {
   MT2Analysis<MT2EstimateTree>* qcdTree_mc   = MT2Analysis<MT2EstimateTree>::readFromFile( qcdCRdir + "/mc.root",   "qcdCRtree" );
   MT2Analysis<MT2EstimateTree>* qcdTree_data = MT2Analysis<MT2EstimateTree>::readFromFile( qcdCRdir + "/data.root", "qcdCRtree" );
 
+  std::string runRange = "";
+  if (onlyUseUpToRunG)
+    runRange = Form("&&(run<=%d||ht>1000)",lastRunG);
+
   MT2Analysis<MT2EstimateTree>* mcTruth;
-
-
   MT2Analysis<MT2EstimateTree>* data  ;
   MT2Analysis<MT2EstimateTree>* nonQCD;
   if( closureTest ) { // in validation region we also use id==152
-    mcTruth = MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( "mcTruth", cfg.regionsSet(), qcdTree_mc  , 1, 100, 200 , "(id>150&&(id>151||ht<450)&&(id>152||ht<575)&&(id>153||ht<1000)&&(id>154||ht<1500)) && id<200 && mt2>100 && mt2<200. && deltaPhiMin>0.3"); // signal region for mcTruth
-    data    = MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( "data"   , cfg.regionsSet(), qcdTree_data, 1, 100, 200 , "id==1   && mt2>100. && mt2<200. && deltaPhiMin>0.3"         ); // signal region for data
+    ////    mcTruth = MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( "mcTruth", cfg.regionsSet(), qcdTree_mc  , 1, 100, 200 , "(id>150&&(id>151||ht<450)&&(id>152||ht<575)&&(id>153||ht<1000)&&(id>154||ht<1500)) && id<200 && mt2>100 && mt2<200. && deltaPhiMin>0.3"); // signal region for mcTruth
+    mcTruth = MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( "mcTruth", cfg.regionsSet(), qcdTree_mc  , 1, 100, 200 , "(id>150 && id<200 && mt2>100 && mt2<200. && deltaPhiMin>0.3)"); // signal region for mcTruth
+    //    mcTruth = MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( "mcTruth", cfg.regionsSet(), qcdTree_mc  , 1, 100, 200 , "(id>150&&(id>152||ht<450)&&(id>153||ht<575)&&(id>154||ht<1000)&&(id>155||ht<1500)) && id<200 && mt2>100 && mt2<200. && deltaPhiMin>0.3"); // signal region for mcTruth
+    data    = MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( "data"   , cfg.regionsSet(), qcdTree_data, 1, 100, 200 , "((id&1)==1"+runRange+") && mt2>100. && mt2<200. && deltaPhiMin>0.3"         ); // signal region for data
+    //// nonQCD  = MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( "nonQCD" , cfg.regionsSet(), qcdTree_mc  , 1, 100, 200 , "(id>=300 || id<=0) && mt2>100. && mt2<200. && deltaPhiMin>0.3"         ); // signal region for nonQCD mcTruth
     nonQCD  = MT2EstimateTree::makeRebinnedAnalysisFromInclusiveTree( "nonQCD" , cfg.regionsSet(), qcdTree_mc  , 1, 100, 200 , "id>=300 && mt2>100. && mt2<200. && deltaPhiMin>0.3"         ); // signal region for nonQCD mcTruth
+
   }
   else
-    mcTruth = MT2EstimateTree::makeAnalysisFromInclusiveTree( "mcTruth", cfg.regionsSet(), qcdTree_mc  , "(id>150&&(id>151||ht<450)&&(id>152||ht<575)&&(id>153||ht<1000)&&(id>154||ht<1500)) && id<200 && mt2>200. && deltaPhiMin>0.3" ); // signal region for mcTruth
+    //mcTruth = MT2EstimateTree::makeAnalysisFromInclusiveTree( "mcTruth", cfg.regionsSet(), qcdTree_mc  , "(id>150&&(id>152||ht<450)&&(id>153||ht<575)&&(id>154||ht<1000)&&(id>155||ht<1500)) && id<200 && mt2>200. && deltaPhiMin>0.3 && (met>250 || ht>1000)" ); // signal region for mcTruth
+    mcTruth = MT2EstimateTree::makeAnalysisFromInclusiveTree( "mcTruth", cfg.regionsSet(), qcdTree_mc  , "id> 10 && id<200 && mt2>200. && deltaPhiMin>0.3 && (met>250 || ht>1000)" ); // signal region for mcTruth  
+    ////mcTruth = MT2EstimateTree::makeAnalysisFromInclusiveTree( "mcTruth", cfg.regionsSet(), qcdTree_mc  , "(id>150&&(id>151||ht<450)&&(id>152||ht<575)&&(id>153||ht<1000)&&(id>154||ht<1500)) && id<200 && mt2>200. && deltaPhiMin>0.3 && (met>250 || ht>1000)" ); // signal region for mcTruth
 
 
   MT2Analysis<MT2Estimate>* estimateMC     = MT2Analysis<MT2Estimate>::readFromFile( mcFile  , "qcdEstimate" );
@@ -186,7 +190,7 @@ void compareFractions( const MT2Config& cfg, const std::string& outputdir, const
     h1_data->Draw("p same norm");
 
 
-    TPaveText* labelTop = MT2DrawTools::getLabelTop( cfg.lumi() );
+    TPaveText* labelTop = MT2DrawTools::getLabelTop( cfg.lumi()*(onlyUseUpToRunG ? lumiRatioGtoH : 1.0) );
     labelTop->Draw("same");
     // //TPaveText* labelCMS = MT2DrawTools::getLabelCMS();
     // //TPaveText* labelCMS = MT2DrawTools::getLabelCMS("CMS Unpublished");
@@ -314,17 +318,17 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
 
       TH1D* h_nonQCD;
       if ( doClosureTestData ){ 
-	float ps = 1.;
+	float ps = 1./(onlyUseUpToRunG ? lumiRatioGtoH : 1.);
 	if     ( iMT2->htMin() < 300. ) ps = prescales[0];
 	else if( iMT2->htMin() < 500. ) ps = prescales[1];
 	else if( iMT2->htMin() < 600. ) ps = prescales[2];
 
 	// apply scale factors
 	float sf = 1.;  // 2015 numbers from lost lepton from Dominick. Confirmed in zll from Myriam
-	if     ( iMT2->htMin() < 500.  ) sf = 0.97; // prescale
-	else if( iMT2->htMin() < 1000. ) sf = 0.85;
-	else if( iMT2->htMin() < 1500. ) sf = 0.82;
-	else                             sf = 0.57;
+	// if     ( iMT2->htMin() < 500.  ) sf = 0.97; // prescale
+	// else if( iMT2->htMin() < 1000. ) sf = 0.85;
+	// else if( iMT2->htMin() < 1500. ) sf = 0.82;
+	// else                             sf = 0.57;
 
 	h_nonQCD = nonQCD->get(*iMT2)->yield;
 	h_nonQCD->Scale(lumi/ps*sf);
@@ -625,7 +629,7 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
   
   TLine* lHT[4];
   for( int iHT=1; iHT < 5; iHT++ ){
-    lHT[iHT-1] = new TLine(11*iHT, -3, 11*iHT, yMax );
+    lHT[iHT-1] = new TLine(7*iHT+4*(iHT-1), -3, 7*iHT+4*(iHT-1), yMax );
     lHT[iHT-1]->SetLineColor(kBlack);
     lHT[iHT-1]->SetLineStyle(3);
     lHT[iHT-1]->SetLineWidth(2);
@@ -635,7 +639,7 @@ void drawClosure( const std::string& outputdir, MT2Analysis<MT2Estimate>* estima
 
   int nHTRegions = 5;
   std::vector< std::string > htRegions;
-  htRegions.push_back("H_{T} [200,450] GeV");
+  htRegions.push_back("H_{T} [250,450] GeV");
   htRegions.push_back("H_{T} [450,575] GeV");
   htRegions.push_back("H_{T} [575,100] GeV");
   htRegions.push_back("H_{T} [1000,1500] GeV");

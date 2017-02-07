@@ -3,99 +3,127 @@ from array import array
 import os
 from math import sqrt
 
-ROOT.gSystem.Load("/mnt/t3nfs01/data01/shome/casal/ana743/src/MT2DrawTools_cc")
+# this was created when MT2DrawTools could be compiled standalone
+ROOT.gSystem.Load("/mnt/t3nfs01/data01/shome/mschoene/8_0_12_analysisPlayArea/src/mschoene_newBinning/MT2DrawTools_cc")
 from ROOT import MT2DrawTools
 
-lumi = 12.9
+lumi = 27.7
 
 MT2DrawTools.setStyle()
 lumilabel = MT2DrawTools.getLabelTop(lumi)
 
-# 211/pb
-#f = ROOT.TFile.Open("dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/pandolf/MT2production/80X/PostProcessed/data2016_v3/JetHT_Run2016B_PromptReco_v2_post.root")
-# 589/pb
-#f = ROOT.TFile.Open("dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/mangano/babies/80X/MT2/PostProcessed/data27May_v1/JetHT_Run2016B_PromptReco_v2_po0st.root")
-# 804/pb
-#f = ROOT.TFile.Open("dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/mangano/babies/80X/MT2/PostProcessed/data07June_JetHT_v1/JetHT_Run2016B_PromptReco_v2_post.root")
 
-#t = f.Get("mt2")
+OVERWRITE = False # use cached files if they exist, if true recreate cached files
 
+base_dir = "dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/casal/MT2production/80X/PostProcessed/prodNov08_allRuns_forQCD/"
 
-t = ROOT.TChain("mt2")
+# can contain subdirs, and wildcards
+# if separated in chunks, they will be cached for posible quick access later
+### re-reco up to runG 27.7/fb ###
+files = [ "JetHT_Run2016B_23Sep2016_v3*.root", "JetHT_Run2016C_23Sep2016_v1*.root", "JetHT_Run2016D_23Sep2016_v1*.root", "JetHT_Run2016E_23Sep2016_v1*.root", "JetHT_Run2016F_23Sep2016_v1*.root", "JetHT_Run2016G_23Sep2016_v1*.root" ]
 
-# 2.07/fb
-#t.Add("dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/mangano/MT2production/80X/PostProcessed/data13June_271036-274421_newCFG_v1/JetHT_Run2016B*.root")
-
-# 2.07 + 1.89 /fb
-#t.Add("dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/mangano/MT2production/80X/PostProcessed/data13June_271036-274421_newCFG_v1/JetHT_Run2016B*.root")
-#t.Add("dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/mangano/MT2production/80X/PostProcessed/prodJune21_274422-275125_forQCD_v1_v2/JetHT_Run2016B*.root")
-
-# all runB 5.4/fb
-#t.Add("dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/mangano/MT2production/80X/PostProcessed/prodJune30_allRunB_forQCD_v1//JetHT_Run2016B*.root")
-
-# JECv6, eta2.4,  5.89 (B) + 1.76 (C) /fb
-#t.Add("dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/mangano/MT2production/80X/PostProcessed/prodJuly08_runB_forQCD_v1//JetHT_Run2016B*.root")
-#t.Add("dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/mangano/MT2production/80X/PostProcessed/prodJuly08_runC_forQCD_v1//JetHT_Run2016C*.root")
-
-# 5.94 (B) + 2.646 (C) + 0.649 (D) = 9.24/fb
-#t.Add("dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/mangano/MT2production/80X/PostProcessed/prodJuly08_runB_forQCD_v1/JetHT_Run2016B*.root")
-#t.Add("dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/mangano/MT2production/80X/PostProcessed/prodJuly15_runC_all_forQCD_v1//JetHT_Run2016C*.root")
-#t.Add("dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/mangano/MT2production/80X/PostProcessed/prodJuly15_runD_276311-276384_forQCD_v1/JetHT_Run2016D*.root")
-
-# 5.940 (B) + 2.646 (C) + 4.330 (D) = 12.92/fb
-#t.Add("dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/mangano/MT2production/80X/PostProcessed/prodJuly15_runB_forQCD_v1/JetHT_Run2016B*.root") #one file missing
-t.Add("dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/mangano/MT2production/80X/PostProcessed/prodJuly08_runB_forQCD_v1/JetHT_Run2016B*.root")
-t.Add("dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/mangano/MT2production/80X/PostProcessed/prodJuly15_runC_all_forQCD_v1//JetHT_Run2016C*.root")
-t.Add("dcap://t3se01.psi.ch:22125//pnfs/psi.ch/cms/trivcat/store/user/mangano/crab/MT2_8_0_11/prodJuly19_runD_276311-276811_forQCD_v1/JetHT_Run2016D*.root")
+### full 2016 re-reco dataset ###
+#files = [ "JetHT_Run2016*.root" ]
 
 
-ht800 = ROOT.TH1F("ht800","ht800",68,300,2000)
-ht475 = ROOT.TH1F("ht475","ht475",68,300,2000)
-ht350 = ROOT.TH1F("ht350","ht350",68,300,2000)
-ht125 = ROOT.TH1F("ht125","ht125",68,300,2000)
+def getHistos(base, afile, ow): # will return [ht900, ht475, ht350, ht125]
 
-t.Draw("ht>>ht800","isGolden && HLT_PFHT800"         , "q");  ht800.Sumw2()
-t.Draw("ht>>ht475","isGolden && HLT_PFHT475_Prescale", "q");  ht475.Sumw2() 
-t.Draw("ht>>ht350","isGolden && HLT_PFHT350_Prescale", "q");  ht350.Sumw2() 
-t.Draw("ht>>ht125","isGolden && HLT_PFHT125_Prescale", "q");  ht125.Sumw2() 
-#t.Draw("ht>>ht125","isGolden && (HLT_PFHT125_Prescale||HLT_PFHT200_Prescale)", "q");  ht125.Sumw2() 
+    dirName = base.rstrip("/").split("/")[-1]
+    if ( not os.path.isdir(dirName) ):
+        os.mkdir(dirName)
+
+    theFile = dirName + "/" + afile.replace("*","_a_")
+    if ( not theFile.endswith(".root") ):
+        theFile += ".root"
+    subname = theFile.rstrip(".root").split("/")[-1]
+    
+    if ( not ow and os.path.isfile(theFile) ): #get histos from cached file
+        print "reading from cached file", theFile
+        rfile = ROOT.TFile(theFile, "READ")
+        ROOT.gROOT.cd()
+        return [rfile.Get("ht900"+"_"+subname).Clone(), 
+                rfile.Get("ht475"+"_"+subname).Clone(), 
+                rfile.Get("ht350"+"_"+subname).Clone(), 
+                rfile.Get("ht125"+"_"+subname).Clone() ]
+
+    else:
+
+        print "creating histos from", base+"/"+afile
+
+        t = ROOT.TChain("mt2")
+        t.Add(base+"/"+afile)
+   
+        ht900 = ROOT.TH1F("ht900"+"_"+subname,"ht900",68,300,2000)
+        ht475 = ROOT.TH1F("ht475"+"_"+subname,"ht475",68,300,2000)
+        ht350 = ROOT.TH1F("ht350"+"_"+subname,"ht350",68,300,2000)
+        ht125 = ROOT.TH1F("ht125"+"_"+subname,"ht125",68,300,2000)
+
+        t.Draw("ht>>ht900"+"_"+subname,"isGolden && HLT_PFHT900"         , "goff");  ht900.Sumw2()
+        t.Draw("ht>>ht475"+"_"+subname,"isGolden && HLT_PFHT475_Prescale", "goff");  ht475.Sumw2() 
+        t.Draw("ht>>ht350"+"_"+subname,"isGolden && HLT_PFHT350_Prescale", "goff");  ht350.Sumw2() 
+        t.Draw("ht>>ht125"+"_"+subname,"isGolden && HLT_PFHT125_Prescale", "goff");  ht125.Sumw2() 
+
+        # cache histos in file -> save into folder, so stuff is quicker when you rerun
+        rfile = ROOT.TFile(theFile, "RECREATE")
+        rfile.cd()
+        ht900.Write()
+        ht475.Write()
+        ht350.Write()
+        ht125.Write()
+        rfile.Close()
+
+        return [ht900, ht475, ht350, ht125]
+        
+
+for i,afile in enumerate(files):
+    [h1, h2, h3, h4] = getHistos(base_dir, afile, OVERWRITE)
+    print "got histos for file", afile
+    if i==0:
+        [ht900, ht475, ht350, ht125] = [h1, h2, h3, h4]
+    else:
+        ht900.Add(h1)
+        ht475.Add(h2)
+        ht350.Add(h3)
+        ht125.Add(h4)
 
 
-r800over475 = ht800.Clone("r800over475");  r800over475.Divide(ht475)
-r800over350 = ht800.Clone("r800over350");  r800over350.Divide(ht350)
+r900over475 = ht900.Clone("r900over475");  r900over475.Divide(ht475)
+r900over350 = ht900.Clone("r900over350");  r900over350.Divide(ht350)
 r475over350 = ht475.Clone("r475over350");  r475over350.Divide(ht350)
 r475over125 = ht475.Clone("r475over125");  r475over125.Divide(ht125)
-# double binning for low stats 800over125
-ht800.Rebin(2); ht125.Rebin(2)
-r800over125 = ht800.Clone("r800over125");  r800over125.Divide(ht125)
-r800over475.SetLineWidth(2); r800over475.SetLineColor(1)
-r800over350.SetLineWidth(2); r800over350.SetLineColor(2)
-r800over125.SetLineWidth(2); r800over125.SetLineColor(4)
+# double binning for low stats 900over125
+ht900.Rebin(2); ht125.Rebin(2)
+r900over125 = ht900.Clone("r900over125");  r900over125.Divide(ht125)
+r900over475.SetLineWidth(2); r900over475.SetLineColor(1)
+r900over350.SetLineWidth(2); r900over350.SetLineColor(2)
+r900over125.SetLineWidth(2); r900over125.SetLineColor(4)
 r475over350.SetLineWidth(2); r475over350.SetLineColor(8)
 r475over125.SetLineWidth(2); r475over125.SetLineColor(51)
 
-r800over350.GetXaxis().SetTitle("H_{T} [GeV]")
-r800over350.GetYaxis().SetTitle("ratio of events")
-r800over350.GetXaxis().SetTitleSize(0.06); r800over350.GetYaxis().SetTitleSize(0.06); 
-r800over350.GetYaxis().SetRangeUser(0.1,6000)
+r900over350.GetXaxis().SetTitle("H_{T} [GeV]")
+r900over350.GetYaxis().SetTitle("ratio of events")
+r900over350.GetXaxis().SetTitleSize(0.06); r900over350.GetYaxis().SetTitleSize(0.06); 
+r900over350.GetYaxis().SetRangeUser(0.1,12000)
 can = ROOT.TCanvas()
 can.SetLogy()
 
-r800over350.Draw("e")
-r800over475.Draw("esame")
-r800over125.Draw("esame")
+r900over350.Draw("e")
+r900over475.Draw("esame")
+r900over125.Draw("esame")
 r475over350.Draw("esame")
 r475over125.Draw("esame")
 
-f_ps1  = ROOT.TF1("ps1" , "pol0(0)", 900, 2000); f_ps1 .SetLineColor(1) ; f_ps1 .SetLineWidth(2)
-f_ps2  = ROOT.TF1("ps2" , "pol0(0)", 900, 2000); f_ps2 .SetLineColor(2) ; f_ps2 .SetLineWidth(2)
-f_ps3  = ROOT.TF1("ps3" , "pol0(0)", 900, 2000); f_ps3 .SetLineColor(4) ; f_ps3 .SetLineWidth(2)
+#fit only in the ranges from where they are eff, eg for first one, HT900 eff after 1000GeV of HT
+f_ps1  = ROOT.TF1("ps1" , "pol0(0)", 1000, 2000); f_ps1 .SetLineColor(1) ; f_ps1 .SetLineWidth(2)
+f_ps2  = ROOT.TF1("ps2" , "pol0(0)", 1000, 2000); f_ps2 .SetLineColor(2) ; f_ps2 .SetLineWidth(2)
+f_ps3  = ROOT.TF1("ps3" , "pol0(0)", 1000, 2000); f_ps3 .SetLineColor(4) ; f_ps3 .SetLineWidth(2)
+#comparing to the lower threshold triggers
 f_ps12 = ROOT.TF1("ps12", "pol0(0)", 575, 2000); f_ps12.SetLineColor(8) ; f_ps12.SetLineWidth(2); f_ps12.SetLineStyle(7)
 f_ps13 = ROOT.TF1("ps13", "pol0(0)", 575, 2000); f_ps13.SetLineColor(51); f_ps13.SetLineWidth(2); f_ps13.SetLineStyle(7)
 
-r800over475.Fit(f_ps1 ,"R")
-r800over350.Fit(f_ps2 ,"R")
-r800over125.Fit(f_ps3 ,"R")
+r900over475.Fit(f_ps1 ,"R")
+r900over350.Fit(f_ps2 ,"R")
+r900over125.Fit(f_ps3 ,"R")
 r475over350.Fit(f_ps12,"R")
 r475over125.Fit(f_ps13,"R")
 
@@ -109,12 +137,15 @@ ps2b, eps2b = ps1*ps12, sqrt( (eps1*ps12)**2 + (ps1*eps12)**2 )
 ps3b, eps3b = ps1*ps13, sqrt( (eps1*ps13)**2 + (ps1*eps13)**2 )
 
 leg = ROOT.TLegend(0.356, 0.18, 0.5, 0.386)
-leg.AddEntry(f_ps1 , "PFHT800/475: %.1f #pm %.1f" % (ps1 , eps1 ), "L")
-leg.AddEntry(f_ps2 , "PFHT800/350: %.1f #pm %.1f" % (ps2 , eps2 ), "L")
-leg.AddEntry(f_ps3 , "PFHT800/125: %.0f #pm %.0f" % (ps3 , eps3 ), "L")
+leg.AddEntry(f_ps1 , "PFHT900/475: %.1f #pm %.1f" % (ps1 , eps1 ), "L")
+leg.AddEntry(f_ps2 , "PFHT900/350: %.1f #pm %.1f" % (ps2 , eps2 ), "L")
+leg.AddEntry(f_ps3 , "PFHT900/125: %.0f #pm %.0f" % (ps3 , eps3 ), "L")
 leg.AddEntry(f_ps12, "PFHT475/350: %.2f #pm %.2f #rightarrow ps350 = %.1f #pm %.1f" % (ps12, eps12, ps2b, eps2b), "L")
 leg.AddEntry(f_ps13, "PFHT475/125: %.1f #pm %.1f #rightarrow ps125 = %.0f #pm %.0f" % (ps13, eps13, ps3b, eps3b), "L")
 leg.SetTextSize(0.026)
+
+
+#we use the weighted average of the fits
 
 #weighted averages 
 def weightedAverage(data, errors):
@@ -135,5 +166,5 @@ leg.Draw("same")
 
 lumilabel.Draw("same")
 
-#can.SaveAs("prescales.pdf")
-#can.SaveAs("prescales.png")
+can.SaveAs(base_dir.rstrip("/").split("/")[-1]+"/prescales.pdf")
+can.SaveAs(base_dir.rstrip("/").split("/")[-1]+"/prescales.png")

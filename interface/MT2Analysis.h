@@ -18,7 +18,7 @@ class MT2Analysis {
 
  public:
 
-  MT2Analysis( const std::string& aname, const std::string& regionsSet="zurichPlus", int id=-1, const std::string& afullName="" );
+  MT2Analysis( const std::string& aname, const std::string& regionsSet="zurich2016", int id=-1, const std::string& afullName="" );
   MT2Analysis( const std::string& aname, std::set<MT2HTRegion> htRegions, std::set<MT2SignalRegion> signalRegions, int id=-1, const std::string& afullName="" );
   MT2Analysis( const std::string& aname, std::set<MT2Region> regions, int id=-1, const std::string& afullName="" );
   MT2Analysis( const std::string& aname, const std::string& asystname, std::set<MT2Region> regions, int id=-1, const std::string& afullName="" );
@@ -85,9 +85,9 @@ class MT2Analysis {
   static MT2Analysis* readSystFromFile( const std::string& fileName, const std::string& matchName="", const std::string& systName="" );
   static std::vector<MT2Analysis*> readAllFromFile( const std::string& fileName, const std::string& matchName="", bool verbose=true );
   static std::vector<MT2Analysis*> readAllSystFromFile( const std::string& fileName, const std::string& matchName="", const std::string& systName="", bool verbose=true );
-  void writeToFile( const std::string& fileName, const std::string& option="UPDATE", bool overwrite=true );
-  void addToFile( const std::string& fileName, bool overwrite=true ) {
-    return this->writeToFile(fileName,"UPDATE",overwrite);
+  void writeToFile( const std::string& fileName, const std::string& option="UPDATE", bool overwrite=true, bool addToDir=false );
+  void addToFile( const std::string& fileName, bool overwrite=true, bool addToDir=false ) {
+    return this->writeToFile(fileName,"UPDATE",overwrite, addToDir);
   }
 
   static void printFromFile( const std::string& fileName, const std::string& ofs, const std::string& matchName="" );
@@ -215,6 +215,10 @@ MT2Analysis<T>::MT2Analysis( const std::string& aname, const std::string& region
   } else if( regionsSet=="13TeV_inclusive" ) {
 
     regions_.insert(MT2Region( 200. )); // inclusive 200-inf at least one jet requirement
+
+  } else if( regionsSet=="13TeV_2016_inclusive" ) {
+
+    regions_.insert(MT2Region( 250. )); // inclusive 250-inf at least one jet requirement //new 2016 eoy 
 
   } else if( regionsSet=="13TeV_inclusive450" ) {
 
@@ -458,13 +462,136 @@ MT2Analysis<T>::MT2Analysis( const std::string& aname, const std::string& region
     regions_.insert(MT2Region(450., 575., 1, 1, 0, 0));
     regions_.insert(MT2Region(575., 700., 1, 1, 0, 0));
     regions_.insert(MT2Region(700.,1000., 1, 1, 0, 0));
-    regions_.insert(MT2Region(1000.,  -1, 1, 1, 0, 0));
+    regions_.insert(MT2Region(1000.,1200., 1, 1, 0, 0));
+    regions_.insert(MT2Region(1200.,  -1, 1, 1, 0, 0));
 
     regions_.insert(MT2Region(200., 250., 1, 1, 1, -1));
     regions_.insert(MT2Region(250., 350., 1, 1, 1, -1));
     regions_.insert(MT2Region(350., 450., 1, 1, 1, -1));
     regions_.insert(MT2Region(450., 575., 1, 1, 1, -1));
-    regions_.insert(MT2Region(575.,  -1, 1, 1, 1, -1));
+    regions_.insert(MT2Region(575., 700., 1, 1, 1, -1));
+    regions_.insert(MT2Region(700.,  -1, 1, 1, 1, -1));
+
+  } else if( regionsSet=="zurich2016" ){
+
+    std::set<MT2HTRegion> htRegions;
+    //htRegions.insert(MT2HTRegion( 250.,   450.));//changed due to MET 250
+    htRegions.insert(MT2HTRegion( 450.,   575.));
+    htRegions.insert(MT2HTRegion( 575.,  1000.));
+    htRegions.insert(MT2HTRegion(1000.,  1500.));
+    htRegions.insert(MT2HTRegion(1500.,    -1 ));
+    
+    std::set<MT2SignalRegion> signalRegions;
+    signalRegions.insert(MT2SignalRegion(2,  3, 0,  0));
+    signalRegions.insert(MT2SignalRegion(4, 6, 0,  0));
+    signalRegions.insert(MT2SignalRegion(7, -1, 0,  0));
+    signalRegions.insert(MT2SignalRegion(2,  3, 1,  1));
+    signalRegions.insert(MT2SignalRegion(4, 6, 1,  1));
+    signalRegions.insert(MT2SignalRegion(7, -1, 1,  1));
+    signalRegions.insert(MT2SignalRegion(2,  3, 2,  2));
+    signalRegions.insert(MT2SignalRegion(4, 6, 2,  2));
+    signalRegions.insert(MT2SignalRegion(7, -1, 2,  2));
+    signalRegions.insert(MT2SignalRegion(2,  6, 3,  -1));
+    signalRegions.insert(MT2SignalRegion(7, -1, 3,  -1));
+
+    regions_ = multiplyHTandSignal( htRegions, signalRegions );
+    
+    //NEW very low HT binning
+    regions_.insert(MT2Region(250., 450., 2, 3, 0, 0));
+    regions_.insert(MT2Region(250., 450., 2, 3, 1, 1));
+    regions_.insert(MT2Region(250., 450., 2, 3, 2, 2));
+    regions_.insert(MT2Region(250., 450., 4, -1, 0, 0));
+    regions_.insert(MT2Region(250., 450., 4, -1, 1, 1));
+    regions_.insert(MT2Region(250., 450., 4, -1, 2, 2));
+    regions_.insert(MT2Region(250., 450., 2, -1, 3, -1));
+
+    regions_.insert(MT2Region(250., 350., 1, 1, 0, 0));
+    regions_.insert(MT2Region(350., 450., 1, 1, 0, 0));
+    regions_.insert(MT2Region(450., 575., 1, 1, 0, 0));
+    regions_.insert(MT2Region(575., 700., 1, 1, 0, 0));
+    regions_.insert(MT2Region(700.,1000., 1, 1, 0, 0));
+    regions_.insert(MT2Region(1000.,1200., 1, 1, 0, 0));
+    regions_.insert(MT2Region(1200.,  -1, 1, 1, 0, 0));
+
+    regions_.insert(MT2Region(250., 350., 1, 1, 1, -1));
+    regions_.insert(MT2Region(350., 450., 1, 1, 1, -1));
+    regions_.insert(MT2Region(450., 575., 1, 1, 1, -1));
+    regions_.insert(MT2Region(575., 700., 1, 1, 1, -1));
+    regions_.insert(MT2Region(700.,  -1, 1, 1, 1, -1));
+
+  } else if( regionsSet=="zurich2016_noMonojet" ){
+
+    std::set<MT2HTRegion> htRegions;
+    htRegions.insert(MT2HTRegion( 450.,   575.));
+    htRegions.insert(MT2HTRegion( 575.,  1000.));
+    htRegions.insert(MT2HTRegion(1000.,  1500.));
+    htRegions.insert(MT2HTRegion(1500.,    -1 ));
+    
+    std::set<MT2SignalRegion> signalRegions;
+    signalRegions.insert(MT2SignalRegion(2,  3, 0,  0));
+    signalRegions.insert(MT2SignalRegion(4, 6, 0,  0));
+    signalRegions.insert(MT2SignalRegion(7, -1, 0,  0));
+    signalRegions.insert(MT2SignalRegion(2,  3, 1,  1));
+    signalRegions.insert(MT2SignalRegion(4, 6, 1,  1));
+    signalRegions.insert(MT2SignalRegion(7, -1, 1,  1));
+    signalRegions.insert(MT2SignalRegion(2,  3, 2,  2));
+    signalRegions.insert(MT2SignalRegion(4, 6, 2,  2));
+    signalRegions.insert(MT2SignalRegion(7, -1, 2,  2));
+    signalRegions.insert(MT2SignalRegion(2,  6, 3,  -1));
+    signalRegions.insert(MT2SignalRegion(7, -1, 3,  -1));
+
+    regions_ = multiplyHTandSignal( htRegions, signalRegions );
+    
+    //NEW very low HT binning
+    regions_.insert(MT2Region(250., 450., 2, 3, 0, 0));
+    regions_.insert(MT2Region(250., 450., 2, 3, 1, 1));
+    regions_.insert(MT2Region(250., 450., 2, 3, 2, 2));
+    regions_.insert(MT2Region(250., 450., 4, -1, 0, 0));
+    regions_.insert(MT2Region(250., 450., 4, -1, 1, 1));
+    regions_.insert(MT2Region(250., 450., 4, -1, 2, 2));
+    regions_.insert(MT2Region(250., 450., 2, -1, 3, -1));
+
+  } else if( regionsSet=="zurich2016_forExtrapol" ){
+
+    std::set<MT2HTRegion> htRegions;
+    //  htRegions.insert(MT2HTRegion( 200.,  450.));
+    //  htRegions.insert(MT2HTRegion( 250.,  450.));
+    htRegions.insert(MT2HTRegion( 450.,   575.));
+    htRegions.insert(MT2HTRegion( 575.,  1000.));
+    htRegions.insert(MT2HTRegion(1000.,  1500.));
+    //  htRegions.insert(MT2HTRegion(1500.,    -1 ));
+    
+    std::set<MT2SignalRegion> signalRegions;
+    signalRegions.insert(MT2SignalRegion( 2,  2, 0, -1)); // splitting 2-3 bin for 2-6 bin
+    signalRegions.insert(MT2SignalRegion( 3,  3, 0, -1));
+    signalRegions.insert(MT2SignalRegion( 4,  6, 0, -1));
+    signalRegions.insert(MT2SignalRegion( 7, -1, 0, -1));
+
+    regions_ = multiplyHTandSignal( htRegions, signalRegions );
+
+    regions_.insert(MT2Region(1500.,-1., 2, -1, 0, -1));
+
+    //very low ht bins
+    regions_.insert(MT2Region(250., 450., 2,  2, 0, -1));
+    regions_.insert(MT2Region(250., 450., 3,  3, 0, -1));
+    regions_.insert(MT2Region(250., 450., 4, -1, 0, -1));
+
+    //monojet bins
+    //    regions_.insert(MT2Region(200., 250., 1, 1, 0, 0));
+    regions_.insert(MT2Region(250., 350., 1, 1, 0, 0));
+    regions_.insert(MT2Region(350., 450., 1, 1, 0, 0));
+    regions_.insert(MT2Region(450., 575., 1, 1, 0, 0));
+    regions_.insert(MT2Region(575., 700., 1, 1, 0, 0));
+    regions_.insert(MT2Region(700.,1000., 1, 1, 0, 0));
+    regions_.insert(MT2Region(1000.,1200., 1, 1, 0, 0));
+    regions_.insert(MT2Region(1200.,  -1, 1, 1, 0, 0));
+
+    //    regions_.insert(MT2Region(200., 250., 1, 1, 1, -1));
+    regions_.insert(MT2Region(250., 350., 1, 1, 1, -1));
+    regions_.insert(MT2Region(350., 450., 1, 1, 1, -1));
+    regions_.insert(MT2Region(450., 575., 1, 1, 1, -1));
+    regions_.insert(MT2Region(575., 700., 1, 1, 1, -1));
+    regions_.insert(MT2Region(700.,  -1, 1, 1, 1, -1));
 
   } else if( regionsSet=="alphaT" ){
 
@@ -658,6 +785,15 @@ MT2Analysis<T>::MT2Analysis( const std::string& aname, const std::string& region
     regions_.insert(MT2Region(1500.,    -1., 2., -1.));
 
 
+  } else if( regionsSet=="zurich2016_onlyHT" ){
+
+    regions_.insert(MT2Region( 250.,   450., 2., -1.));
+    regions_.insert(MT2Region( 450.,   575., 2., -1.));
+    regions_.insert(MT2Region( 575.,  1000., 2., -1.));
+    regions_.insert(MT2Region(1000.,  1500., 2., -1.));
+    regions_.insert(MT2Region(1500.,    -1., 2., -1.));
+
+
   } else if( regionsSet=="zurich_HTtriggers" ){
 
     regions_.insert(MT2Region( 450.,   575.)); // no cut on jets
@@ -710,6 +846,15 @@ MT2Analysis<T>::MT2Analysis( const std::string& aname, const std::string& region
     regions_.insert(MT2Region(200., -1., 4,  6, 0,  -1));
     regions_.insert(MT2Region(200., -1., 7, -1, 0,  -1));
 
+
+  } else if( regionsSet=="zurich2016_onlyJets_noB" ){
+
+    regions_.insert(MT2Region(250., -1., 2,  3, 0,  -1));
+    regions_.insert(MT2Region(250., -1., 4,  6, 0,  -1));
+    regions_.insert(MT2Region(250., -1., 7, -1, 0,  -1));
+    regions_.insert(MT2Region(250., -1., 2,  6, 0,  -1)); // not exclusive from above, used for !VLHT and 3b
+    regions_.insert(MT2Region(250., -1., 4, -1, 0,  -1)); // not exclusive from above, used for VLHT and <3b 
+    regions_.insert(MT2Region(250., -1., 2, -1, 0,  -1)); // not exclusive from above, used for VLHT and 3b 
 
   } else if( regionsSet=="darkMatter_max1b" ){
 
@@ -2003,7 +2148,7 @@ MT2Analysis<T> MT2Analysis<T>::operator/( float k ) const {
 
 
 template<class T> 
-void MT2Analysis<T>::writeToFile( const std::string& fileName, const std::string& option, bool overwrite ) {
+void MT2Analysis<T>::writeToFile( const std::string& fileName, const std::string& option, bool overwrite, bool addToDir ) {
 
   TFile* file = TFile::Open(fileName.c_str(), option.c_str() );
   file->cd();
@@ -2012,13 +2157,20 @@ void MT2Analysis<T>::writeToFile( const std::string& fileName, const std::string
     file->cd();
     if( overwrite ) {
       file->rmdir(this->name_.c_str());
+      file->mkdir(this->name_.c_str());
     } else {
-      std::cout << "[MT2Analysis::writeToFile] Directory '" << this->name_ << "' already exists in file '" << fileName << "'. Will not overwrite." << std::endl;
-      return;
+      std::cout << "[MT2Analysis::writeToFile] Directory '" << this->name_ << "' already exists in file '" << fileName << "'. Will not overwrite";
+      if ( !addToDir )	{
+	std::cout << " and exit." << std::endl;
+	return; // if addToDir don't exit and try to add new dirs
+      }
+      else
+	std::cout << " existing data but write new info." << std::endl;
     }
   }
+  else
+    file->mkdir(this->name_.c_str());
 
-  file->mkdir(this->name_.c_str());
   file->cd(this->name_.c_str());
 
   std::set<MT2Region> regions = this->getRegions();

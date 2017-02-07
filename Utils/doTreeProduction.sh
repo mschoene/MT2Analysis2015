@@ -6,8 +6,6 @@
 # env -i X509_USER_PROXY=~/.x509up_u`id -u` gfal-ls gsiftp://storage01.lcg.cscs.ch/pnfs/lcg.cscs.ch/cms/trivcat/store/user/mangano
 
 # NB: Insert path starting from /store/user/... The rest will be added automatically
-#inputProductionFolder="/store/user/mschoene/crab/8_0_11/signal2016_Nov02/"
-
 inputProductionFolder="/store/user/mschoene/crab/8_0_11/signal2017_Jan11/"
 #inputProductionFolder="/store/user/mschoene/crab/8_0_11/mc2016_Nov15"
 

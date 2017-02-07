@@ -1,8 +1,8 @@
 /*
-How to run:
-root -l
-.L btagSF.C+
-btagSF(inputString, inputFolder, outputFile, treeName, objectName)
+  How to run:
+  root -l
+  .L btagSF.C+
+  btagSF(inputString, inputFolder, outputFile, treeName, objectName)
 */
 
 
@@ -58,6 +58,7 @@ public:
     h_btag_eff_c    = (TH2D*) f_btag_eff->Get("h2_BTaggingEff_csv_med_Eff_c"   );
     h_btag_eff_udsg = (TH2D*) f_btag_eff->Get("h2_BTaggingEff_csv_med_Eff_udsg");
 
+    
     calib_fast = new BTagCalibrationStandalone("csvv2", "/shome/mschoene/btagSF/CSV_13TEV_Combined_14_7_2016.csv"); // 25 ns official version of SFs
     reader_fastSim    = new BTagCalibrationStandaloneReader(BTagEntryStandalone::OP_MEDIUM, "central", {"up","down"}); 
 
@@ -222,8 +223,6 @@ void BTagSFHelper::get_weight_btag(int nobj, float* obj_pt, float* obj_eta, int*
 
 
     bool istag = csv >= btag_wp && eta <= 2.4 && pt>=20;
-    //   bool istag = csv > 0.890 && eta < 2.5 && pt>20;
-
     float SF = 0.;
     float SFup = 0.;
     float SFdown = 0.;
@@ -275,6 +274,7 @@ void BTagSFHelper::get_weight_btag(int nobj, float* obj_pt, float* obj_eta, int*
   wtbtagUp_light   = errLup   / ( mcNoTag * mcTag );
   wtbtagDown_heavy = errHdown / ( mcNoTag * mcTag );
   wtbtagDown_light = errLdown / ( mcNoTag * mcTag );
+ 
 }
 
 

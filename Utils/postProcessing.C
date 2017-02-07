@@ -206,7 +206,6 @@ int postProcessing(std::string inputString,
   TH2D* h_muSF = 0;
 
   TH2D* h_elTrk = 0;
-
   TH1D* h_muTrk_hi = 0;
   TH1D* h_muTrk_lo = 0;
  
@@ -960,7 +959,7 @@ int postProcessing(std::string inputString,
     weight_lepsf_0l        = 1.;
     weight_lepsf_0l_UP     = 1.;
     weight_lepsf_0l_DN     = 1.;
-    
+
     for(int v=0; v<110; ++v){
       weight_scales[v]=1.;
       weight_scales_av[v]=1.;
@@ -1174,15 +1173,16 @@ int postProcessing(std::string inputString,
 	    Int_t binx = h_muSF->GetXaxis()->FindBin(pt);
 	    Int_t biny = h_muSF->GetYaxis()->FindBin(fabs(eta));
 
-	    if ( binx >7 ) binx = 7; //overflow bin empty for the muons...
-	    central = h_muSF->GetBinContent(binx,biny);
-
 	    float central_trk = 1;
 	    Int_t binx_trk = h_muTrk_hi->GetXaxis()->FindBin(  lep_eta[o] );
 	    if( binx_trk>10 ) binx_trk = 10;
 	    else if( binx_trk<1 ) binx_trk = 1;
 	    central_trk = h_muTrk_hi->GetBinContent( binx_trk );
-	   
+
+
+	    if ( binx >7 ) binx = 7; //overflow bin empty for the muons...
+	    central = h_muSF->GetBinContent(binx,biny);
+
 	    central *= central_trk;
 
 	    err  = 0.03; //current recomendation is 3% //   err  = 0.014; // adding in quadrature 1% unc. on ID and 1% unc. on ISO
@@ -1443,5 +1443,4 @@ int postProcessing(std::string inputString,
   return 0;
   
 }
-
 

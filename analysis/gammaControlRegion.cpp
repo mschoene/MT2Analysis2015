@@ -88,8 +88,9 @@ int main( int argc, char* argv[] ) {
 
     std::string samplesFile = "../samples/samples_" + cfg.mcSamples() + ".dat";
     
-    std::vector<MT2Sample> samples_gammaJet = MT2Sample::loadSamples(samplesFile, "gjet");
-    //   std::vector<MT2Sample> samples_gammaJet = MT2Sample::loadSamples(samplesFile, "GJets");
+    //std::vector<MT2Sample> samples_gammaJet = MT2Sample::loadSamples(samplesFile, "gjet");
+    //std::vector<MT2Sample> samples_gammaJet = MT2Sample::loadSamples(samplesFile, 200, 299);
+    std::vector<MT2Sample> samples_gammaJet = MT2Sample::loadSamples(samplesFile, "GJets");
     if( samples_gammaJet.size()==0 ) {
       std::cout << "There must be an error: didn't find any gamma+jet files in " << samplesFile << "!" << std::endl;
       exit(1209);
@@ -98,8 +99,8 @@ int main( int argc, char* argv[] ) {
     std::cout << std::endl << std::endl;
     std::cout << "-> Loading QCD samples" << std::endl;
 
-    std::vector<MT2Sample> samples_qcd = MT2Sample::loadSamples(samplesFile, "qcd");
-    //    std::vector<MT2Sample> samples_qcd = MT2Sample::loadSamples(samplesFile, "QCD");
+    //std::vector<MT2Sample> samples_qcd = MT2Sample::loadSamples(samplesFile, "qcd");
+    std::vector<MT2Sample> samples_qcd = MT2Sample::loadSamples(samplesFile, "QCD");
 
 
     MT2Analysis<MT2EstimateTree>* tree = new MT2Analysis<MT2EstimateTree>( "gammaCRtree_loose", cfg.crRegionsSet() );
@@ -111,6 +112,8 @@ int main( int argc, char* argv[] ) {
     MT2EstimateTree::addVar( tree, "etaGamma" );
     MT2EstimateTree::addVar( tree, "jet1_pt" );
     MT2EstimateTree::addVar( tree, "jet2_pt" );
+    MT2EstimateTree::addVar( tree, "drMinParton" );
+
     
     MT2Analysis<MT2EstimateTree>* tree_pass = new MT2Analysis<MT2EstimateTree>( "gammaCRtree", cfg.crRegionsSet() );
     MT2EstimateTree::addVar( tree_pass, "prompt" );
@@ -121,6 +124,8 @@ int main( int argc, char* argv[] ) {
     MT2EstimateTree::addVar( tree_pass, "etaGamma" );
     MT2EstimateTree::addVar( tree_pass, "jet1_pt" );
     MT2EstimateTree::addVar( tree_pass, "jet2_pt" );
+    MT2EstimateTree::addVar( tree_pass, "drMinParton" );
+  
 
     if(cfg.analysisType() == "ZG"){
       MT2EstimateTree::addVar( tree, "raw_mt2" );
@@ -139,8 +144,6 @@ int main( int argc, char* argv[] ) {
 
     MT2Analysis<MT2EstimateZinvGamma>* nip = new MT2Analysis<MT2EstimateZinvGamma>( "nip", cfg.regionsSet() );
     MT2Analysis<MT2EstimateZinvGamma>* nip_pass = new MT2Analysis<MT2EstimateZinvGamma>( "nip_pass", cfg.regionsSet() );
-
-
 
     for( unsigned i=0; i<samples_gammaJet.size(); ++i ) {
       computeYield( samples_gammaJet[i], cfg, tree, tree_pass, prompt, prompt_pass, nip, nip_pass, fake, fake_pass );
@@ -258,7 +261,8 @@ int main( int argc, char* argv[] ) {
     std::cout << std::endl << std::endl;
     std::cout << "-> Loading data from file: " << samplesFile_data << std::endl;
 
-    std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, "SinglePhoton");
+    std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, "merged");
+    //    std::vector<MT2Sample> samples_data = MT2Sample::loadSamples(samplesFile_data, "SinglePhoton");
 
     if( samples_data.size()==0 ) {
 
@@ -280,6 +284,7 @@ int main( int argc, char* argv[] ) {
       MT2EstimateTree::addVar( tree, "etaGamma" );
       MT2EstimateTree::addVar( tree, "jet1_pt" );
       MT2EstimateTree::addVar( tree, "jet2_pt" );
+      MT2EstimateTree::addVar( tree, "drMinParton" );
       
       MT2Analysis<MT2EstimateTree>* tree_pass = new MT2Analysis<MT2EstimateTree>( "gammaCRtree", cfg.crRegionsSet() );
       MT2EstimateTree::addVar( tree_pass, "iso" );
@@ -288,6 +293,7 @@ int main( int argc, char* argv[] ) {
       MT2EstimateTree::addVar( tree_pass, "etaGamma" );
       MT2EstimateTree::addVar( tree_pass, "jet1_pt" );
       MT2EstimateTree::addVar( tree_pass, "jet2_pt" );
+      MT2EstimateTree::addVar( tree_pass, "drMinParton" );
 
       MT2EstimateTree::addVar( tree, "gamma_chHadIsoRC" );
       MT2EstimateTree::addVar( tree_pass, "gamma_chHadIsoRC" );
@@ -395,7 +401,12 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
       if( (myTree.gamma_nJet30>1 && myTree.gamma_mt2<200.) || (myTree.gamma_nJet30==1 && myTree.gamma_ht<200.) ) continue;
     
     }
- 
+
+    // REMOVE THIS SOOOOON
+    // or maybe not due to spiky behavior in qcd samples
+    
+// if( myTree.evt_scale1fb>10. ) continue;
+
 
 //    if( myTree.gamma_nJet30==1 ){
 //      
@@ -421,25 +432,48 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
       if( !myTree.passGammaAdditionalSelection(sample.id) ) continue;
     }
     
-    
-    if( !(myTree.HLT_Photon165_HE10) ) continue;
-    
-    
+  
+   
+    // if( !( myTree.HLT_Photon165_HE10 ) ) continue;  NOT applied to MC right now
+
+
     if( cfg.additionalStuff()=="gammaNoSietaieta" ) {
       //if( myTree.gamma_hOverE[0]>0.1 ) continue;
     } else {
       if( myTree.gamma_idCutBased[0]==0 ) continue;
     }
 
+
+    //crazy events! To be piped into a separate txt file
+    if(myTree.jet_pt[0] > 13000){
+      std::cout << "Rejecting weird event at run:lumi:evt = " << myTree.run << ":" << myTree.lumi << ":" << myTree.evt << std::endl;
+      continue;
+    }
+    //NEW check if is there is a nan
+    if( isnan(myTree.ht) || isnan(myTree.met_pt) ||  isinf(myTree.ht) || isinf(myTree.met_pt)  ){
+      std::cout << "Rejecting nan/inf event at run:lumi:evt = " << myTree.run << ":" << myTree.lumi << ":" << myTree.evt << std::endl;
+      continue;
+    }
+
+    if( myTree.met_miniaodPt/myTree.met_caloPt > 5. ) continue;
+     
     if( myTree.isData ) {
       
-      //      if( !( myTree.isGolden ) ) continue;
-      
-      if( !( myTree.HLT_Photon165_HE10 ) ) continue;
+      if( !( myTree.isGolden ) ) continue;
 
-      if( !myTree.passFilters() ) continue;
+
+      if( !(myTree.passFilters() ) ) continue;
+    
+      if( !(myTree.HLT_Photon165_HE10) ) continue;
+    
+      //if( !(nVert>0. && Flag_HBHENoiseFilter==1 && Flag_eeBadScFilter==1 ) ) continue;
+      //if( !(myTree.nVert>0. && myTree.Flag_HBHENoiseFilter==1 ) ) continue;
 
     }
+
+    if( !(myTree.nVert>0 && myTree.Flag_HBHENoiseFilter==1 && myTree.Flag_HBHENoiseIsoFilter==1 && myTree.Flag_EcalDeadCellTriggerPrimitiveFilter==1 && myTree.Flag_goodVertices==1 && myTree.Flag_eeBadScFilter==1 && myTree.Flag_badChargedHadronFilter==1)) continue;
+
+
 
     TLorentzVector gamma;
     gamma.SetPtEtaPhiM( myTree.gamma_pt[0], myTree.gamma_eta[0], myTree.gamma_phi[0], myTree.gamma_mass[0] );
@@ -459,7 +493,7 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
     int nbjets      = myTree.gamma_nBJet20;    
     float ht        = myTree.gamma_ht;
     float mt2       = (njets>1) ? myTree.gamma_mt2 : ht;
-    //float mt2       = myTree.gamma_mt2;
+ 
 
     if( cfg.gamma2bMethod()=="2b1bRatio" && nbjets==2 )
       continue; // will take 2b from reweighted 1b so skip
@@ -467,9 +501,50 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
     //    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi()*myTree.puWeight; 
     Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb;//*cfg.lumi(); 
     //  Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi(); 
-
-    if( !myTree.isData )
+    
+    
+    if( !myTree.isData ){
       weight *= myTree.weight_btagsf;
+      weight *= myTree.weight_lepsf;
+    
+      float SF = 1.0;
+      float pt = myTree.gamma_pt[0];
+
+      //Trigger eff corrections (status ICHEP 2016)
+      if ( fabs(myTree.gamma_eta[0])<1.479 ) {
+	if (pt > 150 && pt < 160) SF = 0.02913004;
+	else if (pt < 170) SF = 0.2979024;
+	else if (pt < 180) SF = 0.9168265;
+	else if (pt < 200) SF = 0.9346871;
+	else if (pt < 250) SF = 0.9498014;
+	else if (pt < 300) SF = 0.9503671;
+	else if (pt < 350) SF = 0.9266015;
+	else if (pt < 400) SF = 0.9366893;
+	else if (pt < 450) SF = 0.9451516;
+	else if (pt < 500) SF = 0.9467028;
+	else if (pt < 600) SF = 0.9480487;
+	else if (pt < 700) SF = 0.9501481;
+	else if (pt < 800) SF = 0.9634304;
+	else SF = 0.9398705;
+      }      else {
+	if (pt > 150 && pt < 160) SF = 0.02942861;
+	else if (pt < 170) SF = 0.1139842;
+	else if (pt < 180) SF = 0.6114576;
+	else if (pt < 200) SF = 0.8858802;
+	else if (pt < 250) SF = 0.9609917;
+	else if (pt < 300) SF = 0.9371325;
+	else if (pt < 350) SF = 0.9273918;
+	else if (pt < 400) SF = 0.9442088;
+	else if (pt < 450) SF = 0.9526445;
+	else if (pt < 500) SF = 0.9331003;
+	else if (pt < 600) SF = 0.9604496;
+	else if (pt < 700) SF = 0.9525379;
+	else if (pt < 800) SF = 0.9785377;
+	else SF = 0.9763883;
+      }
+
+      weight *= SF;
+    }
 
 
     bool passIso = iso<isoCut;
@@ -669,6 +744,7 @@ void fillOneTree( MT2EstimateTree* thisTree, const MT2Tree& myTree, float weight
   thisTree->assignVar( "jet1_pt", myTree.gamma_jet1_pt );
   thisTree->assignVar( "jet2_pt", myTree.gamma_jet2_pt );
   thisTree->assignVar( "gamma_chHadIsoRC",  myTree.gamma_chHadIsoRC[0] );
+  thisTree->assignVar( "drMinParton", myTree.gamma_drMinParton[0] );
 
 
   if( nTrueB>=0 ) {

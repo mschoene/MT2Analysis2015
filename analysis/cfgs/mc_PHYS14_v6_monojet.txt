@@ -1,4 +1,0 @@
-lumi 5
-regionsSet DMv0
-mcSamples PHYS14_v6_monojetSkim
-dataSamples datatest
