@@ -51,7 +51,7 @@ struct BGTable {
 
 };
 
-bool drawSignals=false;
+bool drawSignals=true;
 float lumi; //fb-1 
 
 BGTable getTable( const std::string& tableFileName );
@@ -396,10 +396,10 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
       int nBinsMT2;
       double* binsMT2;
       iMT2->getBins(nBinsMT2, binsMT2);
-      if( iMT2->htMin()==1500 && iMT2->nJetsMin()>1 ){
-	double *binsExtreme = binsMT2++;
-	nBinsMT2--;
-      }
+//      if( iMT2->htMin()==1500 && iMT2->nJetsMin()>1 ){
+//	double *binsExtreme = binsMT2++;
+//	nBinsMT2--;
+//      }
 
       int nBinsM=81;
       double binWidthM=25.;
@@ -823,7 +823,13 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
 	double int_sig[sigSize+sigContSize];
 	for(int s=0; s<sigSize+sigContSize; ++s){
 	  
-	  int_sig[s] = h_sig[s]->GetBinContent(iBin);
+	  if(iMT2->htMin()>=1500){
+	    int_sig[s] = h_sig[s]->GetBinContent(iBin+1);
+	    if(s==0)
+	      std::cout << std::endl << iRegion << " " << iBin <<"/"<<nBins << " " << h_sig[s]->GetXaxis()->GetBinLowEdge(iBin+1) <<  " " << int_sig[s] << std::endl;
+	  }
+	  else
+	    int_sig[s] = h_sig[s]->GetBinContent(iBin);
 	  
 	  if( int_sig[s] < 0. ) int_sig[s]=0.;
 	  
@@ -1142,6 +1148,8 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
 
   if(drawSignals)
       bgStack.Add(hsig[S]);
+  
+  std::cout <<"Itnegral: " << hsig[S]->Integral(213, -1) <<std::endl;
 
 //  hdata->Draw("pe");
 //  bgStack.Draw("histo, same");
@@ -1477,9 +1485,10 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
 
   gPad->RedrawAxis();
 
-  c2_0->SaveAs( Form("%s/mt2_monojet_fullEstimate_plus%s.pdf", fullPath.c_str(), sigName[S].c_str()) );
-  c2_0->SaveAs( Form("%s/mt2_monojet_fullEstimate_plus%s.png", fullPath.c_str(), sigName[S].c_str()) );
-
+  if(drawSignals){
+    c2_0->SaveAs( Form("%s/mt2_monojet_fullEstimate_plus%s.pdf", fullPath.c_str(), sigName[S].c_str()) );
+    c2_0->SaveAs( Form("%s/mt2_monojet_fullEstimate_plus%s.png", fullPath.c_str(), sigName[S].c_str()) );
+  }
 
 
   TCanvas* c2_1 = new TCanvas("c2_1", "", 1100, 600);
@@ -1652,9 +1661,10 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
 
   gPad->RedrawAxis();
 
-  c2_1->SaveAs( Form("%s/mt2_veryLowHT_fullEstimate_plus%s.pdf", fullPath.c_str(), sigName[S].c_str()) );
-  c2_1->SaveAs( Form("%s/mt2_veryLowHT_fullEstimate_plus%s.png", fullPath.c_str(), sigName[S].c_str()) );
-
+  if(drawSignals){
+    c2_1->SaveAs( Form("%s/mt2_veryLowHT_fullEstimate_plus%s.pdf", fullPath.c_str(), sigName[S].c_str()) );
+    c2_1->SaveAs( Form("%s/mt2_veryLowHT_fullEstimate_plus%s.png", fullPath.c_str(), sigName[S].c_str()) );
+  }
 
   TCanvas* c2_2 = new TCanvas("c2_2", "", 1100, 600);
   c2_2->cd();
@@ -1828,9 +1838,10 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
 
   gPad->RedrawAxis();
 
-  c2_2->SaveAs( Form("%s/mt2_lowHT_fullEstimate_plus%s.pdf", fullPath.c_str(), sigName[S].c_str()) );
-  c2_2->SaveAs( Form("%s/mt2_lowHT_fullEstimate_plus%s.png", fullPath.c_str(), sigName[S].c_str()) );
-
+  if(drawSignals){
+    c2_2->SaveAs( Form("%s/mt2_lowHT_fullEstimate_plus%s.pdf", fullPath.c_str(), sigName[S].c_str()) );
+    c2_2->SaveAs( Form("%s/mt2_lowHT_fullEstimate_plus%s.png", fullPath.c_str(), sigName[S].c_str()) );
+  }
 
   TCanvas* c2_3 = new TCanvas("c2_3", "", 1100, 600);
   c2_3->cd();
@@ -1998,10 +2009,11 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
   legend->Draw("same");
 
   gPad->RedrawAxis();
-
-  c2_3->SaveAs( Form("%s/mt2_mediumHT_fullEstimate_plus%s.pdf", fullPath.c_str(), sigName[S].c_str()) );
-  c2_3->SaveAs( Form("%s/mt2_mediumHT_fullEstimate_plus%s.png", fullPath.c_str(), sigName[S].c_str()) );
-
+  
+  if(drawSignals){
+    c2_3->SaveAs( Form("%s/mt2_mediumHT_fullEstimate_plus%s.pdf", fullPath.c_str(), sigName[S].c_str()) );
+    c2_3->SaveAs( Form("%s/mt2_mediumHT_fullEstimate_plus%s.png", fullPath.c_str(), sigName[S].c_str()) );
+  }
 
 
 
@@ -2173,9 +2185,10 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
 
   gPad->RedrawAxis();
 
-  c2_4->SaveAs( Form("%s/mt2_highHT_fullEstimate_plus%s.pdf", fullPath.c_str(), sigName[S].c_str()) );
-  c2_4->SaveAs( Form("%s/mt2_highHT_fullEstimate_plus%s.png", fullPath.c_str(), sigName[S].c_str()) );
-
+  if(drawSignals){
+    c2_4->SaveAs( Form("%s/mt2_highHT_fullEstimate_plus%s.pdf", fullPath.c_str(), sigName[S].c_str()) );
+    c2_4->SaveAs( Form("%s/mt2_highHT_fullEstimate_plus%s.png", fullPath.c_str(), sigName[S].c_str()) );
+  }
 
 
 
@@ -2205,17 +2218,21 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
   hestimate_all->GetXaxis()->LabelsOption("v");
   hestimate_all->GetXaxis()->SetLabelSize(0.042);
 
-//  TH1D* haxes= new TH1D("haxes", "", thisBin+1-oldBin, oldBin, thisBin+1);
-//  for (int b=1; b<=thisBin-oldBin; ++b)
-//    haxes->GetXaxis()->SetBinLabel(b, hestimate_all->GetXaxis()->GetBinLabel(b+oldBin-1));
-//
-//  haxes->GetYaxis()->SetRangeUser(yMin, yMax);
-//  haxes->GetXaxis()->LabelsOption("v");
-//  haxes->GetXaxis()->SetLabelSize(0.042);
-//
-//  haxes->Draw("A");
+  TH1D* haxes= new TH1D("haxes", "", thisBin+1-oldBin, oldBin, thisBin+1);
+  for (int b=1; b<=thisBin-oldBin; ++b)
+    haxes->GetXaxis()->SetBinLabel(b, hestimate_all->GetXaxis()->GetBinLabel(b+oldBin));
 
-  hestimate_all->Draw("");  
+  haxes->GetYaxis()->SetRangeUser(yMin, yMax);
+  haxes->GetXaxis()->LabelsOption("v");
+  haxes->GetXaxis()->SetLabelSize(0.042);
+  haxes->GetYaxis()->SetTitle("Entries");
+  haxes->GetYaxis()->SetTitleOffset(0.95);
+  haxes->GetYaxis()->SetLabelSize(0.042);
+
+  haxes->Draw("");
+  hestimate_all->Draw("same");  
+
+  ((TH1*)(bgStack.GetStack()->Last()))->SetBinContent(214,0);
 
   bgStack.Draw("histo,same");
   hestimate_all->Draw("E2,same");
@@ -2234,7 +2251,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
   right = pad1_5->GetRightMargin();
   bot   = pad1_5->GetBottomMargin();
   top   = pad1_5->GetTopMargin();
-  binWidth = (1.0-right-left)/(thisBin-oldBin);
+  binWidth = (1.0-right-left)/(thisBin+1-oldBin);
 
   text->SetTextAlign(13);
   text->SetTextFont(42);
@@ -2270,7 +2287,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
 
   ibin=0;
 
-  for(int nR=0; nR<11; nR++){
+  for(int nR=0; nR<11-1; nR++){
 
     ibin+=(nBins_[12+7+11*3+nR]-1);
     x = left+ibin*binWidth;
@@ -2295,11 +2312,11 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
   TH2D* h2_axes_ratio_5;
   if(doLogRatio){
     gPad->SetLogy();
-    h2_axes_ratio_5 = new TH2D("axes_ratio_5", "", 10, oldBin, thisBin, 10, 0.1, 10.0 );
+    h2_axes_ratio_5 = new TH2D("axes_ratio_5", "", 10, oldBin, thisBin, 10+1, 0.1, 10.0 );
   }
   else
     //    h2_axes_ratio_5 = new TH2D("axes_ratio_5", "", 10, oldBin, thisBin, 10, 0., 2.5 );
-    h2_axes_ratio_5 = new TH2D("axes_ratio_5", "", 10, oldBin, thisBin, 10, 0., 3.0 );
+    h2_axes_ratio_5 = new TH2D("axes_ratio_5", "", 10, oldBin, thisBin+1, 10, 0., 3.0 );
 
   //  TH2D* h2_axes_ratio_5 = new TH2D("axes_ratio_5", "", 10, oldBin, thisBin, 10, 0., 3.0 );
   h2_axes_ratio_5->SetStats(0);
@@ -2311,7 +2328,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
   h2_axes_ratio_5->GetYaxis()->SetLabelSize(0.17);
   h2_axes_ratio_5->GetYaxis()->SetTitle("Data/Est.");
   
-  TLine* LineCentral_5 = new TLine(oldBin, 1.0, thisBin, 1.0);
+  TLine* LineCentral_5 = new TLine(oldBin, 1.0, thisBin+1, 1.0);
   LineCentral_5->SetLineColor(1);
 
   h2_axes_ratio_5->Draw("");
@@ -2325,7 +2342,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
   line->SetLineWidth(1);
   line->SetLineColor(kBlack);
   ibin = oldBin;
-  for(int nR=0; nR<11; nR++){
+  for(int nR=0; nR<11-1; nR++){
     ibin += (nBins_[12+7+11*3+nR]-1);
     line->DrawLine(ibin,0.,ibin,3.0);
   }
@@ -2342,8 +2359,9 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
   c2_5->cd();
 
   gPad->SetLogy();
-
-  hestimate_all->Draw("");
+  
+  haxes->Draw("");
+  hestimate_all->Draw("same");
   bgStack.Draw("histo, same");
   hestimate_all->Draw("E2,same");
   //  hdata->Draw("pe,same");
@@ -2361,7 +2379,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
   right = gPad->GetRightMargin();
   bot   = gPad->GetBottomMargin();
   top   = gPad->GetTopMargin();
-  binWidth = (1.0-right-left)/(thisBin-oldBin);
+  binWidth = (1.0-right-left)/(thisBin+1-oldBin);
 
   text->SetTextAlign(13);
   text->SetTextFont(42);
@@ -2397,7 +2415,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
 
   ibin=0;
 
-  for(int nR=0; nR<11; nR++){
+  for(int nR=0; nR<11-1; nR++){
 
     ibin+=(nBins_[12+7+11*3+nR]-1);
     x = left+ibin*binWidth;
@@ -2412,9 +2430,10 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
 
   gPad->RedrawAxis();
 
-  c2_5->SaveAs( Form("%s/mt2_extremeHT_fullEstimate_plus%s.pdf", fullPath.c_str(), sigName[S].c_str()) );
-  c2_5->SaveAs( Form("%s/mt2_extremeHT_fullEstimate_plus%s.png", fullPath.c_str(), sigName[S].c_str()) );
-
+  if(drawSignals){
+    c2_5->SaveAs( Form("%s/mt2_extremeHT_fullEstimate_plus%s.pdf", fullPath.c_str(), sigName[S].c_str()) );
+    c2_5->SaveAs( Form("%s/mt2_extremeHT_fullEstimate_plus%s.png", fullPath.c_str(), sigName[S].c_str()) );
+  }
 
 
 

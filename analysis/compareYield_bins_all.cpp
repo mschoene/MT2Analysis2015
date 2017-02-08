@@ -1531,7 +1531,22 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   hestimate_all->GetYaxis()->SetRangeUser(yMin, yMax);
   hestimate_all->GetXaxis()->LabelsOption("v");
   hestimate_all->GetXaxis()->SetLabelSize(0.042);
-  hestimate_all->Draw("");  
+
+  TH1D* haxes= new TH1D("haxes", "", thisBin+1-oldBin, oldBin, thisBin+1);
+  for (int b=1; b<=thisBin-oldBin; ++b)
+    haxes->GetXaxis()->SetBinLabel(b, hestimate_all->GetXaxis()->GetBinLabel(b+oldBin));
+
+  haxes->GetYaxis()->SetRangeUser(yMin, yMax);
+  haxes->GetXaxis()->LabelsOption("v");
+  haxes->GetXaxis()->SetLabelSize(0.042);
+  haxes->GetYaxis()->SetTitle("Entries");
+  haxes->GetYaxis()->SetTitleOffset(0.95);
+  haxes->GetYaxis()->SetLabelSize(0.042);
+
+  haxes->Draw("");
+  hestimate_all->Draw("same");  
+
+  //  ((TH1*)(bgStack.GetStack()->Last()))->SetBinContent(214,0);
 
   bgStack.Draw("histo,same");
   hestimate_all->Draw("E2,same");
@@ -1550,7 +1565,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   right = pad1_5->GetRightMargin();
   bot   = pad1_5->GetBottomMargin();
   top   = pad1_5->GetTopMargin();
-  binWidth = (1.0-right-left)/(thisBin-oldBin);
+  binWidth = (1.0-right-left)/(thisBin+1-oldBin);
 
   text->SetTextAlign(13);
   text->SetTextFont(42);
@@ -1586,7 +1601,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
 
   ibin=0;
 
-  for(int nR=0; nR<11; nR++){
+  for(int nR=0; nR<11-1; nR++){
 
     ibin+=(nBins_[12+7+11*3+nR]-1);
     x = left+ibin*binWidth;
@@ -1611,10 +1626,10 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   TH2D* h2_axes_ratio_5;
   if(doLogRatio){
     gPad->SetLogy();
-    h2_axes_ratio_5 = new TH2D("axes_ratio_5", "", 10, oldBin, thisBin, 10, 0.1, 10.0 );
+    h2_axes_ratio_5 = new TH2D("axes_ratio_5", "", 10, oldBin, thisBin+1, 10, 0.1, 10.0 );
   }
   else
-    h2_axes_ratio_5 = new TH2D("axes_ratio_5", "", 10, oldBin, thisBin, 10, 0., 3.0 );
+    h2_axes_ratio_5 = new TH2D("axes_ratio_5", "", 10, oldBin, thisBin+1, 10, 0., 3.0 );
   //h2_axes_ratio_5 = new TH2D("axes_ratio_5", "", 10, oldBin, thisBin, 10, 0., 2.0 );
 
   h2_axes_ratio_5->SetStats(0);
@@ -1626,7 +1641,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   h2_axes_ratio_5->GetYaxis()->SetLabelSize(0.17);
   h2_axes_ratio_5->GetYaxis()->SetTitle("Data/Est.");
   
-  TLine* LineCentral_5 = new TLine(oldBin, 1.0, thisBin, 1.0);
+  TLine* LineCentral_5 = new TLine(oldBin, 1.0, thisBin+1, 1.0);
   LineCentral_5->SetLineColor(1);
 
   h2_axes_ratio_5->Draw("");
@@ -1640,7 +1655,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   line->SetLineWidth(1);
   line->SetLineColor(kBlack);
   ibin = oldBin;
-  for(int nR=0; nR<11; nR++){
+  for(int nR=0; nR<11-1; nR++){
     ibin += (nBins_[12+7+11*3+nR]-1);
     line->DrawLine(ibin,0.,ibin,3.0);
   }
