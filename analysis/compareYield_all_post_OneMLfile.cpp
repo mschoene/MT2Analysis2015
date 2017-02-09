@@ -53,7 +53,7 @@ struct BGTable {
 };
 
 
-bool drawSignals=false;
+bool drawSignals=true;
 float lumi; //fb-1 
 
 BGTable getTable( const std::string& tableFileName );
@@ -97,26 +97,9 @@ int main( int argc, char* argv[] ) {
   MT2Analysis<MT2Estimate>* analysis = MT2Analysis<MT2Estimate>::readFromFile( dir + "/analyses.root", "data" ); // any one is good, just need to know the regions                                                                    
 
 
-  std::string sigPath="./signalScansFromDominick";
+  //  std::string sigPath="./signalScansFromDominick";
+  std::string sigPath="~mschoene/8_0_12_analysisPlayArea/src/mschoene_newBinning/analysis/signalScansFromDominick/";
 
-//  std::vector < MT2Analysis<MT2Estimate>* > analysesSignal;
-//  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( dir + "/analyses.root", "T1tttt_1500_100") );
-//  analysesSignal[0]->setName("T1tttt 1500,100");
-//
-//  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( dir + "/analyses.root", "T1tttt_1200_800") );
-//  analysesSignal[1]->setName("T1tttt 1200,800");
-//
-//  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( dir + "/analyses.root", "T1bbbb_1500_100") );
-//  analysesSignal[2]->setName("T1bbbb 1500,100");
-//
-//  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( dir + "/analyses.root", "T1bbbb_1000_900") );
-//  analysesSignal[3]->setName("T1bbbb 1000,900");
-//
-//  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( dir + "/analyses.root", "T1qqqq_1400_100") );
-//  analysesSignal[4]->setName("T1qqqq 1400,100");
-//
-//  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( dir + "/analyses.root", "T1qqqq_1000_800") );
-//  analysesSignal[5]->setName("T1qqqq 1000,800");
 
   std::vector < MT2Analysis<MT2Estimate>* > analysesSignal;
   std::vector < MT2Analysis<MT2EstimateSigContSyst>* > analysesSignalCont;
@@ -150,58 +133,48 @@ int main( int argc, char* argv[] ) {
 //  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( sigPath + "/T2tt_eth.root", "T2tt") );
 //  analysesSignal[8]->setName("T2tt 200, 100");
 
-
-  // // // analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( sigPath + "/T1bbbb_eth.root", "T1bbbb") );
-  // // // //  analysesSignal[0]->setName("T1bbbb 1500, 100");
-  // // // analysesSignal[0]->setName("pp #rightarrow #tilde{g}#tilde{g}, #tilde{g} #rightarrow b#bar{b}#chi_{1}^{0}");
-  // // // (*analysesSignal[0]) *= 2.26355/2.155;
-
-  // // // analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( sigPath + "/T1bbbb_eth.root", "T1bbbb") );
-  // // // //  analysesSignal[1]->setName("T1bbbb 700, 600");
-  // // // analysesSignal[1]->setName("pp #rightarrow #tilde{g}#tilde{g}, #tilde{g} #rightarrow b#bar{b}#tilde{#chi}_{1}^{0}");
-  // // // //  (*analysesSignal[1]) *= 2.26355/2.155;
-
-  // // // analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( sigPath + "/T1qqqq_eth.root", "T1qqqq") );
-  // // // analysesSignal[2]->setName("T1qqqq 1300, 100");
-  // // // (*analysesSignal[2]) *= 2.26355/2.155;
-
-  // // // analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( sigPath + "/T1qqqq_eth.root", "T1qqqq") );
-  // // // analysesSignal[3]->setName("pp #rightarrow #tilde{g}#tilde{g}, #tilde{g} #rightarrow q#bar{q}#tilde{#chi}_{1}^{0}");
-  // // // (*analysesSignal[3]) *= 2.26355/2.155;
-
-  // // // analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( sigPath + "/T2bb_eth.root", "T2bb") );
-  // // // analysesSignal[4]->setName("T2bb 700, 0");
-  // // // (*analysesSignal[4]) *= 2.26355/2.26;
-
-  // // // analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( sigPath + "/T2bb_eth.root", "T2bb") );
-  // // // analysesSignal[5]->setName("pp #rightarrow #tilde{b}#bar{#tilde{b}}, #tilde{b} #rightarrow b#tilde{#chi}_{1}^{0}");
-  // // // (*analysesSignal[5]) *= 2.26355/2.26;
-
-//  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( sigPath + "/T2qq_eth.root", "T2qq") );
-//  analysesSignal[6]->setName("T2qq 1000, 0");
-//  (*analysesSignal[6]) *= 2.26355/2.26;
-//
-//  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( sigPath + "/T2qq_eth.root", "T2qq") );
-//  analysesSignal[7]->setName("T2qq 600, 0");
-//  (*analysesSignal[7]) *= 2.26355/2.26;
-//
-//  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( sigPath + "/T2qq_eth.root", "T2qq") );
-//  analysesSignal[8]->setName("pp #rightarrow #tilde{q}#bar{#tilde{q}}, #tilde{q} #rightarrow q#tilde{#chi}_{1}^{0}");
-//  (*analysesSignal[8]) *= 2.26355/2.26;
+   analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( sigPath + "/T1bbbb_eth.root", "T1bbbb") );
+   //  analysesSignal[0]->setName("T1bbbb 1500, 100");
+   analysesSignal[0]->setName("pp #rightarrow #tilde{g}#tilde{g}, #tilde{g} #rightarrow b#bar{b}#tilde{#chi}_{1}^{0}");
+  
+   analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( sigPath + "/T1bbbb_eth.root", "T1bbbb") );
+   analysesSignal[1]->setName("T1bbbb 700, 600");
 
 
-  // // // analysesSignalCont.push_back( MT2Analysis<MT2EstimateSigContSyst>::readSystFromFile( sigPath + "/T1tttt_sigcontam_eth.root", "T1tttt_sigcontam", "isr") );
+   analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( sigPath + "/T1qqqq_eth.root", "T1qqqq") );
+   analysesSignal[2]->setName("pp #rightarrow #tilde{g}#tilde{g}, #tilde{g} #rightarrow q#bar{q}#tilde{#chi}_{1}^{0}");
 
-  // // // analysesSignalCont.push_back( MT2Analysis<MT2EstimateSigContSyst>::readSystFromFile( sigPath + "/T1tttt_sigcontam_eth.root", "T1tttt_sigcontam", "isr") );
+   analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( sigPath + "/T1qqqq_eth.root", "T1qqqq") );
+   analysesSignal[3]->setName("T1qqqq 700, 600");
 
-  // // // analysesSignalCont.push_back( MT2Analysis<MT2EstimateSigContSyst>::readSystFromFile( sigPath + "/T2tt_sigcontam_eth.root", "T2tt_sigcontam", "isr") );
-  // // // analysesSignalCont[2]->setName("T2tt 650, 0");
+   analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( sigPath + "/T2bb_eth.root", "T2bb") );
+   analysesSignal[4]->setName("pp #rightarrow #tilde{b}#bar{#tilde{b}}, #tilde{b} #rightarrow b#tilde{#chi}_{1}^{0}");
 
-  // // // analysesSignalCont.push_back( MT2Analysis<MT2EstimateSigContSyst>::readSystFromFile( sigPath + "/T2tt_sigcontam_eth.root", "T2tt_sigcontam", "isr") );
-  // // // analysesSignalCont[3]->setName("T2tt 600, 200");
+   analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( sigPath + "/T2bb_eth.root", "T2bb") );
+   analysesSignal[5]->setName("T2bb 400, 200");
 
-  // // // analysesSignalCont.push_back( MT2Analysis<MT2EstimateSigContSyst>::readSystFromFile( sigPath + "/T2tt_sigcontam_eth.root", "T2tt_sigcontam", "isr") );
-  // // // analysesSignalCont[4]->setName("pp #rightarrow #tilde{t}#bar{#tilde{t}}, #tilde{t} #rightarrow t#tilde{#chi}_{1}^{0}");
+  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( sigPath + "/T2qq_eth.root", "T2qq") );
+  analysesSignal[6]->setName("pp #rightarrow #tilde{q}#bar{#tilde{q}}, #tilde{q} #rightarrow q#tilde{#chi}_{1}^{0}");
+
+  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( sigPath + "/T2qq_eth.root", "T2qq") );
+  analysesSignal[7]->setName("T2qq 600, 0");
+
+  analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( sigPath + "/T2qq_eth.root", "T2qq") );
+  analysesSignal[8]->setName("T2qq 500, 300");
+
+
+  analysesSignalCont.push_back( MT2Analysis<MT2EstimateSigContSyst>::readSystFromFile( sigPath + "/T1tttt_sigcontam_eth.root", "T1tttt_sigcontam", "isr") );
+  
+  analysesSignalCont.push_back( MT2Analysis<MT2EstimateSigContSyst>::readSystFromFile( sigPath + "/T1tttt_sigcontam_eth.root", "T1tttt_sigcontam", "isr") );
+  
+  analysesSignalCont.push_back( MT2Analysis<MT2EstimateSigContSyst>::readSystFromFile( sigPath + "/T2tt_sigcontam_eth.root", "T2tt_sigcontam", "isr") );
+  analysesSignalCont[2]->setName("pp #rightarrow #tilde{t}#bar{#tilde{t}}, #tilde{t} #rightarrow t#tilde{#chi}_{1}^{0}");
+  
+  analysesSignalCont.push_back( MT2Analysis<MT2EstimateSigContSyst>::readSystFromFile( sigPath + "/T2tt_sigcontam_eth.root", "T2tt_sigcontam", "isr") );
+  analysesSignalCont[3]->setName("T2tt 600, 200");
+  
+  analysesSignalCont.push_back( MT2Analysis<MT2EstimateSigContSyst>::readSystFromFile( sigPath + "/T2tt_sigcontam_eth.root", "T2tt_sigcontam", "isr") );
+  analysesSignalCont[4]->setName("T2tt 200, 100");
   
   std::set<MT2Region> regions = analysis->getRegions();
 
@@ -222,7 +195,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
 
 
   std::vector<std::string> sigName;
-  sigName.push_back("T1bbbb_1500_100");
+  sigName.push_back("T1bbbb_2000_100");
   sigName.push_back("T1bbbb_700_600");
   sigName.push_back("T1qqqq_1300_100");
   sigName.push_back("T1qqqq_700_600");
@@ -280,11 +253,11 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
   styleSig.push_back(1);
 
   int bgSize = 3;
-  int sigSize = 0;//9;
-  int sigContSize = 0;
+//  int sigSize = 0;//9;
+//  int sigContSize = 0;
 
-  // int sigSize = 6;//9;
-  // int sigContSize = 5;
+   int sigSize = 9;
+   int sigContSize = 5;
 
   int S=1;
 
@@ -410,7 +383,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
 	  h_sig3d[s] = new TH3D("emptyHisto", "", nBinsMT2, binsMT2, nBinsM, binsM, nBinsM, binsM);
       
 
-      float m1[]={1500., 1000., 1300., 700., 700., 400., 1000., 600., 500., 1200., 700., 650., 600., 200.};
+      float m1[]={2000., 1000., 1300., 700., 700., 400., 1000., 600., 500., 1200., 700., 650., 600., 200.};
       float m2[]={100., 800., 100., 600., 0., 200., 0., 0., 300., 100., 400., 0., 200., 100.};
 
       int binY, binZ;
@@ -783,7 +756,11 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
       for(int s=0; s<sigSize+sigContSize; ++s){
 
 	int_sig[s]=0;
+
 	for(int b=1; b<=h_sig[s]->GetXaxis()->GetNbins(); b++){
+
+	  if(iMT2->htMin()>=1500 && b==1) continue;
+
 	  if(h_sig[s]->GetBinContent(b) >= 0)
 	    int_sig[s]+=h_sig[s]->GetBinContent(b);
 	}
