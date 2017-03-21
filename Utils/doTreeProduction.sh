@@ -3,16 +3,27 @@
 ############################## configuration lines (TO DO: consider to move this into a separate file) #################################
 
 #MEMO of the command necesasry to list files on T2: 
-# env -i X509_USER_PROXY=~/.x509up_u`id -u` gfal-ls gsiftp://storage01.lcg.cscs.ch/pnfs/lcg.cscs.ch/cms/trivcat/store/user/mangano
+# env -i X509_USER_PROXY=~/.x509up_u`id -u` gfal-ls gsiftp://storage01.lcg.cscs.ch/pnfs/lcg.cscs.ch/cms/trivcat/store/user/mschoene/crab
 
 # NB: Insert path starting from /store/user/... The rest will be added automatically
-inputProductionFolder="/store/user/mschoene/crab/8_0_11/signal2017_Jan11/"
+#inputProductionFolder="/store/user/mschoene/crab/8_0_26/reMini2017_runC_Feb28"
+#inputProductionFolder="/store/user/mschoene/crab/8_0_26/reMini2017_runB_Feb28"
+#inputProductionFolder="/store/user/mschoene/crab/8_0_26/reMini2017_runD_Feb28"
+#inputProductionFolder="/store/user/mschoene/crab/8_0_26/reMini2017_runE_Feb28"
+#inputProductionFolder="/store/user/mschoene/crab/8_0_26/reMini2017_runF_Feb28"
+#inputProductionFolder="/store/user/mschoene/crab/8_0_26/reMini2017_runG_Feb28"
+#inputProductionFolder="/store/user/mschoene/crab/8_0_26/reMini2017_runH_Feb28"
+
+inputProductionFolder="/store/user/mschoene/crab/8_0_26/MT2_gg_15Mar_CutBased15Id"
+
+
+#inputProductionFolder="/store/user/mschoene/crab/8_0_11/signal2017_Jan11/"
 #inputProductionFolder="/store/user/mschoene/crab/8_0_11/mc2016_Nov15"
 
 # In case you want to run the same production twice, adding a post-fix may help
 #postFix=""
 #postFix="_preProc_Jan11"
-postFix="_postProc_Jan12"
+postFix="_preProc_Mar20"
 #postFix="_postProc_Dec09"
 
 # For reading input from T2 (default):
@@ -28,11 +39,11 @@ listOfSamplesFile="postProcessing2016-MC.cfg"   # for MC inputs
 
 isCrab=1
 inputPU="MyDataPileupHistogram.root"
-GoldenJSON="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-251642_13TeV_PromptReco_Collisions15_JSON.txt"
+GoldenJSON="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions16/13TeV/ReReco/Final/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt"
 #"$PWD/gold_runF.txt"  #produced, for example for runE, with: filterJSON.py --min=276831 --max=277420 --output=gold_runE.txt gold_json.txt
 
 ###CHANGE
-doSkimmingPruning=1 #1 as default; 0 for *_forQCD datasets (in data), which don't contain the necessary info to run the skimming and which are already pruned
+doSkimmingPruning=0 #1 as default; 0 for *_forQCD datasets (in data), which don't contain the necessary info to run the skimming and which are already pruned
 applyJSON=0     #0 for MC
 doFilterTxt=0   #0 for MC
 doAllSF=1       #1 for MC
@@ -348,6 +359,7 @@ fi
 
 
 echo "gROOT->LoadMacro(\"goodrunClass.cc+\"); gSystem->Exit(0);" |root.exe -b -l ;
+echo "gROOT->LoadMacro(\"leptonSF.cc+\"); gSystem->Exit(0);" |root.exe -b -l ;
 echo "gROOT->LoadMacro(\"BTagCalibrationStandalone.cc+\"); gSystem->Exit(0);" |root.exe -b -l ;
 echo "gSystem->Load(\"goodrunClass_cc.so\"); gSystem->Load(\"BTagCalibrationStandalone_cc.so\"); gROOT->LoadMacro(\"postProcessing.C+\"); gSystem->Exit(0);" |root.exe -b -l ;
 
@@ -558,7 +570,7 @@ semkdir ${gfalProtocol}://t3se01.psi.ch/$outputFolder
 
 echo "postProcessing(\"$name\",\"$counterFile\",\"$outputFile\",\"$treeName\",$filter,$kfactor,$xsec,$id,\"$crabExt\",\"$inputPU\",\"$PUvar\",\"$jobsLogsFolder/goodruns_golden.txt\",\"$jobsLogsFolder/goodruns_silver.txt\",$applyJSON,$doAllSF,$doSilver,\"$preProcFile\"); gSystem->Exit(0);"
 
-echo "gSystem->Load(\"goodrunClass_cc.so\");  gSystem->Load(\"BTagCalibrationStandalone_cc.so\"); gROOT->LoadMacro(\"postProcessing.C\"); postProcessing(\"$name\",\"$counterFile\",\"$outputFile\",\"$treeName\",$filter,$kfactor,$xsec,$id,\"$crabExt\",\"$inputPU\",\"$PUvar\",$applyJSON,$doAllSF,$doSilver,\"$preProcFile\"); gSystem->Exit(0);" |root.exe -b -l ;
+echo "gSystem->Load(\"goodrunClass_cc.so\"); gSystem->Load(\"leptonSF_cc.so\");  gSystem->Load(\"BTagCalibrationStandalone_cc.so\"); gROOT->LoadMacro(\"postProcessing.C\"); postProcessing(\"$name\",\"$counterFile\",\"$outputFile\",\"$treeName\",$filter,$kfactor,$xsec,$id,\"$crabExt\",\"$inputPU\",\"$PUvar\",$applyJSON,$doAllSF,$doSilver,\"$preProcFile\"); gSystem->Exit(0);" |root.exe -b -l ;
 
 ####echo "gSystem->Load(\"goodrunClass_cc.so\");  gSystem->Load(\"BTagCalibrationStandalone_cc.so\"); gROOT->LoadMacro(\"postProcessing.C\"); postProcessing(\"$name\",\"$counterFile\",\"$outputFile\",\"$treeName\",$filter,$kfactor,$xsec,$id,\"$crabExt\",\"$inputPU\",\"$PUvar\",\"$jobsLogsFolder/goodruns_golden.txt\",\"$jobsLogsFolder/goodruns_silver.txt\",$applyJSON,$doAllSF,$doSilver,\"$preProcFile\"); gSystem->Exit(0);" |root.exe -b -l ;
 
@@ -670,9 +682,9 @@ if [[ "$1" = "mergeData" ]]; then
     # It assumes that the 'doTreeProduction mergeData' script is run after the 'doTreeProduction post' step.
     # If this is not the case, the 'input' variable here may need to be set properly by hand
     # no automated yet to merge the three skim flavours... (un)comment out as necessary
-    input="${outputFolder}/skimAndPrune/"
+    # input="${outputFolder}/skimAndPrune/"
     #input="${outputFolder}/"
-    #input="${outputFolder}/QCDskimAndPrune/"
+    input="${outputFolder}/QCDskimAndPrune/"
     #input="${outputFolder}/QCDMonoJetSkimAndPrune/"
 
 

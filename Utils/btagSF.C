@@ -27,13 +27,13 @@
 #include "TH2F.h"
 #include "TLorentzVector.h"
 
-
 #include "BTagCalibrationStandalone.h"
 
-//using namespace std;
+using namespace std;
 
 //Working point
-float btag_wp = 0.800;
+float btag_wp = 0.8484;
+// float btag_wp = 0.800; // value for 2016 analysis
 
 // setup calibration readers 
 // https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation74X  --  official SFs
@@ -42,7 +42,9 @@ float btag_wp = 0.800;
 class BTagSFHelper{
 public:
   BTagSFHelper(){
-    calib = new BTagCalibrationStandalone("csvv2", "/shome/mschoene/btagSF/CSVv2_ichep.csv");
+
+    calib = new BTagCalibrationStandalone("csvv2", "/shome/mschoene/btagSF/CSVv2Moriond17_2017_1_26_BtoH.csv");
+    //calib = new BTagCalibrationStandalone("csvv2", "/shome/mschoene/btagSF/CSVv2_ichep.csv");
     reader_fullSim_heavy    = new BTagCalibrationStandaloneReader(BTagEntryStandalone::OP_MEDIUM, "central",{"up","down"}); 
     reader_fullSim_light    = new BTagCalibrationStandaloneReader(BTagEntryStandalone::OP_MEDIUM, "central",{"up","down"}); 
 
@@ -53,20 +55,23 @@ public:
     reader_fullSim_light->load(*calib,BTagEntryStandalone::FLAV_B,"incl");
     reader_fullSim_light->load(*calib,BTagEntryStandalone::FLAV_C,"incl");
 
-    f_btag_eff = new TFile("/shome/mschoene/btagSF/btageff__ttbar_powheg_pythia8_25ns.root"); // Dominick's b-tagging efficiencies
+    f_btag_eff = new TFile("/shome/mschoene/btagSF/btageff__ttbar_powheg_pythia8_25ns_Moriond17.root"); // Dominick's b-tagging efficiencies
+    //f_btag_eff = new TFile("/shome/mschoene/btagSF/btageff__ttbar_powheg_pythia8_25ns.root"); // Dominick's b-tagging efficiencies
     h_btag_eff_b    = (TH2D*) f_btag_eff->Get("h2_BTaggingEff_csv_med_Eff_b"   );
     h_btag_eff_c    = (TH2D*) f_btag_eff->Get("h2_BTaggingEff_csv_med_Eff_c"   );
     h_btag_eff_udsg = (TH2D*) f_btag_eff->Get("h2_BTaggingEff_csv_med_Eff_udsg");
 
-    
-    calib_fast = new BTagCalibrationStandalone("csvv2", "/shome/mschoene/btagSF/CSV_13TEV_Combined_14_7_2016.csv"); // 25 ns official version of SFs
+    calib_fast = new BTagCalibrationStandalone("csvv2", "/shome/mschoene/btagSF/fastsim_csvv2_ttbar_26_1_2017.csv"); // <- this is the fixed version, the one on the twiki had a bug in the format (too many "")
+       //    calib_fast = new BTagCalibrationStandalone("csvv2", "/shome/mschoene/btagSF/CSV_13TEV_Combined_14_7_2016.csv"); // 25 ns official version of SFs
+ 
     reader_fastSim    = new BTagCalibrationStandaloneReader(BTagEntryStandalone::OP_MEDIUM, "central", {"up","down"}); 
 
     reader_fastSim->load(*calib_fast,BTagEntryStandalone::FLAV_UDSG,"fastsim");
     reader_fastSim->load(*calib_fast,BTagEntryStandalone::FLAV_B,"fastsim");
     reader_fastSim->load(*calib_fast,BTagEntryStandalone::FLAV_C,"fastsim");
 
-    f_btag_fast_eff = new TFile("/shome/mschoene/btagSF/btageff__SMS-T1bbbb-T1qqqq_fastsim_2016.root"); // Dominick's fast sim b-tagging efficiencies
+    f_btag_fast_eff = new TFile("/shome/mschoene/btagSF/btageff__SMS-T1bbbb-T1qqqq_25ns_Moriond17.root"); // Dominick's fast sim b-tagging efficiencies
+    //f_btag_fast_eff = new TFile("/shome/mschoene/btagSF/btageff__SMS-T1bbbb-T1qqqq_fastsim_2016.root"); // Dominick's fast sim b-tagging efficiencies
     h_btag_fast_eff_b    = (TH2D*) f_btag_fast_eff->Get("h2_BTaggingEff_csv_med_Eff_b"   );
     h_btag_fast_eff_c    = (TH2D*) f_btag_fast_eff->Get("h2_BTaggingEff_csv_med_Eff_c"   );
     h_btag_fast_eff_udsg = (TH2D*) f_btag_fast_eff->Get("h2_BTaggingEff_csv_med_Eff_udsg");
