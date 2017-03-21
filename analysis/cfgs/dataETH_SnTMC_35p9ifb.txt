@@ -1,0 +1,19 @@
+lumi 35.867
+regionsSet zurich2016
+
+gammaTemplateRegions 13TeV_2016_inclusive
+crRegionsSet 13TeV_2016_inclusive
+qcdRegionsSet zurich2016_noMonojet
+
+mcSamples Summer16_SnT_06Mar
+dataSamples Run2016_35p9ifb_06Mar
+
+qcdMCSamples Summer16_SnT_06Mar_forQCD
+qcdDataSamples Run2016_35p9ifb_06Mar_forQCD
+
+qcdMonoJetMCSamples Summer16_SnT_06Mar
+qcdMonoJetDataSamples Run2016_35p9ifb_06Mar_forMonoJet
+
+#additionalStuff noSignals
+#qcdMCSamples Spring16_SnT_Dec02
+#qcdDataSamples Run2016_12p9ifb_qcdSkim
