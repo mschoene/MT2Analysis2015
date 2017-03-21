@@ -35,7 +35,8 @@ float nonQCDunc = 0.20; // extra uncertainty on non-QCD subtraction (relative un
 
 bool onlyUseUpToRunG = true; // only use up to run G for rphi, fj, rb
 //float lumiRatioGtoH = 27.70/36.46;
-float lumiRatioGtoH = 27.958/36.815;
+float lumiRatioGtoH = 27.261/35.876;
+//float lumiRatioGtoH = 27.958/36.815;
 
 //float lumiRatioGtoH = 27.70/36.46;
 int lastRunG = 280385;
@@ -155,12 +156,15 @@ int main( int argc, char* argv[] ) {
   MT2Analysis<MT2EstimateTree>* rest_4rHat ;
   MT2Analysis<MT2EstimateTree>* rest_4fJets;
   //spike removal with id cuts//
-  ////qcdmc_4rHat  = MT2EstimateTree::makeAnalysisFromInclusiveTree( "qcdmc_4rHat"   , regionsSet_rHat  , qcdTree_mc, "((id>150  && id<200) && mt2>100. && mt2<200. && nJets>1 && deltaPhiMin<0.3)" ); // invert deltaPhi (i.e. low deltaphi = not the signal region)
+  qcdmc_4rHat  = MT2EstimateTree::makeAnalysisFromInclusiveTree( "qcdmc_4rHat"   , regionsSet_rHat  , qcdTree_mc, "((id>150  && id<200)&& ht>1000 && mt2>100. && mt2<200. && nJets>1 && deltaPhiMin<0.3)" ); // invert deltaPhi (i.e. low deltaphi = not the signal region)
+  //original: qcdmc_4rHat  = MT2EstimateTree::makeAnalysisFromInclusiveTree( "qcdmc_4rHat"   , regionsSet_rHat  , qcdTree_mc, "((id>150  && id<200) && mt2>100. && mt2<200. && nJets>1 && deltaPhiMin<0.3)" ); // invert deltaPhi (i.e. low deltaphi = not the signal region)
   ////  qcdmc_4rHat  = MT2EstimateTree::makeAnalysisFromInclusiveTree( "qcdmc_4rHat"   , regionsSet_rHat  , qcdTree_mc, "((id>150&&(id>151||ht<450)&&(id>152||ht<575)&&(id>153||ht<1000)&&(id>154||ht<1500)) && id<200 && mt2>100. && mt2<200. && nJets>1 && deltaPhiMin<0.3)" ); // invert deltaPhi (i.e. low deltaphi = not the signal region)
-  qcdmc_4rHat  = MT2EstimateTree::makeAnalysisFromInclusiveTree( "qcdmc_4rHat"   , regionsSet_rHat  , qcdTree_mc, "((id>150&&(id>152||ht<450)&&(id>153||ht<575)&&(id>154||ht<1000)&&(id>155||ht<1500)) && id<200 && mt2>100. && mt2<200. && nJets>1 && deltaPhiMin<0.3)" ); // invert deltaPhi (i.e. low deltaphi = not the signal region)
-  ////qcdmc_4fJets = MT2EstimateTree::makeAnalysisFromInclusiveTree( "qcdmc_4fJets"  , regionsSet_fJets , qcdTree_mc, "((id>150 && id<200 && mt2>100. && mt2<200. && nJets>1 && deltaPhiMin<0.3))" ); // invert deltaPhi ; id=152 plays a role for VLHT in 100<mt2<200 
+  ////qcdmc_4rHat  = MT2EstimateTree::makeAnalysisFromInclusiveTree( "qcdmc_4rHat"   , regionsSet_rHat  , qcdTree_mc, "((id>150&&(id>152||ht<450)&&(id>153||ht<575)&&(id>154||ht<1000)&&(id>155||ht<1500)) && id<200 && mt2>100. && mt2<200. && nJets>1 && deltaPhiMin<0.3)" ); // invert deltaPhi (i.e. low deltaphi = not the signal region)
+  qcdmc_4fJets = MT2EstimateTree::makeAnalysisFromInclusiveTree( "qcdmc_4fJets"  , regionsSet_fJets , qcdTree_mc, "((id>150 && id<200 && mt2>100. && mt2<200. && nJets>1 && deltaPhiMin<0.3))" ); // invert deltaPhi ; id=152 plays a role for VLHT in 100<mt2<200 
+ 
+  //original: qcdmc_4fJets = MT2EstimateTree::makeAnalysisFromInclusiveTree( "qcdmc_4fJets"  , regionsSet_fJets , qcdTree_mc, "((id>150 && id<200 && mt2>100. && mt2<200. && nJets>1 && deltaPhiMin<0.3))" ); // invert deltaPhi ; id=152 plays a role for VLHT in 100<mt2<200 
   ////  qcdmc_4fJets = MT2EstimateTree::makeAnalysisFromInclusiveTree( "qcdmc_4fJets"  , regionsSet_fJets , qcdTree_mc, "((id>150&&(id>151||ht<450)&&(id>152||ht<575)&&(id>153||ht<1000)&&(id>154||ht<1500)) && id<200 && mt2>100. && mt2<200. && nJets>1 && deltaPhiMin<0.3)" ); // invert deltaPhi ; id=152 plays a role for VLHT in 100<mt2<200
-  qcdmc_4fJets = MT2EstimateTree::makeAnalysisFromInclusiveTree( "qcdmc_4fJets"  , regionsSet_fJets , qcdTree_mc, "((id>150&&(id>152||ht<450)&&(id>153||ht<575)&&(id>154||ht<1000)&&(id>155||ht<1500)) && id<200 && mt2>100. && mt2<200. && nJets>1 && deltaPhiMin<0.3)" ); // invert deltaPhi ; id=152 plays a role for VLHT in 100<mt2<200
+  //// qcdmc_4fJets = MT2EstimateTree::makeAnalysisFromInclusiveTree( "qcdmc_4fJets"  , regionsSet_fJets , qcdTree_mc, "((id>150&&(id>152||ht<450)&&(id>153||ht<575)&&(id>154||ht<1000)&&(id>155||ht<1500)) && id<200 && mt2>100. && mt2<200. && nJets>1 && deltaPhiMin<0.3)" ); // invert deltaPhi ; id=152 plays a role for VLHT in 100<mt2<200
 
   if ( !useMC ) {//= DATA!!!
     // with PFHT900 trigger only (HT only triggered)
@@ -885,9 +889,6 @@ void fillFromTreeAndRatio( MT2Estimate* estimate, MT2Estimate* nCR, MT2EstimateS
     float error_fit  = hp_rErr->GetBinContent(iBin);
     float r_up    = hp_rUp->GetBinContent(iBin);
     float r_down  = hp_rDown->GetBinContent(iBin);
-
-    std::cout << "Got the bin contents " << std::endl;
-
 
     // if zero events in control region, take r from lower mt2 edge
     if ( nCR->yield->GetBinContent(iBin)==0 ){

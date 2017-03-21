@@ -317,6 +317,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
   }
 
   THStack bgStack("bgStack", "");
+  THStack bgStackSig("bgStackSig", "");
 
   TH1D* hPull = new TH1D("hPull", "", 101, -5.05, 5.05);
   hPull->Sumw2();
@@ -386,6 +387,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
       //TH1D* h_first = data->get(*iMT2)->yield;
       TGraphAsymmErrors* g_first = MT2DrawTools::getPoissonGraph(h_first);      
       
+      TH1D* h_sig_forExtreme[sigSize+sigContSize];
       TH1D* h_sig[sigSize+sigContSize];
       TH3D* h_sig3d[sigSize+sigContSize];
       for(int s=0; s<sigSize; ++s)
@@ -411,16 +413,35 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
         if( h_sig3d[s] == 0 )
           h_sig3d[s] = new TH3D("emptyHisto", "", nBinsMT2, binsMT2, nBinsM, binsM, nBinsM, binsM);
 
-      float m1[]={2000., 700., 1300., 700., 700., 400., 1000., 600., 500., 1200., 700., 650., 600., 200.};
+      float m1[]={1900., 700., 1300., 700., 700., 400., 1000., 600., 500., 1200., 700., 650., 600., 200.};
       float m2[]={100., 600., 100., 600., 100., 200., 100., 100., 300., 100., 400., 100., 200., 100.};
 
       int binY, binZ;
+
+      double *binsExtreme = bins++;
 
       for(int s = 0; s<sigSize; ++s){
 
         binY = h_sig3d[s]->GetYaxis()->FindBin(m1[s]);
         binZ = h_sig3d[s]->GetZaxis()->FindBin(m2[s]);
-        h_sig[s] = h_sig3d[s]->ProjectionX(Form("mt2_%d", s), binY, binY, binZ, binZ);
+
+        h_sig_forExtreme[s] = h_sig3d[s]->ProjectionX(Form("mt2X_%d", s), binY, binY, binZ, binZ);
+	std::cout << h_sig_forExtreme[s]->GetNbinsX()<<std::endl;
+	
+	if( iMT2->htMin()==1500 && iMT2->nJetsMin()>1 ){
+	  h_sig[s] = new TH1D(Form("mt2_%d", s), "", nBins, binsExtreme);
+	  
+	  std::cout << nBins << " " << binsExtreme[0] << " " << binsExtreme[nBins] << std::endl;
+	  
+	  for( int iBin=1; iBin<=nBins; ++iBin ){
+	    h_sig[s]->SetBinContent( iBin, h_sig_forExtreme[s]->GetBinContent(iBin+1) );
+	    std::cout << nBins << " " << binsExtreme[0] << " " << binsExtreme[nBins] << " " << "iBin " << iBin << " " << h_sig_forExtreme[s]->GetBinContent(iBin+1)  << std::endl;
+	    
+	  }
+
+	  
+	}else
+	  h_sig[s] = (TH1D*)h_sig_forExtreme[s]->Clone(Form("mt2_%d", s));
 
       }
 
@@ -823,18 +844,19 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
 	double int_sig[sigSize+sigContSize];
 	for(int s=0; s<sigSize+sigContSize; ++s){
 	  
-	  if(iMT2->htMin()>=1500){
-	    int_sig[s] = h_sig[s]->GetBinContent(iBin+1);
-	    if(s==0)
-	      std::cout << std::endl << iRegion << " " << iBin <<"/"<<nBins << " " << h_sig[s]->GetXaxis()->GetBinLowEdge(iBin+1) <<  " " << int_sig[s] << std::endl;
-	  }
-	  else
-	    int_sig[s] = h_sig[s]->GetBinContent(iBin);
+//	  if(iMT2->htMin()>=1500){
+//	    int_sig[s] = h_sig[s]->GetBinContent(iBin+1);
+//	    if(s==0)
+//	      std::cout << std::endl << iRegion << " " << iBin <<"/"<<nBins << " " << h_sig[s]->GetXaxis()->GetBinLowEdge(iBin+1) <<  " " << int_sig[s] << std::endl;
+//	  }
+//	  else
+	  int_sig[s] = h_sig[s]->GetBinContent(iBin);
 	  
 	  if( int_sig[s] < 0. ) int_sig[s]=0.;
 	  
 	  hsig[s]->SetBinContent(iRegion, int_sig[s]);
-	  hsig[s]->GetXaxis()->SetBinLabel( iRegion, niceNames[1].c_str() );
+	  std::string thisLabel=Form("%s,%d", niceNames[1].c_str(), iBin);
+	  hsig[s]->GetXaxis()->SetBinLabel( iRegion, thisLabel.c_str() );
 
 	}
 
@@ -1010,6 +1032,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
 
     hestimate[b]->SetLineWidth(0);
     bgStack.Add(hestimate[b]);
+    bgStackSig.Add(hestimate[b]);
     //bgStack.Add(hestimate_forRatio[b]);
     
 //    if(b==0) hestimate_all = (TH1D*) hestimate[b]->Clone("hestimate_all");
@@ -1146,10 +1169,12 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
 //  }
   
 
-  if(drawSignals)
-      bgStack.Add(hsig[S]);
+//  if(drawSignals)
+  bgStack.Add(hsig[S]);
   
-  std::cout <<"Itnegral: " << hsig[S]->Integral(213, -1) <<std::endl;
+  std::cout <<"Integral: " << hsig[S]->Integral(213, -1) <<std::endl;
+  std::cout<<  bgStack.GetNhists() <<std::endl;
+
 
 //  hdata->Draw("pe");
 //  bgStack.Draw("histo, same");
@@ -1455,7 +1480,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
       legend->AddEntry( hsig[S], analysesSignalCont[S-sigSize]->getName().c_str(), "F" );
 
     if(sigName[S]=="T1bbbb_2000_100"){
-      legend->AddEntry( postfit, "m_{#tilde{g}}=2000 GeV", "F");
+      legend->AddEntry( postfit, "m_{#tilde{g}}=1900 GeV", "F");
       legend->AddEntry( postfit, "m_{#tilde{#chi}_{1}^{0}}=100 GeV", "F");
     }
     else if(sigName[S]=="T1qqqq_1300_100"){
@@ -2232,7 +2257,10 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
   haxes->Draw("");
   hestimate_all->Draw("same");  
 
-  ((TH1*)(bgStack.GetStack()->Last()))->SetBinContent(214,0);
+  std::cout<<  ((TH1*)(bgStack.GetStack()->Last()))->GetBinContent(213) <<std::endl;
+  std::cout<<  ((TH1*)(bgStackSig.GetStack()->Last()))->GetBinContent(213) <<std::endl;
+
+  //  ((TH1*)(bgStack.GetStack()->Last()))->SetBinContent(214,0);
 
   bgStack.Draw("histo,same");
   hestimate_all->Draw("E2,same");

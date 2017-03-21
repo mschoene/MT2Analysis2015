@@ -26,6 +26,13 @@ MT2EstimateAllSigSyst::MT2EstimateAllSigSyst( const std::string& aname, const MT
 //  for (int b=0; b<=nBinsM; ++b)
 //    binsM[b]=b*binWidthM;
 
+  int nBinsVert=50;
+  double binWidthVert=1.;
+  double binsVert[nBinsVert+1];
+  for (int b=0; b<=nBinsVert; ++b)
+    binsVert[b]=b*binWidthVert;
+
+
   int nBinsM=93;
   double binWidthM=25.;
   double binsM[nBinsM+1];
@@ -73,6 +80,20 @@ MT2EstimateAllSigSyst::MT2EstimateAllSigSyst( const std::string& aname, const MT
   yield3d_alpha->Sumw2();
 
 
+  yield3d_gt20 = new TH3D( this->getHistoName("yield3d_gt20").c_str(), "", nBins, bins, nBinsM, binsM, nBinsM, binsM);
+  yield3d_gt20->Sumw2();
+
+  yield3d_st20 = new TH3D( this->getHistoName("yield3d_st20").c_str(), "", nBins, bins, nBinsM, binsM, nBinsM, binsM);
+  yield3d_st20->Sumw2();
+
+  // yield3d_gt20 = new TH3D( this->getHistoName("yield3d_gt20").c_str(), "", nBinsVert, binsVert, nBinsM, binsM, nBinsM, binsM);
+  // yield3d_gt20->Sumw2();
+
+  // yield3d_st20 = new TH3D( this->getHistoName("yield3d_st20").c_str(), "", nBinsVert, binsVert, nBinsM, binsM, nBinsM, binsM);
+  // yield3d_st20->Sumw2();
+
+
+
 
   //  int nBinsMY=161;
   //  double binWidthMY=5.;
@@ -113,6 +134,10 @@ MT2EstimateAllSigSyst::MT2EstimateAllSigSyst( const MT2EstimateAllSigSyst& rhs )
   this->yield3d_crsl  = new TH3D(*(rhs.yield3d_crsl));
   this->yield3d_alpha = new TH3D(*(rhs.yield3d_alpha));
 
+ 
+ this->yield3d_gt20 = new TH3D(*(rhs.yield3d_gt20));
+ this->yield3d_st20 = new TH3D(*(rhs.yield3d_st20));
+
 
 }
 
@@ -142,6 +167,9 @@ MT2EstimateAllSigSyst::~MT2EstimateAllSigSyst() {
   delete yield3d_crsl;
   delete yield3d_alpha;
 
+  delete yield3d_gt20;
+  delete yield3d_st20;
+  
 }
 
 
@@ -175,6 +203,9 @@ void MT2EstimateAllSigSyst::setName( const std::string& newName ) {
   yield3d_alpha  ->SetName( this->getHistoName("yield3d_alpha").c_str() );
   yield3d_crsl  ->SetName( this->getHistoName("yield3d_crsl").c_str() );
 
+  yield3d_gt20  ->SetName( this->getHistoName("yield3d_gt20").c_str() );
+  yield3d_st20  ->SetName( this->getHistoName("yield3d_st20").c_str() );
+
 
 }
 
@@ -201,6 +232,11 @@ void MT2EstimateAllSigSyst::setSystName( const std::string& newSystName ) {
 
   yield3d_alpha  ->SetName( this->getHistoName("yield3d_alpha").c_str() );
   yield3d_crsl  ->SetName( this->getHistoName("yield3d_crsl").c_str() );
+
+
+  yield3d_gt20  ->SetName( this->getHistoName("yield3d_gt20").c_str() );
+  yield3d_st20  ->SetName( this->getHistoName("yield3d_st20").c_str() );
+ 
 
 }
 
@@ -237,6 +273,9 @@ void MT2EstimateAllSigSyst::getShit( TFile* file, const std::string& path ) {
 
   yield3d_crsl    = (TH3D*)file->Get(Form("%s/%s", path.c_str(), yield3d_crsl->GetName()));
   yield3d_alpha   = (TH3D*)file->Get(Form("%s/%s", path.c_str(), yield3d_alpha->GetName()));
+
+  yield3d_gt20   = (TH3D*)file->Get(Form("%s/%s", path.c_str(), yield3d_gt20->GetName()));
+  yield3d_st20   = (TH3D*)file->Get(Form("%s/%s", path.c_str(), yield3d_st20->GetName()));
 
 }
 
@@ -324,6 +363,9 @@ void MT2EstimateAllSigSyst::write() const {
   yield3d_crsl->Write();
   yield3d_alpha->Write();
 
+  yield3d_gt20->Write();
+  yield3d_st20->Write();
+
 }
 
 
@@ -355,6 +397,9 @@ const MT2EstimateAllSigSyst& MT2EstimateAllSigSyst::operator=( const MT2Estimate
 
   this->yield3d_crsl    = new TH3D(*(rhs.yield3d_crsl));
   this->yield3d_alpha   = new TH3D(*(rhs.yield3d_alpha));
+
+  this->yield3d_gt20   = new TH3D(*(rhs.yield3d_gt20));
+  this->yield3d_st20   = new TH3D(*(rhs.yield3d_st20));
 
 
   this->systName = rhs.systName;
@@ -394,6 +439,9 @@ const MT2EstimateAllSigSyst& MT2EstimateAllSigSyst::operator=( const MT2Estimate
   this->yield3d_crsl    = new TH3D(*(rhs.yield3d));
   this->yield3d_alpha   = new TH3D(*(rhs.yield3d));
 
+  this->yield3d_gt20   = new TH3D(*(rhs.yield3d));
+  this->yield3d_st20   = new TH3D(*(rhs.yield3d));
+
   this->systName = "syst";
 
   this->setName( this->getName() );
@@ -428,6 +476,9 @@ const MT2EstimateAllSigSyst& MT2EstimateAllSigSyst::operator+=( const MT2Estimat
 
   this->yield3d_crsl->Add(rhs.yield3d_crsl);
   this->yield3d_alpha->Add(rhs.yield3d_alpha);
+
+  this->yield3d_gt20->Add(rhs.yield3d_gt20);
+  this->yield3d_st20->Add(rhs.yield3d_st20);
 
   return (*this);
 
@@ -476,8 +527,12 @@ MT2EstimateAllSigSyst MT2EstimateAllSigSyst::operator*( float k ) const{
   result.yield3d_crsl    = new TH3D(*(this->yield3d_crsl));  
   result.yield3d_crsl->Scale(k);
   result.yield3d_alpha   = new TH3D(*(this->yield3d_alpha)); 
-  result.yield3d_crsl->Scale(k);
+  result.yield3d_alpha->Scale(k);
 
+  result.yield3d_gt20   = new TH3D(*(this->yield3d_gt20)); 
+  result.yield3d_gt20->Scale(k);
+  result.yield3d_st20   = new TH3D(*(this->yield3d_st20)); 
+  result.yield3d_st20->Scale(k);
 
   return result;
 
@@ -526,7 +581,12 @@ MT2EstimateAllSigSyst MT2EstimateAllSigSyst::operator/( float k ) const{
   result.yield3d_crsl    = new TH3D(*(this->yield3d_crsl));  
   result.yield3d_crsl->Scale(1./k);
   result.yield3d_alpha   = new TH3D(*(this->yield3d_alpha)); 
-  result.yield3d_crsl->Scale(1./k);
+  result.yield3d_alpha->Scale(1./k);
+
+  result.yield3d_gt20   = new TH3D(*(this->yield3d_gt20)); 
+  result.yield3d_gt20->Scale(1./k);
+  result.yield3d_st20   = new TH3D(*(this->yield3d_st20)); 
+  result.yield3d_st20->Scale(1./k);
 
   return result;
 
@@ -558,6 +618,9 @@ const MT2EstimateAllSigSyst& MT2EstimateAllSigSyst::operator*=( float k ) {
   this->yield3d_crsl->Scale(k);
   this->yield3d_alpha->Scale(k);
 
+  this->yield3d_gt20->Scale(k);
+  this->yield3d_st20->Scale(k);
+
   return (*this);
 
 }
@@ -583,6 +646,9 @@ const MT2EstimateAllSigSyst& MT2EstimateAllSigSyst::operator/=( float k ) {
 
   this->yield3d_crsl->Scale(1./k);
   this->yield3d_alpha->Scale(1./k);
+
+  this->yield3d_gt20->Scale(1./k);
+  this->yield3d_st20->Scale(1./k);
 
   return (*this);
 

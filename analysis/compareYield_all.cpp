@@ -736,8 +736,8 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   bgStack.Draw("histo, same");
   hestimate_all->Draw("E2,same");
   //  hdata->Draw("pe,same");
-  gdata_zero->Draw("pe,same");
-  gdata->Draw("pe,same");
+  gdata_zero->Draw("pe0,same");
+  gdata->Draw("pe0,same");
   
   TH1D* prefit=new TH1D("prefit", "", 1, 0, 1);
   prefit->SetFillColor(0);
@@ -808,6 +808,26 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
     htBox[iHT]->Draw("same");
 
   }
+
+  
+  std::vector< std::string > jRegions;
+  jRegions.push_back("0b");
+  jRegions.push_back("#geq1b");
+  TPaveText* jBox[2];
+  for( int iHT = 0; iHT < 2; ++iHT){
+
+    jBox[iHT] = new TPaveText(0.18+0.065*iHT, 0.9-0.08, 0.22+0.065*iHT, 0.85-0.02, "brNDC");
+    jBox[iHT]->AddText( jRegions[iHT].c_str() );
+
+    jBox[iHT]->SetBorderSize(0);
+    jBox[iHT]->SetFillColor(kWhite);
+    jBox[iHT]->SetTextSize(0.035);
+    jBox[iHT]->SetTextAlign(21);
+    jBox[iHT]->SetTextFont(62);
+    jBox[iHT]->Draw("same");
+
+  }
+
 //  htRegions.push_back("H_{T} [250,450] GeV");
 //  htRegions.push_back("H_{T} [450,575] GeV");
 //  htRegions.push_back("H_{T} [575,1000] GeV");
@@ -931,7 +951,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   h_band->Draw("E2same");
   LineCentral->Draw("same");
   //  h_Ratio->Draw("pe,same");
-  g_Ratio->Draw("pe,same");
+  g_Ratio->Draw("pe0,same");
   
 
   TLine* lHT_b[6];
@@ -979,16 +999,17 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   for(unsigned int b=0; b<bgSize; ++b)
     hestimate[b]->Write();
 
-  //  gStyle->SetOptStat(0110);
-  gStyle->SetOptFit(0011);
-  
+  gStyle->SetOptStat(1110);
+//  gStyle->SetOptFit(0011);
+  gStyle->SetOptFit(1);
+
   TF1* fgauss= new TF1("fgauss", "gaus", -5, 5);
   fgauss->SetLineColor(2);
 
   TCanvas* c3 = new TCanvas("c3", "", 600, 600);
   c3->cd();
   
-  hPull->SetStats(1100);
+  hPull->SetStats(1110);
   //  hPull->GetYaxis()->SetRangeUser(0, 15);
   hPull->Draw("hist");
   hPull->Fit("fgauss");
@@ -997,17 +1018,18 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   labelTop = MT2DrawTools::getLabelTop(lumi);
   labelTop->Draw("same");
 
-  labelCMS = MT2DrawTools::getLabelCMS("CMS Supplementary");
+  labelCMS = MT2DrawTools::getLabelCMS("CMS Preliminary");
+  //  labelCMS = MT2DrawTools::getLabelCMS("CMS Supplementary");
   labelCMS->Draw("same");
   
-  TPaveText *arxiv = new TPaveText(0.2, 0.9-0.05, 0.35, 0.9, "brNDC");
-  arxiv->AddText( "arXiv:1603.04053" );
-  arxiv->SetBorderSize(0);
-  arxiv->SetFillColor(kWhite);
-  //  arxiv->SetTextSize(0.035);
-  arxiv->SetTextAlign(11); // align centered                                                                                                                                  
-  arxiv->SetTextFont(42);
-  arxiv->Draw("same");
+//  TPaveText *arxiv = new TPaveText(0.2, 0.9-0.05, 0.35, 0.9, "brNDC");
+//  arxiv->AddText( "arXiv:1603.04053" );
+//  arxiv->SetBorderSize(0);
+//  arxiv->SetFillColor(kWhite);
+//  //  arxiv->SetTextSize(0.035);
+//  arxiv->SetTextAlign(11); // align centered                                                                                                                                  
+//  arxiv->SetTextFont(42);
+//  arxiv->Draw("same");
   
   c3->SaveAs( Form("%s/PullDistribution.pdf", fullPath.c_str()) );
   c3->SaveAs( Form("%s/PullDistribution.png", fullPath.c_str()) );

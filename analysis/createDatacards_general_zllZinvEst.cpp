@@ -29,8 +29,11 @@ bool doSignalContamination = true;
 bool doSimultaneousFit = false;
 bool includeSignalUnc = true; // signal lep eff commented out till available
 //set back to this: bool includeSignalUnc = true; // signal lep eff commented out till available
-bool copy2SE = true; // copy datacards to SE
+bool copy2SE = false; // copy datacards to SE
 bool doGenAverage = true;
+bool addSigLepSF= true;
+
+
 
 int round(float d) {
   return (int)(floor(d + 0.5));
@@ -94,7 +97,6 @@ int main( int argc, char* argv[] ) {
   std::string mc_fileName = dir + "/analyses.root";
   std::string data_fileName = dir + "/analyses.root";
 
-  bool addSigLepSF= true;
 
   bool useMC_qcd  = false;
   bool useMC_zinv = false;
@@ -133,8 +135,11 @@ int main( int argc, char* argv[] ) {
 
   float zinv_doubleRatioOffset = 0.89; // 89%, used to correct the Z/G ratio in zinv estimate // TO BE UPDATED IN CASE IT CHANGES WITH FULL LUMI
   
-  float err_lumi_corr   = 0.062; // Uncertainty on luminosity (6.2% for 2016 public results)
+  float err_lumi_corr   = 0.026; // Uncertainty on luminosity (2.6% for 2016 pp run)
+  //  float err_lumi_corr   = 0.062; // Uncertainty on luminosity (6.2% for 2016 public results prelim)
   // float err_lumi_corr   = 0.046; // Uncertainty on luminosity (6.2% for 2016 public results)
+
+  float err_sig_PU   = 0.046; // Uncertainty on luminosity (2.6% for 2016 pp run)
 
   float err_jec_llep = 0.02;
   float err_jec_zinv= 0.02; //special case for VL in line
@@ -650,6 +655,8 @@ int main( int argc, char* argv[] ) {
 	
 	datacard << "lumi_syst    lnN    " << 1.+err_lumi_corr << " - - - " << 1.+err_lumi_corr << " -" << std::endl;
 
+	datacard << "PU_syst    lnN    " << 1.+err_sig_PU << " - - - " << 1.+err_sig_PU << " -" << std::endl;
+
 	datacard << "jec    lnN    - " << 1.+ err_jec_zinv  << " " << 1.+ err_jec_llep << "  - "  << std::endl;
 
 	datacard << "lep_eff    lnN    - " << 1. + err_lep_eff << " " << 1.+ err_lep_eff << "  - "  << std::endl;
@@ -663,7 +670,7 @@ int main( int argc, char* argv[] ) {
 	  datacard << "sig_isrSyst lnN III - - - - -" << std::endl;
 	  datacard << "sig_bTagHeavySyst lnN HHH - - - - -" << std::endl;
 	  datacard << "sig_bTagLightSyst lnN LLL - - - - -" << std::endl;
-	  if( addSigLepSF && (model=="T2tt" || model=="T1tttt") )
+	  if( addSigLepSF && (model=="T2tt" || model=="T1tttt" || model == "T2bt" || model == "T2bW") )
 	    datacard << "sig_lepEffSyst lnN EEE - - - - -" << std::endl; // Include lepton eff. uncertainty only for T2tt and T1tttt
 	}
 
@@ -681,6 +688,7 @@ int main( int argc, char* argv[] ) {
 	datacard << "-------------" << std::endl;
 	
 	datacard << "lumi_syst    lnN    " << 1.+err_lumi_corr << " - - -" << std::endl;
+	datacard << "PU_syst    lnN    " << 1.+err_sig_PU << " - - -" << std::endl;
 
 	datacard << "lep_eff    lnN    - " << 1. + err_lep_eff << " " << 1. + err_lep_eff << "  - "  << std::endl;
 	datacard << "jec    lnN    - " << 1.+ err_jec_zinv  << " " << 1.+ err_jec_llep << "  - "  << std::endl;
@@ -696,7 +704,7 @@ int main( int argc, char* argv[] ) {
 	  datacard << "sig_isrSyst lnN III - - -" << std::endl;
 	  datacard << "sig_bTagHeavySyst lnN HHH - - -" << std::endl;
 	  datacard << "sig_bTagLightSyst lnN LLL - - -" << std::endl;
-	  if( addSigLepSF && ((model=="T2tt" || model=="T1tttt")) )
+	  if( addSigLepSF && ((model=="T2tt" || model=="T1tttt" || model == "T2bt" || model == "T2bW")) )
 	    datacard << "sig_lepEffSyst lnN EEE - - -" << std::endl; // Include lepton eff. uncertainty only for T2tt and T1tttt 
 	}
       }
@@ -912,13 +920,7 @@ int main( int argc, char* argv[] ) {
 	    Ngamma = round(this_zinvCR->GetBinContent(iBin)); //If NOT using extrapolation, photon CR is corresponding bin
 	    Nzll = round(this_zinvCR_zll->GetBinContent(iBin)); //If NOT using extrapolation, zll CR is corresponding bin
 	  }else if( use_hybrid ){
-
-	    std::cout << zinvCR_name << std::endl;
-	    std::cout << this_zinvCR_zll->Integral() << std::endl;
-	    std::cout << round(this_zinvCR_zll->Integral()) << std::endl;
-
 	    Nzll = round(this_zinvCR_zll->Integral()); //If using extrapolation (DEFAULT), zll CR is integrated over MT2
-
 	  }else{
 	    Ngamma = round(this_zinvCR->Integral()); // If using extrapolation (DEFAULT), photon CR is integrated over MT2
 	    Nzll = round(this_zinvCR_zll->Integral()); // If using extrapolation (DEFAULT), zll CR is integrated over MT2
@@ -934,9 +936,6 @@ int main( int argc, char* argv[] ) {
 	  //float err_zinvZll_purity = (this_purity_zll_err->GetBinContent(iBin));
 	  // p_errUp_zll = p_errDown_zll = err_zinvZll_purity;
 
-
-
-	  std::cout << "purity " << p_zll << std::endl;
  
 	  if(doSimultaneousFit && includeCR){
 	    datacard << "zinvDY_Rsfof  lnN  - " << 1.+ 0.15*(1.-p_zll) << " - - - -" << std::endl;
@@ -945,7 +944,7 @@ int main( int argc, char* argv[] ) {
 	  }
 
 	  zinvZll_systUp += (0.15*(1.-p_zll))*(0.15*(1.-p_zll));
-	  zinvZll_systDn +=  (0.15*(1.-p_zll))*(0.15*(1.-p_zll));
+	  zinvZll_systDn += (0.15*(1.-p_zll))*(0.15*(1.-p_zll));
 
 
 
@@ -1545,6 +1544,7 @@ int main( int argc, char* argv[] ) {
 	   
 	   // For TR 2-6j, 3b get F(J) as 2-3j + 4-6j
 	   //and also for very low HT
+
 	   if( iR->nBJetsMin()==3 && iR->nJetsMin()==2 ) {
 	     
 	     int otherFJetsBin  = this_qcd_fjets->FindBin(4);
@@ -1670,8 +1670,10 @@ int main( int argc, char* argv[] ) {
   std::vector<MT2Analysis<MT2EstimateSigSyst>*> signals_bTagLight;
   std::vector<MT2Analysis<MT2EstimateSigSyst>*> signals_lepEff;
 
+  //MT2Analysis<MT2Estimate>* llep_bin_extrapol;
+ 
   std::string modelName = model;
-  if( model == "T2tt" || model == "T1tttt" )
+  if( model == "T2tt" || model == "T1tttt" || model == "T2bt" || model == "T2bW")
     modelName += "_sigcontam";
 
   // // for running on ETH processed signal 
@@ -1694,8 +1696,11 @@ int main( int argc, char* argv[] ) {
     signals_bTagHeavy = MT2Analysis<MT2EstimateSigSyst>::readAllSystFromFile( "./signalScansFromDominick/"+modelName+"_eth.root", modelName, "btagsf_heavy" );
     signals_bTagLight = MT2Analysis<MT2EstimateSigSyst>::readAllSystFromFile( "./signalScansFromDominick/"+modelName+"_eth.root", modelName, "btagsf_light" );
     
-    if( addSigLepSF && (( model == "T2tt" || model == "T1tttt" )) )
+    if( addSigLepSF && (( model == "T2tt" || model == "T1tttt" || model == "T2bt" || model == "T2bW" )) ){
       signals_lepEff = MT2Analysis<MT2EstimateSigSyst>::readAllSystFromFile( "./signalScansFromDominick/"+modelName+"_eth.root", modelName, "lepeff" );
+      //llep_bin_extrapol = MT2Analysis<MT2Estimate>::readFromFile( dir + "/llepEstimate.root", "extrapol_bin" );
+    }
+   
   }
   
   
@@ -1748,7 +1753,13 @@ int main( int argc, char* argv[] ) {
 
     // Start loop over topological regions
     for( std::set<MT2Region>::iterator iR=regions.begin(); iR!=regions.end(); ++iR ) {
-      
+
+
+      //For signal contamination
+      TH1D* this_llep_bin_extrapol = llep_bin_extrapol->get(*iR)->yield;
+      int llep_hybridBin = this_llep_bin_extrapol->GetBinContent(1);
+      int extrapol_bin_llep = ( use_hybrid ) ?  llep_hybridBin : 1;
+
       TH3D* this_signal3d_central;
       TH1D* this_signalParent;
       
@@ -1800,7 +1811,8 @@ int main( int argc, char* argv[] ) {
 	else
 	  this_signal3d_bTagLight_Up = (TH3D*) signals[isig]->get(*iR)->yield3d->Clone();
 	
-	if( addSigLepSF && (( model == "T2tt" || model == "T1tttt" ))){
+	
+	if( addSigLepSF && (( model == "T2tt" || model == "T1tttt" || model == "T2bt" || model == "T2bW"))){
 	  thisSigSyst_lepEff = signals_lepEff[isig]->get(*iR);
 	  if( thisSigSyst_lepEff->yield3d_systUp!=0 )
 	    this_signal3d_lepEff_Up       = (TH3D*) signals_lepEff[isig]->get(*iR)->yield3d_systUp->Clone();
@@ -1814,24 +1826,44 @@ int main( int argc, char* argv[] ) {
       for( int iBinY=1; iBinY<this_signalParent->GetNbinsX()+1; ++iBinY ){
 	
 	float mParent = this_signalParent->GetBinLowEdge(iBinY);
-	if( !(mParent >= m1-1 && mParent < m2-1) ) continue;
+
+      	if( !(mParent >= m1-1 && mParent < m2-1) ) continue;
 	
 	// Get LSP masses for this parent mass
 	TH1D* this_signalLSP = this_signal3d_central->ProjectionZ("mLSP", 0, -1, iBinY, iBinY);
 	
 	// Start loop over LSP masses
+	//for( int iBinZ=1; iBinZ < this_signalLSP->GetNbinsX()+1; ++iBinZ ) {
 	for( int iBinZ=1; iBinZ < iBinY; ++iBinZ ) {
 	  
 	  float mLSP = this_signalLSP->GetBinLowEdge(iBinZ);
+	  
+	  std::cout << mParent << " MParent and " << mLSP << " mLSP " << std::endl;
+	  std::cout << iBinY << " and bin " << iBinZ << std::endl;
+
+	  //	  std::cout << this_signalParent->GetNbinsX() << " number of bins " << this_signalLSP->GetNbinsX() << std::endl;
+
 	  if( !(mLSP >= m11-1 && mLSP < m22-1) ) continue;
 	  
 	  // Get MT2 yield histogram for this mass point
 	  TH1D* this_signal      = this_signal3d_central->ProjectionX("mt2"     , iBinY, iBinY, iBinZ, iBinZ);
 	  TH1D* this_signal_syst = this_signal3d_central->ProjectionX("mt2_syst", iBinY, iBinY, iBinZ, iBinZ);
+
+	  TH1D* this_signal_reco = this_signal3d_central->ProjectionX("mt2_reco"     , iBinY, iBinY, iBinZ, iBinZ);
+
+	  std::cout << "got integrated signal yield of " << this_signal_reco->Integral() << std::endl;
+
 	  
 	  if (doGenAverage && signals[isig]->get(*iR)->yield3d_genmet!=0) {
 	    TH3D* this_signal3d_central_genmet = signals[isig]->get(*iR)->yield3d_genmet;
 	    TH1D* this_signal_genmet = this_signal3d_central_genmet->ProjectionX("mt2_genmet", iBinY, iBinY, iBinZ, iBinZ);
+
+	    std::string SignalRegionName = iR->getName();
+
+	    // std::cout << "Averaging in region " << SignalRegionName << std::endl;
+	    // std::cout << this_signal->GetBinContent(1) << std::endl;
+	    // std::cout << this_signal_genmet->GetBinContent(1) << std::endl;
+
 	    this_signal->Add(this_signal_genmet);
 	    this_signal->Scale(0.5);
 
@@ -1855,7 +1887,7 @@ int main( int argc, char* argv[] ) {
 	  TH1D* this_signal_crsl_syst;
 	  TH1D* this_signal_alpha;
 	  
-	  if( (model == "T2tt" || model == "T1tttt") && doSignalContamination ){
+	  if( (model == "T2tt" || model == "T1tttt" || model == "T2bt" || model == "T2bW" ) && doSignalContamination ){
 	    this_signal3d_crsl        = (TH3D*) signals[isig]->get(*iR)->yield3d_crsl       ->Clone();
 	    //this_signal3d_crsl = (TH3D*) signalVeto_1lCR[isig]->get(*iR)->yield3d->Clone();
 	    this_signal_crsl        = this_signal3d_crsl       ->ProjectionX("mt2_crsl", iBinY, iBinY, iBinZ, iBinZ);
@@ -1864,27 +1896,80 @@ int main( int argc, char* argv[] ) {
 	    if (doGenAverage && signals[isig]->get(*iR)->yield3d_crsl_genmet!=0){
 	      TH3D *this_signal3d_crsl_genmet = (TH3D*) signals[isig]->get(*iR)->yield3d_crsl_genmet->Clone();
 	      TH1D *this_signal_crsl_genmet = this_signal3d_crsl_genmet->ProjectionX("mt2_crsl", iBinY, iBinY, iBinZ, iBinZ);
+
+	      std::string SignalRegionName = iR->getName();
+	      std::cout << "Averaging SC in region " << SignalRegionName << std::endl;
+	      std::cout << this_signal_crsl->GetBinContent(1) << std::endl;
+	      std::cout << this_signal_crsl_genmet->GetBinContent(1) << std::endl;
+
 	      this_signal_crsl->Add(this_signal_crsl_genmet);
 	      this_signal_crsl->Scale(0.5);
 
 	      this_signal_crsl_syst= this_signal3d_crsl->ProjectionX("mt2_crsl_syst", iBinY, iBinY, iBinZ, iBinZ);
 	      this_signal_crsl_syst->Add(this_signal_crsl_genmet,-1.0);
 	      this_signal_crsl_syst->Scale(0.5);
+  
+
+	    }else{
+	      std::string SignalRegionName = iR->getName();
+ 	      std::cout << "Not averaging SC in region " << SignalRegionName << std::endl;
+	      std::cout << this_signal_crsl->GetBinContent(1) << std::endl;
+	      
 	    }
+
 	    
-	  //	  //If want to replace yield in 1l CR for signal contamination
-	  //	  TH1D* this_signal_veto_1lCR = (TH1D*) signalVeto_1lCR[isig]->get(*iR)->yield->Clone();
-	  //	  // Then, below replace this_signal_crsl with this histogram;
+	    //	  //If want to replace yield in 1l CR for signal contamination
+	    //	  TH1D* this_signal_veto_1lCR = (TH1D*) signalVeto_1lCR[isig]->get(*iR)->yield->Clone();
+	    //	  // Then, below replace this_signal_crsl with this histogram;
 	    
 	    if( doSimultaneousFit )
 	      this_signalContamination = (TH1D*) this_signal_crsl->Clone();
 	    else{
+	      std::string SignalRegionName = iR->getName();
+	      std::cout << "scaling by alpha in region " << SignalRegionName << std::endl;
+	      	      
+
+
 	      this_signalContamination = (TH1D*) this_signal_alpha->Clone();
-	      this_signalContamination->Scale( this_signal_crsl->Integral() );
-	      if(doGenAverage){
+	      if(doGenAverage)
 		this_signalContamination_syst = (TH1D*) this_signal_alpha->Clone("mt2_cont_syst");
-		this_signalContamination_syst->Scale( this_signal_crsl_syst->Integral() );
-	      }
+		
+
+	      TH1D* alpha_copy = (TH1D*) this_signal_alpha->Clone();
+		
+	      //Hybrid method for llep also for signal contamination
+	      for( int iBin=1; iBin<this_signal->GetNbinsX()+1; ++iBin ) {
+
+		if(iBin < extrapol_bin_llep){ // BIN BY BIN CASE
+		
+		  //  this_signalContamination->Scale( this_signal_crsl->Integral() );
+	      	      
+		  this_signalContamination->SetBinContent( iBin, this_signalContamination->GetBinContent(iBin) * this_signal_crsl->GetBinContent(iBin) );
+
+		  if(doGenAverage){
+		    //  this_signalContamination_syst = (TH1D*) this_signal_alpha->Clone("mt2_cont_syst");
+		    //this_signalContamination_syst->Scale( this_signal_crsl_syst->Integral() );
+		    this_signalContamination_syst->SetBinContent( iBin, this_signalContamination_syst->GetBinContent(iBin) * this_signal_crsl_syst->GetBinContent(iBin)  );
+ 
+		  }
+		}else{ //EXTRAPOLATION CASE
+		  // this_signalContamination = (TH1D*) this_signal_alpha->Clone();
+
+		  //this_signalContamination->Scale( this_signal_crsl->Integral() );
+	      	      
+		  this_signalContamination->SetBinContent( iBin, alpha_copy->GetBinContent(iBin) * alpha_copy->GetBinContent(iBin)/alpha_copy->Integral(extrapol_bin_llep, -1) * this_signal_crsl->Integral(extrapol_bin_llep, -1) );
+ 
+
+		  if(doGenAverage){
+		    //this_signalContamination_syst = (TH1D*) this_signal_alpha->Clone("mt2_cont_syst");
+		    //this_signalContamination_syst->Scale( this_signal_crsl_syst->Integral() );
+		    this_signalContamination_syst->SetBinContent( iBin, alpha_copy->GetBinContent(iBin) * alpha_copy->GetBinContent(iBin)/alpha_copy->Integral(extrapol_bin_llep, -1) * this_signal_crsl_syst->Integral(extrapol_bin_llep, -1) );
+ 
+		  }
+		}
+
+
+	      } 
 	    }
 	  }
 	  else{
@@ -1899,10 +1984,20 @@ int main( int argc, char* argv[] ) {
 	  }
 	    
 	  //////
+
+	  // if( (model == "T2tt" || model == "T1tttt" || model == "T2bt" || model == "T2bW" ) && doSignalContamination ){
+
+	  //   std::string SignalRegionName = iR->getName();
+	  //   std::cout << "Final signal contam value in bin 1 for " << SignalRegionName << std::endl;
+
+	  //   std::cout << this_signal_crsl->GetNbinsY() << "  " << this_signal_crsl->GetNbinsZ() << std::endl;
+
+	  //   std::cout << this_signal_crsl->GetBinContent(1) << std::endl;
+	  // }
 	  
 	  //Start loop over MT2 bins
 	  for( int iBin=1; iBin<this_signal->GetNbinsX()+1; ++iBin ) {
-	    
+
 	    bool includeCR=false;
 	    if(iBin==1) includeCR=true;
 	    if(iR->nJetsMin()>=7 && iR->nBJetsMin()>1) includeCR=false;
@@ -1915,7 +2010,7 @@ int main( int argc, char* argv[] ) {
 	    if( iR->htMin()==1500 && iR->nJetsMin()>1 && mt2Min==200 ) continue;
 	    
 	    // If bin is empty, do not create card
-	    if( this_signal->GetBinContent(iBin) <=0 );
+	    if( this_signal->GetBinContent(iBin) <=0 ) ;
 	    else{
 	      
 	      std::string binName;
@@ -1967,8 +2062,16 @@ int main( int argc, char* argv[] ) {
 
 
 	      float sig = this_signal->GetBinContent(iBin);
-	      float sigErr = this_signal->GetBinError(iBin)/sig;
+	 
+	      //	      float sigErr = this_signal->GetBinError(iBin)/sig;
 	      float sig_syst = 0;
+
+	      float sig_reco = this_signal_reco->GetBinContent(iBin);
+
+	      if( !( sig_reco > 0) ) continue;
+
+	      float sigErr = this_signal_reco->GetBinError(iBin)/sig_reco;
+
 	      
 	      ////// If you want to replace central yield
 	      //	      float sig_veto = this_signal_veto->GetBinContent(iBin);
@@ -1977,14 +2080,14 @@ int main( int argc, char* argv[] ) {
 	      sig*=xs_norm; // To eventually rescale xsec.
 	      
 	      //Scaling to lumi (so one doesn't have to reloop to change lumi), for ETH, not for SnT histograms
-	      //sig *= cfg.lumi();
+	      //sig *= cfg.lumi(;)
 
 	      // Siganl Contamination
 	      double sigContErr = 0.0;
 	      double sigCont = 0.0;
-	      if(doSignalContamination && doSimultaneousFit)
+	      if(doSignalContamination && doSimultaneousFit){
 		sigCont = this_signalContamination->IntegralAndError(1, -1, sigContErr);
-	      else if(doSignalContamination && !doSimultaneousFit){
+	      }else if(doSignalContamination && !doSimultaneousFit){
 		sigCont = this_signalContamination->GetBinContent(iBin);
 		sigContErr = this_signalContamination->GetBinError(iBin);
 	      }
@@ -1999,29 +2102,46 @@ int main( int argc, char* argv[] ) {
 	      
 	      if( includeSignalUnc ) {
 		
-		isrErr = this_signal3d_isr_Up->GetBinContent(iBin, iBinY, iBinZ);
-		//isrErr = 2 - isrErr/sig;
-		isrErr = isrErr/sig; // before without the 1+
-		//isrErr = 1. + isrErr/sig; // before without the 1+
-		//isrErr = isrErr/sig;
+		if( sig_reco > 0.){
+		  isrErr = this_signal3d_isr_Up->GetBinContent(iBin, iBinY, iBinZ);
+		  //isrErr = 2 - isrErr/sig;
+		  isrErr = isrErr/sig_reco; //before /sig, now we use the reco yield
+		  //isrErr = 1. + isrErr/sig; // before without the 1+
+		  //isrErr = isrErr/sig;
 	      
-		bTagErr_heavy = this_signal3d_bTagHeavy_Up->GetBinContent(iBin, iBinY, iBinZ);
-		bTagErr_heavy = bTagErr_heavy/sig;// before without the 1+
-		//		bTagErr_heavy = 1. + bTagErr_heavy/sig;// before without the 1+
+		  bTagErr_heavy = this_signal3d_bTagHeavy_Up->GetBinContent(iBin, iBinY, iBinZ);
+		  bTagErr_heavy = bTagErr_heavy/sig_reco;// before without the 1+
+		  //		bTagErr_heavy = 1. + bTagErr_heavy/sig;// before without the 1+
 	      
-		bTagErr_light = this_signal3d_bTagLight_Up->GetBinContent(iBin, iBinY, iBinZ);
-		bTagErr_light = bTagErr_light/sig;// before without the 1+
-		//bTagErr_light = 1. + bTagErr_light/sig;// before without the 1+
+		  bTagErr_light = this_signal3d_bTagLight_Up->GetBinContent(iBin, iBinY, iBinZ);
+		  std::cout << "signal =" << sig  << "  signal reco =" << sig_reco << " btagerr = " << bTagErr_light << std::endl;
+
+		  bTagErr_light = bTagErr_light/sig_reco;// before without the 1+
+		  //bTagErr_light = 1. + bTagErr_light/sig;// before without the 1+
 		
-		if( addSigLepSF && (( model == "T2tt" || model == "T1tttt" ))){
-		  lepEffErr = this_signal3d_lepEff_Up->GetBinContent(iBin, iBinY, iBinZ);
-		  lepEffErr = lepEffErr/sig;
+
+		  if( addSigLepSF && (( model == "T2tt" || model == "T1tttt" || model == "T2bt" || model == "T2bW"))){
+		    lepEffErr = this_signal3d_lepEff_Up->GetBinContent(iBin, iBinY, iBinZ);
+		    lepEffErr = lepEffErr/sig_reco;
+		  }
+		}else{
+		  std::cout << "IT IS ZERO HERE SO WHY THE FUCK WOUTNL_T IT BE IN THE CARD" << std::endl;
+		  isrErr        = 1.0;
+		  bTagErr_heavy = 1.0;
+		  bTagErr_light = 1.0;
+		  if( addSigLepSF && (( model == "T2tt" || model == "T1tttt" || model == "T2bt" || model == "T2bW"))){
+		    lepEffErr   = 1.0;
+		  }
+
 		}
 		
 	      }
 	      
-	      float totUncorrErr = 1.+sqrt(sigErr*sigErr+0.05*0.05+0.1*0.1); // MC stat + scales (5%) + JEC (10%)
-	      float totUncorrErrCont = 1.+sqrt(sigContErr*sigContErr+0.05*0.05+0.1*0.1); // MC stat + scales (5%) + JEC (10%)
+	      float totUncorrErr = 1.+sqrt(sigErr*sigErr+0.05*0.05+0.05*0.05); // MC stat + scales (5%) + JEC (5%)
+	      float totUncorrErrCont = 1.+sqrt(sigContErr*sigContErr+0.05*0.05+0.05*0.05); // MC stat + scales (5%) + JEC (5%)
+
+	      //float totUncorrErr = 1.+sqrt(sigErr*sigErr+0.05*0.05+0.1*0.1); // MC stat + scales (5%) + JEC (10%)
+	      //float totUncorrErrCont = 1.+sqrt(sigContErr*sigContErr+0.05*0.05+0.1*0.1); // MC stat + scales (5%) + JEC (10%)
 
 	      if(doSignalContamination && !doSimultaneousFit) sig=sig-sigCont;
 	      else if(!doSignalContamination) {
@@ -2072,7 +2192,7 @@ int main( int argc, char* argv[] ) {
 		system( sedCommand_bTagHErr.c_str() );
 		system( sedCommand_bTagLErr.c_str() );
 		
-		if( addSigLepSF && (( model == "T2tt" || model == "T1tttt" )))
+		if( addSigLepSF && (( model == "T2tt" || model == "T1tttt" || model == "T2bt" || model == "T2bW" )))
 		  system( sedCommand_lepEffErr.c_str() );
 	      
 	      }

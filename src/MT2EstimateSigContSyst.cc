@@ -49,6 +49,31 @@ MT2EstimateSigContSyst::MT2EstimateSigContSyst( const std::string& aname, const 
   yield3d_crsl_genmet = new TH3D( this->getHistoName("yield3d_crsl_genmet").c_str(), "", nBins, bins, nBinsM, binsM, nBinsM, binsM);
   yield3d_crsl_genmet->Sumw2();
 
+
+  // int nBinsMY=161;
+  // double binWidthMY=5.;
+  // double binsMY[nBinsMY+1];
+  // for (int b=0; b<=nBinsMY; ++b)
+  //   binsMY[b]=b*binWidthMY;
+
+
+  // yield3d_systUp = new TH3D( this->getHistoName("yield3d_"+asystName+"_UP").c_str(), "", nBins, bins, nBinsM, binsM, nBinsMY, binsMY);
+  // yield3d_systUp->Sumw2();
+  // yield3d_systDown = new TH3D( this->getHistoName("yield3d_"+asystName+"_DN").c_str(), "", nBins, bins, nBinsM, binsM, nBinsMY, binsMY);
+  // yield3d_systDown->Sumw2();
+
+  // yield_alpha = new TH1D( this->getHistoName("yield_alpha").c_str(), "", nBins, bins);
+  // yield_alpha->Sumw2();
+
+  // yield3d_crsl = new TH3D( this->getHistoName("yield3d_crsl").c_str(), "", nBins, bins, nBinsM, binsM, nBinsMY, binsMY);
+  // yield3d_crsl->Sumw2();
+
+  // yield3d_genmet = new TH3D( this->getHistoName("yield3d_genmet").c_str(), "", nBins, bins, nBinsM, binsM, nBinsMY, binsMY);
+  // yield3d_genmet->Sumw2();
+
+  // yield3d_crsl_genmet = new TH3D( this->getHistoName("yield3d_crsl_genmet").c_str(), "", nBins, bins, nBinsM, binsM, nBinsMY, binsMY);
+  // yield3d_crsl_genmet->Sumw2();
+
 }
 
 

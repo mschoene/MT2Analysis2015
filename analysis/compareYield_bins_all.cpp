@@ -436,7 +436,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
       legend->Draw("same");
 
       bgStack_region.Draw("histo, same");
-      g_first->Draw("pe,same");
+      g_first->Draw("pe0,same");
       
       //TPaveText* labelTop = MT2DrawTools::getLabelTop("18.1 fb^{-1} (13TeV)" );
       TPaveText* labelTop = MT2DrawTools::getLabelTop(lumi);
@@ -478,7 +478,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
 
       h2_axes_ratio->Draw("");
       lineCentral->Draw("same");
-      h_ratio->Draw("pe,same");
+      h_ratio->Draw("pe0,same");
       
       gPad->RedrawAxis();
       
@@ -649,13 +649,13 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
 //  hdata->Draw("pe");
 //  bgStack.Draw("histo, same");
 //  hestimate_all->Draw("E2,same");
-//  hdata->Draw("pe,same");
+//  hdata->Draw("pe0,same");
 
-  gdata->Draw("pe");
+  gdata->Draw("pe0");
   bgStack.Draw("histo, same");
   hestimate_all->Draw("E2,same");
-  gdata_zero->Draw("pe,same");
-  gdata->Draw("pe,same");
+  gdata_zero->Draw("pe0,same");
+  gdata->Draw("pe0,same");
   
   TH1D* prefit=new TH1D("prefit", "", 1, 0, 1);
   prefit->SetFillColor(0);
@@ -718,7 +718,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   
   c2->cd();
   TPad *pad2 = new TPad("pad2","pad2",0,0,1,0.21);
-  pad2->SetTopMargin(0.05);
+  pad2->SetTopMargin(0.06);
   pad2->SetBottomMargin(0.1);
   pad2->Draw();
   pad2->cd();  
@@ -760,7 +760,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   h2_axes_ratio->Draw("");
   h_band->Draw("E2same");
   LineCentral->Draw("same");
-  h_Ratio->Draw("pe,same");
+  h_Ratio->Draw("pe0,same");
   
   gPad->RedrawAxis();
 
@@ -810,9 +810,9 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
 
   bgStack.Draw("histo,same");
   hestimate_all->Draw("E2,same");
-  //hdata->Draw("pe,same");
-  gdata_zero->Draw("pe1,same");
-  gdata->Draw("pe1,same");
+  //hdata->Draw("pe0,same");
+  gdata_zero->Draw("pe0,same");
+  gdata->Draw("pe0,same");
 
   legend->Draw("same");
 
@@ -876,7 +876,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
 
   c2_0->cd();
   TPad *pad2_0 = new TPad("pad2_0","pad2_0",0,0,1,0.21);
-  pad2_0->SetTopMargin(0.05);
+  pad2_0->SetTopMargin(0.06);
   pad2_0->SetBottomMargin(0.1);
   pad2_0->Draw();
   pad2_0->cd();
@@ -907,8 +907,8 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   h2_axes_ratio_0->Draw("");
   h_band->Draw("E2same");
   LineCentral_0->Draw("same");
-  //h_Ratio->Draw("pe,same");
-  g_Ratio->Draw("pe,same");
+  //h_Ratio->Draw("pe0,same");
+  g_Ratio->Draw("pe0,same");
   
   line->DrawLine(monoBin[0],0.0,monoBin[0],2.0);
 
@@ -946,9 +946,9 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
 
   bgStack.Draw("histo,same");
   hestimate_all->Draw("E2,same");
-  //hdata->Draw("pe,same");
-  gdata_zero->Draw("pe1,same");
-  gdata->Draw("pe1,same");
+  //hdata->Draw("pe0,same");
+  gdata_zero->Draw("pe0,same");
+  gdata->Draw("pe0,same");
   
   legend->Draw("same");
 
@@ -1017,7 +1017,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   
   c2_1->cd();
   TPad *pad2_1 = new TPad("pad2_1","pad2_1",0,0,1,0.21);
-  pad2_1->SetTopMargin(0.05);
+  pad2_1->SetTopMargin(0.06);
   pad2_1->SetBottomMargin(0.1);
   pad2_1->Draw();
   pad2_1->cd();
@@ -1046,8 +1046,8 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   h2_axes_ratio_1->Draw("");
   h_band->Draw("E2same");
   LineCentral_1->Draw("same");
-  //h_Ratio->Draw("pe,same");
-  g_Ratio->Draw("pe,same");
+  //h_Ratio->Draw("pe0,same");
+  g_Ratio->Draw("pe0,same");
   
   line->SetNDC(1);
   line->SetLineStyle(2);
@@ -1095,9 +1095,9 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
 
   bgStack.Draw("histo,same");
   hestimate_all->Draw("E2,same");
-  //hdata->Draw("pe,same");
-  gdata_zero->Draw("pe1,same");
-  gdata->Draw("pe1,same");
+  //hdata->Draw("pe0,same");
+  gdata_zero->Draw("pe0,same");
+  gdata->Draw("pe0,same");
   
   legend->Draw("same");
 
@@ -1166,7 +1166,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   
   c2_2->cd();
   TPad *pad2_2 = new TPad("pad2_2","pad2_2",0,0,1,0.21);
-  pad2_2->SetTopMargin(0.05);
+  pad2_2->SetTopMargin(0.06);
   pad2_2->SetBottomMargin(0.1);
   pad2_2->Draw();
   pad2_2->cd();
@@ -1177,7 +1177,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
     h2_axes_ratio_2 = new TH2D("axes_ratio_2", "", 10, oldBin, thisBin, 10, 0.1, 10.0 );
   }
   else
-    h2_axes_ratio_2 = new TH2D("axes_ratio_2", "", 10, oldBin, thisBin, 10, 0., 4.0 );
+    h2_axes_ratio_2 = new TH2D("axes_ratio_2", "", 10, oldBin, thisBin, 10, 0., 3.5 );
 
   h2_axes_ratio_2->SetStats(0);
   h2_axes_ratio_2->GetXaxis()->SetLabelSize(0.00);
@@ -1194,8 +1194,8 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   h2_axes_ratio_2->Draw("");
   h_band->Draw("E2same");
   LineCentral_2->Draw("same");
-  //h_Ratio->Draw("pe,same");
-  g_Ratio->Draw("pe,same");
+  //h_Ratio->Draw("pe0,same");
+  g_Ratio->Draw("pe0,same");
   
   line->SetNDC(1);
   line->SetLineStyle(2);
@@ -1204,7 +1204,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   ibin = oldBin;
   for(int nR=0; nR<11; nR++){
     ibin += nBins_[12+7+nR];
-    line->DrawLine(ibin,0,ibin,4);
+    line->DrawLine(ibin,0,ibin,3.5);
   }
 
   gPad->RedrawAxis();
@@ -1243,9 +1243,9 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
 
   bgStack.Draw("histo,same");
   hestimate_all->Draw("E2,same");
-  //hdata->Draw("pe,same");
-  gdata_zero->Draw("pe1,same");
-  gdata->Draw("pe1,same");
+  //hdata->Draw("pe0,same");
+  gdata_zero->Draw("pe0,same");
+  gdata->Draw("pe0,same");
   
   legend->Draw("same");
 
@@ -1311,7 +1311,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   
   c2_3->cd();
   TPad *pad2_3 = new TPad("pad2_3","pad2_3",0,0,1,0.21);
-  pad2_3->SetTopMargin(0.05);
+  pad2_3->SetTopMargin(0.06);
   pad2_3->SetBottomMargin(0.1);
   pad2_3->Draw();
   pad2_3->cd();
@@ -1322,7 +1322,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
     h2_axes_ratio_3 = new TH2D("axes_ratio_3", "", 10, oldBin, thisBin, 10, 0.1, 10.0 );
   }
   else
-    h2_axes_ratio_3 = new TH2D("axes_ratio_3", "", 10, oldBin, thisBin, 10, 0., 2.5 );
+    h2_axes_ratio_3 = new TH2D("axes_ratio_3", "", 10, oldBin, thisBin, 10, 0., 2.0 );
   //h2_axes_ratio_3 = new TH2D("axes_ratio_3", "", 10, oldBin, thisBin, 10, 0., 2.0 );
 
   h2_axes_ratio_3->SetStats(0);
@@ -1340,8 +1340,8 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   h2_axes_ratio_3->Draw("");
   h_band->Draw("E2same");
   LineCentral_3->Draw("same");
-  //h_Ratio->Draw("pe,same");
-  g_Ratio->Draw("pe,same");
+  //h_Ratio->Draw("pe0,same");
+  g_Ratio->Draw("pe0,same");
 
   line->SetNDC(1);
   line->SetLineStyle(2);
@@ -1350,7 +1350,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   ibin = oldBin;
   for(int nR=0; nR<11; nR++){
     ibin += nBins_[12+7+11+nR];
-    line->DrawLine(ibin,0.,ibin,2.5);
+    line->DrawLine(ibin,0.,ibin,2.0);
   }
 
   gPad->RedrawAxis();
@@ -1388,9 +1388,9 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
 
   bgStack.Draw("histo,same");
   hestimate_all->Draw("E2,same");
-  //hdata->Draw("pe,same");
-  gdata_zero->Draw("pe1,same");
-  gdata->Draw("pe1,same");
+  //hdata->Draw("pe0,same");
+  gdata_zero->Draw("pe0,same");
+  gdata->Draw("pe0,same");
   
   legend->Draw("same");
 
@@ -1456,7 +1456,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   
   c2_4->cd();
   TPad *pad2_4 = new TPad("pad2_4","pad2_4",0,0,1,0.21);
-  pad2_4->SetTopMargin(0.05);
+  pad2_4->SetTopMargin(0.06);
   pad2_4->SetBottomMargin(0.1);
   pad2_4->Draw();
   pad2_4->cd();
@@ -1486,8 +1486,8 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   h2_axes_ratio_4->Draw("");
   h_band->Draw("E2same");
   LineCentral_4->Draw("same");
-  //h_Ratio->Draw("pe,same");
-  g_Ratio->Draw("pe,same");
+  //h_Ratio->Draw("pe0,same");
+  g_Ratio->Draw("pe0,same");
   
   line->SetNDC(1);
   line->SetLineStyle(2);
@@ -1550,9 +1550,9 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
 
   bgStack.Draw("histo,same");
   hestimate_all->Draw("E2,same");
-  //hdata->Draw("pe,same");
-  gdata_zero->Draw("pe1,same");
-  gdata->Draw("pe1,same");
+  //hdata->Draw("pe0,same");
+  gdata_zero->Draw("pe0,same");
+  gdata->Draw("pe0,same");
   
   legend->Draw("same");
 
@@ -1618,7 +1618,7 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   
   c2_5->cd();
   TPad *pad2_5 = new TPad("pad2_5","pad2_5",0,0,1,0.21);
-  pad2_5->SetTopMargin(0.05);
+  pad2_5->SetTopMargin(0.06);
   pad2_5->SetBottomMargin(0.1);
   pad2_5->Draw();
   pad2_5->cd();
@@ -1647,8 +1647,8 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data, s
   h2_axes_ratio_5->Draw("");
   h_band->Draw("E2same");
   LineCentral_5->Draw("same");
-  //  h_Ratio->Draw("pe,same");
-  g_Ratio->Draw("pe,same");
+  //  h_Ratio->Draw("pe0,same");
+  g_Ratio->Draw("pe0,same");
   
   line->SetNDC(1);
   line->SetLineStyle(2);

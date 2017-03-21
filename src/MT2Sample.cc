@@ -119,12 +119,14 @@ std::vector<MT2Sample> MT2Sample::loadSamples(const std::string& filename, const
       else if( rootFileName.Contains("SinglePhoton") )   s.id = 7;
       else if( rootFileName.Contains("SingleMuon") )     s.id = 8;
       else if( rootFileName.Contains("SingleElectron") ) s.id = 9;
-      else if( rootFileName.Contains("T1bbbb") )         s.id = 1020;
+      // else if( rootFileName.Contains("T1bbbb") )         s.id = 1020;
       else if( rootFileName.Contains("singletop") )	 s.id = 403;
-      else if( rootFileName.Contains("mg_lo") )	 s.id =330 ;
+      else if( rootFileName.Contains("mg_lo") )	         s.id =330 ;
       
-      else if( rootFileName.Contains("wjets") )	 s.id = 504;
+      else if( rootFileName.Contains("wjets") )	         s.id = 504;
       else if( rootFileName.Contains("dyjetsll") )	 s.id = 705;
+
+      else if( rootFileName.Contains("T2bW") )	         s.id = 1490;
 
     }
 
