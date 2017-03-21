@@ -179,7 +179,7 @@ int preProcessing(std::string inputString,
   Float_t jet_eta[100];
   chain->SetBranchAddress("jet_eta", jet_eta);
   Int_t jet_mcFlavour[100];
-  chain->SetBranchAddress( "jet_hadronFlavour", jet_mcFlavour);
+  chain->SetBranchAddress("jet_hadronFlavour", jet_mcFlavour);
   Float_t jet_btagCSV[100];
   chain->SetBranchAddress("jet_btagCSV", jet_btagCSV);
   
@@ -195,9 +195,9 @@ int preProcessing(std::string inputString,
   Int_t GenSusyMGluino;
 
   bool isFastSim = 0;
-  if( id>1000) isFastSim = 1;
+  if( id>1000 && id<=2000 ) isFastSim = 1;
 
-  if( (id>1000 ) ){
+  if( (id>1000 && id<=2000 ) ){
     chain->SetBranchAddress("GenSusyMNeutralino", &GenSusyMNeutralino);
 
     if(  txtFileList.find("T2bb") != std::string::npos ){
@@ -323,23 +323,26 @@ int preProcessing(std::string inputString,
 
     //NEW method with number of ISR jets
     float isr_err = 0.;
-    if( nisrMatch == 1 ){
-      weight_isr_av = 0.882;	    isr_err = 0.059;
-    }else if( nisrMatch == 2 ){
-      weight_isr_av = 0.792;	    isr_err = 0.104;
-    }else if( nisrMatch == 3 ){ 
-      weight_isr_av = 0.702;	    isr_err = 0.149;
-    }else if( nisrMatch == 4 ){
-      weight_isr_av = 0.648;	    isr_err = 0.176;
-    }else if( nisrMatch == 5 ){
-      weight_isr_av = 0.601;	    isr_err = 0.199;
-    }else if( nisrMatch > 5 ){  
-      weight_isr_av = 0.515;	    isr_err = 0.242;
+
+    if( (id>=300 && id<=400) || (id>=1000  && id<=2000)  ){
+      if( nisrMatch == 1 ){
+	weight_isr_av = 0.882;	    isr_err = 0.059;
+      }else if( nisrMatch == 2 ){
+	weight_isr_av = 0.792;	    isr_err = 0.104;
+      }else if( nisrMatch == 3 ){ 
+	weight_isr_av = 0.702;	    isr_err = 0.149;
+      }else if( nisrMatch == 4 ){
+	weight_isr_av = 0.648;	    isr_err = 0.176;
+      }else if( nisrMatch == 5 ){
+	weight_isr_av = 0.601;	    isr_err = 0.199;
+      }else if( nisrMatch > 5 ){  
+	weight_isr_av = 0.515;	    isr_err = 0.242;
+      }
     }
 
     if(id>10 && id<1000)
       isr_average += weight_isr_av /(double) nEventsTree ;
-    else if( id>=1000){
+    else if( id>=1000  && id<=2000 ){
       h_isr->Fill((float)GenSusyMGluino , (float)GenSusyMNeutralino,  weight_isr_av);
 
       h_isr_UP->Fill((float)GenSusyMGluino , (float)GenSusyMNeutralino,  weight_isr_av + isr_err);
@@ -404,15 +407,7 @@ int preProcessing(std::string inputString,
   ofs << weight_btagsf_light_UP_av << " ";
   ofs << weight_btagsf_light_DN_av << " ";
 
-  // ofs << weight_btagsf_av /(double) nEventsTree << " ";
-  // ofs << weight_btagsf_heavy_UP_av /(double) nEventsTree << " ";
-  // ofs << weight_btagsf_heavy_DN_av /(double) nEventsTree << " ";
-  // ofs << weight_btagsf_light_UP_av /(double) nEventsTree << " ";
-  // ofs << weight_btagsf_light_DN_av /(double) nEventsTree << " ";
-  // //  ofs << average;
-
   ofs.close();
-
 
   TFile* file_out = new TFile( Form("%s.root", outputFile.c_str()) ,"RECREATE");
   h_isr->Write();
@@ -435,6 +430,6 @@ int preProcessing(std::string inputString,
   delete newSumW;
   return 0;
   
-  }
+}
 
 
