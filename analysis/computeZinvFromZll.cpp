@@ -626,7 +626,7 @@ MT2Analysis<MT2EstimateSyst>* computePurityOF( MT2Analysis<MT2Estimate>* SF, MT2
       float contentSF = SFEst->yield->GetBinContent(ibin);
       float contentOF = OFEst->yield->GetBinContent(ibin);
 
-      float R_sfof = 1.12; // old value for freezing 1.13;//old value 1.12(used for ehm before freezing //old value 1.11 (used for dec 2016 results)
+      float R_sfof = 1.13; // old value for preapp = 1.12; // old value for freezing 1.13;//old value 1.12(used for ehm before freezing //old value 1.11 (used for dec 2016 results)
       float R_sfof_err = 0.0; // old err, now in create DC= 0.15;
 
       float purity = 0.0;

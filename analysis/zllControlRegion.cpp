@@ -484,9 +484,11 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
     if( myTree.isData && !myTree.passFilters() ) continue;
     if( myTree.isData &&  myTree.isGolden == 0 ) continue;
 
+    if( !myTree.isData && !myTree.passFiltersMC() ) continue;
+
     // myTree.Flag_HBHENoiseFilter>0 && myTree.Flag_HBHENoiseIsoFilter>0 && myTree.Flag_globalTightHalo2016Filter>0 && myTree.Flag_EcalDeadCellTriggerPrimitiveFilter>0 && myTree.Flag_goodVertices>0 && myTree.Flag_eeBadScFilter>0 && myTree.Flag_badMuonFilter>0 && myTree.Flag_badChargedHadronFilter>0 
 
-    if( !(myTree.Flag_goodVertices>0 && myTree.Flag_eeBadScFilter>0 ) ) continue;
+    //if( !(myTree.Flag_goodVertices>0 && myTree.Flag_eeBadScFilter>0 ) ) continue;
 
     //crazy events! To be piped into a separate txt file
     if(myTree.jet_pt[0] > 13000){
@@ -660,7 +662,7 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
       
       if( !myTree.isData){
 	//weight *= myTree.weight_btagsf * HLT_weight * myTree.weight_lepsf;
-	weight *= myTree.weight_btagsf * HLT_weight * myTree.weight_lepsf2017;
+	weight *= myTree.weight_btagsf * HLT_weight * myTree.weight_lepsf;
       }
 
       int nJetHF30_ = 0;
@@ -891,7 +893,7 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
       float HLT_weight = getHLTweight( myTree.lep_pdgId[0], myTree.lep_pdgId[1], myTree.lep_pt[0], myTree.lep_pt[1], 0 );
 
       if( !myTree.isData){
-	weight *= myTree.weight_btagsf * myTree.weight_lepsf2017 * HLT_weight;
+	weight *= myTree.weight_btagsf * myTree.weight_lepsf * HLT_weight;
 	//weight *= myTree.weight_btagsf * myTree.weight_lepsf * HLT_weight;
       }
 

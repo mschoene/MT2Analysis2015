@@ -87,6 +87,8 @@ public :
    Int_t         Flag_eeBadScFilter;
    Int_t         Flag_badMuonFilter;
    Int_t         Flag_badChargedHadronFilter;
+   Int_t         Flag_badMuonFilterV2;
+   Int_t         Flag_badChargedHadronFilterV2;
    Int_t nJet200MuFrac50DphiMet;
 
    Float_t         puWeight;
@@ -563,6 +565,8 @@ public :
    TBranch        *b_Flag_eeBadScFilter;   //!
    TBranch        *b_Flag_badMuonFilter;   //!
    TBranch        *b_Flag_badChargedHadronFilter;   //!
+   TBranch        *b_Flag_badMuonFilterV2;   //!
+   TBranch        *b_Flag_badChargedHadronFilterV2;   //!
    TBranch        *b_nJet200MuFrac50DphiMet;   //!
    TBranch        *b_puWeight;   //!
    TBranch        *b_nTrueInt;   //!
@@ -985,6 +989,7 @@ public :
    virtual Bool_t   passLeptonVeto  () const;
    virtual Bool_t   passIsoTrackVeto() const;
    virtual Bool_t   passFilters     () const;
+   virtual Bool_t   passFiltersMC   () const;
    virtual Bool_t   passGammaAdditionalSelection( int sampleId ) const;
    virtual Bool_t   passMonoJetId( int j ) const;
    virtual Int_t    get_nJetHF( float etaCut = 3.0 ) const;
@@ -1111,6 +1116,9 @@ void MT2Tree::Init(TTree *tree)
    fChain->SetBranchAddress("Flag_eeBadScFilter", &Flag_eeBadScFilter, &b_Flag_eeBadScFilter);
    fChain->SetBranchAddress("Flag_badMuonFilter", &Flag_badMuonFilter, &b_Flag_badMuonFilter);
    fChain->SetBranchAddress("Flag_badChargedHadronFilter", &Flag_badChargedHadronFilter, &b_Flag_badChargedHadronFilter);
+
+   fChain->SetBranchAddress("Flag_badMuonFilterV2", &Flag_badMuonFilterV2, &b_Flag_badMuonFilterV2);
+   fChain->SetBranchAddress("Flag_badChargedHadronFilterV2", &Flag_badChargedHadronFilterV2, &b_Flag_badChargedHadronFilterV2);
 
    fChain->SetBranchAddress("nJet200MuFrac50DphiMet", &nJet200MuFrac50DphiMet, &b_nJet200MuFrac50DphiMet);
 
@@ -1572,7 +1580,13 @@ Bool_t MT2Tree::passIsoTrackVeto() const {
 
 Bool_t MT2Tree::passFilters() const {
 
-  return nVert>0 && Flag_HBHENoiseFilter>0 && Flag_HBHENoiseIsoFilter>0 && Flag_globalTightHalo2016Filter>0 && Flag_EcalDeadCellTriggerPrimitiveFilter>0 && Flag_goodVertices>0 && Flag_eeBadScFilter>0 && Flag_badMuonFilter>0 && Flag_badChargedHadronFilter>0 ;
+  return nVert>0 && Flag_HBHENoiseFilter>0 && Flag_HBHENoiseIsoFilter>0 && Flag_globalTightHalo2016Filter>0 && Flag_EcalDeadCellTriggerPrimitiveFilter>0 && Flag_goodVertices>0 && Flag_eeBadScFilter>0 && Flag_badMuonFilterV2>0 && Flag_badChargedHadronFilterV2>0 ;
+
+}
+
+Bool_t MT2Tree::passFiltersMC() const {
+
+  return nVert>0 && Flag_HBHENoiseFilter>0 && Flag_HBHENoiseIsoFilter>0 && Flag_globalTightHalo2016Filter>0 && Flag_EcalDeadCellTriggerPrimitiveFilter>0 && Flag_goodVertices>0 && Flag_badMuonFilterV2>0 && Flag_badChargedHadronFilterV2>0 ;
 
 }
 

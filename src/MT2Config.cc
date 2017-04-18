@@ -216,6 +216,14 @@ std::string MT2Config::getGammaCRdir() const {
 
 }
 
+std::string MT2Config::getDiPhotonCRdir() const {
+
+  std::string outputdir = this->getEventYieldDir() + "/diPhotonControlRegion/";
+
+  return outputdir;
+
+}
+
 
 
 void MT2Config::saveAs( const std::string& filename ) const {

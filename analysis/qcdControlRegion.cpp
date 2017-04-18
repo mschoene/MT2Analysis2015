@@ -213,7 +213,11 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
     }
     else {
       //if ( !(myTree.Flag_badMuonFilter>0 && myTree.Flag_badChargedHadronFilter>0 && myTree.Flag_EcalDeadCellTriggerPrimitiveFilter>0) ) continue;
-      if ( !(myTree.Flag_badChargedHadronFilter>0 && myTree.Flag_EcalDeadCellTriggerPrimitiveFilter>0) ) continue; // americans don't have muon filter
+      // if ( !(myTree.Flag_badChargedHadronFilter>0 && myTree.Flag_EcalDeadCellTriggerPrimitiveFilter>0) ) continue; // americans don't have muon filter
+
+      //if ( !( myTree.nVert>0 && myTree.Flag_HBHENoiseFilter>0 && myTree.Flag_HBHENoiseIsoFilter>0 && myTree.Flag_globalTightHalo2016Filter>0 && myTree.Flag_EcalDeadCellTriggerPrimitiveFilter>0 && myTree.Flag_goodVertices>0  && myTree.Flag_badMuonFilter>0 && myTree.Flag_badChargedHadronFilter>0) ) continue;
+      if ( !myTree.passFiltersMC() ) continue;
+
     }
 
     //don't apply it  if (myTree.met_miniaodPt/myTree.met_caloPt > 5.0) continue; // RA2 filter for QCD MC
@@ -295,7 +299,7 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg, MT2Analysis<MT
       	weight *= myTree.weight_isr/0.895;
 
       weight *= myTree.weight_btagsf;
-      weight *= myTree.weight_lepsf2017;
+      weight *= myTree.weight_lepsf;
     }
 
 

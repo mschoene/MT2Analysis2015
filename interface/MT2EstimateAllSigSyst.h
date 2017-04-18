@@ -45,6 +45,9 @@ class MT2EstimateAllSigSyst : public MT2Estimate {
   TH3D* yield3d_crsl;
   TH3D* yield3d_alpha;
 
+  TH3D* yield3d_gt20;
+  TH3D* yield3d_st20;
+
 
   const MT2EstimateAllSigSyst& operator=( const MT2EstimateAllSigSyst& rhs );
   const MT2EstimateAllSigSyst& operator=( const MT2Estimate& rhs );

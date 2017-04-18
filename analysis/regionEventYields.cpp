@@ -48,6 +48,16 @@ int matchPartonToJet( int index, MT2Tree* myTree );
 
 
 
+TH2D* h_nsig;                      
+TH2D* h_nsigNVtxGeq20;            
+TH2D* h_nsigNVtxL20;           
+TH2D* h_avg_weight_btagsf ;       
+TH2D* h_avg_weight_btagsfNVtxGeq20;
+TH2D* h_avg_weight_btagsfNVtxL20;
+TH2D* h_avg_weight_isr; 
+TH2D* h_avg_weight_isrNVtxGeq20;
+TH2D* h_avg_weight_isrNVtxL20; 
+
 
 
 int main( int argc, char* argv[] ) {
@@ -97,6 +107,37 @@ int main( int argc, char* argv[] ) {
   system(Form("mkdir -p %s", outputdir.c_str()));
 
 
+
+  if( argc > 3){
+    std::string model = signalName;
+    std::string filename = Form("/scratch/mmasciov/signalTreesMoriond2017/nsig_weights_%s.root", model.c_str() );
+    TFile* f_avWeights = new TFile(filename.c_str() );
+
+    h_nsig                       = (TH2D*) f_avWeights->Get("h_nsig");
+    h_nsigNVtxGeq20              = (TH2D*) f_avWeights->Get("h_nsigNVtxGeq20");
+    h_nsigNVtxL20                = (TH2D*) f_avWeights->Get("h_nsigNVtxL20");
+    h_avg_weight_btagsf          = (TH2D*) f_avWeights->Get("h_avg_weight_btagsf");
+    h_avg_weight_btagsfNVtxGeq20 = (TH2D*) f_avWeights->Get("h_avg_weight_btagsfNVtxGeq20");
+    h_avg_weight_btagsfNVtxL20   = (TH2D*) f_avWeights->Get("h_avg_weight_btagsfNVtxL20");
+    h_avg_weight_isr             = (TH2D*) f_avWeights->Get("h_avg_weight_isr");
+    h_avg_weight_isrNVtxGeq20    = (TH2D*) f_avWeights->Get("h_avg_weight_isrNVtxGeq20");
+    h_avg_weight_isrNVtxL20      = (TH2D*) f_avWeights->Get("h_avg_weight_isrNVtxL20");
+
+    h_nsig                      ->SetDirectory(0);         
+    h_nsigNVtxGeq20             ->SetDirectory(0);   
+    h_nsigNVtxL20               ->SetDirectory(0);   
+    h_avg_weight_btagsf         ->SetDirectory(0);   
+    h_avg_weight_btagsfNVtxGeq20->SetDirectory(0);   
+    h_avg_weight_btagsfNVtxL20  ->SetDirectory(0);   
+    h_avg_weight_isr            ->SetDirectory(0);   
+    h_avg_weight_isrNVtxGeq20   ->SetDirectory(0);   
+    h_avg_weight_isrNVtxL20     ->SetDirectory(0);   
+
+    f_avWeights->Close();
+    delete f_avWeights;
+  }
+
+
   TH1::AddDirectory(kFALSE); // stupid ROOT memory allocation needs this
 
 
@@ -116,6 +157,7 @@ int main( int argc, char* argv[] ) {
     }
 
 
+
     
     std::vector< MT2Analysis<MT2EstimateTree>* > EventYield_incl;
     for( unsigned i=0; i<fSamples.size(); ++i ) {
@@ -126,6 +168,19 @@ int main( int argc, char* argv[] ) {
     }
     MT2Analysis<MT2EstimateTree>* EventYield_zjets_inclusive = mergeYields<MT2EstimateTree>( EventYield_incl, "13TeV_2016_inclusive", "ZJets_inclusive", 600, 699, "Z+jets" );
     EventYield_zjets_inclusive->writeToFile(outputdir + "/ZJetsIncl.root");
+
+
+    std::vector< MT2Analysis<MT2EstimateTree>* > EventYield_ssr;
+    for( unsigned i=0; i<fSamples.size(); ++i ) {
+      int this_id = fSamples[i].id;
+      if( this_id>=600 ) continue; //
+      if( this_id<=299 ) continue; //
+      EventYield_ssr.push_back( computeYield<MT2EstimateTree>( fSamples[i], cfg, "13TeV_2016_ssr"  ));
+    }
+    MT2Analysis<MT2EstimateTree>* EventYield_wjets_ssr = mergeYields<MT2EstimateTree>( EventYield_ssr, "13TeV_2016_ssr", "Wjets_ssr", 500, 599, "W+jets" );
+    EventYield_wjets_ssr->writeToFile(outputdir + "/WjetsSSR.root");
+    MT2Analysis<MT2EstimateTree>* EventYield_top_ssr = mergeYields<MT2EstimateTree>( EventYield_ssr, "13TeV_2016_ssr", "Top_ssr", 300, 499, "Top" );
+    EventYield_top_ssr->writeToFile(outputdir + "/TopSSR.root");
 
 
     std::vector< MT2Analysis<MT2EstimateTree>* > EventYield;
@@ -294,13 +349,13 @@ int main( int argc, char* argv[] ) {
   //  signals[i]->writeToFile(outputdir + "/analyses.root");
   }
   else if( signals.size()>0 ){
-    signalYield->writeToFile(outputdir + "/analyses.root");
     //    signals[0]->writeToFile(outputdir + "/analyses.root");
     //    for( unsigned i=1; i<signals.size(); ++i )
     //    signals[i]->writeToFile(outputdir + "/analyses.root");
   }
 
-
+  // signalYield->writeToFile(outputdir + "/analyses.root");
+   
   cfg.saveAs(outputdir + "/config.txt");
 
   return 0;
@@ -387,7 +442,7 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg, std
     if ( myTree.nJet30==1 && !myTree.passMonoJetId(0) ) continue;
       
     float ht   = myTree.ht;
-    float met  = myTree.met_pt;
+    //    float met  = myTree.met_pt;
     float minMTBmet = myTree.minMTBMet;
     int njets  = myTree.nJet30;
     int nbjets = myTree.nBJet20;    
@@ -413,7 +468,7 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg, std
 
     if( !myTree.isData ){
       weight *= myTree.weight_btagsf;
-      weight *= myTree.weight_lepsf2017;
+      weight *= myTree.weight_lepsf;
 
       // // ETH has a branch witht he average weight stored:
       // // Also we have a different numbering scheme...
@@ -433,14 +488,17 @@ MT2Analysis<T>* computeYield( const MT2Sample& sample, const MT2Config& cfg, std
       //     weight_syst = myTree.weight_isr;
     
     //The filters to be applied to MC only
-    if( !(myTree.nVert>0 && myTree.Flag_HBHENoiseFilter==1 && myTree.Flag_HBHENoiseIsoFilter==1 && myTree.Flag_EcalDeadCellTriggerPrimitiveFilter==1 && myTree.Flag_goodVertices==1 && myTree.Flag_eeBadScFilter==1 && myTree.Flag_badChargedHadronFilter==1)) continue;
+    // if( !(myTree.nVert>0 && myTree.Flag_HBHENoiseFilter==1 && myTree.Flag_HBHENoiseIsoFilter==1 && myTree.Flag_EcalDeadCellTriggerPrimitiveFilter==1 && myTree.Flag_goodVertices==1 && myTree.Flag_eeBadScFilter==1 && myTree.Flag_badChargedHadronFilter==1)) continue;
 
 
     if( myTree.isData ) {
       
       if( !myTree.passFilters() ) continue;
 
-    }
+    }else
+      if( !myTree.passFiltersMC() ) continue;
+    
+    if( myTree.nJet200MuFrac50DphiMet > 0 ) continue; // new RA2 filter
 
     //crazy events! To be piped into a separate txt file
     if(myTree.jet_pt[0] > 13000){
@@ -625,7 +683,8 @@ MT2Analysis<T>* computeSigYield( const MT2Sample& sample, const MT2Config& cfg )
   TFile* sigXSFile;
   if(sigSampleName.Contains("T1qqqq") || sigSampleName.Contains("T1bbbb") || sigSampleName.Contains("T1tttt"))
     sigXSFile = TFile::Open("/shome/casal/SUSxsecs/SUSYCrossSections13TeVgluglu.root");
-  else if(sigSampleName.Contains("T2bb") || sigSampleName.Contains("T2tt"))
+  else if(sigSampleName.Contains("T2bb") || sigSampleName.Contains("T2tt") || sigSampleName.Contains("T2cc")
+ || sigSampleName.Contains("T2bW") || sigSampleName.Contains("T2bt"))
     sigXSFile = TFile::Open("/shome/casal/SUSxsecs/SUSYCrossSections13TeVstopstop.root");
   else
     sigXSFile = TFile::Open("/shome/casal/SUSxsecs/SUSYCrossSections13TeVsquarkantisquark.root");
@@ -690,7 +749,7 @@ MT2Analysis<T>* computeSigYield( const MT2Sample& sample, const MT2Config& cfg )
 
 
     float ht   = myTree.ht;
-    float met  = myTree.met_pt;
+    //    float met  = myTree.met_pt;
     float met_gen  = myTree.met_genPt;
     float minMTBmet = myTree.minMTBMet;
     int njets  = myTree.nJet30;
@@ -705,9 +764,9 @@ MT2Analysis<T>* computeSigYield( const MT2Sample& sample, const MT2Config& cfg )
     float isr_UP     = myTree.weight_isr_UP / myTree.weight_isr_UP_av;
     float isr_DN     = myTree.weight_isr_DN / myTree.weight_isr_DN_av;
 
-    float weight_lepsf = myTree.weight_lepsf2017;
-    float lepsf_UP     = myTree.weight_lepsf2017_UP;
-    float lepsf_DN     = myTree.weight_lepsf2017_DN;
+    float weight_lepsf = myTree.weight_lepsf;
+    float lepsf_UP     = myTree.weight_lepsf_UP;
+    float lepsf_DN     = myTree.weight_lepsf_DN;
 
     float weight_btagsf = myTree.weight_btagsf;
     float btag_heavy_UP = myTree.weight_btagsf_heavy_UP;
@@ -721,50 +780,90 @@ MT2Analysis<T>* computeSigYield( const MT2Sample& sample, const MT2Config& cfg )
     int GenSusyMScan2=0;
     if(  myTree.evt_id > 999){
      
-      if(sigSampleName.Contains("T2qq")){
+      //ETH WAY
+      //      if(sigSampleName.Contains("T2qq")){
 	
-	GenSusyMScan1 = myTree.GenSusyMSquark;
-	GenSusyMScan2 = myTree.GenSusyMNeutralino;
+      // 	GenSusyMScan1 = myTree.GenSusyMSquark;
+      // 	GenSusyMScan2 = myTree.GenSusyMNeutralino;
 
-      }
-      else if(sigSampleName.Contains("T2bb")){
+      //       }
+      //       else if(sigSampleName.Contains("T2bb")){
 	
-	GenSusyMScan1 = myTree.GenSusyMSbottom;
-	GenSusyMScan2 = myTree.GenSusyMNeutralino;
+      // 	GenSusyMScan1 = myTree.GenSusyMSbottom;
+      // 	GenSusyMScan2 = myTree.GenSusyMNeutralino;
 	
-      }
-      else if(sigSampleName.Contains("T2tt")){
+      //       }
+      //       else if( sigSampleName.Contains("T2tt") || sigSampleName.Contains("T2cc") || sigSampleName.Contains("T2bW") || sigSampleName.Contains("T2bt") ){
 	
-	GenSusyMScan1 = myTree.GenSusyMStop;
-	GenSusyMScan2 = myTree.GenSusyMNeutralino;
+      // 	GenSusyMScan1 = myTree.GenSusyMStop;
+      // 	GenSusyMScan2 = myTree.GenSusyMNeutralino;
 
-      }
-      else{
+      //       }
+      //       else{
       
-      GenSusyMScan1 = myTree.GenSusyMGluino;
-      GenSusyMScan2 = myTree.GenSusyMNeutralino;
+      //       GenSusyMScan1 = myTree.GenSusyMGluino;
+      //       GenSusyMScan2 = myTree.GenSusyMNeutralino;
       
-//      GenSusyMScan1 = myTree.GenSusyMScan1;
-//      GenSusyMScan2 = myTree.GenSusyMScan2;
+      // //      GenSusyMScan1 = myTree.GenSusyMScan1;
+      // //      GenSusyMScan2 = myTree.GenSusyMScan2;
       
-      }
+      //       }
+
+      //SNT WAY
+      GenSusyMScan1 = myTree.GenSusyMScan1;
+      GenSusyMScan2 = myTree.GenSusyMScan2;
+      
+      //    std::cout << "Masses are " << GenSusyMScan1 << " and " << GenSusyMScan2 << std::endl;
 
     }
  
     //Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi()*myTree.puWeight;
-    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb;//*cfg.lumi();
+    Double_t weight = 1.;
+    Double_t weight_geq20 = 1.;
+    Double_t weight_l20 = 1.;
+
+
+
+    //    Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb;//*cfg.lumi();
     //Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb*cfg.lumi(); //Keeping normalization to luminosity for signal?
     Double_t weight_syst = 1.;
 
     //weight = 1000./nentries*cfg.lumi(); //Exceptionally for signal from muricans 
 
+
+    int binx = h_avg_weight_isr->GetXaxis()->FindBin( GenSusyMScan1 );
+    int biny = h_avg_weight_isr->GetYaxis()->FindBin( GenSusyMScan2 );
+
+
+    float weight_isr_geq20 = h_avg_weight_isrNVtxGeq20->GetBinContent( binx, biny );
+    float weight_isr_l20 = h_avg_weight_isrNVtxL20->GetBinContent( binx, biny );
+
+    float weight_btag_geq20 = h_avg_weight_btagsfNVtxGeq20->GetBinContent( binx, biny );
+    float weight_btag_l20 = h_avg_weight_btagsfNVtxL20->GetBinContent( binx, biny );
+
+
+
     if( !myTree.isData ){
+      
       weight *= weight_btagsf;
       weight *= weight_lepsf;
       weight *= weight_isr ;
+
+
+      // std::cout << "isr geq20 = " <<  weight_isr_geq20 << " l20 = " << weight_isr_l20 << std::endl;
+      //std::cout << "btag geq20 = " <<  weight_btag_geq20 << " l20 = " << weight_btag_l20 << std::endl;
+
+      weight_geq20 *= myTree.weight_btagsf / weight_btag_geq20;
+      //weight_geq20 *= myTree.weight_lepsf;
+      weight_geq20 *= myTree.weight_isr / weight_isr_geq20;
+
+      weight_l20 *= myTree.weight_btagsf / weight_btag_l20;
+      //weight_l20 *= myTree.weight_lepsf;
+      weight_l20 *= myTree.weight_isr / weight_isr_l20;
+
     }
 
-
+ 
 //    if( myTree.evt_id > 1000 )
 //      weight_syst = myTree.weight_isr;
     
@@ -775,12 +874,12 @@ MT2Analysis<T>* computeSigYield( const MT2Sample& sample, const MT2Config& cfg )
       int thisBinX = sigXS->FindBin( GenSusyMScan1 );
      
       sig_xs = sigXS->GetBinContent(thisBinX);
-     
+      // std::cout << " sig_xs " << sig_xs << std::endl;
       weight *= sig_xs;
    
     }
     
-    
+
     T* thisEstimate = analysis->get( ht, njets, nbjets, minMTBmet, mt2 );
     if( thisEstimate==0 ) continue;
     
@@ -809,7 +908,12 @@ MT2Analysis<T>* computeSigYield( const MT2Sample& sample, const MT2Config& cfg )
             
       thisEstimate->yield3d_btag_light_UP->Fill( mt2, GenSusyMScan1, GenSusyMScan2, weight/weight_btagsf*btag_light_UP);
       thisEstimate->yield3d_btag_light_DN->Fill( mt2, GenSusyMScan1, GenSusyMScan2, weight/weight_btagsf*btag_light_DN);
-                             
+
+      if( myTree.nVert >= 20 )
+	thisEstimate->yield3d_gt20->Fill( mt2, GenSusyMScan1, GenSusyMScan2, weight_geq20);
+      else
+	thisEstimate->yield3d_st20->Fill( mt2, GenSusyMScan1, GenSusyMScan2, weight_l20);
+                   
     }
     
     if(dogenmet && passGenMET){

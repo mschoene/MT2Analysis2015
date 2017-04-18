@@ -220,6 +220,10 @@ MT2Analysis<T>::MT2Analysis( const std::string& aname, const std::string& region
 
     regions_.insert(MT2Region( 250. )); // inclusive 250-inf at least one jet requirement //new 2016 eoy 
 
+  } else if( regionsSet=="13TeV_2016_ssr" ) {
+
+    regions_.insert(MT2Region( 1000., -1, 2, -1, 0, -1 )); // inclusive region for SSR
+
   } else if( regionsSet=="13TeV_inclusive450" ) {
 
     regions_.insert(MT2Region( 450., -1., 2., -1. )); // inclusive 450-inf at least two jet requirement
@@ -593,6 +597,38 @@ MT2Analysis<T>::MT2Analysis( const std::string& aname, const std::string& region
     regions_.insert(MT2Region(575., 700., 1, 1, 1, -1));
     regions_.insert(MT2Region(700.,  -1, 1, 1, 1, -1));
 
+  } else if( regionsSet=="zurich2016_ssr" ){
+
+    std::set<MT2HTRegion> htRegions;
+    htRegions.insert(MT2HTRegion(1000.,  -1 ));
+    htRegions.insert(MT2HTRegion(1500.,  -1 ));
+    
+    std::set<MT2SignalRegion> signalRegions;
+    signalRegions.insert(MT2SignalRegion(2,  -1, 0,  -1));
+    signalRegions.insert(MT2SignalRegion(2,  -1, 2,  -1));
+    signalRegions.insert(MT2SignalRegion(2,  -1, 3,  -1));
+    signalRegions.insert(MT2SignalRegion(4,  -1, 0,  -1));
+    signalRegions.insert(MT2SignalRegion(7,  -1, 0,  -1));
+    signalRegions.insert(MT2SignalRegion(7,  -1, 3,  -1));
+  
+    regions_ = multiplyHTandSignal( htRegions, signalRegions );
+    
+  } else if( regionsSet=="zurich2016_forExtrapol_ssr" ){
+
+    std::set<MT2HTRegion> htRegions;
+    htRegions.insert(MT2HTRegion(1000.,  -1 ));
+    
+    std::set<MT2SignalRegion> signalRegions;
+    signalRegions.insert(MT2SignalRegion(2,  -1, 0,  -1));
+    signalRegions.insert(MT2SignalRegion(3,  -1, 0,  -1));
+    signalRegions.insert(MT2SignalRegion(4,  -1, 0,  -1));
+    signalRegions.insert(MT2SignalRegion(7,  -1, 0,  -1));
+  
+    regions_ = multiplyHTandSignal( htRegions, signalRegions );
+
+    regions_.insert(MT2Region(1500., -1, 2, -1, 0, -1));
+
+    
   } else if( regionsSet=="alphaT" ){
 
     std::set<MT2HTRegion> htRegions;
@@ -794,6 +830,12 @@ MT2Analysis<T>::MT2Analysis( const std::string& aname, const std::string& region
     regions_.insert(MT2Region(1500.,    -1., 2., -1.));
 
 
+  } else if( regionsSet=="zurich2016_onlyHT_ssr" ){
+
+    regions_.insert(MT2Region(1000.,  1500., 2., -1.));
+    regions_.insert(MT2Region(1500.,    -1., 2., -1.));
+
+
   } else if( regionsSet=="zurich_HTtriggers" ){
 
     regions_.insert(MT2Region( 450.,   575.)); // no cut on jets
@@ -846,6 +888,12 @@ MT2Analysis<T>::MT2Analysis( const std::string& aname, const std::string& region
     regions_.insert(MT2Region(200., -1., 4,  6, 0,  -1));
     regions_.insert(MT2Region(200., -1., 7, -1, 0,  -1));
 
+
+  } else if( regionsSet=="zurich2016_onlyJets_noB_ssr" ){
+
+    regions_.insert(MT2Region(250., -1., 7, -1, 0,  -1));
+    regions_.insert(MT2Region(250., -1., 4, -1, 0,  -1)); // not exclusive from above, used for VLHT and <3b 
+    regions_.insert(MT2Region(250., -1., 2, -1, 0,  -1)); // not exclusive from above, used for VLHT and 3b 
 
   } else if( regionsSet=="zurich2016_onlyJets_noB" ){
 
@@ -2583,7 +2631,7 @@ std::vector<MT2Analysis<T>*> MT2Analysis<T>::readAllSystFromFile( const std::str
     if( (matchName=="SMS" || matchName=="DarkMatter" || matchName=="Zprime" || matchName=="Wprime" || matchName=="DMS" || matchName=="DMV") && !(analysisName_tstr.Contains(matchName)) ) continue;
     else if( matchName!="" && matchName!="SMS" && matchName!="DarkMatter" && matchName!="Zprime" && matchName!="Wprime" && matchName!="DMS" && matchName!="DMV" && matchName!=analysisName ) continue;
 
-    // now that we know name and region structure we can istantiate an MT2Analysis:
+    // now that we know name and region structure we can instantiate an MT2Analysis:
     MT2Analysis<T>* analysis = new MT2Analysis<T>( analysisName, systName, regions );
 
     // second loop to set everything

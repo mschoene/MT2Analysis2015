@@ -1,0 +1,60 @@
+#### /scratch/mmasciov/mcFromSnTMoriond2017/qcdSkim/dyjetsll_ht100to200_nonext_1.root
+#### /scratch/mmasciov/mcFromSnTMoriond2017/qcdSkim/dyjetsll_ht1200to2500_nonext_1.root
+#### /scratch/mmasciov/mcFromSnTMoriond2017/qcdSkim/dyjetsll_ht200to400.root
+#### /scratch/mmasciov/mcFromSnTMoriond2017/qcdSkim/dyjetsll_ht2500toInf_nonext_1.root
+#### /scratch/mmasciov/mcFromSnTMoriond2017/qcdSkim/dyjetsll_ht400to600.root
+#### /scratch/mmasciov/mcFromSnTMoriond2017/qcdSkim/dyjetsll_ht600to800_nonext_1.root
+#### /scratch/mmasciov/mcFromSnTMoriond2017/qcdSkim/dyjetsll_ht800to1200_nonext_1.root
+
+#### /scratch/mmasciov/mcFromSnTMoriond2017/qcdSkim/gjets_dr0p05_ht100to200_nonext_1.root
+#### /scratch/mmasciov/mcFromSnTMoriond2017/qcdSkim/gjets_dr0p05_ht200to400_ext1_1.root
+#### /scratch/mmasciov/mcFromSnTMoriond2017/qcdSkim/gjets_dr0p05_ht400to600_nonext_1.root
+#### /scratch/mmasciov/mcFromSnTMoriond2017/qcdSkim/gjets_dr0p05_ht40to100_ext1_1.root
+#### /scratch/mmasciov/mcFromSnTMoriond2017/qcdSkim/gjets_dr0p05_ht600toInf.root
+
+#### /scratch/mmasciov/mcFromSnTMoriond2017/qcdSkim/gjets_dr0p4_ht100to200_1.root
+#### /scratch/mmasciov/mcFromSnTMoriond2017/qcdSkim/gjets_dr0p4_ht200to400_1.root
+#### /scratch/mmasciov/mcFromSnTMoriond2017/qcdSkim/gjets_dr0p4_ht400to600_1.root
+#### /scratch/mmasciov/mcFromSnTMoriond2017/qcdSkim/gjets_dr0p4_ht40to100_1.root
+#### /scratch/mmasciov/mcFromSnTMoriond2017/qcdSkim/gjets_dr0p4_ht600toInf_1.root
+
+/scratch/mmasciov/mcFromSnTMoriond2017/qcdSkim/qcd_ht1000to1500.root
+/scratch/mmasciov/mcFromSnTMoriond2017/qcdSkim/qcd_ht1500to2000.root
+/scratch/mmasciov/mcFromSnTMoriond2017/qcdSkim/qcd_ht2000toInf.root
+/scratch/mmasciov/mcFromSnTMoriond2017/qcdSkim/qcd_ht300to500.root
+/scratch/mmasciov/mcFromSnTMoriond2017/qcdSkim/qcd_ht500to700.root
+/scratch/mmasciov/mcFromSnTMoriond2017/qcdSkim/qcd_ht700to1000.root
+
+/scratch/mmasciov/mcFromSnTMoriond2017/qcdSkim/singletop_amcatnlo_4f_schan_1.root
+/scratch/mmasciov/mcFromSnTMoriond2017/qcdSkim/singletop_powheg_4f_tbartchan_1.root
+/scratch/mmasciov/mcFromSnTMoriond2017/qcdSkim/singletop_powheg_5f_tWchan_l_1.root
+/scratch/mmasciov/mcFromSnTMoriond2017/qcdSkim/singletop_powheg_5f_tbarWchan_l_1.root
+
+/scratch/mmasciov/mcFromSnTMoriond2017/qcdSkim/ttdl_mg_lo.root
+#/scratch/mmasciov/mcFromSnTMoriond2017/qcdSkim/ttg_amcatnlo_1.root
+/scratch/mmasciov/mcFromSnTMoriond2017/qcdSkim/tth_bb_1.root
+/scratch/mmasciov/mcFromSnTMoriond2017/qcdSkim/tth_nonbb_1.root
+/scratch/mmasciov/mcFromSnTMoriond2017/qcdSkim/ttsl_mg_lo_tbar.root
+/scratch/mmasciov/mcFromSnTMoriond2017/qcdSkim/ttsl_mg_lo_top.root
+/scratch/mmasciov/mcFromSnTMoriond2017/qcdSkim/tttt_amcatnlo_1.root
+/scratch/mmasciov/mcFromSnTMoriond2017/qcdSkim/ttw_mg_lo_1.root
+/scratch/mmasciov/mcFromSnTMoriond2017/qcdSkim/ttz_mg_lo_1.root
+#/scratch/mmasciov/mcFromSnTMoriond2017/qcdSkim/twz_ll_mg_lo_1.root
+
+/scratch/mmasciov/mcFromSnTMoriond2017/qcdSkim/wjets_ht100to200.root
+/scratch/mmasciov/mcFromSnTMoriond2017/qcdSkim/wjets_ht1200to2500_nonext_1.root
+/scratch/mmasciov/mcFromSnTMoriond2017/qcdSkim/wjets_ht200to400.root
+/scratch/mmasciov/mcFromSnTMoriond2017/qcdSkim/wjets_ht2500toInf.root
+/scratch/mmasciov/mcFromSnTMoriond2017/qcdSkim/wjets_ht400to600.root
+/scratch/mmasciov/mcFromSnTMoriond2017/qcdSkim/wjets_ht600to800.root
+/scratch/mmasciov/mcFromSnTMoriond2017/qcdSkim/wjets_ht800to1200_ext1_1.root
+
+#/scratch/mmasciov/mcFromSnTMoriond2017/qcdSkim/ww_2l2nu_powheg_1.root
+
+/scratch/mmasciov/mcFromSnTMoriond2017/qcdSkim/zinv_ht100to200_nonext_1.root
+/scratch/mmasciov/mcFromSnTMoriond2017/qcdSkim/zinv_ht1200to2500_nonext_1.root
+/scratch/mmasciov/mcFromSnTMoriond2017/qcdSkim/zinv_ht200to400_nonext_1.root
+/scratch/mmasciov/mcFromSnTMoriond2017/qcdSkim/zinv_ht2500toInf_nonext_1.root
+/scratch/mmasciov/mcFromSnTMoriond2017/qcdSkim/zinv_ht400to600_ext1_1.root
+/scratch/mmasciov/mcFromSnTMoriond2017/qcdSkim/zinv_ht600to800_nonext_1.root
+/scratch/mmasciov/mcFromSnTMoriond2017/qcdSkim/zinv_ht800to1200_nonext_1.root

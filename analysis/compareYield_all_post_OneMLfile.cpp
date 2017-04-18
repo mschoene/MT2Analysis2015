@@ -138,14 +138,14 @@ int main( int argc, char* argv[] ) {
    analysesSignal[0]->setName("pp #rightarrow #tilde{g}#tilde{g}, #tilde{g} #rightarrow b#bar{b}#tilde{#chi}_{1}^{0}");
   
    analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( sigPath + "/T1bbbb_eth.root", "T1bbbb") );
-   analysesSignal[1]->setName("T1bbbb 700, 600");
+   analysesSignal[1]->setName("pp #rightarrow #tilde{g}#tilde{g}, #tilde{g} #rightarrow b#bar{b}#tilde{#chi}_{1}^{0}");
 
 
    analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( sigPath + "/T1qqqq_eth.root", "T1qqqq") );
    analysesSignal[2]->setName("pp #rightarrow #tilde{g}#tilde{g}, #tilde{g} #rightarrow q#bar{q}#tilde{#chi}_{1}^{0}");
 
    analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( sigPath + "/T1qqqq_eth.root", "T1qqqq") );
-   analysesSignal[3]->setName("T1qqqq 700, 600");
+   analysesSignal[3]->setName("pp #rightarrow #tilde{g}#tilde{g}, #tilde{g} #rightarrow q#bar{q}#tilde{#chi}_{1}^{0}");
 
    analysesSignal.push_back( MT2Analysis<MT2Estimate>::readFromFile( sigPath + "/T2bb_eth.root", "T2bb") );
    analysesSignal[4]->setName("pp #rightarrow #tilde{b}#bar{#tilde{b}}, #tilde{b} #rightarrow b#tilde{#chi}_{1}^{0}");
@@ -767,7 +767,8 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
 
 	hsig[s]->SetBinContent(iRegion, int_sig[s]);
 	
-	hsig[s]->GetXaxis()->SetBinLabel( iRegion, niceNames[1].c_str() );
+	std::string thisLabel=Form("%s", niceNames[1].c_str());
+	hsig[s]->GetXaxis()->SetBinLabel( iRegion, thisLabel.c_str() );
 
       }
 
@@ -1421,9 +1422,15 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
   TPaveText* htBox2[5];
   for( int iHT = 0; iHT < nHTRegions; ++iHT){
 
-    if (iHT==0) htBox2[iHT] = new TPaveText(0.12+0.15*iHT, 0.9-0.04+0.01, 0.34+0.15*iHT, 0.87+0.01, "brNDC");
-    else htBox2[iHT] = new TPaveText(0.13+0.13*iHT, 0.9-0.04+0.01, 0.34+0.13*iHT, 0.87+0.01, "brNDC");
+
+    if (iHT==0) htBox2[iHT] = new TPaveText(0.12+0.15*iHT, 0.9-0.06+0.02, 0.34+0.15*iHT, 0.85+0.02, "brNDC");
+    else if (iHT==1) htBox2[iHT] = new TPaveText(0.30, 0.9-0.06+0.02, 0.39, 0.85+0.02, "brNDC");
+    else htBox2[iHT] = new TPaveText(0.39+0.14*(iHT-2), 0.9-0.06+0.02, 0.39+0.14+0.14*(iHT-2), 0.85+0.02, "brNDC");
     htBox2[iHT]->AddText( htRegions[iHT].c_str() );
+
+//    if (iHT==0) htBox2[iHT] = new TPaveText(0.12+0.15*iHT, 0.9-0.04+0.01, 0.34+0.15*iHT, 0.87+0.01, "brNDC");
+//    else htBox2[iHT] = new TPaveText(0.13+0.13*iHT, 0.9-0.04+0.01, 0.34+0.13*iHT, 0.87+0.01, "brNDC");
+//    htBox2[iHT]->AddText( htRegions[iHT].c_str() );
 
     htBox2[iHT]->SetBorderSize(0);
     htBox2[iHT]->SetFillColor(kWhite);
@@ -1477,6 +1484,20 @@ void drawYields( const std::string& outputdir, MT2Analysis<MT2Estimate>* data,  
   
   legend->Draw("same");
   
+  left  = gPad->GetLeftMargin();
+  right = gPad->GetRightMargin();
+  bot   = gPad->GetBottomMargin();
+  top   = gPad->GetTopMargin();
+  binWidth = (1.0-right-left)/63;
+
+  text->SetNDC(1);
+
+  text->SetTextAlign(23);
+  text->SetTextFont(42);
+  text->SetTextAngle(0);
+  text->SetTextSize(0.05);
+  text->DrawLatex((1-left-right)/2+0.15,1-top-0.12, "Post-fit background");
+
   gPad->RedrawAxis();
   
   c2->SaveAs( Form("%s/mt2_ALL_fullEstimate_plus%s.pdf", fullPath.c_str(), sigName[S].c_str()) );

@@ -47,6 +47,7 @@ class MT2Config {
 
   std::string getEventYieldDir() const;
   std::string getGammaCRdir() const;
+  std::string getDiPhotonCRdir() const;
 
   void saveAs( const std::string& filename ) const;
 
