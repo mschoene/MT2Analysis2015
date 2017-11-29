@@ -236,7 +236,6 @@ MT2SignalRegion::MT2SignalRegion( const std::string& name ) {
     parts.push_back(item);
   }
 
-
   if( parts.size()!=2 && parts.size()!=3 && parts.size()!=4 ) {
     std::cout << "[MT2SignalRegion]::MT2SignalRegion ERROR! Unrecognized MT2SignalRegion name: " << name << std::endl;
     exit(457);
@@ -279,15 +278,38 @@ MT2SignalRegion::MT2SignalRegion( const std::string& name ) {
   nJetsMax  = jMax;
   nBJetsMin = bMin;
   nBJetsMax = bMax;
-  
-  
-  mtCut = "";
-  if( parts.size()>2 ) mtCut = parts[2];
+   
+  int pT_bin(-1);
 
-  if( mtCut!="" && mtCut!="loMT" && mtCut!="hiMT" ) {
-    std::cout << "[MT2SignalRegion::MT2SignalRegion] ERROR! Unkown mtCut '" << mtCut << "'!" << std::endl;
-    exit(3535);
+  //  if( mtCut!="" && mtCut!="loMT" && mtCut!="hiMT" ) {
+  if( parts.size()>2   ) {
+    //    std::cout << "getting the following region " << parts[2] << std::endl;
+    sscanf( parts[2].c_str(), "pT%d", &pT_bin );
+    mtCut = "";
   }
+
+  this->pTbin = pT_bin;
+
+
+
+
+  mtCut = "";
+  // mtCut = parts[2];
+
+  //  if( parts.size()>2 ) mtCut = parts[2];
+
+
+  // if(  mtCut!="" && mtCut!="loMT" && mtCut!="hiMT" && mtCut!="loPt" && mtCut!="hiPt" ){
+  //   std::cout << "[MT2SignalRegion::MT2SignalRegion] ERROR! Unkown mtCut '" << mtCut << "'!" << std::endl;
+  //   exit(3535);
+  // }
+
+
+
+  // if( mtCut!="" && mtCut!="loMT" && mtCut!="hiMT" ) {
+  //   std::cout << "[MT2SignalRegion::MT2SignalRegion] ERROR! Unkown mtCut '" << mtCut << "'!" << std::endl;
+  //   exit(3535);
+  // }
 
 
 }
@@ -295,7 +317,7 @@ MT2SignalRegion::MT2SignalRegion( const std::string& name ) {
 
 
 
-MT2SignalRegion::MT2SignalRegion(int njmin, int njmax, int nbmin, int nbmax, const std::string& mtcut ) {
+MT2SignalRegion::MT2SignalRegion(int njmin, int njmax, int nbmin, int nbmax, int pT_bin, const std::string& mtcut ) {
 
   nJetsMin = njmin;
   nJetsMax = njmax;
@@ -304,6 +326,8 @@ MT2SignalRegion::MT2SignalRegion(int njmin, int njmax, int nbmin, int nbmax, con
   //if( nJetsMin<nBJetsMin ) nJetsMin = nBJetsMin;
 
   mtCut = mtcut;
+
+  pTbin = pT_bin;
 
 }
 
@@ -319,6 +343,8 @@ MT2SignalRegion::MT2SignalRegion( const MT2SignalRegion& rhs ) {
 
   mtCut = rhs.mtCut;
 
+  pTbin = rhs.pTbin;
+
 }
 
 
@@ -331,6 +357,10 @@ std::string MT2SignalRegion::getName() const {
   std::string signal_region = jString + "_" + bString;
   if( mtCut!="" ) signal_region = signal_region + "_" + mtCut;
 
+  if( pTbin!=-1 ){
+    std::string ptString(Form("%d", pTbin ));
+    signal_region = signal_region + "_pT" + ptString ;
+  }
   return signal_region;
 
 }
@@ -368,6 +398,8 @@ std::string MT2SignalRegion::getNiceName() const {
 
   if( mtCut=="loMT"  ) niceName += " (low M_{T})";
   else if( mtCut=="hiMT" ) niceName += " (high M_{T})";
+  else if( mtCut=="loPt" ) niceName += " (low H p_{T})";
+  else if( mtCut=="hiPt" ) niceName += " (high H p_{T})";
 
   return niceName;
 
@@ -412,6 +444,9 @@ std::string MT2SignalRegion::getNiceNameLatex() const {
 
   if( mtCut=="loMT"  ) niceName += " (low M_{T})";
   else if( mtCut=="hiMT" ) niceName += " (high M_{T})";
+  
+  if( pTbin==0 ) niceName += " (low H p_{T})";
+  else if( pTbin==1 ) niceName += " (high H p_{T})";
 
   return niceName;
 
@@ -452,12 +487,32 @@ std::string MT2SignalRegion::getCuts() const {
 
   std::string  jetCuts = this->getJetCuts();
   std::string bjetCuts = this->getBJetCuts();
+ 
+  std::string ptCuts = this->getPtCuts();
+
   std::string fullCuts = jetCuts + " && " + bjetCuts;
+
+  if( ptCuts != "" )
+    fullCuts += " && " + ptCuts;
 
   return fullCuts;
 
 }
 
+
+
+std::string MT2SignalRegion::getPtCuts() const {
+
+  std::string cuts = "";
+
+  if( pTbin == 0 )
+    cuts = " h_pt <= 0.8 ";
+  else if( pTbin == 1 )
+    cuts = " h_pt > 0.8 ";
+
+  return cuts;
+
+}
 
 
 std::string MT2SignalRegion::getJetCuts() const {
@@ -512,6 +567,8 @@ bool MT2SignalRegion::operator<( const MT2SignalRegion& rhs ) const {
   int  thisNJmin = nJetsMin;
   int  rhsNJmin = rhs.nJetsMin;
 
+  int rhsPTbin = rhs.pTbin;
+
   bool returnBool;
   
   if( nJetsMax == 1 && (rhs.nJetsMax > 1 || rhs.nJetsMax < 0) ){
@@ -542,14 +599,16 @@ bool MT2SignalRegion::operator<( const MT2SignalRegion& rhs ) const {
 	  
 	  } else {
 	    
-	    if( mtCut!=rhs.mtCut ) {
+	    // if( mtCut!=rhs.mtCut ) {
 	      
-	      if( mtCut=="loMT" ) {
-		returnBool = true;
-	      } else {
-		returnBool = false;
-	      }
+	    //   if( mtCut=="loMT" ) {
+	    //    	returnBool = true;
+	    //   } else {
+	    //    	returnBool = false;
+	    //   }
 	      
+	    if( pTbin < rhsPTbin ){ 
+	      returnBool = true; 
 	    } else { // everything is the same
 	      
 	      returnBool = false;
@@ -616,7 +675,9 @@ bool MT2SignalRegion::isIncluded( const MT2SignalRegion* sigRegion ) const {
   if( nBJetsMin < sigRegion->nBJetsMin ) returnBool = false;
   if( nBJetsMax > sigRegion->nBJetsMax && sigRegion->nBJetsMax>=0 ) returnBool = false;
   if( nBJetsMax < sigRegion->nBJetsMax && nBJetsMax < 0 ) returnBool = false; //To solve case where nBJetsMax is inf and sigRegion->nBJetsMax is finite 
-  if( sigRegion->mtCut != "" && mtCut != sigRegion->mtCut ) return false;
+  if( sigRegion->mtCut != "" && mtCut != sigRegion->mtCut )returnBool = false; 
+
+  if(  pTbin != sigRegion->pTbin ) returnBool = false;
 
 
   return returnBool;
@@ -696,6 +757,198 @@ void MT2Region::getBins( int &nBins, double*& bins) const {
 
   } 
   // Plot
+
+  else if( regionName == "HT0toInf_j0_b0toInf_pT1" ){ //this is as inclusive as it gets
+    const int nBins_tmp                        = 12;
+    bins = new double[nBins_tmp+1]{0., 100., 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 210.};
+    nBins = nBins_tmp;
+  }
+  else if( regionName == "HT0toInf_j1to3_b0_pT1" ){ //this is as inclusive as it gets
+    const int nBins_tmp                        = 12;
+    bins = new double[nBins_tmp+1]{0., 100., 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 210.};
+    nBins = nBins_tmp;
+  }
+  else if( regionName == "HT0toInf_j1to3_b1_pT1" ){ //this is as inclusive as it gets
+    const int nBins_tmp                        = 12;
+    bins = new double[nBins_tmp+1]{0., 100., 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 210.};
+    nBins = nBins_tmp;
+  }
+  else if( regionName == "HT0toInf_j1to3_b2toInf_pT1" ){ //this is as inclusive as it gets
+    const int nBins_tmp                        = 12;
+    bins = new double[nBins_tmp+1]{0., 100., 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 210.};
+    nBins = nBins_tmp;
+  }
+  else if( regionName == "HT0toInf_j4toInf_b0_pT1" ){ //this is as inclusive as it gets
+    const int nBins_tmp                        = 12;
+    bins = new double[nBins_tmp+1]{0., 100., 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 210.};
+    nBins = nBins_tmp;
+  }
+  else if( regionName == "HT0toInf_j4toInf_b1_pT1" ){ //this is as inclusive as it gets
+    const int nBins_tmp                        = 12;
+    bins = new double[nBins_tmp+1]{0., 100., 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 210.};
+    nBins = nBins_tmp;
+  }
+  else if( regionName == "HT0toInf_j4toInf_b2toInf_pT1" ){ //this is as inclusive as it gets
+    const int nBins_tmp                        = 12;
+    bins = new double[nBins_tmp+1]{0., 100., 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 210.};
+    nBins = nBins_tmp;
+  }
+
+  else if( regionName == "HT0toInf_j0_b0toInf_pT0" ){ //this is as inclusive as it gets
+    const int nBins_tmp                        = 12;
+    bins = new double[nBins_tmp+1]{0., 100., 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 210.};
+    nBins = nBins_tmp;
+  }
+  else if( regionName == "HT0toInf_j1to3_b0_pT0" ){ //this is as inclusive as it gets
+    const int nBins_tmp                        = 12;
+    bins = new double[nBins_tmp+1]{0., 100., 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 210.};
+    nBins = nBins_tmp;
+  }
+  else if( regionName == "HT0toInf_j1to3_b1_pT0" ){ //this is as inclusive as it gets
+    const int nBins_tmp                        = 12;
+    bins = new double[nBins_tmp+1]{0., 100., 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 210.};
+    nBins = nBins_tmp;
+  }
+  else if( regionName == "HT0toInf_j1to3_b2toInf_pT0" ){ //this is as inclusive as it gets
+    const int nBins_tmp                        = 12;
+    bins = new double[nBins_tmp+1]{0., 100., 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 210.};
+    nBins = nBins_tmp;
+  }
+  else if( regionName == "HT0toInf_j4toInf_b0_pT0" ){ //this is as inclusive as it gets
+    const int nBins_tmp                        = 12;
+    bins = new double[nBins_tmp+1]{0., 100., 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 210.};
+    nBins = nBins_tmp;
+  }
+  else if( regionName == "HT0toInf_j4toInf_b1_pT0" ){ //this is as inclusive as it gets
+    const int nBins_tmp                        = 12;
+    bins = new double[nBins_tmp+1]{0., 100., 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 210.};
+    nBins = nBins_tmp;
+  }
+  else if( regionName == "HT0toInf_j4toInf_b2toInf_pT0" ){ //this is as inclusive as it gets
+    const int nBins_tmp                        = 12;
+    bins = new double[nBins_tmp+1]{0., 100., 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 210.};
+    nBins = nBins_tmp;
+  }
+
+
+
+  //next one
+  else if( regionName == "HT0toInf_j0_b0_pT1" ){ //this is as inclusive as it gets
+    const int nBins_tmp                        = 12;
+    bins = new double[nBins_tmp+1]{0., 100., 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 210.};
+    nBins = nBins_tmp;
+  }
+  else if( regionName == "HT0toInf_j0_b1toInf_pT1" ){ //this is as inclusive as it gets
+    const int nBins_tmp                        = 12;
+    bins = new double[nBins_tmp+1]{0., 100., 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 210.};
+    nBins = nBins_tmp;
+  }
+  else if( regionName == "HT0toInf_j1to3_b0_pT1" ){ //this is as inclusive as it gets
+    const int nBins_tmp                        = 12;
+    bins = new double[nBins_tmp+1]{0., 100., 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 210.};
+    nBins = nBins_tmp;
+  }
+  else if( regionName == "HT0toInf_j1to3_b1toInf_pT1" ){ //this is as inclusive as it gets
+    const int nBins_tmp                        = 12;
+    bins = new double[nBins_tmp+1]{0., 100., 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 210.};
+    nBins = nBins_tmp;
+  }
+  else if( regionName == "HT0toInf_j4toInf_b0_pT1" ){ //this is as inclusive as it gets
+    const int nBins_tmp                        = 12;
+    bins = new double[nBins_tmp+1]{0., 100., 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 210.};
+    nBins = nBins_tmp;
+  }
+  else if( regionName == "HT0toInf_j4toInf_b1toInf_pT1" ){ //this is as inclusive as it gets
+    const int nBins_tmp                        = 12;
+    bins = new double[nBins_tmp+1]{0., 100., 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 210.};
+    nBins = nBins_tmp;
+  }
+
+  else if( regionName == "HT0toInf_j0_b0_pT0" ){ //this is as inclusive as it gets
+    const int nBins_tmp                        = 12;
+    bins = new double[nBins_tmp+1]{0., 100., 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 210.};
+    nBins = nBins_tmp;
+  }
+  else if( regionName == "HT0toInf_j0_b1toInf_pT0" ){ //this is as inclusive as it gets
+    const int nBins_tmp                        = 12;
+    bins = new double[nBins_tmp+1]{0., 100., 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 210.};
+    nBins = nBins_tmp;
+  }
+  else if( regionName == "HT0toInf_j1to3_b0_pT0" ){ //this is as inclusive as it gets
+    const int nBins_tmp                        = 12;
+    bins = new double[nBins_tmp+1]{0., 100., 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 210.};
+    nBins = nBins_tmp;
+  }
+  else if( regionName == "HT0toInf_j1to3_b1toInf_pT0" ){ //this is as inclusive as it gets
+    const int nBins_tmp                        = 12;
+    bins = new double[nBins_tmp+1]{0., 100., 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 210.};
+    nBins = nBins_tmp;
+  }
+  else if( regionName == "HT0toInf_j4toInf_b0_pT0" ){ //this is as inclusive as it gets
+    const int nBins_tmp                        = 12;
+    bins = new double[nBins_tmp+1]{0., 100., 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 210.};
+    nBins = nBins_tmp;
+  }
+  else if( regionName == "HT0toInf_j4toInf_b1toInf_pT0" ){ //this is as inclusive as it gets
+    const int nBins_tmp                        = 12;
+    bins = new double[nBins_tmp+1]{0., 100., 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 210.};
+    nBins = nBins_tmp;
+  }
+
+
+
+
+
+
+
+
+  else if( regionName == "HT0toInf_j0to3_b0to1_pT1" ){ //this is as inclusive as it gets
+    const int nBins_tmp                        = 12;
+    bins = new double[nBins_tmp+1]{0., 100., 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 210.};
+    nBins = nBins_tmp;
+  }
+  else if( regionName == "HT0toInf_j0to3_b2toInf_pT1" ){ //this is as inclusive as it gets
+    const int nBins_tmp                        = 12;
+    bins = new double[nBins_tmp+1]{0., 100., 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 210.};
+    nBins = nBins_tmp;
+  }
+  else if( regionName == "HT0toInf_j4toInf_b0to1_pT1" ){ //this is as inclusive as it gets
+    const int nBins_tmp                        = 12;
+    bins = new double[nBins_tmp+1]{0., 100., 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 210.};
+    nBins = nBins_tmp;
+  }
+  else if( regionName == "HT0toInf_j4toInf_b2toInf_pT1" ){ //this is as inclusive as it gets
+    const int nBins_tmp                        = 12;
+    bins = new double[nBins_tmp+1]{0., 100., 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 210.};
+    nBins = nBins_tmp;
+  }
+
+  else if( regionName == "HT0toInf_j0to3_b0to1_pT0" ){ //this is as inclusive as it gets
+    const int nBins_tmp                        = 12;
+    bins = new double[nBins_tmp+1]{0., 100., 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 210.};
+    nBins = nBins_tmp;
+  }
+  else if( regionName == "HT0toInf_j0to3_b2toInf_pT0" ){ //this is as inclusive as it gets
+    const int nBins_tmp                        = 12;
+    bins = new double[nBins_tmp+1]{0., 100., 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 210.};
+    nBins = nBins_tmp;
+  }
+  else if( regionName == "HT0toInf_j4toInf_b0to1_pT0" ){ //this is as inclusive as it gets
+    const int nBins_tmp                        = 12;
+    bins = new double[nBins_tmp+1]{0., 100., 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 210.};
+    nBins = nBins_tmp;
+  }
+  else if( regionName == "HT0toInf_j4toInf_b2toInf_pT0" ){ //this is as inclusive as it gets
+    const int nBins_tmp                        = 12;
+    bins = new double[nBins_tmp+1]{0., 100., 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 210.};
+    nBins = nBins_tmp;
+  }
+
+
+
+
+
+
   else if( regionName == "HT0toInf_j0toInf_b0toInf" ){ //this is as inclusive as it gets
     
     const int nBins_tmp                        = 40;

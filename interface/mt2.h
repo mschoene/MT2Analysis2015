@@ -65,6 +65,7 @@ public :
    Int_t         HLT_Photon175;
    Int_t         HLT_MuEG;
    Int_t         HLT_DiJet;
+   Int_t         HLT_DiPhoton30;
    Int_t         HLT_DoubleEl;
    Int_t         HLT_DoubleMu;
    Int_t         HLT_DoubleEl33;
@@ -164,8 +165,8 @@ public :
    Float_t         mt2_gen;
    Float_t         mt2_genmet;
    Float_t         mt2;
-   Float_t         gamma_mt2;
    Float_t         zll_mt2;
+   Float_t         gamma_mt2;
    Int_t           gamma_nJet20;
    Int_t           gamma_nJet25;
    Int_t           gamma_nJet30;
@@ -181,7 +182,23 @@ public :
    Float_t         gamma_mht_phi;
    Float_t         gamma_minMTBMet;
    Float_t         gamma_jet1_pt;
-   Float_t         gamma_jet2_pt;
+   Float_t         gamma_jet2_pt;   
+   
+   Float_t         gg_mt2;
+   Int_t           gg_nJet30;
+   Int_t           gg_nJet30FailId;
+   Int_t           gg_nBJet20;
+   Float_t         gg_ht;
+   Float_t         gg_deltaPhiMin;
+   Float_t         gg_diffMetMht;
+   Float_t         gg_mht_pt;
+   Float_t         gg_mht_phi;
+   Float_t         gg_minMTBMet;
+   Float_t         gg_jet1_pt;
+   Float_t         gg_jet2_pt;
+   Float_t         gg_met_pt;
+   Float_t         gg_met_phi;
+
    Float_t         zll_deltaPhiMin;
    Float_t         zll_diffMetMht;
    Float_t         zll_mht_pt;
@@ -193,6 +210,8 @@ public :
    Float_t         zll_eta;
    Float_t         zll_phi;
    Float_t         zll_mass;
+   Float_t         h_pt;
+   Float_t         h_mass;
    Float_t         pseudoJet2_pt;
    Float_t         pseudoJet2_eta;
    Float_t         pseudoJet2_phi;
@@ -543,6 +562,7 @@ public :
    TBranch        *b_HLT_PFJet450;   //!
    TBranch        *b_HLT_Photon175;   //!
    TBranch        *b_HLT_DiJet;   //!
+   TBranch        *b_HLT_DiPhoton30;   //!
    TBranch        *b_HLT_DoubleEl;   //!
    TBranch        *b_HLT_DoubleMu;   //!
    TBranch        *b_HLT_DoubleEl33;   //!
@@ -641,8 +661,8 @@ public :
    TBranch        *b_mt2_gen;   //!
    TBranch        *b_mt2_genmet;   //!
    TBranch        *b_mt2;   //!
-   TBranch        *b_gamma_mt2;   //!
    TBranch        *b_zll_mt2;   //!
+   TBranch        *b_gamma_mt2;   //!
    TBranch        *b_gamma_nJet20;   //!
    TBranch        *b_gamma_nJet25;   //!
    TBranch        *b_gamma_nJet30;   //!
@@ -659,6 +679,22 @@ public :
    TBranch        *b_gamma_minMTBMet;   //!
    TBranch        *b_gamma_jet1_pt;   //!
    TBranch        *b_gamma_jet2_pt;   //!
+
+   TBranch        *b_gg_mt2;   //!
+   TBranch        *b_gg_nJet30;   //!
+   TBranch        *b_gg_nBJet20;   //! 
+   TBranch        *b_gg_nJet30FailId;   //!
+   TBranch        *b_gg_ht;   //!
+   TBranch        *b_gg_deltaPhiMin;   //!
+   TBranch        *b_gg_diffMetMht;   //!
+   TBranch        *b_gg_mht_pt;   //!
+   TBranch        *b_gg_mht_phi;   //!
+   TBranch        *b_gg_minMTBMet;   //!
+   TBranch        *b_gg_jet1_pt;   //!
+   TBranch        *b_gg_jet2_pt;   //!
+   TBranch        *b_gg_met_pt;   //!
+   TBranch        *b_gg_met_phi;   //!
+
    TBranch        *b_zll_deltaPhiMin;   //!
    TBranch        *b_zll_diffMetMht;   //!
    TBranch        *b_zll_mht_pt;   //!
@@ -670,6 +706,10 @@ public :
    TBranch        *b_zll_eta;   //!
    TBranch        *b_zll_phi;   //!
    TBranch        *b_zll_mass;   //!
+
+   TBranch        *b_h_mass;   //!
+   TBranch        *b_h_pt;   //!
+
    TBranch        *b_pseudoJet2_pt;   //!
    TBranch        *b_pseudoJet2_eta;   //!
    TBranch        *b_pseudoJet2_phi;   //!
@@ -1094,6 +1134,7 @@ void MT2Tree::Init(TTree *tree)
    fChain->SetBranchAddress("HLT_PFJet450", &HLT_PFJet450, &b_HLT_PFJet450);
    fChain->SetBranchAddress("HLT_Photon175", &HLT_Photon175, &b_HLT_Photon175);
    fChain->SetBranchAddress("HLT_DiJet", &HLT_DiJet, &b_HLT_DiJet);
+   fChain->SetBranchAddress("HLT_DiPhoton30", &HLT_DiPhoton30, &b_HLT_DiPhoton30);
    fChain->SetBranchAddress("HLT_DoubleEl", &HLT_DoubleEl, &b_HLT_DoubleEl);
    fChain->SetBranchAddress("HLT_DoubleMu", &HLT_DoubleMu, &b_HLT_DoubleMu);
    fChain->SetBranchAddress("HLT_DoubleEl33", &HLT_DoubleEl33, &b_HLT_DoubleEl33);
@@ -1213,6 +1254,22 @@ void MT2Tree::Init(TTree *tree)
    fChain->SetBranchAddress("gamma_minMTBMet", &gamma_minMTBMet, &b_gamma_minMTBMet);
    fChain->SetBranchAddress("gamma_jet1_pt", &gamma_jet1_pt, &b_gamma_jet1_pt);
    fChain->SetBranchAddress("gamma_jet2_pt", &gamma_jet2_pt, &b_gamma_jet2_pt);
+
+   fChain->SetBranchAddress("gg_mt2", &gg_mt2, &b_gg_mt2);
+   fChain->SetBranchAddress("gg_nJet30", &gg_nJet30, &b_gg_nJet30);
+   fChain->SetBranchAddress("gg_nBJet20", &gg_nBJet20, &b_gg_nBJet20);
+   fChain->SetBranchAddress("gg_nJet30FailId", &gg_nJet30FailId, &b_gg_nJet30FailId);
+   fChain->SetBranchAddress("gg_ht", &gg_ht, &b_gg_ht);
+   fChain->SetBranchAddress("gg_deltaPhiMin", &gg_deltaPhiMin, &b_gg_deltaPhiMin);
+   fChain->SetBranchAddress("gg_diffMetMht", &gg_diffMetMht, &b_gg_diffMetMht);
+   fChain->SetBranchAddress("gg_mht_pt", &gg_mht_pt, &b_gg_mht_pt);
+   fChain->SetBranchAddress("gg_mht_phi", &gg_mht_phi, &b_gg_mht_phi);
+   fChain->SetBranchAddress("gg_minMTBMet", &gg_minMTBMet, &b_gg_minMTBMet);
+   fChain->SetBranchAddress("gg_jet1_pt", &gg_jet1_pt, &b_gg_jet1_pt);
+   fChain->SetBranchAddress("gg_jet2_pt", &gg_jet2_pt, &b_gg_jet2_pt);
+   fChain->SetBranchAddress("gg_met_pt", &gg_met_pt, &b_gg_met_pt);
+   fChain->SetBranchAddress("gg_met_phi", &gg_met_phi, &b_gg_met_phi);
+
    fChain->SetBranchAddress("zll_deltaPhiMin", &zll_deltaPhiMin, &b_zll_deltaPhiMin);
    fChain->SetBranchAddress("zll_diffMetMht", &zll_diffMetMht, &b_zll_diffMetMht);
    fChain->SetBranchAddress("zll_mht_pt", &zll_mht_pt, &b_zll_mht_pt);
@@ -1224,6 +1281,10 @@ void MT2Tree::Init(TTree *tree)
    fChain->SetBranchAddress("zll_eta", &zll_eta, &b_zll_eta);
    fChain->SetBranchAddress("zll_phi", &zll_phi, &b_zll_phi);
    fChain->SetBranchAddress("zll_mass", &zll_mass, &b_zll_mass);
+
+   fChain->SetBranchAddress("h_mass", &h_mass, &b_h_mass);
+   fChain->SetBranchAddress("h_pt", &h_pt, &b_h_pt);
+
    fChain->SetBranchAddress("pseudoJet2_pt", &pseudoJet2_pt, &b_pseudoJet2_pt);
    fChain->SetBranchAddress("pseudoJet2_eta", &pseudoJet2_eta, &b_pseudoJet2_eta);
    fChain->SetBranchAddress("pseudoJet2_phi", &pseudoJet2_phi, &b_pseudoJet2_phi);
@@ -1663,6 +1724,31 @@ Bool_t MT2Tree::passGammaAdditionalSelection(int sampleId) const
   return kTRUE;
 
 }
+
+/* Bool_t MT2Tree::passDiGammaAdditionalSelection(int sampleId) const */
+/* { */
+
+/*   if( ngamma<2 ) return kFALSE; */
+
+/*   bool isQCD  = (sampleId>=100 && sampleId<200) ||  (sampleId>=3100 && sampleId<3200 ); */
+/*   bool isGJet = sampleId>=200 && sampleId<298; //299 is the diphoton box */
+/*   bool isGG = sampleId==299; //299 is the diphoton box */
+
+/*   float deltaRmin_parton0 = gamma_drMinParton[0]; */
+/*   float deltaRmin_parton1 = gamma_drMinParton[1]; */
+
+/*   bool isFake0 = (gamma_mcMatchId[0]!=22 || deltaRmin_parton0<0.4); */
+/*   bool isFake1 = (gamma_mcMatchId[1]!=22 || deltaRmin_parton1<0.4); */
+
+/*   if( isQCD && (deltaRmin_parton0>0.4 || deltaRmin_parton1>0.4 )) return kFALSE; // stitching */
+
+/*   if( isGJet && (( !isFake0 && !isFake1 ) || ( isFake0 && isFake1 )) ) return kFALSE; // fakes only from QCD (it's inclusive) //one has to be fake, otherwise it is GG */
+
+/*   if( isGG && ( isFake0 || isFake1 ) ) return kFalse; //fakes from other samples */
+
+/*   return kTRUE; */
+
+/* } */
 
 
 
