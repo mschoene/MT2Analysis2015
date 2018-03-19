@@ -6,6 +6,8 @@
 #include "interface/MT2EstimateSyst.h"
 #include "interface/MT2EstimateTree.h"
 
+#include "interface/Davismt2.h"
+#include "interface/Hemisphere.h"
 #define mt2_cxx
 #include "../interface/mt2.h"
 
@@ -15,6 +17,7 @@
 
 
 bool alsoSignals = true;
+bool is2017=false; //true for 2017 data&mc, otherwise it's 2016 data&mc (for trigger and filters, evlt btag id)
 
 
 int round(float d) {
@@ -34,6 +37,8 @@ float DeltaR(float eta1, float eta2, float phi1, float phi2);
 
 float DeltaPhi(float phi1, float phi2);
 
+void getHemispheres( std::vector<float> input_pt, std::vector<float> input_eta, std::vector<float> input_phi, std::vector<float> input_mass, TLorentzVector *v1, TLorentzVector *v2);
+Float_t calcMT2(std::vector<float> input_pt, std::vector<float> input_eta, std::vector<float> input_phi, std::vector<float> input_mass, float met, float metphi);
 
 int main( int argc, char* argv[] ) {
 
@@ -199,7 +204,8 @@ int main( int argc, char* argv[] ) {
       std::cout << "size " << samples_sig.size() << std::endl;
 
       if( mass_neutralino2 > 0 ){   
-	for( int mass2 =125; mass2<410; mass2+=25){
+	for( int mass2 =125; mass2<166; mass2+=25){
+	  //	for( int mass2 =125; mass2<410; mass2+=25){
 	  for( int mass1 =0 ; mass1< (mass2 - 120); mass1+=25){
 
 	    int massNeut2 = mass2;
@@ -379,6 +385,11 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
     isEW_WH = 1;
 
 
+
+  TFile* r9corrFile = TFile::Open("transformation_Moriond17_AfterPreApr_v1.root");
+  TGraph* r9corr = (TGraph*)r9corrFile->Get("transffull5x5R9EB");
+  r9corrFile->Close();
+
   int nentries = tree->GetEntries();
 
   //  for( int iEntry=0; iEntry< 5000 ; ++iEntry ) {
@@ -387,6 +398,9 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
     if( iEntry % 50000 == 0 ) std::cout << "    Entry: " << iEntry << " / " << nentries << std::endl;
 
     myTree.GetEntry(iEntry);
+
+    if( myTree.ngamma<2 ) continue;
+
 
     if( isEW && mass_neut2>0 && ( mass_neut2 != myTree.GenSusyMNeutralino2) ) {
       if ( !isEW )
@@ -425,17 +439,18 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
      
     if( myTree.isData ) {
       if( !( myTree.isGolden ) ) continue;
-      if( !(myTree.passFilters() ) ) continue;
-      if( !(myTree.HLT_DiPhoton30) ) continue;
+      
+      if( !is2017 && !(myTree.passFilters()  ) ) continue;
+      if( !is2017 && !(myTree.HLT_DiPhoton30 ) ) continue;
+
+      if( is2017 && !(myTree.passFilters2017()   ) ) continue;
+      if( is2017 && !(myTree.HLT_DiPhoton30_2017 ) ) continue;
+
     }
-
-    if( myTree.ngamma<2 ) continue;
-
 
 
     // if( myTree.gamma_pt[0]<30 ) continue;
     // if( myTree.gamma_pt[1]<20 ) continue;
-
 
     // TLorentzVector gamma;
     // gamma.SetPtEtaPhiM( myTree.gamma_pt[0], myTree.gamma_eta[0], myTree.gamma_phi[0], myTree.gamma_mass[0] );
@@ -451,7 +466,9 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
 	bool isNotALep = true;
     	if( myTree.nlep>0){
     	  for(int lep=0; lep< myTree.nlep; lep++){
-    	    float dR = sqrt( ((myTree.lep_eta[lep]-myTree.gamma_eta[i])*(myTree.lep_eta[lep]-myTree.gamma_eta[i])) + ((myTree.lep_phi[lep]-myTree.gamma_phi[i])*(myTree.lep_phi[lep]-myTree.gamma_phi[i])) );
+	    //    	    float dR = sqrt( ((myTree.lep_eta[lep]-myTree.gamma_eta[i])*(myTree.lep_eta[lep]-myTree.gamma_eta[i])) + ((myTree.lep_phi[lep]-myTree.gamma_phi[i])*(myTree.lep_phi[lep]-myTree.gamma_phi[i])) );
+    	    float dR = DeltaR ( myTree.lep_eta[lep], myTree.gamma_eta[i], myTree.lep_phi[lep], myTree.gamma_phi[i] );
+
     	    //Clean out photons from electrons with dR<1, from muons wiht dR<0.5
     	    if( !( (abs(myTree.lep_pdgId[lep])==11 && dR>1.0 ) || (abs(myTree.lep_pdgId[lep])==13 && dR>0.5) ) ){ 
 	      isNotALep = false;
@@ -479,6 +496,7 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
       continue;
     }
 
+
     if( (isQCD || isGJets) && myTree.gamma_mcMatchId[indexG[0]]==22 && myTree.gamma_mcMatchId[indexG[1]]==22 ) continue; //remove promptprom from QCD & GJets as it is already in the BOX
 
     TLorentzVector Hvec;
@@ -488,12 +506,51 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
       continue; //should already be taken care of in the skim
 
 
+
+    std::vector<float> input_pt;
+    std::vector<float> input_eta;
+    std::vector<float> input_phi;
+    std::vector<float> input_mass;
+
+    for(int jj=0; jj < myTree.njet; jj++){
+      if( fabs(myTree.jet_eta[jj]) < 2.4 ){
+	input_pt.push_back( myTree.jet_pt[jj] );
+	input_eta.push_back( myTree.jet_eta[jj] );
+	input_phi.push_back( myTree.jet_phi[jj] );
+	input_mass.push_back( myTree.jet_mass[jj] );
+      }
+    }
+
+    if( ( myTree.nlep>0 )){
+
+      for(int jj=0; jj < myTree.nlep; jj++){
+	input_pt.push_back( myTree.lep_pt[jj] );
+	input_eta.push_back( myTree.lep_eta[jj] );
+	input_phi.push_back( myTree.lep_phi[jj] );
+	input_mass.push_back( myTree.lep_mass[jj] );
+      }
+
+    }
+
+
+    if( ( myTree.nisoTrack>0 )){
+
+      for(int jj=0; jj < myTree.nisoTrack; jj++){
+	input_pt.push_back( myTree.isoTrack_pt[jj] );
+	input_eta.push_back( myTree.isoTrack_eta[jj] );
+	input_phi.push_back( myTree.isoTrack_phi[jj] );
+	input_mass.push_back( myTree.isoTrack_mass[jj] );
+      }
+
+    }
+
     float minMTBmet = myTree.minMTBMet;
     float met       = myTree.gg_met_pt;
     int njets       = myTree.gg_nJet30;
     int nbjets      = myTree.gg_nBJet20;    
+    //    int nbjets      = (is2017)  ?  myTree.gg_nBJet20deepcsv : myTree.gg_nBJet20;    
     float ht        = myTree.gg_ht;
-    float mt2       = (njets>1) ? myTree.mt2 : ht;
+    float mt2       = (njets>1) ?  myTree.mt2 : ht;
 
 
 
@@ -513,15 +570,6 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
 
     float scalarProd11 = gamma0.Vect()*pseudoJet1.Vect();
     float scalarProd12 = gamma1.Vect()*pseudoJet1.Vect();
-
-
-
-    // float minMTBmet = myTree.minMTBMet;
-    // float met       = myTree.met_pt;
-    // int njets       = myTree.nJet30;
-    // int nbjets      = myTree.nBJet20;    
-    // float ht        = myTree.ht;
-    // float mt2       = (njets>1) ? myTree.mt2 : ht;
 
 
     Double_t weight = (myTree.isData) ? 1. : myTree.evt_scale1fb;//*cfg.lumi(); 
@@ -571,10 +619,21 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
     //   std::cout << myTree.h_mass << " vs " << Hvec.M() << std::endl;
 
 
-    if( (fabs(myTree.gamma_eta[indexG[0]])<=1.4) && myTree.gamma_sigmaIetaIeta[indexG[0]]> 0.010 ) continue;
-    if( (fabs(myTree.gamma_eta[indexG[1]])<=1.4) && myTree.gamma_sigmaIetaIeta[indexG[1]]> 0.010 ) continue;
-    if( (fabs(myTree.gamma_eta[indexG[0]])>1.4)  && myTree.gamma_sigmaIetaIeta[indexG[0]]> 0.0267 ) continue;
-    if( (fabs(myTree.gamma_eta[indexG[1]])>1.4)  && myTree.gamma_sigmaIetaIeta[indexG[1]]> 0.0267 ) continue;
+    if( is2017 && (fabs(myTree.gamma_eta[indexG[0]])<=1.4) && myTree.gamma_sigmaIetaIeta[indexG[0]]> 0.0105 ) continue;
+    if( is2017 && (fabs(myTree.gamma_eta[indexG[1]])<=1.4) && myTree.gamma_sigmaIetaIeta[indexG[1]]> 0.0105 ) continue;
+    if( is2017 && (fabs(myTree.gamma_eta[indexG[0]])>1.4)  && myTree.gamma_sigmaIetaIeta[indexG[0]]> 0.0356 ) continue;
+    if( is2017 && (fabs(myTree.gamma_eta[indexG[1]])>1.4)  && myTree.gamma_sigmaIetaIeta[indexG[1]]> 0.0356 ) continue;
+
+    if( !is2017 && (fabs(myTree.gamma_eta[indexG[0]])<=1.4) && myTree.gamma_sigmaIetaIeta[indexG[0]]> 0.011 ) continue;
+    if( !is2017 && (fabs(myTree.gamma_eta[indexG[1]])<=1.4) && myTree.gamma_sigmaIetaIeta[indexG[1]]> 0.011 ) continue;
+    if( !is2017 && (fabs(myTree.gamma_eta[indexG[0]])>1.4)  && myTree.gamma_sigmaIetaIeta[indexG[0]]> 0.0314 ) continue;
+    if( !is2017 && (fabs(myTree.gamma_eta[indexG[1]])>1.4)  && myTree.gamma_sigmaIetaIeta[indexG[1]]> 0.0314 ) continue;
+
+    // if( (fabs(myTree.gamma_eta[indexG[0]])<=1.4) && myTree.gamma_sigmaIetaIeta[indexG[0]]> 0.010 ) continue;
+    // if( (fabs(myTree.gamma_eta[indexG[1]])<=1.4) && myTree.gamma_sigmaIetaIeta[indexG[1]]> 0.010 ) continue;
+    // if( (fabs(myTree.gamma_eta[indexG[0]])>1.4)  && myTree.gamma_sigmaIetaIeta[indexG[0]]> 0.0267 ) continue;
+    // if( (fabs(myTree.gamma_eta[indexG[1]])>1.4)  && myTree.gamma_sigmaIetaIeta[indexG[1]]> 0.0267 ) continue;
+
 
 
     h_mass = Hvec.M();
@@ -584,17 +643,20 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
     // h_pt = myTree.h_pt;
 
 
-    float massEG00 = -99.;
-    float massEG01 = -99.;
-    float massEG10 = -99.;
-    float massEG11 = -99.;
+    // float massEG00 = -99.;
+    // float massEG01 = -99.;
+    // float massEG10 = -99.;
+    // float massEG11 = -99.;
 
     float diLepMass = -99.;
     bool isDiLepZ = 0;
+    int diLepPdgId = -99.;
     //di lep
     if( ( myTree.nlep>1 )){
 
-      if( ((myTree.lep_pdgId[0]*myTree.lep_pdgId[1])< 0 )  && myTree.lep_pt[0]> 20 && myTree.lep_pt[1]>20  && (abs(myTree.lep_pdgId[0])==13 || ( abs(myTree.lep_pdgId[0])==11 && myTree.lep_tightId[0]> 0.5 && abs(myTree.lep_pdgId[1])==11 && myTree.lep_tightId[1]> 0.5  )) ) {
+      if( ((myTree.lep_pdgId[0]*myTree.lep_pdgId[1])< 0 )  && myTree.lep_pt[0]> 20 && myTree.lep_pt[1]>20  && (abs(myTree.lep_pdgId[0])==13 || ( abs(myTree.lep_pdgId[0])==11 && myTree.lep_tightId[0]> 0.5 && abs(myTree.lep_pdgId[1])==11 && myTree.lep_tightId[1]> 0.5  ) || is2017  ) ) {
+
+	//      if( ((myTree.lep_pdgId[0]*myTree.lep_pdgId[1])< 0 )  && myTree.lep_pt[0]> 20 && myTree.lep_pt[1]>20  && (abs(myTree.lep_pdgId[0])==13 || ( abs(myTree.lep_pdgId[0])==11 && myTree.lep_tightId[0]> 0.5 && abs(myTree.lep_pdgId[1])==11 && myTree.lep_tightId[1]> 0.5  )) ) {
 	//why use 30 if you can use 20 in pt      if( ((myTree.lep_pdgId[0]*myTree.lep_pdgId[1])< 0 )  && myTree.lep_pt[0]> 30 && myTree.lep_pt[1]>30  && (abs(myTree.lep_pdgId[0])==13 || ( abs(myTree.lep_pdgId[0])==11 && myTree.lep_tightId[0]> 0.5 && abs(myTree.lep_pdgId[1])==11 && myTree.lep_tightId[1]> 0.5  )) ) {
 
 	//Need the lorentz vectors of the leptons first
@@ -609,16 +671,18 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
     	if( fabs( diLepMass -91.19) <= 20 ) 
 	  isDiLepZ  = 1;
 
-	//build M egamma for purity, ie get those dirty photon electrons out
-	TLorentzVector vecEG00 = LVec[0] + gamma0 ; //leptons invariant mass
-	TLorentzVector vecEG01 = LVec[0] + gamma1 ; //leptons invariant mass
-	TLorentzVector vecEG10 = LVec[1] + gamma0 ; //leptons invariant mass
-	TLorentzVector vecEG11 = LVec[1] + gamma1 ; //leptons invariant mass
+	diLepPdgId = abs ( myTree.lep_pdgId[0] );
 
-	massEG00 = vecEG00.M();
-	massEG01 = vecEG01.M();
-	massEG10 = vecEG10.M();
-	massEG11 = vecEG11.M();
+	// //build M egamma for purity, ie get those dirty photon electrons out
+	// TLorentzVector vecEG00 = LVec[0] + gamma0 ; //leptons invariant mass
+	// TLorentzVector vecEG01 = LVec[0] + gamma1 ; //leptons invariant mass
+	// TLorentzVector vecEG10 = LVec[1] + gamma0 ; //leptons invariant mass
+	// TLorentzVector vecEG11 = LVec[1] + gamma1 ; //leptons invariant mass
+
+	// massEG00 = vecEG00.M();
+	// massEG01 = vecEG01.M();
+	// massEG10 = vecEG10.M();
+	// massEG11 = vecEG11.M();
 
       }
     }
@@ -630,7 +694,7 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
     //SINGLE LEPTON region
     if( myTree.nlep==1 ){
 
-      if(  myTree.lep_pt[0]> 20  && (abs(myTree.lep_pdgId[0])==13 || ( abs(myTree.lep_pdgId[0])==11 && myTree.lep_tightId[0]> 0.5  )) ) {
+      if(  myTree.lep_pt[0]> 20  && (abs(myTree.lep_pdgId[0])==13 || ( abs(myTree.lep_pdgId[0])==11 && myTree.lep_tightId[0]> 0.5  || is2017 )) ) {
 	if( (abs(myTree.lep_pdgId[0])==11 ))
 	  is1El = 1;
 	else if((abs(myTree.lep_pdgId[0])==13 ))
@@ -645,13 +709,23 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
     std::vector<float> bPTVector;
     float diBpT = -99;
 
-    if( myTree.gg_nBJet20 > 1 ){
+
+
+    if( nbjets > 1 ){
       std::vector<int> indexB;       //   int indexB0 = -1;      int indexB1 = -1;
       for( int i=0; i< myTree.njet; i++){
 	if ( fabs(myTree.jet_eta[i]) > 2.4 ) 
 	  continue;
-	if( myTree.jet_btagCSV[i]>0.8484 ){
-	  indexB.push_back( i );
+
+	if( is2017){
+	  if( myTree.jet_btagCSV[i]>0.8484 ){
+   //if( (myTree.jet_pfDeepCSV_bb[i] + myTree.jet_pfDeepCSV_b[i])> 0.6324){
+	    indexB.push_back( i );
+	  }
+	}else{
+	  if( myTree.jet_btagCSV[i]>0.8484 ){
+	    indexB.push_back( i );
+	  }
 	}
       }
 
@@ -677,8 +751,6 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
 	//	diBMass0 = bMassVector[0]; // first in list
 	diBpT  = bPTVector[0]; //set to first one then see if there is a better one
 	//	diBpT0 = bPTVector[0]; // first in list
-	//	std::cout << bMassVector.size()  << std::endl;
-	//	std::cout << "Original "  << diBMass << std::endl;
 
 	for( unsigned int bbCand=0; bbCand<bMassVector.size(); bbCand++){
 	  if( (bMassVector[ bbCand ] <140) && (bMassVector[ bbCand ] >= 95) )
@@ -688,6 +760,7 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
 	  if( (bMassVector[ bbCand ] <95) && (bMassVector[ bbCand ] >= 60)  && (isDiBH==0) )
 	    isDiBZ = 1;
 	}
+
 	//   //	  std::cout << "current Original "  << diBMass << std::endl;
 	//   for( unsigned int bbCand2=bbCand+1; bbCand2<bMassVector.size(); bbCand2++){
 	//     if( ((fabs( bMassVector[bbCand2]-125.)) < (fabs( diBMass-125.) )) || ((fabs( bMassVector[bbCand2]- 90.)) < (fabs( diBMass - 90.)) ) )
@@ -705,10 +778,10 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
 
   
 
-    thisTree->assignVar("massEG00", massEG00 );
-    thisTree->assignVar("massEG01", massEG01 );
-    thisTree->assignVar("massEG10", massEG10 );
-    thisTree->assignVar("massEG11", massEG11 );
+    // thisTree->assignVar("massEG00", massEG00 );
+    // thisTree->assignVar("massEG01", massEG01 );
+    // thisTree->assignVar("massEG10", massEG10 );
+    // thisTree->assignVar("massEG11", massEG11 );
 
 
     float lep_id = -99;
@@ -729,7 +802,29 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
       lep_phi1 = myTree.lep_phi[1];
     }
 
-    thisTree->assignVar("lep_pdgId0", lep_id );
+
+    //Float_t calcMT2(std::vector<float> input_pt, std::vector<float> input_eta, std::vector<float> input_phi, std::vector<float> input_mass, float met, float metphi){
+    
+    float calc_mt2 = -99;
+    //if( input_pt.size() >1 )
+    //    calc_mt2 = calcMT2( input_pt, input_eta, input_phi, input_mass, myTree.met_pt, myTree.met_phi );
+
+
+    //    thisTree->assignVar( "calc_mt2", calc_mt2 );
+
+    thisTree->assignVar( "hgg_mt2", myTree.hgg_mt2 );
+
+    // thisTree->assignVar( "jet0_pt", myTree.jet_pt[0] );
+    // thisTree->assignVar( "jet1_pt", myTree.jet_pt[1] );
+    // thisTree->assignVar( "jet2_pt", myTree.jet_pt[2] );
+
+    // thisTree->assignVar( "jet0_eta", myTree.jet_eta[0] );
+    // thisTree->assignVar( "jet1_eta", myTree.jet_eta[1] );
+    // thisTree->assignVar( "jet2_eta", myTree.jet_eta[2] );
+
+    thisTree->assignVar("nVert", myTree.nVert );
+
+    thisTree->assignVar( "lep_pdgId0", lep_id );
     thisTree->assignVar( "lep_tightId0", lep_tightId0 );
     thisTree->assignVar( "lep_tightId1", lep_tightId1 );
     thisTree->assignVar( "lep_eta0", lep_eta0 );
@@ -740,6 +835,7 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
 
     thisTree->assignVar( "diLepMass", diLepMass );
     thisTree->assignVar( "isDiLepZ", isDiLepZ );
+    thisTree->assignVar( "diLepId", diLepPdgId );
 
     thisTree->assignVar( "is1El", is1El);
     thisTree->assignVar( "is1Mu", is1Mu);
@@ -749,11 +845,10 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
     thisTree->assignVar( "isDiBZ", isDiBZ );
     thisTree->assignVar( "diBpT", diBpT );
 
-    thisTree->assignVar( "scProd11", scalarProd11 );
-    thisTree->assignVar( "scProd12", scalarProd12 );
+    //    thisTree->assignVar( "scProd11", scalarProd11 );
+    //    thisTree->assignVar( "scProd12", scalarProd12 );
 
-
-    thisTree->assignVar( "angleGammas", LVec[0].Angle(LVec[1].Vect()) );
+    //    thisTree->assignVar( "angleGammas", LVec[0].Angle(LVec[1].Vect()) );
 
     thisTree->assignVar( "met_phi", myTree.met_phi );
 
@@ -765,7 +860,12 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
     thisTree->assignVar( "ptGamma0", myTree.gamma_pt[indexG[0]] );
     thisTree->assignVar( "etaGamma0", myTree.gamma_eta[indexG[0]] );
     thisTree->assignVar( "phiGamma0", myTree.gamma_phi[indexG[0]] );
-    thisTree->assignVar( "r9Gamma0", myTree.gamma_r9[indexG[0]] );
+
+    float gamma0_r9_corr = (myTree.isData) ? myTree.gamma_r9[indexG[0]] : r9corr->Eval(myTree.gamma_r9[indexG[0]]);
+    float gamma1_r9_corr = (myTree.isData) ? myTree.gamma_r9[indexG[1]] : r9corr->Eval(myTree.gamma_r9[indexG[1]]);
+
+    thisTree->assignVar( "r9Gamma0", gamma0_r9_corr );
+    thisTree->assignVar( "r9Gamma1", gamma1_r9_corr );
     thisTree->assignVar( "sigmaIetaIetaGamma0", myTree.gamma_sigmaIetaIeta[indexG[0]] );
 
     // thisTree->assignVar( "chHadIsoGamma0", myTree.gamma_chHadIso[indexG[0]] );
@@ -775,15 +875,15 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
     thisTree->assignVar( "ptGamma1", myTree.gamma_pt[indexG[1]] );
     thisTree->assignVar( "etaGamma1", myTree.gamma_eta[indexG[1]] );
     thisTree->assignVar( "phiGamma1", myTree.gamma_phi[indexG[1]] );
-    thisTree->assignVar( "r9Gamma1", myTree.gamma_r9[indexG[1]] );
+    //    thisTree->assignVar( "r9Gamma1", myTree.gamma_r9[indexG[1]] );
     thisTree->assignVar( "sigmaIetaIetaGamma1", myTree.gamma_sigmaIetaIeta[indexG[1]] );
 
     // thisTree->assignVar( "chHadIsoGamma1", myTree.gamma_chHadIso[indexG[1]] );
     // thisTree->assignVar( "chHadIsoRCGamma1", myTree.gamma_chHadIsoRC[indexG[1]] );
     // thisTree->assignVar( "chHadIsoRC04Gamma1", myTree.gamma_chHadIsoRC04[indexG[1]] );
 
-    thisTree->assignVar( "gamma_jet1_pt", myTree.gamma_jet1_pt );
-    thisTree->assignVar( "gamma_jet2_pt", myTree.gamma_jet2_pt );
+    //    thisTree->assignVar( "gamma_jet1_pt", myTree.gamma_jet1_pt );
+    //    thisTree->assignVar( "gamma_jet2_pt", myTree.gamma_jet2_pt );
     // thisTree->assignVar( "gamma_chHadIsoRC",  myTree.gamma_chHadIsoRC[0] );
     thisTree->assignVar( "drMinParton", myTree.gamma_drMinParton[0] );
     //thisTree->assignVars( ht, njets, nbjets, met, mt2 ); //manually override these (so change nbjets)
@@ -791,18 +891,22 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
 
 
     thisTree->assignVar( "gg_nJets", myTree.gg_nJet30 );
-    thisTree->assignVar( "gg_nBJets", myTree.gg_nBJet20 );
+    thisTree->assignVar( "gg_nBJets", nbjets );
+    thisTree->assignVar( "gg_nBJetsCSV", myTree.gg_nBJet20 );
+
     thisTree->assignVar( "gg_mt2", myTree.gg_mt2 );
     thisTree->assignVar( "gg_ht", myTree.gg_ht );
     thisTree->assignVar( "gg_deltaPhiMin", myTree.gg_deltaPhiMin );
-    thisTree->assignVar( "gg_diffMetMht", myTree.gg_diffMetMht );
-    thisTree->assignVar( "gg_mht", myTree.gg_mht_pt );
+    //    thisTree->assignVar( "gg_diffMetMht", myTree.gg_diffMetMht );
+    //    thisTree->assignVar( "gg_mht", myTree.gg_mht_pt );
     thisTree->assignVar( "gg_met", myTree.gg_met_pt );
     thisTree->assignVar( "gg_met_phi", myTree.gg_met_phi );
-    thisTree->assignVar( "gg_jet1_pt", myTree.gg_jet1_pt );
-    thisTree->assignVar( "gg_jet2_pt", myTree.gg_jet2_pt );
-    thisTree->assignVar( "jet1_pt", myTree.jet1_pt );
-    thisTree->assignVar( "jet2_pt", myTree.jet2_pt );
+
+    // thisTree->assignVar( "gg_jet1_pt", myTree.gg_jet1_pt );
+    // thisTree->assignVar( "gg_jet2_pt", myTree.gg_jet2_pt );
+
+    // thisTree->assignVar( "jet1_pt", myTree.jet1_pt );
+    // thisTree->assignVar( "jet2_pt", myTree.jet2_pt );
 
     if(sigSampleName.Contains("T2bH")){ 
       thisTree->assignVar( "weight_isr", myTree.weight_isr/myTree.weight_isr_av );
@@ -914,18 +1018,29 @@ float DeltaPhi(float phi1, float phi2){
 
 void addVariables(MT2Analysis<MT2EstimateTree>* tree){
 
-  MT2EstimateTree::addVar( tree, "gamma_jet1_pt" );
-  MT2EstimateTree::addVar( tree, "gamma_jet2_pt" );
+  //  MT2EstimateTree::addVar( tree, "calc_mt2" );
+  MT2EstimateTree::addVar( tree, "hgg_mt2" );
+
+  // MT2EstimateTree::addVar( tree, "jet0_pt" );
+  // MT2EstimateTree::addVar( tree, "jet1_pt" );
+  // MT2EstimateTree::addVar( tree, "jet2_pt" );
+
+  // MT2EstimateTree::addVar( tree, "jet0_eta" );
+  // MT2EstimateTree::addVar( tree, "jet1_eta" );
+  // MT2EstimateTree::addVar( tree, "jet2_eta" );
+
+  // MT2EstimateTree::addVar( tree, "gamma_jet1_pt" );
+  // MT2EstimateTree::addVar( tree, "gamma_jet2_pt" );
 
   MT2EstimateTree::addVar( tree, "drMinParton" );
   MT2EstimateTree::addVar( tree, "raw_mt2" );
 
   MT2EstimateTree::addVar( tree, "met_phi" );
 
-  MT2EstimateTree::addVar( tree, "scProd12" );
-  MT2EstimateTree::addVar( tree, "scProd11" );
+  //  MT2EstimateTree::addVar( tree, "scProd12" );
+  //  MT2EstimateTree::addVar( tree, "scProd11" );
 
-  MT2EstimateTree::addVar( tree, "angleGammas" );
+  //  MT2EstimateTree::addVar( tree, "angleGammas" );
   MT2EstimateTree::addVar( tree, "h_phi" );
   MT2EstimateTree::addVar( tree, "h_eta" );
   MT2EstimateTree::addVar( tree, "h_mass");
@@ -953,18 +1068,20 @@ void addVariables(MT2Analysis<MT2EstimateTree>* tree){
 
   MT2EstimateTree::addVar( tree, "gg_nJets" );
   MT2EstimateTree::addVar( tree, "gg_nBJets" );
+  MT2EstimateTree::addVar( tree, "gg_nBJetsCSV" );
+
   MT2EstimateTree::addVar( tree, "gg_ht" );
   MT2EstimateTree::addVar( tree, "gg_mt2" );
   MT2EstimateTree::addVar( tree, "gg_deltaPhiMin" );
-  MT2EstimateTree::addVar( tree, "gg_diffMetMht" );
-  MT2EstimateTree::addVar( tree, "gg_mht" );
+  //  MT2EstimateTree::addVar( tree, "gg_diffMetMht" );
+  // MT2EstimateTree::addVar( tree, "gg_mht" );
   MT2EstimateTree::addVar( tree, "gg_met" );
   MT2EstimateTree::addVar( tree, "gg_met_phi" );
-  MT2EstimateTree::addVar( tree, "gg_jet1_pt" );
-  MT2EstimateTree::addVar( tree, "gg_jet2_pt" );
+  //  MT2EstimateTree::addVar( tree, "gg_jet1_pt" );
+  //  MT2EstimateTree::addVar( tree, "gg_jet2_pt" );
 
-  MT2EstimateTree::addVar( tree, "jet1_pt" );
-  MT2EstimateTree::addVar( tree, "jet2_pt" );
+  // MT2EstimateTree::addVar( tree, "jet1_pt" );
+  // MT2EstimateTree::addVar( tree, "jet2_pt" );
 
   MT2EstimateTree::addVar( tree, "weight_isr" );
   MT2EstimateTree::addVar( tree, "weight_isr_UP" );
@@ -974,7 +1091,8 @@ void addVariables(MT2Analysis<MT2EstimateTree>* tree){
   MT2EstimateTree::addVar( tree, "isDiBZ" );
   MT2EstimateTree::addVar( tree, "diBMass" );
   MT2EstimateTree::addVar( tree, "isDiLepZ" );
-  MT2EstimateTree::addVar( tree, "diLepMass" ); 
+  MT2EstimateTree::addVar( tree, "diLepMass" );  
+  MT2EstimateTree::addVar( tree, "diLepId" ); 
 
   MT2EstimateTree::addVar( tree, "is1El" );
   MT2EstimateTree::addVar( tree, "is1Mu" );
@@ -993,9 +1111,95 @@ void addVariables(MT2Analysis<MT2EstimateTree>* tree){
   MT2EstimateTree::addVar( tree, "lep_phi0" );
   MT2EstimateTree::addVar( tree, "lep_phi1" );
 
-  MT2EstimateTree::addVar( tree, "massEG00" );
-  MT2EstimateTree::addVar( tree, "massEG01" );
-  MT2EstimateTree::addVar( tree, "massEG10" );
-  MT2EstimateTree::addVar( tree, "massEG11" );
+  MT2EstimateTree::addVar( tree, "nVert" );
+
+  // MT2EstimateTree::addVar( tree, "massEG00" );
+  // MT2EstimateTree::addVar( tree, "massEG01" );
+  // MT2EstimateTree::addVar( tree, "massEG10" );
+  // MT2EstimateTree::addVar( tree, "massEG11" );
+
+}
+
+
+
+
+
+
+void getHemispheres(std::vector<float> input_pt, std::vector<float> input_eta, std::vector<float> input_phi, std::vector<float> input_mass, TLorentzVector *v1, TLorentzVector *v2){
+  
+  std::vector<float> px, py, pz, E;
+  int NJets = input_pt.size();
+  for(int j=0; j<NJets; ++j){
+    TLorentzVector jet;
+    //    if (input_pt.at(j) > 30 && fabs(jEtaReb[j])<2.5)
+    
+    // selected relevant jets, b-jets 
+    jet.SetPtEtaPhiM(input_pt.at(j), input_eta.at(j), input_phi.at(j), input_mass.at(j) );
+    //else
+    //  continue;
+    px.push_back(jet.Px());
+    py.push_back(jet.Py());
+    pz.push_back(jet.Pz());
+    E .push_back(jet.E ());
+  }
+
+  Hemisphere* hemisp = new Hemisphere(px, py, pz, E, 2, 3);
+  std::vector<int> grouping = hemisp->getGrouping();
+
+  v1->SetPxPyPzE(0.,0.,0.,0.);
+  v2->SetPxPyPzE(0.,0.,0.,0.);
+  for(unsigned int i=0; i<px.size(); ++i){
+	if(grouping[i]==1){
+		v1->SetPx(v1->Px() + px[i]);
+		v1->SetPy(v1->Py() + py[i]);
+		v1->SetPz(v1->Pz() + pz[i]);
+		v1->SetE (v1->E () + E [i]);	
+	}else if(grouping[i] == 2){
+		v2->SetPx(v2->Px() + px[i]);
+		v2->SetPy(v2->Py() + py[i]);
+		v2->SetPz(v2->Pz() + pz[i]);
+		v2->SetE (v2->E () + E [i]);
+	}
+  }
+  delete hemisp;
+
+}
+
+
+
+
+
+
+Float_t calcMT2(std::vector<float> input_pt, std::vector<float> input_eta, std::vector<float> input_phi, std::vector<float> input_mass, float met, float metphi){
+
+  TLorentzVector *visible1 = new TLorentzVector(0.,0.,0.,0.);
+  TLorentzVector *visible2 = new TLorentzVector(0.,0.,0.,0.);
+
+  getHemispheres(input_pt, input_eta, input_phi, input_mass, visible1, visible2);
+
+  double pa[3];
+  double pb[3];
+  double pmiss[3];
+
+  pmiss[0] = 0;
+  pmiss[1] = static_cast<double> (met*TMath::Cos(metphi));
+  pmiss[2] = static_cast<double> (met*TMath::Sin(metphi));
+
+  pa[0] = 0;
+  pa[1] = static_cast<double> (visible1->Px());
+  pa[2] = static_cast<double> (visible1->Py());
+  
+  pb[0] = 0;
+  pb[1] = static_cast<double> (visible2->Px());
+  pb[2] = static_cast<double> (visible2->Py());
+
+  Davismt2 *mt2 = new Davismt2();
+  mt2->set_momenta(pa, pb, pmiss);
+  mt2->set_mn(0);
+  Float_t MT2=mt2->get_mt2();
+  delete mt2;
+  delete visible1;
+  delete visible2;
+  return MT2;
 
 }
