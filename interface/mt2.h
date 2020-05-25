@@ -66,6 +66,7 @@ public :
    Int_t         HLT_MuEG;
    Int_t         HLT_DiJet;
    Int_t         HLT_DiPhoton30;
+   Int_t         HLT_DiPhoton30_2017;
    Int_t         HLT_DoubleEl;
    Int_t         HLT_DoubleMu;
    Int_t         HLT_DoubleEl33;
@@ -81,6 +82,7 @@ public :
    Int_t         Flag_CSCTightHaloFilter;
    Int_t         Flag_CSCTightHalo2015Filter;
    Int_t         Flag_globalTightHalo2016Filter;
+   Int_t         Flag_globalSuperTightHalo2016Filter;
    Int_t         Flag_HBHENoiseFilter;
    Int_t         Flag_HBHENoiseIsoFilter;
    Int_t         Flag_goodVertices;
@@ -90,7 +92,11 @@ public :
    Int_t         Flag_badChargedHadronFilter;
    Int_t         Flag_badMuonFilterV2;
    Int_t         Flag_badChargedHadronFilterV2;
-   Int_t nJet200MuFrac50DphiMet;
+   Int_t         nJet200MuFrac50DphiMet;
+
+   Int_t         Flag_eeBadCalibFilter;
+   Int_t         Flag_badMuons;
+   Int_t         Flag_badChHad;
 
    Float_t         puWeight;
    Int_t           nTrueInt;
@@ -184,10 +190,14 @@ public :
    Float_t         gamma_jet1_pt;
    Float_t         gamma_jet2_pt;   
    
+   Float_t         hgg_mt2;
+   Float_t         hgg_mt2_genMET;
+   Float_t         hgg_stdMET_mt2;
    Float_t         gg_mt2;
    Int_t           gg_nJet30;
    Int_t           gg_nJet30FailId;
    Int_t           gg_nBJet20;
+   Int_t           gg_nBJet20deepcsv;
    Float_t         gg_ht;
    Float_t         gg_deltaPhiMin;
    Float_t         gg_diffMetMht;
@@ -233,6 +243,7 @@ public :
    Float_t         pseudoViaKtJet2_had_phi;
    Float_t         pseudoViaKtJet2_had_mass;
    Float_t         met_pt;
+   Float_t         met_stdMET_pt;
    Float_t         met_miniaodPt;
    Float_t         met_caloPt;
    Float_t         met_eta;
@@ -326,10 +337,17 @@ public :
    Float_t         jet1_pt;
    Float_t         jet2_pt;
    Float_t         jet_pt[50];   //[njet]
+   Float_t         gg_jet_pt[50];   //[njet]
    Float_t         jet_eta[50];   //[njet]
+   Float_t         gg_jet_eta[50];   //[njet]
+   Float_t         gg_jet_phi[50];   //[njet]
+   Float_t         gg_jet_mass[50];   //[njet]
    Float_t         jet_phi[50];   //[njet]
    Float_t         jet_mass[50];   //[njet]
    Float_t         jet_btagCSV[50];   //[njet]
+   Float_t         gg_jet_btagCSV[50];   //[njet]
+   Float_t         jet_pfDeepCSV_bb[50];   //[njet]
+   Float_t         jet_pfDeepCSV_b[50];   //[njet]
    Float_t         jet_rawPt[50];   //[njet]
    Float_t         jet_mcPt[50];   //[njet]
    Int_t           jet_mcFlavour[50];   //[njet]
@@ -427,8 +445,14 @@ public :
    Int_t           genLepFromTau_status[5];   //[ngenLepFromTau]
    Int_t           genLepFromTau_sourceId[5];   //[ngenLepFromTau]
    Int_t           ngamma;
+ 
+   Float_t         gammaWideEta_pt[20];   //[ngammaWideEta]
+   Float_t         gammaWideEta_eta[20];   //[ngammaWideEta]
+   Float_t         gammaWideEta_phi[20];   //[ngammaWideEta]
+
    Float_t         gamma_pt[20];   //[ngamma]
    Float_t         gamma_eta[20];   //[ngamma]
+   Float_t         gamma_etaSc[20];   //[ngamma]
    Float_t         gamma_phi[20];   //[ngamma]
    Float_t         gamma_mass[20];   //[ngamma]
    Int_t           gamma_pdgId[20];   //[ngamma]
@@ -492,6 +516,9 @@ public :
    Float_t weight_lepsf2017;
    Float_t weight_lepsf2017_UP;
    Float_t weight_lepsf2017_DN;
+   Float_t weight_gammasf2017;
+   Float_t weight_gammasf2017_UP;
+   Float_t weight_gammasf2017_DN;
    Float_t weight_btagsf;
    Float_t weight_btagsf_light_UP;
    Float_t weight_btagsf_light_DN;
@@ -512,7 +539,9 @@ public :
    Float_t weight_isr_DN;
    Float_t weight_isr_UP_av;
    Float_t weight_isr_DN_av;
-   Float_t weight_scales[500];
+   //   Float_t weight_scales[500];
+   Float_t weight_scales[110];
+   Float_t weight_scales_av[110];
    Float_t weight_scales_UP;
    Float_t weight_scales_DN;
    Float_t weight_pdfs_UP;
@@ -563,6 +592,7 @@ public :
    TBranch        *b_HLT_Photon175;   //!
    TBranch        *b_HLT_DiJet;   //!
    TBranch        *b_HLT_DiPhoton30;   //!
+   TBranch        *b_HLT_DiPhoton30_2017;   //!
    TBranch        *b_HLT_DoubleEl;   //!
    TBranch        *b_HLT_DoubleMu;   //!
    TBranch        *b_HLT_DoubleEl33;   //!
@@ -578,6 +608,7 @@ public :
    TBranch        *b_Flag_CSCTightHaloFilter;   //!
    TBranch        *b_Flag_CSCTightHalo2015Filter;   //!
    TBranch        *b_Flag_globalTightHalo2016Filter;   //!
+   TBranch        *b_Flag_globalSuperTightHalo2016Filter;   //!
    TBranch        *b_Flag_HBHENoiseFilter;   //!
    TBranch        *b_Flag_HBHENoiseIsoFilter;   //!
    TBranch        *b_Flag_goodVertices;   //!
@@ -587,6 +618,11 @@ public :
    TBranch        *b_Flag_badChargedHadronFilter;   //!
    TBranch        *b_Flag_badMuonFilterV2;   //!
    TBranch        *b_Flag_badChargedHadronFilterV2;   //!
+
+   TBranch        *b_Flag_badMuons;   //!
+   TBranch        *b_Flag_badChHad;   //!
+   TBranch        *b_Flag_eeBadCalibFilter;   //!
+
    TBranch        *b_nJet200MuFrac50DphiMet;   //!
    TBranch        *b_puWeight;   //!
    TBranch        *b_nTrueInt;   //!
@@ -680,9 +716,13 @@ public :
    TBranch        *b_gamma_jet1_pt;   //!
    TBranch        *b_gamma_jet2_pt;   //!
 
+   TBranch        *b_hgg_mt2;   //!
+   TBranch        *b_hgg_mt2_genMET;   //!
+   TBranch        *b_hgg_stdMET_mt2;   //!
    TBranch        *b_gg_mt2;   //!
    TBranch        *b_gg_nJet30;   //!
    TBranch        *b_gg_nBJet20;   //! 
+   TBranch        *b_gg_nBJet20deepcsv;   //! 
    TBranch        *b_gg_nJet30FailId;   //!
    TBranch        *b_gg_ht;   //!
    TBranch        *b_gg_deltaPhiMin;   //!
@@ -730,6 +770,7 @@ public :
    TBranch        *b_pseudoViaKtJet2_had_eta;   //!
    TBranch        *b_pseudoViaKtJet2_had_phi;   //!
    TBranch        *b_pseudoViaKtJet2_had_mass;   //!
+   TBranch        *b_met_stdMET_pt;   //!
    TBranch        *b_met_pt;   //!
    TBranch        *b_met_miniaodPt;   //!
    TBranch        *b_met_caloPt;   //!
@@ -827,7 +868,16 @@ public :
    TBranch        *b_jet_eta;   //!
    TBranch        *b_jet_phi;   //!
    TBranch        *b_jet_mass;   //!
+
+   TBranch        *b_gg_jet_pt;   //!
+   TBranch        *b_gg_jet_eta;   //!
+   TBranch        *b_gg_jet_phi;   //!
+   TBranch        *b_gg_jet_mass;   //!
+
    TBranch        *b_jet_btagCSV;   //!
+   TBranch        *b_gg_jet_btagCSV;   //!
+   TBranch        *b_jet_pfDeepCSV_bb;   //!
+   TBranch        *b_jet_pfDeepCSV_b;   //!
    TBranch        *b_jet_rawPt;   //!
    TBranch        *b_jet_mcPt;   //!
    TBranch        *b_jet_mcFlavour;   //!
@@ -925,8 +975,13 @@ public :
    TBranch        *b_genLepFromTau_status;   //!
    TBranch        *b_genLepFromTau_sourceId;   //!
    TBranch        *b_ngamma;   //!
+   TBranch        *b_gammaWideEta_pt;   //!
+   TBranch        *b_gammaWideEta_eta;   //!
+   TBranch        *b_gammaWideEta_phi;   //!
+
    TBranch        *b_gamma_pt;   //!
    TBranch        *b_gamma_eta;   //!
+   TBranch        *b_gamma_etaSc;   //!
    TBranch        *b_gamma_phi;   //!
    TBranch        *b_gamma_mass;   //!
    TBranch        *b_gamma_pdgId;   //!
@@ -988,6 +1043,10 @@ public :
    TBranch *b_weight_lepsf2017_UP;
    TBranch *b_weight_lepsf2017_DN;
 
+   TBranch *b_weight_gammasf2017;
+   TBranch *b_weight_gammasf2017_UP;
+   TBranch *b_weight_gammasf2017_DN;
+
    TBranch *b_weight_lepsf;
    TBranch *b_weight_lepsf_UP;
    TBranch *b_weight_lepsf_DN;
@@ -1012,6 +1071,7 @@ public :
    TBranch *b_weight_isr_UP_av;
    TBranch *b_weight_isr_DN_av;
    TBranch *b_weight_scales;
+   TBranch *b_weight_scales_av;
    TBranch *b_weight_scales_UP;
    TBranch *b_weight_scales_DN;
    TBranch *b_weight_pdfs_UP;
@@ -1028,8 +1088,16 @@ public :
    virtual Bool_t   passBaseline (TString sel = "") const;
    virtual Bool_t   passLeptonVeto  () const;
    virtual Bool_t   passIsoTrackVeto() const;
+
    virtual Bool_t   passFilters     () const;
    virtual Bool_t   passFiltersMC   () const;
+   virtual Bool_t   passFiltersMCFastSim   () const;
+
+   virtual Bool_t   passFilters2017     () const;
+   virtual Bool_t   passFilters2017MC     () const;
+   virtual Bool_t   passFilters2017MCFastSim     () const;
+
+
    virtual Bool_t   passGammaAdditionalSelection( int sampleId ) const;
    virtual Bool_t   passMonoJetId( int j ) const;
    virtual Int_t    get_nJetHF( float etaCut = 3.0 ) const;
@@ -1135,6 +1203,7 @@ void MT2Tree::Init(TTree *tree)
    fChain->SetBranchAddress("HLT_Photon175", &HLT_Photon175, &b_HLT_Photon175);
    fChain->SetBranchAddress("HLT_DiJet", &HLT_DiJet, &b_HLT_DiJet);
    fChain->SetBranchAddress("HLT_DiPhoton30", &HLT_DiPhoton30, &b_HLT_DiPhoton30);
+   fChain->SetBranchAddress("HLT_DiPhoton30_2017", &HLT_DiPhoton30_2017, &b_HLT_DiPhoton30_2017);
    fChain->SetBranchAddress("HLT_DoubleEl", &HLT_DoubleEl, &b_HLT_DoubleEl);
    fChain->SetBranchAddress("HLT_DoubleMu", &HLT_DoubleMu, &b_HLT_DoubleMu);
    fChain->SetBranchAddress("HLT_DoubleEl33", &HLT_DoubleEl33, &b_HLT_DoubleEl33);
@@ -1150,6 +1219,7 @@ void MT2Tree::Init(TTree *tree)
    fChain->SetBranchAddress("Flag_CSCTightHaloFilter", &Flag_CSCTightHaloFilter, &b_Flag_CSCTightHaloFilter);
    fChain->SetBranchAddress("Flag_CSCTightHalo2015Filter", &Flag_CSCTightHalo2015Filter, &b_Flag_CSCTightHalo2015Filter);
    fChain->SetBranchAddress("Flag_globalTightHalo2016Filter", &Flag_globalTightHalo2016Filter, &b_Flag_globalTightHalo2016Filter);
+   fChain->SetBranchAddress("Flag_globalSuperTightHalo2016Filter", &Flag_globalSuperTightHalo2016Filter, &b_Flag_globalSuperTightHalo2016Filter);
    fChain->SetBranchAddress("Flag_HBHENoiseFilter", &Flag_HBHENoiseFilter, &b_Flag_HBHENoiseFilter);
    fChain->SetBranchAddress("Flag_HBHENoiseIsoFilter", &Flag_HBHENoiseIsoFilter, &b_Flag_HBHENoiseIsoFilter);
    fChain->SetBranchAddress("Flag_goodVertices", &Flag_goodVertices, &b_Flag_goodVertices);
@@ -1160,6 +1230,10 @@ void MT2Tree::Init(TTree *tree)
 
    fChain->SetBranchAddress("Flag_badMuonFilterV2", &Flag_badMuonFilterV2, &b_Flag_badMuonFilterV2);
    fChain->SetBranchAddress("Flag_badChargedHadronFilterV2", &Flag_badChargedHadronFilterV2, &b_Flag_badChargedHadronFilterV2);
+
+   fChain->SetBranchAddress("Flag_badMuons", &Flag_badMuons, &b_Flag_badMuons);
+   fChain->SetBranchAddress("Flag_badChHad", &Flag_badChHad, &b_Flag_badChHad);
+   fChain->SetBranchAddress("Flag_eeBadCalibFilter", &Flag_eeBadCalibFilter, &b_Flag_eeBadCalibFilter);
 
    fChain->SetBranchAddress("nJet200MuFrac50DphiMet", &nJet200MuFrac50DphiMet, &b_nJet200MuFrac50DphiMet);
 
@@ -1255,9 +1329,13 @@ void MT2Tree::Init(TTree *tree)
    fChain->SetBranchAddress("gamma_jet1_pt", &gamma_jet1_pt, &b_gamma_jet1_pt);
    fChain->SetBranchAddress("gamma_jet2_pt", &gamma_jet2_pt, &b_gamma_jet2_pt);
 
+   fChain->SetBranchAddress("hgg_mt2", &hgg_mt2, &b_hgg_mt2);
+   fChain->SetBranchAddress("hgg_mt2_genMET", &hgg_mt2_genMET, &b_hgg_mt2_genMET);
+   fChain->SetBranchAddress("hgg_stdMET_mt2", &hgg_stdMET_mt2, &b_hgg_stdMET_mt2);
    fChain->SetBranchAddress("gg_mt2", &gg_mt2, &b_gg_mt2);
    fChain->SetBranchAddress("gg_nJet30", &gg_nJet30, &b_gg_nJet30);
    fChain->SetBranchAddress("gg_nBJet20", &gg_nBJet20, &b_gg_nBJet20);
+   fChain->SetBranchAddress("gg_nBJet20deepcsv", &gg_nBJet20deepcsv, &b_gg_nBJet20deepcsv);
    fChain->SetBranchAddress("gg_nJet30FailId", &gg_nJet30FailId, &b_gg_nJet30FailId);
    fChain->SetBranchAddress("gg_ht", &gg_ht, &b_gg_ht);
    fChain->SetBranchAddress("gg_deltaPhiMin", &gg_deltaPhiMin, &b_gg_deltaPhiMin);
@@ -1268,6 +1346,7 @@ void MT2Tree::Init(TTree *tree)
    fChain->SetBranchAddress("gg_jet1_pt", &gg_jet1_pt, &b_gg_jet1_pt);
    fChain->SetBranchAddress("gg_jet2_pt", &gg_jet2_pt, &b_gg_jet2_pt);
    fChain->SetBranchAddress("gg_met_pt", &gg_met_pt, &b_gg_met_pt);
+   fChain->SetBranchAddress("met_stdMET_pt", &met_stdMET_pt, &b_met_stdMET_pt);
    fChain->SetBranchAddress("gg_met_phi", &gg_met_phi, &b_gg_met_phi);
 
    fChain->SetBranchAddress("zll_deltaPhiMin", &zll_deltaPhiMin, &b_zll_deltaPhiMin);
@@ -1442,7 +1521,16 @@ void MT2Tree::Init(TTree *tree)
    fChain->SetBranchAddress("jet_eta", jet_eta, &b_jet_eta);
    fChain->SetBranchAddress("jet_phi", jet_phi, &b_jet_phi);
    fChain->SetBranchAddress("jet_mass", jet_mass, &b_jet_mass);
+
+   fChain->SetBranchAddress("gg_jet_pt", gg_jet_pt, &b_gg_jet_pt);
+   fChain->SetBranchAddress("gg_jet_eta", gg_jet_eta, &b_gg_jet_eta);
+   fChain->SetBranchAddress("gg_jet_phi", gg_jet_phi, &b_gg_jet_phi);
+   fChain->SetBranchAddress("gg_jet_mass", gg_jet_mass, &b_gg_jet_mass);
+
    fChain->SetBranchAddress("jet_btagCSV", jet_btagCSV, &b_jet_btagCSV);
+   fChain->SetBranchAddress("gg_jet_btagCSV", gg_jet_btagCSV, &b_gg_jet_btagCSV);
+   fChain->SetBranchAddress("jet_pfDeepCSV_bb", jet_pfDeepCSV_bb, &b_jet_pfDeepCSV_bb);
+   fChain->SetBranchAddress("jet_pfDeepCSV_b", jet_pfDeepCSV_b, &b_jet_pfDeepCSV_b);
    fChain->SetBranchAddress("jet_rawPt", jet_rawPt, &b_jet_rawPt);
    fChain->SetBranchAddress("jet_mcPt", jet_mcPt, &b_jet_mcPt);
    fChain->SetBranchAddress("jet_mcFlavour", jet_mcFlavour, &b_jet_mcFlavour);
@@ -1522,8 +1610,14 @@ void MT2Tree::Init(TTree *tree)
    fChain->SetBranchAddress("lep_mcMatchAny", lep_mcMatchAny, &b_lep_mcMatchAny);
    fChain->SetBranchAddress("lep_mcMatchTau", lep_mcMatchTau, &b_lep_mcMatchTau);
    fChain->SetBranchAddress("ngamma", &ngamma, &b_ngamma);
+
+   fChain->SetBranchAddress("gammaWideEta_pt", gammaWideEta_pt, &b_gammaWideEta_pt);
+   fChain->SetBranchAddress("gammaWideEta_eta", gammaWideEta_eta, &b_gammaWideEta_eta);
+   fChain->SetBranchAddress("gammaWideEta_phi", gammaWideEta_phi, &b_gammaWideEta_phi);
+
    fChain->SetBranchAddress("gamma_pt", gamma_pt, &b_gamma_pt);
    fChain->SetBranchAddress("gamma_eta", gamma_eta, &b_gamma_eta);
+   fChain->SetBranchAddress("gamma_etaSc", gamma_etaSc, &b_gamma_etaSc);
    fChain->SetBranchAddress("gamma_phi", gamma_phi, &b_gamma_phi);
    fChain->SetBranchAddress("gamma_mass", gamma_mass, &b_gamma_mass);
    fChain->SetBranchAddress("gamma_pdgId", gamma_pdgId, &b_gamma_pdgId);
@@ -1568,6 +1662,10 @@ void MT2Tree::Init(TTree *tree)
    fChain->SetBranchAddress("weight_lepsf2017_UP", &weight_lepsf2017_UP, &b_weight_lepsf2017_UP);
    fChain->SetBranchAddress("weight_lepsf2017_DN", &weight_lepsf2017_DN, &b_weight_lepsf2017_DN);
 
+   fChain->SetBranchAddress("weight_gammasf2017", &weight_gammasf2017, &b_weight_gammasf2017);
+   fChain->SetBranchAddress("weight_gammasf2017_UP", &weight_gammasf2017_UP, &b_weight_gammasf2017_UP);
+   fChain->SetBranchAddress("weight_gammasf2017_DN", &weight_gammasf2017_DN, &b_weight_gammasf2017_DN);
+
    fChain->SetBranchAddress("weight_btagsf", &weight_btagsf, &b_weight_btagsf);
    fChain->SetBranchAddress("weight_btagsf_heavy_UP", &weight_btagsf_heavy_UP, &b_weight_btagsf_heavy_UP);
    fChain->SetBranchAddress("weight_btagsf_heavy_DN", &weight_btagsf_heavy_DN, &b_weight_btagsf_heavy_DN);
@@ -1591,6 +1689,7 @@ void MT2Tree::Init(TTree *tree)
    fChain->SetBranchAddress("weight_isr_UP_av", &weight_isr_UP_av, &b_weight_isr_UP_av);
    fChain->SetBranchAddress("weight_isr_DN_av", &weight_isr_DN_av, &b_weight_isr_DN_av);
    fChain->SetBranchAddress("weight_scales", weight_scales, &b_weight_scales);
+   fChain->SetBranchAddress("weight_scales_av", weight_scales_av, &b_weight_scales_av);
    fChain->SetBranchAddress("weight_scales_UP", &weight_scales_UP, &b_weight_scales_UP);
    fChain->SetBranchAddress("weight_scales_DN", &weight_scales_DN, &b_weight_scales_DN);
    fChain->SetBranchAddress("weight_pdfs_UP", &weight_pdfs_UP, &b_weight_pdfs_UP);
@@ -1639,16 +1738,37 @@ Bool_t MT2Tree::passIsoTrackVeto() const {
   return nPFLep5LowMT==0 && nPFHad10LowMT==0;
 }
 
+
+
 Bool_t MT2Tree::passFilters() const {
-
-  return nVert>0 && Flag_HBHENoiseFilter>0 && Flag_HBHENoiseIsoFilter>0 && Flag_globalTightHalo2016Filter>0 && Flag_EcalDeadCellTriggerPrimitiveFilter>0 && Flag_goodVertices>0 && Flag_eeBadScFilter>0 && Flag_badMuonFilterV2>0 && Flag_badChargedHadronFilterV2>0 ;
-
+  return nVert>0 && Flag_HBHENoiseFilter>0 && Flag_HBHENoiseIsoFilter>0 && Flag_globalSuperTightHalo2016Filter>0 && Flag_EcalDeadCellTriggerPrimitiveFilter>0 && Flag_goodVertices>0 && Flag_eeBadScFilter>0 && Flag_badMuonFilterV2>0 && Flag_badChargedHadronFilterV2>0 ;
 }
 
 Bool_t MT2Tree::passFiltersMC() const {
+  return nVert>0 && Flag_HBHENoiseFilter>0 && Flag_HBHENoiseIsoFilter>0 && Flag_globalSuperTightHalo2016Filter>0 && Flag_EcalDeadCellTriggerPrimitiveFilter>0 && Flag_goodVertices>0 ;
+}
 
-  return nVert>0 && Flag_HBHENoiseFilter>0 && Flag_HBHENoiseIsoFilter>0 && Flag_globalTightHalo2016Filter>0 && Flag_EcalDeadCellTriggerPrimitiveFilter>0 && Flag_goodVertices>0 && Flag_badMuonFilterV2>0 && Flag_badChargedHadronFilterV2>0 ;
+/* Bool_t MT2Tree::passFiltersMC() const { */
+/*   return nVert>0 && Flag_HBHENoiseFilter>0 && Flag_HBHENoiseIsoFilter>0 && Flag_globalSuperTightHalo2016Filter>0 && Flag_EcalDeadCellTriggerPrimitiveFilter>0 && Flag_goodVertices>0 && Flag_badMuonFilterV2>0 && Flag_badChargedHadronFilterV2>0 ; */
+/* } */
 
+Bool_t MT2Tree::passFiltersMCFastSim() const {
+  return nVert>0 && Flag_HBHENoiseFilter>0 && Flag_HBHENoiseIsoFilter>0 && Flag_EcalDeadCellTriggerPrimitiveFilter>0 && Flag_goodVertices>0 && Flag_badMuonFilter>0 && Flag_badChargedHadronFilter>0 ;
+  //  return nVert>0 && Flag_HBHENoiseFilter>0 && Flag_HBHENoiseIsoFilter>0 && Flag_EcalDeadCellTriggerPrimitiveFilter>0 && Flag_goodVertices>0 && Flag_badMuonFilterV2>0 && Flag_badChargedHadronFilterV2>0 ;
+}
+
+
+
+Bool_t MT2Tree::passFilters2017() const {
+  return  nVert>0 && Flag_HBHENoiseFilter>0 && Flag_HBHENoiseIsoFilter>0 && Flag_globalSuperTightHalo2016Filter>0 && Flag_EcalDeadCellTriggerPrimitiveFilter>0 && Flag_goodVertices>0 && Flag_eeBadScFilter>0 && Flag_badMuons>0 && Flag_badChHad>0 && Flag_eeBadCalibFilter>0 ;
+}
+
+Bool_t MT2Tree::passFilters2017MC() const {
+  return  nVert>0 && Flag_HBHENoiseFilter>0 && Flag_HBHENoiseIsoFilter>0 && Flag_globalSuperTightHalo2016Filter>0 && Flag_EcalDeadCellTriggerPrimitiveFilter>0 && Flag_goodVertices>0 && Flag_badMuons>0 && Flag_badChHad>0 && Flag_eeBadCalibFilter>0 ;
+}
+
+Bool_t MT2Tree::passFilters2017MCFastSim() const {
+  return  nVert>0 && Flag_HBHENoiseFilter>0 && Flag_HBHENoiseIsoFilter>0 && Flag_EcalDeadCellTriggerPrimitiveFilter>0 && Flag_goodVertices>0 && Flag_badMuons>0 && Flag_badChHad>0 && Flag_eeBadCalibFilter>0 ;
 }
 
 Bool_t MT2Tree::passMonoJetId( int j ) const {

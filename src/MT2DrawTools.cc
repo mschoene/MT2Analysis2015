@@ -12,14 +12,16 @@
 MT2DrawTools::MT2DrawTools( const std::string& outDir, float lumi ) {
 
   lumi_    = lumi;
-  lumiErr_ = 0.12;
+  lumiErr_ = 0.026;
   shapeNorm_ = false;
   outdir_ = outDir;
 
   data_ = 0;
+  data2_ = 0;
   mc_ = 0;
 
   mcSF_ = 1.;
+  mcSF2_ = 1.;
 
   addOverflow_ = true;
 
@@ -41,6 +43,12 @@ MT2DrawTools::MT2DrawTools( const std::string& outDir, float lumi ) {
 void MT2DrawTools::set_data( MT2Analysis<MT2EstimateTree>* data ) {
 
   data_ = data;
+
+}
+
+void MT2DrawTools::set_data2( MT2Analysis<MT2EstimateTree>* data2 ) {
+
+  data2_ = data2;
 
 }
 
@@ -116,6 +124,13 @@ void MT2DrawTools::set_mcSF( float mcsf ) {
 
   std::cout << "[MT2DrawTools] Setting MC SF to: " << mcsf << std::endl;
   mcSF_ = mcsf;
+
+}
+
+void MT2DrawTools::set_mcSF2( float mcsf2 ) {
+
+  std::cout << "[MT2DrawTools] Setting MC SF to: " << mcsf2 << std::endl;
+  mcSF2_ = mcsf2;
 
 }
 
@@ -355,8 +370,8 @@ TGraphAsymmErrors* MT2DrawTools::getPoissonGraph( TH1D* histo, bool drawZeros, c
     yerrplus = yp - y;
     yerrminus = y - ym;
 
-    if(y==0)
-      std::cout << yerrplus << "\t" << yerrminus << std::endl;
+    //    if(y==0)
+    //      std::cout << yerrplus << "\t" << yerrminus << std::endl;
 
     int thisPoint = graph->GetN();
     graph->SetPoint( thisPoint, x, y );
@@ -524,7 +539,9 @@ TH2D* MT2DrawTools::getRatioAxes( float xMin, float xMax, float yMin, float yMax
   h2_axes_ratio->GetYaxis()->SetTitleSize(0.17);
   h2_axes_ratio->GetYaxis()->SetTitleOffset(0.4);
   h2_axes_ratio->GetYaxis()->SetLabelSize(0.17);
-  h2_axes_ratio->GetYaxis()->SetTitle("Data / MC");
+  h2_axes_ratio->GetYaxis()->SetTitle("2016/2017");
+  //  h2_axes_ratio->GetYaxis()->SetTitle("sel 0/i");
+  //  h2_axes_ratio->GetYaxis()->SetTitle("Data / MC");
 
   return h2_axes_ratio;
 
@@ -547,7 +564,8 @@ TPaveText* MT2DrawTools::getRatioText( double integral_data, double integral_mc,
   ratioText->SetTextColor(2);
   ratioText->SetFillColor(0);
   ratioText->SetTextAlign(11);
-  ratioText->AddText( Form("Data/MC = %.2f +/- %.2f", integral_data/integral_mc, error_datamc) );
+  ratioText->AddText( Form("2016/2017 = %.2f +/- %.2f", integral_data/integral_mc, error_datamc) );
+  //  ratioText->AddText( Form("Data/MC = %.2f +/- %.2f", integral_data/integral_mc, error_datamc) );
 
   return ratioText;
 
@@ -867,19 +885,37 @@ std::vector<TCanvas*> MT2DrawTools::drawRegionYields_fromTree( const std::string
     TGraphAsymmErrors* gr_data = 0;
     if( tree_data ) {
       h1_data = new TH1D("h1_data", "", nBins, xMin, xMax );
-      tree_data->Project( "h1_data", varName.c_str(), selection.c_str() );
-      //tree_data->Project( "h1_data", varName.c_str(), Form("%f*(%s)", data_->getWeight(), selection.c_str()) );
+      //tree_data->Project( "h1_data", varName.c_str(), selection.c_str() );
+        tree_data->Project( "h1_data", varName.c_str(), Form("%f*weight*(%s)", lumi_, selection.c_str()) );
+	//tree_data->Project( "h1_data", varName.c_str(), Form("%f*(%s)", data_->getWeight(), selection.c_str()) );
       if( addOverflow_ )
         MT2DrawTools::addOverflowSingleHisto(h1_data);
       gr_data = MT2DrawTools::getPoissonGraph(h1_data, false, "binWidth");
       gr_data->SetMarkerStyle(20);
       gr_data->SetMarkerSize(1.2);
+
+      h1_data->SetFillColor( 855 );
+      h1_data->SetLineColor( kBlack );
     }
+
+    // TTree* tree_data2 = (data2_) ? data2_->get(thisRegion)->tree : 0;
+    // TH1D* h1_data2 = 0;
+    // TGraphAsymmErrors* gr_data2 = 0;
+    // if( tree_data2 ) {
+    //   h1_data2 = new TH1D("h1_data2", "", nBins, xMin, xMax );
+    //   tree_data2->Project( "h1_data2", varName.c_str(), selection.c_str() );
+    //   //tree_data2->Project( "h1_data2", varName.c_str(), Form("%f*(%s)", data2_->getWeight(), selection.c_str()) );
+    //   if( addOverflow_ )
+    //     MT2DrawTools::addOverflowSingleHisto(h1_data2);
+    //   gr_data2 = MT2DrawTools::getPoissonGraph(h1_data2, false, "binWidth");
+    //   gr_data2->SetMarkerStyle(24);
+    //   gr_data2->SetMarkerSize(1.2);
+    // }
     
 
-
     std::vector< TH1D* > histos_mc;
-    for( unsigned i=0; i<mc_->size(); ++i ) { 
+    for( unsigned i=0; i<4; ++i ) { 
+      //org    for( unsigned i=0; i<mc_->size(); ++i ) { 
       TTree* tree_mc = (mc_->at(i)->get(thisRegion)->tree);
       std::string thisName = "h1_" + mc_->at(i)->getName() + "_" + thisRegion.getName();
       TObject* obj = gROOT->FindObject(thisName.c_str());
@@ -897,13 +933,32 @@ std::vector<TCanvas*> MT2DrawTools::drawRegionYields_fromTree( const std::string
         MT2DrawTools::addOverflowSingleHisto(h1_mc);
 
       histos_mc.push_back(h1_mc);
-      //if( varName == "nBJets"){
-      // for(int iBin=1; iBin< h1_mc->GetNbinsX(); iBin++){
-      //   std::cout << "iBin " << i << " = " << h1_mc->GetBinContent(iBin) << std::endl;
-      //}}
     }
 
-    //TH1::AddDirectory(kFALSE); // stupid ROOT memory allocation needs this
+
+
+   std::vector< TH1D* > histos_mc_sig;
+   for( unsigned i=4; i<mc_->size(); ++i ) { 
+      TTree* tree_mc = (mc_->at(i)->get(thisRegion)->tree);
+      std::string thisName = "h1_sig_" + mc_->at(i)->getName() + "_" + thisRegion.getName();
+      TObject* obj = gROOT->FindObject(thisName.c_str());
+      if( obj ) delete obj;
+      TH1D* h1_sig_mc = new TH1D( thisName.c_str(), "", nBins, xMin, xMax );
+      h1_sig_mc->Sumw2();
+      if( selection!="" )
+        tree_mc->Project( thisName.c_str(), varName.c_str(), Form("%f*weight*(%s)", lumi_, selection.c_str()) );
+      else
+        tree_mc->Project( thisName.c_str(), varName.c_str(), Form("%f*weight", lumi_) );
+     
+      if( addOverflow_ )
+        MT2DrawTools::addOverflowSingleHisto(h1_sig_mc);
+
+      h1_sig_mc->SetLineColor(mc_->at(i)->getColor() ); 
+      h1_sig_mc->SetLineStyle(2 ); 
+      h1_sig_mc->SetLineWidth(2 ); 
+      histos_mc_sig.push_back(h1_sig_mc);
+   }
+
 
     TH1D* mc_sum;
     for( unsigned i=0; i<histos_mc.size(); ++i ) { 
@@ -920,12 +975,12 @@ std::vector<TCanvas*> MT2DrawTools::drawRegionYields_fromTree( const std::string
       float sf;
       if( addOverflow_ ){
 	//adding the overflow bin to the SF calculation
-	std::cout << "Integrals: " << h1_data->Integral(1, nBins+1) << "\t" << mc_sum->Integral(1, nBins+1) << std::endl;
+	std::cout << "Integrals data: " << h1_data->Integral(1, nBins+1) << "\t mc: " << mc_sum->Integral(1, nBins+1) << std::endl;
 	sf  = h1_data->Integral(1, nBins+1)/mc_sum->Integral(1, nBins+1);
 
       }else{ 
 	//not adding the overflow bin
-	std::cout << "Integrals: " << h1_data->Integral(1, nBins) << "\t" << mc_sum->Integral(1, nBins) << std::endl;
+	std::cout << "Integrals data: " << h1_data->Integral(1, nBins) << "\t mc: " << mc_sum->Integral(1, nBins) << std::endl;
 	sf  = h1_data->Integral(1, nBins)/mc_sum->Integral(1, nBins);
       }
       std::cout << "SF: " << sf << std::endl;
@@ -933,12 +988,34 @@ std::vector<TCanvas*> MT2DrawTools::drawRegionYields_fromTree( const std::string
     }
 
 
-    TObject* oldStack = gROOT->FindObject("bgStack");
+    // float scaleFactor2 = mcSF2_;
+    // if( data2_ ) {
+    //   float sf;
+    //   if( addOverflow_ ){
+    // 	//adding the overflow bin to the SF calculation
+    // 	std::cout << "Integrals: " << h1_data2->Integral(1, nBins+1) << "\t" << mc_sum->Integral(1, nBins+1) << std::endl;
+    // 	sf  = h1_data2->Integral(1, nBins+1)/mc_sum->Integral(1, nBins+1);
+
+    //   }else{ 
+    // 	//not adding the overflow bin
+    // 	std::cout << "Integrals: " << h1_data2->Integral(1, nBins) << "\t" << mc_sum->Integral(1, nBins) << std::endl;
+    // 	sf  = h1_data2->Integral(1, nBins)/mc_sum->Integral(1, nBins);
+    //   }
+    //   std::cout << "SF: " << sf << std::endl;
+    //   if( shapeNorm_ ) scaleFactor2 *= sf;
+    // }
+
+    TObject* oldStack = gROOT->FindObject(Form("bgStack_%s", iMT2->getName().c_str()));
+    //TObject* oldStack = gROOT->FindObject("bgStack");
     if( oldStack ) delete oldStack;
     TH1D* histo_mc;
-    THStack* bgStack = new THStack("bgStack", "");
+    //THStack* bgStack = new THStack( "bgStack", Form("bgStack_%s", iMT2->getName().c_str()) );
+   
+    THStack* bgStack = new THStack( Form("bgStack_%s", iMT2->getName().c_str()),"" );
+    // THStack* bgStack = new THStack("bgStack", "");
     for( unsigned i=0; i<histos_mc.size(); ++i ) { 
-      int index = mc_->size() - i - 1;
+      int index = 4 - i - 1;
+      //org      int index = mc_->size() - i - 1;
       histos_mc[index]->SetFillColor( mc_->at(index)->getColor() );
       histos_mc[index]->SetLineColor( kBlack );
       //if( shapeNorm_ && data_ )
@@ -953,22 +1030,29 @@ std::vector<TCanvas*> MT2DrawTools::drawRegionYields_fromTree( const std::string
     TH1D* mcBand = MT2DrawTools::getMCBandHisto( histo_mc, lumiErr_ );
     
     TGraphAsymmErrors* g_ratio = 0;
-    if( data_ ) g_ratio = MT2DrawTools::getRatioGraph(h1_data, mcBand);
-    
+    TGraphAsymmErrors* g_ratio2  = 0;
+    if( data_ )  g_ratio = MT2DrawTools::getRatioGraph(h1_data, mcBand);
+    // if( data2_ ) g_ratio2 = MT2DrawTools::getRatioGraph(h1_data2, mcBand);
+    // if( data2_ ) g_ratio2->SetMarkerStyle(24);    
+
+    // TH1D* h_ratio = (TH1D*) h1_data->Clone("h_ratio");
+    // h_ratio->Divide( mcBand );
+
     TLine* lineCentral = new TLine(xMin, 1.0, xMax, 1.0);
     lineCentral->SetLineColor(1);
     //TGraphErrors* systBand = MT2DrawTools::getSystBand(xMin, xMax, lumiErr_);
-    
+
     TF1* fSF = (data_) ? MT2DrawTools::getSFFit(g_ratio, xMin, xMax) : 0;
+    //    TF1* fSF2 = (data2_) ? MT2DrawTools::getSFFit(g_ratio2, xMin, xMax) : 0;
     TGraphErrors* SFFitBand = (fSF) ? MT2DrawTools::getSFFitBand(fSF, xMin, xMax) : 0;
     
-//    double error_data;
-//    double integral_data = h1_data->IntegralAndError(0, nBins+1, error_data);
-//
-//    double error_mc;
-//    double integral_mc = mc_sum->IntegralAndError(0, nBins+1, error_mc);
-//
-//    double error_datamc = MT2DrawTools::getSFError(integral_data, error_data, integral_mc, error_mc );
+    // double error_data;
+    // double integral_data = h1_data->IntegralAndError(0, nBins+1, error_data);
+
+    double error_mc;
+    double integral_mc = mc_sum->IntegralAndError(0, nBins+1, error_mc);
+
+    //    double error_datamc = MT2DrawTools::getSFError(integral_data, error_data, integral_mc, error_mc );
 
 
 
@@ -977,7 +1061,7 @@ std::vector<TCanvas*> MT2DrawTools::drawRegionYields_fromTree( const std::string
     
     TCanvas* c1_log = new TCanvas(Form("c1_log_%s", iMT2->getName().c_str()), "", 600, 600);
 
-    float yMaxScale = 1.1;
+    float yMaxScale = 1.4;
     float yMax1 = (data_) ? h1_data->GetMaximum()*yMaxScale : 0.;
     float yMax2 = (data_) ? yMaxScale*(h1_data->GetMaximum() + sqrt(h1_data->GetMaximum())) : 0.;
     float yMax3 = yMaxScale*(bgStack->GetMaximum());
@@ -1120,50 +1204,61 @@ std::vector<TCanvas*> MT2DrawTools::drawRegionYields_fromTree( const std::string
     normText->SetTextSize(0.035);
     if( scaleFactor!=1. ) {
       if( displaySF_ )
-        normText->AddText( Form("#splitline{MC scaled}{by %.2f}", scaleFactor) );
+        normText->AddText( Form("#splitline{2017 scaled}{by %.2f}", scaleFactor) );
+      //        normText->AddText( Form("#splitline{MC scaled}{by %.2f}", scaleFactor) );
       else
 	normText->AddText( "#splitline{Shape}{Norm.}" );
       if( this->twoPads() ) 
         pad1->cd();
       else
         c1->cd();
-      //   normText->Draw("same");
+      normText->Draw("same");
       if( this->twoPads() ) 
         pad1_log->cd();
       else
         c1_log->cd();
-      //normText->Draw("same");
+      normText->Draw("same");
     }
+
 
 
     int addLines = (data_) ? 2 : 0;
-    TLegend* legend = new TLegend( 0.67, 0.9-(mc_->size()+addLines)*0.06, 0.93, 0.9 );
+
+    TLegend* legend2 = new TLegend( 0.5, 0.94-(mc_->size()+addLines-5)*0.05, 0.74, 0.94 );
+    for( unsigned i=0; i<histos_mc_sig.size(); ++i ) { 
+      legend2->AddEntry( histos_mc_sig[i], mc_->at(i+4)->getFullName().c_str(), "L" );
+    }
+
+    //    addLines = (data2_&&data_) ? 4 : 2;
+    TLegend* legend = new TLegend( 0.75, 0.94-(mc_->size()+addLines-5)*0.05, 0.95, 0.94 );
+    //    TLegend* legend = new TLegend( 0.67, 0.9-(mc_->size()+addLines)*0.06, 0.93, 0.9 );
     legend->SetTextSize(0.038);
     legend->SetTextFont(42);
     legend->SetFillColor(0);
-    //float data_int = 0.;
     if( data_ ) {
-      legend->AddEntry( gr_data, "Data", "P" );
-      //std::cout<< h1_data->GetName() << std::endl;
-      //std::cout << "integral: " << h1_data->Integral(3, -1) << std::endl;
-      //std::cout << "data(30-60): "<< h1_data->GetBinContent(3) + h1_data->GetBinContent(4) << std::endl;
-      //data_int = h1_data->GetBinContent(3) + h1_data->GetBinContent(4);
+      //      legend->AddEntry( gr_data, "Data", "P" );
+      legend->AddEntry( h1_data, "Higgs 2016", "P" );
     }
+    // if( data2_ ) {
+    //   legend->AddEntry( gr_data2, "Data 2017", "P" );
+    //   //std::cout<< h1_data2->GetName() << std::endl;
+    //   //std::cout << "integral: " << h1_data2->Integral(3, -1) << std::endl;
+    //   //std::cout << "data2(30-60): "<< h1_data2->GetBinContent(3) + h1_data2->GetBinContent(4) << std::endl;
+    //   //data2_int = h1_data2->GetBinContent(3) + h1_data2->GetBinContent(4);
+    // }
     //float mc_int = 0.;
     for( unsigned i=0; i<histos_mc.size(); ++i ) {  
       legend->AddEntry( histos_mc[i], mc_->at(i)->getFullName().c_str(), "F" );
-      //std::cout<< histos_mc[i]->GetName() << std::endl;
-      //std::cout << "integral: " << histos_mc[i]->Integral(3, -1) << std::endl;
-      //std::cout << "30-60: "<< histos_mc[i]->GetBinContent(3) + histos_mc[i]->GetBinContent(4) << std::endl;
-      //mc_int += histos_mc[i]->GetBinContent(3) + histos_mc[i]->GetBinContent(4);
     }
+
+
     //float qcdFrac = (histos_mc[0]->GetBinContent(3) + histos_mc[0]->GetBinContent(4) )/ mc_int;
     //std::cout << "qcd frac: " << qcdFrac << std::endl;
     //std::cout << "qcd estimate: " << data_int*qcdFrac << std::endl;
     //std::cout << "qcd true (0-30): " <<  1.27*(histos_mc[0]->GetBinContent(1) + histos_mc[0]->GetBinContent(2)) << std::endl;
     //std::cout << "qcd true (30-60): " << 1.27*(histos_mc[0]->GetBinContent(3) + histos_mc[0]->GetBinContent(3)) << std::endl;
-    if( data_ ) 
-      legend->AddEntry( mcBand, "MC Uncert.", "F" );
+    //    if( data_ ) 
+    legend->AddEntry( mcBand, "Uncert.", "F" );
 
    
     
@@ -1185,15 +1280,28 @@ std::vector<TCanvas*> MT2DrawTools::drawRegionYields_fromTree( const std::string
     if( this->twoPads() )
       pad1->cd();
     legend->Draw("same");
+    legend2->Draw("same");
     bgStack->Draw("histo same");
+
+    for( unsigned i=0; i<histos_mc_sig.size(); ++i ) { 
+      histos_mc_sig[i]->Draw("L same");
+    }
+
+    mcBand->Draw("E2 same");
+
     if( data_ ) {
       mcBand->Draw("E2 same");
-      gr_data->Draw("p same");
+      h1_data->Draw("E2 same");
+      //     gr_data->Draw("p same");
     }
+    // if( data2_ ) {
+    //   //      mcBand->Draw("E2 same");
+    //   gr_data2->Draw("p same");
+    // }
     if( !shapeNorm_ && fitText )
       fitText->Draw("same");
     //    ratioText->Draw("same");
-
+ 
 
     (data_) ? MT2DrawTools::addLabels( (TCanvas*)pad1, lumi_, CMStext.c_str() ) : MT2DrawTools::addLabels( (TCanvas*)c1, lumi_, "CMS Simulation"); 
     //(data_) ? MT2DrawTools::addLabels( (TCanvas*)pad1, lumi_, CMStext.c_str() ) : MT2DrawTools::addLabels( (TCanvas*)pad1, lumi_, "CMS Simulation"); 
@@ -1204,11 +1312,23 @@ std::vector<TCanvas*> MT2DrawTools::drawRegionYields_fromTree( const std::string
     if( this->twoPads() )
       pad1_log->cd();
     legend->Draw("same");
+    legend2->Draw("same");
     bgStack->Draw("histo same");
+
+    for( unsigned i=0; i<histos_mc_sig.size(); ++i ) { 
+      histos_mc_sig[i]->Draw("L same");
+    }
+
+    mcBand->Draw("E2 same");
+
     if( data_ ) {
       mcBand->Draw("E2 same");
       gr_data->Draw("p same");
     }
+    // if( data2_ ) {
+    //   //      mcBand->Draw("E2 same");
+    //   gr_data2->Draw("p same");
+    // }
     if( !shapeNorm_ && fitText )
       fitText->Draw("same");
     //    ratioText->Draw("same");
@@ -1241,7 +1361,9 @@ std::vector<TCanvas*> MT2DrawTools::drawRegionYields_fromTree( const std::string
 
       }
 
-      if( g_ratio ) g_ratio->Draw("PE,same");    
+      //      h_ratio->Draw("P,same" );
+      // if( g_ratio ) g_ratio->Draw("PE,same");    
+      // if( g_ratio2 ) g_ratio2->Draw("PE,same");    
       gPad->RedrawAxis();
 
 
@@ -1266,7 +1388,9 @@ std::vector<TCanvas*> MT2DrawTools::drawRegionYields_fromTree( const std::string
 //        lineSF->Draw("same");
 
       }
+      //      h_ratio->Draw("P,same" );
       if( g_ratio ) g_ratio->Draw("PE,same");
+      if( g_ratio2 ) g_ratio2->Draw("PE,same");
       gPad->RedrawAxis();
 
     } // if twoPads
@@ -1289,6 +1413,7 @@ std::vector<TCanvas*> MT2DrawTools::drawRegionYields_fromTree( const std::string
     delete h2_axes_ratio;
     
     delete h1_data;
+    //    delete h1_data2;
   
     //for( unsigned i=0; i<histos_mc.size(); ++i )
     //  delete histos_mc[i];
@@ -1353,6 +1478,7 @@ TList* MT2DrawTools::getCorrectList( TCanvas* c1 ) {
 
   if( list->GetSize()==2 ) { // means that it's a two-pad canvas
 
+    std::cout << "Get list for ratio pad version" << std::endl;
     TPad* pad1 = (TPad*)list->FindObject("pad1");
     list = pad1->GetListOfPrimitives();
 
@@ -1368,5 +1494,1476 @@ TList* MT2DrawTools::getCorrectList( TCanvas* c1 ) {
 bool MT2DrawTools::twoPads() const {
 
   return data_ && mc_;
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//Data will take over the place of the ratio one, so signal or w/e you want to put in, now WITH weight!
+//Fuck that for a bit actually, can't be bothered, just draw the fractions, no ratio for now
+std::vector<TCanvas*> MT2DrawTools::drawRegionFractions_fromTree( const std::string& saveName, const std::string& varName, const std::string& selection, int nBins, float xMin, float xMax, std::string axisName, const std::string& units, const std::string& kinCuts, const std::string& topoCuts ) {
+
+
+  TString sel_tstr(selection);
+  if( sel_tstr.Contains("weight") ) {
+    std::cout << "[MT2DrawTools::drawRegionYields_fromTree] WARNING!! Selection contains 'weight'!! Are you sure you know what you're doing??" << std::endl;
+  }
+
+  std::vector<TCanvas*> returnVector;
+
+  system( Form("mkdir -p %s", outdir_.c_str()) );
+
+
+  //  float binWidth = (xMax-xMin)/nBins;
+  if( axisName=="" ) axisName = varName;
+
+
+  TH1::AddDirectory(kTRUE); // stupid ROOT memory allocation needs this
+
+  std::set<MT2Region> MT2Regions = mc_->at(0)->getRegions();
+  
+  for( std::set<MT2Region>::iterator iMT2 = MT2Regions.begin(); iMT2!=MT2Regions.end(); ++iMT2 ) {
+
+    TCanvas *old_c1 = (TCanvas*)gROOT->GetListOfCanvases()->FindObject(Form("c1_%s", iMT2->getName().c_str()));
+    if( old_c1 != 0 ) delete old_c1;
+  
+    MT2Region thisRegion( (*iMT2) );
+
+    TTree* tree_data = (data_) ? data_->get(thisRegion)->tree : 0;
+    TH1D* h1_data = 0;
+    TGraphAsymmErrors* gr_data = 0;
+    if( tree_data ) {
+      h1_data = new TH1D("h1_data", "", nBins, xMin, xMax );
+      //      tree_data->Project( "h1_data", varName.c_str(), selection.c_str() );
+      //tree_data->Project( "h1_data", varName.c_str(), Form("%f*(%s)", data_->getWeight(), selection.c_str()) );
+      tree_data->Project( "h1_data", varName.c_str(), Form("%f*weight*(%s)", lumi_, selection.c_str()) );
+      if( addOverflow_ )
+        MT2DrawTools::addOverflowSingleHisto(h1_data);
+
+      //      h1_data->Scale(1./ h1_data->Integral());
+      h1_data->SetMarkerStyle(20);
+      h1_data->SetMarkerSize(1.2);
+
+
+      h1_data->SetFillColor( 855 );
+      h1_data->SetLineColor( kBlack );
+
+      gr_data = MT2DrawTools::getPoissonGraph(h1_data, false, "binWidth");
+      gr_data->SetMarkerStyle(20);
+      gr_data->SetMarkerSize(1.2);
+    }
+    
+
+    TGraphAsymmErrors* gr_mc = 0;
+
+    std::vector< TH1D* > histos_mc;
+    for( unsigned i=0; i<mc_->size(); ++i ) { 
+      TTree* tree_mc = (mc_->at(i)->get(thisRegion)->tree);
+      std::string thisName = "h1_" + mc_->at(i)->getName() + "_" + thisRegion.getName();
+      TObject* obj = gROOT->FindObject(thisName.c_str());
+      if( obj ) delete obj;
+      TH1D* h1_mc = new TH1D( thisName.c_str(), "", nBins, xMin, xMax );
+      h1_mc->Sumw2();
+      if( selection!="" )
+        tree_mc->Project( thisName.c_str(), varName.c_str(), Form("%f*weight*(%s)", lumi_, selection.c_str()) );
+      else
+        tree_mc->Project( thisName.c_str(), varName.c_str(), Form("%f*weight", lumi_) );
+
+      if( addOverflow_ )
+        MT2DrawTools::addOverflowSingleHisto(h1_mc);
+
+      //h1_mc->SetFillColor( mc_->at(index)->getColor() );
+      h1_mc->SetLineColor(  mc_->at(i)->getColor() );
+
+      h1_mc->SetLineWidth( 2 );
+      if(i>3)
+	h1_mc->SetLineStyle( 2 );
+
+      histos_mc.push_back(h1_mc);
+
+      gr_mc = MT2DrawTools::getPoissonGraph(h1_mc, false, "binWidth");
+      //if( varName == "nBJets"){
+      // for(int iBin=1; iBin< h1_mc->GetNbinsX(); iBin++){
+      //   std::cout << "iBin " << i << " = " << h1_mc->GetBinContent(iBin) << std::endl;
+      //}}
+    }
+
+
+
+
+
+    TObject* oldStack = gROOT->FindObject(Form("bgStack_%s", iMT2->getName().c_str()));
+    //TObject* oldStack = gROOT->FindObject("bgStack");
+    if( oldStack ) delete oldStack;
+    TH1D* histo_mc;
+    //THStack* bgStack = new THStack( "bgStack", Form("bgStack_%s", iMT2->getName().c_str()) );
+   
+    THStack* bgStack = new THStack( Form("bgStack_%s", iMT2->getName().c_str()),"" );
+    // THStack* bgStack = new THStack("bgStack", "");
+    for( unsigned i=0; i<histos_mc.size(); ++i ) { 
+      int index = mc_->size() - i - 1;
+      //   histos_mc[index]->SetFillColor( mc_->at(index)->getColor() );
+      //histos_mc[index]->SetLineColor( kBlack );
+      //if( shapeNorm_ && data_ )
+      //      histos_mc[index]->Scale( scaleFactor );
+
+      if(i==0) histo_mc = (TH1D*) histos_mc[index]->Clone("histo_mc");
+      else histo_mc->Add(histos_mc[index]);
+      bgStack->Add(histos_mc[index]);
+    }
+
+
+
+    // TH1::AddDirectory(kFALSE); // stupid ROOT memory allocation needs this
+
+    float scaleFactor = mcSF_;
+    if( data_ ) {
+      float sf;
+      if( addOverflow_ ){
+    	//adding the overflow bin to the SF calculation
+    	std::cout << "Integrals: " << h1_data->Integral(1, nBins+1) << "\t" << histo_mc->Integral(1, nBins+1) << std::endl;
+    	sf  = h1_data->Integral(1, nBins+1)/histo_mc->Integral(1, nBins+1);
+
+      }else{ 
+    	//not adding the overflow bin
+    	std::cout << "Integrals: " << h1_data->Integral(1, nBins) << "\t" << histo_mc->Integral(1, nBins) << std::endl;
+    	sf  = h1_data->Integral(1, nBins)/histo_mc->Integral(1, nBins);
+      }
+      std::cout << "SF: " << sf << std::endl;
+      if( shapeNorm_ ) scaleFactor *= sf;
+    }
+
+    histo_mc->Scale(1./histo_mc->Integral(1, nBins+1));
+    if( data_)    h1_data->Scale(1./h1_data->Integral(1, nBins+1));
+
+    TH1D* mcBand = MT2DrawTools::getMCBandHisto( histo_mc, lumiErr_ );
+    
+    TH1D* g_ratio = 0;
+    if( data_ ) g_ratio = (TH1D*) h1_data->Clone("h1_data");
+    if( data_)  g_ratio->Divide( histo_mc );
+    //    TGraphAsymmErrors* g_ratio = 0;
+    // if( data_ ) g_ratio = MT2DrawTools::getRatioGraph(h1_data, mcBand);
+    
+    TLine* lineCentral = new TLine(xMin, 1.0, xMax, 1.0);
+    lineCentral->SetLineColor(1);
+    //TGraphErrors* systBand = MT2DrawTools::getSystBand(xMin, xMax, lumiErr_);
+    
+    // TF1* fSF = (data_) ? MT2DrawTools::getSFFit(g_ratio, xMin, xMax) : 0;
+    // TGraphErrors* SFFitBand = (fSF) ? MT2DrawTools::getSFFitBand(fSF, xMin, xMax) : 0;
+
+    TCanvas* c1 = new TCanvas(Form("c1_%s", iMT2->getName().c_str()), "", 600, 600);
+    c1->cd();
+    
+    TCanvas* c1_log = new TCanvas(Form("c1_log_%s", iMT2->getName().c_str()), "", 600, 600);
+
+    float yMaxScale = 1.1;
+    //  float yMax1 = (data_) ? h1_data->GetMaximum()*yMaxScale : 0.;
+    //float yMax2 = (data_) ? yMaxScale*(h1_data->GetMaximum() + sqrt(h1_data->GetMaximum())) : 0.;
+    float yMax1 = yMaxScale*(histos_mc[0]->GetMaximum()/ histos_mc[0]->Integral());
+    float yMax2 = yMaxScale*(histos_mc[0]->GetMaximum()/ histos_mc[0]->Integral());
+    float yMax3 = yMaxScale*(histos_mc[0]->GetMaximum()/ histos_mc[0]->Integral());
+    for( unsigned i=0; i<histos_mc.size(); ++i ) {  
+      if ( yMaxScale*(histos_mc[i]->GetMaximum()/ histos_mc[i]->Integral() ) > yMax3 )
+	yMax3 = yMaxScale*(histos_mc[i]->GetMaximum()/ histos_mc[i]->Integral());
+    }
+
+    float yMax = (yMax1>yMax2) ? yMax1 : yMax2;
+    if( yMax3 > yMax ) yMax = yMax3;
+    if( histos_mc[0]->GetNbinsX()<2 ) yMax *=3.;
+    yMax*=1.25;
+    
+    std::string xAxisTitle;
+    if( units!="" ) 
+      xAxisTitle = (std::string)(Form("%s [%s]", axisName.c_str(), units.c_str()) );
+    else
+      xAxisTitle = (std::string)(Form("%s", axisName.c_str()) );
+
+    // std::string yAxisTitle;
+    // if(binWidth>0.99){
+    //   if( units!="" ) 
+    // 	yAxisTitle = (std::string)(Form("Events / (%.0f %s)", binWidth, units.c_str()));
+    //   else
+    // 	yAxisTitle = (std::string)(Form("Events / (%.0f)", binWidth));
+    // }
+    // else if(binWidth>0.099){
+    //   if( units!="" ) 
+    // 	yAxisTitle = (std::string)(Form("Events / (%.2f %s)", binWidth, units.c_str()));
+    //   else
+    // 	yAxisTitle = (std::string)(Form("Events / (%.2f)", binWidth));
+    // }
+    // else{
+    //   if( units!="" ) 
+    // 	yAxisTitle = (std::string)(Form("Events / (%.4f %s)", binWidth, units.c_str()));
+    //   else
+    // 	yAxisTitle = (std::string)(Form("Events / (%.4f)", binWidth));
+    // }
+
+    TH2D* h2_axes = new TH2D("axes", "", 10, xMin, xMax, 10, 0., yMax );
+    h2_axes->SetXTitle(xAxisTitle.c_str());
+    //    h2_axes->SetYTitle(yAxisTitle.c_str());
+
+    c1->cd();
+  
+    TPad* pad1 = 0;
+    if( this->twoPads() ) {
+      std::cout << "two pads" << std::endl;
+      pad1 = MT2DrawTools::getCanvasMainPad();
+      pad1->Draw();
+      pad1->cd();
+    }
+
+    h2_axes->Draw();
+
+    float yMin_log = (data_ && h1_data->GetMinimum()>2.) ? 1. : 0.0001;
+    //   float yMin_log = (data_ && h1_data->GetMinimum()>2.) ? 1. : 0.001;
+
+    TH2D* h2_axes_log = new TH2D("axes_log", "", 10, xMin, xMax, 10, yMin_log, yMax*2.0 );
+    h2_axes_log->SetXTitle(xAxisTitle.c_str());
+    //    h2_axes_log->SetYTitle(yAxisTitle.c_str());
+
+    c1_log->cd();
+
+    TPad* pad1_log = 0;
+    if( this->twoPads() ) {
+      pad1_log = MT2DrawTools::getCanvasMainPad( true );
+      pad1_log->Draw();
+      pad1_log->cd();
+    } else {
+      c1_log->SetLogy();
+    }
+
+    h2_axes_log->Draw();
+   
+
+
+    std::vector<std::string> niceNames = thisRegion.getNiceNames();
+ //   for( unsigned i=0; i<niceNames.size(); ++i ) {
+ //
+ //     float yMax = 0.9-(float)i*0.05;
+ //     float yMin = yMax - 0.05;
+ //     TPaveText* regionText = new TPaveText( 0.18, yMin, 0.55, yMax, "brNDC" );
+ //     regionText->SetTextSize(0.035);
+ //     regionText->SetTextFont(42);
+ //     regionText->SetFillColor(0);
+ //     regionText->SetTextAlign(11);
+ //     regionText->AddText( niceNames[i].c_str() );
+ //
+ //     //c1->cd();
+ //     //regionText->Draw("same");
+ // 
+ //     //c1_log->cd();
+ //     //regionText->Draw("same");
+ // 
+ //   }
+ 
+
+    
+    for( unsigned i=0; i<niceNames.size(); ++i ) { 
+      
+      float yMax = 0.9-(float)i*0.05;
+      float yMin = yMax - 0.05;
+      TPaveText* regionText = new TPaveText( 0.18, yMin, 0.55, yMax, "brNDC" );
+      regionText->SetTextSize(0.030);
+      regionText->SetTextFont(42);
+      regionText->SetFillColor(0);
+      regionText->SetTextAlign(11);
+
+    
+      if( i==0 ) {
+
+        if(kinCuts!="") {
+          regionText->AddText( kinCuts.c_str() );
+        } else {
+          regionText->AddText( niceNames[i].c_str() );
+        }
+
+      } else if( i==1 ) {
+    
+        if(topoCuts!="") {
+          regionText->AddText( topoCuts.c_str() );
+        } else {
+          regionText->AddText( niceNames[i].c_str() );
+        }
+
+      }
+    
+      if( this->twoPads() )
+        pad1->cd();
+      else
+        c1->cd();
+      regionText->Draw("same");
+      
+      if( this->twoPads() )
+        pad1_log->cd();
+      else
+        c1_log->cd();
+      regionText->Draw("same");
+      
+    }
+
+
+    TPaveText* normText = new TPaveText( 0.47, 0.7, 0.62, 0.82, "brNDC" );
+    normText->SetFillColor(0);
+    normText->SetTextSize(0.035);
+    if( scaleFactor!=1. ) {
+      if( displaySF_ )
+        normText->AddText( Form("#splitline{Norm diff}{by %.2f}", scaleFactor) );
+      else
+    	normText->AddText( "#splitline{Shape}{Norm.}" );
+      if( this->twoPads() ) 
+        pad1->cd();
+      else
+        c1->cd();
+        normText->Draw("same");
+      if( this->twoPads() ) 
+        pad1_log->cd();
+      else
+        c1_log->cd();
+      normText->Draw("same");
+    }
+
+
+    int addLines = (data_) ? 2 : 0;
+    TLegend* legend = new TLegend( 0.67, 0.9-(mc_->size()+addLines)*0.06, 0.93, 0.9 );
+    legend->SetTextSize(0.038);
+    legend->SetTextFont(42);
+    legend->SetFillColor(0);
+    //float data_int = 0.;
+    if( data_ ) {
+      //      legend->AddEntry( gr_data, "Data 2017", "P" );
+      legend->AddEntry( h1_data, "H #gamma#gamma 2016", "P" );
+      //      legend->AddEntry( gr_data, "Data", "P" );
+    }
+    //float mc_int = 0.;
+    for( unsigned i=0; i<histos_mc.size(); ++i ) {  
+      legend->AddEntry( histos_mc[i], mc_->at(i)->getFullName().c_str(), "F" );
+    }
+    //    if( data_ ) 
+      //      legend->AddEntry( mcBand, "MC Uncert.", "F" );
+
+   
+    
+      //  TPaveText* fitText = (fSF) ? MT2DrawTools::getFitText( fSF ) : 0;
+    
+    float yMinR=0.0;
+    float yMaxR=2.0;
+    
+    TH2D* h2_axes_ratio = MT2DrawTools::getRatioAxes( xMin, xMax, yMinR, yMaxR );
+
+    std::string CMStext = doPaperPlots_ ? "CMS" : "CMS Preliminary";
+
+    c1->cd();
+    if( this->twoPads() )
+      pad1->cd();
+    legend->Draw("same");
+    for( unsigned i=0; i<histos_mc.size(); ++i ) 
+      histos_mc[i]->DrawNormalized("histo same");
+
+    mcBand->Draw("E2 same");
+
+    //    gr_mc->Draw("L samm
+    if( data_ ) {
+      mcBand->Draw("E2 same");
+      h1_data->DrawNormalized("p same");
+      //      gr_data->Draw("p same");
+    }
+    // if( !shapeNorm_ && fitText )
+      //      fitText->Draw("same");
+    //    ratioText->Draw("same");
+
+
+    //    (data_) ? MT2DrawTools::addLabels( (TCanvas*)pad1, lumi_, CMStext.c_str() ) : MT2DrawTools::addLabels( (TCanvas*)c1, lumi_, "CMS Simulation"); 
+    //(data_) ? MT2DrawTools::addLabels( (TCanvas*)pad1, lumi_, CMStext.c_str() ) : MT2DrawTools::addLabels( (TCanvas*)pad1, lumi_, "CMS Simulation"); 
+
+    gPad->RedrawAxis();
+
+    c1_log->cd();
+    if( this->twoPads() )
+      pad1_log->cd();
+    legend->Draw("same");
+    for( unsigned i=0; i<histos_mc.size(); ++i ) 
+      histos_mc[i]->DrawNormalized("histo same");
+    mcBand->Draw("E2 same");
+    if( data_ ) {
+      //      mcBand->Draw("E2 same");
+      h1_data->DrawNormalized("p same");
+      //      gr_data->Draw("p same");
+    }
+    //    if( !shapeNorm_ && fitText )
+    //  fitText->Draw("same");
+    //    ratioText->Draw("same");
+    //(data_) ? MT2DrawTools::addLabels( (TCanvas*)pad1_log, lumi_, CMStext.c_str() ) : MT2DrawTools::addLabels( (TCanvas*)c1_log, lumi_, "CMS Simulation"); 
+    //(data_) ? MT2DrawTools::addLabels( (TCanvas*)pad1_log, lumi_, CMStext.c_str() ) : MT2DrawTools::addLabels( (TCanvas*)pad1_log, lumi_, "CMS Simulation"); 
+
+    gPad->RedrawAxis();
+    
+    c1->cd();
+
+    if( twoPads() ) {
+      TPad* pad2 = MT2DrawTools::getCanvasRatioPad();
+      pad2->Draw();
+      pad2->cd();
+
+      h2_axes_ratio->Draw("");
+      lineCentral->Draw("same");
+      if( !shapeNorm_ ){
+
+        //systBand->Draw("3,same");
+        lineCentral->Draw("same");
+
+        if( data_ ) {
+	  //          SFFitBand->Draw("3,same");
+	  //          fSF->Draw("same");
+        }
+
+//        SFband->Draw("3,same");
+//        lineSF->Draw("same");
+
+      }
+
+      // h1_data->DrawNormalized("p same");
+      if( g_ratio ) g_ratio->Draw("PE,same");    
+      gPad->RedrawAxis();
+
+
+      c1_log->cd();
+      TPad* pad2_log = MT2DrawTools::getCanvasRatioPad( true );
+      pad2_log->Draw();
+      pad2_log->cd();
+
+      h2_axes_ratio->Draw("");
+      lineCentral->Draw("same");
+      if( !shapeNorm_ ){
+
+        //systBand->Draw("3,same");
+        lineCentral->Draw("same");
+
+        if( data_ ) {
+	  //          SFFitBand->Draw("3,same");
+          //fSF->Draw("same");
+        }
+        
+//        SFband->Draw("3,same");
+//        lineSF->Draw("same");
+
+      }
+      if( g_ratio ) g_ratio->Draw("PE,same");
+      gPad->RedrawAxis();
+
+    } // if twoPads
+
+
+    std::string regionSaveName = (MT2Regions.size()!=1) ? "_" + thisRegion.getName() : "";
+
+    c1->SaveAs( Form("%s/norm_%s%s.eps", outdir_.c_str(), saveName.c_str(), regionSaveName.c_str()) );
+    c1->SaveAs( Form("%s/norm_%s%s.png", outdir_.c_str(), saveName.c_str(), regionSaveName.c_str()) );
+    c1->SaveAs( Form("%s/norm_%s%s.pdf", outdir_.c_str(), saveName.c_str(), regionSaveName.c_str()) );
+
+    c1_log->SaveAs( Form("%s/norm_%s%s_log.eps", outdir_.c_str(), saveName.c_str(), regionSaveName.c_str()) );
+    c1_log->SaveAs( Form("%s/norm_%s%s_log.png", outdir_.c_str(), saveName.c_str(), regionSaveName.c_str()) );
+    c1_log->SaveAs( Form("%s/norm_%s%s_log.pdf", outdir_.c_str(), saveName.c_str(), regionSaveName.c_str()) );
+
+    returnVector.push_back(c1);
+
+    if( g_ratio )         delete h2_axes;
+    if( g_ratio )         delete h2_axes_log;
+    if( g_ratio )     delete h2_axes_ratio;
+    
+    if(data_)    delete h1_data;
+    delete c1_log;
+
+    if( g_ratio)    delete g_ratio;
+
+  }// for MT2 regions
+
+  return returnVector;
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//Draw 2D histograms from a tree
+std::vector<TCanvas*> MT2DrawTools::drawRegion2D_fromTree( const std::string& saveName, const std::string& varName, const std::string& varName2, const std::string& selection, int nBins, float xMin, float xMax, int nBins2, float yMin, float yMax, std::string axisName, std::string axisName2, const std::string& units, const std::string& units2, const std::string& kinCuts, const std::string& topoCuts ) {
+
+
+  TString sel_tstr(selection);
+  if( sel_tstr.Contains("weight") ) {
+    std::cout << "[MT2DrawTools::drawRegion2D_fromTree] WARNING!! Selection contains 'weight'!! Are you sure you know what you're doing??" << std::endl;
+  }
+
+  std::vector<TCanvas*> returnVector;
+
+  system( Form("mkdir -p %s", outdir_.c_str()) );
+
+  if( axisName=="" ) axisName = varName;
+  if( axisName2=="" ) axisName2 = varName2;
+
+
+  TH1::AddDirectory(kTRUE); // stupid ROOT memory allocation needs this
+
+  std::set<MT2Region> MT2Regions = mc_->at(0)->getRegions();
+  
+  for( std::set<MT2Region>::iterator iMT2 = MT2Regions.begin(); iMT2!=MT2Regions.end(); ++iMT2 ) {
+
+    TCanvas *old_c1 = (TCanvas*)gROOT->GetListOfCanvases()->FindObject(Form("c1_%s", iMT2->getName().c_str()));
+    if( old_c1 != 0 ) delete old_c1;
+  
+    MT2Region thisRegion( (*iMT2) );
+
+    // TTree* tree_data = (data_) ? data_->get(thisRegion)->tree : 0;
+    // TH1D* h1_data = 0;
+    // TGraphAsymmErrors* gr_data = 0;
+    // if( tree_data ) {
+    //   h1_data = new TH1D("h1_data", "", nBins, xMin, xMax );
+    //   tree_data->Project( "h1_data", varName.c_str(), selection.c_str() );
+    //   //tree_data->Project( "h1_data", varName.c_str(), Form("%f*(%s)", data_->getWeight(), selection.c_str()) );
+    //   if( addOverflow_ )
+    //     MT2DrawTools::addOverflowSingleHisto(h1_data);
+    //   gr_data = MT2DrawTools::getPoissonGraph(h1_data, false, "binWidth");
+    //   gr_data->SetMarkerStyle(20);
+    //   gr_data->SetMarkerSize(1.2);
+    // }
+    
+
+
+    std::vector< TH2D* > histos_mc;
+    for( unsigned i=0; i<mc_->size(); ++i ) { 
+      TTree* tree_mc = (mc_->at(i)->get(thisRegion)->tree);
+      std::string thisName = "h1_" + mc_->at(i)->getName() + "_" + thisRegion.getName();
+      TObject* obj = gROOT->FindObject(thisName.c_str());
+      if( obj ) delete obj;
+      TH2D* h1_mc = new TH2D( thisName.c_str(), "", nBins, xMin, xMax, nBins2, yMin, yMax );
+      h1_mc->Sumw2();
+      if( selection!="" )
+        tree_mc->Project( thisName.c_str(), Form("%s:%s", varName.c_str(), varName2.c_str()) , Form("%f*weight*(%s)", lumi_, selection.c_str()) );
+      //tree_mc->Project( thisName.c_str(), varName.c_str(), Form("%f*(%s)", lumi_*mc_->at(i)->getWeight(), selection.c_str()) );
+      else
+        tree_mc->Project( thisName.c_str(), Form("%s:%s", varName.c_str(), varName2.c_str()), Form("%f*weight", lumi_)  );
+      //tree_mc->Project( thisName.c_str(), varName.c_str(), Form("%f", lumi_*mc_->at(i)->getWeight()) );
+
+      //      if( addOverflow_ )
+      // MT2DrawTools::addOverflowSingleHisto(h1_mc);
+
+      h1_mc->SetMarkerStyle( 20 );//      h1_mc->SetMarkerStyle( 6 );  
+      h1_mc->SetMarkerSize( 0.4);
+      h1_mc->SetMarkerColor( mc_->at(i)->getColor() );
+      h1_mc->SetFillColor(   mc_->at(i)->getColor() );
+
+      // h1_mc->SetLineWidth( 2 );
+      // if(i>3)
+      // h1_mc->SetLineStyle( 2 );
+
+      histos_mc.push_back(h1_mc);
+    }
+
+    
+    TLine* lineCentral = new TLine(xMin, 1.0, xMax, 1.0);
+    lineCentral->SetLineColor(1);
+    //TGraphErrors* systBand = MT2DrawTools::getSystBand(xMin, xMax, lumiErr_);
+    
+    // TF1* fSF = (data_) ? MT2DrawTools::getSFFit(g_ratio, xMin, xMax) : 0;
+    // TGraphErrors* SFFitBand = (fSF) ? MT2DrawTools::getSFFitBand(fSF, xMin, xMax) : 0;
+
+    TCanvas* c1 = new TCanvas(Form("c1_%s", iMT2->getName().c_str()), "", 600, 600);
+    c1->cd();
+    
+    TCanvas* c1_log = new TCanvas(Form("c1_log_%s", iMT2->getName().c_str()), "", 600, 600);
+
+    // float yMaxScale = 1.1;
+    // float yMax1 = (data_) ? h1_data->GetMaximum()*yMaxScale : 0.;
+    // float yMax2 = (data_) ? yMaxScale*(h1_data->GetMaximum() + sqrt(h1_data->GetMaximum())) : 0.;
+    // float yMax3 = yMaxScale*(histos_mc[0]->GetMaximum()/ histos_mc[0]->Integral());
+    // for( unsigned i=0; i<histos_mc.size(); ++i ) {  
+    //   if ( yMaxScale*(histos_mc[i]->GetMaximum()/ histos_mc[i]->Integral() ) > yMax3 )
+    // 	yMax3 = yMaxScale*(histos_mc[i]->GetMaximum()/ histos_mc[i]->Integral());
+    // }
+
+
+    // float yMax = (yMax1>yMax2) ? yMax1 : yMax2;
+    // if( yMax3 > yMax ) yMax = yMax3;
+    // if( histos_mc[0]->GetNbinsX()<2 ) yMax *=3.;
+    // yMax*=1.25;
+    
+    std::string xAxisTitle;
+    std::string yAxisTitle;
+    if( units!="" ) 
+      xAxisTitle = (std::string)(Form("%s [%s]", axisName.c_str(), units.c_str()) );
+    else
+      xAxisTitle = (std::string)(Form("%s", axisName.c_str()) );
+
+    if( units2!="" ) 
+      yAxisTitle = (std::string)(Form("%s [%s]", axisName2.c_str(), units2.c_str()) );
+    else
+      yAxisTitle = (std::string)(Form("%s", axisName2.c_str()) );
+
+    TH2D* h2_axes = new TH2D("axes", "", nBins, xMin, xMax, nBins2, yMin, yMax );
+    h2_axes->SetXTitle(xAxisTitle.c_str());
+    h2_axes->SetYTitle(yAxisTitle.c_str());
+
+    c1->cd();
+  
+    TPad* pad1 = 0;
+    if( this->twoPads() ) {
+      pad1 = MT2DrawTools::getCanvasMainPad();
+      pad1->Draw();
+      pad1->cd();
+    }
+
+
+    h2_axes->Draw();
+
+    // float yMin_log = (data_ && h1_data->GetMinimum()>2.) ? 1. : 0.001;
+
+    TH2D* h2_axes_log = new TH2D("axes_log", "", nBins, xMin, xMax, nBins2, yMin, yMax );
+    h2_axes_log->SetXTitle(xAxisTitle.c_str());
+    //    h2_axes_log->SetYTitle(yAxisTitle.c_str());
+
+    c1_log->cd();
+
+    TPad* pad1_log = 0;
+    if( this->twoPads() ) {
+      pad1_log = MT2DrawTools::getCanvasMainPad( true );
+      pad1_log->Draw();
+      pad1_log->cd();
+    } else {
+      c1_log->SetLogz();//      c1_log->SetLogy();
+    }
+
+    //    h2_axes_log->Draw();
+   
+
+
+    std::vector<std::string> niceNames = thisRegion.getNiceNames();
+    for( unsigned i=0; i<niceNames.size(); ++i ) { 
+      float yMax = 0.9-(float)i*0.05;
+      float yMin = yMax - 0.05;
+      TPaveText* regionText = new TPaveText( 0.18, yMin, 0.55, yMax, "brNDC" );
+      regionText->SetTextSize(0.030);
+      regionText->SetTextFont(42);
+      regionText->SetFillColor(0);
+      regionText->SetTextAlign(11);
+    
+      if( i==0 ) {
+        if(kinCuts!="") 
+          regionText->AddText( kinCuts.c_str() );
+	else 
+          regionText->AddText( niceNames[i].c_str() );
+      } else if( i==1 ) {
+	if(topoCuts!="") 
+          regionText->AddText( topoCuts.c_str() );
+        else 
+          regionText->AddText( niceNames[i].c_str() );
+      }
+    
+      if( this->twoPads() )
+        pad1->cd();
+      else
+        c1->cd();
+      regionText->Draw("same");
+      
+      if( this->twoPads() )
+        pad1_log->cd();
+      else
+        c1_log->cd();
+      regionText->Draw("same");
+      
+    }
+
+    //    int addLines = (data_) ? 2 : 0;
+    TLegend* legend = new TLegend( 0.67, 0.9-(mc_->size())*0.06, 0.93, 0.9 );
+    legend->SetTextSize(0.038);
+    legend->SetTextFont(42);
+    legend->SetFillColor(0);
+    //float data_int = 0.;
+    // if( data_ ) {
+    //   legend->AddEntry( gr_data, "Data", "P" );
+    // }
+    //float mc_int = 0.;
+    for( unsigned i=0; i<histos_mc.size(); ++i ) {  
+      legend->AddEntry( histos_mc[i], mc_->at(i)->getFullName().c_str(), "F" );
+    }
+    //    if( data_ ) 
+      //      legend->AddEntry( mcBand, "MC Uncert.", "F" );
+
+   
+    
+      //  TPaveText* fitText = (fSF) ? MT2DrawTools::getFitText( fSF ) : 0;
+    
+    float yMinR=0.0;
+    float yMaxR=2.0;
+    
+    TH2D* h2_axes_ratio = MT2DrawTools::getRatioAxes( xMin, xMax, yMinR, yMaxR );
+
+    std::string CMStext = doPaperPlots_ ? "CMS" : "CMS Preliminary";
+
+    c1->cd();
+    if( this->twoPads() )
+      pad1->cd();
+
+    // //for( unsigned i=0; i<histos_mc.size(); ++i ) {
+    // for( int i=histos_mc.size()-1; i>=0; --i ) {
+    //   if(i==(histos_mc.size()-1) )
+    //   	histos_mc[i]->Draw("scat");
+    //   else
+    // 	histos_mc[i]->Draw("scat same");
+    // }
+
+    for( unsigned i=0; i<histos_mc.size(); ++i ) {
+      if(i==0)
+      	histos_mc[i]->Draw("scat");
+      else
+	histos_mc[i]->Draw("scat same");
+    }
+    legend->Draw("same");
+    //  if( data_ ) {
+    //   //      mcBand->Draw("E2 same");
+    //   gr_data->Draw("p same");
+    // }
+    // if( !shapeNorm_ && fitText )
+    //      fitText->Draw("same");
+    //    ratioText->Draw("same");
+
+
+    //(data_) ? MT2DrawTools::addLabels( (TCanvas*)pad1, lumi_, CMStext.c_str() ) : MT2DrawTools::addLabels( (TCanvas*)c1, lumi_, "CMS Simulation"); 
+    //(data_) ? MT2DrawTools::addLabels( (TCanvas*)pad1, lumi_, CMStext.c_str() ) : MT2DrawTools::addLabels( (TCanvas*)pad1, lumi_, "CMS Simulation"); 
+
+    gPad->RedrawAxis();
+
+    c1_log->cd();
+    if( this->twoPads() )
+      pad1_log->cd();
+
+    for( unsigned i=0; i<histos_mc.size(); ++i ) 
+      histos_mc[i]->Draw("scat same");
+    legend->Draw("same");
+
+    //if( data_ ) {
+      //      mcBand->Draw("E2 same");
+    //  gr_data->Draw("p same");
+    // }
+    //    if( !shapeNorm_ && fitText )
+    //  fitText->Draw("same");
+    //    ratioText->Draw("same");
+    //(data_) ? MT2DrawTools::addLabels( (TCanvas*)pad1_log, lumi_, CMStext.c_str() ) : MT2DrawTools::addLabels( (TCanvas*)c1_log, lumi_, "CMS Simulation"); 
+    //(data_) ? MT2DrawTools::addLabels( (TCanvas*)pad1_log, lumi_, CMStext.c_str() ) : MT2DrawTools::addLabels( (TCanvas*)pad1_log, lumi_, "CMS Simulation"); 
+
+    gPad->RedrawAxis();
+    
+    c1->cd();
+
+    if( twoPads() ) {
+      TPad* pad2 = MT2DrawTools::getCanvasRatioPad();
+      pad2->Draw();
+      pad2->cd();
+
+      h2_axes_ratio->Draw("");
+      lineCentral->Draw("same");
+      if( !shapeNorm_ ){
+        //systBand->Draw("3,same");
+        lineCentral->Draw("same");
+      }
+      //      if( g_ratio ) g_ratio->Draw("PE,same");    
+      gPad->RedrawAxis();
+
+      c1_log->cd();
+      TPad* pad2_log = MT2DrawTools::getCanvasRatioPad( true );
+      pad2_log->Draw();
+      pad2_log->cd();
+
+      h2_axes_ratio->Draw("");
+      lineCentral->Draw("same");
+      if( !shapeNorm_ ){
+        //systBand->Draw("3,same");
+        lineCentral->Draw("same");
+      }
+      //      if( g_ratio ) g_ratio->Draw("PE,same");
+      gPad->RedrawAxis();
+    } // if twoPads
+
+    std::string regionSaveName = (MT2Regions.size()!=1) ? "_" + thisRegion.getName() : "";
+
+    c1->SaveAs( Form("%s/2d_%s%s.eps", outdir_.c_str(), saveName.c_str(), regionSaveName.c_str()) );
+    c1->SaveAs( Form("%s/2d_%s%s.png", outdir_.c_str(), saveName.c_str(), regionSaveName.c_str()) );
+    c1->SaveAs( Form("%s/2d_%s%s.pdf", outdir_.c_str(), saveName.c_str(), regionSaveName.c_str()) );
+
+    // c1_log->SaveAs( Form("%s/2d_%s%s_log.eps", outdir_.c_str(), saveName.c_str(), regionSaveName.c_str()) );
+    // c1_log->SaveAs( Form("%s/2d_%s%s_log.png", outdir_.c_str(), saveName.c_str(), regionSaveName.c_str()) );
+    // c1_log->SaveAs( Form("%s/2d_%s%s_log.pdf", outdir_.c_str(), saveName.c_str(), regionSaveName.c_str()) );
+
+    returnVector.push_back(c1);
+
+    delete h2_axes;
+    delete h2_axes_log;
+    delete h2_axes_ratio;
+    
+    // delete h1_data;
+    delete c1_log;
+
+  }// for MT2 regions
+
+  return returnVector;
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//Data will take over the place of the ratio one, so signal or w/e you want to put in, now WITH weight!
+std::vector<TCanvas*> MT2DrawTools::drawSelections_fromTree( const std::string& saveName, const std::string& varName, std::vector<std::string>& selection, std::vector<std::string>& sel_name, int nBins, float xMin, float xMax, std::string axisName, const std::string& units, const std::string& kinCuts, const std::string& topoCuts ) {
+
+
+  TString sel_tstr(selection[0]);
+  if( sel_tstr.Contains("weight") ) {
+    std::cout << "[MT2DrawTools::drawRegionYields_fromTree] WARNING!! Selection contains 'weight'!! Are you sure you know what you're doing??" << std::endl;
+  }
+
+  std::vector<TCanvas*> returnVector;
+
+  system( Form("mkdir -p %s", outdir_.c_str()) );
+
+
+  //  float binWidth = (xMax-xMin)/nBins;
+  if( axisName=="" ) axisName = varName;
+
+
+  TH1::AddDirectory(kTRUE); // stupid ROOT memory allocation needs this
+
+  std::set<MT2Region> MT2Regions = mc_->at(0)->getRegions();
+  
+  for( std::set<MT2Region>::iterator iMT2 = MT2Regions.begin(); iMT2!=MT2Regions.end(); ++iMT2 ) {
+
+    TCanvas *old_c1 = (TCanvas*)gROOT->GetListOfCanvases()->FindObject(Form("c1_%s", iMT2->getName().c_str()));
+    if( old_c1 != 0 ) delete old_c1;
+  
+    MT2Region thisRegion( (*iMT2) );
+
+    TTree* tree_data = (data_) ? data_->get(thisRegion)->tree : 0;
+    TH1D* h1_data = 0;
+    TGraphAsymmErrors* gr_data = 0;
+    if( tree_data ) {
+      h1_data = new TH1D("h1_data", "", nBins, xMin, xMax );
+      tree_data->Project( "h1_data", varName.c_str(), selection[0].c_str() );
+      //tree_data->Project( "h1_data", varName.c_str(), Form("%f*(%s)", data_->getWeight(), selection[0].c_str()) );
+      if( addOverflow_ )
+        MT2DrawTools::addOverflowSingleHisto(h1_data);
+
+      //      h1_data->Scale(1./ h1_data->Integral());
+      h1_data->SetMarkerStyle(20);
+      h1_data->SetMarkerSize(1.2);
+
+      gr_data = MT2DrawTools::getPoissonGraph(h1_data, false, "binWidth");
+      gr_data->SetMarkerStyle(20);
+      gr_data->SetMarkerSize(1.2);
+    }
+    
+
+
+
+    std::vector< TH1D* > histos_mc_ratios;
+
+    std::vector< TH1D* > histos_mc;
+    for( unsigned i=0; i<mc_->size(); ++i ) { 
+      for( unsigned count_sel=0; count_sel<selection.size(); ++count_sel ) { 
+
+	TTree* tree_mc = (mc_->at(i)->get(thisRegion)->tree);
+	std::string thisName = "h1_" + mc_->at(i)->getName() + "_" + thisRegion.getName()+"_"+ Form("%d",count_sel);
+
+	TObject* obj = gROOT->FindObject(thisName.c_str());
+	if( obj ) delete obj;
+	TH1D* h1_mc = new TH1D( thisName.c_str(), "", nBins, xMin, xMax );
+	h1_mc->Sumw2();
+	if( selection[0]!="" )
+	  tree_mc->Project( thisName.c_str(), varName.c_str(), Form("%f*weight*(%s)", lumi_, selection[count_sel].c_str()) );
+	else
+	  tree_mc->Project( thisName.c_str(), varName.c_str(), Form("%f*weight", lumi_) );
+
+	if( addOverflow_ )
+	  MT2DrawTools::addOverflowSingleHisto(h1_mc);
+
+	//h1_mc->SetFillColor( mc_->at(index)->getColor() );
+	
+	h1_mc->SetLineColor(  mc_->at(i)->getColor()+count_sel );
+
+	h1_mc->SetLineWidth( 2 );
+	if(i>3)
+	  h1_mc->SetLineStyle( 2 );
+
+	h1_mc->SetLineStyle( count_sel+1 );
+
+	histos_mc.push_back(h1_mc);
+	//if( varName == "nBJets"){
+	// for(int iBin=1; iBin< h1_mc->GetNbinsX(); iBin++){
+	//   std::cout << "iBin " << i << " = " << h1_mc->GetBinContent(iBin) << std::endl;
+
+	TH1D* h1_mc_ratio = (TH1D*) h1_mc ->Clone(Form("%s_ratio",thisName.c_str() ));
+	if((i+count_sel)>0)
+	  histos_mc_ratios.push_back(h1_mc_ratio);
+
+	//}}
+      }
+    }
+
+  
+    for( unsigned i=0; i<histos_mc_ratios.size(); ++i ) { 
+
+      float integral = histos_mc[0]->Integral();
+      float integral_r = histos_mc_ratios[i]->Integral();
+      histos_mc_ratios[i]->Divide( histos_mc[0] );
+      //      histos_mc_ratios[i]->Scale( integral / integral_r );
+
+    }
+
+
+    TObject* oldStack = gROOT->FindObject(Form("bgStack_%s", iMT2->getName().c_str()));
+    //TObject* oldStack = gROOT->FindObject("bgStack");
+    if( oldStack ) delete oldStack;
+    TH1D* histo_mc;
+    //THStack* bgStack = new THStack( "bgStack", Form("bgStack_%s", iMT2->getName().c_str()) );
+   
+    THStack* bgStack = new THStack( Form("bgStack_%s", iMT2->getName().c_str()),"" );
+    // THStack* bgStack = new THStack("bgStack", "");
+    for( unsigned i=0; i<histos_mc.size(); ++i ) { 
+
+      int index = ( (mc_->size()) * (selection.size()) ) - i -1 ;
+
+      //   histos_mc[index]->SetFillColor( mc_->at(index)->getColor() );
+      //histos_mc[index]->SetLineColor( kBlack );
+      //if( shapeNorm_ && data_ )
+      //      histos_mc[index]->Scale( scaleFactor );
+
+      if(i==0) 
+	histo_mc = (TH1D*) histos_mc[index]->Clone("histo_mc");
+      else 
+	histo_mc->Add(histos_mc[index]);
+
+      bgStack->Add(histos_mc[index]);
+    }
+
+    // TH1::AddDirectory(kFALSE); // stupid ROOT memory allocation needs this
+
+    float scaleFactor = mcSF_;
+    if( data_ ) {
+      float sf;
+      if( addOverflow_ ){
+    	//adding the overflow bin to the SF calculation
+    	std::cout << "Integrals: " << h1_data->Integral(1, nBins+1) << "\t" << histo_mc->Integral(1, nBins+1) << std::endl;
+    	sf  = h1_data->Integral(1, nBins+1)/histo_mc->Integral(1, nBins+1);
+
+      }else{ 
+    	//not adding the overflow bin
+    	std::cout << "Integrals: " << h1_data->Integral(1, nBins) << "\t" << histo_mc->Integral(1, nBins) << std::endl;
+    	sf  = h1_data->Integral(1, nBins)/histo_mc->Integral(1, nBins);
+      }
+      std::cout << "SF: " << sf << std::endl;
+      if( shapeNorm_ ) scaleFactor *= sf;
+    }
+
+    //    histo_mc->Scale(1./histo_mc->Integral(1, nBins+1));
+    if(data_)    h1_data->Scale(1./h1_data->Integral(1, nBins+1));
+
+
+    TH1D* mcBand = MT2DrawTools::getMCBandHisto( histo_mc, lumiErr_ );
+    
+    TH1D* g_ratio = 0;
+    if( data_ ) g_ratio = (TH1D*) h1_data->Clone("h1_data");
+    if (data_) g_ratio->Divide( histo_mc );
+    //    TGraphAsymmErrors* g_ratio = 0;
+    // if( data_ ) g_ratio = MT2DrawTools::getRatioGraph(h1_data, mcBand);
+    
+    TLine* lineCentral = new TLine(xMin, 1.0, xMax, 1.0);
+    lineCentral->SetLineColor(1);
+    //TGraphErrors* systBand = MT2DrawTools::getSystBand(xMin, xMax, lumiErr_);
+    
+    // TF1* fSF = (data_) ? MT2DrawTools::getSFFit(g_ratio, xMin, xMax) : 0;
+    // TGraphErrors* SFFitBand = (fSF) ? MT2DrawTools::getSFFitBand(fSF, xMin, xMax) : 0;
+
+    TCanvas* c1 = new TCanvas(Form("c1_%s", iMT2->getName().c_str()), "", 600, 600);
+    c1->cd();
+    
+    TCanvas* c1_log = new TCanvas(Form("c1_log_%s", iMT2->getName().c_str()), "", 600, 600);
+
+    float yMaxScale = 1.1;
+    //  float yMax1 = (data_) ? h1_data->GetMaximum()*yMaxScale : 0.;
+    //float yMax2 = (data_) ? yMaxScale*(h1_data->GetMaximum() + sqrt(h1_data->GetMaximum())) : 0.;
+    float yMax1 = yMaxScale*(histos_mc[0]->GetMaximum());
+    float yMax2 = yMaxScale*(histos_mc[0]->GetMaximum());
+    float yMax3 = yMaxScale*(histos_mc[0]->GetMaximum());
+			     
+    //  float yMax1 = yMaxScale*(histos_mc[0]->GetMaximum()/ histos_mc[0]->Integral());
+    // float yMax2 = yMaxScale*(histos_mc[0]->GetMaximum()/ histos_mc[0]->Integral());
+    // float yMax3 = yMaxScale*(histos_mc[0]->GetMaximum()/ histos_mc[0]->Integral());
+ 
+   for( unsigned i=0; i<histos_mc.size(); ++i ) {  
+      if ( yMaxScale*(histos_mc[i]->GetMaximum()/ histos_mc[i]->Integral() ) > yMax3 )
+	yMax3 = yMaxScale*(histos_mc[i]->GetMaximum()/ histos_mc[i]->Integral());
+    }
+
+    float yMax = (yMax1>yMax2) ? yMax1 : yMax2;
+    if( yMax3 > yMax ) yMax = yMax3;
+    if( histos_mc[0]->GetNbinsX()<2 ) yMax *=3.;
+    yMax*=1.25;
+    
+    std::string xAxisTitle;
+    if( units!="" ) 
+      xAxisTitle = (std::string)(Form("%s [%s]", axisName.c_str(), units.c_str()) );
+    else
+      xAxisTitle = (std::string)(Form("%s", axisName.c_str()) );
+
+    // std::string yAxisTitle;
+    // if(binWidth>0.99){
+    //   if( units!="" ) 
+    // 	yAxisTitle = (std::string)(Form("Events / (%.0f %s)", binWidth, units.c_str()));
+    //   else
+    // 	yAxisTitle = (std::string)(Form("Events / (%.0f)", binWidth));
+    // }
+    // else if(binWidth>0.099){
+    //   if( units!="" ) 
+    // 	yAxisTitle = (std::string)(Form("Events / (%.2f %s)", binWidth, units.c_str()));
+    //   else
+    // 	yAxisTitle = (std::string)(Form("Events / (%.2f)", binWidth));
+    // }
+    // else{
+    //   if( units!="" ) 
+    // 	yAxisTitle = (std::string)(Form("Events / (%.4f %s)", binWidth, units.c_str()));
+    //   else
+    // 	yAxisTitle = (std::string)(Form("Events / (%.4f)", binWidth));
+    // }
+
+    TH2D* h2_axes = new TH2D("axes", "", 10, xMin, xMax, 10, 0., yMax );
+    h2_axes->SetXTitle(xAxisTitle.c_str());
+    //    h2_axes->SetYTitle(yAxisTitle.c_str());
+
+    c1->cd();
+  
+
+
+    TPad* pad1 = 0;
+    if( true ) {
+      //    if( this->twoPads() ) {
+      pad1 = MT2DrawTools::getCanvasMainPad();
+      pad1->Draw();
+      pad1->cd();
+    }
+
+
+    h2_axes->Draw();
+
+    float yMin_log = (data_ && h1_data->GetMinimum()>2.) ? 1. : 0.0001;
+    //   float yMin_log = (data_ && h1_data->GetMinimum()>2.) ? 1. : 0.001;
+
+    TH2D* h2_axes_log = new TH2D("axes_log", "", 10, xMin, xMax, 10, yMin_log, yMax*2.0 );
+    h2_axes_log->SetXTitle(xAxisTitle.c_str());
+    //    h2_axes_log->SetYTitle(yAxisTitle.c_str());
+
+    c1_log->cd();
+
+    TPad* pad1_log = 0;
+    //   if( this->twoPads() ) {
+      pad1_log = MT2DrawTools::getCanvasMainPad( true );
+      pad1_log->Draw();
+      pad1_log->cd();
+    // } else {
+    //   c1_log->SetLogy();
+    // }
+
+    h2_axes_log->Draw();
+   
+
+
+    std::vector<std::string> niceNames = thisRegion.getNiceNames();
+ //   for( unsigned i=0; i<niceNames.size(); ++i ) {
+ //
+ //     float yMax = 0.9-(float)i*0.05;
+ //     float yMin = yMax - 0.05;
+ //     TPaveText* regionText = new TPaveText( 0.18, yMin, 0.55, yMax, "brNDC" );
+ //     regionText->SetTextSize(0.035);
+ //     regionText->SetTextFont(42);
+ //     regionText->SetFillColor(0);
+ //     regionText->SetTextAlign(11);
+ //     regionText->AddText( niceNames[i].c_str() );
+ //
+ //     //c1->cd();
+ //     //regionText->Draw("same");
+ // 
+ //     //c1_log->cd();
+ //     //regionText->Draw("same");
+ // 
+ //   }
+ 
+
+    
+    for( unsigned i=0; i<niceNames.size(); ++i ) { 
+      
+      float yMax = 0.9-(float)i*0.05;
+      float yMin = yMax - 0.05;
+      TPaveText* regionText = new TPaveText( 0.18, yMin, 0.55, yMax, "brNDC" );
+      regionText->SetTextSize(0.030);
+      regionText->SetTextFont(42);
+      regionText->SetFillColor(0);
+      regionText->SetTextAlign(11);
+
+    
+      if( i==0 ) {
+
+        if(kinCuts!="") {
+          regionText->AddText( kinCuts.c_str() );
+        } else {
+          regionText->AddText( niceNames[i].c_str() );
+        }
+
+      } else if( i==1 ) {
+    
+        if(topoCuts!="") {
+          regionText->AddText( topoCuts.c_str() );
+        } else {
+          regionText->AddText( niceNames[i].c_str() );
+        }
+
+      }
+    
+      //      if( this->twoPads() )
+        pad1->cd();
+	//else
+        //c1->cd();
+      //regionText->Draw("same");
+      
+	//      if( this->twoPads() )
+        pad1_log->cd();
+	//      else
+	//        c1_log->cd();
+      //regionText->Draw("same");
+      
+    }
+
+
+    TPaveText* normText = new TPaveText( 0.47, 0.7, 0.62, 0.82, "brNDC" );
+    normText->SetFillColor(0);
+    normText->SetTextSize(0.035);
+    if( scaleFactor!=1. ) {
+      if( displaySF_ )
+        normText->AddText( Form("#splitline{Norm diff}{by %.2f}", scaleFactor) );
+      else
+    	normText->AddText( "#splitline{Shape}{Norm.}" );
+      //      if( this->twoPads() ) 
+        pad1->cd();
+	//else
+	//        c1->cd();
+
+        normText->Draw("same");
+	//      if( this->twoPads() ) 
+        pad1_log->cd();
+	//      else
+	//        c1_log->cd();
+
+      normText->Draw("same");
+    }
+
+
+    int addLines = (data_) ? 2 : 0;
+    TLegend* legend = new TLegend( 0.67, 0.9-(mc_->size()*selection.size() +addLines)*0.06, 0.93, 0.9 );
+    legend->SetTextSize(0.038);
+    legend->SetTextFont(42);
+    legend->SetFillColor(0);
+    //float data_int = 0.;
+    if( data_ ) {
+      legend->AddEntry( gr_data, "Data 2017", "P" );
+      //      legend->AddEntry( gr_data, "Data", "P" );
+    }
+    //float mc_int = 0.;
+
+
+ 
+
+    for( unsigned i=0; i<histos_mc.size(); ++i ) {  
+      if(i==0)
+	legend->SetHeader( Form("%s", mc_->at(i%mc_->size())->getFullName().c_str()), "C");
+      legend->AddEntry( histos_mc[i], Form("%s", sel_name[i].c_str()), "F" );
+      //    legend->AddEntry( histos_mc[i], mc_->at(i%mc_->size())->getFullName().c_str(), "F" );
+    }
+
+    //    if( data_ ) 
+    //      legend->AddEntry( mcBand, "MC Uncert.", "F" );
+    
+    //  TPaveText* fitText = (fSF) ? MT2DrawTools::getFitText( fSF ) : 0;
+    
+    float yMinR=0.50;
+    float yMaxR=1.50;
+
+    // float yMinR=0.0;
+    // float yMaxR=2.0;
+    
+    TH2D* h2_axes_ratio = MT2DrawTools::getRatioAxes( xMin, xMax, yMinR, yMaxR );
+    //    TH2D* h2_axes_ratio = MT2DrawTools::getRatioAxes( xMin, xMax, yMinR, yMaxR );
+
+    std::string CMStext = doPaperPlots_ ? "CMS" : "CMS Preliminary";
+
+    c1->cd();
+    //    if( this->twoPads() )
+      pad1->cd();
+    legend->Draw("same");
+    for( unsigned i=0; i<histos_mc.size(); ++i ) 
+      histos_mc[i]->Draw("histo same");
+    //      histos_mc[i]->DrawNormalized("histo same");
+    if( data_ ) {
+      //      mcBand->Draw("E2 same");
+      h1_data->DrawNormalized("p same");
+      //      gr_data->Draw("p same");
+    }
+    // if( !shapeNorm_ && fitText )
+      //      fitText->Draw("same");
+    //    ratioText->Draw("same");
+
+
+    //(data_) ? MT2DrawTools::addLabels( (TCanvas*)pad1, lumi_, CMStext.c_str() ) : MT2DrawTools::addLabels( (TCanvas*)c1, lumi_, "CMS Simulation"); 
+    //(data_) ? MT2DrawTools::addLabels( (TCanvas*)pad1, lumi_, CMStext.c_str() ) : MT2DrawTools::addLabels( (TCanvas*)pad1, lumi_, "CMS Simulation"); 
+
+    gPad->RedrawAxis();
+
+    c1_log->cd();
+    //    if( this->twoPads() )
+    pad1_log->cd();
+    legend->Draw("same");
+    for( unsigned i=0; i<histos_mc.size(); ++i ) 
+      histos_mc[i]->Draw("histo same");
+    //      histos_mc[i]->DrawNormalized("histo same");
+    if( data_ ) {
+      //      mcBand->Draw("E2 same");
+      h1_data->DrawNormalized("p same");
+      //      gr_data->Draw("p same");
+    }
+    //    if( !shapeNorm_ && fitText )
+    //  fitText->Draw("same");
+    //    ratioText->Draw("same");
+    //(data_) ? MT2DrawTools::addLabels( (TCanvas*)pad1_log, lumi_, CMStext.c_str() ) : MT2DrawTools::addLabels( (TCanvas*)c1_log, lumi_, "CMS Simulation"); 
+    //(data_) ? MT2DrawTools::addLabels( (TCanvas*)pad1_log, lumi_, CMStext.c_str() ) : MT2DrawTools::addLabels( (TCanvas*)pad1_log, lumi_, "CMS Simulation"); 
+
+    gPad->RedrawAxis();
+    
+    c1->cd();
+
+    //    if( twoPads() ) {
+    TPad* pad2 = MT2DrawTools::getCanvasRatioPad();
+    pad2->Draw();
+    pad2->cd();
+
+    h2_axes_ratio->Draw("");
+    lineCentral->Draw("same");
+    if( !shapeNorm_ ){
+
+      //systBand->Draw("3,same");
+      lineCentral->Draw("same");
+
+      if( data_ ) {
+	//          SFFitBand->Draw("3,same");
+	//          fSF->Draw("same");
+      }
+
+      //        SFband->Draw("3,same");
+      //        lineSF->Draw("same");
+
+    }
+
+    // h1_data->DrawNormalized("p same");
+    if( g_ratio ) g_ratio->Draw("PE,same");  
+
+    std::cout << "Added a ratio histo" << histos_mc_ratios.size() <<  std::endl;
+
+    for( unsigned i=0; i<histos_mc_ratios.size(); ++i ) { 
+      histos_mc_ratios[i]->Draw("L same");
+      std::cout << "Added a ratio histo" << std::endl;
+    }
+  
+    gPad->RedrawAxis();
+
+
+    c1_log->cd();
+    TPad* pad2_log = MT2DrawTools::getCanvasRatioPad( true );
+    pad2_log->Draw();
+    pad2_log->cd();
+
+    h2_axes_ratio->Draw("");
+    lineCentral->Draw("same");
+      if( !shapeNorm_ ){
+
+        //systBand->Draw("3,same");
+        lineCentral->Draw("same");
+
+        if( data_ ) {
+	  //          SFFitBand->Draw("3,same");
+          //fSF->Draw("same");
+        }
+        
+//        SFband->Draw("3,same");
+//        lineSF->Draw("same");
+
+      }
+      if( g_ratio ) g_ratio->Draw("PE,same");
+      for( unsigned i=0; i<histos_mc_ratios.size(); ++i ) { 
+	histos_mc_ratios[i]->Draw("L same");
+      }
+
+      gPad->RedrawAxis();
+
+      //    } // if twoPads
+
+
+    std::string regionSaveName = (MT2Regions.size()!=1) ? "_" + thisRegion.getName() : "";
+
+    c1->SaveAs( Form("%s/norm_%s%s.eps", outdir_.c_str(), saveName.c_str(), regionSaveName.c_str()) );
+    c1->SaveAs( Form("%s/norm_%s%s.png", outdir_.c_str(), saveName.c_str(), regionSaveName.c_str()) );
+    c1->SaveAs( Form("%s/norm_%s%s.pdf", outdir_.c_str(), saveName.c_str(), regionSaveName.c_str()) );
+
+    c1_log->SaveAs( Form("%s/norm_%s%s_log.eps", outdir_.c_str(), saveName.c_str(), regionSaveName.c_str()) );
+    c1_log->SaveAs( Form("%s/norm_%s%s_log.png", outdir_.c_str(), saveName.c_str(), regionSaveName.c_str()) );
+    c1_log->SaveAs( Form("%s/norm_%s%s_log.pdf", outdir_.c_str(), saveName.c_str(), regionSaveName.c_str()) );
+
+    returnVector.push_back(c1);
+
+    delete h2_axes;
+    delete h2_axes_log;
+    delete h2_axes_ratio;
+    
+    delete h1_data;
+    delete c1_log;
+
+    delete g_ratio;
+
+  }// for MT2 regions
+
+  return returnVector;
 
 }

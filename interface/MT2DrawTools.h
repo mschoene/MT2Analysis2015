@@ -29,6 +29,8 @@
 #define kZinv 430
 #define kLostLepton 418
 
+#define kData 15
+
 
 
 
@@ -44,11 +46,13 @@ class MT2DrawTools {
 
   void set_outDir( const std::string& outdir );
   void set_data( MT2Analysis<MT2EstimateTree>* data );
+  void set_data2( MT2Analysis<MT2EstimateTree>* data2 );
   void set_mc( std::vector< MT2Analysis<MT2EstimateTree>* >* mc );
   void set_lumi( float lumi );
   void set_lumiErr( float lumiErr );
   void set_shapeNorm( bool shapeNorm );
   void set_mcSF( float mcsf );
+  void set_mcSF2( float mcsf2 );
   void set_addOverflow( bool addOver );
   void set_displaySF( bool displaySF );
   void set_doPaperPlots( bool doPaperPlots );
@@ -104,6 +108,15 @@ class MT2DrawTools {
   std::vector<TCanvas*> drawRegionYields_fromTree( const std::string& saveName, const std::string& varName, const std::string& selection, int nBins, float xMin, float xMax, std::string axisName="", const std::string& units="", const std::string& kinCuts="", const std::string& topoCuts="" );
   //void drawRegionYields_fromTree( MT2Analysis<MT2EstimateTree>* data, std::vector<MT2Analysis<MT2EstimateTree>* >  bgYields, const std::string& saveName, const std::string& varName, const std::string& selection, int nBins, float xMin, float xMax, std::string axisName="", const std::string& units="", const std::string& cutsLabel="" );
 
+  std::vector<TCanvas*> drawRegionFractions_fromTree( const std::string& saveName, const std::string& varName, const std::string& selection,int nBins, float xMin, float xMax, std::string axisName="", const std::string& units="", const std::string& kinCuts="", const std::string& topoCuts="" );
+
+
+  std::vector<TCanvas*> drawSelections_fromTree( const std::string& saveName, const std::string& varName, std::vector<std::string>& selection, std::vector<std::string>& sel_name, int nBins, float xMin, float xMax, std::string axisName="", const std::string& units="", const std::string& kinCuts="", const std::string& topoCuts="" );
+  //int nBins, float xMin, float xMax, std::string axisName, const std::string& units, const std::string& kinCuts, const std::string& topoCuts );
+
+
+  std::vector<TCanvas*> drawRegion2D_fromTree( const std::string& saveName, const std::string& varName, const std::string& varName2, const std::string& selection, int nBins, float xMin, float xMax, int nBins2, float yMin, float yMax, std::string axisName="", std::string axisName2="", const std::string& units="", const std::string& units2="", const std::string& kinCuts="", const std::string& topoCuts="" );
+
  private:
 
   std::string outdir_;
@@ -115,8 +128,10 @@ class MT2DrawTools {
   bool doPaperPlots_;
 
   MT2Analysis<MT2EstimateTree>* data_;
+  MT2Analysis<MT2EstimateTree>* data2_;
   std::vector< MT2Analysis<MT2EstimateTree>* >* mc_;
   float mcSF_;
+  float mcSF2_;
   
 
 };

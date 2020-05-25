@@ -15,6 +15,9 @@
 #include "TH1F.h"
 #include "TF1.h"
 
+#include <memory>
+using std::unique_ptr;
+using std::string;
 
 bool alsoSignals = true;
 bool is2017=false; //true for 2017 data&mc, otherwise it's 2016 data&mc (for trigger and filters, evlt btag id)
@@ -56,7 +59,7 @@ int main( int argc, char* argv[] ) {
 
 
   if( argc<2 ) {
-    std::cout << "USAGE: ./diPhotonControlRegion [configFileName] [data/MC/qcd/diPhoton/higgs]" << std::endl;
+    std::cout << "USAGE: ./diPhotonControlRegion [configFileName] [data/MC/qcd/diPhoton/higgs/diH]" << std::endl;
     std::cout << "Exiting." << std::endl;
     exit(11);
   }
@@ -72,7 +75,7 @@ int main( int argc, char* argv[] ) {
   if( argc > 2 ) {
     std::string dataMC(argv[2]);
     if( dataMC=="data" ) onlyData = true;
-    else if( dataMC=="MC" || dataMC=="mc" || dataMC=="gjets" || dataMC=="qcd" || dataMC=="diPhoton" || dataMC=="higgs" || dataMC=="HZ" || dataMC=="HH" || dataMC=="WH" || dataMC=="T2bH" ) {
+    else if( dataMC=="MC" || dataMC=="mc" || dataMC=="gjets" || dataMC=="qcd" || dataMC=="diPhoton" || dataMC=="diH" || dataMC=="higgs" || dataMC=="HZ" || dataMC=="HH" || dataMC=="WH" || dataMC=="T2bH" ) {
       onlyMC = true;
       process = dataMC;
     }  
@@ -97,9 +100,10 @@ int main( int argc, char* argv[] ) {
 
 
   TString name2017( argv[1] );
-  if( name2017.Contains("2017")  )
+  if( name2017.Contains("2017")  ){
+    std::cout << "changing to 2017 settings " << std::endl;
     is2017 = true;
-
+  }
 
   TH1::AddDirectory(kFALSE); // stupid ROOT memory allocation needs this
 
@@ -123,7 +127,8 @@ int main( int argc, char* argv[] ) {
 
     std::vector<MT2Sample> samples_diPhoton = MT2Sample::loadSamples(samplesFile, 295, 299);
 
-    std::vector<MT2Sample> samples_higgs = MT2Sample::loadSamples(samplesFile, 900, 999 );
+    std::vector<MT2Sample> samples_higgs = MT2Sample::loadSamples(samplesFile, 900, 969 );
+    std::vector<MT2Sample> samples_diH = MT2Sample::loadSamples(samplesFile, 970, 980 );
 
     // std::cout << std::endl << std::endl;
     // std::cout << "-> Loading QCD samples" << std::endl;
@@ -135,11 +140,13 @@ int main( int argc, char* argv[] ) {
     MT2Analysis<MT2EstimateTree>* tree = new MT2Analysis<MT2EstimateTree>( "gjets", cfg.regionsSet() );
     //   MT2Analysis<MT2EstimateTree>* tree_diPhoton = new MT2Analysis<MT2EstimateTree>( "diPhotonCRtree", cfg.regionsSet() );
     MT2Analysis<MT2EstimateTree>* tree_higgs = new MT2Analysis<MT2EstimateTree>( "higgs", cfg.regionsSet() );
+    MT2Analysis<MT2EstimateTree>* tree_diH = new MT2Analysis<MT2EstimateTree>( "diH", cfg.regionsSet() );
     MT2Analysis<MT2EstimateTree>* tree_qcd = new MT2Analysis<MT2EstimateTree>( "qcd", cfg.regionsSet() );
 
     addVariables( tree );
     //   addVariables( tree_diPhoton );
     addVariables( tree_higgs );
+    addVariables( tree_diH );
     addVariables( tree_qcd );
 
 
@@ -153,15 +160,18 @@ int main( int argc, char* argv[] ) {
     // 	computeYield( samples_diPhoton[i], cfg, tree_diPhoton );
     //   }
 
-    if ( process=="mc" || process=="MC" || process=="higgs")
-      for( unsigned i=0; i<samples_higgs.size(); ++i ) {
-    	computeYield( samples_higgs[i], cfg, tree_higgs );
+    if ( process=="mc" || process=="MC" || process=="diH")
+      for( unsigned i=0; i<samples_diH.size(); ++i ) {
+    	computeYield( samples_diH[i], cfg, tree_diH );
       }
+    // if ( process=="mc" || process=="MC" || process=="higgs")
+    //   for( unsigned i=0; i<samples_higgs.size(); ++i ) {
+    // 	computeYield( samples_higgs[i], cfg, tree_higgs );
+    //   }
     if ( process=="mc" || process=="MC" || process=="qcd")
       for( unsigned i=0; i<samples_qcd.size(); ++i ) {
     	computeYield( samples_qcd[i], cfg, tree_qcd );
       }
-
 
 
     std::string mcFile = outputdir + "/mc.root";
@@ -173,6 +183,10 @@ int main( int argc, char* argv[] ) {
     if ( process=="mc" || process=="MC" || process=="qcd"){
       std::string mcFile_qcd = outputdir + "/mc_qcd.root";
       tree_qcd     ->writeToFile( mcFile_qcd, "RECREATE"  );
+    }
+    if ( process=="mc" || process=="MC" || process=="diH"){
+      std::string mcFile_diH = outputdir + "/mc_diH.root";
+      tree_diH     ->writeToFile( mcFile_diH, "RECREATE"  );
     }
 
     // if ( process=="mc" || process=="MC" || process=="higgs"){
@@ -190,7 +204,8 @@ int main( int argc, char* argv[] ) {
 	tree_higgs->writeToFile( mcFile_higgs, "RECREATE"  );
       }
     }
-    
+
+   
     if ( process=="mc" || process=="MC" || process=="diPhoton"){
       for( unsigned i=0; i<samples_diPhoton.size(); ++i ) {
 	MT2Analysis<MT2EstimateTree>* tree_diPhoton = new MT2Analysis<MT2EstimateTree>( "diPhoton", cfg.regionsSet() );
@@ -219,7 +234,7 @@ int main( int argc, char* argv[] ) {
 	  //	  for( int mass2 =125; mass2<210; mass2+=25){
 	    for( int mass1 =0 ; mass1< (mass2 - 120); mass1+=25){
 
-	      if( mass1 > 300 ) continue; //scan stops there, cut of triangular shape
+	      if( mass1 > 302 ) continue; //scan stops there, cut of triangular shape (stop was at 300
 
 	      int massNeut2 = mass2;
 	      if( mass2 == 125 ) massNeut2 = 127;
@@ -237,22 +252,23 @@ int main( int argc, char* argv[] ) {
 		bound = "300";
 	      else if(massNeut2 < 401)
 		bound = "400";
+	      else if(massNeut2 < 501)
+		bound = "500";
 	      else if(massNeut2 < 601)
 		bound = "600";
 	      else
-		bound = "Inf";
-
+		bound = "INF";
 
 	      std::cout << bound << std::endl;
 
-
-	      MT2Analysis<MT2EstimateTree>* treeWH = new MT2Analysis<MT2EstimateTree>( Form("SMS_TChiWH_HToGG_%d_%d", massNeut2, massNeut1 ), cfg.regionsSet() );
+	      MT2Analysis<MT2EstimateTree>* treeWH = new MT2Analysis<MT2EstimateTree>( Form("SMS_TChiWH_HToGG_m%d_m%d", massNeut2, massNeut1 ), cfg.regionsSet() );
 	      addVariables( treeWH );
 
 	      for( unsigned i=0; i<samples_sig.size(); ++i ) {
 
 		TString sigSampleFile(samples_sig[i].file);
-		if( ! sigSampleFile.Contains(Form("WH%s", bound.c_str() ))  )
+		//		if( ! sigSampleFile.Contains(Form("WH%s", bound.c_str() ))  )
+		if( (! sigSampleFile.Contains(Form("WH%s", bound.c_str() )) ) &&  !(bound=="200" && sigSampleFile.Contains("TChiWH_HToGG_175")  )     )
 		  continue;		
 
 		TString sigSampleName(samples_sig[i].name);
@@ -272,7 +288,8 @@ int main( int argc, char* argv[] ) {
 
       if( process== "HH"  ){ 
 	//make a loop from 1 to 1000 over the mass of the neutralino to get the full scan
-	for( int mass =125; mass<1001; mass+=25){
+	//	for( int mass =125; mass<1001; mass+=25){
+	for( int mass =125; mass<531; mass+=25){
 	  //	    for( int mass =125; mass<1001; mass+=25){
 	  mass_neutralino2 = mass;
 	  if(mass == 0  ) mass_neutralino2 = 1;
@@ -297,7 +314,8 @@ int main( int argc, char* argv[] ) {
 
       if( process=="HZ"  ){ 
 	//make a loop from 1 to 1000 over the mass of the neutralino to get the full scan
-	for( int mass =125; mass<1001; mass+=25){
+	for( int mass =125; mass<531; mass+=25){
+	  //	for( int mass =125; mass<1001; mass+=25){
 	  //	    for( int mass =125; mass<1001; mass+=25){
 	  mass_neutralino2 = mass;
 	  if(mass == 0  ) mass_neutralino2 = 1;
@@ -335,25 +353,75 @@ int main( int argc, char* argv[] ) {
 
       if( process== "T2bH"  ){ // normal T2bH
 	  
-	for( unsigned i=0; i<samples_sig.size(); ++i ) {
+	if( mass_neutralino2 > 0 ){   
+	  for( int mass2 =250; mass2<901; mass2+=50){
+	  //	  for( int mass2 =125; mass2<210; mass2+=25){
+	    for( int mass1 =0 ; mass1< (mass2 - 140); mass1+=50){
 
-	  TString sigSampleName(samples_sig[i].name);
+	      //  if( mass1 > 320 ) continue; //scan stops there, cut of triangular shape (stop was at 300
 
-	  if( sigSampleName.Contains("T2bH")){
+	      int massNeut2 = mass2;
+	      //	      if( mass2 == 125 ) massNeut2 = 127;
+	      int massNeut1 = mass1;
+	      //if( mass1 == (mass2-125)) massNeut1 = (mass1-1);
+	      if( mass1 == 0 ) massNeut1 = 1;
 
-	    std::string properName = samples_sig[i].sname;
-	    std::string properNameSave = samples_sig[i].sname;
+	      std::cout << "Working on point " << mass1 << " : " << mass2 << std::endl;
+	      std::cout << "Working on mass point " << massNeut1 << " : " << massNeut2 << std::endl;
 
+	      std::string  bound = "";
+	      if(massNeut2 < 401) 		bound = "400";
+	      else if(massNeut2 < 551)		bound = "550";
+	      else if(massNeut2 < 601)		bound = "600";
+	      else if(massNeut2 < 651)		bound = "650";
+	      else if(massNeut2 < 701)		bound = "700";
+	      else if(massNeut2 < 751)		bound = "750";
+	      else if(massNeut2 < 801)		bound = "800";
+	      else if(massNeut2 < 851)		bound = "850";
+	      else              		bound = "900";
 
-	    MT2Analysis<MT2EstimateTree>* thisSig = new MT2Analysis<MT2EstimateTree>( samples_sig[i].sname, cfg.regionsSet(), samples_sig[i].id );
-	    addVariables( thisSig );
-	    computeYield( samples_sig[i], cfg, thisSig);
-	    signals.push_back( thisSig );
+	      std::cout << bound << std::endl;
 
-	  }
+	      MT2Analysis<MT2EstimateTree>* treeT2bH = new MT2Analysis<MT2EstimateTree>( Form("SMS_T2bH_mSbottom%d_mLSP%d", massNeut2, massNeut1 ), cfg.regionsSet() );
+	      addVariables( treeT2bH );
 
+	      for( unsigned i=0; i<samples_sig.size(); ++i ) {
+		TString sigSampleFile(samples_sig[i].file);
+		if( (! sigSampleFile.Contains(Form("T2bHto%s", bound.c_str() )) ) &&  !(bound=="400" && sigSampleFile.Contains("T2bH_HToGG_250")  )     )
+		  continue;		
+		TString sigSampleName(samples_sig[i].name);
+		std::cout << "sample name = " << sigSampleName  << std::endl;
+		if( sigSampleName.Contains("T2bH")  ){
+
+		  computeYield( samples_sig[i], cfg, treeT2bH, massNeut2, massNeut1 );
+    
+		}
+	      }
+	      signals.push_back( treeT2bH );
+	    }	  
+
+	  }//done loop over masses for tchwh
 	}
+
+	// for( unsigned i=0; i<samples_sig.size(); ++i ) {
+
+	//   TString sigSampleName(samples_sig[i].name);
+
+	//   if( sigSampleName.Contains("T2bH")){
+
+	//     std::string properName = samples_sig[i].sname;
+	//     std::string properNameSave = samples_sig[i].sname;
+
+
+	//     MT2Analysis<MT2EstimateTree>* thisSig = new MT2Analysis<MT2EstimateTree>( samples_sig[i].sname, cfg.regionsSet(), samples_sig[i].id );
+	//     addVariables( thisSig );
+	//     computeYield( samples_sig[i], cfg, thisSig);
+	//     signals.push_back( thisSig );
+
+	// }
+
       }
+   
 
     }  // for signals
 
@@ -361,12 +429,14 @@ int main( int argc, char* argv[] ) {
 
     std::cout << "signal size is " << signals.size() << std::endl;
 
-    std::string mcFile_sig = outputdir + "/mc_sig.root";
+    //    std::string mcFile_sig = outputdir + "/mc_sig.root";
+    std::string mcFile_sig = outputdir + "/mc_"+process+".root";
+
     for( unsigned i=0; i<signals.size(); ++i )
-      //   if( i==0)
-      //	signals[i]->writeToFile( mcFile_sig, "RECREATE");
-      //      else
-      signals[i]->addToFile( mcFile_sig);
+      if( i==0)
+      	signals[i]->writeToFile( mcFile_sig, "RECREATE");
+      else
+	signals[i]->addToFile( mcFile_sig);
 
     // if( cfg.dummyAnalysis() ) {
     //   // emulate data:
@@ -454,6 +524,10 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
   if(sigSampleName.Contains("TChiWH"))
     isEW_WH = 1;
 
+  bool isT2bH = 0;
+  if(sigSampleName.Contains("T2bH"))
+    isT2bH = 1;
+
 
   TFile* r9corrFile = TFile::Open("transformation_Moriond17_AfterPreApr_v1.root");
   TGraph* r9corr = (TGraph*)r9corrFile->Get("transffull5x5R9EB");
@@ -472,19 +546,19 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
     if( isEW && mass_neut2>0 && ( mass_neut2 != myTree.GenSusyMNeutralino2) ) {
       if ( !isEW )
 	std::cout << "Why are you doing this" << std::endl;
-
-      // if( mass_neut2 != myTree.GenSusyMNeutralino2) 
-      //	std::cout << "not the mass i want" << std::endl;
-
       continue;
     }
-
 
     if( isEW_WH && mass_neut2>0 && ( mass_neut1 != myTree.GenSusyMNeutralino) ) {
       if ( !isEW_WH )
 	std::cout << "Why are you doing this" << std::endl;
-      // if( mass_neut2 != myTree.GenSusyMNeutralino2) 
-      //	std::cout << "not the mass i want" << std::endl;
+      continue;
+    }
+
+    if( isT2bH && mass_neut2>0 && ( mass_neut2 != myTree.GenSusyMSbottom) ) {
+      continue;
+    }
+    if( isT2bH && mass_neut2>0 && ( mass_neut1 != myTree.GenSusyMNeutralino) ) {
       continue;
     }
 
@@ -511,6 +585,22 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
 
       if( is2017 && !(myTree.passFilters2017()   ) ) continue;
       if( is2017 && !(myTree.HLT_DiPhoton30_2017 ) ) continue;
+    }else{
+      //is MC but different filters for full and fast sim, not trigger in fastsim, ie sig
+
+      if( !(mass_neut2>0) ){ //trigger decision apparently not in signal babies
+	if( !is2017 && !(myTree.HLT_DiPhoton30 ) ) continue;
+	if( is2017 && !(myTree.HLT_DiPhoton30_2017 ) ) continue;
+      }
+
+      if( !(mass_neut2>0) ){
+	if( !is2017 && !(myTree.passFiltersMC()  ) ) continue;
+	if( is2017 && !(myTree.passFilters2017MC()   ) ) continue;
+      }else{
+	if( !is2017 && !(myTree.passFiltersMCFastSim()  ) ) continue;
+	if( is2017 && !(myTree.passFilters2017MCFastSim()   ) ) continue;
+      }
+
     }
 
 
@@ -533,7 +623,6 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
       //   for(int lep=0; lep< myTree.nlep; lep++){
       //     //    	    float dR = sqrt( ((myTree.lep_eta[lep]-myTree.gamma_eta[i])*(myTree.lep_eta[lep]-myTree.gamma_eta[i])) + ((myTree.lep_phi[lep]-myTree.gamma_phi[i])*(myTree.lep_phi[lep]-myTree.gamma_phi[i])) );
       //     float dR = DeltaR ( myTree.lep_eta[lep], myTree.gamma_eta[i], myTree.lep_phi[lep], myTree.gamma_phi[i] );
-
       //     //Clean out photons from electrons with dR<1, from muons wiht dR<0.5
       //     if( !( (abs(myTree.lep_pdgId[lep])==11 && dR>1.0 ) || (abs(myTree.lep_pdgId[lep])==13 && dR>0.5) ) ){ 
       //       isNotALep = false;
@@ -551,56 +640,46 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
 
     if( indexG.size()<2 ){
       //    if( ngam<2 || gotSecond==false ){
-      
-    //   std::cout << "Kicking out event with " << myTree.ngamma << " of with only " << ngam << " are clean and got a second = " << << std::endl;     
+      //   std::cout << "Kicking out event with " << myTree.ngamma << " of with only " << ngam << " are clean and got a second = " << << std::endl;     
       continue;
     }
 
-
-    if( (isQCD || isGJets) && myTree.gamma_mcMatchId[indexG[0]]==22 && myTree.gamma_mcMatchId[indexG[1]]==22 )
+    //    if( (isQCD || isGJets) && myTree.gamma_mcMatchId[indexG[0]]==22 && myTree.gamma_mcMatchId[1]==22 )
+    if( (isQCD || isGJets) && myTree.gamma_mcMatchId[0]==22 && myTree.gamma_mcMatchId[1]==22 )
       {
 	// 	std::cout << "removing pp event from QCD and gJets " << std::endl;
 	continue; //remove promptprompt from QCD & GJets as it is already in the BOX
       }
     TLorentzVector Hvec;
     if( indexG.size()>=2 )
-      Hvec = LVec[indexG[0]] + LVec[indexG[1]]; //gamma invariant mass
+      Hvec = LVec[0] + LVec[1]; //gamma invariant mass
     else 
       continue; //should already be taken care of in the skim
 
-
-
-    // std::vector<float> input_pt;
-    // std::vector<float> input_eta;
-    // std::vector<float> input_phi;
+    // std::vector<float> input_pt;    // std::vector<float> input_eta;    // std::vector<float> input_phi;   
     // std::vector<float> input_mass;
     // for(int jj=0; jj < myTree.njet; jj++){
     //   if( fabs(myTree.jet_eta[jj]) < 2.4 ){
-    // 	input_pt.push_back( myTree.jet_pt[jj] );
-    // 	input_eta.push_back( myTree.jet_eta[jj] );
-    // 	input_phi.push_back( myTree.jet_phi[jj] );
-    // 	input_mass.push_back( myTree.jet_mass[jj] );
+    // 	input_pt.push_back( myTree.jet_pt[jj] );    // 	input_eta.push_back( myTree.jet_eta[jj] );    
+    // 	input_phi.push_back( myTree.jet_phi[jj] );    // 	input_mass.push_back( myTree.jet_mass[jj] );
     //   }
     // }
     // if( ( myTree.nlep>0 )){
     //   for(int jj=0; jj < myTree.nlep; jj++){
-    // 	input_pt.push_back( myTree.lep_pt[jj] );
-    // 	input_eta.push_back( myTree.lep_eta[jj] );
-    // 	input_phi.push_back( myTree.lep_phi[jj] );
-    // 	input_mass.push_back( myTree.lep_mass[jj] );
+    // 	input_pt.push_back( myTree.lep_pt[jj] );    // 	input_eta.push_back( myTree.lep_eta[jj] );
+    // 	input_phi.push_back( myTree.lep_phi[jj] );    // 	input_mass.push_back( myTree.lep_mass[jj] );
     //   }
     // }
     // if( ( myTree.nisoTrack>0 )){
     //   for(int jj=0; jj < myTree.nisoTrack; jj++){
-    // 	input_pt.push_back( myTree.isoTrack_pt[jj] );
-    // 	input_eta.push_back( myTree.isoTrack_eta[jj] );
-    // 	input_phi.push_back( myTree.isoTrack_phi[jj] );
-    // 	input_mass.push_back( myTree.isoTrack_mass[jj] );
+    // 	input_pt.push_back( myTree.isoTrack_pt[jj] );    // 	input_eta.push_back( myTree.isoTrack_eta[jj] );
+    // 	input_phi.push_back( myTree.isoTrack_phi[jj] );    // 	input_mass.push_back( myTree.isoTrack_mass[jj] );
     //   }
     // }
 
-    float minMTBmet = myTree.minMTBMet;
-    float met       = myTree.gg_met_pt;
+    //    float minMTBmet = myTree.minMTBMet;
+    //    float met       = myTree.gg_met_pt;
+    float met       = myTree.met_pt;
     int njets       = myTree.gg_nJet30;
     int nbjets      = myTree.gg_nBJet20;    
     //    int nbjets      = (is2017)  ?  myTree.gg_nBJet20deepcsv : myTree.gg_nBJet20;    
@@ -610,10 +689,10 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
 
 
     TLorentzVector gamma0;
-    gamma0.SetPtEtaPhiM( myTree.gamma_pt[indexG[0]], myTree.gamma_eta[indexG[0]], myTree.gamma_phi[indexG[0]], myTree.gamma_mass[indexG[0]] );
+    gamma0.SetPtEtaPhiM( myTree.gamma_pt[indexG[0]], myTree.gamma_etaSc[indexG[0]], myTree.gamma_phi[indexG[0]], myTree.gamma_mass[indexG[0]] );
 
     TLorentzVector gamma1;
-    gamma1.SetPtEtaPhiM( myTree.gamma_pt[indexG[1]], myTree.gamma_eta[indexG[1]], myTree.gamma_phi[indexG[1]], myTree.gamma_mass[indexG[1]] );
+    gamma1.SetPtEtaPhiM( myTree.gamma_pt[indexG[1]], myTree.gamma_etaSc[indexG[1]], myTree.gamma_phi[indexG[1]], myTree.gamma_mass[indexG[1]] );
 
     // TLorentzVector pseudoJet1;
     // pseudoJet1.SetPtEtaPhiM( myTree.pseudoJet1_pt, myTree.pseudoJet1_eta, myTree.pseudoJet1_phi, myTree.pseudoJet1_mass );
@@ -631,43 +710,38 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
     else if( anaTreeName.Contains("HH0p25"))
       weight *= 0.25;
 
-  
-    // std::string whatPt;
-    // if( myTree.h_pt/myTree.h_mass > 0.8 )
-    //   whatPt = "hiPt";
-    // else
-    //   whatPt = "loPT";
-
     MT2EstimateTree* thisTree = anaTree->get( ht, njets, nbjets, Hvec.Perp()/Hvec.M() , Hvec.M());
     if( thisTree==0 ) continue;
 
     float h_mass = -999;
     float h_pt = -999;
 
-    //This is now already taken care of by heppy
-    if( is2017 && (fabs(myTree.gamma_eta[indexG[0]])<=1.4442) && myTree.gamma_sigmaIetaIeta[indexG[0]]> 0.0103 ) continue;
-    if( is2017 && (fabs(myTree.gamma_eta[indexG[1]])<=1.4442) && myTree.gamma_sigmaIetaIeta[indexG[1]]> 0.0103 ) continue;
-    if( is2017 && (fabs(myTree.gamma_eta[indexG[0]])>1.4442)  && myTree.gamma_sigmaIetaIeta[indexG[0]]> 0.0276 ) continue;
-    if( is2017 && (fabs(myTree.gamma_eta[indexG[1]])>1.4442)  && myTree.gamma_sigmaIetaIeta[indexG[1]]> 0.0276 ) continue;
+    // //This is now already taken care of by heppy
+    // if( is2017 && (fabs(myTree.gamma_etaSc[indexG[0]])<=1.4442) && myTree.gamma_sigmaIetaIeta[indexG[0]]> 0.0103 ) continue;
+    // if( is2017 && (fabs(myTree.gamma_etaSc[indexG[1]])<=1.4442) && myTree.gamma_sigmaIetaIeta[indexG[1]]> 0.0103 ) continue;
+    // if( is2017 && (fabs(myTree.gamma_etaSc[indexG[0]])>1.4442)  && myTree.gamma_sigmaIetaIeta[indexG[0]]> 0.0276 ) continue;
+    // if( is2017 && (fabs(myTree.gamma_etaSc[indexG[1]])>1.4442)  && myTree.gamma_sigmaIetaIeta[indexG[1]]> 0.0276 ) continue;
 
-    if( !is2017 && (fabs(myTree.gamma_eta[indexG[0]])<=1.4442) && myTree.gamma_sigmaIetaIeta[indexG[0]]> 0.01031 ) continue;
-    if( !is2017 && (fabs(myTree.gamma_eta[indexG[1]])<=1.4442) && myTree.gamma_sigmaIetaIeta[indexG[1]]> 0.01031 ) continue;
-    if( !is2017 && (fabs(myTree.gamma_eta[indexG[0]])>1.4442)  && myTree.gamma_sigmaIetaIeta[indexG[0]]> 0.03013 ) continue;
-    if( !is2017 && (fabs(myTree.gamma_eta[indexG[1]])>1.4442)  && myTree.gamma_sigmaIetaIeta[indexG[1]]> 0.03013 ) continue;
+    // if( !is2017 && (fabs(myTree.gamma_etaSc[indexG[0]])<=1.4442) && myTree.gamma_sigmaIetaIeta[indexG[0]]> 0.01031 ) continue;
+    // if( !is2017 && (fabs(myTree.gamma_etaSc[indexG[1]])<=1.4442) && myTree.gamma_sigmaIetaIeta[indexG[1]]> 0.01031 ) continue;
+    // if( !is2017 && (fabs(myTree.gamma_etaSc[indexG[0]])>1.4442)  && myTree.gamma_sigmaIetaIeta[indexG[0]]> 0.03013 ) continue;
+    // if( !is2017 && (fabs(myTree.gamma_etaSc[indexG[1]])>1.4442)  && myTree.gamma_sigmaIetaIeta[indexG[1]]> 0.03013 ) continue;
 
-    // if( is2017 && (fabs(myTree.gamma_eta[indexG[0]])<=1.4442) && myTree.gamma_sigmaIetaIeta[indexG[0]]> 0.0105 ) continue;
-    // if( is2017 && (fabs(myTree.gamma_eta[indexG[1]])<=1.4442) && myTree.gamma_sigmaIetaIeta[indexG[1]]> 0.0105 ) continue;
-    // if( is2017 && (fabs(myTree.gamma_eta[indexG[0]])>1.4442)  && myTree.gamma_sigmaIetaIeta[indexG[0]]> 0.0356 ) continue;
-    // if( is2017 && (fabs(myTree.gamma_eta[indexG[1]])>1.4442)  && myTree.gamma_sigmaIetaIeta[indexG[1]]> 0.0356 ) continue;
+    // if( is2017 && (fabs(myTree.gamma_etaSc[indexG[0]])<=1.4442) && myTree.gamma_sigmaIetaIeta[indexG[0]]> 0.0105 ) continue;
+    // if( is2017 && (fabs(myTree.gamma_etaSc[indexG[1]])<=1.4442) && myTree.gamma_sigmaIetaIeta[indexG[1]]> 0.0105 ) continue;
+    // if( is2017 && (fabs(myTree.gamma_etaSc[indexG[0]])>1.4442)  && myTree.gamma_sigmaIetaIeta[indexG[0]]> 0.0356 ) continue;
+    // if( is2017 && (fabs(myTree.gamma_etaSc[indexG[1]])>1.4442)  && myTree.gamma_sigmaIetaIeta[indexG[1]]> 0.0356 ) continue;
 
-    // if( !is2017 && (fabs(myTree.gamma_eta[indexG[0]])<=1.4442) && myTree.gamma_sigmaIetaIeta[indexG[0]]> 0.011 ) continue;
-    // if( !is2017 && (fabs(myTree.gamma_eta[indexG[1]])<=1.4442) && myTree.gamma_sigmaIetaIeta[indexG[1]]> 0.011 ) continue;
-    // if( !is2017 && (fabs(myTree.gamma_eta[indexG[0]])>1.4442)  && myTree.gamma_sigmaIetaIeta[indexG[0]]> 0.0314 ) continue;
-    // if( !is2017 && (fabs(myTree.gamma_eta[indexG[1]])>1.4442)  && myTree.gamma_sigmaIetaIeta[indexG[1]]> 0.0314 ) continue;
-
+    // if( !is2017 && (fabs(myTree.gamma_etaSc[indexG[0]])<=1.4442) && myTree.gamma_sigmaIetaIeta[indexG[0]]> 0.011 ) continue;
+    // if( !is2017 && (fabs(myTree.gamma_etaSc[indexG[1]])<=1.4442) && myTree.gamma_sigmaIetaIeta[indexG[1]]> 0.011 ) continue;
+    // if( !is2017 && (fabs(myTree.gamma_etaSc[indexG[0]])>1.4442)  && myTree.gamma_sigmaIetaIeta[indexG[0]]> 0.0314 ) continue;
+    // if( !is2017 && (fabs(myTree.gamma_etaSc[indexG[1]])>1.4442)  && myTree.gamma_sigmaIetaIeta[indexG[1]]> 0.0314 ) continue;
 
     h_mass = Hvec.M();
     h_pt = Hvec.Perp();
+
+    if( h_mass > 200 ) continue;
+    if( h_mass < 99 ) continue;
 
     // h_mass = myTree.h_mass;
     // h_pt = myTree.h_pt;
@@ -677,70 +751,138 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
     int diLepPdgId = -99.;
     //di lep
     if( ( myTree.nlep>1 )){
-
       if( ((myTree.lep_pdgId[0]*myTree.lep_pdgId[1])< 0 )  && myTree.lep_pt[0]>= 20 && myTree.lep_pt[1]>=20  && ((abs(myTree.lep_pdgId[0])==13 && abs(myTree.lep_pdgId[1])==13) || ( abs(myTree.lep_pdgId[0])==11 && abs(myTree.lep_pdgId[1])==11 )  ) ) {
-	
 	//Need the lorentz vectors of the leptons first
 	TLorentzVector *LVec = new TLorentzVector[2];
 	for(int i=0; i< 2; i++){
 	  LVec[i].SetPtEtaPhiM(myTree.lep_pt[i], myTree.lep_eta[i],myTree.lep_phi[i], myTree.lep_mass[i]);
 	}
-
 	TLorentzVector Zvec = LVec[0] + LVec[1]; //leptons invariant mass
 	diLepMass = Zvec.M(); // compare with myTree.zll_mass
-
     	if( fabs( diLepMass -91.19) <= 20 ) 
 	  isDiLepZ  = 1;
-
 	diLepPdgId = abs ( myTree.lep_pdgId[0] );
-
       }
     }
-
 
     bool is1Mu = 0;
     bool is1El = 0;
 
     //SINGLE LEPTON region
     if( myTree.nlep==1 ){
-
       if(  myTree.lep_pt[0]>= 20 ) {
 	if( (abs(myTree.lep_pdgId[0])==11 ))
 	  is1El = 1;
 	else if((abs(myTree.lep_pdgId[0])==13 ))
 	  is1Mu = 1;
-     
       }
     }
   
-
     float diBMass = -99.;     bool isDiBZ = 0;bool isDiBH = 0;    
     std::vector<float> bMassVector;
     std::vector<float> bPTVector;
     float diBpT = -99;
 
+    int numberOfCombos = -1;
+
+    float btag_wp = 0.5426; //2016 value 
+    if( is2017 )
+      btag_wp = 0.5803; //2017 value 
+
+    float bjet0_pt = -99;
+    float bjet0_eta = -99;
+    float bjet0_phi= -99;
+    float bjet0_mass = -99;
+    float bjet0_btagCSV = -99;
+
+    float bjet1_pt = -99;
+    float bjet1_eta = -99;
+    float bjet1_phi= -99;
+    float bjet1_mass = -99;
+    float bjet1_btagCSV = -99;
+
+    float bjet2_pt = -99;
+    float bjet2_eta = -99;
+    float bjet2_phi= -99;
+    float bjet2_mass = -99;
+    float bjet2_btagCSV = -99;
+
+    float bjet3_pt = -99;
+    float bjet3_eta = -99;
+    float bjet3_phi= -99;
+    float bjet3_mass = -99;
+    float bjet3_btagCSV = -99;
+
 
     if( nbjets > 1 ){
-      std::vector<int> indexB;   
+      std::vector<int>* indexB = new std::vector<int>;
+      //      int counter = 0;      //      std::cout << "working on event = " << myTree.evt << std::endl;
+      //     std::vector<std::unique_ptr<int>> indexB= new std::vector<unique_ptr<s>>;;   
       for( int i=0; i< myTree.njet; i++){
+      // for( int i=0; i< (njets+nbjets) ; i++){		
+	float dR0 = DeltaR ( myTree.jet_eta[i], myTree.gamma_eta[0], myTree.jet_phi[i], myTree.gamma_phi[0] );
+	float dR1 = DeltaR ( myTree.jet_eta[i], myTree.gamma_eta[1], myTree.jet_phi[i], myTree.gamma_phi[1] );
+	//	std::cout<< "njets " << myTree.gg_nJet30 << " nbjets " << myTree.gg_nBJet20  <<  " pt = " << myTree.jet_pt[i]  <<  " eta = " << myTree.jet_eta[i]  <<  " btag = " << myTree.jet_btagCSV[i] << " dr0, dr1 =" << dR0 << ", " << dR1 << std::endl;
+	if( dR1<0.4  || dR0<0.4)
+	  continue;	
 	if ( fabs(myTree.jet_eta[i]) > 2.4 ) 
 	  continue;
 
-	if( is2017){
-	  if( myTree.jet_btagCSV[i]>0.8838 ){
-	    indexB.push_back( i );
-	  }
-	}else{
-	  if( myTree.jet_btagCSV[i]>0.8484 ){
-	    indexB.push_back( i );
-	  }
+	if( myTree.jet_btagCSV[i] > btag_wp ){
+	  indexB->push_back(  i  );
+	  // std::cout << " pushing back index " << i << std::endl;
+	  //	  counter++;
 	}
+	//	  indexB->push_back( std::make_unique<int>( i ) );
       }
 
-      if( indexB.size()>1 ){
-	for(std::vector<int>::iterator bIndex = indexB.begin(); bIndex != indexB.end()-1; ++bIndex){
-	  for(std::vector<int>::iterator bIndex2 = indexB.begin()+1; bIndex2 != indexB.end(); ++bIndex2){
-	    //  std::cout << "Working on b jets of jets at indeces " << *bIndex << ", " << *bIndex2 << std::endl;
+      // if (indexB->size()> nbjets )
+      // 	std::cout << "found in evt " << myTree.evt << " more bjets "<< indexB->size() << " than bjets in the tree " << nbjets << std::endl;
+      // if (indexB->size()< nbjets )
+      // 	std::cout << "found in evt " << myTree.evt << " less bjets "<< indexB->size() << " than bjets in the tree " << nbjets << std::endl;
+
+      int count = 0;
+      for(auto bIndex = indexB->begin(); bIndex != indexB->end(); ++bIndex){
+	if(count ==0){
+	  bjet0_pt = myTree.jet_pt[*bIndex];
+	  bjet0_eta = myTree.jet_eta[*bIndex];
+	  bjet0_mass = myTree.jet_mass[*bIndex];
+	  bjet0_phi = myTree.jet_phi[*bIndex];
+	  bjet0_btagCSV = myTree.jet_btagCSV[*bIndex];
+	}else if( count ==1 ){
+	  bjet1_pt = myTree.jet_pt[*bIndex];
+	  bjet1_eta = myTree.jet_eta[*bIndex];
+	  bjet1_mass = myTree.jet_mass[*bIndex];
+	  bjet1_phi = myTree.jet_phi[*bIndex];
+	  bjet1_btagCSV = myTree.jet_btagCSV[*bIndex];
+	}else if( count ==2 ){
+	  bjet2_pt = myTree.jet_pt[*bIndex];
+	  bjet2_eta = myTree.jet_eta[*bIndex];
+	  bjet2_mass = myTree.jet_mass[*bIndex];
+	  bjet2_phi = myTree.jet_phi[*bIndex];
+	  bjet2_btagCSV = myTree.jet_btagCSV[*bIndex];
+	}else if( count ==3 ){
+	  bjet3_pt = myTree.jet_pt[*bIndex];
+	  bjet3_eta = myTree.jet_eta[*bIndex];
+	  bjet3_mass = myTree.jet_mass[*bIndex];
+	  bjet3_phi = myTree.jet_phi[*bIndex];
+	  bjet3_btagCSV = myTree.jet_btagCSV[*bIndex];
+	}
+
+	++count;
+      }
+
+      //      if( counter>1 ){
+      if( indexB->size()>1  ){
+	for(auto bIndex = indexB->begin(); bIndex != indexB->end()-1; ++bIndex){
+	  for(auto bIndex2 = indexB->begin()+1; bIndex2 != indexB->end(); ++bIndex2){
+
+	    if( *bIndex != *bIndex2 && ( myTree.jet_pt[*bIndex] > myTree.jet_pt[*bIndex2]  ) ){
+	    // std::cout << "Working on b jets of jets at indeces " << *bIndex << ", " << *bIndex2 << std::endl;
+	    // std::cout << "Working on b jets of jets at indeces " << myTree.jet_pt[*bIndex]<< ", " << myTree.jet_pt[*bIndex2] << std::endl;
+	    // std::cout << "Working on b jets of jets at indeces " << myTree.jet_eta[*bIndex]<< ", " << myTree.jet_eta[*bIndex2] << std::endl;
+	    // // std::cout << "Working on b jets of jets at indeces " << myTree.jet_btagCSV[*bIndex]<< ", " << myTree.jet_btagCSV[*bIndex2] << std::endl;
+
 	    TLorentzVector *LVec = new TLorentzVector[2];
 	    LVec[0].SetPtEtaPhiM(myTree.jet_pt[*bIndex], myTree.jet_eta[*bIndex], myTree.jet_phi[*bIndex], myTree.jet_mass[*bIndex]);
 	    LVec[1].SetPtEtaPhiM(myTree.jet_pt[*bIndex2], myTree.jet_eta[*bIndex2], myTree.jet_phi[*bIndex2], myTree.jet_mass[*bIndex2]);
@@ -752,25 +894,62 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
 	    diBpT  = Bvec.Perp();
 	    //	if( (fabs( diBMass-91.19) <= 20.) ||  (fabs(diBMass-125) <= 20.)  ) 
 	    //isDiB = 1;
+
+	    //	    std::cout << "yielding mass =  " << diBMass << std::endl;
+	    }
 	  }
 	}
 
-	diBMass  = bMassVector[0]; //set to first one then see if there is a better one
-	//	diBMass0 = bMassVector[0]; // first in list
-	diBpT  = bPTVector[0]; //set to first one then see if there is a better one
-	//	diBpT0 = bPTVector[0]; // first in list
+	// diBMass  = bMassVector[0]; //set to first one then see if there is a better one	// //	diBMass0 = bMassVector[0]; // first in list 	// diBpT  = bPTVector[0]; //set to first one then see if there is a better one 	// //	diBpT0 = bPTVector[0]; // first in list
+	// //alternative method: only check the leading pair	// if( (diBMass <140) && (diBMass >= 95) //   isDiBH = 1;	// else  if( (diBMass <95) && (diBMass >= 60) )	//   isDiBZ = 1;
 
+	numberOfCombos = bMassVector.size();
+  
 	for( unsigned int bbCand=0; bbCand<bMassVector.size(); bbCand++){
-	  if( (bMassVector[ bbCand ] <140) && (bMassVector[ bbCand ] >= 95) )
+	  if( (bMassVector[ bbCand ] <140) && (bMassVector[ bbCand ] >= 95) ){
 	    isDiBH = 1;
+	    diBMass  = bMassVector[bbCand];
+	    diBpT  = bPTVector[bbCand];
+	  }
 	}
 	for( unsigned int bbCand=0; bbCand<bMassVector.size(); bbCand++){
-	  if( (bMassVector[ bbCand ] <95) && (bMassVector[ bbCand ] >= 60)  && (isDiBH==0) )
+	  if( (bMassVector[ bbCand ] <95) && (bMassVector[ bbCand ] >= 60)  && (isDiBH==0) ){
 	    isDiBZ = 1;
+	    diBMass  = bMassVector[bbCand];
+	    diBpT  = bPTVector[bbCand];
+	  }
 	}
 
-      } // only do all this if there are 2 bjets
+      } 
 
+      //      indexB->erase( std::next( indexB->begin() ));
+      indexB->clear();
+
+    }// only do all this if there are 2 bjets
+
+    //    int nwideEtaGamma = ngamma;
+
+    // ECAL prefiring: filter out events that have a jet in 2.25<eta<3 && pt>100 or photon pt>50
+    bool passPrefire = 1;
+
+    if( !myTree.isData ){
+
+      if( is2017 )
+	for(int i=0; i< 20; i++){
+	  if ( fabs(myTree.gammaWideEta_eta[i]) > 2.24 && fabs(myTree.gammaWideEta_eta[i]) < 3.0 && myTree.gammaWideEta_pt[i]>50 ) 
+	    passPrefire = 0;
+	}
+      else
+	for(int i=0; i< myTree.ngamma; i++){
+	  if ( fabs(myTree.gamma_eta[i]) > 2.24 && fabs(myTree.gamma_eta[i]) < 3.0 && myTree.gamma_pt[i]>50 ) 
+	    passPrefire = 0;
+	}
+
+      if ( passPrefire ) // only need to loop over jets if it wasn't already flagged as bad
+	for( int i=0; i< myTree.njet; i++){
+	  if ( fabs(myTree.jet_eta[i]) > 2.24 && fabs(myTree.jet_eta[i]) < 3.0 && myTree.jet_pt[i]>100 ) 
+	    passPrefire = 0;
+	}
     }
 
 
@@ -793,15 +972,38 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
     }
 
 
+    thisTree->assignVar( "passPrefire", passPrefire );
+    thisTree->assignVar( "ngamma", myTree.ngamma );
+
     thisTree->assignVar( "hgg_mt2", myTree.hgg_mt2 );
+    thisTree->assignVar( "hgg_mt2_genMET", myTree.hgg_mt2_genMET );
 
-    // thisTree->assignVar( "jet0_pt", myTree.jet_pt[0] );
-    // thisTree->assignVar( "jet1_pt", myTree.jet_pt[1] );
-    // thisTree->assignVar( "jet2_pt", myTree.jet_pt[2] );
 
-    // thisTree->assignVar( "jet0_eta", myTree.jet_eta[0] );
-    // thisTree->assignVar( "jet1_eta", myTree.jet_eta[1] );
-    // thisTree->assignVar( "jet2_eta", myTree.jet_eta[2] );
+
+    thisTree->assignVar( "bjet0_pt", bjet0_pt );
+    thisTree->assignVar( "bjet0_eta", bjet0_eta );
+    thisTree->assignVar( "bjet0_mass", bjet0_mass );
+    thisTree->assignVar( "bjet0_phi", bjet0_phi );
+    thisTree->assignVar( "bjet0_btagCSV", bjet0_btagCSV );
+
+    thisTree->assignVar( "bjet1_pt", bjet1_pt );
+    thisTree->assignVar( "bjet1_eta", bjet1_eta );
+    thisTree->assignVar( "bjet1_mass", bjet1_mass );
+    thisTree->assignVar( "bjet1_phi", bjet1_phi );
+    thisTree->assignVar( "bjet1_btagCSV", bjet1_btagCSV );
+
+    thisTree->assignVar( "bjet2_pt", bjet2_pt );
+    thisTree->assignVar( "bjet2_eta", bjet2_eta );
+    thisTree->assignVar( "bjet2_mass", bjet2_mass );
+    thisTree->assignVar( "bjet2_phi", bjet2_phi );
+    thisTree->assignVar( "bjet2_btagCSV", bjet2_btagCSV );
+
+    thisTree->assignVar( "bjet3_pt", bjet3_pt );
+    thisTree->assignVar( "bjet3_eta", bjet3_eta );
+    thisTree->assignVar( "bjet3_mass", bjet3_mass );
+    thisTree->assignVar( "bjet3_phi", bjet3_phi );
+    thisTree->assignVar( "bjet3_btagCSV", bjet3_btagCSV );
+
 
     thisTree->assignVar("nVert", myTree.nVert );
 
@@ -824,6 +1026,8 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
     thisTree->assignVar( "isDiBH", isDiBH);
     thisTree->assignVar( "isDiBZ", isDiBZ );
     thisTree->assignVar( "diBpT", diBpT );
+    thisTree->assignVar( "diBCombos", numberOfCombos );
+
 
     thisTree->assignVar( "met_phi", myTree.met_phi );
 
@@ -832,26 +1036,50 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
     thisTree->assignVar( "h_mass", h_mass );
     thisTree->assignVar( "h_pt",   h_pt   );
 
-    thisTree->assignVar( "ptGamma0", myTree.gamma_pt[indexG[0]] );
-    thisTree->assignVar( "etaGamma0", myTree.gamma_eta[indexG[0]] );
-    thisTree->assignVar( "phiGamma0", myTree.gamma_phi[indexG[0]] );
+    thisTree->assignVar( "ptGamma0", myTree.gamma_pt[0] );
+    thisTree->assignVar( "etaGamma0", myTree.gamma_etaSc[0] );
+    thisTree->assignVar( "phiGamma0", myTree.gamma_phi[0] );
 
-    float gamma0_r9_corr = (myTree.isData) ? myTree.gamma_r9[indexG[0]] : r9corr->Eval(myTree.gamma_r9[indexG[0]]);
-    float gamma1_r9_corr = (myTree.isData) ? myTree.gamma_r9[indexG[1]] : r9corr->Eval(myTree.gamma_r9[indexG[1]]);
+    float gamma0_r9_corr = (myTree.isData) ? myTree.gamma_r9[0] : r9corr->Eval(myTree.gamma_r9[0]);
+    float gamma1_r9_corr = (myTree.isData) ? myTree.gamma_r9[1] : r9corr->Eval(myTree.gamma_r9[1]);
 
     thisTree->assignVar( "r9Gamma0", gamma0_r9_corr );
     thisTree->assignVar( "r9Gamma1", gamma1_r9_corr );
-    thisTree->assignVar( "sigmaIetaIetaGamma0", myTree.gamma_sigmaIetaIeta[indexG[0]] );
+    thisTree->assignVar( "sigmaIetaIetaGamma0", myTree.gamma_sigmaIetaIeta[0] );
 
-    // thisTree->assignVar( "chHadIsoGamma0", myTree.gamma_chHadIso[indexG[0]] );
-    // thisTree->assignVar( "chHadIsoRCGamma0", myTree.gamma_chHadIsoRC[indexG[0]] );
-    // thisTree->assignVar( "chHadIsoRC04Gamma0", myTree.gamma_chHadIsoRC04[indexG[0]] );
+    // thisTree->assignVar( "chHadIsoGamma0", myTree.gamma_chHadIso[0] );
+    // thisTree->assignVar( "chHadIsoRCGamma0", myTree.gamma_chHadIsoRC[0] );
+    // thisTree->assignVar( "chHadIsoRC04Gamma0", myTree.gamma_chHadIsoRC04[0] );
 
-    thisTree->assignVar( "ptGamma1", myTree.gamma_pt[indexG[1]] );
-    thisTree->assignVar( "etaGamma1", myTree.gamma_eta[indexG[1]] );
-    thisTree->assignVar( "phiGamma1", myTree.gamma_phi[indexG[1]] );
-    //    thisTree->assignVar( "r9Gamma1", myTree.gamma_r9[indexG[1]] );
-    thisTree->assignVar( "sigmaIetaIetaGamma1", myTree.gamma_sigmaIetaIeta[indexG[1]] );
+    thisTree->assignVar( "ptGamma1", myTree.gamma_pt[1] );
+    thisTree->assignVar( "etaGamma1", myTree.gamma_etaSc[1] );
+    thisTree->assignVar( "phiGamma1", myTree.gamma_phi[1] );
+    //    thisTree->assignVar( "r9Gamma1", myTree.gamma_r9[1] );
+    thisTree->assignVar( "sigmaIetaIetaGamma1", myTree.gamma_sigmaIetaIeta[1] );
+
+
+
+
+    // thisTree->assignVar( "ptGamma0", myTree.gamma_pt[indexG[0]] );
+    // thisTree->assignVar( "etaGamma0", myTree.gamma_etaSc[indexG[0]] );
+    // thisTree->assignVar( "phiGamma0", myTree.gamma_phi[indexG[0]] );
+
+    // float gamma0_r9_corr = (myTree.isData) ? myTree.gamma_r9[indexG[0]] : r9corr->Eval(myTree.gamma_r9[indexG[0]]);
+    // float gamma1_r9_corr = (myTree.isData) ? myTree.gamma_r9[indexG[1]] : r9corr->Eval(myTree.gamma_r9[indexG[1]]);
+
+    // thisTree->assignVar( "r9Gamma0", gamma0_r9_corr );
+    // thisTree->assignVar( "r9Gamma1", gamma1_r9_corr );
+    // thisTree->assignVar( "sigmaIetaIetaGamma0", myTree.gamma_sigmaIetaIeta[indexG[0]] );
+
+    // // thisTree->assignVar( "chHadIsoGamma0", myTree.gamma_chHadIso[indexG[0]] );
+    // // thisTree->assignVar( "chHadIsoRCGamma0", myTree.gamma_chHadIsoRC[indexG[0]] );
+    // // thisTree->assignVar( "chHadIsoRC04Gamma0", myTree.gamma_chHadIsoRC04[indexG[0]] );
+
+    // thisTree->assignVar( "ptGamma1", myTree.gamma_pt[indexG[1]] );
+    // thisTree->assignVar( "etaGamma1", myTree.gamma_etaSc[indexG[1]] );
+    // thisTree->assignVar( "phiGamma1", myTree.gamma_phi[indexG[1]] );
+    // //    thisTree->assignVar( "r9Gamma1", myTree.gamma_r9[indexG[1]] );
+    // thisTree->assignVar( "sigmaIetaIetaGamma1", myTree.gamma_sigmaIetaIeta[indexG[1]] );
 
     // thisTree->assignVar( "chHadIsoGamma1", myTree.gamma_chHadIso[indexG[1]] );
     // thisTree->assignVar( "chHadIsoRCGamma1", myTree.gamma_chHadIsoRC[indexG[1]] );
@@ -874,6 +1102,20 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
     thisTree->assignVar( "gg_met", myTree.gg_met_pt );
     thisTree->assignVar( "gg_met_phi", myTree.gg_met_phi );
 
+    float normalMT2 = myTree.hgg_mt2;
+    float normalMET = myTree.met_pt;
+    if( is2017 ){
+      normalMET = myTree.met_stdMET_pt;
+      normalMT2 = myTree.hgg_stdMET_mt2;
+    }
+    thisTree->assignVar( "std_met", normalMET );
+    thisTree->assignVar( "std_mt2", normalMT2 );
+
+
+
+    thisTree->assignVar( "met_pt", myTree.met_pt );
+
+
     // thisTree->assignVar( "gg_jet1_pt", myTree.gg_jet1_pt );
     // thisTree->assignVar( "gg_jet2_pt", myTree.gg_jet2_pt );
 
@@ -881,23 +1123,76 @@ void computeYield( const MT2Sample& sample, const MT2Config& cfg,
     // thisTree->assignVar( "jet2_pt", myTree.jet2_pt );
 
     if(sigSampleName.Contains("T2bH") || sigSampleName.Contains("TChi") ){ 
-      thisTree->assignVar( "weight_isr", myTree.weight_isr/myTree.weight_isr_av );
-      thisTree->assignVar( "weight_isr_UP", myTree.weight_isr_UP/myTree.weight_isr_UP_av );
-      thisTree->assignVar( "weight_isr_DN", myTree.weight_isr_DN/myTree.weight_isr_DN_av );
 
-      weight *=  myTree.weight_isr/myTree.weight_isr_av;
+      //only apply the 2016 weight correction to 2016, for 2017, weight =1 and uncert =10
+      if( !is2017 ){
+	thisTree->assignVar( "weight_isr", myTree.weight_isr/myTree.weight_isr_av );
+	thisTree->assignVar( "weight_isr_UP", myTree.weight_isr_UP/myTree.weight_isr_UP_av );
+	thisTree->assignVar( "weight_isr_DN", myTree.weight_isr_DN/myTree.weight_isr_DN_av );
+	weight *=  myTree.weight_isr/myTree.weight_isr_av;
+      }else{
+	thisTree->assignVar( "weight_isr", 1. );
+	thisTree->assignVar( "weight_isr_UP", 1.1);
+	thisTree->assignVar( "weight_isr_DN", 1.1);
+      }
 
     }
 
     if( !(myTree.isData) ){
 
-      weight *= myTree.weight_btagsf / myTree.weight_btagsf_av * myTree.weight_lepsf2017;
+      // scale diphoton xsec to nlo, only affects data to mc plots
+      if( sample.id==295)
+	weight *= 135.1/84.4;
 
-      thisTree->assignVar( "weight_lepsf", myTree.weight_lepsf2017 );
-      thisTree->assignVar( "weight_lepsf_UP", myTree.weight_lepsf2017_UP );
-      thisTree->assignVar( "weight_lepsf_DN", myTree.weight_lepsf2017_DN );
+      float weight_btag_av = myTree.weight_btagsf_av;
+      if( myTree.weight_btagsf_av == 0 )
+	weight_btag_av = 1.;
 
-      thisTree->assignVar( "weight_btagsf", myTree.weight_btagsf/myTree.weight_btagsf_av );
+      float weight_btag = myTree.weight_btagsf;
+      if( myTree.weight_btagsf == 0 )
+	weight_btag = 1.;
+
+      float weight_lepsf = myTree.weight_lepsf2017;
+      float weight_lepsf_UP = myTree.weight_lepsf2017_UP;
+      float weight_lepsf_DN = myTree.weight_lepsf2017_DN;
+      if( myTree.weight_lepsf2017 == 0 ){
+	weight_lepsf = 1.;
+	weight_lepsf_UP = 1. + weight_lepsf_UP;
+	weight_lepsf_DN = 1. + weight_lepsf_DN;
+      }
+
+      float weight_gammasf = myTree.weight_gammasf2017;
+      float weight_gammasf_UP = myTree.weight_gammasf2017_UP;
+      float weight_gammasf_DN = myTree.weight_gammasf2017_DN;
+      if( myTree.weight_gammasf2017 == 0 ){	
+	weight_gammasf = 1.;
+	weight_gammasf_UP = 1. + weight_gammasf_UP;
+	weight_gammasf_DN = 1. + weight_gammasf_DN;
+      }
+
+
+      //only need it for SMH and signal
+      if( sample.id>950 )
+	for( int i=0; i<110; i++)
+	  thisTree->assignVar( Form("weight_scales_%d",i), myTree.weight_scales[i]/myTree.weight_scales_av[i] );
+
+      //since we do yield = 1/2(yield_met + yield_genMET) we will just halve the weight before so that I can just add the datasets
+      if( sample.id>=1000 )
+	weight *= 0.5;
+
+      //      weight *= myTree.weight_btagsf / myTree.weight_btagsf_av * myTree.weight_lepsf2017 ;
+      //      weight *= myTree.weight_btagsf / myTree.weight_btagsf_av * myTree.weight_lepsf2017  * myTree.weight_gammasf2017;
+      weight *= weight_btag / weight_btag_av * weight_lepsf  * weight_gammasf;
+
+      thisTree->assignVar( "weight_lepsf", weight_lepsf );
+      thisTree->assignVar( "weight_lepsf_UP", weight_lepsf_UP );
+      thisTree->assignVar( "weight_lepsf_DN", weight_lepsf_DN );
+
+      thisTree->assignVar( "weight_gammasf", weight_gammasf );
+      thisTree->assignVar( "weight_gammasf_UP", weight_gammasf_UP );
+      thisTree->assignVar( "weight_gammasf_DN", weight_gammasf_DN );
+
+      thisTree->assignVar( "weight_btagsf", weight_btag/myTree.weight_btagsf_av );
       thisTree->assignVar( "weight_btagsf_light_UP", myTree.weight_btagsf_light_UP/myTree.weight_btagsf_light_UP_av );
       thisTree->assignVar( "weight_btagsf_light_DN", myTree.weight_btagsf_light_DN/myTree.weight_btagsf_light_DN_av );
       thisTree->assignVar( "weight_btagsf_heavy_UP", myTree.weight_btagsf_heavy_UP/myTree.weight_btagsf_heavy_UP_av );
@@ -958,7 +1253,7 @@ void fillOneTree( MT2EstimateTree* thisTree, const MT2Tree& myTree, float weight
   //  thisTree->assignVar( "iso", iso );
   thisTree->assignVar( "sietaieta", myTree.gamma_sigmaIetaIeta[0] );
   thisTree->assignVar( "ptGamma", myTree.gamma_pt[0] );
-  thisTree->assignVar( "etaGamma", myTree.gamma_eta[0] );
+  thisTree->assignVar( "etaGamma", myTree.gamma_etaSc[0] );
   thisTree->assignVar( "jet1_pt", myTree.gamma_jet1_pt );
   thisTree->assignVar( "jet2_pt", myTree.gamma_jet2_pt );
   thisTree->assignVar( "gamma_chHadIsoRC",  myTree.gamma_chHadIsoRC[0] );
@@ -1004,15 +1299,38 @@ float DeltaPhi(float phi1, float phi2){
 
 void addVariables(MT2Analysis<MT2EstimateTree>* tree){
 
+
+  MT2EstimateTree::addVar( tree, "passPrefire" );
+
+  MT2EstimateTree::addVar( tree, "ngamma" );
+
   MT2EstimateTree::addVar( tree, "hgg_mt2" );
+  MT2EstimateTree::addVar( tree, "hgg_mt2_genMET" );
 
-  // MT2EstimateTree::addVar( tree, "jet0_pt" );
-  // MT2EstimateTree::addVar( tree, "jet1_pt" );
-  // MT2EstimateTree::addVar( tree, "jet2_pt" );
+  MT2EstimateTree::addVar( tree, "bjet0_pt" );
+  MT2EstimateTree::addVar( tree, "bjet1_pt" );
+  MT2EstimateTree::addVar( tree, "bjet2_pt" );
+  MT2EstimateTree::addVar( tree, "bjet3_pt" );
 
-  // MT2EstimateTree::addVar( tree, "jet0_eta" );
-  // MT2EstimateTree::addVar( tree, "jet1_eta" );
-  // MT2EstimateTree::addVar( tree, "jet2_eta" );
+  MT2EstimateTree::addVar( tree, "bjet0_eta" );
+  MT2EstimateTree::addVar( tree, "bjet1_eta" );
+  MT2EstimateTree::addVar( tree, "bjet2_eta" );
+  MT2EstimateTree::addVar( tree, "bjet3_eta" );
+
+  MT2EstimateTree::addVar( tree, "bjet0_phi" );
+  MT2EstimateTree::addVar( tree, "bjet1_phi" );
+  MT2EstimateTree::addVar( tree, "bjet2_phi" );
+  MT2EstimateTree::addVar( tree, "bjet3_phi" );
+ 
+  MT2EstimateTree::addVar( tree, "bjet0_mass" );
+  MT2EstimateTree::addVar( tree, "bjet1_mass" );
+  MT2EstimateTree::addVar( tree, "bjet2_mass" );
+  MT2EstimateTree::addVar( tree, "bjet3_mass" );
+ 
+  MT2EstimateTree::addVar( tree, "bjet0_btagCSV" );
+  MT2EstimateTree::addVar( tree, "bjet1_btagCSV" );
+  MT2EstimateTree::addVar( tree, "bjet2_btagCSV" );
+  MT2EstimateTree::addVar( tree, "bjet3_btagCSV" );
 
   // MT2EstimateTree::addVar( tree, "gamma_jet1_pt" );
   // MT2EstimateTree::addVar( tree, "gamma_jet2_pt" );
@@ -1063,6 +1381,12 @@ void addVariables(MT2Analysis<MT2EstimateTree>* tree){
   // MT2EstimateTree::addVar( tree, "jet1_pt" );
   // MT2EstimateTree::addVar( tree, "jet2_pt" );
 
+  //   Float_t weight_scales[110];
+
+  for( int i=0; i<110; i++)
+    MT2EstimateTree::addVar( tree, Form("weight_scales_%d",i) );
+
+
   MT2EstimateTree::addVar( tree, "weight_isr" );
   MT2EstimateTree::addVar( tree, "weight_isr_UP" );
   MT2EstimateTree::addVar( tree, "weight_isr_DN" );
@@ -1070,6 +1394,10 @@ void addVariables(MT2Analysis<MT2EstimateTree>* tree){
   MT2EstimateTree::addVar( tree, "weight_lepsf" );
   MT2EstimateTree::addVar( tree, "weight_lepsf_UP" );
   MT2EstimateTree::addVar( tree, "weight_lepsf_DN" );
+
+  MT2EstimateTree::addVar( tree, "weight_gammasf" );
+  MT2EstimateTree::addVar( tree, "weight_gammasf_UP" );
+  MT2EstimateTree::addVar( tree, "weight_gammasf_DN" );
 
   MT2EstimateTree::addVar( tree, "weight_btagsf" );
   MT2EstimateTree::addVar( tree, "weight_btagsf_light_UP" );
@@ -1089,6 +1417,7 @@ void addVariables(MT2Analysis<MT2EstimateTree>* tree){
   MT2EstimateTree::addVar( tree, "is1Mu" );
 
   MT2EstimateTree::addVar( tree, "diBpT" );
+  MT2EstimateTree::addVar( tree, "diBCombos");
 
   MT2EstimateTree::addVar( tree, "lep_pdgId0");
   // MT2EstimateTree::addVar( tree, "lep_pdgId1");
@@ -1103,6 +1432,10 @@ void addVariables(MT2Analysis<MT2EstimateTree>* tree){
   MT2EstimateTree::addVar( tree, "lep_phi1" );
 
   MT2EstimateTree::addVar( tree, "nVert" );
+
+  MT2EstimateTree::addVar( tree, "std_met" );
+  MT2EstimateTree::addVar( tree, "std_mt2" );
+  MT2EstimateTree::addVar( tree, "met_pt" );
 
 }
 

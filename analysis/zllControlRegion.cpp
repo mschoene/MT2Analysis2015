@@ -642,7 +642,7 @@ void computeYieldSnO( const MT2Sample& sample, const MT2Config& cfg,
     
     if(isSF){ //////////SAME FLAVOR//////////////////////////////////////////
       if(  myTree.isData && !( myTree.HLT_DoubleMu || myTree.HLT_DoubleMu_NonIso || myTree.HLT_SingleMu_NonIso || myTree.HLT_DoubleEl || myTree.HLT_DoubleEl33 || myTree.HLT_Photon165_HE10 ) )continue;
-
+ 
       if(do_ZinvEst){
 	//SF part
 	if( fabs(myTree.zll_mass-91.19)>=20 ) continue;
