@@ -54,7 +54,7 @@ class MT2SignalRegion {
  public:
 
   MT2SignalRegion( const std::string& name );
-  MT2SignalRegion( int njmin, int njmax, int nbmin, int nbmax, const std::string& mtCut="" );
+  MT2SignalRegion( int njmin, int njmax, int nbmin, int nbmax, int pTbin=-1, const std::string& mtCut="" );
   MT2SignalRegion( const MT2SignalRegion& rhs );
 
   ~MT2SignalRegion() {};
@@ -66,6 +66,7 @@ class MT2SignalRegion {
   std::string getNiceName() const;
   std::string getNiceNameLatex() const;
 
+  std::string getPtCuts() const;
   std::string getJetCuts() const;
   std::string getBJetCuts() const;
   std::string getCuts() const;
@@ -74,6 +75,8 @@ class MT2SignalRegion {
   int nJetsMax;
   int nBJetsMin;
   int nBJetsMax;
+
+  int pTbin;
 
   std::string mtCut; // can be "", "loMT", or "hiMT"
 
@@ -116,10 +119,10 @@ class MT2Region {
 
   MT2Region( const std::string& regionName );
 
-  MT2Region( float htMin, float htMax=-1, int njmin=1, int njmax=-1, int nbmin=-1, int nbmax=-1, const std::string& mtCut="" ) {
+  MT2Region( float htMin, float htMax=-1, int njmin=1, int njmax=-1, int nbmin=-1, int nbmax=-1, int pTbin=-1, const std::string& mtCut="" ) {
     //MT2Region( float htMin, float htMax=-1, int njmin=2, int njmax=-1, int nbmin=-1, int nbmax=-1, const std::string& mtCut="" ) {
     htRegion_ = new MT2HTRegion( htMin, htMax );
-    sigRegion_ = new MT2SignalRegion( njmin, njmax, nbmin, nbmax, mtCut );
+    sigRegion_ = new MT2SignalRegion( njmin, njmax, nbmin, nbmax, pTbin, mtCut );
   }
 
   ~MT2Region() {};
@@ -166,8 +169,8 @@ class MT2Region {
   int nJetsMax()  const { return sigRegion_->nJetsMax; };
   int nBJetsMin() const { return sigRegion_->nBJetsMin; };
   int nBJetsMax() const { return sigRegion_->nBJetsMax; };
-  std::string mtCut() const {return sigRegion_->mtCut; };
-
+  std::string mtCut() const { return sigRegion_->mtCut; };
+  int pTbin() const { return sigRegion_->pTbin; };
 
   bool operator==( const MT2Region& rhs ) const;
   bool operator!=( const MT2Region& rhs ) const;

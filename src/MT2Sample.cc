@@ -130,8 +130,8 @@ std::vector<MT2Sample> MT2Sample::loadSamples(const std::string& filename, const
 
     }
 
-    std::cout << "s.id  = " << s.id << std::endl;
-    std::cout << "evtid = " << evt_id << std::endl;
+    // std::cout << "s.id  = " << s.id << std::endl;
+    // std::cout << "evtid = " << evt_id << std::endl;
     
     s.nevents  = evt_nEvts;
     s.xsection = evt_xsec;
